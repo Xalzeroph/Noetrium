@@ -4,7 +4,8 @@ This file is generated from the canonical system registry and public API exports
 Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 
 - Registered systems: 166
-- Systems with typed facades: 145
+- Systems with generated facades: 166
+- Systems with API exports: 145
 - Registry digest: `470c795d7436dbc5b3054e70b17340a3f06573241ed84a48fcb4c1d9e0563a7e`
 
 ## `artifact`
@@ -66,7 +67,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: scientific result truth
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.artifact__lineage`
 
 ## `artifact/lineage/relation`
 
@@ -127,7 +128,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: immutable artifact content identity
 - Requires: `artifact`, `platform`, `scope`
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.data`
 
 ## `data/dataset`
 
@@ -300,7 +301,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: host supervision implementation
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.environment__instance`
 
 ## `environment/instance/identity`
 
@@ -475,7 +476,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: live host process state
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.environment__specification`
 
 ## `environment/specification/digest`
 
@@ -936,7 +937,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: runtime business control
 - Requires: none
 - Provides: `quality.audit`
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.governance__quality`
 
 ## `governance/release`
 
@@ -1085,7 +1086,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: live deployment state
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.model__catalog`
 
 ## `model/catalog/family`
 
@@ -1332,7 +1333,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: failure/state authority
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.observability__diagnostic`
 
 ## `observability/diagnostic/correlation`
 
@@ -1386,7 +1387,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: failure taxonomy and recovery
 - Requires: none
 - Provides: `logging.observation`
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.observability__logging`
 
 ## `observability/logging/capture`
 
@@ -1485,7 +1486,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: log storage mutation
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.observability__logging__routing`
 
 ## `observability/logging/sink`
 
@@ -1586,7 +1587,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: durable domain state
 - Requires: none
 - Provides: `telemetry.metrics`
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.observability__telemetry`
 
 ## `observability/telemetry/event`
 
@@ -1630,7 +1631,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: business operation truth
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.observability__tracing`
 
 ## `observability/tracing/context`
 
@@ -1700,7 +1701,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: new durable truth
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.operator__audit`
 
 ## `operator/command`
 
@@ -1710,7 +1711,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: domain command execution
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.operator__command`
 
 ## `operator/command/intent`
 
@@ -1763,7 +1764,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: durable state mutation
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.operator__query`
 
 ## `operator/query/search`
 
@@ -1855,7 +1856,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: execution session state
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.participant__definition`
 
 ## `participant/method`
 
@@ -1886,7 +1887,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: server/process implementation
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.participant__session`
 
 ## `platform`
 
@@ -2042,7 +2043,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: scientific truth and UI projections
 - Requires: `data`, `governance`, `observability`, `platform`, `scope`
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.reliability`
 
 ## `reliability/diagnostics`
 
@@ -2147,7 +2148,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: failure taxonomy
 - Requires: none
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.reliability__recovery__execution`
 
 ## `resource`
 
@@ -2157,7 +2158,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: environment semantics and model deployment truth
 - Requires: `platform`, `scope`
 - Provides: none
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.resource`
 
 ## `resource/allocation`
 
@@ -2448,7 +2449,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: platform authority mutation, project semantics, provider credentials or scientific result acceptance
 - Requires: `platform`
 - Provides: `reference.agent.components`, `reference.agent.runtime.bridge`
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.components`
 
 ## `orchestration`
 
@@ -2458,7 +2459,7 @@ Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.
 - Must not own: single-agent cognition, memory, model providers, scientific truth or platform authority
 - Requires: `components`, `platform`
 - Provides: `multi_agent.orchestration`
-- Facade: none (no exported API symbols)
+- Facade: `noetrium.contracts.systems.orchestration`
 
 ## `scope`
 

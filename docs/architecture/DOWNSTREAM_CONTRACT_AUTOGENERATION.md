@@ -32,9 +32,9 @@ The generator records, for every registered system:
 - every exported typed name;
 - the stable generated facade import path.
 
-A system without an API export remains visible in the catalog with
-`facade_module = null`. This is intentional: a topology node is not silently
-treated as an executable public API.
+Every registered system receives a generated metadata facade. A system
+without API exports has an empty `__all__` and is explicitly marked as a
+metadata-only facade; it is not silently treated as an executable public API.
 
 For example, the generic persistent-session system is exposed through:
 

@@ -28,10 +28,10 @@ def test_generated_catalog_covers_exact_registry() -> None:
 def test_generated_facades_are_importable() -> None:
     catalog = load_downstream_capability_catalog()
     for surface in catalog.systems:
-        if surface.facade_module is None:
-            continue
+        assert surface.facade_module is not None
         module = importlib.import_module(surface.facade_module)
-        assert tuple(module.__all__)
+        assert hasattr(module, "__all__")
+        assert module.SYSTEM_KEY == surface.system_key
         for name in module.__all__:
             assert hasattr(module, name), (
                 f"{surface.system_key}: missing generated export {name}"

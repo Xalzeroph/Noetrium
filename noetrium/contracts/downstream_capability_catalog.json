@@ -188,7 +188,7 @@
     {
       "api_modules": [],
       "authority": "artifact_lineage",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.artifact__lineage",
       "must_not_own": "scientific result truth",
       "owns": "artifact lineage and provenance relations",
       "package_prefix": "noetrium_platform.evidence.artifact.lineage",
@@ -364,7 +364,7 @@
     {
       "api_modules": [],
       "authority": "data_authority",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.data",
       "must_not_own": "immutable artifact content identity",
       "owns": "durable facts, records, datasets, canonical state and projections",
       "package_prefix": "noetrium_platform.evidence.data",
@@ -976,7 +976,7 @@
     {
       "api_modules": [],
       "authority": "environment_instance",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.environment__instance",
       "must_not_own": "host supervision implementation",
       "owns": "environment instance identity, readiness and lifecycle",
       "package_prefix": "noetrium_platform.capabilities.environment.instance",
@@ -1629,7 +1629,7 @@
     {
       "api_modules": [],
       "authority": "environment_spec",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.environment__specification",
       "must_not_own": "live host process state",
       "owns": "environment definition and immutable spec identity",
       "package_prefix": "noetrium_platform.capabilities.environment.specification",
@@ -3464,7 +3464,7 @@
     {
       "api_modules": [],
       "authority": "quality_policy",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.governance__quality",
       "must_not_own": "runtime business control",
       "owns": "quality gates, audits and invariants as descriptive policy",
       "package_prefix": "noetrium_platform.foundation.governance.quality",
@@ -3970,7 +3970,7 @@
     {
       "api_modules": [],
       "authority": "model_catalog",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.model__catalog",
       "must_not_own": "live deployment state",
       "owns": "model families/revisions catalog and metadata",
       "package_prefix": "noetrium_platform.capabilities.model.catalog",
@@ -4844,7 +4844,7 @@
     {
       "api_modules": [],
       "authority": "diagnostic_view_contract",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.observability__diagnostic",
       "must_not_own": "failure/state authority",
       "owns": "operator-facing diagnostic correlation contracts",
       "package_prefix": "noetrium_platform.evidence.observability.diagnostic",
@@ -4935,7 +4935,7 @@
     {
       "api_modules": [],
       "authority": "log_observation",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.observability__logging",
       "must_not_own": "failure taxonomy and recovery",
       "owns": "structured logs, context, sinks, stores, queries, retention and capture",
       "package_prefix": "noetrium_platform.evidence.observability.logging",
@@ -5112,7 +5112,7 @@
     {
       "api_modules": [],
       "authority": "log_routing",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.observability__logging__routing",
       "must_not_own": "log storage mutation",
       "owns": "log routing rules and fan-out decisions",
       "package_prefix": "noetrium_platform.evidence.observability.logging.routing",
@@ -5307,7 +5307,7 @@
     {
       "api_modules": [],
       "authority": "telemetry_observation",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.observability__telemetry",
       "must_not_own": "durable domain state",
       "owns": "metrics/events/counters and telemetry routing",
       "package_prefix": "noetrium_platform.evidence.observability.telemetry",
@@ -5423,7 +5423,7 @@
     {
       "api_modules": [],
       "authority": "trace_observation",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.observability__tracing",
       "must_not_own": "business operation truth",
       "owns": "trace/span identity and propagation",
       "package_prefix": "noetrium_platform.evidence.observability.tracing",
@@ -5594,7 +5594,7 @@
     {
       "api_modules": [],
       "authority": "operator_audit",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.operator__audit",
       "must_not_own": "new durable truth",
       "owns": "audit/reporting views across system authorities",
       "package_prefix": "noetrium_platform.product.operator.audit",
@@ -5605,7 +5605,7 @@
     {
       "api_modules": [],
       "authority": "operator_commands",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.operator__command",
       "must_not_own": "domain command execution",
       "owns": "operator command intent and command result contracts",
       "package_prefix": "noetrium_platform.product.operator.command",
@@ -5690,7 +5690,7 @@
     {
       "api_modules": [],
       "authority": "operator_queries",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.operator__query",
       "must_not_own": "durable state mutation",
       "owns": "operator read/query contracts",
       "package_prefix": "noetrium_platform.product.operator.query",
@@ -6149,7 +6149,7 @@
     {
       "api_modules": [],
       "authority": "participant_definition",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.participant__definition",
       "must_not_own": "execution session state",
       "owns": "participant identities and types",
       "package_prefix": "noetrium_platform.capabilities.participant.definition",
@@ -6308,7 +6308,7 @@
     {
       "api_modules": [],
       "authority": "participant_session",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.participant__session",
       "must_not_own": "server/process implementation",
       "owns": "participant session identity and lifecycle contract",
       "package_prefix": "noetrium_platform.capabilities.participant.session",
@@ -6702,7 +6702,7 @@
     {
       "api_modules": [],
       "authority": "reliability_authority",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.reliability",
       "must_not_own": "scientific truth and UI projections",
       "owns": "effects, failures, incidents, forensics, diagnosis, reconciliation and recovery",
       "package_prefix": "noetrium_platform.infrastructure.reliability",
@@ -7120,7 +7120,7 @@
     {
       "api_modules": [],
       "authority": "recovery_execution",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.reliability__recovery__execution",
       "must_not_own": "failure taxonomy",
       "owns": "recovery execution lifecycle and effect handoff",
       "package_prefix": "noetrium_platform.infrastructure.reliability.recovery.execution",
@@ -7131,7 +7131,7 @@
     {
       "api_modules": [],
       "authority": "resource_inventory",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.resource",
       "must_not_own": "environment semantics and model deployment truth",
       "owns": "resource inventory, compute, directories, leases and allocation/resolution",
       "package_prefix": "noetrium_platform.infrastructure.resources",
@@ -8123,7 +8123,7 @@
     {
       "api_modules": [],
       "authority": "reference_component_library",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.components",
       "must_not_own": "platform authority mutation, project semantics, provider credentials or scientific result acceptance",
       "owns": "reusable single-agent methods, memory, tools and external-framework bridges",
       "package_prefix": "components",
@@ -8139,7 +8139,7 @@
     {
       "api_modules": [],
       "authority": "multi_agent_orchestration",
-      "facade_module": null,
+      "facade_module": "noetrium.contracts.systems.orchestration",
       "must_not_own": "single-agent cognition, memory, model providers, scientific truth or platform authority",
       "owns": "multi-agent topology, communication, group/debate/hierarchical coordination and transport seams",
       "package_prefix": "orchestration",

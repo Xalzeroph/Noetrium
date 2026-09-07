@@ -159,7 +159,6 @@ def build_surfaces(root: Path) -> tuple[SystemSurface, ...]:
             api_modules=modules,
             facade_module=(
                 f"noetrium.contracts.systems.{_facade_slug(system_key)}"
-                if modules else None
             ),
         ))
     return tuple(rows)
@@ -192,6 +191,7 @@ def render_facade(surface: SystemSurface) -> str:
         f'""" {_MARKER}.',
         f"System: {surface.system_key}",
         f"Authority: {surface.authority}",
+        f"API exports: {'available' if surface.api_modules else 'none (metadata-only facade)'}",
         "This module is regenerated from the canonical registry and API exports.",
         '"""',
         "",
@@ -213,11 +213,11 @@ def render_facade(surface: SystemSurface) -> str:
 def render_init(surfaces: tuple[SystemSurface, ...]) -> str:
     mapping = {
         surface.system_key: surface.facade_module
-        for surface in surfaces if surface.facade_module is not None
+        for surface in surfaces
     }
     lines = [
         f'""" {_MARKER}.',
-        "One generated typed facade exists for every registered system with API exports.",
+        "One generated system facade exists for every registered system; API exports are included when available.",
         '"""',
         "",
         f"SYSTEM_FACADES = {mapping!r}",
@@ -271,7 +271,8 @@ def render_markdown(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
         "Do not edit it manually; run `python scripts/generate_downstream_contracts.py`.",
         "",
         f"- Registered systems: {len(surfaces)}",
-        f"- Systems with typed facades: {sum(surface.facade_module is not None for surface in surfaces)}",
+        f"- Systems with generated facades: {len(surfaces)}",
+        f"- Systems with API exports: {sum(bool(surface.api_modules) for surface in surfaces)}",
         f"- Registry digest: `{_digest(registry)}`",
         "",
     ]
