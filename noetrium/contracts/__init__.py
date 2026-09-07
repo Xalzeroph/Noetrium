@@ -335,3 +335,30 @@ __all__ = [
     "EnvironmentSession", "EnvironmentSessionDiagnostics",
     "EnvironmentSessionServices", "Observation",
 ]
+
+from .discovery import (
+    DownstreamApiModule,
+    DownstreamCapabilityCatalog,
+    DownstreamSystemSurface,
+    load_downstream_capability_catalog,
+)
+
+__all__ += [
+    "DownstreamApiModule",
+    "DownstreamCapabilityCatalog",
+    "DownstreamSystemSurface",
+    "load_downstream_capability_catalog",
+]
+
+from .session import *  # noqa: F401,F403
+from .session import __all__ as _session_contracts
+from .server import *  # noqa: F401,F403
+from .server import __all__ as _server_contracts
+from .systems import SYSTEM_FACADES, SYSTEM_KEYS
+
+__all__ += list(dict.fromkeys((
+    *_session_contracts,
+    *_server_contracts,
+    "SYSTEM_FACADES",
+    "SYSTEM_KEYS",
+)))
