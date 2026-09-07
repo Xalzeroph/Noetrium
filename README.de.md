@@ -21,7 +21,7 @@
 
 <!-- readme-locale:de -->
 
-<!-- readme-source-sha256:8e8c68b8a6974f340bd0c15a55bcc88b0fa0e57b2891aac0cc72e32390fb6f51 -->
+<!-- readme-source-sha256:ddaa75ab59f9a0cc56c2283152276be56a2d729afe01ec78ed1300625e7127fe -->
 
 <p align="center">
   <strong>Agents bauen. Experimente ausführen. Ergebnisse verifizieren.</strong><br>
@@ -90,6 +90,45 @@ Noetrium ist bewusst breiter als eine Agent-Workflow-Bibliothek: Experimentdesig
 - Reliability — failure classification, effect certainty, reconciliation, replay, incidents und fail-closed recovery.
 - Observability — strukturierte Logs, events, metrics, traces, diagnostics, projections und health signals.
 - Governance — Gates für architecture, dependency, algorithm, concurrency, performance, forensic, release und no-degradation.
+
+<!-- noetrium-interface-catalog:start -->
+### Public interface catalog
+
+Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
+
+- 166 registered system surfaces; 462 public API modules; 3351 public symbols.
+- Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
+- Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
+- Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
+
+| Capability domain | Registered surfaces |
+| --- | ---: |
+| artifact | 7 |
+| components | 1 |
+| data | 8 |
+| environment | 17 |
+| execution | 7 |
+| experimentation | 12 |
+| governance | 13 |
+| model | 16 |
+| observability | 27 |
+| operator | 8 |
+| orchestration | 1 |
+| participant | 7 |
+| platform | 5 |
+| portfolio | 5 |
+| reliability | 7 |
+| resource | 6 |
+| runtime | 12 |
+| scope | 7 |
+
+Discover a capability in the catalog, import its generated facade, and inject its typed ports in downstream composition:
+
+    from noetrium.contracts.systems.environment__minecraft import MinecraftBridgePort
+    from noetrium.contracts.systems.participant__agent import AgentMemoryPort
+
+After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
+<!-- noetrium-interface-catalog:end -->
 
 <!-- readme-section:architecture -->
 
