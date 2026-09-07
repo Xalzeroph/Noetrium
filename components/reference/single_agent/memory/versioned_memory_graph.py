@@ -84,6 +84,15 @@ class VersionedMemoryGraph:
                     bool(payload.get("active", True)),
                     tuple(str(value) for value in payload.get("evidence_ids", ())),
                     tuple(str(value) for value in payload.get("parent_ids", ())),
+                    str(payload.get("purpose", "general")),
+                    str(payload.get("scope", "global")),
+                    str(payload.get("mode", "APPEND")),
+                    dict(payload.get("schema", {})),
+                    tuple(str(value) for value in payload.get("access", ())),
+                    tuple(str(value) for value in payload.get("sources", ())),
+                    dict(payload.get("transform", {})),
+                    dict(payload.get("maintenance_contract", {})),
+                    dict(payload.get("provenance", {})),
                 )
             elif operation.operation == "update_node":
                 current = nodes.get(operation.target_id)
@@ -99,6 +108,15 @@ class VersionedMemoryGraph:
                     bool(payload.get("active", current.active)),
                     tuple(str(value) for value in payload.get("evidence_ids", current.evidence_ids)),
                     tuple(str(value) for value in payload.get("parent_ids", current.parent_ids)),
+                    str(payload.get("purpose", current.purpose)),
+                    str(payload.get("scope", current.scope)),
+                    str(payload.get("mode", current.mode)),
+                    dict(payload.get("schema", current.schema)),
+                    tuple(str(value) for value in payload.get("access", current.access)),
+                    tuple(str(value) for value in payload.get("sources", current.sources)),
+                    dict(payload.get("transform", current.transform)),
+                    dict(payload.get("maintenance_contract", current.maintenance_contract)),
+                    dict(payload.get("provenance", current.provenance)),
                 )
             elif operation.operation == "retire_node":
                 current = nodes.get(operation.target_id)

@@ -26,6 +26,15 @@ class MemoryNodeRecord:
     active: bool = True
     evidence_ids: tuple[str, ...] = ()
     parent_ids: tuple[str, ...] = ()
+    purpose: str = "general"
+    scope: str = "global"
+    mode: str = "APPEND"
+    schema: Mapping[str, JsonValue] = field(default_factory=dict)
+    access: tuple[str, ...] = ()
+    sources: tuple[str, ...] = ()
+    transform: Mapping[str, JsonValue] = field(default_factory=dict)
+    maintenance_contract: Mapping[str, JsonValue] = field(default_factory=dict)
+    provenance: Mapping[str, JsonValue] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         for name in ("node_id", "kind", "label", "content", "generation"):
@@ -36,6 +45,17 @@ class MemoryNodeRecord:
             raise ValueError("memory node evidence_ids must contain text")
         if any(not isinstance(value, str) or not value.strip() for value in self.parent_ids):
             raise ValueError("memory node parent_ids must contain text")
+        for name in ("purpose", "scope"):
+            _text(getattr(self, name), name)
+        if self.mode not in {"APPEND", "CURRENT", "AGGREGATE"}:
+            raise ValueError("memory node mode must be APPEND, CURRENT, or AGGREGATE")
+        for name in ("schema", "transform", "maintenance_contract", "provenance"):
+            if not isinstance(getattr(self, name), Mapping):
+                raise TypeError(f"memory node {name} must be a mapping")
+        for name in ("access", "sources"):
+            values = getattr(self, name)
+            if any(not isinstance(value, str) or not value.strip() for value in values):
+                raise ValueError(f"memory node {name} must contain text")
 
     def digest(self) -> str:
         return canonical_digest(self)
