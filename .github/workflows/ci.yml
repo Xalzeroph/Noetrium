@@ -109,8 +109,8 @@ jobs:
         run: python scripts/test_system.py check
       - name: Verify public contracts
         run: python scripts/public_contract_audit.py
-      - name: Verify generated downstream contract surface
-        run: python scripts/generate_downstream_contracts.py --check
+      - name: Verify generated downstream capability surface and README
+        run: python scripts/update_generated_docs.py --check
       - name: Verify README localization
         run: python scripts/check_readme_i18n.py
       - name: Run no-degradation audit
