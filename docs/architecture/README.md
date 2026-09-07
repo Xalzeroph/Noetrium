@@ -9,6 +9,10 @@ Use these documents for recursive ownership, composition-time binding,
 runtime ports, event-spine boundaries, migration rules and data flow. Project
 method details do not belong here.
 
+The complete downstream capability inventory is generated at
+`DOWNSTREAM_CAPABILITY_CATALOG.md`. Its typed facade generation and CI drift
+check are specified in `DOWNSTREAM_CONTRACT_AUTOGENERATION.md`.
+
 ## Current topology-query implementation notes
 
 The in-memory system registry may maintain derived child indexes for query efficiency, but `governance/system_registry/catalog.json` remains the only topology authority. Indexed `children()` and `descendants()` projections must preserve deterministic sorted breadth-first ordering and must never become independent durable state.

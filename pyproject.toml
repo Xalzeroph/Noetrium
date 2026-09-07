@@ -42,6 +42,7 @@ include = ["components*", "orchestration*", "noetrium*", "noetrium_platform*"]
 
 [tool.setuptools.package-data]
 "noetrium_platform.foundation.governance.system_registry" = ["catalog.json"]
+"noetrium.contracts" = ["downstream_capability_catalog.json"]
 "noetrium_platform.capabilities.environment.minecraft.providers" = ["assets/mineflayer_bridge/*.js", "assets/mineflayer_bridge/package.json", "assets/mineflayer_bridge/package-lock.json"]
 
 [tool.pytest.ini_options]
