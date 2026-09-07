@@ -4207,6 +4207,8 @@
           "module": "noetrium_platform.capabilities.model.request.api",
           "source": "noetrium_platform/capabilities/model/request/api/__init__.py",
           "symbols": [
+            "ExecutionContext",
+            "ImmutableModelIdentity",
             "ContentAddressedStorePort",
             "ContentRef",
             "ModelRequestEnvelope",

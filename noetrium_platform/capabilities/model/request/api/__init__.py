@@ -1,3 +1,8 @@
+from noetrium_platform.foundation.kernel.kernel import (
+    ExecutionContext,
+    ImmutableModelIdentity,
+)
+
 from .contracts import (
     ContentAddressedStorePort,
     ContentRef,
@@ -8,6 +13,8 @@ from .contracts import (
 )
 
 __all__ = [
+    "ExecutionContext",
+    "ImmutableModelIdentity",
     "ContentAddressedStorePort",
     "ContentRef",
     "ModelRequestEnvelope",

@@ -20,7 +20,7 @@ Example:
 
 - Registered systems: 166
 - Public API modules: 462
-- Public symbols: 3351
+- Public symbols: 3353
 - Registry digest: 470c795d7436dbc5b3054e70b17340a3f06573241ed84a48fcb4c1d9e0563a7e
 
 ## Capability domains
@@ -34,7 +34,7 @@ Example:
 | execution | 7 | 30 | 177 |
 | experimentation | 12 | 51 | 471 |
 | governance | 13 | 31 | 295 |
-| model | 16 | 53 | 446 |
+| model | 16 | 53 | 448 |
 | observability | 27 | 50 | 150 |
 | operator | 8 | 10 | 60 |
 | orchestration | 1 | 0 | 0 |
@@ -1214,7 +1214,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.capabilities.model.request.api ?w^~)?t ContentAddressedStorePort, ContentRef, ModelRequestEnvelope, ModelRequestLedgerPort, ModelRequestRecorderPort, ReconstructedModelRequest
+- noetrium_platform.capabilities.model.request.api ?w^~)?t ExecutionContext, ImmutableModelIdentity, ContentAddressedStorePort, ContentRef, ModelRequestEnvelope, ModelRequestLedgerPort, ModelRequestRecorderPort, ReconstructedModelRequest
 - noetrium_platform.capabilities.model.request.api.contracts ?w^~)?t ContentAddressedStorePort, ContentRef, ModelRequestEnvelope, ModelRequestLedgerPort, ModelRequestRecorderPort, ReconstructedModelRequest
 
 ### model/request/input

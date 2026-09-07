@@ -6,6 +6,8 @@ This module is regenerated from the canonical registry and API exports.
 """
 
 from noetrium_platform.capabilities.model.request.api import (
+    ExecutionContext,
+    ImmutableModelIdentity,
     ContentAddressedStorePort,
     ContentRef,
     ModelRequestEnvelope,
@@ -25,4 +27,4 @@ from noetrium_platform.capabilities.model.request.api.contracts import (
 
 SYSTEM_KEY = 'model/request'
 PACKAGE_PREFIX = 'noetrium_platform.capabilities.model.request'
-__all__ = ('ContentAddressedStorePort', 'ContentRef', 'ModelRequestEnvelope', 'ModelRequestLedgerPort', 'ModelRequestRecorderPort', 'ReconstructedModelRequest', 'contracts__ContentAddressedStorePort', 'contracts__ContentRef', 'contracts__ModelRequestEnvelope', 'contracts__ModelRequestLedgerPort', 'contracts__ModelRequestRecorderPort', 'contracts__ReconstructedModelRequest')
+__all__ = ('ExecutionContext', 'ImmutableModelIdentity', 'ContentAddressedStorePort', 'ContentRef', 'ModelRequestEnvelope', 'ModelRequestLedgerPort', 'ModelRequestRecorderPort', 'ReconstructedModelRequest', 'contracts__ContentAddressedStorePort', 'contracts__ContentRef', 'contracts__ModelRequestEnvelope', 'contracts__ModelRequestLedgerPort', 'contracts__ModelRequestRecorderPort', 'contracts__ReconstructedModelRequest')
