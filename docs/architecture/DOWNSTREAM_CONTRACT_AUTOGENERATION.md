@@ -13,9 +13,12 @@ The downstream surface is therefore generated from two canonical sources:
 2. Each registered package's `api` surface declares the typed contracts and
    ports that the system makes available.
 
-The generated artifact is
-`noetrium/contracts/downstream_capability_catalog.json`. The generated typed
-facades are under `noetrium/contracts/systems/`.
+The generated artifacts are
+`noetrium/contracts/downstream_capability_catalog.json`,
+`docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md`, and the typed facades
+under `noetrium/contracts/systems/`. The same generator refreshes
+`docs/architecture/VNEXT_SYSTEM_CATALOG.json` from the canonical registry, so
+topology documentation is not maintained as a separate manual copy.
 
 ## What is generated
 

@@ -18,6 +18,11 @@ def test_generated_catalog_covers_exact_registry() -> None:
     catalog = load_downstream_capability_catalog()
     assert {row.system_key for row in catalog.systems} == set(registry)
     assert catalog.topology_digest
+    assert (
+        ROOT / "docs/architecture/VNEXT_SYSTEM_CATALOG.json"
+    ).read_bytes() == (
+        ROOT / "noetrium_platform/foundation/governance/system_registry/catalog.json"
+    ).read_bytes()
 
 
 def test_generated_facades_are_importable() -> None:

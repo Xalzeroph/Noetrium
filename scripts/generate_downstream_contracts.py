@@ -315,10 +315,13 @@ def generate(root: Path, *, check: bool = False) -> int:
     facade_root = root / "noetrium/contracts/systems"
     catalog_path = root / "noetrium/contracts/downstream_capability_catalog.json"
     markdown_path = root / "docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md"
+    topology_path = root / "docs/architecture/VNEXT_SYSTEM_CATALOG.json"
+    topology_source = root / "noetrium_platform/foundation/governance/system_registry/catalog.json"
     expected: dict[Path, bytes] = {
         facade_root / "__init__.py": render_init(surfaces).encode("utf-8"),
         catalog_path: render_catalog(root, surfaces),
         markdown_path: render_markdown(root, surfaces),
+        topology_path: topology_source.read_bytes(),
     }
     for surface in surfaces:
         if surface.facade_module is None:
