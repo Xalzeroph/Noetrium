@@ -3,216 +3,47 @@
   "system_id": "noetrium-test-system",
   "description": "Hierarchical test taxonomy and executable gates for the platform.",
   "levels": [
-    {
-      "id": "L0",
-      "name": "static",
-      "purpose": "syntax, imports, architecture and source invariants"
-    },
-    {
-      "id": "L1",
-      "name": "contract",
-      "purpose": "typed API, identity, boundary and failure contracts"
-    },
-    {
-      "id": "L2",
-      "name": "component",
-      "purpose": "one subsystem's state machine or algorithm"
-    },
-    {
-      "id": "L3",
-      "name": "integration",
-      "purpose": "multiple ports composed through an explicit authority"
-    },
-    {
-      "id": "L4",
-      "name": "durability",
-      "purpose": "persistence, replay, recovery and corruption handling"
-    },
-    {
-      "id": "L5",
-      "name": "concurrency",
-      "purpose": "parallel workers, isolation, capacity and performance"
-    },
-    {
-      "id": "L6",
-      "name": "domain",
-      "purpose": "generic study, scientific and domain-contract behavior"
-    },
-    {
-      "id": "L7",
-      "name": "release",
-      "purpose": "release evidence, packaging and deployment qualification"
-    },
-    {
-      "id": "L8",
-      "name": "live",
-      "purpose": "qualified external runtime evidence; never local-only"
-    }
+    {"id": "L0", "name": "static", "purpose": "syntax, imports, architecture and source invariants"},
+    {"id": "L1", "name": "contract", "purpose": "typed API, identity, boundary and failure contracts"},
+    {"id": "L2", "name": "component", "purpose": "one subsystem's state machine or algorithm"},
+    {"id": "L3", "name": "integration", "purpose": "multiple ports composed through an explicit authority"},
+    {"id": "L4", "name": "durability", "purpose": "persistence, replay, recovery and corruption handling"},
+    {"id": "L5", "name": "concurrency", "purpose": "parallel workers, isolation, capacity and performance"},
+    {"id": "L6", "name": "domain", "purpose": "generic study, scientific and domain-contract behavior"},
+    {"id": "L7", "name": "release", "purpose": "release evidence, packaging and deployment qualification"},
+    {"id": "L8", "name": "live", "purpose": "qualified external runtime evidence; never local-only"}
   ],
   "families": {
-    "static-architecture": {
-      "level": "L0",
-      "risk": "P0",
-      "intent": "prevent layer, topology and source-authority drift",
-      "parallelism": "parallel-safe"
-    },
-    "typed-contracts": {
-      "level": "L1",
-      "risk": "P0",
-      "intent": "prove public contracts and typed failure semantics",
-      "parallelism": "parallel-safe"
-    },
-    "runtime-components": {
-      "level": "L2",
-      "risk": "P1",
-      "intent": "prove deterministic local component behavior",
-      "parallelism": "process-isolated"
-    },
-    "composition-integration": {
-      "level": "L3",
-      "risk": "P0",
-      "intent": "prove explicit cross-subsystem wiring and authority identity",
-      "parallelism": "process-isolated"
-    },
-    "durability-recovery": {
-      "level": "L4",
-      "risk": "P0",
-      "intent": "prove crash consistency, replay, checksums and restart recovery",
-      "parallelism": "exclusive"
-    },
-    "concurrency-capacity": {
-      "level": "L5",
-      "risk": "P0",
-      "intent": "prove race safety, isolation, fairness and bounded resources",
-      "parallelism": "exclusive"
-    },
-    "scientific-domain": {
-      "level": "L6",
-      "risk": "P0",
-      "intent": "prove generic study/domain scientific contracts and fail-closed behavior",
-      "parallelism": "exclusive"
-    },
-    "release-deployment": {
-      "level": "L7",
-      "risk": "P0",
-      "intent": "prove immutable release evidence and deployment prerequisites",
-      "parallelism": "exclusive"
-    },
-    "live-qualified": {
-      "level": "L8",
-      "risk": "P0",
-      "intent": "record externally qualified execution evidence only",
-      "parallelism": "exclusive"
-    }
+    "static-architecture": {"level": "L0", "risk": "P0", "intent": "prevent layer, topology and source-authority drift", "parallelism": "parallel-safe"},
+    "typed-contracts": {"level": "L1", "risk": "P0", "intent": "prove public contracts and typed failure semantics", "parallelism": "parallel-safe"},
+    "runtime-components": {"level": "L2", "risk": "P1", "intent": "prove deterministic local component behavior", "parallelism": "process-isolated"},
+    "composition-integration": {"level": "L3", "risk": "P0", "intent": "prove explicit cross-subsystem wiring and authority identity", "parallelism": "process-isolated"},
+    "durability-recovery": {"level": "L4", "risk": "P0", "intent": "prove crash consistency, replay, checksums and restart recovery", "parallelism": "exclusive"},
+    "concurrency-capacity": {"level": "L5", "risk": "P0", "intent": "prove race safety, isolation, fairness and bounded resources", "parallelism": "exclusive"},
+    "scientific-domain": {"level": "L6", "risk": "P0", "intent": "prove generic study/domain scientific contracts and fail-closed behavior", "parallelism": "exclusive"},
+    "release-deployment": {"level": "L7", "risk": "P0", "intent": "prove immutable release evidence and deployment prerequisites", "parallelism": "exclusive"},
+    "live-qualified": {"level": "L8", "risk": "P0", "intent": "record externally qualified execution evidence only", "parallelism": "exclusive"}
   },
   "gates": {
-    "fast": {
-      "description": "static and contract feedback",
-      "families": [
-        "static-architecture",
-        "typed-contracts"
-      ]
-    },
-    "integration": {
-      "description": "component and composition regression",
-      "families": [
-        "runtime-components",
-        "composition-integration"
-      ]
-    },
-    "recovery": {
-      "description": "durability and concurrency regression",
-      "families": [
-        "durability-recovery",
-        "concurrency-capacity"
-      ]
-    },
-    "domain": {
-      "description": "generic study/domain and scientific-contract regression",
-      "families": [
-        "scientific-domain"
-      ]
-    },
-    "release": {
-      "description": "complete source regression and release verification",
-      "families": [
-        "static-architecture",
-        "typed-contracts",
-        "runtime-components",
-        "composition-integration",
-        "durability-recovery",
-        "concurrency-capacity",
-        "scientific-domain",
-        "release-deployment"
-      ]
-    },
-    "live": {
-      "description": "external qualified evidence; not runnable as a local unit gate",
-      "families": [
-        "live-qualified"
-      ]
-    }
+    "fast": {"description": "static and contract feedback", "families": ["static-architecture", "typed-contracts"]},
+    "integration": {"description": "component and composition regression", "families": ["runtime-components", "composition-integration"]},
+    "recovery": {"description": "durability and concurrency regression", "families": ["durability-recovery", "concurrency-capacity"]},
+    "domain": {"description": "generic study/domain and scientific-contract regression", "families": ["scientific-domain"]},
+    "release": {"description": "complete source regression and release verification", "families": ["static-architecture", "typed-contracts", "runtime-components", "composition-integration", "durability-recovery", "concurrency-capacity", "scientific-domain", "release-deployment"]},
+    "live": {"description": "external qualified evidence; not runnable as a local unit gate", "families": ["live-qualified"]}
   },
   "rules": [
-    {
-      "id": "release",
-      "pattern": "^test_(?:release|active_release|qualified_closure|frozen_deployment|deployment_qualification|gate_system|t2b)",
-      "family": "release-deployment"
-    },
-    {
-      "id": "architecture",
-      "pattern": "^test_(?:algorithm_governance|concurrency_(?:architecture|governance)|architecture|authority|capability|composed|cross_subsystem|dataflow|harness|hierarchical_platform|leaf_(?:executable|public)|no_degradation|platform_(?:core|repository_boundary)|quality_architecture|registered_public|registry_bound_raw_capture|runtime_platform_architecture|test_system|vnext)",
-      "family": "static-architecture"
-    },
-    {
-      "id": "section42-scientific",
-      "pattern": "^test_(?:benchmark_source|raw_record_metric_engine|universal_experiment|measurement_protocol|research_compiler|research_workbench|trial_matrix_executor)_",
-      "family": "scientific-domain"
-    },
-    {
-      "id": "contracts",
-      "pattern": "^test_(?:agent_(?:capability_abi|observation_evidence_payload)|embodied_environment|checksummed_document_failure_codes|document_integrity|exact_|experiment_run_spec|failure_taxonomy_binding|leaf_failure_contract|prompt_contract|public_api_imports|qualification_evidence_codec|project_system|python_environment|role04_algorithm_contracts|run_(?:launch_manifest_authority|manifest_codec)|runtime_verification_ports|scientific_identity_freeze|section42_identity_facets|segment_verifier|server_connection_environment|source_.*|system_leaf_contracts|trial_(?:identity_freeze|protocol_identity)|typed_.*)",
-      "family": "typed-contracts"
-    },
-    {
-      "id": "durability",
-      "pattern": "^test_(?:action_checkpoint|action_intent_journal|agent_(?:cognition_recovery|cognition_state_checkpoint|coordination_durability|memory_durability|skill_library_durability)|crash_bundle|durable|effect_journal|forensic_index|heartbeat|jsonl_log_algorithm_regressions|leaf_state|method_observation_outbox|participant_checkpoint|public_checkpoint|raw_lake|recovery_(?!lease_|observer_)|research_checkpoint|run_artifact|runtime_history|runtime_state|segmented_logs|sem_durable|sqlite_atomic_state|state_|storage|torn_)",
-      "family": "durability-recovery"
-    },
-    {
-      "id": "concurrency",
-      "pattern": "^test_(?:capacity|platform_concurrency_runtime|qualification_index_worker_concurrency|io_performance|parallel|.*isolation|recovery_lease|resource_(?:endpoint_(?:allocation|atomicity|heartbeat)|shared_carrier_fencing)|segmented_event_hot_path|sem_hot_path)",
-      "family": "concurrency-capacity"
-    },
-    {
-      "id": "reliability",
-      "pattern": "^test_(?:action_(?!checkpoint|intent_journal)|failure_(?!taxonomy_binding)|forensic_(?!index)|forensics|incident|operation_|operator_unclosed|crash_(?!bundle)|effect_(?!journal)|environment_effect|runtime_failure|runtime_recovery|service_crash|supervisor|triage)",
-      "family": "runtime-components"
-    },
-    {
-      "id": "minecraft-provider",
-      "pattern": "^test_minecraft_",
-      "family": "composition-integration"
-    },
-    {
-      "id": "composition",
-      "pattern": "^test_(?:agent_cognition_(?:action_phase|planning_phase)|controller|deployment_(?!qualification)|experiment_(?!run_spec)|generic_|host_|java_runtime|joined_runtime_status|local_service|management|model_|operator_(?!unclosed)|participant_(?!checkpoint_envelope)|platform_meta_systems|prepared_process|process_|qualification_(?:fact_probes|index_snapshot)|resource_resolution|runtime_(?!failure|history|observer|platform|recovery|service|state|small|verification)|server_(?!connection)|service_(?!crash_)|workload_)",
-      "family": "composition-integration"
-    },
-    {
-      "id": "domain",
-      "pattern": "^test_(?:agent_effectful|agent_only|environment_(?!effect_safety)|method_(?!observation_outbox)|metric_|prompt_(?!contract|trace_observer_isolation)|scientific_(?!identity_freeze)|study_)",
-      "family": "scientific-domain"
-    },
-    {
-      "id": "evolution",
-      "pattern": "^test_topology_evolution_",
-      "family": "composition-integration"
-    },
-    {
-      "id": "platform",
-      "pattern": "^test_(?:active_(?!release)|artifact_|debug_|event_|final_|forensic_(?!index|read)|io_(?!performance)|kernel_|lifecycle|logging_|low_level_|observability_|one_click_|optimization_|registry_observability_|runtime_small|server_health(?!_entrypoint)|telemetry_|tmux_)",
-      "family": "runtime-components"
-    }
+    {"id": "release", "pattern": "^test_(?:release|active_release|qualified_closure|frozen_deployment|deployment_qualification|gate_system|t2b)", "family": "release-deployment"},
+    {"id": "architecture", "pattern": "^test_(?:algorithm_governance|concurrency_(?:architecture|governance)|architecture|authority|capability|composed|cross_subsystem|dataflow|downstream_contracts|harness|hierarchical_platform|leaf_(?:executable|public)|no_degradation|platform_(?:core|repository_boundary)|quality_architecture|registered_public|registry_bound_raw_capture|runtime_platform_architecture|test_system|vnext)", "family": "static-architecture"},
+    {"id": "section42-scientific", "pattern": "^test_(?:benchmark_source|raw_record_metric_engine|universal_experiment|measurement_protocol|research_compiler|research_workbench|trial_matrix_executor)_", "family": "scientific-domain"},
+    {"id": "contracts", "pattern": "^test_(?:agent_(?:capability_abi|observation_evidence_payload)|embodied_environment|checksummed_document_failure_codes|document_integrity|exact_|experiment_run_spec|failure_taxonomy_binding|leaf_failure_contract|prompt_contract|public_api_imports|qualification_evidence_codec|project_system|python_environment|role04_algorithm_contracts|run_(?:launch_manifest_authority|manifest_codec)|runtime_verification_ports|scientific_identity_freeze|section42_identity_facets|segment_verifier|server_connection_environment|source_.*|system_leaf_contracts|trial_(?:identity_freeze|protocol_identity)|typed_.*)", "family": "typed-contracts"},
+    {"id": "durability", "pattern": "^test_(?:action_checkpoint|action_intent_journal|agent_(?:cognition_recovery|cognition_state_checkpoint|coordination_durability|memory_durability|skill_library_durability)|crash_bundle|durable|effect_journal|forensic_index|heartbeat|jsonl_log_algorithm_regressions|leaf_state|method_observation_outbox|participant_checkpoint|public_checkpoint|raw_lake|recovery_(?!lease_|observer_)|research_checkpoint|run_artifact|runtime_history|runtime_state|segmented_logs|sem_durable|sqlite_atomic_state|state_|storage|torn_)", "family": "durability-recovery"},
+    {"id": "concurrency", "pattern": "^test_(?:capacity|platform_concurrency_runtime|qualification_index_worker_concurrency|io_performance|parallel|.*isolation|recovery_lease|resource_(?:endpoint_(?:allocation|atomicity|heartbeat)|shared_carrier_fencing)|segmented_event_hot_path|sem_hot_path)", "family": "concurrency-capacity"},
+    {"id": "reliability", "pattern": "^test_(?:action_(?!checkpoint|intent_journal)|failure_(?!taxonomy_binding)|forensic_(?!index)|forensics|incident|operation_|operator_unclosed|crash_(?!bundle)|effect_(?!journal)|environment_effect|runtime_failure|runtime_recovery|service_crash|supervisor|triage)", "family": "runtime-components"},
+    {"id": "minecraft-provider", "pattern": "^test_minecraft_", "family": "composition-integration"},
+    {"id": "composition", "pattern": "^test_(?:agent_cognition_(?:action_phase|planning_phase)|controller|deployment_(?!qualification)|experiment_(?!run_spec)|generic_|host_|java_runtime|joined_runtime_status|local_service|management|model_|operator_(?!unclosed)|participant_(?!checkpoint_envelope)|platform_meta_systems|prepared_process|process_|public_project_|qualification_(?:fact_probes|index_snapshot)|resource_resolution|runtime_(?!failure|history|observer|platform|recovery|service|state|small|verification)|server_(?!connection)|service_(?!crash_)|workload_)", "family": "composition-integration"},
+    {"id": "domain", "pattern": "^test_(?:agent_effectful|agent_only|environment_(?!effect_safety)|method_(?!observation_outbox)|metric_|prompt_(?!contract|trace_observer_isolation)|scientific_(?!identity_freeze)|study_)", "family": "scientific-domain"},
+    {"id": "evolution", "pattern": "^test_topology_evolution_", "family": "composition-integration"},
+    {"id": "platform", "pattern": "^test_(?:active_(?!release)|artifact_|debug_|event_|final_|forensic_(?!index|read)|io_(?!performance)|kernel_|lifecycle|logging_|low_level_|observability_|one_click_|optimization_|registry_observability_|runtime_small|server_health(?!_entrypoint)|telemetry_|tmux_)", "family": "runtime-components"}
   ]
 }
