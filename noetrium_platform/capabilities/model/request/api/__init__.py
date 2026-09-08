@@ -1,6 +1,8 @@
 from .contracts import (
     ContentAddressedStorePort,
     ContentRef,
+    ExecutionContext,
+    ImmutableModelIdentity,
     ModelRequestEnvelope,
     ModelRequestLedgerPort,
     ModelRequestRecorderPort,
@@ -10,6 +12,8 @@ from .contracts import (
 __all__ = [
     "ContentAddressedStorePort",
     "ContentRef",
+    "ExecutionContext",
+    "ImmutableModelIdentity",
     "ModelRequestEnvelope",
     "ModelRequestLedgerPort",
     "ModelRequestRecorderPort",
