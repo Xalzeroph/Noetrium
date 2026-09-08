@@ -1,4 +1,5 @@
 from .authorities import ModelAuthorities
+from .multimodal import MultimodalMethodSpec, MultimodalPart, MultimodalRequest, MultimodalRequestCodecPort, MultimodalResponse
 from .capability import (
     EmbeddingInput,
     EmbeddingOutput,
@@ -63,6 +64,11 @@ from noetrium_platform.capabilities.model.catalog.revision.api import (
 
 __all__ = [
     "EmbeddingInput",
+    "MultimodalMethodSpec",
+    "MultimodalPart",
+    "MultimodalRequest",
+    "MultimodalRequestCodecPort",
+    "MultimodalResponse",
     "EmbeddingOutput",
     "EmbeddingVector",
     "ModelCapabilityInput",

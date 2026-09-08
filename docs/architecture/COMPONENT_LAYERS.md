@@ -27,6 +27,30 @@ noetrium_platform never imports root extensions, and no root extension owns a
 global registry. Composition constructs each registry/topology and injects it
 into a method. The root packages are the only canonical extension paths.
 
+## High-level Agent Research Kit boundary
+
+The stable product facade also exposes
+\`noetrium.platform.bind_agent_research_runtime\`. It composes the existing
+environment-neutral \`AgentCognitionLoop\` from typed observation, planner,
+skill, action, memory, safety, completion, evidence, progress, and optional
+diagnostic ports. The paper chooses the policies and providers; Noetrium
+owns sequencing, budgets, checkpoint restoration, and diagnostic failure
+handling.
+
+For multimodal papers, \`MultimodalAgentObservationPort\` composes a normal
+observation source with an arbitrary content-part source. Parts remain
+content-addressed and preserve modality, ordering, timing, coordinate-frame,
+and source-reference metadata. The adapter does not assume a vendor or a
+finite list of modalities.
+
+Model calls use the same public composition boundary:
+noetrium.platform.complete_project_model records and fences a qualified
+generation request, while invoke_multimodal_model passes arbitrary multimodal
+parts through a provider-owned codec and content store. The model body,
+modality interpretation, and response decoding remain method/provider owned;
+request identity, recording, endpoint invocation, and response provenance
+remain Noetrium-owned.
+
 ## Paper reproduction patterns
 
 | Paper contribution | Reuse | Downstream change |

@@ -19,8 +19,8 @@ Example:
         ...
 
 - Registered systems: 172
-- Public API modules: 499
-- Public symbols: 3602
+- Public API modules: 500
+- Public symbols: 3659
 - Registry digest: a6a6e15a0288ba7acc23a378d3b928067da1be62005febdac711e4a26b0b50cc
 
 ## Capability domains
@@ -28,16 +28,16 @@ Example:
 | Domain | Systems | API modules | Symbols |
 | --- | ---: | ---: | ---: |
 | artifact | 7 | 24 | 127 |
-| components | 1 | 1 | 10 |
+| components | 1 | 1 | 49 |
 | data | 8 | 20 | 106 |
 | environment | 18 | 53 | 444 |
 | execution | 7 | 31 | 179 |
 | experimentation | 15 | 59 | 576 |
 | governance | 13 | 33 | 307 |
-| model | 16 | 53 | 466 |
+| model | 16 | 54 | 476 |
 | observability | 27 | 52 | 152 |
 | operator | 8 | 10 | 60 |
-| orchestration | 1 | 1 | 11 |
+| orchestration | 1 | 1 | 19 |
 | participant | 8 | 39 | 410 |
 | platform | 5 | 9 | 89 |
 | portfolio | 5 | 7 | 75 |
@@ -1221,9 +1221,10 @@ Example:
 
 #### API modules
 
-- noetrium_platform.capabilities.model.api ?w^~)?t EmbeddingInput, EmbeddingOutput, EmbeddingVector, ModelCapabilityInput, ModelCapabilityInvocation, ModelCapabilityOutput, ModelCapabilityResponse, NamedScalar, ProjectModelStreamingCapabilityProviderPort, ProjectModelStreamingCapabilityClientPort, ModelCapabilityStreamTerminal, ModelCapabilityStreamSession, ModelCapabilityStreamDisposition, ModelCapabilityStreamChunk, PolicyActionProbability, PolicyInferenceInput, PolicyInferenceOutput, RankedCandidate, RankingCandidate, RankingInput, RankingOutput, ProjectModelCapabilityClientPort, ProjectModelCapabilityProviderPort, ScoredCandidate, ScoringCandidate, ScoringInput, ScoringOutput, StructuredGenerationOutput, StructuredGenerationInput, StructuredGenerationDecoderPort, ValueInferenceInput, ValueInferenceOutput, ModelPromotionDecision, ModelPromotionDisposition, ModelPromotionReceipt, ModelRevisionAuthorityPort, ModelRevisionAuthoritySnapshot, ModelRevisionCommit, ModelRevisionConflictError, ModelRevisionEvidence, ModelRevisionEvidenceKind, ModelRevisionIdentity, ModelRevisionIntegrityError, ModelRevisionStateError, ModelRollbackReceipt, ModelUpdateBuildEvidence, ModelUpdateBuildReceipt, ModelUpdatePlan, ModelUpdateProducerPort, ModelUpdateProposal, ModelUpdateSource, PreparedModelRevision, ModelAuthorities, ModelBindingDiagnostic, ModelBindingDiagnosticCode, ModelBindingDiagnosticSeverity, ModelCapabilityRequirement, ModelProjectBindingError, ModelProjectDefinition, MultimodalInferenceOutput, MultimodalInferenceInput, MultimodalContent, ModelRequirementContribution, ModelProviderProfile, ProjectModelBinding, ProjectModelClientPort, ProjectModelProviderPort, ProjectModelRequest, ProjectModelResponse
+- noetrium_platform.capabilities.model.api ?w^~)?t EmbeddingInput, MultimodalMethodSpec, MultimodalPart, MultimodalRequest, MultimodalRequestCodecPort, MultimodalResponse, EmbeddingOutput, EmbeddingVector, ModelCapabilityInput, ModelCapabilityInvocation, ModelCapabilityOutput, ModelCapabilityResponse, NamedScalar, ProjectModelStreamingCapabilityProviderPort, ProjectModelStreamingCapabilityClientPort, ModelCapabilityStreamTerminal, ModelCapabilityStreamSession, ModelCapabilityStreamDisposition, ModelCapabilityStreamChunk, PolicyActionProbability, PolicyInferenceInput, PolicyInferenceOutput, RankedCandidate, RankingCandidate, RankingInput, RankingOutput, ProjectModelCapabilityClientPort, ProjectModelCapabilityProviderPort, ScoredCandidate, ScoringCandidate, ScoringInput, ScoringOutput, StructuredGenerationOutput, StructuredGenerationInput, StructuredGenerationDecoderPort, ValueInferenceInput, ValueInferenceOutput, ModelPromotionDecision, ModelPromotionDisposition, ModelPromotionReceipt, ModelRevisionAuthorityPort, ModelRevisionAuthoritySnapshot, ModelRevisionCommit, ModelRevisionConflictError, ModelRevisionEvidence, ModelRevisionEvidenceKind, ModelRevisionIdentity, ModelRevisionIntegrityError, ModelRevisionStateError, ModelRollbackReceipt, ModelUpdateBuildEvidence, ModelUpdateBuildReceipt, ModelUpdatePlan, ModelUpdateProducerPort, ModelUpdateProposal, ModelUpdateSource, PreparedModelRevision, ModelAuthorities, ModelBindingDiagnostic, ModelBindingDiagnosticCode, ModelBindingDiagnosticSeverity, ModelCapabilityRequirement, ModelProjectBindingError, ModelProjectDefinition, MultimodalInferenceOutput, MultimodalInferenceInput, MultimodalContent, ModelRequirementContribution, ModelProviderProfile, ProjectModelBinding, ProjectModelClientPort, ProjectModelProviderPort, ProjectModelRequest, ProjectModelResponse
 - noetrium_platform.capabilities.model.api.authorities ?w^~)?t ModelAuthorities
 - noetrium_platform.capabilities.model.api.capability ?w^~)?t EmbeddingInput, EmbeddingOutput, EmbeddingVector, ModelCapabilityInput, ModelCapabilityInvocation, ModelCapabilityOutput, ModelCapabilityResponse, NamedScalar, ProjectModelStreamingCapabilityProviderPort, ProjectModelStreamingCapabilityClientPort, ModelCapabilityStreamTerminal, ModelCapabilityStreamSession, ModelCapabilityStreamDisposition, ModelCapabilityStreamChunk, PolicyActionProbability, PolicyInferenceInput, PolicyInferenceOutput, RankedCandidate, RankingCandidate, RankingInput, RankingOutput, ProjectModelCapabilityClientPort, ProjectModelCapabilityProviderPort, ScoredCandidate, ScoringCandidate, ScoringInput, ScoringOutput, StructuredGenerationOutput, StructuredGenerationDecoderPort, ValueInferenceInput, ValueInferenceOutput
+- noetrium_platform.capabilities.model.api.multimodal ?w^~)?t MultimodalMethodSpec, MultimodalPart, MultimodalRequest, MultimodalRequestCodecPort, MultimodalResponse
 - noetrium_platform.capabilities.model.api.project ?w^~)?t ModelBindingDiagnostic, ModelBindingDiagnosticCode, ModelBindingDiagnosticSeverity, ModelCapabilityRequirement, ModelProjectBindingError, ModelProjectDefinition, MultimodalInferenceOutput, MultimodalInferenceInput, MultimodalContent, ModelRequirementContribution, ModelProviderProfile, ProjectModelBinding, ProjectModelClientPort, ProjectModelProviderPort, ProjectModelRequest, ProjectModelResponse, StructuredGenerationInput
 
 ### model/asset
@@ -2786,7 +2787,7 @@ Example:
 
 #### API modules
 
-- components.api ?w^~)?t MemoryEdgeRecord, MemoryGraphConflict, MemoryGraphIntegrityError, MemoryGraphLedgerEntry, MemoryGraphOperation, MemoryGraphPort, MemoryGraphSnapshot, MemoryGraphTransaction, MemoryNodeRecord, VersionedMemoryGraph
+- components.api ?w^~)?t MemoryEdgeRecord, MemoryGraphConflict, MemoryGraphIntegrityError, MemoryGraphLedgerEntry, MemoryGraphOperation, MemoryGraphPort, MemoryGraphSnapshot, MemoryGraphTransaction, MemoryNodeRecord, VersionedMemoryGraph, JsonlReferenceAgentProgress, NullReferenceAgentProgress, PlatformCapabilityToolPort, ReferenceAgentAction, ReferenceAgentActionKind, ReferenceAgentActionToolPort, ReferenceAgentDecision, ReferenceAgentDecisionPort, ReferenceAgentEvent, ReferenceAgentMessage, ReferenceAgentObservation, ReferenceAgentPlannerPort, ReferenceAgentProgressPort, ReferenceAgentReflectionPort, ReferenceAgentRunResult, ReferenceAgentSolverPort, ReferenceAgentState, ReferenceAgentStatus, ReferenceAgentToolPort, ReferencePlanAndSolveMethod, ReferenceReActMethod, ReferenceReflexionMethod, ReferenceToolRegistryPort, EpisodicMemoryStore, MemoryEmbedderPort, MemoryItem, MemoryPersistencePort, SQLiteMemoryPersistence, VectorMemoryStore, WorkingMemory, ToolArguments, ToolAuditPort, ToolAuthorization, ToolAuthorizationPort, ToolDefinition, ToolHandler, ToolRegistry, ToolResult, ToolRiskClass
 
 ### orchestration
 
@@ -2801,7 +2802,7 @@ Example:
 
 #### API modules
 
-- orchestration.api ?w^~)?t CommunicationEdge, CommunicationTopology, MultiAgentCancellationPort, MultiAgentCheckpoint, MultiAgentDeliveryReceipt, MultiAgentDeliveryStatus, MultiAgentJournalPort, MultiAgentMessage, MultiAgentNodePort, MultiAgentRunResult, MultiAgentRunStatus
+- orchestration.api ?w^~)?t CommunicationEdge, CommunicationTopology, MultiAgentCancellationPort, MultiAgentCheckpoint, MultiAgentDeliveryReceipt, MultiAgentDeliveryStatus, MultiAgentJournalPort, MultiAgentMessage, MultiAgentNodePort, MultiAgentRunResult, MultiAgentRunStatus, DebateCoordinator, GroupChatCoordinator, HierarchicalCoordinator, MultiAgentCoordinator, MultiAgentMembershipPort, MultiAgentTransportPort, TransportBackedMultiAgentCoordinator, SQLiteMultiAgentJournal
 
 ### scope
 

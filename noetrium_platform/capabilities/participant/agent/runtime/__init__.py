@@ -17,9 +17,13 @@ from .goals import AgentGoalGraph, AgentSubgoal, GoalStatus
 from .self_prompter import AgentSelfPrompter, SelfPromptEvent, SelfPrompterLifecycle, SelfPrompterState
 from .skill_library import InMemorySkillLibrary
 from .vision import AgentVisionProviderPort, VisionFrame, VisionInterpretation, VisionObservationProjector
+from .multimodal import AgentMultimodalObservationProjector
+from .multimodal_adapter import AgentObservationPartSourcePort, MultimodalAgentObservationPort
 
 __all__ = [
     "ActionExecutionPolicy",
+    "AgentMultimodalObservationProjector",
+    "AgentObservationPartSourcePort",
     "ActionLifecycleState",
     "ActionManagerSnapshot",
     "AgentActionManager",
@@ -52,4 +56,5 @@ __all__ = [
     "VisionFrame",
     "VisionInterpretation",
     "VisionObservationProjector",
+    "MultimodalAgentObservationPort",
 ]

@@ -1,47 +1,47 @@
 {
   "schema": "agent-noetrium.readme-translation-state.v1",
   "source_locale": "en",
-  "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b",
+  "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78",
   "translations": {
     "en": {
       "status": "source",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     },
     "zh-CN": {
       "status": "current",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     },
     "zh-TW": {
       "status": "current",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     },
     "ja": {
       "status": "current",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     },
     "ko": {
       "status": "current",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     },
     "es": {
       "status": "current",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     },
     "pt-BR": {
       "status": "current",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     },
     "fr": {
       "status": "current",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     },
     "de": {
       "status": "current",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     },
     "ru": {
       "status": "current",
-      "source_semantic_sha256": "1200f1f42e9e52fc5829e36a43cd022c9ec93e45e2e531f4cc56c3180c42fb8b"
+      "source_semantic_sha256": "5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78"
     }
   }
 }

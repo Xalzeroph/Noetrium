@@ -4098,6 +4098,11 @@
           "source": "noetrium_platform/capabilities/model/api/__init__.py",
           "symbols": [
             "EmbeddingInput",
+            "MultimodalMethodSpec",
+            "MultimodalPart",
+            "MultimodalRequest",
+            "MultimodalRequestCodecPort",
+            "MultimodalResponse",
             "EmbeddingOutput",
             "EmbeddingVector",
             "ModelCapabilityInput",
@@ -4210,6 +4215,17 @@
             "StructuredGenerationDecoderPort",
             "ValueInferenceInput",
             "ValueInferenceOutput"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.model.api.multimodal",
+          "source": "noetrium_platform/capabilities/model/api/multimodal.py",
+          "symbols": [
+            "MultimodalMethodSpec",
+            "MultimodalPart",
+            "MultimodalRequest",
+            "MultimodalRequestCodecPort",
+            "MultimodalResponse"
           ]
         },
         {
@@ -8877,7 +8893,46 @@
             "MemoryGraphSnapshot",
             "MemoryGraphTransaction",
             "MemoryNodeRecord",
-            "VersionedMemoryGraph"
+            "VersionedMemoryGraph",
+            "JsonlReferenceAgentProgress",
+            "NullReferenceAgentProgress",
+            "PlatformCapabilityToolPort",
+            "ReferenceAgentAction",
+            "ReferenceAgentActionKind",
+            "ReferenceAgentActionToolPort",
+            "ReferenceAgentDecision",
+            "ReferenceAgentDecisionPort",
+            "ReferenceAgentEvent",
+            "ReferenceAgentMessage",
+            "ReferenceAgentObservation",
+            "ReferenceAgentPlannerPort",
+            "ReferenceAgentProgressPort",
+            "ReferenceAgentReflectionPort",
+            "ReferenceAgentRunResult",
+            "ReferenceAgentSolverPort",
+            "ReferenceAgentState",
+            "ReferenceAgentStatus",
+            "ReferenceAgentToolPort",
+            "ReferencePlanAndSolveMethod",
+            "ReferenceReActMethod",
+            "ReferenceReflexionMethod",
+            "ReferenceToolRegistryPort",
+            "EpisodicMemoryStore",
+            "MemoryEmbedderPort",
+            "MemoryItem",
+            "MemoryPersistencePort",
+            "SQLiteMemoryPersistence",
+            "VectorMemoryStore",
+            "WorkingMemory",
+            "ToolArguments",
+            "ToolAuditPort",
+            "ToolAuthorization",
+            "ToolAuthorizationPort",
+            "ToolDefinition",
+            "ToolHandler",
+            "ToolRegistry",
+            "ToolResult",
+            "ToolRiskClass"
           ]
         }
       ],
@@ -8912,7 +8967,15 @@
             "MultiAgentMessage",
             "MultiAgentNodePort",
             "MultiAgentRunResult",
-            "MultiAgentRunStatus"
+            "MultiAgentRunStatus",
+            "DebateCoordinator",
+            "GroupChatCoordinator",
+            "HierarchicalCoordinator",
+            "MultiAgentCoordinator",
+            "MultiAgentMembershipPort",
+            "MultiAgentTransportPort",
+            "TransportBackedMultiAgentCoordinator",
+            "SQLiteMultiAgentJournal"
           ]
         }
       ],
