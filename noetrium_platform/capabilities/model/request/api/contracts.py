@@ -165,8 +165,6 @@ class ModelRequestRecorderPort(Protocol):
 __all__ = [
     "ContentAddressedStorePort",
     "ContentRef",
-    "ExecutionContext",
-    "ImmutableModelIdentity",
     "ModelRequestEnvelope",
     "ModelRequestLedgerPort",
     "ModelRequestRecorderPort",
