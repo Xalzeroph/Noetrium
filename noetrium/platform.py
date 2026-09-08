@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from importlib import resources
 from pathlib import Path
+import math
 import shutil
+import subprocess
 from uuid import uuid4
 
 from noetrium_platform.api import (
@@ -61,6 +63,19 @@ from noetrium_platform.capabilities.model.serving.providers import (
     DirectoryRuntimeQualificationEvidenceStore,
 )
 from noetrium_platform.capabilities.model.serving.runtime.admission import ModelAdmissionRegistry
+from noetrium_platform.capabilities.participant.method.api import (
+    MethodEndpointPort,
+    MethodImplementation,
+    MethodSessionRuntime,
+)
+from noetrium_platform.capabilities.participant.method.runtime import (
+    DefaultMethodEndpointFactory as _DefaultMethodEndpointFactory,
+)
+from noetrium.contracts.systems.runtime__process import (
+    LocalCommandResult,
+    LocalCommandStartError,
+    LocalCommandTimeoutError,
+)
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
 from noetrium_platform.research.experimentation.checkpoint.api import (
@@ -242,6 +257,66 @@ def bind_environment_category_catalog() -> EnvironmentCategoryCatalogPort:
     """Return Noetrium's registry-aligned environment category catalog."""
 
     return default_environment_category_catalog()
+
+
+def bind_method_endpoint(
+    implementation: MethodImplementation,
+    runtime: MethodSessionRuntime,
+) -> MethodEndpointPort:
+    """Bind a downstream method through Noetrium's public product facade.
+
+    Downstream projects must not import the platform's internal method runtime
+    namespace merely to compose an implementation with its generic runtime.
+    The concrete factory remains an upstream implementation detail.
+    """
+
+    if not isinstance(implementation, MethodImplementation):
+        raise TypeError("method implementation must satisfy MethodImplementation")
+    if not isinstance(runtime, MethodSessionRuntime):
+        raise TypeError("method runtime must satisfy MethodSessionRuntime")
+    return _DefaultMethodEndpointFactory().bind(implementation, runtime)
+
+
+def run_local_shell_command(
+    command: str,
+    *,
+    timeout_seconds: float = 300.0,
+    cwd: str | Path | None = None,
+) -> LocalCommandResult:
+    """Execute one explicitly supplied host command behind the Noe facade.
+
+    This is intended for project composition actions such as an externally
+    managed assignment/world reset. The command remains deployment-owned; SEM
+    does not own a process authority or call subprocess directly.
+    """
+
+    if type(command) is not str or not command.strip():
+        raise ValueError("local shell command must be non-empty")
+    if not math.isfinite(float(timeout_seconds)) or timeout_seconds <= 0:
+        raise ValueError("local shell command timeout must be finite and positive")
+    try:
+        completed = subprocess.run(
+            command,
+            shell=True,
+            text=True,
+            capture_output=True,
+            timeout=float(timeout_seconds),
+            cwd=str(cwd) if cwd is not None else None,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise LocalCommandTimeoutError(
+            "local-shell-command", f"execution exceeded {float(timeout_seconds):g}s"
+        ) from exc
+    except OSError as exc:
+        raise LocalCommandStartError(
+            "local-shell-command", "could not start process"
+        ) from exc
+    return LocalCommandResult(
+        argv=("/bin/sh", "-lc", command),
+        returncode=int(completed.returncode),
+        stdout=completed.stdout or "",
+        stderr=completed.stderr or "",
+    )
 
 
 class StudyMatrixBinding:
@@ -672,6 +747,7 @@ __all__ = [
     "ResearchRequest", "ResearchResult", "bind_bundled_minecraft_environment",
     "bind_directory_run_artifact_store", "bind_durable_run_control",
     "bind_environment_category_catalog", "bind_minecraft_environment", "bind_qualified_project_model",
+    "bind_method_endpoint", "run_local_shell_command",
     "bind_research_workbench", "bind_run_control_application",
     "bind_study_matrix_execution", "build_basic_study_metric_aggregation",
     "build_checkpointed_workload_batch_executor", "build_project_run_checkpoint_store",
