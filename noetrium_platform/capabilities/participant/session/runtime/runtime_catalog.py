@@ -1,22 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Callable
-
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantSessionRuntimeIdentity
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantSessionRuntime
-
-
-ParticipantSessionRuntimeFactory = Callable[[], ParticipantSessionRuntime]
+from noetrium_platform.capabilities.participant.session.api import (
+    ParticipantSessionRuntimeCatalogPort,
+    ParticipantSessionRuntimeFactory,
+    ParticipantSessionRuntimeIdentity,
+    RegisteredParticipantSessionRuntime,
+)
 
 
-@dataclass(frozen=True, slots=True)
-class RegisteredParticipantSessionRuntime:
-    identity: ParticipantSessionRuntimeIdentity
-    factory: ParticipantSessionRuntimeFactory
-
-
-class ParticipantSessionRuntimeCatalog:
+class ParticipantSessionRuntimeCatalog(ParticipantSessionRuntimeCatalogPort):
     """Session authority for runtime identities and session factories."""
 
     def __init__(self) -> None:

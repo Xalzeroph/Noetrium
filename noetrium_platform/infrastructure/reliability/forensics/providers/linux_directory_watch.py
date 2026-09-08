@@ -255,10 +255,29 @@ def _hub() -> _LinuxInotifyHub:
         return _HUB
 
 
+def _discard_empty_hub(hub: _LinuxInotifyHub) -> None:
+    global _HUB
+    with _HUB_LOCK:
+        if _HUB is not hub:
+            return
+        with hub._lock:
+            if hub._watch_by_token:
+                return
+        hub.close()
+        _HUB = None
+
+
 class LinuxDirectoryWatch:
     def __init__(self, root: Path) -> None:
-        self._hub = _hub()
-        self._token: int | None = self._hub.register(root)
+        hub = _hub()
+        try:
+            token = hub.register(root)
+        except BaseException:
+            # A failed first registration must not leave an inotify fd alive.
+            _discard_empty_hub(hub)
+            raise
+        self._hub = hub
+        self._token: int | None = token
 
     def changed(self) -> bool:
         if self._token is None:

@@ -16,6 +16,7 @@ def build_default_system_registry(root: str | Path | None = None) -> InMemorySys
         details = "; ".join(
             (
                 *(f"stale:{item}" for item in audit.stale_registered_packages),
+                *(f"incomplete:{item}" for item in audit.incomplete_registered_packages),
                 *(f"unregistered:{item}" for item in audit.unregistered_standard_packages),
             )
         )

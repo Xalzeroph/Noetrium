@@ -22,14 +22,6 @@ _FORBIDDEN_ROOTS = (
 
 _FRAMEWORK_ENVIRONMENT_DIRS = frozenset({"api", "binding", "catalog", "category", "composition", "instance", "providers", "resolution", "runtime", "specification"})
 _BUNDLED_ENVIRONMENT_PROVIDERS = frozenset({"minecraft", "embodied", "gui", "web", "software", "text_world"})
-_ALLOWED_ENVIRONMENT_SYSTEMS = frozenset({
-    "environment", "environment/binding", "environment/catalog", "environment/category", "environment/instance",
-    "environment/instance/identity", "environment/instance/readiness", "environment/minecraft", "environment/embodied",
-    "environment/gui", "environment/web", "environment/software", "environment/text_world",
-    "environment/resolution", "environment/runtime", "environment/specification",
-    "environment/specification/digest", "environment/specification/schema",
-})
-
 
 def _violation(code: str, path: str, detail: str) -> RepositoryBoundaryViolation:
     return RepositoryBoundaryViolation(code, path.replace("\\", "/"), detail)
@@ -83,9 +75,34 @@ def _audit_environment_ownership(root: Path) -> list[RepositoryBoundaryViolation
             rows.append(_violation("SYSTEM_CATALOG_INVALID", str(catalog.relative_to(root)), str(exc)))
             return rows
         if isinstance(payload, dict):
-            for key in payload:
-                if (key == "environment" or key.startswith("environment/")) and key not in _ALLOWED_ENVIRONMENT_SYSTEMS:
-                    rows.append(_violation("REGISTRY_OWNS_DOWNSTREAM_ENVIRONMENT", str(catalog.relative_to(root)), f"unapproved environment system: {key}"))
+            prefix = "noetrium_platform.capabilities.environment"
+            for key, descriptor in payload.items():
+                if not (key == "environment" or key.startswith("environment/")):
+                    continue
+                package_prefix = descriptor.get("package_prefix") if isinstance(descriptor, dict) else None
+                if not isinstance(package_prefix, str):
+                    rows.append(_violation(
+                        "SYSTEM_CATALOG_INVALID",
+                        str(catalog.relative_to(root)),
+                        f"environment system has no package_prefix: {key}",
+                    ))
+                    continue
+                if package_prefix == prefix:
+                    continue
+                if not package_prefix.startswith(prefix + "."):
+                    rows.append(_violation(
+                        "REGISTRY_OWNS_DOWNSTREAM_ENVIRONMENT",
+                        str(catalog.relative_to(root)),
+                        f"environment system escapes environment package authority: {key}",
+                    ))
+                    continue
+                first_segment = package_prefix[len(prefix) + 1:].split(".", 1)[0]
+                if first_segment not in allowed_dirs:
+                    rows.append(_violation(
+                        "REGISTRY_OWNS_DOWNSTREAM_ENVIRONMENT",
+                        str(catalog.relative_to(root)),
+                        f"unapproved environment provider package: {key} -> {package_prefix}",
+                    ))
     return rows
 
 

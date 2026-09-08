@@ -10,6 +10,7 @@ from noetrium_platform.research.experimentation.checkpoint.runtime import (
     CheckpointedWorkloadBatchExecutor,
     WorkloadCheckpointCoordinator,
 )
+from noetrium_platform.research.experimentation.workload.runtime import GenericWorkloadBatchExecutor
 from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentTaskSpec,
     ExperimentWorkloadFailure,
@@ -155,7 +156,7 @@ def test_checkpointed_batch_resumes_exact_committed_prefix(tmp_path) -> None:
     first_calls: list[str] = []
     first_batch = _BatchBinding(first_state, first_calls, abort_second=True)
     with pytest.raises(ExperimentWorkloadFailure):
-        CheckpointedWorkloadBatchExecutor(recorder, publication=publication).execute(
+        CheckpointedWorkloadBatchExecutor(recorder, GenericWorkloadBatchExecutor(), publication=publication).execute(
             first_batch,
             checkpoint_binding=_CheckpointBinding(first_state),
         )
@@ -173,6 +174,7 @@ def test_checkpointed_batch_resumes_exact_committed_prefix(tmp_path) -> None:
     resumed_batch = _BatchBinding(resumed_state, resumed_calls)
     outcome = CheckpointedWorkloadBatchExecutor(
         recorder,
+        GenericWorkloadBatchExecutor(),
         publication=publication,
     ).execute(
         resumed_batch,
@@ -200,7 +202,7 @@ def test_checkpointed_batch_rejects_malformed_resume_id_before_restore(tmp_path,
         WorkloadCheckpointCoordinator(DirectoryWorkloadCheckpointStore(tmp_path / "cp"))
     )
     with pytest.raises(ValueError, match="resume_checkpoint_id"):
-        CheckpointedWorkloadBatchExecutor(coordinator).execute(
+        CheckpointedWorkloadBatchExecutor(coordinator, GenericWorkloadBatchExecutor()).execute(
             batch, checkpoint_binding=_CheckpointBinding(state), resume_checkpoint_id=bad_checkpoint_id
         )
     assert coordinator.restored == []

@@ -25,7 +25,7 @@ from noetrium_platform.capabilities.model.qualification.runtime.qualification im
 )
 from noetrium_platform.product.operator.maintenance.runtime.management.deployments import _qualification_python_path
 from noetrium_platform.capabilities.model.qualification.providers.qualification_probe import LocalDeploymentCapabilityProbe
-from noetrium_platform.foundation.kernel.kernel.process import LocalCommandResult
+from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandResult
 
 
 def _facts(*, kernel_architectures: tuple[str, ...] = ("sm100",)) -> DeploymentCapabilityFacts:

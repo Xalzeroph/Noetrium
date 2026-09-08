@@ -18,10 +18,10 @@ Example:
     def compose(bridge: MinecraftBridgePort, memory: AgentMemoryPort) -> None:
         ...
 
-- Registered systems: 166
-- Public API modules: 462
-- Public symbols: 3353
-- Registry digest: 470c795d7436dbc5b3054e70b17340a3f06573241ed84a48fcb4c1d9e0563a7e
+- Registered systems: 172
+- Public API modules: 499
+- Public symbols: 3602
+- Registry digest: a6a6e15a0288ba7acc23a378d3b928067da1be62005febdac711e4a26b0b50cc
 
 ## Capability domains
 
@@ -30,20 +30,20 @@ Example:
 | artifact | 7 | 24 | 127 |
 | components | 1 | 1 | 10 |
 | data | 8 | 20 | 106 |
-| environment | 17 | 50 | 434 |
-| execution | 7 | 30 | 177 |
-| experimentation | 12 | 51 | 471 |
-| governance | 13 | 31 | 295 |
-| model | 16 | 53 | 448 |
-| observability | 27 | 50 | 150 |
+| environment | 18 | 53 | 444 |
+| execution | 7 | 31 | 179 |
+| experimentation | 15 | 59 | 576 |
+| governance | 13 | 33 | 307 |
+| model | 16 | 53 | 466 |
+| observability | 27 | 52 | 152 |
 | operator | 8 | 10 | 60 |
-| orchestration | 1 | 0 | 0 |
-| participant | 7 | 24 | 359 |
+| orchestration | 1 | 1 | 11 |
+| participant | 8 | 39 | 410 |
 | platform | 5 | 9 | 89 |
 | portfolio | 5 | 7 | 75 |
-| reliability | 7 | 30 | 150 |
+| reliability | 7 | 31 | 162 |
 | resource | 6 | 17 | 114 |
-| runtime | 12 | 43 | 256 |
+| runtime | 13 | 47 | 282 |
 | scope | 7 | 12 | 32 |
 
 ## System surfaces
@@ -56,6 +56,7 @@ Example:
 - Must not own: mutable business state
 - Requires: platform, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.artifact
 
 #### API modules
@@ -72,6 +73,7 @@ Example:
 - Must not own: content bytes mutation
 - Requires: none
 - Provides: artifact.registry
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.artifact__catalog
 
 #### API modules
@@ -89,6 +91,7 @@ Example:
 - Must not own: business metadata
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.artifact__content
 
 #### API modules
@@ -107,6 +110,7 @@ Example:
 - Must not own: scientific result truth
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.artifact__lineage
 
 ### artifact/lineage/relation
@@ -117,6 +121,7 @@ Example:
 - Must not own: scientific result semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.artifact__lineage__relation
 
 #### API modules
@@ -134,6 +139,7 @@ Example:
 - Must not own: content mutation
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.artifact__reference
 
 #### API modules
@@ -151,6 +157,7 @@ Example:
 - Must not own: business state semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.artifact__retention
 
 #### API modules
@@ -168,6 +175,7 @@ Example:
 - Must not own: immutable artifact content identity
 - Requires: artifact, platform, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.data
 
 ### data/dataset
@@ -178,6 +186,7 @@ Example:
 - Must not own: dataset physical storage implementation
 - Requires: none
 - Provides: dataset.registry
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.data__dataset
 
 #### API modules
@@ -195,6 +204,7 @@ Example:
 - Must not own: business-specific state transitions
 - Requires: none
 - Provides: durable.fact
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.data__fact
 
 #### API modules
@@ -210,6 +220,7 @@ Example:
 - Must not own: source-of-truth mutation
 - Requires: none
 - Provides: projection.runtime
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.data__projection
 
 #### API modules
@@ -225,6 +236,7 @@ Example:
 - Must not own: durable writes
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.data__query
 
 #### API modules
@@ -242,6 +254,7 @@ Example:
 - Must not own: writes and authority mutation
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.data__query__cross
 
 #### API modules
@@ -257,6 +270,7 @@ Example:
 - Must not own: artifact content bytes
 - Requires: none
 - Provides: record.plane
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.data__record
 
 #### API modules
@@ -272,6 +286,7 @@ Example:
 - Must not own: disposable projections
 - Requires: platform
 - Provides: state.atomic
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.data__state
 
 #### API modules
@@ -289,6 +304,7 @@ Example:
 - Must not own: project semantics and model serving
 - Requires: platform, reliability, resource, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment
 
 #### API modules
@@ -303,6 +319,23 @@ Example:
 - noetrium_platform.capabilities.environment.api.provider ?w^~)?t EnvironmentCapability, EnvironmentDiagnosticsPort, EnvironmentProviderCapabilities, EnvironmentProviderPort, EnvironmentSessionDiagnostics, EnvironmentSessionServices
 - noetrium_platform.capabilities.environment.api.state_machine ?w^~)?t JsonScalar, JsonInput, JsonMutableValue, JsonValue, StateMachineDynamicsIdentity, StateMachineDynamicsPort, StateMachineEnvironmentSpec, StateTransition, freeze_json_mapping, thaw_json, thaw_json_mapping
 
+### environment/category
+
+- Package: noetrium_platform.capabilities.environment.category
+- Authority: environment_category_catalog
+- Owns: environment category definitions, category/provider descriptors, compatibility and category fingerprint contracts
+- Must not own: environment instance lifecycle, provider execution, project task semantics or vendor-specific runtime state
+- Requires: governance/system_registry, platform
+- Provides: environment.category
+- Downstream surface: public
+- Facade: noetrium.contracts.systems.environment__category
+
+#### API modules
+
+- noetrium_platform.capabilities.environment.category.api ?w^~)?t EnvironmentCategoryCatalogPort, EnvironmentCategoryDescriptor, EnvironmentCategoryId, EnvironmentCategoryStatus, EnvironmentImplementationDescriptor
+- noetrium_platform.capabilities.environment.category.api.contracts ?w^~)?t EnvironmentCategoryDescriptor, EnvironmentCategoryId, EnvironmentCategoryStatus, EnvironmentImplementationDescriptor
+- noetrium_platform.capabilities.environment.category.api.ports ?w^~)?t EnvironmentCategoryCatalogPort
+
 ### environment/binding
 
 - Package: noetrium_platform.capabilities.environment.binding
@@ -311,6 +344,7 @@ Example:
 - Must not own: artifact storage
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__binding
 
 #### API modules
@@ -325,6 +359,7 @@ Example:
 - Must not own: resource capacity
 - Requires: none
 - Provides: environment.catalog
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__catalog
 
 #### API modules
@@ -341,6 +376,7 @@ Example:
 - Must not own: host supervision implementation
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__instance
 
 ### environment/instance/identity
@@ -351,6 +387,7 @@ Example:
 - Must not own: host process lifecycle
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__instance__identity
 
 #### API modules
@@ -365,6 +402,7 @@ Example:
 - Must not own: authoritative process health
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__instance__readiness
 
 #### API modules
@@ -379,6 +417,7 @@ Example:
 - Must not own: generic environment catalog, process/server supervision, model serving, project method semantics or telemetry storage
 - Requires: artifact, environment, reliability, resource, runtime
 - Provides: environment.minecraft.contract
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__minecraft
 
 #### API modules
@@ -404,6 +443,7 @@ Example:
 - Must not own: generic environment catalog, experiment semantics, model serving, telemetry storage or vendor SDK internals
 - Requires: environment, reliability, resource
 - Provides: environment.embodied.contract
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__embodied
 
 #### API modules
@@ -420,6 +460,7 @@ Example:
 - Must not own: benchmark cases, task scoring, tool capability policy or OS process supervision
 - Requires: environment, runtime
 - Provides: environment.gui.contract
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__gui
 
 #### API modules
@@ -436,6 +477,7 @@ Example:
 - Must not own: benchmark cases, task scoring, browser automation policy or model serving
 - Requires: environment, runtime
 - Provides: environment.web.contract
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__web
 
 #### API modules
@@ -452,6 +494,7 @@ Example:
 - Must not own: benchmark scoring, repository policy, model serving or generic process supervision
 - Requires: environment, runtime, resource
 - Provides: environment.software.contract
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__software
 
 #### API modules
@@ -468,6 +511,7 @@ Example:
 - Must not own: dialogue method, benchmark scoring, agent memory or multi-agent topology
 - Requires: environment
 - Provides: environment.text_world.contract
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__text_world
 
 #### API modules
@@ -484,6 +528,7 @@ Example:
 - Must not own: process lifecycle
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__resolution
 
 #### API modules
@@ -498,6 +543,7 @@ Example:
 - Must not own: environment catalog authority
 - Requires: none
 - Provides: environment.contract
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__runtime
 
 #### API modules
@@ -516,6 +562,7 @@ Example:
 - Must not own: live host process state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__specification
 
 ### environment/specification/digest
@@ -526,6 +573,7 @@ Example:
 - Must not own: resource resolution
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__specification__digest
 
 #### API modules
@@ -540,6 +588,7 @@ Example:
 - Must not own: environment instance lifecycle
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.environment__specification__schema
 
 #### API modules
@@ -554,12 +603,14 @@ Example:
 - Must not own: provider storage and domain truth
 - Requires: environment, governance, model, observability, participant, platform, reliability, runtime, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.execution
 
 #### API modules
 
-- noetrium_platform.research.execution.api ?w^~)?t ExecutionIntentPort, ExecutionIntentReceipt, ExecutionOperationIntent
+- noetrium_platform.research.execution.api ?w^~)?t DeploymentStatusIdentity, ExecutionIntentPort, ExecutionIntentReceipt, ExecutionOperationIntent
 - noetrium_platform.research.execution.api.intent ?w^~)?t ExecutionIntentPort, ExecutionIntentReceipt, ExecutionOperationIntent
+- noetrium_platform.research.execution.api.status ?w^~)?t DeploymentStatusIdentity
 
 ### execution/admission
 
@@ -569,6 +620,7 @@ Example:
 - Must not own: scheduling order/fairness, executor lifecycle or model/environment truth
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.execution__admission
 
 #### API modules
@@ -586,6 +638,7 @@ Example:
 - Must not own: provider implementation
 - Requires: none
 - Provides: capability.invocation, capability.registration
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.execution__capability
 
 #### API modules
@@ -602,6 +655,7 @@ Example:
 - Must not own: human UI and provider-specific control
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.execution__command
 
 #### API modules
@@ -619,6 +673,7 @@ Example:
 - Must not own: failure taxonomy and recovery authority
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.execution__operation
 
 #### API modules
@@ -637,6 +692,7 @@ Example:
 - Must not own: live resource/admission state, quotas or executor lifecycle
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.execution__scheduling
 
 #### API modules
@@ -654,6 +710,7 @@ Example:
 - Must not own: process supervision
 - Requires: none
 - Provides: workflow.runtime
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.execution__workflow
 
 #### API modules
@@ -675,6 +732,7 @@ Example:
 - Must not own: server/process control and model serving
 - Requires: environment, execution, participant, platform, portfolio, scope, governance, model
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation
 
 #### API modules
@@ -693,11 +751,28 @@ Example:
 - Must not own: generic artifact lineage
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__branch
 
 #### API modules
 
 - noetrium_platform.research.experimentation.branch.api.boundary ?w^~)?t SystemLeafContract, contract
+
+### experimentation/catalog
+
+- Package: noetrium_platform.research.experimentation.catalog
+- Authority: experiment_catalog_view
+- Owns: typed experiment catalog views, implementation candidates, slot health and catalog publication/query contracts
+- Must not own: experiment execution, study measurement truth, run lifecycle or benchmark implementation runtime
+- Requires: experimentation/experiment, experimentation/run/identity, experimentation/study, scope
+- Provides: experiment.catalog
+- Downstream surface: public
+- Facade: noetrium.contracts.systems.experimentation__catalog
+
+#### API modules
+
+- noetrium_platform.research.experimentation.catalog.api ?w^~)?t ExperimentationCatalogPort
+- noetrium_platform.research.experimentation.catalog.api.ports ?w^~)?t ExperimentationCatalogPort
 
 ### experimentation/checkpoint
 
@@ -707,6 +782,7 @@ Example:
 - Must not own: artifact content storage
 - Requires: none
 - Provides: run.checkpoint
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__checkpoint
 
 #### API modules
@@ -726,6 +802,7 @@ Example:
 - Must not own: experiment execution lifecycle or scientific claim acceptance
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__evaluation
 
 #### API modules
@@ -741,6 +818,7 @@ Example:
 - Must not own: runtime process state
 - Requires: none
 - Provides: experiment.definition, experiment.runtime
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__experiment
 
 #### API modules
@@ -761,6 +839,7 @@ Example:
 - Must not own: server supervision internals
 - Requires: none
 - Provides: run.lifecycle, run.decision
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__run
 
 #### API modules
@@ -780,12 +859,13 @@ Example:
 - Must not own: operator product intents, server supervision internals or duplicate run manifest/checkpoint truth
 - Requires: execution, execution/operation, experimentation/checkpoint, experimentation/run, experimentation/run/identity, experimentation/run/lifecycle, experimentation/run/manifest, platform
 - Provides: run.control
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__run__control
 
 #### API modules
 
 - noetrium_platform.research.experimentation.run.control.api ?w^~)?t RunControlAction, RunControlActionFailure, RunControlCheckpointBundlePort, RunControlCheckpointStorePort, RunControlConflict, RunControlError, RunControlEventReceipt, RunControlEvidencePort, RunControlIntegrityError, RunControlLedgerPort, RunControlLifecyclePort, RunControlNotFound, RunControlPhase, RunControlProjection, RunControlRecordKind, RunControlPort, RunControlReceipt, RunControlReceiptReference, RunControlReconciliationPort, RunControlRequest, RunControlStaleGeneration, RunControlTarget, RunControlTransitionOutcome, RunEvidenceValidity, RunExecutionOutcome, RunOutcomeProjection, RunScientificValidity, RunTaskOutcome
-- noetrium_platform.research.experimentation.run.control.api.contracts ?w^~)?t canonical_digest, DecisionCycleIdentity, RunIdentity, RunLaunchManifest, EvidenceBundleReceipt, EffectReconciliationVerdict, RunControlAction, RunControlPhase, RunControlRecordKind, RunControlTarget, RunControlRequest, RunControlOperationIntent, RunControlPreparedOperation, RunControlEventReceipt, RunControlProjection, RunExecutionOutcome, RunTaskOutcome, RunEvidenceValidity, RunScientificValidity, RunOutcomeProjection, RunControlReceiptReference, RunControlReceipt, RunControlTransitionOutcome, RunControlPreparation, RunControlError, RunControlNotFound, RunControlConflict, RunControlStaleGeneration, RunControlIntegrityError, RunControlActionFailure, RunControlPort, RunControlLedgerPort, RunControlCheckpointBundlePort, RunControlCheckpointStorePort, RunControlLifecyclePort, RunControlReconciliationPort, RunControlEvidencePort
+- noetrium_platform.research.experimentation.run.control.api.contracts ?w^~)?t RunControlAction, RunControlPhase, RunControlRecordKind, RunControlTarget, RunControlRequest, RunControlOperationIntent, RunControlPreparedOperation, RunControlEventReceipt, RunControlProjection, RunControlReceiptReference, RunControlReceipt, RunControlTransitionOutcome, RunControlPreparation, RunControlError, RunControlNotFound, RunControlConflict, RunControlStaleGeneration, RunControlIntegrityError, RunControlActionFailure, RunControlPort, RunControlLedgerPort, RunControlCheckpointBundlePort, RunControlCheckpointStorePort, RunControlLifecyclePort, RunControlReconciliationPort, RunControlEvidencePort
 
 ### experimentation/run/identity
 
@@ -795,6 +875,7 @@ Example:
 - Must not own: live execution state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__run__identity
 
 #### API modules
@@ -811,6 +892,7 @@ Example:
 - Must not own: runtime server lifecycle
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__run__lifecycle
 
 #### API modules
@@ -828,6 +910,7 @@ Example:
 - Must not own: runtime mutable state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__run__manifest
 
 #### API modules
@@ -845,6 +928,7 @@ Example:
 - Must not own: method implementation internals
 - Requires: artifact
 - Provides: study.definition
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__study
 
 #### API modules
@@ -868,11 +952,46 @@ Example:
 - Must not own: model deployment internals
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__variant
 
 #### API modules
 
 - noetrium_platform.research.experimentation.variant.api.boundary ?w^~)?t SystemLeafContract, contract
+
+### experimentation/workbench
+
+- Package: noetrium_platform.research.experimentation.workbench
+- Authority: research_analysis_publication
+- Owns: typed research analysis tables, deterministic statistics/evaluation workflow and report/figure publication semantics
+- Must not own: experiment execution lifecycle, measurement truth, method semantics or vendor-specific scientific backends
+- Requires: experimentation/study
+- Provides: research.workbench
+- Downstream surface: public
+- Facade: noetrium.contracts.systems.experimentation__workbench
+
+#### API modules
+
+- noetrium_platform.research.experimentation.workbench.api ?w^~)?t AggregationFunction, AggregationSpec, BaselineRegistryPort, BaselineSpec, DataColumn, DataTable, EvaluationContext, EvaluationStage, FigureCategory, FigureCell, FigureKind, FigureOutputFormat, FigurePoint, FigureRendererPort, FigureSeries, FigureSpec, FigureStyle, GroupComparison, InferenceResult, MetricSummary, MissingValuePolicy, MultipleComparisonMethod, MultipleComparisonResult, PairedComparison, RenderedResearchPackage, ResearchEvaluation, ResearchFigureFactoryPort, ResearchLifecyclePort, ResearchReport, ResearchStatisticsPort, ResearchTablePipelinePort, ReportTableRendererPort, SplitStrategy, TableAnalysisPort, TableReaderPort, TableTransformPort, MeasurementRecordTableAdapter, StudyObservationTableAdapter
+- noetrium_platform.research.experimentation.workbench.api.adapters ?w^~)?t MeasurementRecordTableAdapter, StudyObservationTableAdapter
+- noetrium_platform.research.experimentation.workbench.api.contracts ?w^~)?t AggregationFunction, AggregationSpec, BaselineRegistryPort, BaselineSpec, DataColumn, DataTable, EvaluationContext, EvaluationStage, FigureCategory, FigureCell, FigureKind, FigureOutputFormat, FigurePoint, FigureRendererPort, FigureSeries, FigureSpec, FigureStyle, GroupComparison, InferenceResult, MetricSummary, MissingValuePolicy, MultipleComparisonMethod, MultipleComparisonResult, PairedComparison, RenderedResearchPackage, ResearchEvaluation, ResearchFigureFactoryPort, ResearchLifecyclePort, ResearchReport, ResearchStatisticsPort, ResearchTablePipelinePort, ReportTableRendererPort, SplitStrategy, TableAnalysisPort, TableReaderPort, TableTransformPort
+
+### experimentation/workload
+
+- Package: noetrium_platform.research.experimentation.workload
+- Authority: experiment_workload_execution_contract
+- Owns: generic experiment task-runner contracts, workload context, task handles/results and checkpointable workload execution semantics
+- Must not own: experiment definition truth, environment provider internals, participant method semantics or run durability authority
+- Requires: environment/runtime, experimentation/experiment, experimentation/run, participant/method, platform
+- Provides: experiment.workload
+- Downstream surface: public
+- Facade: noetrium.contracts.systems.experimentation__workload
+
+#### API modules
+
+- noetrium_platform.research.experimentation.workload.api ?w^~)?t WorkloadActionAdapterPort, WorkloadBatchCloseError, WorkloadBatchResult, WorkloadBatchBindingPort, WorkloadBatchExecutorPort, WorkloadBoundaryPort, WorkloadCompletionPort, WorkloadCompletionReceipt, WorkloadDecision, WorkloadDiagnosticsPort, WorkloadExecutionCutObserverPort, WorkloadEnvironmentPort, WorkloadEvidencePort, WorkloadFailurePolicyPort, WorkloadPlannerPort, WorkloadStatePort, WorkloadTaskResult, WorkloadTaskRunnerPort, WorkloadTaskRunError
+- noetrium_platform.research.experimentation.workload.api.contracts ?w^~)?t WorkloadBatchCloseError, WorkloadBatchResult, WorkloadCompletionReceipt, WorkloadDecision, WorkloadTaskResult, WorkloadTaskRunError
+- noetrium_platform.research.experimentation.workload.api.ports ?w^~)?t WorkloadActionAdapterPort, WorkloadBatchBindingPort, WorkloadBatchExecutorPort, WorkloadBoundaryPort, WorkloadCompletionPort, WorkloadDiagnosticsPort, WorkloadExecutionCutObserverPort, WorkloadEnvironmentPort, WorkloadEvidencePort, WorkloadFailurePolicyPort, WorkloadPlannerPort, WorkloadStatePort, WorkloadTaskRunnerPort
 
 ### governance
 
@@ -882,6 +1001,7 @@ Example:
 - Must not own: domain execution
 - Requires: platform
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance
 
 #### API modules
@@ -898,6 +1018,7 @@ Example:
 - Must not own: runtime execution or scientific result semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__algorithm
 
 #### API modules
@@ -913,6 +1034,7 @@ Example:
 - Must not own: business state
 - Requires: scope
 - Provides: architecture.audit
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__architecture
 
 #### API modules
@@ -931,6 +1053,7 @@ Example:
 - Must not own: runtime task scheduling or mutable execution state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__concurrency
 
 #### API modules
@@ -946,6 +1069,7 @@ Example:
 - Must not own: business state, runtime execution or scientific acceptance
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__gate
 
 #### API modules
@@ -962,6 +1086,7 @@ Example:
 - Must not own: runtime resource scheduling or business execution
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__performance
 
 #### API modules
@@ -977,7 +1102,13 @@ Example:
 - Must not own: runtime business control
 - Requires: none
 - Provides: quality.audit
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__quality
+
+#### API modules
+
+- noetrium_platform.foundation.governance.quality.api ?w^~)?t BANNED_RUNTIME_IDENTIFIERS, DegradationFinding, FORBIDDEN_ENABLED_CONFIG_KEYS, FORBIDDEN_NONEMPTY_CONFIG_KEYS, SilentFailureFinding
+- noetrium_platform.foundation.governance.quality.api.contracts ?w^~)?t BANNED_RUNTIME_IDENTIFIERS, DegradationFinding, FORBIDDEN_ENABLED_CONFIG_KEYS, FORBIDDEN_NONEMPTY_CONFIG_KEYS, SilentFailureFinding
 
 ### governance/release
 
@@ -987,6 +1118,7 @@ Example:
 - Must not own: runtime process state
 - Requires: none
 - Provides: release.freeze
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__release
 
 #### API modules
@@ -1003,6 +1135,7 @@ Example:
 - Must not own: downstream project scientific or deployment policy
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__repository_boundary
 
 #### API modules
@@ -1018,6 +1151,7 @@ Example:
 - Must not own: domain state mutation
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__schema
 
 #### API modules
@@ -1032,6 +1166,7 @@ Example:
 - Must not own: scientific method semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__security
 
 #### API modules
@@ -1046,12 +1181,13 @@ Example:
 - Must not own: runtime orchestration
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__system_registry
 
 #### API modules
 
-- noetrium_platform.foundation.governance.system_registry.api ?w^~)?t AuthorityDescriptor, SYSTEM_CATALOG, SystemDescriptor, SystemIdentity, SystemLayer, SystemRegistryChange, SystemRegistryObserver, SystemRegistryPort, TopologySourceAudit, audit_system_topology_source, system_catalog
-- noetrium_platform.foundation.governance.system_registry.api.contracts ?w^~)?t AuthorityDescriptor, STANDARD_SYSTEM_SHAPE, SystemDescriptor, SystemIdentity, SystemRegistryChange, SystemLayer
+- noetrium_platform.foundation.governance.system_registry.api ?w^~)?t AuthorityDescriptor, DownstreamSurfaceMode, SYSTEM_CATALOG, SystemDescriptor, SystemIdentity, SystemLayer, SystemRegistryChange, SystemRegistryObserver, SystemRegistryPort, TopologySourceAudit, audit_system_topology_source, system_catalog
+- noetrium_platform.foundation.governance.system_registry.api.contracts ?w^~)?t AuthorityDescriptor, DownstreamSurfaceMode, STANDARD_SYSTEM_SHAPE, SystemDescriptor, SystemIdentity, SystemRegistryChange, SystemLayer
 - noetrium_platform.foundation.governance.system_registry.api.ports ?w^~)?t SystemRegistryObserver, SystemRegistryPort
 - noetrium_platform.foundation.governance.system_registry.api.topology ?w^~)?t SYSTEM_CATALOG, TopologySourceAudit, audit_system_topology_source, system_catalog
 
@@ -1063,6 +1199,7 @@ Example:
 - Must not own: domain state, external effects and direct runtime mutation
 - Requires: governance/system_registry, observability
 - Provides: governance.evolution
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.governance__evolution
 
 #### API modules
@@ -1079,6 +1216,7 @@ Example:
 - Must not own: process lifecycle implementation and experiment semantics
 - Requires: environment, platform, resource, runtime, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model
 
 #### API modules
@@ -1096,6 +1234,7 @@ Example:
 - Must not own: artifact byte storage
 - Requires: none
 - Provides: model.asset, model.asset-acquisition
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__asset
 
 #### API modules
@@ -1111,6 +1250,7 @@ Example:
 - Must not own: serving process lifecycle
 - Requires: none
 - Provides: model.assignment
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__assignment
 
 #### API modules
@@ -1126,6 +1266,7 @@ Example:
 - Must not own: live deployment state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__catalog
 
 ### model/catalog/family
@@ -1136,6 +1277,7 @@ Example:
 - Must not own: revision deployment state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__catalog__family
 
 #### API modules
@@ -1150,11 +1292,12 @@ Example:
 - Must not own: mutable serving state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__catalog__revision
 
 #### API modules
 
-- noetrium_platform.capabilities.model.catalog.revision.api ?w^~)?t CONTRACT, contract, ModelPromotionDecision, ModelPromotionDisposition, ModelPromotionReceipt, ModelRevisionAuthorityPort, ModelRevisionAuthoritySnapshot, ModelRevisionCommit, ModelRevisionConflictError, ModelRevisionEvidence, ModelRevisionEvidenceKind, ModelRevisionIdentity, ModelRevisionIntegrityError, ModelRevisionStateError, ModelRollbackReceipt, ModelUpdateProducerPort, ModelUpdateProposal, PreparedModelRevision
+- noetrium_platform.capabilities.model.catalog.revision.api ?w^~)?t CONTRACT, contract, ModelPromotionDecision, ModelPromotionDisposition, ModelPromotionReceipt, ModelRevisionAuthorityPort, ModelRevisionAuthoritySnapshot, ModelRevisionCommit, ModelRevisionConflictError, ModelRevisionEvidence, ModelRevisionEvidenceKind, ModelRevisionIdentity, ModelRevisionIntegrityError, ModelRevisionStateError, ModelRollbackReceipt, ModelUpdateProposal, PreparedModelRevision, ModelUpdateBuildEvidence, ModelUpdateBuildReceipt, ModelUpdatePlan, ModelUpdateProducerPort, ModelUpdateSource
 - noetrium_platform.capabilities.model.catalog.revision.api.boundary ?w^~)?t SystemLeafContract, contract
 - noetrium_platform.capabilities.model.catalog.revision.api.contracts ?w^~)?t ModelPromotionDecision, ModelPromotionDisposition, ModelPromotionReceipt, ModelRevisionAuthorityPort, ModelRevisionAuthoritySnapshot, ModelRevisionCommit, ModelRevisionConflictError, ModelRevisionEvidence, ModelRevisionEvidenceKind, ModelRevisionIdentity, ModelRevisionIntegrityError, ModelRevisionStateError, ModelRollbackReceipt, ModelUpdateProposal, PreparedModelRevision
 - noetrium_platform.capabilities.model.catalog.revision.api.update ?w^~)?t ModelUpdateBuildEvidence, ModelUpdateBuildReceipt, ModelUpdatePlan, ModelUpdateProducerPort, ModelUpdateSource
@@ -1167,6 +1310,7 @@ Example:
 - Must not own: server process implementation
 - Requires: none
 - Provides: model.deployment, model.deployment-control
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__deployment
 
 #### API modules
@@ -1182,6 +1326,7 @@ Example:
 - Must not own: server runtime health
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__deployment__closure
 
 #### API modules
@@ -1196,6 +1341,7 @@ Example:
 - Must not own: live capacity snapshots
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__qualification
 
 #### API modules
@@ -1210,6 +1356,7 @@ Example:
 - Must not own: business result semantics
 - Requires: none
 - Provides: model.request
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__request
 
 #### API modules
@@ -1225,6 +1372,7 @@ Example:
 - Must not own: serving process lifecycle
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__request__input
 
 #### API modules
@@ -1239,6 +1387,7 @@ Example:
 - Must not own: business metric semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__request__output
 
 #### API modules
@@ -1253,11 +1402,12 @@ Example:
 - Must not own: model serving, inference transport or participant cognition state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__request__prompt
 
 #### API modules
 
-- noetrium_platform.capabilities.model.request.prompt.api ?w^~)?t ActivePromptEvidenceReadPort, ActivePromptVerificationEvidence, PromptVerificationIntegrityError
+- noetrium_platform.capabilities.model.request.prompt.api ?w^~)?t ActivePromptEvidenceReadPort, ActivePromptVerificationEvidence, PromptVerificationIntegrityError, PromptTraceDescriptor, PromptTraceObserverFailure, PromptTraceObserverFailureSink, PromptTraceObserverPort, PromptTracePoint, PromptTraceStage, PromptTraceSummary, PromptBoundRequest, PromptBodyContext, PromptDynamicBlock, PromptRequestBindingPort, PromptRequestBodyBuilder, PromptSelectionIdentity, PromptSelectionPort
 - noetrium_platform.capabilities.model.request.prompt.api.request ?w^~)?t PromptBoundRequest, PromptBodyContext, PromptDynamicBlock, PromptRequestBindingPort, PromptRequestBodyBuilder
 - noetrium_platform.capabilities.model.request.prompt.api.selection ?w^~)?t PromptSelectionIdentity, PromptSelectionPort
 - noetrium_platform.capabilities.model.request.prompt.api.trace ?w^~)?t PromptTraceDescriptor, PromptTraceObserverFailure, PromptTraceObserverFailureSink, PromptTraceObserverPort, PromptTracePoint, PromptTraceStage, PromptTraceSummary
@@ -1271,6 +1421,7 @@ Example:
 - Must not own: model catalog metadata
 - Requires: none
 - Provides: model.serving, model.qualification
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__serving
 
 #### API modules
@@ -1304,6 +1455,7 @@ Example:
 - Must not own: request result truth
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__serving__endpoint
 
 #### API modules
@@ -1322,6 +1474,7 @@ Example:
 - Must not own: server health
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.model__stack
 
 #### API modules
@@ -1337,6 +1490,7 @@ Example:
 - Must not own: durable state/failure authority
 - Requires: data, governance, platform, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability
 
 #### API modules
@@ -1357,6 +1511,7 @@ Example:
 - Must not own: semantic log interpretation
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__capture
 
 #### API modules
@@ -1373,6 +1528,7 @@ Example:
 - Must not own: failure/state authority
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__diagnostic
 
 ### observability/diagnostic/correlation
@@ -1383,6 +1539,7 @@ Example:
 - Must not own: causal authority
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__diagnostic__correlation
 
 #### API modules
@@ -1397,6 +1554,7 @@ Example:
 - Must not own: source mutation
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__diagnostic__query
 
 #### API modules
@@ -1411,6 +1569,7 @@ Example:
 - Must not own: new business truth
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__diagnostic__snapshot
 
 #### API modules
@@ -1427,6 +1586,7 @@ Example:
 - Must not own: failure taxonomy and recovery
 - Requires: none
 - Provides: logging.observation
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging
 
 ### observability/logging/capture
@@ -1437,6 +1597,7 @@ Example:
 - Must not own: semantic event taxonomy
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging__capture
 
 #### API modules
@@ -1451,6 +1612,7 @@ Example:
 - Must not own: log record persistence and query
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging__context
 
 #### API modules
@@ -1466,6 +1628,7 @@ Example:
 - Must not own: source log truth
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging__projection
 
 #### API modules
@@ -1480,6 +1643,7 @@ Example:
 - Must not own: log writes
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging__query
 
 #### API modules
@@ -1495,6 +1659,7 @@ Example:
 - Must not own: sink routing and storage
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging__record
 
 #### API modules
@@ -1512,6 +1677,7 @@ Example:
 - Must not own: failure retention and artifact retention
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging__retention
 
 #### API modules
@@ -1525,8 +1691,14 @@ Example:
 - Owns: log routing rules and fan-out decisions
 - Must not own: log storage mutation
 - Requires: none
-- Provides: none
+- Provides: logging.routing
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging__routing
+
+#### API modules
+
+- noetrium_platform.evidence.observability.logging.routing.api ?w^~)?t LogRoutingPort
+- noetrium_platform.evidence.observability.logging.routing.api.ports ?w^~)?t LogRoutingPort
 
 ### observability/logging/sink
 
@@ -1536,6 +1708,7 @@ Example:
 - Must not own: query/index semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging__sink
 
 #### API modules
@@ -1551,6 +1724,7 @@ Example:
 - Must not own: log schema policy
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__logging__storage
 
 #### API modules
@@ -1566,6 +1740,7 @@ Example:
 - Must not own: source-of-truth mutation
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__projection
 
 #### API modules
@@ -1582,6 +1757,7 @@ Example:
 - Must not own: authoritative lifecycle state
 - Requires: none
 - Provides: status.read-model
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__status
 
 #### API modules
@@ -1599,6 +1775,7 @@ Example:
 - Must not own: authoritative lifecycle transitions
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__status__health
 
 #### API modules
@@ -1613,6 +1790,7 @@ Example:
 - Must not own: lifecycle state authority
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__status__lifecycle_view
 
 #### API modules
@@ -1627,6 +1805,7 @@ Example:
 - Must not own: durable domain state
 - Requires: none
 - Provides: telemetry.metrics
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__telemetry
 
 ### observability/telemetry/event
@@ -1637,6 +1816,7 @@ Example:
 - Must not own: durable facts
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__telemetry__event
 
 #### API modules
@@ -1652,6 +1832,7 @@ Example:
 - Must not own: business result truth
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__telemetry__metric
 
 #### API modules
@@ -1671,6 +1852,7 @@ Example:
 - Must not own: business operation truth
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__tracing
 
 ### observability/tracing/context
@@ -1681,6 +1863,7 @@ Example:
 - Must not own: business operation state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__tracing__context
 
 #### API modules
@@ -1695,6 +1878,7 @@ Example:
 - Must not own: trace storage
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__tracing__propagation
 
 #### API modules
@@ -1709,6 +1893,7 @@ Example:
 - Must not own: trace identity semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.observability__tracing__storage
 
 #### API modules
@@ -1723,6 +1908,7 @@ Example:
 - Must not own: domain authority and business state
 - Requires: environment, execution, experimentation, governance, model, observability, platform, portfolio, reliability, resource, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.operator
 
 #### API modules
@@ -1741,6 +1927,7 @@ Example:
 - Must not own: new durable truth
 - Requires: none
 - Provides: none
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.operator__audit
 
 ### operator/command
@@ -1751,6 +1938,7 @@ Example:
 - Must not own: domain command execution
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.operator__command
 
 ### operator/command/intent
@@ -1761,6 +1949,7 @@ Example:
 - Must not own: command execution side effects
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.operator__command__intent
 
 #### API modules
@@ -1775,6 +1964,7 @@ Example:
 - Must not own: incident authority
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.operator__incident
 
 #### API modules
@@ -1789,6 +1979,7 @@ Example:
 - Must not own: provider internals
 - Requires: runtime
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.operator__maintenance
 
 #### API modules
@@ -1804,6 +1995,7 @@ Example:
 - Must not own: durable state mutation
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.operator__query
 
 ### operator/query/search
@@ -1814,6 +2006,7 @@ Example:
 - Must not own: authoritative writes
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.operator__query__search
 
 #### API modules
@@ -1828,6 +2021,7 @@ Example:
 - Must not own: server/process supervision and scientific truth
 - Requires: data, platform, reliability
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.participant
 
 #### API modules
@@ -1837,6 +2031,29 @@ Example:
 - noetrium_platform.capabilities.participant.api.revision ?w^~)?t ParticipantRevisionAuthorityPort, ParticipantRevisionAuthoritySnapshot, ParticipantRevisionCommit, ParticipantRevisionConflictError, ParticipantRevisionEvidence, ParticipantRevisionEvidenceKind, ParticipantRevisionIntegrityError, ParticipantRevisionProposal, ParticipantRevisionStateError, ParticipantRevisionValue, ParticipantStateCompatibility, ParticipantStateRevision, ParticipantStateTransition, ParticipantTransitionValue, PreparedParticipantRevision
 - noetrium_platform.capabilities.participant.api.topology ?w^~)?t ArchitectureChangeKind, ParticipantArchitectureChange, ParticipantArchitectureComponent, ParticipantArchitectureRevision, ParticipantArchitectureTransition, ParticipantMessageSchedule, ParticipantMessageScheduleEntry, ParticipantTopology, ParticipantTopologyChange, ParticipantTopologyMember, ParticipantTopologyTransition, TopologyChangeKind
 
+### participant/core
+
+- Package: noetrium_platform.capabilities.participant.core
+- Authority: participant_runtime_abi
+- Owns: foundational participant runtime identities, capability descriptors, runtime binding, delivery, lifecycle and checkpoint contracts
+- Must not own: project participant selection policy, method semantics, environment semantics or process supervision implementation
+- Requires: platform
+- Provides: participant.runtime.abi
+- Downstream surface: public
+- Facade: noetrium.contracts.systems.participant__core
+
+#### API modules
+
+- noetrium_platform.capabilities.participant.core.api ?w^~)?t BoundParticipant, BoundParticipants, ParticipantSessionBinding
+- noetrium_platform.capabilities.participant.core.api.bound ?w^~)?t BoundParticipant, BoundParticipants, ParticipantSessionBinding
+- noetrium_platform.capabilities.participant.core.api.checkpoint ?w^~)?t ParticipantCheckpoint, ParticipantCheckpointIdentityMismatch, ParticipantCheckpointRef
+- noetrium_platform.capabilities.participant.core.api.contracts ?w^~)?t ParticipantConfigurationArtifact, ParticipantImplementationIdentity, ParticipantRuntimeBinding, ParticipantSessionRuntimeIdentity
+- noetrium_platform.capabilities.participant.core.api.frozen_manifests ?w^~)?t ParticipantImplementationInventory, ParticipantRuntimeBindingManifest, ParticipantRuntimeInventory
+- noetrium_platform.capabilities.participant.core.api.lifecycle ?w^~)?t ParticipantIdentityMismatch, ParticipantLifecycleAdapter, ParticipantLifecycleAdapterRegistry
+- noetrium_platform.capabilities.participant.core.api.runtime ?w^~)?t ParticipantResolverPort, ParticipantRuntimeEndpoint, ParticipantRuntimeHandle, ParticipantSessionRuntime
+- noetrium_platform.capabilities.participant.core.api.runtime_operations ?w^~)?t PARTICIPANT_OPERATION_VERBS, ParticipantOperationContractError, participant_operation_type, participant_operation_verb, validate_participant_kind
+- noetrium_platform.capabilities.participant.core.api.runtime_ports ?w^~)?t ParticipantCheckpointOperationsPort, ParticipantCheckpointRuntimePort, ParticipantResolutionPort, ParticipantSessionLifecyclePort
+
 ### participant/agent
 
 - Package: noetrium_platform.capabilities.participant.agent
@@ -1845,6 +2062,7 @@ Example:
 - Must not own: model serving lifecycle
 - Requires: none
 - Provides: agent.contract
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.participant__agent
 
 #### API modules
@@ -1865,6 +2083,7 @@ Example:
 - Must not own: provider internals
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.participant__binding
 
 #### API modules
@@ -1879,6 +2098,7 @@ Example:
 - Must not own: execution capability implementation
 - Requires: none
 - Provides: capability.contract
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.participant__capability
 
 #### API modules
@@ -1895,8 +2115,15 @@ Example:
 - Owns: participant identities and types
 - Must not own: execution session state
 - Requires: none
-- Provides: none
+- Provides: participant.definition
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.participant__definition
+
+#### API modules
+
+- noetrium_platform.capabilities.participant.definition.api ?w^~)?t ParticipantConfigurationArtifact, ParticipantImplementationCatalogPort, ParticipantImplementationFactory, ParticipantImplementationIdentity, RegisteredParticipantImplementation
+- noetrium_platform.capabilities.participant.definition.api.contracts ?w^~)?t ParticipantImplementationFactory, RegisteredParticipantImplementation
+- noetrium_platform.capabilities.participant.definition.api.ports ?w^~)?t ParticipantImplementationCatalogPort
 
 ### participant/method
 
@@ -1906,6 +2133,7 @@ Example:
 - Must not own: method implementation itself
 - Requires: governance
 - Provides: method.contract, method.runtime
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.participant__method
 
 #### API modules
@@ -1926,8 +2154,15 @@ Example:
 - Owns: participant session identity and lifecycle contract
 - Must not own: server/process implementation
 - Requires: none
-- Provides: none
+- Provides: participant.session
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.participant__session
+
+#### API modules
+
+- noetrium_platform.capabilities.participant.session.api ?w^~)?t ParticipantCheckpointRuntimePort, ParticipantRuntimeEndpoint, ParticipantSessionLifecyclePort, ParticipantSessionRuntime, ParticipantSessionRuntimeCatalogPort, ParticipantSessionRuntimeFactory, ParticipantSessionRuntimeIdentity, RegisteredParticipantSessionRuntime
+- noetrium_platform.capabilities.participant.session.api.contracts ?w^~)?t ParticipantSessionRuntimeFactory, RegisteredParticipantSessionRuntime
+- noetrium_platform.capabilities.participant.session.api.ports ?w^~)?t ParticipantSessionRuntimeCatalogPort
 
 ### platform
 
@@ -1937,6 +2172,7 @@ Example:
 - Must not own: domain business state and child internals
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.platform
 
 #### API modules
@@ -1953,6 +2189,7 @@ Example:
 - Must not own: domain mutable state, admission quotas/decisions, scheduling priority/fairness or business semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.platform__concurrency
 
 #### API modules
@@ -1969,6 +2206,7 @@ Example:
 - Must not own: domain configuration semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.platform__configuration
 
 #### API modules
@@ -1983,6 +2221,7 @@ Example:
 - Must not own: workspace/project/run identity
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.platform__identity
 
 #### API modules
@@ -1997,6 +2236,7 @@ Example:
 - Must not own: service/process lifecycle
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.platform__lifecycle
 
 #### API modules
@@ -2011,6 +2251,7 @@ Example:
 - Must not own: study/run execution state
 - Requires: platform, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.portfolio
 
 #### API modules
@@ -2027,6 +2268,7 @@ Example:
 - Must not own: runtime participant sessions
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.portfolio__membership
 
 #### API modules
@@ -2041,6 +2283,7 @@ Example:
 - Must not own: study semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.portfolio__program
 
 #### API modules
@@ -2055,6 +2298,7 @@ Example:
 - Must not own: experiment/run execution state
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.portfolio__project
 
 #### API modules
@@ -2069,6 +2313,7 @@ Example:
 - Must not own: generic scope tree authority
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.portfolio__workspace
 
 #### API modules
@@ -2083,6 +2328,7 @@ Example:
 - Must not own: scientific truth and UI projections
 - Requires: data, governance, observability, platform, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.reliability
 
 ### reliability/diagnostics
@@ -2093,6 +2339,7 @@ Example:
 - Must not own: durable authority mutation
 - Requires: none
 - Provides: diagnostics.causal
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.reliability__diagnostics
 
 #### API modules
@@ -2111,11 +2358,12 @@ Example:
 - Must not own: process/server ownership
 - Requires: none
 - Provides: effect.safety, effect.journal
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.reliability__effect
 
 #### API modules
 
-- noetrium_platform.infrastructure.reliability.effect.api ?w^~)?t EffectAlreadyConsumed, EffectCompletionEvidence, EffectIntent, EffectIntentConflict, EffectIntentJournal, EffectJournalIntegrityError, EffectIntentPhase, EffectIntentPrepareResult, EffectIntentRecord, EffectRecoveryAnchorMissing, EffectRecoveryRequired, EffectReconciliationDisposition, EffectReconciliationProof, PendingEffectRecoveryRequired, PreparedEffectHandle, consumption_digest, effect_digest, require_effect_receipt_request_digest
+- noetrium_platform.infrastructure.reliability.effect.api ?w^~)?t EffectAlreadyConsumed, EffectCompletionEvidence, EffectIntent, EffectIntentConflict, EffectIntentJournal, EffectJournalIntegrityError, EffectIntentPhase, EffectIntentPrepareResult, EffectIntentRecord, EffectRecoveryAnchorMissing, EffectRecoveryRequired, EffectReconciliationDisposition, EffectReconciliationProof, PendingEffectRecoveryRequired, PreparedEffectHandle, consumption_digest, effect_digest, require_effect_receipt_request_digest, consumed_transition, effect_transition, is_authoritatively_resolved, not_applied_transition, prepare_transition, require_consumable_effect, require_not_applied_compatible
 - noetrium_platform.infrastructure.reliability.effect.api.contracts ?w^~)?t EffectReconciliationDisposition, EffectReconciliationProof, PreparedEffectHandle, require_effect_receipt_request_digest
 - noetrium_platform.infrastructure.reliability.effect.api.journal ?w^~)?t EffectCompletionEvidence, EffectIntent, EffectIntentConflict, EffectIntentJournal, EffectJournalIntegrityError, EffectRecoveryRequired, EffectAlreadyConsumed, PendingEffectRecoveryRequired, EffectRecoveryAnchorMissing, EffectIntentPhase, EffectIntentPrepareResult, EffectIntentRecord, consumption_digest, effect_digest
 - noetrium_platform.infrastructure.reliability.effect.api.transitions ?w^~)?t consumed_transition, effect_transition, is_authoritatively_resolved, not_applied_transition, prepare_transition, require_consumable_effect, require_not_applied_compatible
@@ -2128,11 +2376,12 @@ Example:
 - Must not own: diagnostic UI and operator policy
 - Requires: none
 - Provides: failure.truth
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.reliability__failure
 
 #### API modules
 
-- noetrium_platform.infrastructure.reliability.failure.api ?w^~)?t ClassifiedOperationFailure, DEFAULT_FAILURE_CATALOG, FailureCatalog, FailureEnvelope, FailureCorrelationSource, FailureSpec, OperationFailureReferenceProjection, OperationFailureReferenceProjector, PartialOperationFailureClassifier, RecoveryAction, RiskLevel, build_failure, exception_correlation_refs, build_failure_from_spec, failure_from_dict
+- noetrium_platform.infrastructure.reliability.failure.api ?w^~)?t ClassifiedOperationFailure, DEFAULT_FAILURE_CATALOG, FailureCatalog, FailureEnvelope, FailureCorrelationSource, FailureSpec, OperationFailureReferenceProjection, OperationFailureReferenceProjector, PartialOperationFailureClassifier, RecoveryAction, RiskLevel, build_failure, exception_correlation_refs, build_failure_from_spec, failure_from_dict, FailureLedgerPort, FailureFingerprint, fingerprint_failure
 - noetrium_platform.infrastructure.reliability.failure.api.catalog ?w^~)?t FailureCatalog, FailureSpec
 - noetrium_platform.infrastructure.reliability.failure.api.classification ?w^~)?t ClassifiedOperationFailure, PartialOperationFailureClassifier
 - noetrium_platform.infrastructure.reliability.failure.api.codec ?w^~)?t failure_from_dict
@@ -2152,6 +2401,7 @@ Example:
 - Must not own: business result semantics
 - Requires: none
 - Provides: forensics.ledger
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.reliability__forensics
 
 #### API modules
@@ -2171,6 +2421,7 @@ Example:
 - Must not own: provider storage internals
 - Requires: none
 - Provides: recovery.runtime
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.reliability__recovery
 
 #### API modules
@@ -2187,8 +2438,13 @@ Example:
 - Owns: recovery execution lifecycle and effect handoff
 - Must not own: failure taxonomy
 - Requires: none
-- Provides: none
+- Provides: recovery.execution
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.reliability__recovery__execution
+
+#### API modules
+
+- noetrium_platform.infrastructure.reliability.recovery.execution.api ?w^~)?t RecoveryExecutionFactoryPort, RecoveryExecutionPort
 
 ### resource
 
@@ -2198,6 +2454,7 @@ Example:
 - Must not own: environment semantics and model deployment truth
 - Requires: platform, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.resource
 
 ### resource/allocation
@@ -2208,6 +2465,7 @@ Example:
 - Must not own: execution workflow semantics
 - Requires: resource/lease
 - Provides: resource.endpoint-allocation
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.resource__allocation
 
 #### API modules
@@ -2222,8 +2480,9 @@ Example:
 - Authority: compute_inventory
 - Owns: compute resource identity, capacities and provider facts
 - Must not own: environment packaging
-- Requires: none
+- Requires: runtime/process
 - Provides: compute.inventory, compute.scheduler
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.resource__compute
 
 #### API modules
@@ -2241,6 +2500,7 @@ Example:
 - Must not own: artifact immutable content
 - Requires: none
 - Provides: directory.layout, workspace.storage
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.resource__directory
 
 #### API modules
@@ -2257,6 +2517,7 @@ Example:
 - Must not own: server lifecycle
 - Requires: scope
 - Provides: resource.lease
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.resource__lease
 
 #### API modules
@@ -2274,6 +2535,7 @@ Example:
 - Must not own: environment/model identity
 - Requires: none
 - Provides: resource.hierarchical-resolution
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.resource__resolution
 
 #### API modules
@@ -2290,6 +2552,7 @@ Example:
 - Must not own: experiment semantics and model catalog truth
 - Requires: governance, observability, platform, reliability, resource, scope
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime
 
 #### API modules
@@ -2306,6 +2569,7 @@ Example:
 - Must not own: resource catalog metadata
 - Requires: none
 - Provides: host.runtime
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__host
 
 #### API modules
@@ -2322,13 +2586,15 @@ Example:
 - Must not own: experiment semantics
 - Requires: none
 - Provides: process.execution, process.capture
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__process
 
 #### API modules
 
-- noetrium_platform.infrastructure.lifecycle.process.api ?w^~)?t ByteSegment, CaptureIntegrityError, CaptureManifest, CaptureRotationReceipt, CaptureSyncReceipt, CaptureWriterState, ProcessByteCapturePort
+- noetrium_platform.infrastructure.lifecycle.process.api ?w^~)?t ByteSegment, CaptureIntegrityError, CaptureManifest, CaptureRotationReceipt, CaptureSyncReceipt, CaptureWriterState, LocalCommandExecutionError, LocalCommandResult, LocalCommandRunnerPort, LocalCommandStartError, LocalCommandTimeoutError, ProcessByteCapturePort
 - noetrium_platform.infrastructure.lifecycle.process.api.capture ?w^~)?t ProcessByteCapturePort
 - noetrium_platform.infrastructure.lifecycle.process.api.contracts ?w^~)?t CaptureIntegrityError, ByteSegment, CaptureManifest, CaptureWriterState, CaptureRotationReceipt, CaptureSyncReceipt
+- noetrium_platform.infrastructure.lifecycle.process.api.local_command ?w^~)?t LocalCommandExecutionError, LocalCommandResult, LocalCommandRunnerPort, LocalCommandStartError, LocalCommandTimeoutError
 
 ### runtime/process/supervision
 
@@ -2338,6 +2604,7 @@ Example:
 - Must not own: durable runtime history storage
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__process__supervision
 
 #### API modules
@@ -2355,12 +2622,30 @@ Example:
 - Must not own: model serving truth
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__server
 
 #### API modules
 
 - noetrium_platform.infrastructure.lifecycle.server.api ?w^~)?t ServerOperationEffect, ServerOperationFinished, ServerOperationJournalPort, ServerOperationKind, ServerOperationRecord, ServerOperationReconciliationRequired, ServerOperationTransitionConflict, ServerMutationBusy, ServerTransportBusy, ServerOperationResolved, ServerOperationResolution, ServerOperationStarted, ServerOperationState
 - noetrium_platform.infrastructure.lifecycle.server.api.operations ?w^~)?t ServerOperationFinished, ServerOperationEffect, ServerOperationJournalPort, ServerOperationKind, ServerOperationStarted, ServerOperationRecord, ServerOperationReconciliationRequired, ServerOperationTransitionConflict, ServerMutationBusy, ServerTransportBusy, ServerOperationResolved, ServerOperationResolution, ServerOperationState
+
+### runtime/server/bootstrap
+
+- Package: noetrium_platform.infrastructure.lifecycle.host.bootstrap
+- Authority: server_bootstrap_transaction
+- Owns: server bootstrap commands, phases, durable bootstrap state/facts and forward-repair transaction contracts
+- Must not own: persistent session implementation, release selection authority or server steady-state lifecycle policy
+- Requires: governance/release, platform, runtime/session
+- Provides: server.bootstrap
+- Downstream surface: public
+- Facade: noetrium.contracts.systems.runtime__server__bootstrap
+
+#### API modules
+
+- noetrium_platform.infrastructure.lifecycle.host.bootstrap.api ?w^~)?t ServerBootstrapBlocked, ServerBootstrapIdentityConflict, ServerBootstrapPhase, ServerBootstrapState, ServerBootstrapStateConflict, ServerBootstrapStatePort, ServerBootstrapTransactionPort, ServerBootstrapTransactionReport
+- noetrium_platform.infrastructure.lifecycle.host.bootstrap.api.contracts ?w^~)?t ServerBootstrapBlocked, ServerBootstrapIdentityConflict, ServerBootstrapPhase, ServerBootstrapState, ServerBootstrapStateConflict, ServerBootstrapTransactionReport
+- noetrium_platform.infrastructure.lifecycle.host.bootstrap.api.ports ?w^~)?t ServerBootstrapStatePort, ServerBootstrapTransactionPort
 
 ### runtime/server/health
 
@@ -2370,6 +2655,7 @@ Example:
 - Must not own: observability health storage
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__server__health
 
 #### API modules
@@ -2386,6 +2672,7 @@ Example:
 - Must not own: live health
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__server__identity
 
 #### API modules
@@ -2400,8 +2687,9 @@ Example:
 - Authority: server_lifecycle
 - Owns: server lifecycle state and transitions
 - Must not own: process internals
-- Requires: none
+- Requires: runtime/server/bootstrap
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__server__lifecycle
 
 #### API modules
@@ -2421,6 +2709,7 @@ Example:
 - Must not own: scientific truth
 - Requires: none
 - Provides: service.runtime
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__service
 
 #### API modules
@@ -2438,6 +2727,7 @@ Example:
 - Must not own: participant scientific semantics
 - Requires: none
 - Provides: persistent-session.runtime
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__session
 
 #### API modules
@@ -2457,6 +2747,7 @@ Example:
 - Must not own: environment scenarios, experiment protocols, or project policy
 - Requires: artifact
 - Provides: runtime.toolchain
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__toolchain
 
 #### API modules
@@ -2473,6 +2764,7 @@ Example:
 - Must not own: generic process supervisor
 - Requires: runtime, resource
 - Provides: python-environment.registry, python-environment.lifecycle, python-environment.execution, python-environment.packages
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.runtime__python
 
 #### API modules
@@ -2489,6 +2781,7 @@ Example:
 - Must not own: platform authority mutation, project semantics, provider credentials or scientific result acceptance
 - Requires: platform
 - Provides: reference.agent.components, reference.agent.runtime.bridge
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.components
 
 #### API modules
@@ -2503,7 +2796,12 @@ Example:
 - Must not own: single-agent cognition, memory, model providers, scientific truth or platform authority
 - Requires: components, platform
 - Provides: multi_agent.orchestration
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.orchestration
+
+#### API modules
+
+- orchestration.api ?w^~)?t CommunicationEdge, CommunicationTopology, MultiAgentCancellationPort, MultiAgentCheckpoint, MultiAgentDeliveryReceipt, MultiAgentDeliveryStatus, MultiAgentJournalPort, MultiAgentMessage, MultiAgentNodePort, MultiAgentRunResult, MultiAgentRunStatus
 
 ### scope
 
@@ -2513,6 +2811,7 @@ Example:
 - Must not own: business metadata and runtime state
 - Requires: platform
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.scope
 
 #### API modules
@@ -2530,6 +2829,7 @@ Example:
 - Must not own: project business fields
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.scope__hierarchy
 
 #### API modules
@@ -2544,6 +2844,7 @@ Example:
 - Must not own: portfolio metadata
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.scope__identity
 
 #### API modules
@@ -2558,6 +2859,7 @@ Example:
 - Must not own: participant sessions
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.scope__membership
 
 #### API modules
@@ -2572,6 +2874,7 @@ Example:
 - Must not own: portfolio business metadata
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.scope__ownership
 
 #### API modules
@@ -2586,6 +2889,7 @@ Example:
 - Must not own: domain-specific routing
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.scope__path
 
 #### API modules
@@ -2602,6 +2906,7 @@ Example:
 - Must not own: domain-specific lookup semantics
 - Requires: none
 - Provides: none
+- Downstream surface: public
 - Facade: noetrium.contracts.systems.scope__resolution
 
 #### API modules

@@ -22,7 +22,7 @@ __all__ = [
     "ModelPromotionReceipt", "ModelRevisionAuthorityPort", "ModelRevisionAuthoritySnapshot",
     "ModelRevisionCommit", "ModelRevisionConflictError", "ModelRevisionEvidence",
     "ModelRevisionEvidenceKind", "ModelRevisionIdentity", "ModelRevisionIntegrityError",
-    "ModelRevisionStateError", "ModelRollbackReceipt", "ModelUpdateProducerPort",
+    "ModelRevisionStateError", "ModelRollbackReceipt",
     "ModelUpdateProposal", "PreparedModelRevision",
 ]
 

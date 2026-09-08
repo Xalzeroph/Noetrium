@@ -2,13 +2,6 @@ from noetrium_platform.foundation.governance.system_registry.api import system_c
 from noetrium_platform.foundation.governance.system_registry.runtime import InMemorySystemRegistry
 
 
-TOP_LEVEL_SYSTEMS = {
-    "platform", "scope", "portfolio", "experimentation", "execution", "participant",
-    "resource", "environment", "model", "runtime", "data", "artifact",
-    "reliability", "observability", "governance", "operator",
-    "components", "orchestration",
-}
-
 
 def _registry() -> InMemorySystemRegistry:
     registry = InMemorySystemRegistry()
@@ -18,10 +11,10 @@ def _registry() -> InMemorySystemRegistry:
 
 
 def test_complete_top_level_system_graph():
-    rows = system_catalog()
-    top_level = {row.identity.system_id for row in rows if row.identity.is_system}
-    assert top_level == TOP_LEVEL_SYSTEMS
-    assert all(row.parent_key is None for row in rows if row.identity.is_system)
+    roots = tuple(row for row in system_catalog() if row.identity.is_system)
+    assert roots
+    assert all(row.parent_key is None for row in roots)
+    assert all(row.layer.value == row.identity.system_id for row in roots)
 
 
 def test_systems_are_peers_not_platform_children():
@@ -31,17 +24,13 @@ def test_systems_are_peers_not_platform_children():
     assert "scope" not in {child.identity.key for child in registry.children("platform")}
 
 
-def test_recursive_children_are_owned_by_their_system():
+def test_recursive_children_are_derived_from_canonical_parent_links():
     registry = _registry()
-    children = {child.identity.key for child in registry.children("observability/logging")}
-    assert {
-        "observability/logging/context",
-        "observability/logging/record",
-        "observability/logging/routing",
-        "observability/logging/sink",
-        "observability/logging/storage",
-        "observability/logging/query",
-        "observability/logging/projection",
-        "observability/logging/retention",
-        "observability/logging/capture",
-    } <= children
+    catalog = system_catalog()
+    parent_keys = {row.parent_key for row in catalog if row.parent_key is not None}
+    for parent_key in parent_keys:
+        expected = tuple(
+            sorted(row.identity.key for row in catalog if row.parent_key == parent_key)
+        )
+        observed = tuple(sorted(child.identity.key for child in registry.children(parent_key)))
+        assert observed == expected

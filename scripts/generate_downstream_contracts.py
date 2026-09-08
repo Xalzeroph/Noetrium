@@ -23,6 +23,33 @@ _SAFE = re.compile(r"[^A-Za-z0-9_.-]+")
 README_BLOCK_START = "<!-- noetrium-interface-catalog:start -->"
 README_BLOCK_END = "<!-- noetrium-interface-catalog:end -->"
 
+# Convenience facades name semantic registry roots, never individual symbols.
+# New registered descendants are picked up automatically for subtree entries.
+_CONVENIENCE_FACADES: dict[str, tuple[tuple[str, bool], ...]] = {
+    "agent": (("participant/agent", False),),
+    "environment": (("environment", False),),
+    "model": (("model", False),),
+    "participant": (("participant", False), ("participant/method", False)),
+    "project": (("portfolio", False),),
+    "research": (("experimentation", True),),
+    "server": (("runtime/server", True), ("runtime/session", False)),
+    "session": (("runtime/session", False),),
+}
+_CONVENIENCE_CANONICAL_OWNERS: dict[str, dict[str, str]] = {
+    "research": {"ExperimentPlan": "experimentation/study"},
+}
+# A convenience facade may also expose stable concrete composition helpers.
+# The module roots are declarative; symbols still come from each module's
+# exported __all__ and are never copied into this generator.
+_CONVENIENCE_EXTRA_PLANES: dict[str, tuple[tuple[str, str], ...]] = {
+    "research": (
+        ("experimentation/study", "runtime"),
+        ("experimentation/workbench", "providers"),
+        ("experimentation/workbench", "runtime"),
+    ),
+}
+_CONVENIENCE_EXCLUDED_NAMES = frozenset({"CONTRACT", "contract"})
+
 
 @dataclass(frozen=True)
 class ApiModuleSurface:
@@ -40,32 +67,199 @@ class SystemSurface:
     must_not_own: str
     requires: tuple[str, ...]
     provides: tuple[str, ...]
+    downstream_surface: str
     api_modules: tuple[ApiModuleSurface, ...]
     facade_module: str | None
 
 
-def _literal_all(tree: ast.AST) -> tuple[str, ...] | None:
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Assign):
-            continue
-        if not any(isinstance(target, ast.Name) and target.id == "__all__"
-                   for target in node.targets):
-            continue
+def _scope_name_from_alias(alias: ast.alias) -> str:
+    return alias.asname or alias.name.split(".")[-1]
+
+
+def _safe_name_predicate(node: ast.AST, *, variable: str, value: str) -> bool:
+    """Evaluate the narrow predicate grammar used by declarative ``__all__`` builders."""
+    if isinstance(node, ast.BoolOp):
+        rows = tuple(_safe_name_predicate(row, variable=variable, value=value) for row in node.values)
+        if isinstance(node.op, ast.Or):
+            return any(rows)
+        if isinstance(node.op, ast.And):
+            return all(rows)
+        raise ValueError("unsupported boolean operator in __all__ predicate")
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+        return not _safe_name_predicate(node.operand, variable=variable, value=value)
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+        receiver = node.func.value
+        if not isinstance(receiver, ast.Name) or receiver.id != variable:
+            raise ValueError("unsupported __all__ predicate receiver")
+        if node.func.attr not in {"startswith", "endswith"} or len(node.args) != 1 or node.keywords:
+            raise ValueError("unsupported __all__ predicate call")
+        argument = ast.literal_eval(node.args[0])
+        if not isinstance(argument, (str, tuple)):
+            raise ValueError("unsupported __all__ predicate argument")
+        method = getattr(value, node.func.attr)
+        return bool(method(argument))
+    if isinstance(node, ast.Compare) and len(node.ops) == 1 and len(node.comparators) == 1:
+        left = value if isinstance(node.left, ast.Name) and node.left.id == variable else ast.literal_eval(node.left)
+        right_node = node.comparators[0]
+        right = value if isinstance(right_node, ast.Name) and right_node.id == variable else ast.literal_eval(right_node)
+        if isinstance(node.ops[0], ast.Eq):
+            return left == right
+        if isinstance(node.ops[0], ast.NotEq):
+            return left != right
+    raise ValueError("unsupported __all__ predicate")
+
+
+def _string_sequence(
+    node: ast.AST,
+    *,
+    sequences: dict[str, tuple[str, ...]],
+    scope_names: tuple[str, ...],
+) -> tuple[str, ...]:
+    if isinstance(node, ast.Name):
         try:
-            value = ast.literal_eval(node.value)
-        except (ValueError, TypeError):
-            return None
-        if isinstance(value, (list, tuple)) and all(isinstance(item, str) for item in value):
-            return tuple(value)
+            return sequences[node.id]
+        except KeyError as exc:
+            raise ValueError(f"unknown __all__ sequence {node.id}") from exc
+    if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
+        rows: list[str] = []
+        for item in node.elts:
+            if isinstance(item, ast.Starred):
+                rows.extend(_string_sequence(item.value, sequences=sequences, scope_names=scope_names))
+                continue
+            value = ast.literal_eval(item)
+            if not isinstance(value, str):
+                raise ValueError("__all__ contains a non-string value")
+            rows.append(value)
+        return tuple(rows)
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+        return (
+            *_string_sequence(node.left, sequences=sequences, scope_names=scope_names),
+            *_string_sequence(node.right, sequences=sequences, scope_names=scope_names),
+        )
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+        if node.func.id not in {"tuple", "list"} or len(node.args) != 1 or node.keywords:
+            raise ValueError("unsupported __all__ sequence constructor")
+        return _string_sequence(node.args[0], sequences=sequences, scope_names=scope_names)
+    if isinstance(node, (ast.ListComp, ast.GeneratorExp)):
+        if len(node.generators) != 1:
+            raise ValueError("unsupported __all__ comprehension")
+        generator = node.generators[0]
+        if generator.is_async or not isinstance(generator.target, ast.Name):
+            raise ValueError("unsupported __all__ comprehension target")
+        variable = generator.target.id
+        if not (
+            isinstance(generator.iter, ast.Call)
+            and isinstance(generator.iter.func, ast.Name)
+            and generator.iter.func.id == "globals"
+            and not generator.iter.args
+            and not generator.iter.keywords
+        ):
+            raise ValueError("unsupported __all__ comprehension iterable")
+        if not isinstance(node.elt, ast.Name) or node.elt.id != variable:
+            raise ValueError("unsupported __all__ comprehension projection")
+        result: list[str] = []
+        for name in scope_names:
+            if all(_safe_name_predicate(cond, variable=variable, value=name) for cond in generator.ifs):
+                result.append(name)
+        return tuple(result)
+    value = ast.literal_eval(node)
+    if isinstance(value, (list, tuple)) and all(isinstance(item, str) for item in value):
+        return tuple(value)
+    raise ValueError("unsupported __all__ expression")
+
+
+def _declared_all(tree: ast.Module) -> tuple[str, ...] | None:
+    """Resolve declarative ``__all__`` updates without importing project code."""
+    sequences: dict[str, tuple[str, ...]] = {}
+    scope_names: list[str] = []
+    saw_all = False
+
+    def remember(name: str) -> None:
+        if name not in scope_names:
+            scope_names.append(name)
+
+    for node in tree.body:
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            remember(node.name)
+            continue
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                remember(_scope_name_from_alias(alias))
+            continue
+        if isinstance(node, ast.ImportFrom):
+            if node.module == "__future__":
+                continue
+            for alias in node.names:
+                if alias.name != "*":
+                    remember(_scope_name_from_alias(alias))
+            continue
+        if isinstance(node, ast.Assign):
+            simple_targets = [target.id for target in node.targets if isinstance(target, ast.Name)]
+            for target in simple_targets:
+                if target != "__all__":
+                    remember(target)
+            try:
+                resolved = _string_sequence(
+                    node.value,
+                    sequences=sequences,
+                    scope_names=tuple(scope_names),
+                )
+            except (ValueError, TypeError, SyntaxError):
+                resolved = None
+            for target in simple_targets:
+                if resolved is not None:
+                    sequences[target] = resolved
+                elif target in sequences:
+                    sequences.pop(target)
+                if target == "__all__":
+                    saw_all = True
+            continue
+        if isinstance(node, ast.AugAssign) and isinstance(node.target, ast.Name):
+            if node.target.id == "__all__" and isinstance(node.op, ast.Add):
+                saw_all = True
+                try:
+                    extension = _string_sequence(
+                        node.value,
+                        sequences=sequences,
+                        scope_names=tuple(scope_names),
+                    )
+                    sequences["__all__"] = (*sequences.get("__all__", ()), *extension)
+                except (ValueError, TypeError, SyntaxError):
+                    sequences.pop("__all__", None)
+            continue
+        if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+            call = node.value
+            if isinstance(call.func, ast.Attribute) and isinstance(call.func.value, ast.Name):
+                if call.func.value.id == "__all__" and call.func.attr in {"extend", "append"}:
+                    saw_all = True
+                    try:
+                        if call.func.attr == "extend" and len(call.args) == 1:
+                            extension = _string_sequence(
+                                call.args[0], sequences=sequences, scope_names=tuple(scope_names)
+                            )
+                        elif call.func.attr == "append" and len(call.args) == 1:
+                            value = ast.literal_eval(call.args[0])
+                            if not isinstance(value, str):
+                                raise ValueError("__all__.append requires string")
+                            extension = (value,)
+                        else:
+                            raise ValueError("unsupported __all__ mutation")
+                        sequences["__all__"] = (*sequences.get("__all__", ()), *extension)
+                    except (ValueError, TypeError, SyntaxError):
+                        sequences.pop("__all__", None)
+    if not saw_all:
         return None
-    return None
+    resolved = sequences.get("__all__")
+    if resolved is None:
+        raise RuntimeError("declared __all__ cannot be resolved statically")
+    return tuple(dict.fromkeys(resolved))
 
 
 def _public_symbols(path: Path) -> tuple[str, ...]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    declared = _literal_all(tree)
+    declared = _declared_all(tree)
     if declared is not None:
-        return tuple(dict.fromkeys(declared))
+        return declared
     names: list[str] = []
     for node in tree.body:
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -88,7 +282,6 @@ def _public_symbols(path: Path) -> tuple[str, ...]:
                 if not name.startswith("_"):
                     names.append(name)
     return tuple(dict.fromkeys(names))
-
 
 def _package_dir(root: Path, package_prefix: str) -> Path:
     return root.joinpath(*package_prefix.split("."))
@@ -149,7 +342,12 @@ def build_surfaces(root: Path) -> tuple[SystemSurface, ...]:
     for system_key, descriptor in catalog.items():
         if not isinstance(descriptor, dict):
             raise ValueError(f"invalid system descriptor: {system_key}")
-        modules = _api_modules(root, descriptor["package_prefix"])
+        downstream_surface = str(descriptor.get("downstream_surface", "public"))
+        modules = (
+            ()
+            if downstream_surface == "metadata_only"
+            else _api_modules(root, descriptor["package_prefix"])
+        )
         rows.append(SystemSurface(
             system_key=system_key,
             package_prefix=descriptor["package_prefix"],
@@ -158,6 +356,7 @@ def build_surfaces(root: Path) -> tuple[SystemSurface, ...]:
             must_not_own=descriptor["must_not_own"],
             requires=tuple(descriptor["requires"]),
             provides=tuple(descriptor["provides"]),
+            downstream_surface=downstream_surface,
             api_modules=modules,
             facade_module=(
                 f"noetrium.contracts.systems.{_facade_slug(system_key)}"
@@ -193,6 +392,7 @@ def render_facade(surface: SystemSurface) -> str:
         f'""" {_MARKER}.',
         f"System: {surface.system_key}",
         f"Authority: {surface.authority}",
+        f"Downstream surface: {surface.downstream_surface}",
         f"API exports: {'available' if surface.api_modules else 'none (metadata-only facade)'}",
         "This module is regenerated from the canonical registry and API exports.",
         '"""',
@@ -209,6 +409,177 @@ def render_facade(surface: SystemSurface) -> str:
     lines.append(f"PACKAGE_PREFIX = {surface.package_prefix!r}")
     lines.append(f"__all__ = {tuple(names)!r}")
     lines.append("")
+    return "\n".join(lines)
+
+
+def _convenience_surface_keys(
+    surfaces: tuple[SystemSurface, ...],
+    specs: tuple[tuple[str, bool], ...],
+) -> tuple[str, ...]:
+    keys: list[str] = []
+    available = {surface.system_key for surface in surfaces}
+    for root, subtree in specs:
+        if root not in available:
+            raise ValueError(f"convenience facade references unknown system root: {root}")
+        for surface in surfaces:
+            key = surface.system_key
+            if key == root or (subtree and key.startswith(root + "/")):
+                if key not in keys:
+                    keys.append(key)
+    return tuple(keys)
+
+
+def render_convenience_facade(
+    name: str,
+    surfaces: tuple[SystemSurface, ...],
+) -> str:
+    specs = _CONVENIENCE_FACADES[name]
+    keys = _convenience_surface_keys(surfaces, specs)
+    surface_index = {surface.system_key: surface for surface in surfaces}
+    canonical = _CONVENIENCE_CANONICAL_OWNERS.get(name, {})
+    for symbol, owner in canonical.items():
+        if owner not in keys:
+            raise ValueError(
+                f"convenience canonical owner is outside facade roots: {name}.{symbol} -> {owner}"
+            )
+    lines = [
+        f'""" {_MARKER}.',
+        f"Convenience facade: {name}",
+        "Sources are selected by canonical registry roots and declared compatibility planes; symbol lists are never hand-maintained.",
+        '"""',
+        "from __future__ import annotations",
+        "",
+    ]
+    source_rows: list[tuple[str, str]] = []
+    for index, key in enumerate(keys):
+        module = surface_index[key].facade_module
+        alias = f"_surface_{index}"
+        lines.append(f"from {module.rsplit('.', 1)[0]} import {module.rsplit('.', 1)[1]} as {alias}")
+        source_rows.append((key, alias))
+    for index, (key, plane) in enumerate(_CONVENIENCE_EXTRA_PLANES.get(name, ())):
+        if key not in surface_index:
+            raise ValueError(f"convenience extra references unknown system root: {key}")
+        package = surface_index[key].package_prefix
+        alias = f"_extra_{index}"
+        lines.append(f"from {package} import {plane} as {alias}")
+        source_rows.append((f"{key}/{plane}", alias))
+    lines.extend([
+        "",
+        f"_SOURCES = {tuple(source_rows)!r}",
+        f"_CANONICAL_OWNERS = {canonical!r}",
+        f"_EXCLUDED = frozenset({tuple(sorted(_CONVENIENCE_EXCLUDED_NAMES))!r})",
+        "_owners: dict[str, str] = {}",
+        "_exports: list[str] = []",
+        "",
+        "def _qualified(system_key: str, name: str) -> str:",
+        "    return system_key.replace('/', '__').replace('-', '_') + '__' + name",
+        "",
+        "for _system_key, _module_name in _SOURCES:",
+        "    _module = globals()[_module_name]",
+        "    for _name in _module.__all__:",
+        "        if '__' in _name or _name in _EXCLUDED:",
+        "            continue",
+        "        _value = getattr(_module, _name)",
+        "        if _name not in _owners:",
+        "            globals()[_name] = _value",
+        "            _owners[_name] = _system_key",
+        "            _exports.append(_name)",
+        "            continue",
+        "        _owner = _owners[_name]",
+        "        _current = globals()[_name]",
+        "        if _current is _value:",
+        "            continue",
+        "        _owner_alias = _qualified(_owner, _name)",
+        "        _new_alias = _qualified(_system_key, _name)",
+        "        if _owner_alias not in globals():",
+        "            globals()[_owner_alias] = _current",
+        "            _exports.append(_owner_alias)",
+        "        globals()[_new_alias] = _value",
+        "        if _new_alias not in _exports:",
+        "            _exports.append(_new_alias)",
+        "        _canonical = _CANONICAL_OWNERS.get(_name)",
+        "        if _canonical is None:",
+        "            raise RuntimeError(",
+        "                f'convenience facade symbol collision requires canonical owner: {_name}: '",
+        "                f'{_owner} vs {_system_key}'",
+        "            )",
+        "        if _canonical == _system_key:",
+        "            globals()[_name] = _value",
+        "            _owners[_name] = _system_key",
+        "        elif _canonical != _owner:",
+        "            raise RuntimeError(",
+        "                f'invalid canonical owner for {_name}: {_canonical}; observed {_owner}, {_system_key}'",
+        "            )",
+        "",
+        "__all__ = tuple(_exports)",
+        "",
+        "del _exports, _owners",
+        "",
+    ])
+    return "\n".join(lines)
+
+
+def render_root_contract_init(root: Path) -> str:
+    json_symbols = _public_symbols(root / "noetrium/contracts/json.py")
+    sources = ("json", "discovery", *_CONVENIENCE_FACADES.keys())
+    lines = [
+        f'""" {_MARKER}.',
+        "Stable aggregate contract facade derived from generated contract families.",
+        '"""',
+        "from __future__ import annotations",
+        "",
+    ]
+    for index, name in enumerate(sources):
+        lines.append(f"from . import {name} as _source_{index}")
+    lines.extend([
+        "from .systems import SYSTEM_FACADES, SYSTEM_KEYS",
+        "",
+        f"_SOURCE_NAMES = {sources!r}",
+        f"_JSON_CANONICAL = {tuple(json_symbols)!r}",
+        "_SOURCES = tuple((_name, globals()[f'_source_{_index}']) for _index, _name in enumerate(_SOURCE_NAMES))",
+        "_owners: dict[str, str] = {}",
+        "_exports: list[str] = []",
+        "",
+        "def _qualified(owner: str, name: str) -> str:",
+        "    return owner.replace('-', '_') + '__' + name",
+        "",
+        "for _owner_name, _module in _SOURCES:",
+        "    for _name in _module.__all__:",
+        "        _value = getattr(_module, _name)",
+        "        if _name not in _owners:",
+        "            globals()[_name] = _value",
+        "            _owners[_name] = _owner_name",
+        "            _exports.append(_name)",
+        "            continue",
+        "        _previous_owner = _owners[_name]",
+        "        _current = globals()[_name]",
+        "        if _current is _value:",
+        "            continue",
+        "        if _name in _JSON_CANONICAL:",
+        "            if _previous_owner == 'json':",
+        "                continue",
+        "            if _owner_name == 'json':",
+        "                globals()[_name] = _value",
+        "                _owners[_name] = 'json'",
+        "                continue",
+        "        _old_alias = _qualified(_previous_owner, _name)",
+        "        _new_alias = _qualified(_owner_name, _name)",
+        "        if _old_alias not in globals():",
+        "            globals()[_old_alias] = _current",
+        "            _exports.append(_old_alias)",
+        "        globals()[_new_alias] = _value",
+        "        if _new_alias not in _exports:",
+        "            _exports.append(_new_alias)",
+        "        raise RuntimeError(",
+        "            f'top-level contract symbol collision requires explicit canonical source: {_name}: '",
+        "            f'{_previous_owner} vs {_owner_name}'",
+        "        )",
+        "",
+        "__all__ = tuple(dict.fromkeys((*_exports, 'SYSTEM_FACADES', 'SYSTEM_KEYS')))",
+        "",
+        "del _exports, _owners",
+        "",
+    ])
     return "\n".join(lines)
 
 
@@ -252,6 +623,7 @@ def render_catalog(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
             "must_not_own": surface.must_not_own,
             "requires": list(surface.requires),
             "provides": list(surface.provides),
+            "downstream_surface": surface.downstream_surface,
             "facade_module": surface.facade_module,
             "api_modules": [
                 {"module": api.module, "source": api.source, "symbols": list(api.symbols)}
@@ -331,6 +703,7 @@ def render_markdown(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
             f"- Must not own: {surface.must_not_own}",
             f"- Requires: {requires}",
             f"- Provides: {provides}",
+            f"- Downstream surface: {surface.downstream_surface}",
             f"- Facade: {surface.facade_module}" if surface.facade_module else "- Facade: none (no exported API symbols)",
             "",
         ])
@@ -422,11 +795,18 @@ def generate(root: Path, *, check: bool = False) -> int:
         markdown_path: render_markdown(root, surfaces),
         topology_path: topology_source.read_bytes(),
     }
+    expected[root / "noetrium/contracts/__init__.py"] = (
+        render_root_contract_init(root).encode("utf-8")
+    )
     for surface in surfaces:
         if surface.facade_module is None:
             continue
         slug = surface.facade_module.rsplit(".", 1)[-1]
         expected[facade_root / f"{slug}.py"] = render_facade(surface).encode("utf-8")
+    for facade_name in _CONVENIENCE_FACADES:
+        expected[root / "noetrium/contracts" / f"{facade_name}.py"] = (
+            render_convenience_facade(facade_name, surfaces).encode("utf-8")
+        )
     readme_block = render_readme_interface_block(surfaces)
     readme_updates: dict[Path, str] = {}
     for readme_path in _readme_paths(root):

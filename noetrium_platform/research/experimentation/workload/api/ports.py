@@ -9,7 +9,7 @@ from noetrium_platform.capabilities.environment.runtime.api import ActionRequest
 from noetrium_platform.capabilities.participant.method.api.contracts import MethodSession
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue
 
-from .contracts import WorkloadDecision, WorkloadTaskResult
+from .contracts import WorkloadBatchResult, WorkloadDecision, WorkloadTaskResult
 
 
 class WorkloadEnvironmentPort(Protocol):
@@ -84,6 +84,18 @@ class WorkloadTaskRunnerPort(Protocol):
     def run(self, task: ExperimentTaskSpec, context: ExecutionContext) -> WorkloadTaskResult: ...
 
 
+class WorkloadBatchExecutorPort(Protocol):
+    """Execute a validated workload batch without owning checkpoint semantics."""
+
+    def execute(
+        self,
+        binding: WorkloadBatchBindingPort,
+        *,
+        prior_results: tuple[WorkloadTaskResult, ...] = (),
+        cut_observer: "WorkloadExecutionCutObserverPort | None" = None,
+    ) -> WorkloadBatchResult: ...
+
+
 class WorkloadExecutionCutObserverPort(Protocol):
     """Observe a committed task boundary for checkpoint/evidence systems."""
 
@@ -120,6 +132,7 @@ class WorkloadDiagnosticsPort(RunDiagnosticsPort, Protocol):
 __all__ = [
     "WorkloadActionAdapterPort",
     "WorkloadBatchBindingPort",
+    "WorkloadBatchExecutorPort",
     "WorkloadBoundaryPort",
     "WorkloadCompletionPort",
     "WorkloadDiagnosticsPort",

@@ -9,7 +9,7 @@ import sys
 import tempfile
 import time
 
-from noetrium_platform.foundation.kernel.kernel.process import (
+from noetrium_platform.infrastructure.lifecycle.process.api import (
     LocalCommandRunnerPort,
     LocalCommandStartError,
     LocalCommandTimeoutError,

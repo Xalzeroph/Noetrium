@@ -3,9 +3,10 @@ from __future__ import annotations
 from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint
 from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantLifecycleAdapter
 from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
+from noetrium_platform.capabilities.participant.session.api import ParticipantCheckpointRuntimePort
 
 
-class ParticipantCheckpointRuntime:
+class ParticipantCheckpointRuntime(ParticipantCheckpointRuntimePort):
     """Session authority for exact checkpoint capture/restore validation."""
 
     def capture(

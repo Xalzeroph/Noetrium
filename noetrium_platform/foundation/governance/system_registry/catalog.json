@@ -281,6 +281,27 @@
     "provides": [],
     "components": []
   },
+  "environment/category": {
+    "authority": "environment_category_catalog",
+    "must_not_own": "environment instance lifecycle, provider execution, project task semantics or vendor-specific runtime state",
+    "owns": "environment category definitions, category/provider descriptors, compatibility and category fingerprint contracts",
+    "package_prefix": "noetrium_platform.capabilities.environment.category",
+    "parent": "environment",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "governance/system_registry",
+      "platform"
+    ],
+    "provides": [
+      "environment.category"
+    ],
+    "components": []
+  },
   "environment/binding": {
     "authority": "environment_binding",
     "must_not_own": "artifact storage",
@@ -415,9 +436,19 @@
     "owns": "desktop and mobile GUI environment contracts and provider adapters",
     "package_prefix": "noetrium_platform.capabilities.environment.gui",
     "parent": "environment",
-    "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment", "runtime"],
-    "provides": ["environment.gui.contract"],
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "environment",
+      "runtime"
+    ],
+    "provides": [
+      "environment.gui.contract"
+    ],
     "components": []
   },
   "environment/web": {
@@ -426,9 +457,19 @@
     "owns": "stateful web and browser environment contracts and provider adapters",
     "package_prefix": "noetrium_platform.capabilities.environment.web",
     "parent": "environment",
-    "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment", "runtime"],
-    "provides": ["environment.web.contract"],
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "environment",
+      "runtime"
+    ],
+    "provides": [
+      "environment.web.contract"
+    ],
     "components": []
   },
   "environment/software": {
@@ -437,9 +478,20 @@
     "owns": "repository and software-workspace environment contracts and provider adapters",
     "package_prefix": "noetrium_platform.capabilities.environment.software",
     "parent": "environment",
-    "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment", "runtime", "resource"],
-    "provides": ["environment.software.contract"],
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "environment",
+      "runtime",
+      "resource"
+    ],
+    "provides": [
+      "environment.software.contract"
+    ],
     "components": []
   },
   "environment/text_world": {
@@ -448,9 +500,18 @@
     "owns": "text-mediated stateful world contracts and provider adapters",
     "package_prefix": "noetrium_platform.capabilities.environment.text_world",
     "parent": "environment",
-    "shape": ["api", "runtime", "providers", "composition"],
-    "requires": ["environment"],
-    "provides": ["environment.text_world.contract"],
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "environment"
+    ],
+    "provides": [
+      "environment.text_world.contract"
+    ],
     "components": []
   },
   "environment/resolution": {
@@ -703,6 +764,29 @@
     "provides": [],
     "components": []
   },
+  "experimentation/catalog": {
+    "authority": "experiment_catalog_view",
+    "must_not_own": "experiment execution, study measurement truth, run lifecycle or benchmark implementation runtime",
+    "owns": "typed experiment catalog views, implementation candidates, slot health and catalog publication/query contracts",
+    "package_prefix": "noetrium_platform.research.experimentation.catalog",
+    "parent": "experimentation",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "experimentation/experiment",
+      "experimentation/run/identity",
+      "experimentation/study",
+      "scope"
+    ],
+    "provides": [
+      "experiment.catalog"
+    ],
+    "components": []
+  },
   "experimentation/checkpoint": {
     "authority": "checkpoint_state",
     "must_not_own": "artifact content storage",
@@ -884,6 +968,50 @@
     ],
     "requires": [],
     "provides": [],
+    "components": []
+  },
+  "experimentation/workbench": {
+    "authority": "research_analysis_publication",
+    "must_not_own": "experiment execution lifecycle, measurement truth, method semantics or vendor-specific scientific backends",
+    "owns": "typed research analysis tables, deterministic statistics/evaluation workflow and report/figure publication semantics",
+    "package_prefix": "noetrium_platform.research.experimentation.workbench",
+    "parent": "experimentation",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "experimentation/study"
+    ],
+    "provides": [
+      "research.workbench"
+    ],
+    "components": []
+  },
+  "experimentation/workload": {
+    "authority": "experiment_workload_execution_contract",
+    "must_not_own": "experiment definition truth, environment provider internals, participant method semantics or run durability authority",
+    "owns": "generic experiment task-runner contracts, workload context, task handles/results and checkpointable workload execution semantics",
+    "package_prefix": "noetrium_platform.research.experimentation.workload",
+    "parent": "experimentation",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "environment/runtime",
+      "experimentation/experiment",
+      "experimentation/run",
+      "participant/method",
+      "platform"
+    ],
+    "provides": [
+      "experiment.workload"
+    ],
     "components": []
   },
   "governance": {
@@ -1612,7 +1740,9 @@
       "composition"
     ],
     "requires": [],
-    "provides": [],
+    "provides": [
+      "logging.routing"
+    ],
     "components": []
   },
   "observability/logging/sink": {
@@ -1869,7 +1999,8 @@
     ],
     "requires": [],
     "provides": [],
-    "components": []
+    "components": [],
+    "downstream_surface": "metadata_only"
   },
   "operator/command": {
     "authority": "operator_commands",
@@ -1989,6 +2120,26 @@
     "provides": [],
     "components": []
   },
+  "participant/core": {
+    "authority": "participant_runtime_abi",
+    "must_not_own": "project participant selection policy, method semantics, environment semantics or process supervision implementation",
+    "owns": "foundational participant runtime identities, capability descriptors, runtime binding, delivery, lifecycle and checkpoint contracts",
+    "package_prefix": "noetrium_platform.capabilities.participant.core",
+    "parent": "participant",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "platform"
+    ],
+    "provides": [
+      "participant.runtime.abi"
+    ],
+    "components": []
+  },
   "participant/agent": {
     "authority": "agent_identity",
     "must_not_own": "model serving lifecycle",
@@ -2054,7 +2205,9 @@
       "composition"
     ],
     "requires": [],
-    "provides": [],
+    "provides": [
+      "participant.definition"
+    ],
     "components": []
   },
   "participant/method": {
@@ -2091,7 +2244,9 @@
       "composition"
     ],
     "requires": [],
-    "provides": [],
+    "provides": [
+      "participant.session"
+    ],
     "components": []
   },
   "platform": {
@@ -2383,7 +2538,9 @@
       "composition"
     ],
     "requires": [],
-    "provides": [],
+    "provides": [
+      "recovery.execution"
+    ],
     "components": []
   },
   "resource": {
@@ -2437,7 +2594,9 @@
       "providers",
       "composition"
     ],
-    "requires": [],
+    "requires": [
+      "runtime/process"
+    ],
     "provides": [
       "compute.inventory",
       "compute.scheduler"
@@ -2593,6 +2752,28 @@
     "provides": [],
     "components": []
   },
+  "runtime/server/bootstrap": {
+    "authority": "server_bootstrap_transaction",
+    "must_not_own": "persistent session implementation, release selection authority or server steady-state lifecycle policy",
+    "owns": "server bootstrap commands, phases, durable bootstrap state/facts and forward-repair transaction contracts",
+    "package_prefix": "noetrium_platform.infrastructure.lifecycle.host.bootstrap",
+    "parent": "runtime.server",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "governance/release",
+      "platform",
+      "runtime/session"
+    ],
+    "provides": [
+      "server.bootstrap"
+    ],
+    "components": []
+  },
   "runtime/server/health": {
     "authority": "server_health_contract",
     "must_not_own": "observability health storage",
@@ -2637,7 +2818,9 @@
       "providers",
       "composition"
     ],
-    "requires": [],
+    "requires": [
+      "runtime/server/bootstrap"
+    ],
     "provides": [],
     "components": []
   },

@@ -2,13 +2,10 @@ from __future__ import annotations
 
 from noetrium_platform.research.experimentation.workload.api import (
     WorkloadBatchBindingPort,
+    WorkloadBatchCloseError,
+    WorkloadBatchExecutorPort,
     WorkloadExecutionCutObserverPort,
     WorkloadTaskResult,
-)
-from noetrium_platform.research.experimentation.workload.runtime import (
-    GenericWorkloadBatchExecutor,
-    WorkloadBatchCloseError,
-    WorkloadBatchResult,
 )
 from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
@@ -114,9 +111,11 @@ class CheckpointedWorkloadBatchExecutor:
     def __init__(
         self,
         coordinator: WorkloadCheckpointCoordinatorPort,
+        batch_executor: WorkloadBatchExecutorPort,
         publication: WorkloadCheckpointPublicationPort | None = None,
     ) -> None:
         self._coordinator = coordinator
+        self._batch_executor = batch_executor
         self._publication = publication
 
     def execute(
@@ -163,9 +162,10 @@ class CheckpointedWorkloadBatchExecutor:
             publication=self._publication,
             completed_task_ids=completed_task_ids,
         )
-        batch = GenericWorkloadBatchExecutor(observer).execute(
+        batch = self._batch_executor.execute(
             batch_binding,
             prior_results=prior_results,
+            cut_observer=observer,
         )
         return CheckpointedWorkloadBatchResult(
             batch=batch,

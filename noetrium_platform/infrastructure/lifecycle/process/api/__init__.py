@@ -1,4 +1,11 @@
 from .capture import ProcessByteCapturePort
+from .local_command import (
+    LocalCommandExecutionError,
+    LocalCommandResult,
+    LocalCommandRunnerPort,
+    LocalCommandStartError,
+    LocalCommandTimeoutError,
+)
 from .contracts import (
     ByteSegment,
     CaptureIntegrityError,
@@ -15,5 +22,10 @@ __all__ = [
     "CaptureRotationReceipt",
     "CaptureSyncReceipt",
     "CaptureWriterState",
+    "LocalCommandExecutionError",
+    "LocalCommandResult",
+    "LocalCommandRunnerPort",
+    "LocalCommandStartError",
+    "LocalCommandTimeoutError",
     "ProcessByteCapturePort",
 ]

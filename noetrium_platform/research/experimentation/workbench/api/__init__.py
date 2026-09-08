@@ -6,7 +6,8 @@ from .contracts import (
     FigurePoint, FigureRendererPort, FigureSeries, FigureSpec, FigureStyle, GroupComparison,
     InferenceResult, MetricSummary, MissingValuePolicy, MultipleComparisonMethod,
     MultipleComparisonResult, PairedComparison,
-    RenderedResearchPackage, ResearchEvaluation, ResearchReport, ReportTableRendererPort, SplitStrategy,
+    RenderedResearchPackage, ResearchEvaluation, ResearchFigureFactoryPort, ResearchLifecyclePort,
+    ResearchReport, ResearchStatisticsPort, ResearchTablePipelinePort, ReportTableRendererPort, SplitStrategy,
     TableAnalysisPort, TableReaderPort, TableTransformPort,
 )
 
@@ -16,8 +17,9 @@ __all__ = [
     "FigureCategory", "FigureCell", "FigureKind", "FigureOutputFormat", "FigurePoint", "FigureRendererPort",
     "FigureSeries", "FigureSpec", "FigureStyle", "GroupComparison", "InferenceResult", "MetricSummary",
     "MissingValuePolicy", "MultipleComparisonMethod", "MultipleComparisonResult", "PairedComparison",
-    "RenderedResearchPackage", "ResearchEvaluation", "ResearchReport",
-    "ReportTableRendererPort", "SplitStrategy", "TableAnalysisPort",
+    "RenderedResearchPackage", "ResearchEvaluation", "ResearchFigureFactoryPort",
+    "ResearchLifecyclePort", "ResearchReport", "ResearchStatisticsPort",
+    "ResearchTablePipelinePort", "ReportTableRendererPort", "SplitStrategy", "TableAnalysisPort",
     "TableReaderPort", "TableTransformPort", "MeasurementRecordTableAdapter",
     "StudyObservationTableAdapter",
 ]

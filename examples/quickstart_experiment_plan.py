@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.study import (
+from noetrium.contracts.research import (
     ExperimentPlan,
     StudyProtocol,
     StudyVariantSpec,
@@ -8,7 +8,7 @@ from noetrium_platform.research.experimentation.study import (
     VariantKind,
     StudyAssignment,
 )
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium.contracts import canonical_digest
 
 
 def build_plan() -> ExperimentPlan:

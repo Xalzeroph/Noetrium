@@ -2,7 +2,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.research.experimentation.checkpoint.api import RunCheckpointStore
+from noetrium_platform.research.experimentation.checkpoint.api import (
+    RunCheckpointStore,
+    WorkloadCheckpointCoordinatorPort,
+    WorkloadCheckpointPublicationPort,
+    WorkloadCheckpointedBatchExecutorPort,
+)
+from noetrium_platform.research.experimentation.checkpoint.runtime.workload_batch import (
+    CheckpointedWorkloadBatchExecutor,
+)
+from noetrium_platform.research.experimentation.workload.runtime import GenericWorkloadBatchExecutor
 from noetrium_platform.research.experimentation.checkpoint.providers import DirectoryRunCheckpointStore
 
 
@@ -16,4 +25,21 @@ def build_project_run_checkpoint_store(project_state_root: str | Path) -> RunChe
     return DirectoryRunCheckpointStore(Path(project_state_root) / "checkpoints")
 
 
-__all__ = ["build_project_run_checkpoint_store"]
+def build_checkpointed_workload_batch_executor(
+    coordinator: WorkloadCheckpointCoordinatorPort,
+    *,
+    publication: WorkloadCheckpointPublicationPort | None = None,
+) -> WorkloadCheckpointedBatchExecutorPort:
+    """Compose checkpoint semantics with the generic workload executor implementation."""
+
+    return CheckpointedWorkloadBatchExecutor(
+        coordinator,
+        GenericWorkloadBatchExecutor(),
+        publication=publication,
+    )
+
+
+__all__ = [
+    "build_checkpointed_workload_batch_executor",
+    "build_project_run_checkpoint_store",
+]

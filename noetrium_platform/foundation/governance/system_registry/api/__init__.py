@@ -1,5 +1,6 @@
 from .contracts import (
     AuthorityDescriptor,
+    DownstreamSurfaceMode,
     SystemDescriptor,
     SystemIdentity,
     SystemLayer,
@@ -10,6 +11,7 @@ from .topology import SYSTEM_CATALOG, TopologySourceAudit, audit_system_topology
 
 __all__ = [
     "AuthorityDescriptor",
+    "DownstreamSurfaceMode",
     "SYSTEM_CATALOG",
     "SystemDescriptor",
     "SystemIdentity",

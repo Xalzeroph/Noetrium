@@ -34,7 +34,7 @@ from noetrium_platform.capabilities.model.deployment.runtime import (
 from noetrium_platform.infrastructure.resources.compute.providers import NvidiaSmiGpuRuntimeObserver
 from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult, PythonEnvironmentOwnership, PythonEnvironmentSpec
 from noetrium_platform.infrastructure.lifecycle.python.runtime import CondaEnvironmentBackend, build_python_environment_authorities
-from noetrium_platform.foundation.kernel.kernel.process import LocalCommandResult
+from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandResult
 from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceProcessIdentity,
     ServiceReconcileObservation,

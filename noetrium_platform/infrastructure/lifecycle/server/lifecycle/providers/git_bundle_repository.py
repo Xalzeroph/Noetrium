@@ -6,7 +6,7 @@ import re
 import shlex
 import tempfile
 
-from noetrium_platform.foundation.kernel.kernel.process import (
+from noetrium_platform.infrastructure.lifecycle.process.api import (
     LocalCommandExecutionError,
     LocalCommandResult,
     LocalCommandRunnerPort,

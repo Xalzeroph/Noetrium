@@ -7,14 +7,14 @@ This document defines the ROLE04-owned downstream seam used by the New Project E
 Ordinary downstream project code should begin with only:
 
 ```python
-from noetrium_platform.capabilities.participant.api import (
+from noetrium.contracts.agent import (
     AgentIdentity,
-    AgentProjectDefinition,
     AgentSession,
     AgentTurnRequest,
     AgentTurnResult,
 )
-from noetrium_platform.capabilities.model.api import ModelCapabilityRequirement
+from noetrium.contracts.participant import AgentProjectDefinition
+from noetrium.contracts.model import ModelCapabilityRequirement
 ```
 
 A project can define Agent behavior with `AgentSession`, declare the exact Agent identity through `AgentProjectDefinition`, and state model requirements through `ModelCapabilityRequirement` without importing Participant runtime/catalog packages or Model serving providers.
@@ -79,8 +79,8 @@ A provider-facing conformance implementation must:
 
 ROLE06 may build the canonical Python facade, project scaffold, provider templates, doctor, and CLI over the following stable ROLE04 surfaces:
 
-- `noetrium_platform.capabilities.participant.api`: Agent behavior/identity, Participant requirements/bindings, typed diagnostics, provider port;
-- `noetrium_platform.capabilities.model.api`: model capability requirement, qualified project binding/client, exact project request/response, typed diagnostics, provider port.
+- `noetrium.contracts.agent` and `noetrium.contracts.participant`: Agent behavior/identity, Participant requirements/bindings, typed diagnostics, provider port;
+- `noetrium.contracts.model`: model capability requirement, qualified project binding/client, exact project request/response, typed diagnostics, provider port.
 
 ROLE06 must not recreate Participant runtime selection, serving endpoint construction, qualification decisions, request provenance, or model/Participant truth inside its facade. Provider templates may implement the public provider ports; common generated project code should depend only on the public API packages above.
 

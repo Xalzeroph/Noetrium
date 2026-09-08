@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from noetrium.contracts.json import canonical_digest
+from noetrium.contracts.json import JsonObject, canonical_digest
 
 from .memory_graph import (
     MemoryEdgeRecord,
@@ -213,7 +213,7 @@ class VersionedMemoryGraph:
         self._snapshot = snapshot
         self._ledger.clear()
 
-    def diagnostics(self) -> Mapping[str, object]:
+    def diagnostics(self) -> JsonObject:
         snapshot = self.snapshot()
         return {
             "generation": snapshot.generation,

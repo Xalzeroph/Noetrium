@@ -5,7 +5,7 @@ entrypoint for these generic memory-graph contracts.  SEM supplies the
 semantic policy; this module supplies the generic graph substrate.
 """
 
-from .reference.single_agent.memory import (
+from ..reference.single_agent.memory import (
     MemoryEdgeRecord,
     MemoryGraphConflict,
     MemoryGraphIntegrityError,

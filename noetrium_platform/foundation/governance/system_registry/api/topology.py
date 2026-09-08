@@ -9,6 +9,7 @@ from pathlib import Path
 from .contracts import (
     STANDARD_SYSTEM_SHAPE,
     AuthorityDescriptor,
+    DownstreamSurfaceMode,
     SystemDescriptor,
     SystemIdentity,
     SystemLayer,
@@ -26,6 +27,7 @@ class _CatalogSemantics:
     requires: tuple[str, ...]
     provides: tuple[str, ...]
     components: tuple[str, ...]
+    downstream_surface: DownstreamSurfaceMode
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,11 +37,16 @@ class TopologySourceAudit:
     registered_packages: tuple[str, ...]
     discovered_standard_packages: tuple[str, ...]
     stale_registered_packages: tuple[str, ...]
+    incomplete_registered_packages: tuple[str, ...]
     unregistered_standard_packages: tuple[str, ...]
 
     @property
     def clean(self) -> bool:
-        return not self.stale_registered_packages and not self.unregistered_standard_packages
+        return not (
+            self.stale_registered_packages
+            or self.incomplete_registered_packages
+            or self.unregistered_standard_packages
+        )
 
 
 def _string_tuple(value: object, *, field: str, key: str) -> tuple[str, ...]:
@@ -70,7 +77,12 @@ def _parse_semantics(key: str, value: object) -> _CatalogSemantics:
         "authority", "must_not_own", "owns", "package_prefix", "parent", "shape",
         "requires", "provides", "components",
     }
-    if not isinstance(value, dict) or set(value) != required:
+    optional = {"downstream_surface"}
+    if (
+        not isinstance(value, dict)
+        or not required.issubset(value)
+        or set(value) - required - optional
+    ):
         raise RuntimeError(f"invalid packaged catalog descriptor for {key!r}")
     text_fields = ("authority", "must_not_own", "owns", "package_prefix")
     if not all(isinstance(value[field], str) and value[field].strip() for field in text_fields):
@@ -82,6 +94,10 @@ def _parse_semantics(key: str, value: object) -> _CatalogSemantics:
     if parent is not None and not isinstance(parent, str):
         raise RuntimeError(f"invalid packaged catalog parent for {key!r}")
     normalized_parent = parent.replace(".", "/") if isinstance(parent, str) else None
+    try:
+        downstream_surface = DownstreamSurfaceMode(value.get("downstream_surface", "public"))
+    except ValueError as exc:
+        raise RuntimeError(f"invalid downstream_surface for {key!r}") from exc
     return _CatalogSemantics(
         authority=value["authority"],
         must_not_own=value["must_not_own"],
@@ -92,6 +108,7 @@ def _parse_semantics(key: str, value: object) -> _CatalogSemantics:
         requires=_string_tuple(value["requires"], field="requires", key=key),
         provides=_string_tuple(value["provides"], field="provides", key=key),
         components=_string_tuple(value["components"], field="components", key=key),
+        downstream_surface=downstream_surface,
     )
 
 
@@ -169,6 +186,7 @@ def _descriptor_from_catalog(key: str, semantics: _CatalogSemantics) -> SystemDe
         requires=semantics.requires,
         provides=semantics.provides,
         components=semantics.components,
+        downstream_surface=semantics.downstream_surface,
     )
 
 
@@ -184,40 +202,93 @@ def system_catalog() -> tuple[SystemDescriptor, ...]:
     return SYSTEM_CATALOG
 
 
-def audit_system_topology_source(root: Path | None = None) -> TopologySourceAudit:
-    """Discover standard-shaped source packages and compare them with the catalog.
+def _plane_exists(package: Path, plane: str) -> bool:
+    return (package / plane / "__init__.py").is_file()
 
-    This is a runtime startup check, not a second declaration mechanism: the
-    catalog remains authoritative, while the source tree supplies automatic
-    discovery evidence for missing or stale ownership.
+
+def _system_shape_candidates(
+    source_root: Path,
+    *,
+    registered_packages: tuple[str, ...],
+) -> tuple[str, ...]:
+    """Discover package roots that look system-shaped before they become complete.
+
+    Two or more standard planes are enough evidence to fail closed. This catches
+    api+runtime/api+providers systems that the historical four-plane-only scanner missed.
     """
 
-    source_root = (Path(root) if root is not None else Path(__file__).resolve().parents[5]).resolve()
-    package_root = source_root / "noetrium_platform"
-    registered = tuple(sorted({descriptor.package_prefix for descriptor in SYSTEM_CATALOG}))
-    stale = tuple(
-        package
-        for package in registered
-        if not (source_root.joinpath(*package.split(".")) / "__init__.py").is_file()
-    )
+    namespace_containers = {
+        prefix
+        for package in registered_packages
+        for index in range(1, len(package.split(".")))
+        for prefix in (".".join(package.split(".")[:index]),)
+        if prefix not in registered_packages
+    }
     discovered: list[str] = []
-    if package_root.is_dir():
-        for path in sorted(package_root.rglob("*")):
+    for package_root in sorted(source_root.iterdir() if source_root.is_dir() else ()):
+        if not package_root.is_dir() or not (package_root / "__init__.py").is_file():
+            continue
+        candidates = (package_root, *sorted(package_root.rglob("*")))
+        for path in candidates:
             if not path.is_dir() or not (path / "__init__.py").is_file():
                 continue
             relative = path.relative_to(package_root)
-            if any(part in STANDARD_SYSTEM_SHAPE for part in relative.parts):
-                continue
-            if all(
-                (path / plane).is_dir() and (path / plane / "__init__.py").is_file()
-                for plane in STANDARD_SYSTEM_SHAPE
+            module = package_root.name
+            if relative.parts:
+                module += "." + ".".join(relative.parts)
+            if (
+                module not in registered_packages
+                and any(part in STANDARD_SYSTEM_SHAPE for part in relative.parts)
             ):
-                discovered.append("noetrium_platform." + ".".join(relative.parts))
-    discovered_tuple = tuple(discovered)
+                continue
+            if module in namespace_containers:
+                continue
+            plane_count = sum(_plane_exists(path, plane) for plane in STANDARD_SYSTEM_SHAPE)
+            if plane_count < 2:
+                continue
+            discovered.append(module)
+    return tuple(dict.fromkeys(discovered))
+
+
+def audit_system_topology_source(
+    root: Path | None = None,
+    *,
+    descriptors: tuple[SystemDescriptor, ...] | None = None,
+) -> TopologySourceAudit:
+    """Compare automatic source-shape discovery with the canonical catalog.
+
+    Registered nodes must resolve to real packages and physically satisfy their
+    declared planes. Any unregistered package with at least two standard system
+    planes is rejected before it can become an implicit second topology source.
+    """
+
+    source_root = (Path(root) if root is not None else Path(__file__).resolve().parents[5]).resolve()
+    catalog = SYSTEM_CATALOG if descriptors is None else tuple(descriptors)
+    registered = tuple(sorted({descriptor.package_prefix for descriptor in catalog}))
+    stale: list[str] = []
+    incomplete: list[str] = []
+    canonical_catalog = (
+        source_root / "noetrium_platform/foundation/governance/system_registry/catalog.json"
+    )
+    if canonical_catalog.is_file():
+        for descriptor in catalog:
+            package = source_root.joinpath(*descriptor.package_prefix.split("."))
+            if not (package / "__init__.py").is_file():
+                stale.append(descriptor.package_prefix)
+                continue
+            missing = tuple(plane for plane in descriptor.shape if not _plane_exists(package, plane))
+            if missing:
+                incomplete.append(
+                    f"{descriptor.package_prefix} (missing: {', '.join(missing)})"
+                )
+    discovered_tuple = _system_shape_candidates(
+        source_root, registered_packages=registered
+    )
     return TopologySourceAudit(
         registered_packages=registered,
         discovered_standard_packages=discovered_tuple,
-        stale_registered_packages=stale,
+        stale_registered_packages=tuple(sorted(stale)),
+        incomplete_registered_packages=tuple(sorted(incomplete)),
         unregistered_standard_packages=tuple(
             package for package in discovered_tuple if package not in registered
         ),

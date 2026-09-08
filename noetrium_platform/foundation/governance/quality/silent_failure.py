@@ -1,18 +1,12 @@
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass
 from pathlib import Path
 
 from noetrium_platform.foundation.governance.api import RepositorySourceIndexPort
 
 
-@dataclass(frozen=True, slots=True)
-class SilentFailureFinding:
-    path: str
-    line: int
-    kind: str
-    detail: str
+from .api.contracts import SilentFailureFinding
 
 
 def _is_broad(handler: ast.ExceptHandler) -> bool:

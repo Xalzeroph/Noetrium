@@ -28,6 +28,7 @@ class DownstreamSystemSurface:
     must_not_own: str
     requires: tuple[str, ...]
     provides: tuple[str, ...]
+    downstream_surface: str
     facade_module: str | None
     api_modules: tuple[DownstreamApiModule, ...]
 
@@ -83,6 +84,7 @@ def load_downstream_capability_catalog() -> DownstreamCapabilityCatalog:
                 must_not_own=row["must_not_own"],
                 requires=tuple(row["requires"]),
                 provides=tuple(row["provides"]),
+                downstream_surface=str(row.get("downstream_surface", "public")),
                 facade_module=row["facade_module"],
                 api_modules=modules,
             )

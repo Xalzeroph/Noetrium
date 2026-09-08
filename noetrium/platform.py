@@ -17,6 +17,10 @@ from noetrium_platform.api import (
     ResearchRequest,
     ResearchResult,
 )
+from noetrium_platform.capabilities.environment.category.api import EnvironmentCategoryCatalogPort
+from noetrium_platform.capabilities.environment.category.composition import (
+    default_environment_category_catalog,
+)
 from noetrium_platform.capabilities.environment.api import (
     EnvironmentCapability,
     EnvironmentIdentity,
@@ -59,9 +63,321 @@ from noetrium_platform.capabilities.model.serving.providers import (
 from noetrium_platform.capabilities.model.serving.runtime.admission import ModelAdmissionRegistry
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
+from noetrium_platform.research.experimentation.checkpoint.api import (
+    RunCheckpointStore,
+    WorkloadCheckpointCoordinatorPort,
+    WorkloadCheckpointPublicationPort,
+    WorkloadCheckpointedBatchExecutorPort,
+)
+from noetrium_platform.research.experimentation.checkpoint.composition import (
+    build_checkpointed_workload_batch_executor as _build_checkpointed_workload_batch_executor,
+    build_project_run_checkpoint_store as _build_project_run_checkpoint_store,
+)
+from noetrium_platform.research.experimentation.run.api import (
+    RunArtifactKind,
+    RunArtifactSnapshotReceipt,
+    RunArtifactStorePort,
+    RunArtifactVerificationPort,
+    RunArtifactWriteActorPort,
+)
+from noetrium_platform.research.experimentation.run.composition.artifacts import (
+    build_directory_run_artifact_store as _build_directory_run_artifact_store,
+)
+from noetrium_platform.research.experimentation.run.control.api import (
+    RunControlCheckpointStorePort,
+    RunControlEvidencePort,
+    RunControlLifecyclePort,
+    RunControlPort,
+    RunControlReconciliationPort,
+)
+from noetrium_platform.research.experimentation.run.control.composition.factory import (
+    build_durable_run_control as _build_durable_run_control,
+)
+from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.run.manifest.api import RunLaunchManifest
+from noetrium_platform.research.experimentation.study.api import (
+    BoundStudyUnitExecutionPort,
+    ExperimentPlan,
+    StudyAssignment,
+    StudyAssignmentPort,
+    StudyMatrixExecutionPort,
+    StudyMatrixExecutionReport,
+    StudyMetricAggregationPort,
+    StudyProtocol,
+    StudyUnitExecutionPort,
+)
+from noetrium_platform.research.experimentation.study.runtime import (
+    BasicStudyMetricAggregator,
+    DeterministicStudyAssignment,
+    StudyMatrixExecutor,
+)
+from noetrium_platform.research.experimentation.workbench.api import (
+    FigureRendererPort,
+    ReportTableRendererPort,
+    ResearchFigureFactoryPort,
+    ResearchLifecyclePort,
+    ResearchStatisticsPort,
+    ResearchTablePipelinePort,
+    TableReaderPort,
+)
+from noetrium_platform.research.experimentation.workbench.composition import (
+    compose_standard_research_workbench,
+)
 from noetrium_platform.product.operator.runtime.run_control_application import (
     bind_run_control_application,
 )
+
+
+class DirectoryRunArtifactBinding:
+    """Own a directory run-artifact store and its serial-write concurrency runtime."""
+
+    def __init__(
+        self,
+        root: str | Path,
+        *,
+        run_id: str,
+        queue_capacity: int | None = None,
+        task_group_id: str | None = None,
+    ) -> None:
+        self._concurrency = build_concurrency_runtime()
+        try:
+            self._task_group = self._concurrency.open_task_group(
+                task_group_id or f"run-artifacts-{uuid4().hex}"
+            )
+            self._store: RunArtifactStorePort = _build_directory_run_artifact_store(
+                root,
+                run_id=run_id,
+                task_group=self._task_group,
+                queue_capacity=queue_capacity,
+            )
+        except BaseException:
+            self._concurrency.close()
+            raise
+        self._closed = False
+
+    @property
+    def store(self) -> RunArtifactStorePort:
+        if self._closed:
+            raise RuntimeError("directory run artifact binding is closed")
+        return self._store
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        self._concurrency.close()
+
+    def __enter__(self) -> "DirectoryRunArtifactBinding":
+        if self._closed:
+            raise RuntimeError("directory run artifact binding is closed")
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        self.close()
+
+
+def bind_directory_run_artifact_store(
+    root: str | Path,
+    *,
+    run_id: str,
+    queue_capacity: int | None = None,
+    task_group_id: str | None = None,
+) -> DirectoryRunArtifactBinding:
+    """Bind the default durable run-artifact store without exposing actor internals."""
+
+    return DirectoryRunArtifactBinding(
+        root,
+        run_id=run_id,
+        queue_capacity=queue_capacity,
+        task_group_id=task_group_id,
+    )
+
+
+def build_project_run_checkpoint_store(project_state_root: str | Path) -> RunCheckpointStore:
+    """Build the default durable project checkpoint store behind its public protocol."""
+
+    return _build_project_run_checkpoint_store(project_state_root)
+
+
+def build_checkpointed_workload_batch_executor(
+    coordinator: WorkloadCheckpointCoordinatorPort,
+    *,
+    publication: WorkloadCheckpointPublicationPort | None = None,
+) -> WorkloadCheckpointedBatchExecutorPort:
+    """Compose checkpoint semantics with Noetrium's generic workload executor."""
+
+    return _build_checkpointed_workload_batch_executor(
+        coordinator, publication=publication
+    )
+
+
+def bind_durable_run_control(
+    root: str | Path,
+    *,
+    identity: RunIdentity,
+    manifest: RunLaunchManifest,
+    writer_actor: RunArtifactWriteActorPort,
+    lifecycle: RunControlLifecyclePort,
+    checkpoint_store: RunControlCheckpointStorePort,
+    reconciliation: RunControlReconciliationPort,
+    evidence: RunControlEvidencePort,
+    artifact_verifier: RunArtifactVerificationPort,
+) -> RunControlPort:
+    """Compose durable run control from explicit producer-owned public authorities."""
+
+    return _build_durable_run_control(
+        root,
+        identity=identity,
+        manifest=manifest,
+        writer_actor=writer_actor,
+        lifecycle=lifecycle,
+        checkpoint_store=checkpoint_store,
+        reconciliation=reconciliation,
+        evidence=evidence,
+        artifact_verifier=artifact_verifier,
+    )
+
+
+def bind_environment_category_catalog() -> EnvironmentCategoryCatalogPort:
+    """Return Noetrium's registry-aligned environment category catalog."""
+
+    return default_environment_category_catalog()
+
+
+class StudyMatrixBinding:
+    """Ready study-matrix execution bound to Noetrium structured concurrency."""
+
+    def __init__(
+        self,
+        *,
+        aggregation: StudyMetricAggregationPort | None = None,
+        task_group_id: str | None = None,
+    ) -> None:
+        self._concurrency = build_concurrency_runtime()
+        try:
+            self._task_group = self._concurrency.open_task_group(
+                task_group_id or f"study-matrix-{uuid4().hex}"
+            )
+            self._assignment: StudyAssignmentPort = DeterministicStudyAssignment()
+            self._aggregation: StudyMetricAggregationPort = (
+                aggregation if aggregation is not None else BasicStudyMetricAggregator()
+            )
+            self._executor: StudyMatrixExecutionPort = StudyMatrixExecutor(
+                self._aggregation,
+                assignment_expander=self._assignment,
+                task_group=self._task_group,
+            )
+        except BaseException:
+            self._concurrency.close()
+            raise
+        self._closed = False
+
+    @property
+    def assignments(self) -> StudyAssignmentPort:
+        return self._assignment
+
+    @property
+    def aggregation(self) -> StudyMetricAggregationPort:
+        return self._aggregation
+
+    def execute(
+        self,
+        protocol: StudyProtocol,
+        assignments: tuple[StudyAssignment, ...],
+        adapter: StudyUnitExecutionPort,
+    ) -> StudyMatrixExecutionReport:
+        if self._closed:
+            raise RuntimeError("study matrix binding is closed")
+        return self._executor.execute(protocol, assignments, adapter)
+
+    def execute_plan(
+        self,
+        plan: ExperimentPlan,
+        assignments: tuple[StudyAssignment, ...],
+        adapter: BoundStudyUnitExecutionPort,
+    ) -> StudyMatrixExecutionReport:
+        if self._closed:
+            raise RuntimeError("study matrix binding is closed")
+        return self._executor.execute_plan(plan, assignments, adapter)
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        self._concurrency.close()
+
+    def __enter__(self) -> "StudyMatrixBinding":
+        if self._closed:
+            raise RuntimeError("study matrix binding is closed")
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        self.close()
+
+
+def bind_study_matrix_execution(
+    *,
+    aggregation: StudyMetricAggregationPort | None = None,
+    task_group_id: str | None = None,
+) -> StudyMatrixBinding:
+    return StudyMatrixBinding(aggregation=aggregation, task_group_id=task_group_id)
+
+
+def build_deterministic_study_assignment() -> StudyAssignmentPort:
+    return DeterministicStudyAssignment()
+
+
+def build_basic_study_metric_aggregation() -> StudyMetricAggregationPort:
+    return BasicStudyMetricAggregator()
+
+
+class ResearchWorkbenchBinding:
+    """Curated standard-library workbench with only public protocol-typed properties."""
+
+    def __init__(self) -> None:
+        self._assembly = compose_standard_research_workbench()
+
+    @property
+    def lifecycle(self) -> ResearchLifecyclePort:
+        return self._assembly.lifecycle
+
+    @property
+    def pipeline(self) -> ResearchTablePipelinePort:
+        return self._assembly.pipeline
+
+    @property
+    def statistics(self) -> ResearchStatisticsPort:
+        return self._assembly.statistics
+
+    @property
+    def figures(self) -> ResearchFigureFactoryPort:
+        return self._assembly.figures
+
+    @property
+    def csv_reader(self) -> TableReaderPort:
+        return self._assembly.csv_reader
+
+    @property
+    def jsonl_reader(self) -> TableReaderPort:
+        return self._assembly.jsonl_reader
+
+    @property
+    def table_renderer(self) -> ReportTableRendererPort:
+        return self._assembly.table_renderer
+
+    @property
+    def figure_renderer(self) -> FigureRendererPort:
+        return self._assembly.figure_renderer
+
+    @property
+    def svg_renderer(self) -> FigureRendererPort:
+        return self._assembly.svg_renderer
+
+
+def bind_research_workbench() -> ResearchWorkbenchBinding:
+    """Build Noetrium's deterministic standard-library research workbench."""
+
+    return ResearchWorkbenchBinding()
 
 
 class MinecraftEnvironmentBinding:
@@ -346,11 +662,18 @@ def bind_qualified_project_model(
 
 
 __all__ = [
+    "DirectoryRunArtifactBinding",
     "MinecraftEnvironmentBinding",
     "QualifiedProjectModelBinding",
+    "ResearchWorkbenchBinding",
+    "StudyMatrixBinding",
     "ProjectTestStage", "ProjectTestStageReceipt", "ResearchAction",
     "ResearchApplicationPort", "ResearchFacade", "ResearchOperationFailure",
     "ResearchRequest", "ResearchResult", "bind_bundled_minecraft_environment",
-    "bind_minecraft_environment", "bind_qualified_project_model",
-    "bind_run_control_application",
+    "bind_directory_run_artifact_store", "bind_durable_run_control",
+    "bind_environment_category_catalog", "bind_minecraft_environment", "bind_qualified_project_model",
+    "bind_research_workbench", "bind_run_control_application",
+    "bind_study_matrix_execution", "build_basic_study_metric_aggregation",
+    "build_checkpointed_workload_batch_executor", "build_project_run_checkpoint_store",
+    "build_deterministic_study_assignment",
 ]

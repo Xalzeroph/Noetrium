@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Mapping
 
 from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult
-from noetrium_platform.foundation.kernel.kernel.process import LocalCommandRunnerPort
+from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandRunnerPort
 
 
 class SubprocessEnvironmentCommandRunner:

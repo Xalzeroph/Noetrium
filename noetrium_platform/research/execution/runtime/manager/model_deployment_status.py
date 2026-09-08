@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.execution.runtime.api import DeploymentStatusIdentity
+from noetrium_platform.research.execution.api import DeploymentStatusIdentity
 from noetrium_platform.evidence.observability.status.api import HealthState, SubsystemSnapshot
 
 from .status_ports import ServiceHeartbeatStatusPort

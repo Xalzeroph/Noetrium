@@ -82,6 +82,12 @@ def _declared_system_cycles(descriptors: tuple[SystemDescriptor, ...]) -> tuple[
     return tuple(sorted(components))
 
 
+def _declared_dependency_covers(dependency: str, target_key: str) -> bool:
+    """Return whether a declared system/subsystem dependency covers the target owner."""
+
+    return target_key == dependency or target_key.startswith(dependency + "/")
+
+
 def audit_system_dependency_invariants(root: Path) -> list[SourceInvariantViolation]:
     """Enforce explicit cross-system dependencies and an acyclic system dependency DAG.
 
@@ -127,9 +133,9 @@ def audit_system_dependency_invariants(root: Path) -> list[SourceInvariantViolat
         target_system = target.identity.system_id
         if source_system == target_system:
             continue
-        parent_declared = set(top_level[source_system].requires)
-        local_declared = set(source.requires)
-        if target_system in parent_declared or target_system in local_declared:
+        target_key = target.identity.key
+        declared = (*top_level[source_system].requires, *source.requires)
+        if any(_declared_dependency_covers(item, target_key) for item in declared):
             continue
         key = (source_system, target_system, edge.path, edge.line)
         if key in seen:

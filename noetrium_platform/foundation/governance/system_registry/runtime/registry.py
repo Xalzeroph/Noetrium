@@ -39,6 +39,7 @@ def _topology_digest(descriptors: tuple[SystemDescriptor, ...]) -> str:
             "owns": descriptor.owns,
             "must_not_own": descriptor.must_not_own,
             "shape": list(descriptor.shape),
+            "downstream_surface": descriptor.downstream_surface.value,
         }
         for descriptor in descriptors
     ]

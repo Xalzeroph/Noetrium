@@ -21,11 +21,31 @@ class ForensicRuntimeLifecycle:
                 flush_projections()
             except Exception as exc:
                 error=exc
-        try:
-            self.parts.index.close()
-        finally:
-            if self.parts.writer_lease is not None:
+
+        # Release every owned resource, including segmented ledgers that keep
+        # process-wide filesystem watches alive. Continue cleanup after the
+        # first failure so one resource cannot leak the rest of the bundle.
+        for resource in (
+            self.parts.events,
+            self.parts.failures,
+            self.parts.mutations,
+            self.parts.index,
+        ):
+            close=getattr(resource,"close",None)
+            if close is None:
+                continue
+            try:
+                close()
+            except Exception as exc:
+                if error is None:
+                    error=exc
+
+        if self.parts.writer_lease is not None:
+            try:
                 self.parts.writer_lease.release()
-            self.closed=True
+            except Exception as exc:
+                if error is None:
+                    error=exc
+        self.closed=True
         if error is not None:
             raise error

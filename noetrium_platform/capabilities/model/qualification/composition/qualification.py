@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from noetrium_platform.foundation.kernel.kernel.process import LocalCommandRunnerPort
+from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandRunnerPort
 
 from noetrium_platform.capabilities.model.qualification.api import (
     DeploymentCapabilityProbePort,

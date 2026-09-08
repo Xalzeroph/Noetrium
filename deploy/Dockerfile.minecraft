@@ -15,7 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ca-certificates curl openjdk-21-jre-headless python3.12 python3.12-venv xz-utils \
+        ca-certificates curl git openjdk-21-jre-headless python3.12 python3.12-venv xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cd /tmp \

@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import shutil
 
-from noetrium_platform.foundation.kernel.kernel.process import LocalCommandRunnerPort, LocalCommandStartError, LocalCommandTimeoutError
+from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandRunnerPort, LocalCommandStartError, LocalCommandTimeoutError
 from noetrium_platform.infrastructure.resources.compute.api import (
     GpuDeviceStatus,
     GpuProcessStatus,

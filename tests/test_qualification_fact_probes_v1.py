@@ -96,7 +96,7 @@ def test_local_capability_probe_composes_split_fact_probes(tmp_path) -> None:
     import json
     from noetrium_platform.capabilities.model.qualification.api import DeploymentQualificationRequest
     from noetrium_platform.capabilities.model.qualification.providers.qualification_probe import LocalDeploymentCapabilityProbe
-    from noetrium_platform.foundation.kernel.kernel.process import LocalCommandResult
+    from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandResult
 
     model_path = tmp_path / "model"
     model_path.mkdir()

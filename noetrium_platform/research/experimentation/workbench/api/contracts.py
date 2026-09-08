@@ -4,7 +4,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Protocol
+from typing import Any, Callable, Protocol
 
 from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest, freeze_json
 
@@ -790,6 +790,110 @@ class RenderedResearchPackage:
         }))
 
 
+class ResearchTablePipelinePort(Protocol):
+    def project(
+        self, table: DataTable, columns: tuple[str, ...], *,
+        operation_id: str, configuration_digest: str,
+    ) -> DataTable: ...
+
+    def filter(
+        self, table: DataTable, predicate: Callable[[dict[str, Any]], bool], *,
+        operation_id: str, configuration_digest: str,
+    ) -> DataTable: ...
+
+    def derive(
+        self, table: DataTable, column: DataColumn, function: Callable[[dict[str, Any]], Any], *,
+        operation_id: str, configuration_digest: str,
+    ) -> DataTable: ...
+
+    def split(
+        self, table: DataTable, *, seed: int, fractions: tuple[tuple[str, float], ...],
+        operation_id: str, configuration_digest: str, strategy: SplitStrategy = SplitStrategy.RANDOM,
+        stratify_by: tuple[str, ...] = (), group_by: tuple[str, ...] = (),
+        order_by: tuple[str, ...] = (),
+    ) -> dict[str, DataTable]: ...
+
+    def aggregate(
+        self, table: DataTable, group_by: tuple[str, ...], aggregations: tuple[AggregationSpec, ...], *,
+        operation_id: str, configuration_digest: str,
+    ) -> DataTable: ...
+
+    def join(
+        self, left: DataTable, right: DataTable, on: tuple[str, ...], *,
+        operation_id: str, configuration_digest: str, how: str = "inner",
+    ) -> DataTable: ...
+
+
+class ResearchStatisticsPort(Protocol):
+    def summarize(
+        self, table: DataTable, value_column: str, *, group_by: tuple[str, ...] = (),
+        missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+    ) -> tuple[MetricSummary, ...]: ...
+
+    def compare(
+        self, table: DataTable, value_column: str, group_column: str, *, baseline: Any, candidate: Any,
+        missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+    ) -> GroupComparison: ...
+
+    def compare_many(
+        self, table: DataTable, value_column: str, group_column: str, *, baseline: Any,
+        candidates: tuple[Any, ...], missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+    ) -> tuple[GroupComparison, ...]: ...
+
+
+class ResearchFigureFactoryPort(Protocol):
+    @property
+    def style(self) -> FigureStyle: ...
+
+    def curve(self, table: DataTable, **kwargs: Any) -> FigureSpec: ...
+    def benchmark(self, table: DataTable, **kwargs: Any) -> FigureSpec: ...
+    def distribution(self, table: DataTable, **kwargs: Any) -> FigureSpec: ...
+    def matrix(self, table: DataTable, **kwargs: Any) -> FigureSpec: ...
+    def classification_curve(self, table: DataTable, **kwargs: Any) -> FigureSpec: ...
+    def pareto(self, table: DataTable, **kwargs: Any) -> FigureSpec: ...
+    def effects(self, comparisons: tuple[GroupComparison, ...], **kwargs: Any) -> FigureSpec: ...
+
+
+class ResearchLifecyclePort(Protocol):
+    @property
+    def pipeline(self) -> ResearchTablePipelinePort: ...
+
+    @property
+    def statistics(self) -> ResearchStatisticsPort: ...
+
+    @property
+    def baselines(self) -> BaselineRegistryPort: ...
+
+    def evaluate(
+        self, table: DataTable, context: EvaluationContext, *, metric: str,
+        group_by: tuple[str, ...] = (), comparison_group: str | None = None,
+        baseline_value: Any | None = None, candidate_value: Any | None = None,
+        candidate_values: tuple[Any, ...] | None = None, figures: tuple[Any, ...] = (),
+        report_id: str | None = None, missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+    ) -> ResearchEvaluation: ...
+
+    def evaluate_study_observations(
+        self, observations: tuple[Any, ...], context: EvaluationContext, **kwargs: Any,
+    ) -> ResearchEvaluation: ...
+
+    def evaluate_measurement_records(
+        self, records: tuple[Any, ...], context: EvaluationContext, *, measurement_id: str,
+        group_by: tuple[str, ...] = ("variant_id",), **kwargs: Any,
+    ) -> ResearchEvaluation: ...
+
+    def evaluate_trial_report(
+        self, report: Any, context: EvaluationContext, *, measurement_id: str,
+        group_by: tuple[str, ...] = ("variant_id",), **kwargs: Any,
+    ) -> ResearchEvaluation: ...
+
+    def render(
+        self, evaluation: ResearchEvaluation, *, table_format: str = "markdown",
+        output_format: FigureOutputFormat = FigureOutputFormat.PDF,
+        table_renderer: ReportTableRendererPort | None = None,
+        figure_renderer: FigureRendererPort | None = None,
+    ) -> RenderedResearchPackage: ...
+
+
 class FigureRendererPort(Protocol):
     def render(
         self,
@@ -809,7 +913,8 @@ __all__ = [
     "FigureCategory", "FigureCell", "FigureKind", "FigureOutputFormat", "FigurePoint", "FigureRendererPort",
     "FigureSeries", "FigureSpec", "FigureStyle", "GroupComparison", "InferenceResult", "MetricSummary",
     "MissingValuePolicy", "MultipleComparisonMethod", "MultipleComparisonResult", "PairedComparison",
-    "RenderedResearchPackage", "ResearchEvaluation",
-    "ResearchReport", "ReportTableRendererPort", "SplitStrategy",
+    "RenderedResearchPackage", "ResearchEvaluation", "ResearchFigureFactoryPort",
+    "ResearchLifecyclePort", "ResearchReport", "ResearchStatisticsPort",
+    "ResearchTablePipelinePort", "ReportTableRendererPort", "SplitStrategy",
     "TableAnalysisPort", "TableReaderPort", "TableTransformPort",
 ]

@@ -88,9 +88,23 @@ def scan_imports(root: Path, package_roots: tuple[str, ...] = ("noetrium_platfor
     return tuple(edges)
 
 
+def _is_allowed_downstream_api_edge(edge: ImportEdge) -> bool:
+    """Allow stable Noetrium facades to re-export downstream extension APIs."""
+
+    if not edge.source_module.startswith("noetrium."):
+        return False
+    return edge.target_module == "components.api" or edge.target_module.startswith(
+        "components.api."
+    ) or edge.target_module == "orchestration.api" or edge.target_module.startswith(
+        "orchestration.api."
+    )
+
+
 def audit_import_rules(edges: tuple[ImportEdge,...], rules: tuple[ImportRule,...]) -> tuple[ImportViolation,...]:
     out=[]
     for edge in edges:
+        if _is_allowed_downstream_api_edge(edge):
+            continue
         for rule in rules:
             if _prefix_matches(edge.source_module, rule.source_prefix) and _prefix_matches(edge.target_module, rule.target_prefix):
                 out.append(ImportViolation(edge,rule.reason))
@@ -160,6 +174,11 @@ def package_cycles(edges: tuple[ImportEdge,...], depth: int=2) -> tuple[tuple[st
 
     graph: dict[str,set[str]]={}
     for e in edges:
+        # Aggregate facades intentionally re-export downstream public APIs.
+        # Their allowed seam must not be treated as a package cycle when the
+        # downstream implementation imports leaf Noe contracts.
+        if _is_allowed_downstream_api_edge(e):
+            continue
         a,b=bucket(e.source_module),bucket(e.target_module)
         if a!=b: graph.setdefault(a,set()).add(b); graph.setdefault(b,set())
     cycles=set()

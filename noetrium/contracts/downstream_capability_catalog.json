@@ -34,6 +34,7 @@
         }
       ],
       "authority": "artifact_identity",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact",
       "must_not_own": "mutable business state",
       "owns": "immutable content identity, references, retention and catalog",
@@ -89,6 +90,7 @@
         }
       ],
       "authority": "artifact_catalog",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact__catalog",
       "must_not_own": "content bytes mutation",
       "owns": "artifact metadata and logical identity catalog",
@@ -177,6 +179,7 @@
         }
       ],
       "authority": "artifact_content",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact__content",
       "must_not_own": "business metadata",
       "owns": "immutable content storage and content digest identity",
@@ -188,6 +191,7 @@
     {
       "api_modules": [],
       "authority": "artifact_lineage",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact__lineage",
       "must_not_own": "scientific result truth",
       "owns": "artifact lineage and provenance relations",
@@ -243,6 +247,7 @@
         }
       ],
       "authority": "artifact_lineage_edge",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact__lineage__relation",
       "must_not_own": "scientific result semantics",
       "owns": "immutable artifact lineage edge identity",
@@ -298,6 +303,7 @@
         }
       ],
       "authority": "artifact_reference",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact__reference",
       "must_not_own": "content mutation",
       "owns": "references, aliases and cross-system artifact pointers",
@@ -353,6 +359,7 @@
         }
       ],
       "authority": "artifact_retention",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact__retention",
       "must_not_own": "business state semantics",
       "owns": "retention, pinning and garbage-collection policy",
@@ -364,6 +371,7 @@
     {
       "api_modules": [],
       "authority": "data_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data",
       "must_not_own": "immutable artifact content identity",
       "owns": "durable facts, records, datasets, canonical state and projections",
@@ -418,6 +426,7 @@
         }
       ],
       "authority": "dataset_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__dataset",
       "must_not_own": "dataset physical storage implementation",
       "owns": "dataset identity, schema references and lifecycle",
@@ -466,6 +475,7 @@
         }
       ],
       "authority": "fact_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__fact",
       "must_not_own": "business-specific state transitions",
       "owns": "durable fact envelopes and authoritative fact writes",
@@ -502,6 +512,7 @@
         }
       ],
       "authority": "projection_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__projection",
       "must_not_own": "source-of-truth mutation",
       "owns": "derived read models and projection lifecycle",
@@ -577,6 +588,7 @@
         }
       ],
       "authority": "query_contracts",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__query",
       "must_not_own": "durable writes",
       "owns": "read query contracts spanning non-authoritative projections",
@@ -608,6 +620,7 @@
         }
       ],
       "authority": "cross_query",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__query__cross",
       "must_not_own": "writes and authority mutation",
       "owns": "cross-authority read composition and query federation",
@@ -636,6 +649,7 @@
         }
       ],
       "authority": "record_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__record",
       "must_not_own": "artifact content bytes",
       "owns": "generic record envelopes and record identity",
@@ -686,6 +700,7 @@
         }
       ],
       "authority": "state_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__state",
       "must_not_own": "disposable projections",
       "owns": "canonical mutable state and state-store contracts",
@@ -890,6 +905,7 @@
         }
       ],
       "authority": "environment_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment",
       "must_not_own": "project semantics and model serving",
       "owns": "environment specs, bindings, resolution and instances",
@@ -906,6 +922,52 @@
     {
       "api_modules": [
         {
+          "module": "noetrium_platform.capabilities.environment.category.api",
+          "source": "noetrium_platform/capabilities/environment/category/api/__init__.py",
+          "symbols": [
+            "EnvironmentCategoryCatalogPort",
+            "EnvironmentCategoryDescriptor",
+            "EnvironmentCategoryId",
+            "EnvironmentCategoryStatus",
+            "EnvironmentImplementationDescriptor"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.environment.category.api.contracts",
+          "source": "noetrium_platform/capabilities/environment/category/api/contracts.py",
+          "symbols": [
+            "EnvironmentCategoryDescriptor",
+            "EnvironmentCategoryId",
+            "EnvironmentCategoryStatus",
+            "EnvironmentImplementationDescriptor"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.environment.category.api.ports",
+          "source": "noetrium_platform/capabilities/environment/category/api/ports.py",
+          "symbols": [
+            "EnvironmentCategoryCatalogPort"
+          ]
+        }
+      ],
+      "authority": "environment_category_catalog",
+      "downstream_surface": "public",
+      "facade_module": "noetrium.contracts.systems.environment__category",
+      "must_not_own": "environment instance lifecycle, provider execution, project task semantics or vendor-specific runtime state",
+      "owns": "environment category definitions, category/provider descriptors, compatibility and category fingerprint contracts",
+      "package_prefix": "noetrium_platform.capabilities.environment.category",
+      "provides": [
+        "environment.category"
+      ],
+      "requires": [
+        "governance/system_registry",
+        "platform"
+      ],
+      "system_key": "environment/category"
+    },
+    {
+      "api_modules": [
+        {
           "module": "noetrium_platform.capabilities.environment.binding.api.boundary",
           "source": "noetrium_platform/capabilities/environment/binding/api/boundary.py",
           "symbols": [
@@ -915,6 +977,7 @@
         }
       ],
       "authority": "environment_binding",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__binding",
       "must_not_own": "artifact storage",
       "owns": "binding environment specs to scopes/runs/participants",
@@ -963,6 +1026,7 @@
         }
       ],
       "authority": "environment_catalog",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__catalog",
       "must_not_own": "resource capacity",
       "owns": "environment catalog and versioned definitions",
@@ -976,6 +1040,7 @@
     {
       "api_modules": [],
       "authority": "environment_instance",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__instance",
       "must_not_own": "host supervision implementation",
       "owns": "environment instance identity, readiness and lifecycle",
@@ -996,6 +1061,7 @@
         }
       ],
       "authority": "environment_instance_identity",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__instance__identity",
       "must_not_own": "host process lifecycle",
       "owns": "environment instance identity and provenance",
@@ -1016,6 +1082,7 @@
         }
       ],
       "authority": "environment_readiness",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__instance__readiness",
       "must_not_own": "authoritative process health",
       "owns": "environment readiness observations/contract",
@@ -1226,6 +1293,7 @@
         }
       ],
       "authority": "minecraft_environment",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__minecraft",
       "must_not_own": "generic environment catalog, process/server supervision, model serving, project method semantics or telemetry storage",
       "owns": "Minecraft environment contracts, server-control/world-cut semantics, state projection, bridge providers and readiness adapters",
@@ -1296,6 +1364,7 @@
         }
       ],
       "authority": "embodied_environment",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__embodied",
       "must_not_own": "generic environment catalog, experiment semantics, model serving, telemetry storage or vendor SDK internals",
       "owns": "embodied environment contracts, episode/trajectory interaction and provider-facing embodiment metadata",
@@ -1338,6 +1407,7 @@
         }
       ],
       "authority": "gui_environment",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__gui",
       "must_not_own": "benchmark cases, task scoring, tool capability policy or OS process supervision",
       "owns": "desktop and mobile GUI environment contracts and provider adapters",
@@ -1379,6 +1449,7 @@
         }
       ],
       "authority": "web_environment",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__web",
       "must_not_own": "benchmark cases, task scoring, browser automation policy or model serving",
       "owns": "stateful web and browser environment contracts and provider adapters",
@@ -1420,6 +1491,7 @@
         }
       ],
       "authority": "software_environment",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__software",
       "must_not_own": "benchmark scoring, repository policy, model serving or generic process supervision",
       "owns": "repository and software-workspace environment contracts and provider adapters",
@@ -1462,6 +1534,7 @@
         }
       ],
       "authority": "text_world_environment",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__text_world",
       "must_not_own": "dialogue method, benchmark scoring, agent memory or multi-agent topology",
       "owns": "text-mediated stateful world contracts and provider adapters",
@@ -1486,6 +1559,7 @@
         }
       ],
       "authority": "environment_resolution",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__resolution",
       "must_not_own": "process lifecycle",
       "owns": "resolve logical environment requirements to concrete instance plan",
@@ -1616,6 +1690,7 @@
         }
       ],
       "authority": "environment_runtime_contract",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__runtime",
       "must_not_own": "environment catalog authority",
       "owns": "environment runtime adapter contracts",
@@ -1629,6 +1704,7 @@
     {
       "api_modules": [],
       "authority": "environment_spec",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__specification",
       "must_not_own": "live host process state",
       "owns": "environment definition and immutable spec identity",
@@ -1649,6 +1725,7 @@
         }
       ],
       "authority": "environment_digest",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__specification__digest",
       "must_not_own": "resource resolution",
       "owns": "exact environment specification identity and digest",
@@ -1669,6 +1746,7 @@
         }
       ],
       "authority": "environment_schema",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment__specification__schema",
       "must_not_own": "environment instance lifecycle",
       "owns": "environment requirement schema and canonical forms",
@@ -1683,6 +1761,7 @@
           "module": "noetrium_platform.research.execution.api",
           "source": "noetrium_platform/research/execution/api/__init__.py",
           "symbols": [
+            "DeploymentStatusIdentity",
             "ExecutionIntentPort",
             "ExecutionIntentReceipt",
             "ExecutionOperationIntent"
@@ -1696,9 +1775,17 @@
             "ExecutionIntentReceipt",
             "ExecutionOperationIntent"
           ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.api.status",
+          "source": "noetrium_platform/research/execution/api/status.py",
+          "symbols": [
+            "DeploymentStatusIdentity"
+          ]
         }
       ],
       "authority": "execution_operations",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution",
       "must_not_own": "provider storage and domain truth",
       "owns": "workflow and operation orchestration contracts",
@@ -1781,6 +1868,7 @@
         }
       ],
       "authority": "admission_decision",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__admission",
       "must_not_own": "scheduling order/fairness, executor lifecycle or model/environment truth",
       "owns": "hierarchical execution quotas, identity-aware admission decisions and lease accounting",
@@ -1835,6 +1923,7 @@
         }
       ],
       "authority": "capability_catalog",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__capability",
       "must_not_own": "provider implementation",
       "owns": "capability declarations and invocation contracts",
@@ -1892,6 +1981,7 @@
         }
       ],
       "authority": "command_intent",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__command",
       "must_not_own": "human UI and provider-specific control",
       "owns": "typed execution commands and command routing",
@@ -1982,6 +2072,7 @@
         }
       ],
       "authority": "operation_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__operation",
       "must_not_own": "failure taxonomy and recovery authority",
       "owns": "operation identity, lifecycle and result envelopes",
@@ -2029,6 +2120,7 @@
         }
       ],
       "authority": "schedule_intent",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__scheduling",
       "must_not_own": "live resource/admission state, quotas or executor lifecycle",
       "owns": "priority, aging, fairness and deterministic scheduling order",
@@ -2123,6 +2215,7 @@
         }
       ],
       "authority": "workflow_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__workflow",
       "must_not_own": "process supervision",
       "owns": "workflow definitions and orchestration semantics",
@@ -2245,6 +2338,7 @@
         }
       ],
       "authority": "experimentation_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation",
       "must_not_own": "server/process control and model serving",
       "owns": "study, experiment, run, branch and checkpoint semantics",
@@ -2274,6 +2368,7 @@
         }
       ],
       "authority": "branch_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__branch",
       "must_not_own": "generic artifact lineage",
       "owns": "run branching and branch lineage",
@@ -2281,6 +2376,40 @@
       "provides": [],
       "requires": [],
       "system_key": "experimentation/branch"
+    },
+    {
+      "api_modules": [
+        {
+          "module": "noetrium_platform.research.experimentation.catalog.api",
+          "source": "noetrium_platform/research/experimentation/catalog/api/__init__.py",
+          "symbols": [
+            "ExperimentationCatalogPort"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.catalog.api.ports",
+          "source": "noetrium_platform/research/experimentation/catalog/api/ports.py",
+          "symbols": [
+            "ExperimentationCatalogPort"
+          ]
+        }
+      ],
+      "authority": "experiment_catalog_view",
+      "downstream_surface": "public",
+      "facade_module": "noetrium.contracts.systems.experimentation__catalog",
+      "must_not_own": "experiment execution, study measurement truth, run lifecycle or benchmark implementation runtime",
+      "owns": "typed experiment catalog views, implementation candidates, slot health and catalog publication/query contracts",
+      "package_prefix": "noetrium_platform.research.experimentation.catalog",
+      "provides": [
+        "experiment.catalog"
+      ],
+      "requires": [
+        "experimentation/experiment",
+        "experimentation/run/identity",
+        "experimentation/study",
+        "scope"
+      ],
+      "system_key": "experimentation/catalog"
     },
     {
       "api_modules": [
@@ -2372,6 +2501,7 @@
         }
       ],
       "authority": "checkpoint_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__checkpoint",
       "must_not_own": "artifact content storage",
       "owns": "checkpoint identity, binding and lifecycle",
@@ -2406,6 +2536,7 @@
         }
       ],
       "authority": "experiment_evaluation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__evaluation",
       "must_not_own": "experiment execution lifecycle or scientific claim acceptance",
       "owns": "evaluation contracts, execution-neutral evaluators and evaluation composition",
@@ -2537,6 +2668,7 @@
         }
       ],
       "authority": "experiment_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__experiment",
       "must_not_own": "runtime process state",
       "owns": "experiment definitions, variants and experiment lifecycle",
@@ -2620,6 +2752,7 @@
         }
       ],
       "authority": "run_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__run",
       "must_not_own": "server supervision internals",
       "owns": "run identity, frozen run contract and run lifecycle",
@@ -2671,12 +2804,6 @@
           "module": "noetrium_platform.research.experimentation.run.control.api.contracts",
           "source": "noetrium_platform/research/experimentation/run/control/api/contracts.py",
           "symbols": [
-            "canonical_digest",
-            "DecisionCycleIdentity",
-            "RunIdentity",
-            "RunLaunchManifest",
-            "EvidenceBundleReceipt",
-            "EffectReconciliationVerdict",
             "RunControlAction",
             "RunControlPhase",
             "RunControlRecordKind",
@@ -2686,11 +2813,6 @@
             "RunControlPreparedOperation",
             "RunControlEventReceipt",
             "RunControlProjection",
-            "RunExecutionOutcome",
-            "RunTaskOutcome",
-            "RunEvidenceValidity",
-            "RunScientificValidity",
-            "RunOutcomeProjection",
             "RunControlReceiptReference",
             "RunControlReceipt",
             "RunControlTransitionOutcome",
@@ -2712,6 +2834,7 @@
         }
       ],
       "authority": "run_control",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__run__control",
       "must_not_own": "operator product intents, server supervision internals or duplicate run manifest/checkpoint truth",
       "owns": "durable generic run lifecycle control authority and fenced control generations",
@@ -2757,6 +2880,7 @@
         }
       ],
       "authority": "run_identity",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__run__identity",
       "must_not_own": "live execution state",
       "owns": "run identity, immutable manifest and parent links",
@@ -2811,6 +2935,7 @@
         }
       ],
       "authority": "run_lifecycle",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__run__lifecycle",
       "must_not_own": "runtime server lifecycle",
       "owns": "run lifecycle state and transitions",
@@ -2867,6 +2992,7 @@
         }
       ],
       "authority": "run_manifest",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__run__manifest",
       "must_not_own": "runtime mutable state",
       "owns": "frozen run contract and exact dependencies",
@@ -3054,6 +3180,7 @@
         }
       ],
       "authority": "study_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__study",
       "must_not_own": "method implementation internals",
       "owns": "study definitions, hypotheses and study lifecycle",
@@ -3078,6 +3205,7 @@
         }
       ],
       "authority": "variant_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__variant",
       "must_not_own": "model deployment internals",
       "owns": "experiment variants, assignments and comparison semantics",
@@ -3085,6 +3213,194 @@
       "provides": [],
       "requires": [],
       "system_key": "experimentation/variant"
+    },
+    {
+      "api_modules": [
+        {
+          "module": "noetrium_platform.research.experimentation.workbench.api",
+          "source": "noetrium_platform/research/experimentation/workbench/api/__init__.py",
+          "symbols": [
+            "AggregationFunction",
+            "AggregationSpec",
+            "BaselineRegistryPort",
+            "BaselineSpec",
+            "DataColumn",
+            "DataTable",
+            "EvaluationContext",
+            "EvaluationStage",
+            "FigureCategory",
+            "FigureCell",
+            "FigureKind",
+            "FigureOutputFormat",
+            "FigurePoint",
+            "FigureRendererPort",
+            "FigureSeries",
+            "FigureSpec",
+            "FigureStyle",
+            "GroupComparison",
+            "InferenceResult",
+            "MetricSummary",
+            "MissingValuePolicy",
+            "MultipleComparisonMethod",
+            "MultipleComparisonResult",
+            "PairedComparison",
+            "RenderedResearchPackage",
+            "ResearchEvaluation",
+            "ResearchFigureFactoryPort",
+            "ResearchLifecyclePort",
+            "ResearchReport",
+            "ResearchStatisticsPort",
+            "ResearchTablePipelinePort",
+            "ReportTableRendererPort",
+            "SplitStrategy",
+            "TableAnalysisPort",
+            "TableReaderPort",
+            "TableTransformPort",
+            "MeasurementRecordTableAdapter",
+            "StudyObservationTableAdapter"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.workbench.api.adapters",
+          "source": "noetrium_platform/research/experimentation/workbench/api/adapters.py",
+          "symbols": [
+            "MeasurementRecordTableAdapter",
+            "StudyObservationTableAdapter"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.workbench.api.contracts",
+          "source": "noetrium_platform/research/experimentation/workbench/api/contracts.py",
+          "symbols": [
+            "AggregationFunction",
+            "AggregationSpec",
+            "BaselineRegistryPort",
+            "BaselineSpec",
+            "DataColumn",
+            "DataTable",
+            "EvaluationContext",
+            "EvaluationStage",
+            "FigureCategory",
+            "FigureCell",
+            "FigureKind",
+            "FigureOutputFormat",
+            "FigurePoint",
+            "FigureRendererPort",
+            "FigureSeries",
+            "FigureSpec",
+            "FigureStyle",
+            "GroupComparison",
+            "InferenceResult",
+            "MetricSummary",
+            "MissingValuePolicy",
+            "MultipleComparisonMethod",
+            "MultipleComparisonResult",
+            "PairedComparison",
+            "RenderedResearchPackage",
+            "ResearchEvaluation",
+            "ResearchFigureFactoryPort",
+            "ResearchLifecyclePort",
+            "ResearchReport",
+            "ResearchStatisticsPort",
+            "ResearchTablePipelinePort",
+            "ReportTableRendererPort",
+            "SplitStrategy",
+            "TableAnalysisPort",
+            "TableReaderPort",
+            "TableTransformPort"
+          ]
+        }
+      ],
+      "authority": "research_analysis_publication",
+      "downstream_surface": "public",
+      "facade_module": "noetrium.contracts.systems.experimentation__workbench",
+      "must_not_own": "experiment execution lifecycle, measurement truth, method semantics or vendor-specific scientific backends",
+      "owns": "typed research analysis tables, deterministic statistics/evaluation workflow and report/figure publication semantics",
+      "package_prefix": "noetrium_platform.research.experimentation.workbench",
+      "provides": [
+        "research.workbench"
+      ],
+      "requires": [
+        "experimentation/study"
+      ],
+      "system_key": "experimentation/workbench"
+    },
+    {
+      "api_modules": [
+        {
+          "module": "noetrium_platform.research.experimentation.workload.api",
+          "source": "noetrium_platform/research/experimentation/workload/api/__init__.py",
+          "symbols": [
+            "WorkloadActionAdapterPort",
+            "WorkloadBatchCloseError",
+            "WorkloadBatchResult",
+            "WorkloadBatchBindingPort",
+            "WorkloadBatchExecutorPort",
+            "WorkloadBoundaryPort",
+            "WorkloadCompletionPort",
+            "WorkloadCompletionReceipt",
+            "WorkloadDecision",
+            "WorkloadDiagnosticsPort",
+            "WorkloadExecutionCutObserverPort",
+            "WorkloadEnvironmentPort",
+            "WorkloadEvidencePort",
+            "WorkloadFailurePolicyPort",
+            "WorkloadPlannerPort",
+            "WorkloadStatePort",
+            "WorkloadTaskResult",
+            "WorkloadTaskRunnerPort",
+            "WorkloadTaskRunError"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.workload.api.contracts",
+          "source": "noetrium_platform/research/experimentation/workload/api/contracts.py",
+          "symbols": [
+            "WorkloadBatchCloseError",
+            "WorkloadBatchResult",
+            "WorkloadCompletionReceipt",
+            "WorkloadDecision",
+            "WorkloadTaskResult",
+            "WorkloadTaskRunError"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.workload.api.ports",
+          "source": "noetrium_platform/research/experimentation/workload/api/ports.py",
+          "symbols": [
+            "WorkloadActionAdapterPort",
+            "WorkloadBatchBindingPort",
+            "WorkloadBatchExecutorPort",
+            "WorkloadBoundaryPort",
+            "WorkloadCompletionPort",
+            "WorkloadDiagnosticsPort",
+            "WorkloadExecutionCutObserverPort",
+            "WorkloadEnvironmentPort",
+            "WorkloadEvidencePort",
+            "WorkloadFailurePolicyPort",
+            "WorkloadPlannerPort",
+            "WorkloadStatePort",
+            "WorkloadTaskRunnerPort"
+          ]
+        }
+      ],
+      "authority": "experiment_workload_execution_contract",
+      "downstream_surface": "public",
+      "facade_module": "noetrium.contracts.systems.experimentation__workload",
+      "must_not_own": "experiment definition truth, environment provider internals, participant method semantics or run durability authority",
+      "owns": "generic experiment task-runner contracts, workload context, task handles/results and checkpointable workload execution semantics",
+      "package_prefix": "noetrium_platform.research.experimentation.workload",
+      "provides": [
+        "experiment.workload"
+      ],
+      "requires": [
+        "environment/runtime",
+        "experimentation/experiment",
+        "experimentation/run",
+        "participant/method",
+        "platform"
+      ],
+      "system_key": "experimentation/workload"
     },
     {
       "api_modules": [
@@ -3134,6 +3450,7 @@
         }
       ],
       "authority": "governance_policy",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance",
       "must_not_own": "domain execution",
       "owns": "architecture, quality, release and system topology rules",
@@ -3179,6 +3496,7 @@
         }
       ],
       "authority": "algorithm_governance",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__algorithm",
       "must_not_own": "runtime execution or scientific result semantics",
       "owns": "repository-wide algorithm inventory, complexity baselines and regression gates",
@@ -3321,6 +3639,7 @@
         }
       ],
       "authority": "architecture_policy",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__architecture",
       "must_not_own": "business state",
       "owns": "architecture rules, dependencies and invariants",
@@ -3368,6 +3687,7 @@
         }
       ],
       "authority": "concurrency_governance",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__concurrency",
       "must_not_own": "runtime task scheduling or mutable execution state",
       "owns": "repository-wide concurrency topology findings, reviewed debt baselines and concurrency regression gates",
@@ -3410,6 +3730,7 @@
         }
       ],
       "authority": "gate_policy",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__gate",
       "must_not_own": "business state, runtime execution or scientific acceptance",
       "owns": "recursive gate contracts and composition semantics",
@@ -3453,6 +3774,7 @@
         }
       ],
       "authority": "performance_governance",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__performance",
       "must_not_own": "runtime resource scheduling or business execution",
       "owns": "repository-wide performance hotspots, reviewed debt baselines and performance regression gates",
@@ -3462,8 +3784,32 @@
       "system_key": "governance/performance"
     },
     {
-      "api_modules": [],
+      "api_modules": [
+        {
+          "module": "noetrium_platform.foundation.governance.quality.api",
+          "source": "noetrium_platform/foundation/governance/quality/api/__init__.py",
+          "symbols": [
+            "BANNED_RUNTIME_IDENTIFIERS",
+            "DegradationFinding",
+            "FORBIDDEN_ENABLED_CONFIG_KEYS",
+            "FORBIDDEN_NONEMPTY_CONFIG_KEYS",
+            "SilentFailureFinding"
+          ]
+        },
+        {
+          "module": "noetrium_platform.foundation.governance.quality.api.contracts",
+          "source": "noetrium_platform/foundation/governance/quality/api/contracts.py",
+          "symbols": [
+            "BANNED_RUNTIME_IDENTIFIERS",
+            "DegradationFinding",
+            "FORBIDDEN_ENABLED_CONFIG_KEYS",
+            "FORBIDDEN_NONEMPTY_CONFIG_KEYS",
+            "SilentFailureFinding"
+          ]
+        }
+      ],
       "authority": "quality_policy",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__quality",
       "must_not_own": "runtime business control",
       "owns": "quality gates, audits and invariants as descriptive policy",
@@ -3531,6 +3877,7 @@
         }
       ],
       "authority": "release_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__release",
       "must_not_own": "runtime process state",
       "owns": "release identities, manifests, verification and promotion semantics",
@@ -3569,6 +3916,7 @@
         }
       ],
       "authority": "upstream_repository_boundary",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__repository_boundary",
       "must_not_own": "downstream project scientific or deployment policy",
       "owns": "enforce reusable upstream repository/package/release boundary",
@@ -3589,6 +3937,7 @@
         }
       ],
       "authority": "schema_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__schema",
       "must_not_own": "domain state mutation",
       "owns": "schema/version declarations for contracts and records",
@@ -3609,6 +3958,7 @@
         }
       ],
       "authority": "security_policy",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__security",
       "must_not_own": "scientific method semantics",
       "owns": "security/redaction/classification policy",
@@ -3624,6 +3974,7 @@
           "source": "noetrium_platform/foundation/governance/system_registry/api/__init__.py",
           "symbols": [
             "AuthorityDescriptor",
+            "DownstreamSurfaceMode",
             "SYSTEM_CATALOG",
             "SystemDescriptor",
             "SystemIdentity",
@@ -3641,6 +3992,7 @@
           "source": "noetrium_platform/foundation/governance/system_registry/api/contracts.py",
           "symbols": [
             "AuthorityDescriptor",
+            "DownstreamSurfaceMode",
             "STANDARD_SYSTEM_SHAPE",
             "SystemDescriptor",
             "SystemIdentity",
@@ -3668,6 +4020,7 @@
         }
       ],
       "authority": "system_topology",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__system_registry",
       "must_not_own": "runtime orchestration",
       "owns": "recursive system topology and ownership declarations",
@@ -3724,6 +4077,7 @@
         }
       ],
       "authority": "system_evolution",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__evolution",
       "must_not_own": "domain state, external effects and direct runtime mutation",
       "owns": "topology-driven discovery, drift detection and improvement proposals",
@@ -3883,6 +4237,7 @@
         }
       ],
       "authority": "model_identity",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model",
       "must_not_own": "process lifecycle implementation and experiment semantics",
       "owns": "model assets, stacks, assignments, deployments and serving identity",
@@ -3927,6 +4282,7 @@
         }
       ],
       "authority": "model_asset",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__asset",
       "must_not_own": "artifact byte storage",
       "owns": "immutable model asset identity and provenance",
@@ -3957,6 +4313,7 @@
         }
       ],
       "authority": "model_assignment",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__assignment",
       "must_not_own": "serving process lifecycle",
       "owns": "assign models to scope/run/participant roles",
@@ -3970,6 +4327,7 @@
     {
       "api_modules": [],
       "authority": "model_catalog",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__catalog",
       "must_not_own": "live deployment state",
       "owns": "model families/revisions catalog and metadata",
@@ -3990,6 +4348,7 @@
         }
       ],
       "authority": "model_family",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__catalog__family",
       "must_not_own": "revision deployment state",
       "owns": "model family identity and metadata",
@@ -4019,9 +4378,13 @@
             "ModelRevisionIntegrityError",
             "ModelRevisionStateError",
             "ModelRollbackReceipt",
-            "ModelUpdateProducerPort",
             "ModelUpdateProposal",
-            "PreparedModelRevision"
+            "PreparedModelRevision",
+            "ModelUpdateBuildEvidence",
+            "ModelUpdateBuildReceipt",
+            "ModelUpdatePlan",
+            "ModelUpdateProducerPort",
+            "ModelUpdateSource"
           ]
         },
         {
@@ -4066,6 +4429,7 @@
         }
       ],
       "authority": "model_revision",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__catalog__revision",
       "must_not_own": "mutable serving state",
       "owns": "versioned model revision identity",
@@ -4114,6 +4478,7 @@
         }
       ],
       "authority": "model_deployment",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__deployment",
       "must_not_own": "server process implementation",
       "owns": "deployment identity, exact closure and lifecycle contract",
@@ -4137,6 +4502,7 @@
         }
       ],
       "authority": "deployment_closure",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__deployment__closure",
       "must_not_own": "server runtime health",
       "owns": "exact deployment closure across model, stack, runtime and artifact identities",
@@ -4193,6 +4559,7 @@
         }
       ],
       "authority": "model_qualification",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__qualification",
       "must_not_own": "live capacity snapshots",
       "owns": "model/runtime/host qualification evidence and compatibility claims",
@@ -4231,6 +4598,7 @@
         }
       ],
       "authority": "model_request",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__request",
       "must_not_own": "business result semantics",
       "owns": "model request identity, exact input contract and response envelope",
@@ -4253,6 +4621,7 @@
         }
       ],
       "authority": "request_input",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__request__input",
       "must_not_own": "serving process lifecycle",
       "owns": "exact request input identity and canonicalization",
@@ -4273,6 +4642,7 @@
         }
       ],
       "authority": "request_output",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__request__output",
       "must_not_own": "business metric semantics",
       "owns": "response envelope and response artifact references",
@@ -4289,7 +4659,21 @@
           "symbols": [
             "ActivePromptEvidenceReadPort",
             "ActivePromptVerificationEvidence",
-            "PromptVerificationIntegrityError"
+            "PromptVerificationIntegrityError",
+            "PromptTraceDescriptor",
+            "PromptTraceObserverFailure",
+            "PromptTraceObserverFailureSink",
+            "PromptTraceObserverPort",
+            "PromptTracePoint",
+            "PromptTraceStage",
+            "PromptTraceSummary",
+            "PromptBoundRequest",
+            "PromptBodyContext",
+            "PromptDynamicBlock",
+            "PromptRequestBindingPort",
+            "PromptRequestBodyBuilder",
+            "PromptSelectionIdentity",
+            "PromptSelectionPort"
           ]
         },
         {
@@ -4335,6 +4719,7 @@
         }
       ],
       "authority": "model_prompt_compilation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__request__prompt",
       "must_not_own": "model serving, inference transport or participant cognition state",
       "owns": "model-request prompt blocks, deterministic compilation and prompt publication contracts",
@@ -4604,6 +4989,7 @@
         }
       ],
       "authority": "model_serving",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__serving",
       "must_not_own": "model catalog metadata",
       "owns": "serving endpoint contract and request routing semantics",
@@ -4675,6 +5061,7 @@
         }
       ],
       "authority": "serving_endpoint",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__serving__endpoint",
       "must_not_own": "request result truth",
       "owns": "serving endpoint identity and exposure contract",
@@ -4705,6 +5092,7 @@
         }
       ],
       "authority": "model_stack",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__stack",
       "must_not_own": "server health",
       "owns": "model stack composition and runtime build identity",
@@ -4779,6 +5167,7 @@
         }
       ],
       "authority": "observability",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability",
       "must_not_own": "durable state/failure authority",
       "owns": "logs, telemetry, traces, status and observation projections",
@@ -4835,6 +5224,7 @@
         }
       ],
       "authority": "capture_observation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__capture",
       "must_not_own": "semantic log interpretation",
       "owns": "raw byte/event/process capture contracts",
@@ -4846,6 +5236,7 @@
     {
       "api_modules": [],
       "authority": "diagnostic_view_contract",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__diagnostic",
       "must_not_own": "failure/state authority",
       "owns": "operator-facing diagnostic correlation contracts",
@@ -4866,6 +5257,7 @@
         }
       ],
       "authority": "diagnostic_correlation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__diagnostic__correlation",
       "must_not_own": "causal authority",
       "owns": "cross-system correlation graph for diagnostic references",
@@ -4886,6 +5278,7 @@
         }
       ],
       "authority": "diagnostic_query",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__diagnostic__query",
       "must_not_own": "source mutation",
       "owns": "operator/debug query language over observation sources",
@@ -4926,6 +5319,7 @@
         }
       ],
       "authority": "diagnostic_snapshot",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__diagnostic__snapshot",
       "must_not_own": "new business truth",
       "owns": "portable diagnostic snapshots assembled from existing authorities",
@@ -4937,6 +5331,7 @@
     {
       "api_modules": [],
       "authority": "log_observation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging",
       "must_not_own": "failure taxonomy and recovery",
       "owns": "structured logs, context, sinks, stores, queries, retention and capture",
@@ -4959,6 +5354,7 @@
         }
       ],
       "authority": "raw_capture",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging__capture",
       "must_not_own": "semantic event taxonomy",
       "owns": "raw process/stream/event capture before semantic logging",
@@ -4985,6 +5381,7 @@
         }
       ],
       "authority": "log_context",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging__context",
       "must_not_own": "log record persistence and query",
       "owns": "diagnostic context construction and propagation metadata",
@@ -5005,6 +5402,7 @@
         }
       ],
       "authority": "log_projection",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging__projection",
       "must_not_own": "source log truth",
       "owns": "derived log indexes and projections",
@@ -5031,6 +5429,7 @@
         }
       ],
       "authority": "log_query",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging__query",
       "must_not_own": "log writes",
       "owns": "log query contracts and filtering",
@@ -5083,6 +5482,7 @@
         }
       ],
       "authority": "log_record_schema",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging__record",
       "must_not_own": "sink routing and storage",
       "owns": "structured log schema, normalization and identity",
@@ -5103,6 +5503,7 @@
         }
       ],
       "authority": "log_retention",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging__retention",
       "must_not_own": "failure retention and artifact retention",
       "owns": "retention, archival and deletion policy for logs",
@@ -5112,13 +5513,31 @@
       "system_key": "observability/logging/retention"
     },
     {
-      "api_modules": [],
+      "api_modules": [
+        {
+          "module": "noetrium_platform.evidence.observability.logging.routing.api",
+          "source": "noetrium_platform/evidence/observability/logging/routing/api/__init__.py",
+          "symbols": [
+            "LogRoutingPort"
+          ]
+        },
+        {
+          "module": "noetrium_platform.evidence.observability.logging.routing.api.ports",
+          "source": "noetrium_platform/evidence/observability/logging/routing/api/ports.py",
+          "symbols": [
+            "LogRoutingPort"
+          ]
+        }
+      ],
       "authority": "log_routing",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging__routing",
       "must_not_own": "log storage mutation",
       "owns": "log routing rules and fan-out decisions",
       "package_prefix": "noetrium_platform.evidence.observability.logging.routing",
-      "provides": [],
+      "provides": [
+        "logging.routing"
+      ],
       "requires": [],
       "system_key": "observability/logging/routing"
     },
@@ -5140,6 +5559,7 @@
         }
       ],
       "authority": "log_sink_delivery",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging__sink",
       "must_not_own": "query/index semantics",
       "owns": "sink contracts and delivery lifecycle",
@@ -5166,6 +5586,7 @@
         }
       ],
       "authority": "log_storage",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__logging__storage",
       "must_not_own": "log schema policy",
       "owns": "durable or volatile log storage backends",
@@ -5206,6 +5627,7 @@
         }
       ],
       "authority": "observation_projection",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__projection",
       "must_not_own": "source-of-truth mutation",
       "owns": "observation projections/indexes and read models",
@@ -5256,6 +5678,7 @@
         }
       ],
       "authority": "status_observation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__status",
       "must_not_own": "authoritative lifecycle state",
       "owns": "health/status observations and status projections",
@@ -5278,6 +5701,7 @@
         }
       ],
       "authority": "health_observation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__status__health",
       "must_not_own": "authoritative lifecycle transitions",
       "owns": "health observations and health snapshots",
@@ -5298,6 +5722,7 @@
         }
       ],
       "authority": "lifecycle_projection",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__status__lifecycle_view",
       "must_not_own": "lifecycle state authority",
       "owns": "read-only lifecycle status views",
@@ -5309,6 +5734,7 @@
     {
       "api_modules": [],
       "authority": "telemetry_observation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__telemetry",
       "must_not_own": "durable domain state",
       "owns": "metrics/events/counters and telemetry routing",
@@ -5339,6 +5765,7 @@
         }
       ],
       "authority": "telemetry_event",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__telemetry__event",
       "must_not_own": "durable facts",
       "owns": "structured telemetry event definitions and emission contracts",
@@ -5414,6 +5841,7 @@
         }
       ],
       "authority": "telemetry_metric",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__telemetry__metric",
       "must_not_own": "business result truth",
       "owns": "metric definitions, aggregation and metric identity",
@@ -5425,6 +5853,7 @@
     {
       "api_modules": [],
       "authority": "trace_observation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__tracing",
       "must_not_own": "business operation truth",
       "owns": "trace/span identity and propagation",
@@ -5445,6 +5874,7 @@
         }
       ],
       "authority": "trace_context",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__tracing__context",
       "must_not_own": "business operation state",
       "owns": "trace/span context creation and attachment",
@@ -5465,6 +5895,7 @@
         }
       ],
       "authority": "trace_propagation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__tracing__propagation",
       "must_not_own": "trace storage",
       "owns": "cross-process trace propagation contracts",
@@ -5485,6 +5916,7 @@
         }
       ],
       "authority": "trace_storage",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.observability__tracing__storage",
       "must_not_own": "trace identity semantics",
       "owns": "trace/span storage backends",
@@ -5573,6 +6005,7 @@
         }
       ],
       "authority": "operator_surface",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.operator",
       "must_not_own": "domain authority and business state",
       "owns": "human-facing query, command, maintenance and incident surfaces",
@@ -5596,6 +6029,7 @@
     {
       "api_modules": [],
       "authority": "operator_audit",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.operator__audit",
       "must_not_own": "new durable truth",
       "owns": "audit/reporting views across system authorities",
@@ -5607,6 +6041,7 @@
     {
       "api_modules": [],
       "authority": "operator_commands",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.operator__command",
       "must_not_own": "domain command execution",
       "owns": "operator command intent and command result contracts",
@@ -5627,6 +6062,7 @@
         }
       ],
       "authority": "operator_command_intent",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.operator__command__intent",
       "must_not_own": "command execution side effects",
       "owns": "human command intents and authorization context",
@@ -5647,6 +6083,7 @@
         }
       ],
       "authority": "operator_incident_view",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.operator__incident",
       "must_not_own": "incident authority",
       "owns": "incident triage and incident work surfaces",
@@ -5679,6 +6116,7 @@
         }
       ],
       "authority": "operator_maintenance",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.operator__maintenance",
       "must_not_own": "provider internals",
       "owns": "maintenance workflows and administrative actions",
@@ -5692,6 +6130,7 @@
     {
       "api_modules": [],
       "authority": "operator_queries",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.operator__query",
       "must_not_own": "durable state mutation",
       "owns": "operator read/query contracts",
@@ -5712,6 +6151,7 @@
         }
       ],
       "authority": "operator_search",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.operator__query__search",
       "must_not_own": "authoritative writes",
       "owns": "human-readable search and filtering over read-side projections",
@@ -5836,6 +6276,7 @@
         }
       ],
       "authority": "participant_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant",
       "must_not_own": "server/process supervision and scientific truth",
       "owns": "participant definitions, bindings, sessions and participant capabilities",
@@ -5847,6 +6288,109 @@
         "reliability"
       ],
       "system_key": "participant"
+    },
+    {
+      "api_modules": [
+        {
+          "module": "noetrium_platform.capabilities.participant.core.api",
+          "source": "noetrium_platform/capabilities/participant/core/api/__init__.py",
+          "symbols": [
+            "BoundParticipant",
+            "BoundParticipants",
+            "ParticipantSessionBinding"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.core.api.bound",
+          "source": "noetrium_platform/capabilities/participant/core/api/bound.py",
+          "symbols": [
+            "BoundParticipant",
+            "BoundParticipants",
+            "ParticipantSessionBinding"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.core.api.checkpoint",
+          "source": "noetrium_platform/capabilities/participant/core/api/checkpoint.py",
+          "symbols": [
+            "ParticipantCheckpoint",
+            "ParticipantCheckpointIdentityMismatch",
+            "ParticipantCheckpointRef"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.core.api.contracts",
+          "source": "noetrium_platform/capabilities/participant/core/api/contracts.py",
+          "symbols": [
+            "ParticipantConfigurationArtifact",
+            "ParticipantImplementationIdentity",
+            "ParticipantRuntimeBinding",
+            "ParticipantSessionRuntimeIdentity"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.core.api.frozen_manifests",
+          "source": "noetrium_platform/capabilities/participant/core/api/frozen_manifests.py",
+          "symbols": [
+            "ParticipantImplementationInventory",
+            "ParticipantRuntimeBindingManifest",
+            "ParticipantRuntimeInventory"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.core.api.lifecycle",
+          "source": "noetrium_platform/capabilities/participant/core/api/lifecycle.py",
+          "symbols": [
+            "ParticipantIdentityMismatch",
+            "ParticipantLifecycleAdapter",
+            "ParticipantLifecycleAdapterRegistry"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.core.api.runtime",
+          "source": "noetrium_platform/capabilities/participant/core/api/runtime.py",
+          "symbols": [
+            "ParticipantResolverPort",
+            "ParticipantRuntimeEndpoint",
+            "ParticipantRuntimeHandle",
+            "ParticipantSessionRuntime"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.core.api.runtime_operations",
+          "source": "noetrium_platform/capabilities/participant/core/api/runtime_operations.py",
+          "symbols": [
+            "PARTICIPANT_OPERATION_VERBS",
+            "ParticipantOperationContractError",
+            "participant_operation_type",
+            "participant_operation_verb",
+            "validate_participant_kind"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.core.api.runtime_ports",
+          "source": "noetrium_platform/capabilities/participant/core/api/runtime_ports.py",
+          "symbols": [
+            "ParticipantCheckpointOperationsPort",
+            "ParticipantCheckpointRuntimePort",
+            "ParticipantResolutionPort",
+            "ParticipantSessionLifecyclePort"
+          ]
+        }
+      ],
+      "authority": "participant_runtime_abi",
+      "downstream_surface": "public",
+      "facade_module": "noetrium.contracts.systems.participant__core",
+      "must_not_own": "project participant selection policy, method semantics, environment semantics or process supervision implementation",
+      "owns": "foundational participant runtime identities, capability descriptors, runtime binding, delivery, lifecycle and checkpoint contracts",
+      "package_prefix": "noetrium_platform.capabilities.participant.core",
+      "provides": [
+        "participant.runtime.abi"
+      ],
+      "requires": [
+        "platform"
+      ],
+      "system_key": "participant/core"
     },
     {
       "api_modules": [
@@ -6004,6 +6548,7 @@
         }
       ],
       "authority": "agent_identity",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__agent",
       "must_not_own": "model serving lifecycle",
       "owns": "agent participant contracts, provider-independent agent identity and bounded cognition-loop orchestration",
@@ -6031,6 +6576,7 @@
         }
       ],
       "authority": "participant_binding",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__binding",
       "must_not_own": "provider internals",
       "owns": "binding participants to scopes, methods, environments or models",
@@ -6138,6 +6684,7 @@
         }
       ],
       "authority": "participant_capability",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__capability",
       "must_not_own": "execution capability implementation",
       "owns": "participant capability declarations and exposure",
@@ -6149,13 +6696,43 @@
       "system_key": "participant/capability"
     },
     {
-      "api_modules": [],
+      "api_modules": [
+        {
+          "module": "noetrium_platform.capabilities.participant.definition.api",
+          "source": "noetrium_platform/capabilities/participant/definition/api/__init__.py",
+          "symbols": [
+            "ParticipantConfigurationArtifact",
+            "ParticipantImplementationCatalogPort",
+            "ParticipantImplementationFactory",
+            "ParticipantImplementationIdentity",
+            "RegisteredParticipantImplementation"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.definition.api.contracts",
+          "source": "noetrium_platform/capabilities/participant/definition/api/contracts.py",
+          "symbols": [
+            "ParticipantImplementationFactory",
+            "RegisteredParticipantImplementation"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.definition.api.ports",
+          "source": "noetrium_platform/capabilities/participant/definition/api/ports.py",
+          "symbols": [
+            "ParticipantImplementationCatalogPort"
+          ]
+        }
+      ],
       "authority": "participant_definition",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__definition",
       "must_not_own": "execution session state",
       "owns": "participant identities and types",
       "package_prefix": "noetrium_platform.capabilities.participant.definition",
-      "provides": [],
+      "provides": [
+        "participant.definition"
+      ],
       "requires": [],
       "system_key": "participant/definition"
     },
@@ -6294,6 +6871,7 @@
         }
       ],
       "authority": "method_participant_binding",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__method",
       "must_not_own": "method implementation itself",
       "owns": "method participant binding contracts",
@@ -6308,13 +6886,46 @@
       "system_key": "participant/method"
     },
     {
-      "api_modules": [],
+      "api_modules": [
+        {
+          "module": "noetrium_platform.capabilities.participant.session.api",
+          "source": "noetrium_platform/capabilities/participant/session/api/__init__.py",
+          "symbols": [
+            "ParticipantCheckpointRuntimePort",
+            "ParticipantRuntimeEndpoint",
+            "ParticipantSessionLifecyclePort",
+            "ParticipantSessionRuntime",
+            "ParticipantSessionRuntimeCatalogPort",
+            "ParticipantSessionRuntimeFactory",
+            "ParticipantSessionRuntimeIdentity",
+            "RegisteredParticipantSessionRuntime"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.session.api.contracts",
+          "source": "noetrium_platform/capabilities/participant/session/api/contracts.py",
+          "symbols": [
+            "ParticipantSessionRuntimeFactory",
+            "RegisteredParticipantSessionRuntime"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.session.api.ports",
+          "source": "noetrium_platform/capabilities/participant/session/api/ports.py",
+          "symbols": [
+            "ParticipantSessionRuntimeCatalogPort"
+          ]
+        }
+      ],
       "authority": "participant_session",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__session",
       "must_not_own": "server/process implementation",
       "owns": "participant session identity and lifecycle contract",
       "package_prefix": "noetrium_platform.capabilities.participant.session",
-      "provides": [],
+      "provides": [
+        "participant.session"
+      ],
       "requires": [],
       "system_key": "participant/session"
     },
@@ -6346,6 +6957,7 @@
         }
       ],
       "authority": "platform_identity",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.platform",
       "must_not_own": "domain business state and child internals",
       "owns": "platform lifecycle, global identity, composition boundaries",
@@ -6453,6 +7065,7 @@
         }
       ],
       "authority": "platform_concurrency_runtime",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.platform__concurrency",
       "must_not_own": "domain mutable state, admission quotas/decisions, scheduling priority/fairness or business semantics",
       "owns": "process-owned bounded executors, serial lanes, timers and structured concurrency lifecycle mechanisms",
@@ -6473,6 +7086,7 @@
         }
       ],
       "authority": "platform_configuration",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.platform__configuration",
       "must_not_own": "domain configuration semantics",
       "owns": "platform configuration sources and frozen configuration snapshots",
@@ -6493,6 +7107,7 @@
         }
       ],
       "authority": "platform_identity",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.platform__identity",
       "must_not_own": "workspace/project/run identity",
       "owns": "platform identity and immutable platform metadata",
@@ -6513,6 +7128,7 @@
         }
       ],
       "authority": "platform_lifecycle",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.platform__lifecycle",
       "must_not_own": "service/process lifecycle",
       "owns": "platform startup/shutdown/readiness semantics",
@@ -6591,6 +7207,7 @@
         }
       ],
       "authority": "portfolio_metadata",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.portfolio",
       "must_not_own": "study/run execution state",
       "owns": "workspace/program/project metadata and portfolio organization",
@@ -6614,6 +7231,7 @@
         }
       ],
       "authority": "portfolio_membership",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.portfolio__membership",
       "must_not_own": "runtime participant sessions",
       "owns": "portfolio-level ownership and membership records",
@@ -6634,6 +7252,7 @@
         }
       ],
       "authority": "program_metadata",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.portfolio__program",
       "must_not_own": "study semantics",
       "owns": "research program metadata and project grouping",
@@ -6673,6 +7292,7 @@
         }
       ],
       "authority": "project_metadata",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.portfolio__project",
       "must_not_own": "experiment/run execution state",
       "owns": "project metadata, configuration references and lifecycle",
@@ -6693,6 +7313,7 @@
         }
       ],
       "authority": "workspace_metadata",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.portfolio__workspace",
       "must_not_own": "generic scope tree authority",
       "owns": "workspace metadata and lifecycle",
@@ -6704,6 +7325,7 @@
     {
       "api_modules": [],
       "authority": "reliability_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.reliability",
       "must_not_own": "scientific truth and UI projections",
       "owns": "effects, failures, incidents, forensics, diagnosis, reconciliation and recovery",
@@ -6774,6 +7396,7 @@
         }
       ],
       "authority": "diagnostic_queries",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.reliability__diagnostics",
       "must_not_own": "durable authority mutation",
       "owns": "read-side cross-system correlation and root-cause views",
@@ -6807,7 +7430,14 @@
             "PreparedEffectHandle",
             "consumption_digest",
             "effect_digest",
-            "require_effect_receipt_request_digest"
+            "require_effect_receipt_request_digest",
+            "consumed_transition",
+            "effect_transition",
+            "is_authoritatively_resolved",
+            "not_applied_transition",
+            "prepare_transition",
+            "require_consumable_effect",
+            "require_not_applied_compatible"
           ]
         },
         {
@@ -6855,6 +7485,7 @@
         }
       ],
       "authority": "effect_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.reliability__effect",
       "must_not_own": "process/server ownership",
       "owns": "external effect intent, outcome certainty and reconciliation state",
@@ -6886,7 +7517,10 @@
             "build_failure",
             "exception_correlation_refs",
             "build_failure_from_spec",
-            "failure_from_dict"
+            "failure_from_dict",
+            "FailureLedgerPort",
+            "FailureFingerprint",
+            "fingerprint_failure"
           ]
         },
         {
@@ -6970,6 +7604,7 @@
         }
       ],
       "authority": "failure_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.reliability__failure",
       "must_not_own": "diagnostic UI and operator policy",
       "owns": "failure taxonomy, envelopes, fingerprints and semantic versions",
@@ -7049,6 +7684,7 @@
         }
       ],
       "authority": "forensic_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.reliability__forensics",
       "must_not_own": "business result semantics",
       "owns": "durable evidence bundles, causal evidence and forensic indexes",
@@ -7109,6 +7745,7 @@
         }
       ],
       "authority": "recovery_authority",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.reliability__recovery",
       "must_not_own": "provider storage internals",
       "owns": "recovery plans, exact replay/reconcile and recovery lifecycle",
@@ -7120,19 +7757,32 @@
       "system_key": "reliability/recovery"
     },
     {
-      "api_modules": [],
+      "api_modules": [
+        {
+          "module": "noetrium_platform.infrastructure.reliability.recovery.execution.api",
+          "source": "noetrium_platform/infrastructure/reliability/recovery/execution/api/__init__.py",
+          "symbols": [
+            "RecoveryExecutionFactoryPort",
+            "RecoveryExecutionPort"
+          ]
+        }
+      ],
       "authority": "recovery_execution",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.reliability__recovery__execution",
       "must_not_own": "failure taxonomy",
       "owns": "recovery execution lifecycle and effect handoff",
       "package_prefix": "noetrium_platform.infrastructure.reliability.recovery.execution",
-      "provides": [],
+      "provides": [
+        "recovery.execution"
+      ],
       "requires": [],
       "system_key": "reliability/recovery/execution"
     },
     {
       "api_modules": [],
       "authority": "resource_inventory",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.resource",
       "must_not_own": "environment semantics and model deployment truth",
       "owns": "resource inventory, compute, directories, leases and allocation/resolution",
@@ -7198,6 +7848,7 @@
         }
       ],
       "authority": "resource_allocation",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.resource__allocation",
       "must_not_own": "execution workflow semantics",
       "owns": "resource allocation intents and allocations",
@@ -7262,6 +7913,7 @@
         }
       ],
       "authority": "compute_inventory",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.resource__compute",
       "must_not_own": "environment packaging",
       "owns": "compute resource identity, capacities and provider facts",
@@ -7270,7 +7922,9 @@
         "compute.inventory",
         "compute.scheduler"
       ],
-      "requires": [],
+      "requires": [
+        "runtime/process"
+      ],
       "system_key": "resource/compute"
     },
     {
@@ -7325,6 +7979,7 @@
         }
       ],
       "authority": "directory_inventory",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.resource__directory",
       "must_not_own": "artifact immutable content",
       "owns": "managed filesystem/directory identity and lifecycle",
@@ -7386,6 +8041,7 @@
         }
       ],
       "authority": "resource_lease",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.resource__lease",
       "must_not_own": "server lifecycle",
       "owns": "lease identity, acquisition, renewal and release",
@@ -7426,6 +8082,7 @@
         }
       ],
       "authority": "resource_resolution",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.resource__resolution",
       "must_not_own": "environment/model identity",
       "owns": "resource resolution policies and resolved bindings",
@@ -7466,6 +8123,7 @@
         }
       ],
       "authority": "runtime_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime",
       "must_not_own": "experiment semantics and model catalog truth",
       "owns": "server, process, service and session orchestration",
@@ -7509,6 +8167,7 @@
         }
       ],
       "authority": "host_runtime_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__host",
       "must_not_own": "resource catalog metadata",
       "owns": "live host identity and runtime host attachment",
@@ -7531,6 +8190,11 @@
             "CaptureRotationReceipt",
             "CaptureSyncReceipt",
             "CaptureWriterState",
+            "LocalCommandExecutionError",
+            "LocalCommandResult",
+            "LocalCommandRunnerPort",
+            "LocalCommandStartError",
+            "LocalCommandTimeoutError",
             "ProcessByteCapturePort"
           ]
         },
@@ -7552,9 +8216,21 @@
             "CaptureRotationReceipt",
             "CaptureSyncReceipt"
           ]
+        },
+        {
+          "module": "noetrium_platform.infrastructure.lifecycle.process.api.local_command",
+          "source": "noetrium_platform/infrastructure/lifecycle/process/api/local_command.py",
+          "symbols": [
+            "LocalCommandExecutionError",
+            "LocalCommandResult",
+            "LocalCommandRunnerPort",
+            "LocalCommandStartError",
+            "LocalCommandTimeoutError"
+          ]
         }
       ],
       "authority": "process_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__process",
       "must_not_own": "experiment semantics",
       "owns": "process identity, launch contract and lifecycle",
@@ -7608,6 +8284,7 @@
         }
       ],
       "authority": "process_supervision",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__process__supervision",
       "must_not_own": "durable runtime history storage",
       "owns": "process health/reconcile loops",
@@ -7658,6 +8335,7 @@
         }
       ],
       "authority": "server_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__server",
       "must_not_own": "model serving truth",
       "owns": "server identity, lifecycle and health contract",
@@ -7665,6 +8343,59 @@
       "provides": [],
       "requires": [],
       "system_key": "runtime/server"
+    },
+    {
+      "api_modules": [
+        {
+          "module": "noetrium_platform.infrastructure.lifecycle.host.bootstrap.api",
+          "source": "noetrium_platform/infrastructure/lifecycle/host/bootstrap/api/__init__.py",
+          "symbols": [
+            "ServerBootstrapBlocked",
+            "ServerBootstrapIdentityConflict",
+            "ServerBootstrapPhase",
+            "ServerBootstrapState",
+            "ServerBootstrapStateConflict",
+            "ServerBootstrapStatePort",
+            "ServerBootstrapTransactionPort",
+            "ServerBootstrapTransactionReport"
+          ]
+        },
+        {
+          "module": "noetrium_platform.infrastructure.lifecycle.host.bootstrap.api.contracts",
+          "source": "noetrium_platform/infrastructure/lifecycle/host/bootstrap/api/contracts.py",
+          "symbols": [
+            "ServerBootstrapBlocked",
+            "ServerBootstrapIdentityConflict",
+            "ServerBootstrapPhase",
+            "ServerBootstrapState",
+            "ServerBootstrapStateConflict",
+            "ServerBootstrapTransactionReport"
+          ]
+        },
+        {
+          "module": "noetrium_platform.infrastructure.lifecycle.host.bootstrap.api.ports",
+          "source": "noetrium_platform/infrastructure/lifecycle/host/bootstrap/api/ports.py",
+          "symbols": [
+            "ServerBootstrapStatePort",
+            "ServerBootstrapTransactionPort"
+          ]
+        }
+      ],
+      "authority": "server_bootstrap_transaction",
+      "downstream_surface": "public",
+      "facade_module": "noetrium.contracts.systems.runtime__server__bootstrap",
+      "must_not_own": "persistent session implementation, release selection authority or server steady-state lifecycle policy",
+      "owns": "server bootstrap commands, phases, durable bootstrap state/facts and forward-repair transaction contracts",
+      "package_prefix": "noetrium_platform.infrastructure.lifecycle.host.bootstrap",
+      "provides": [
+        "server.bootstrap"
+      ],
+      "requires": [
+        "governance/release",
+        "platform",
+        "runtime/session"
+      ],
+      "system_key": "runtime/server/bootstrap"
     },
     {
       "api_modules": [
@@ -7706,6 +8437,7 @@
         }
       ],
       "authority": "server_health_contract",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__server__health",
       "must_not_own": "observability health storage",
       "owns": "runtime server health contracts",
@@ -7764,6 +8496,7 @@
         }
       ],
       "authority": "server_identity",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__server__identity",
       "must_not_own": "live health",
       "owns": "stable server identity and deployment attachment",
@@ -7849,12 +8582,15 @@
         }
       ],
       "authority": "server_lifecycle",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__server__lifecycle",
       "must_not_own": "process internals",
       "owns": "server lifecycle state and transitions",
       "package_prefix": "noetrium_platform.infrastructure.lifecycle.server.lifecycle",
       "provides": [],
-      "requires": [],
+      "requires": [
+        "runtime/server/bootstrap"
+      ],
       "system_key": "runtime/server/lifecycle"
     },
     {
@@ -7906,6 +8642,7 @@
         }
       ],
       "authority": "service_state",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__service",
       "must_not_own": "scientific truth",
       "owns": "managed service identity, registration and lifecycle",
@@ -7996,6 +8733,7 @@
         }
       ],
       "authority": "runtime_session",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__session",
       "must_not_own": "participant scientific semantics",
       "owns": "runtime session identity and host/process bindings",
@@ -8044,6 +8782,7 @@
         }
       ],
       "authority": "runtime_toolchain",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__toolchain",
       "must_not_own": "environment scenarios, experiment protocols, or project policy",
       "owns": "verified host toolchain acquisition, materialization, identity and receipts",
@@ -8106,6 +8845,7 @@
         }
       ],
       "authority": "python_environment",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__python",
       "must_not_own": "generic process supervisor",
       "owns": "Python interpreter environments, package lifecycle and execution bindings",
@@ -8126,7 +8866,7 @@
       "api_modules": [
         {
           "module": "components.api",
-          "source": "components/api.py",
+          "source": "components/api/__init__.py",
           "symbols": [
             "MemoryEdgeRecord",
             "MemoryGraphConflict",
@@ -8142,6 +8882,7 @@
         }
       ],
       "authority": "reference_component_library",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.components",
       "must_not_own": "platform authority mutation, project semantics, provider credentials or scientific result acceptance",
       "owns": "reusable single-agent methods, memory, tools and external-framework bridges",
@@ -8156,8 +8897,27 @@
       "system_key": "components"
     },
     {
-      "api_modules": [],
+      "api_modules": [
+        {
+          "module": "orchestration.api",
+          "source": "orchestration/api/__init__.py",
+          "symbols": [
+            "CommunicationEdge",
+            "CommunicationTopology",
+            "MultiAgentCancellationPort",
+            "MultiAgentCheckpoint",
+            "MultiAgentDeliveryReceipt",
+            "MultiAgentDeliveryStatus",
+            "MultiAgentJournalPort",
+            "MultiAgentMessage",
+            "MultiAgentNodePort",
+            "MultiAgentRunResult",
+            "MultiAgentRunStatus"
+          ]
+        }
+      ],
       "authority": "multi_agent_orchestration",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.orchestration",
       "must_not_own": "single-agent cognition, memory, model providers, scientific truth or platform authority",
       "owns": "multi-agent topology, communication, group/debate/hierarchical coordination and transport seams",
@@ -8213,6 +8973,7 @@
         }
       ],
       "authority": "scope_tree",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.scope",
       "must_not_own": "business metadata and runtime state",
       "owns": "generic hierarchical scope identity, ancestry and ownership paths",
@@ -8235,6 +8996,7 @@
         }
       ],
       "authority": "scope_hierarchy",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.scope__hierarchy",
       "must_not_own": "project business fields",
       "owns": "parent/child relationships, ancestry, descendants",
@@ -8255,6 +9017,7 @@
         }
       ],
       "authority": "scope_identity",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.scope__identity",
       "must_not_own": "portfolio metadata",
       "owns": "stable scope identities and typed scope kinds",
@@ -8275,6 +9038,7 @@
         }
       ],
       "authority": "scope_membership",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.scope__membership",
       "must_not_own": "participant sessions",
       "owns": "membership of entities in scopes",
@@ -8295,6 +9059,7 @@
         }
       ],
       "authority": "scope_ownership",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.scope__ownership",
       "must_not_own": "portfolio business metadata",
       "owns": "generic owner links and owner-path rules",
@@ -8333,6 +9098,7 @@
         }
       ],
       "authority": "scope_path",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.scope__path",
       "must_not_own": "domain-specific routing",
       "owns": "canonical scope paths and resolution",
@@ -8353,6 +9119,7 @@
         }
       ],
       "authority": "scope_resolution",
+      "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.scope__resolution",
       "must_not_own": "domain-specific lookup semantics",
       "owns": "resolve a scope reference to canonical scope path",
@@ -8362,5 +9129,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "470c795d7436dbc5b3054e70b17340a3f06573241ed84a48fcb4c1d9e0563a7e"
+  "topology_digest": "a6a6e15a0288ba7acc23a378d3b928067da1be62005febdac711e4a26b0b50cc"
 }

@@ -2,7 +2,7 @@
 
 The common product boundary is intentionally small:
 
-- Python: `noetrium_platform.api`
+- Python contracts: `noetrium.contracts`; product composition: `noetrium.platform`
 - CLI: `research`
 - lifecycle intents: `run`, `inspect`, `stop`, `resume`, `reconcile`, `evidence`
 - existing forensic tools: `research diagnose ...`
@@ -15,7 +15,7 @@ There is deliberately no ambient service locator and no implicit default product
 ## Python
 
 ```python
-from noetrium_platform.api import ResearchFacade
+from noetrium.platform import ResearchFacade
 
 facade = ResearchFacade(my_application)
 result = facade.inspect("run-123")
@@ -55,7 +55,7 @@ This closes `CSR-06-GENERIC-RUN-LIFECYCLE-OPERATOR-HANDOFF-20260829`: ROLE06 own
 
 ## ROLE 03 run-control binding
 
-`noetrium_platform.product.operator.composition.bind_run_control_application(...)` is the canonical ROLE 06 adapter for the ROLE 03 `RunControlPort`. The adapter is a translation boundary only: ROLE 03 remains the authority for run identity, manifest identity, lifecycle phase, checkpoint identity, reconciliation and evidence. ROLE 06 does not persist a second run-state projection.
+`noetrium.platform.bind_run_control_application(...)` is the canonical ROLE 06 adapter for the ROLE 03 `RunControlPort`. The adapter is a translation boundary only: ROLE 03 remains the authority for run identity, manifest identity, lifecycle phase, checkpoint identity, reconciliation and evidence. ROLE 06 does not persist a second run-state projection.
 
 The binding requires one explicit `run_id`, its exact `run_manifest_digest`, and an injected `RunControlPort`. Payloads are intentionally exact and generation-fenced:
 

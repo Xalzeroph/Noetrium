@@ -7,7 +7,20 @@ from enum import StrEnum
 STANDARD_SYSTEM_SHAPE: tuple[str, ...] = ("api", "runtime", "providers", "composition")
 
 
+class DownstreamSurfaceMode(StrEnum):
+    """Whether a registered system is expected to expose a downstream typed ABI."""
+
+    PUBLIC = "public"
+    METADATA_ONLY = "metadata_only"
+
+
 class SystemLayer(StrEnum):
+    """Open system-layer identity with compatibility constants for established layers.
+
+    Catalog roots are authoritative. Unknown well-formed catalog roots materialize
+    as pseudo-members so adding a registered root never requires a second enum edit.
+    """
+
     PLATFORM = "platform"
     KERNEL = "kernel"
     SCOPE = "scope"
@@ -30,6 +43,15 @@ class SystemLayer(StrEnum):
     COMPOSITION = "composition"
     COMPONENTS = "components"
     ORCHESTRATION = "orchestration"
+
+    @classmethod
+    def _missing_(cls, value: object):
+        if not isinstance(value, str) or not value.strip() or "/" in value:
+            return None
+        member = str.__new__(cls, value)
+        member._name_ = f"CATALOG_{value.upper().replace('-', '_')}"
+        member._value_ = value
+        return member
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -88,6 +110,7 @@ class SystemDescriptor:
     owns: str = ""
     must_not_own: str = ""
     shape: tuple[str, ...] = STANDARD_SYSTEM_SHAPE
+    downstream_surface: DownstreamSurfaceMode = DownstreamSurfaceMode.PUBLIC
 
     def __post_init__(self) -> None:
         platform_prefix = (
@@ -102,6 +125,8 @@ class SystemDescriptor:
         )
         if not platform_prefix and not component_prefix and not orchestration_prefix:
             raise ValueError("system package_prefix must be inside noetrium_platform or a registered root extension namespace")
+        if not isinstance(self.downstream_surface, DownstreamSurfaceMode):
+            raise TypeError("downstream_surface must use DownstreamSurfaceMode")
 
     @property
     def parent_key(self) -> str | None:
@@ -141,6 +166,7 @@ class SystemRegistryChange:
 
 __all__ = [
     "AuthorityDescriptor",
+    "DownstreamSurfaceMode",
     "STANDARD_SYSTEM_SHAPE",
     "SystemDescriptor",
     "SystemIdentity",

@@ -30,6 +30,7 @@ def build_forensic_runtime_parts(
         root.mkdir(parents=True,exist_ok=True)
         lease=ForensicWriterLease(root/".writer.lock").acquire()
 
+    failures = events = mutations = index = None
     try:
         failures=HashChainedJSONL(root/"failures.chain.jsonl",fsync_every=1,read_only=read_only)
         events=SegmentedHashChainedJSONL(
@@ -73,6 +74,14 @@ def build_forensic_runtime_parts(
             event_lane,failure_lane,mutation_lane,lease,
         )
     except Exception:
+        # Roll back partially constructed resources in reverse dependency order.
+        for resource in (index, mutations, events, failures):
+            close=getattr(resource,"close",None)
+            if close is not None:
+                try:
+                    close()
+                except Exception:
+                    pass
         if lease is not None:
             lease.release()
         raise

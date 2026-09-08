@@ -11,19 +11,12 @@ from noetrium_platform.research.experimentation.experiment.api import (
 
 from ..api import (
     WorkloadBatchBindingPort,
+    WorkloadBatchCloseError,
+    WorkloadBatchExecutorPort,
     WorkloadBatchResult,
     WorkloadExecutionCutObserverPort,
     WorkloadTaskResult,
 )
-
-
-class WorkloadBatchCloseError(RuntimeError):
-    """A batch failed and its binding could not close cleanly."""
-
-    def __init__(self, primary: BaseException, cleanup: BaseException) -> None:
-        super().__init__("workload batch failed and binding close failed")
-        self.primary = primary
-        self.cleanup = cleanup
 
 
 def _require_prior_prefix(
@@ -115,7 +108,7 @@ def _execute_task(
         return _task_failure_result(task, exc)
 
 
-class GenericWorkloadBatchExecutor:
+class GenericWorkloadBatchExecutor(WorkloadBatchExecutorPort):
     """Execute a validated task DAG with O(V+E) scheduling work."""
 
     def __init__(self, cut_observer: WorkloadExecutionCutObserverPort | None = None) -> None:
@@ -126,6 +119,7 @@ class GenericWorkloadBatchExecutor:
         binding: WorkloadBatchBindingPort,
         *,
         prior_results: tuple[WorkloadTaskResult, ...] = (),
+        cut_observer: WorkloadExecutionCutObserverPort | None = None,
     ) -> WorkloadBatchResult:
         tasks = validate_task_graph(tuple(binding.tasks))
         _require_prior_prefix(tasks, prior_results)
@@ -133,7 +127,10 @@ class GenericWorkloadBatchExecutor:
         results = list(prior_results)
         primary_error: BaseException | None = None
         try:
-            self._execute_suffix(binding, tasks, prior_results, by_id, results)
+            self._execute_suffix(
+                binding, tasks, prior_results, by_id, results,
+                cut_observer if cut_observer is not None else self._cut_observer,
+            )
         except BaseException as exc:
             primary_error = exc
 
@@ -149,6 +146,7 @@ class GenericWorkloadBatchExecutor:
         prior_results: tuple[WorkloadTaskResult, ...],
         by_id: dict[str, WorkloadTaskResult],
         results: list[WorkloadTaskResult],
+        cut_observer: WorkloadExecutionCutObserverPort | None,
     ) -> None:
         for task in tasks[len(prior_results) :]:
             result = _execute_task(binding, task, by_id)
@@ -156,8 +154,8 @@ class GenericWorkloadBatchExecutor:
             binding.record_result(task=task, result=result, context=binding.context)
             results.append(result)
             by_id[task.task_id] = result
-            if self._cut_observer is not None:
-                self._cut_observer.after_task(
+            if cut_observer is not None:
+                cut_observer.after_task(
                     task=task,
                     result=result,
                     context=binding.context,

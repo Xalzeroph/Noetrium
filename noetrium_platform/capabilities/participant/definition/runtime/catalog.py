@@ -1,24 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Callable
-
-from noetrium_platform.capabilities.participant.core.api.contracts import (
-    ParticipantConfigurationArtifact,
+from noetrium_platform.capabilities.participant.definition.api import (
+    ParticipantImplementationCatalogPort,
+    ParticipantImplementationFactory,
     ParticipantImplementationIdentity,
+    RegisteredParticipantImplementation,
 )
 
 
-ParticipantImplementationFactory = Callable[[ParticipantConfigurationArtifact], object]
-
-
-@dataclass(frozen=True, slots=True)
-class RegisteredParticipantImplementation:
-    identity: ParticipantImplementationIdentity
-    factory: ParticipantImplementationFactory
-
-
-class ParticipantImplementationCatalog:
+class ParticipantImplementationCatalog(ParticipantImplementationCatalogPort):
     """Definition authority for implementation identities and factories."""
 
     def __init__(self) -> None:

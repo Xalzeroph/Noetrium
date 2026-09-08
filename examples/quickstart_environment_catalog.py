@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import json
 
-from noetrium_platform.capabilities.environment.category.composition import (
-    default_environment_category_catalog,
-)
+from noetrium.platform import bind_environment_category_catalog
 
 
 def main() -> None:
-    catalog = default_environment_category_catalog()
+    catalog = bind_environment_category_catalog()
     document = {
         "categories": [
             {

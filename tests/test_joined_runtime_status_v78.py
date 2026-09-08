@@ -10,7 +10,7 @@ import unittest
 from tests._concurrency_support import OwnedForensicStore as ForensicStore
 from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
 from noetrium_platform.evidence.observability.status.runtime import PlatformStatusService
-from noetrium_platform.research.execution.runtime.api import DeploymentStatusIdentity
+from noetrium_platform.research.execution.api import DeploymentStatusIdentity
 from noetrium_platform.infrastructure.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
 from noetrium_platform.research.execution.runtime.manager.heartbeat_storage import FileServiceHeartbeatStore
 from noetrium_platform.research.execution.runtime.manager import RuntimeControlStore, RuntimeTxnPhase

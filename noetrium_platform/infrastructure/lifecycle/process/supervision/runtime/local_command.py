@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import Mapping
 
-from noetrium_platform.foundation.kernel.kernel.process import (
+from noetrium_platform.infrastructure.lifecycle.process.api import (
     LocalCommandResult,
     LocalCommandRunnerPort,
     LocalCommandStartError,

@@ -9,6 +9,15 @@ from noetrium_platform.research.experimentation.experiment.api import Experiment
 from noetrium_platform.foundation.kernel.kernel import JsonValue
 
 
+class WorkloadBatchCloseError(RuntimeError):
+    """A workload batch failed and its binding could not close cleanly."""
+
+    def __init__(self, primary: BaseException, cleanup: BaseException) -> None:
+        super().__init__("workload batch failed and binding close failed")
+        self.primary = primary
+        self.cleanup = cleanup
+
+
 @dataclass(frozen=True, slots=True)
 class WorkloadCompletionReceipt:
     """Frozen workload-owned completion provenance safe for checkpoint round trips."""
@@ -270,6 +279,7 @@ class WorkloadTaskRunError(ExperimentWorkloadFailure):
 
 
 __all__ = [
+    "WorkloadBatchCloseError",
     "WorkloadBatchResult",
     "WorkloadCompletionReceipt",
     "WorkloadDecision",

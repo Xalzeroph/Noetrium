@@ -40,6 +40,7 @@ def test_runtime_descriptor_preserves_canonical_catalog_semantics():
         assert list(row.requires) == source['requires']
         assert list(row.provides) == source['provides']
         assert list(row.components) == source['components']
+        assert row.downstream_surface.value == source.get('downstream_surface', 'public')
 
 
 def test_documentation_catalog_mirrors_packaged_catalog():
@@ -47,14 +48,12 @@ def test_documentation_catalog_mirrors_packaged_catalog():
     documented = (Path(__file__).parents[1] / 'docs' / 'architecture' / 'VNEXT_SYSTEM_CATALOG.json').read_bytes()
     assert packaged == documented
 
-def test_catalog_covers_all_top_level_systems():
-    tops={row.identity.system_id for row in system_catalog() if row.identity.is_system}
-    assert tops == {
-        'platform','scope','portfolio','experimentation','execution','participant',
-        'resource','environment','model','runtime','data','artifact',
-        'reliability','observability','governance','operator',
-        'components','orchestration'
-    }
+def test_catalog_top_level_layers_are_self_consistent_and_open():
+    roots = tuple(row for row in system_catalog() if row.identity.is_system)
+    assert roots
+    assert len({row.identity.system_id for row in roots}) == len(roots)
+    assert all(row.layer.value == row.identity.system_id for row in roots)
+    assert SystemLayer("future-registered-root").value == "future-registered-root"
 
 def test_shared_kernel_consumers_declare_platform_dependency_at_parent_system():
     by_key = {row.identity.key: row for row in system_catalog()}
@@ -126,8 +125,11 @@ def test_packaged_catalog_is_the_single_topology_declaration_authority():
         .read_text(encoding="utf-8")
     )
     assert list(catalog) == [row.identity.key for row in system_catalog()]
-    expected_fields = {"authority", "must_not_own", "owns", "package_prefix", "parent", "shape", "requires", "provides", "components"}
-    assert all(set(source) == expected_fields for source in catalog.values())
+    required_fields = {"authority", "must_not_own", "owns", "package_prefix", "parent", "shape", "requires", "provides", "components"}
+    optional_fields = {"downstream_surface"}
+    assert all(required_fields.issubset(source) for source in catalog.values())
+    assert all(set(source) <= required_fields | optional_fields for source in catalog.values())
+    assert all(source.get("downstream_surface", "public") in {"public", "metadata_only"} for source in catalog.values())
 
 
 def test_standard_shaped_systems_cannot_bypass_catalog_authority():
@@ -260,3 +262,41 @@ def test_architecture_policy_facets_are_folded_into_parent_authority():
     assert "governance/architecture/dependency" not in keys
     assert not any((root / "noetrium_platform/foundation/governance/architecture/authority").rglob("*.py"))
     assert not any((root / "noetrium_platform/foundation/governance/architecture/dependency").rglob("*.py"))
+
+
+def test_partial_system_shape_is_fail_closed_before_four_planes_exist(tmp_path):
+    package = tmp_path / "noetrium_platform" / "foundation" / "governance" / "partial"
+    for path in (
+        tmp_path / "noetrium_platform",
+        tmp_path / "noetrium_platform" / "foundation" / "governance",
+        package,
+    ):
+        path.mkdir(parents=True, exist_ok=True)
+        (path / "__init__.py").write_text("", encoding="utf-8")
+    for plane in ("api", "runtime"):
+        target = package / plane
+        target.mkdir()
+        (target / "__init__.py").write_text("", encoding="utf-8")
+    rows = audit_system_topology_completeness(tmp_path)
+    assert len(rows) == 1
+    assert rows[0].invariant == "unregistered_standard_system"
+    assert "noetrium_platform.foundation.governance.partial" in rows[0].detail
+
+
+def test_registered_system_missing_declared_plane_is_fail_closed(tmp_path, monkeypatch):
+    catalog = tmp_path / "noetrium_platform" / "foundation" / "governance" / "system_registry" / "catalog.json"
+    catalog.parent.mkdir(parents=True)
+    catalog.write_text("{}\n", encoding="utf-8")
+    descriptor = next(row for row in system_catalog() if row.identity.key == "scope")
+    package = tmp_path.joinpath(*descriptor.package_prefix.split("."))
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    for plane in ("api", "runtime", "composition"):
+        target = package / plane
+        target.mkdir()
+        (target / "__init__.py").write_text("", encoding="utf-8")
+    monkeypatch.setattr(topology_invariants, "system_catalog", lambda: (descriptor,))
+    rows = topology_invariants.audit_system_topology_completeness(tmp_path)
+    assert len(rows) == 1
+    assert rows[0].invariant == "incomplete_catalog_package_shape"
+    assert "providers" in rows[0].detail

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from noetrium_platform.research.execution.runtime.api import DeploymentStatusIdentity
+from noetrium_platform.research.execution.api import DeploymentStatusIdentity
 from noetrium_platform.infrastructure.lifecycle.session.api import PersistentSessionStatusConfig
 
 
