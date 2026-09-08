@@ -60,13 +60,18 @@ from noetrium_platform.capabilities.model.serving.runtime.admission import (
 from noetrium_platform.foundation.kernel.concurrency.composition import (
     build_concurrency_runtime,
 )
+from noetrium_platform.foundation.kernel.kernel import JsonDocument, JsonInput
 from noetrium_platform.infrastructure.lifecycle.host.providers import (
     LocalOperatingSystemRoute,
 )
 from noetrium_platform.product.operator.runtime.run_control_application import (
     bind_run_control_application,
 )
-from noetrium_platform.research.experimentation.run.api import RunArtifactStorePort
+from noetrium_platform.research.experimentation.run.api import (
+    RunArtifactKind,
+    RunArtifactSnapshotReceipt,
+    RunArtifactStorePort,
+)
 from noetrium_platform.research.experimentation.run.composition.artifacts import (
     build_directory_run_artifact_store,
 )
@@ -364,10 +369,9 @@ def bind_qualified_project_model(
 class DirectoryRunArtifactStoreBinding:
     """Owned public binding for one durable run-local artifact store.
 
-    Downstream projects receive the existing RunArtifactStorePort while Noetrium
-    retains ownership of the serial writer actor and its structured-concurrency
-    lifetime. The binding intentionally delegates storage semantics to the
-    canonical run-artifact composition rather than reimplementing persistence.
+    The binding itself has the RunArtifactStorePort shape while Noetrium retains
+    ownership of the serial writer actor and its structured-concurrency lifetime.
+    Storage semantics remain delegated to the canonical run-artifact composition.
     """
 
     def __init__(
@@ -397,17 +401,70 @@ class DirectoryRunArtifactStoreBinding:
             raise
         self._closed = False
 
-    @property
-    def store(self) -> RunArtifactStorePort:
+    def _open_store(self) -> RunArtifactStorePort:
         if self._closed:
             raise RuntimeError("run artifact store binding is closed")
         return self._store
 
+    @property
+    def store(self) -> RunArtifactStorePort:
+        """Compatibility view of the underlying public artifact-store port."""
+
+        return self._open_store()
+
+    def path(self, name: str, *, kind: RunArtifactKind) -> str:
+        return self._open_store().path(name, kind=kind)
+
+    def directory(self, name: str, *, kind: RunArtifactKind) -> str:
+        return self._open_store().directory(name, kind=kind)
+
+    def publish_json(
+        self,
+        name: str,
+        payload: JsonInput | JsonDocument,
+        *,
+        kind: RunArtifactKind,
+    ) -> str:
+        return self._open_store().publish_json(name, payload, kind=kind)
+
+    def publish_text(self, name: str, content: str, *, kind: RunArtifactKind) -> str:
+        return self._open_store().publish_text(name, content, kind=kind)
+
+    def append_json(
+        self,
+        name: str,
+        payload: JsonDocument,
+        *,
+        kind: RunArtifactKind,
+    ) -> str:
+        return self._open_store().append_json(name, payload, kind=kind)
+
+    def finalize(
+        self,
+        artifact_ref: str,
+        *,
+        kind: RunArtifactKind,
+        record_stream: bool,
+    ) -> RunArtifactSnapshotReceipt:
+        return self._open_store().finalize(
+            artifact_ref,
+            kind=kind,
+            record_stream=record_stream,
+        )
+
+    def verify_finalized(
+        self,
+        receipt: RunArtifactSnapshotReceipt,
+    ) -> RunArtifactSnapshotReceipt:
+        return self._open_store().verify_finalized(receipt)
+
     def close(self) -> None:
         if self._closed:
             return
-        self._concurrency.close()
-        self._closed = True
+        try:
+            self._concurrency.close()
+        finally:
+            self._closed = True
 
     def __enter__(self) -> "DirectoryRunArtifactStoreBinding":
         if self._closed:
