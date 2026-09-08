@@ -53,6 +53,36 @@ class DownstreamCapabilityCatalog:
         return importlib.import_module(surface.facade_module)
 
 
+def load_downstream_interface_schema() -> dict[str, Any]:
+    """Load the generated schema for every public downstream interface."""
+    resource = files("noetrium.contracts").joinpath("interface_schema.json")
+    document = json.loads(resource.read_text(encoding="utf-8"))
+    if not isinstance(document, dict) or document.get("schema") != "noetrium-interface-catalog.v1":
+        raise RuntimeError("invalid generated downstream interface schema")
+    return document
+
+
+def find_downstream_symbol_schema(
+    system_key: str,
+    module: str,
+    symbol: str,
+) -> dict[str, Any]:
+    """Find one public symbol schema without importing implementation modules."""
+    document = load_downstream_interface_schema()
+    for system in document["systems"]:
+        if system["system_key"] != system_key:
+            continue
+        for api in system["api_modules"]:
+            if api["module"] != module:
+                continue
+            for schema in api["symbol_schemas"]:
+                if schema["name"] == symbol:
+                    return schema
+            raise KeyError(f"unknown public symbol schema: {module}.{symbol}")
+        raise KeyError(f"unknown public API module: {module}")
+    raise KeyError(f"unknown downstream system surface: {system_key}")
+
+
 def _catalog_document() -> dict[str, Any]:
     resource = files("noetrium.contracts").joinpath(
         "downstream_capability_catalog.json"
@@ -100,5 +130,7 @@ __all__ = [
     "DownstreamApiModule",
     "DownstreamCapabilityCatalog",
     "DownstreamSystemSurface",
+    "find_downstream_symbol_schema",
     "load_downstream_capability_catalog",
+    "load_downstream_interface_schema",
 ]

@@ -10,6 +10,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from generate_downstream_contracts import generate
+from generate_interface_schemas import generate as generate_interface_schemas
 from sync_registered_system_shapes import sync_registered_system_shapes
 from audit_registered_system_surfaces import audit as audit_registered_system_surfaces
 from readme_i18n import load_languages, mark_current, sync_navigation
@@ -23,6 +24,9 @@ def update(root: Path) -> int:
             print(f"registered system shape sync failed: {finding}")
         return 1
     result = generate(root, check=False)
+    if result != 0:
+        return result
+    result = generate_interface_schemas(root, check=False)
     if result != 0:
         return result
     surface_findings = tuple(
@@ -49,6 +53,8 @@ def check(root: Path) -> int:
             print(f"- {finding}")
         return 1
     if generate(root, check=True) != 0:
+        return 1
+    if generate_interface_schemas(root, check=True) != 0:
         return 1
     surface_findings = tuple(
         finding
