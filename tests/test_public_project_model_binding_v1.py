@@ -9,6 +9,7 @@ from noetrium.platform import QualifiedProjectModelBinding, bind_qualified_proje
 from noetrium_platform.capabilities.model.api import (
     ModelCapabilityRequirement,
     ModelProviderProfile,
+    ProjectModelProviderPort,
 )
 
 
@@ -41,14 +42,19 @@ class _Provider:
         self.endpoint_factory = endpoint_factory
         self.model_requests = model_requests
         self.requirements = []
+        self.diagnostics = []
 
     def bind(self, requirement):
         self.requirements.append(requirement)
         return ("client", requirement)
 
+    def diagnose(self, requirement):
+        self.diagnostics.append(requirement)
+        return ()
+
 
 class PublicProjectModelBindingTests(TestCase):
-    def test_public_binding_owns_runtime_and_delegates_project_bind(self) -> None:
+    def test_public_binding_owns_runtime_and_satisfies_project_provider_port(self) -> None:
         profile = ModelProviderProfile("sem-qualified", ("generation",))
         requirement = ModelCapabilityRequirement(
             role="planner",
@@ -87,9 +93,13 @@ class PublicProjectModelBindingTests(TestCase):
                 task_group_id="project:model:test",
             )
             self.assertIsInstance(binding, QualifiedProjectModelBinding)
+            self.assertIsInstance(binding, ProjectModelProviderPort)
             self.assertIs(binding.profile, profile)
             self.assertIs(binding.model_requests, recorder)
             self.assertEqual(binding.bind(requirement), ("client", requirement))
+            self.assertEqual(binding.diagnose(requirement), ())
+            self.assertEqual(binding.provider.requirements, [requirement])
+            self.assertEqual(binding.provider.diagnostics, [requirement])
             self.assertEqual(concurrency.group_ids, ["project:model:test"])
             self.assertIs(binding.provider.bindings, qualified_bindings)
             load_closure.assert_called_once()
@@ -100,6 +110,8 @@ class PublicProjectModelBindingTests(TestCase):
             self.assertTrue(concurrency.closed)
             with self.assertRaisesRegex(RuntimeError, "closed"):
                 binding.bind(requirement)
+            with self.assertRaisesRegex(RuntimeError, "closed"):
+                binding.diagnose(requirement)
 
     def test_invalid_timeout_fails_before_runtime_construction(self) -> None:
         profile = ModelProviderProfile("sem-qualified", ("generation",))

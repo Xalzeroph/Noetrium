@@ -32,6 +32,7 @@ from noetrium_platform.capabilities.environment.minecraft.composition.environmen
     compose_minecraft_environment,
 )
 from noetrium_platform.capabilities.model.api import (
+    ModelBindingDiagnostic,
     ModelCapabilityRequirement,
     ModelProviderProfile,
     ProjectModelClientPort,
@@ -223,7 +224,7 @@ class QualifiedProjectModelBinding:
     """Owned project binding over an already-qualified model deployment closure.
 
     Qualification evidence and deployment identity stay authoritative in the
-    persisted Noetrium closure.  The product facade owns endpoint materialization,
+    persisted Noetrium closure. The product facade owns endpoint materialization,
     request provenance storage, admission control and structured concurrency so
     downstream projects never need to import those implementation modules.
     """
@@ -299,6 +300,14 @@ class QualifiedProjectModelBinding:
         if self._closed:
             raise RuntimeError("qualified project model binding is closed")
         return self._provider.bind(requirement)
+
+    def diagnose(
+        self,
+        requirement: ModelCapabilityRequirement,
+    ) -> tuple[ModelBindingDiagnostic, ...]:
+        if self._closed:
+            raise RuntimeError("qualified project model binding is closed")
+        return self._provider.diagnose(requirement)
 
     def close(self) -> None:
         if self._closed:
