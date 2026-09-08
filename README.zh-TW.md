@@ -91,6 +91,45 @@ Noetrium 刻意比 Agent workflow library 更寬：實驗設計、模型/環境 
 - 可觀測性 — 結構化日誌、event、metric、trace、diagnostic、projection 與健康訊號。
 - 治理 — architecture、dependency、algorithm、concurrency、performance、forensic、release 與 no-degradation gate。
 
+<!-- noetrium-interface-catalog:start -->
+### Public interface catalog
+
+Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
+
+- 166 registered system surfaces; 462 public API modules; 3351 public symbols.
+- Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
+- Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
+- Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
+
+| Capability domain | Registered surfaces |
+| --- | ---: |
+| artifact | 7 |
+| components | 1 |
+| data | 8 |
+| environment | 17 |
+| execution | 7 |
+| experimentation | 12 |
+| governance | 13 |
+| model | 16 |
+| observability | 27 |
+| operator | 8 |
+| orchestration | 1 |
+| participant | 7 |
+| platform | 5 |
+| portfolio | 5 |
+| reliability | 7 |
+| resource | 6 |
+| runtime | 12 |
+| scope | 7 |
+
+Discover a capability in the catalog, import its generated facade, and inject its typed ports in downstream composition:
+
+    from noetrium.contracts.systems.environment__minecraft import MinecraftBridgePort
+    from noetrium.contracts.systems.participant__agent import AgentMemoryPort
+
+After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
+<!-- noetrium-interface-catalog:end -->
+
 <!-- readme-section:architecture -->
 
 ## 架構

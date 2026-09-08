@@ -111,18 +111,6 @@ jobs:
         run: python scripts/public_contract_audit.py
       - name: Verify generated downstream contract surface
         run: python scripts/generate_downstream_contracts.py --check
-      - name: Materialize generated downstream surface
-        if: always()
-        run: python scripts/generate_downstream_contracts.py
-      - name: Upload generated downstream surface
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-downstream-surface-${{ github.sha }}
-          if-no-files-found: error
-          path: |
-            README*.md
-            docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
       - name: Verify README localization
         run: python scripts/check_readme_i18n.py
       - name: Run no-degradation audit
