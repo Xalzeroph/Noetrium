@@ -35,6 +35,28 @@ from noetrium_platform.capabilities.environment.minecraft.api import (
 from noetrium_platform.capabilities.environment.minecraft.composition.environment import (
     compose_minecraft_environment,
 )
+from noetrium_platform.capabilities.model.api import (
+    ModelBindingDiagnostic,
+    ModelCapabilityRequirement,
+    ModelProviderProfile,
+    ProjectModelClientPort,
+    ProjectModelProviderPort,
+)
+from noetrium_platform.capabilities.model.providers import QualifiedModelProjectProvider
+from noetrium_platform.capabilities.model.request.api import ModelRequestRecorderPort
+from noetrium_platform.capabilities.model.request.composition.recorder import (
+    build_directory_model_request_recorder,
+)
+from noetrium_platform.capabilities.model.serving.endpoint.composition import (
+    PersistedQualifiedModelEndpointBinding,
+    build_openai_compatible_qualified_endpoint,
+    load_qualified_model_deployment_closure,
+)
+from noetrium_platform.capabilities.model.serving.providers import (
+    DirectoryRuntimeCanaryEvidenceStore,
+    DirectoryRuntimeQualificationEvidenceStore,
+)
+from noetrium_platform.capabilities.model.serving.runtime.admission import ModelAdmissionRegistry
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
 from noetrium_platform.product.operator.runtime.run_control_application import (
@@ -201,10 +223,134 @@ def bind_bundled_minecraft_environment(
     )
 
 
+class QualifiedProjectModelBinding:
+    """Own one project-facing binding over a persisted qualified deployment closure."""
+
+    def __init__(
+        self,
+        profile: ModelProviderProfile,
+        *,
+        closure_path: str | Path,
+        request_root: str | Path,
+        api_key: str = "",
+        timeout_s: float | None = None,
+        task_group_id: str | None = None,
+    ) -> None:
+        if not isinstance(profile, ModelProviderProfile):
+            raise TypeError("profile must be ModelProviderProfile")
+        if timeout_s is not None and timeout_s <= 0:
+            raise ValueError("timeout_s must be positive when provided")
+        self._profile = profile
+        self._concurrency = build_concurrency_runtime()
+        self._admission = ModelAdmissionRegistry()
+        try:
+            self._task_group = self._concurrency.open_task_group(
+                task_group_id or f"project-model-{uuid4().hex}"
+            )
+            closure = load_qualified_model_deployment_closure(
+                closure_path,
+                runtime_qualification_store_factory=DirectoryRuntimeQualificationEvidenceStore,
+                runtime_canary_store_factory=DirectoryRuntimeCanaryEvidenceStore,
+            )
+            bindings = PersistedQualifiedModelEndpointBinding(closure)
+            self._model_requests = build_directory_model_request_recorder(
+                Path(request_root).expanduser().resolve(strict=False)
+            )
+
+            def endpoint_factory(binding):
+                return build_openai_compatible_qualified_endpoint(
+                    binding,
+                    api_key=api_key,
+                    timeout_s=timeout_s,
+                    task_group=self._task_group,
+                    admission_registry=self._admission,
+                )
+
+            self._provider: ProjectModelProviderPort = QualifiedModelProjectProvider(
+                profile, bindings, endpoint_factory, self._model_requests
+            )
+        except BaseException:
+            self._admission.close()
+            self._concurrency.close()
+            raise
+        self._closed = False
+
+    @property
+    def profile(self) -> ModelProviderProfile:
+        return self._profile
+
+    @property
+    def provider(self) -> ProjectModelProviderPort:
+        return self._provider
+
+    @property
+    def model_requests(self) -> ModelRequestRecorderPort:
+        return self._model_requests
+
+    def bind(self, requirement: ModelCapabilityRequirement) -> ProjectModelClientPort:
+        if self._closed:
+            raise RuntimeError("qualified project model binding is closed")
+        return self._provider.bind(requirement)
+
+    def diagnose(
+        self, requirement: ModelCapabilityRequirement
+    ) -> tuple[ModelBindingDiagnostic, ...]:
+        if self._closed:
+            raise RuntimeError("qualified project model binding is closed")
+        return self._provider.diagnose(requirement)
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        errors: list[BaseException] = []
+        try:
+            self._admission.close()
+        except BaseException as exc:
+            errors.append(exc)
+        try:
+            self._concurrency.close()
+        except BaseException as exc:
+            errors.append(exc)
+        self._closed = True
+        if errors:
+            raise ExceptionGroup("qualified project model binding close failed", errors)
+
+    def __enter__(self) -> "QualifiedProjectModelBinding":
+        if self._closed:
+            raise RuntimeError("qualified project model binding is closed")
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        self.close()
+
+
+def bind_qualified_project_model(
+    profile: ModelProviderProfile,
+    *,
+    closure_path: str | Path,
+    request_root: str | Path,
+    api_key: str = "",
+    timeout_s: float | None = None,
+    task_group_id: str | None = None,
+) -> QualifiedProjectModelBinding:
+    """Bind a persisted qualified model deployment through Noetrium authorities."""
+
+    return QualifiedProjectModelBinding(
+        profile,
+        closure_path=closure_path,
+        request_root=request_root,
+        api_key=api_key,
+        timeout_s=timeout_s,
+        task_group_id=task_group_id,
+    )
+
+
 __all__ = [
     "MinecraftEnvironmentBinding",
+    "QualifiedProjectModelBinding",
     "ProjectTestStage", "ProjectTestStageReceipt", "ResearchAction",
     "ResearchApplicationPort", "ResearchFacade", "ResearchOperationFailure",
     "ResearchRequest", "ResearchResult", "bind_bundled_minecraft_environment",
-    "bind_minecraft_environment", "bind_run_control_application",
+    "bind_minecraft_environment", "bind_qualified_project_model",
+    "bind_run_control_application",
 ]
