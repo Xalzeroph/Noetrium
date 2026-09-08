@@ -230,7 +230,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--skip-architecture",
         action="store_true",
-        help="omit the architecture budget gate when CI uses the non-ROLE00 assurance profile",
+        help="omit the architecture governance gate",
     )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)

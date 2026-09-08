@@ -1,10 +1,35 @@
 {
-  "architecture_budget_violations": [],
+  "architecture_budget_violations": [
+    {
+      "detail": "subsystems complexity budget exceeded: observed=154 limit=148",
+      "dimension": "subsystems",
+      "limit": 148,
+      "observed": 154
+    },
+    {
+      "detail": "contract_declarations complexity budget exceeded: observed=202 limit=174",
+      "dimension": "contract_declarations",
+      "limit": 174,
+      "observed": 202
+    },
+    {
+      "detail": "authorities complexity budget exceeded: observed=172 limit=166",
+      "dimension": "authorities",
+      "limit": 166,
+      "observed": 172
+    },
+    {
+      "detail": "import_edges complexity budget exceeded: observed=5612 limit=5042",
+      "dimension": "import_edges",
+      "limit": 5042,
+      "observed": 5612
+    }
+  ],
   "architecture_complexity": {
-    "authorities": 166,
-    "contract_declarations": 174,
-    "import_edges": 5027,
-    "subsystems": 148,
+    "authorities": 172,
+    "contract_declarations": 202,
+    "import_edges": 5612,
+    "subsystems": 154,
     "top_level_systems": 18
   },
   "architecture_complexity_budget": {
@@ -627,7 +652,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5027,
+  "import_edges": 5612,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,11 +898,11 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "00894d81852cd00ee7719111e4d81fe38582811e50afdf7122bbba0c77c5f200",
+  "report_sha256": "f8d9c7d8e35dff5f46b0d883f689af2a031f3d5f598dfa50be116835c2bb909d",
   "source_authority_violations": [],
-  "source_digest": "4b7c52cd2d7e10ff24788e695e14ec5f2907d255a9ba357d70f7649b6ed4d14d",
+  "source_digest": "36826cae139a052b2cee27dcd6461be7db775a6a733725e416e5809bcc404700",
   "source_invariant_violations": [],
-  "source_root": "E:\\Agent-Research-Workspace\\projects\\active\\agent-research-platform-system",
+  "source_root": "/workspace",
   "subsystem_graph": [
     {
       "authorities": [
@@ -1074,6 +1099,23 @@
       "requires": [],
       "source": "environment",
       "target": "environment/catalog"
+    },
+    {
+      "authorities": [
+        "environment_category_catalog"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.capabilities.environment.category",
+      "provides": [
+        "environment.category"
+      ],
+      "relation": "contains",
+      "requires": [
+        "governance/system_registry",
+        "platform"
+      ],
+      "source": "environment",
+      "target": "environment/category"
     },
     {
       "authorities": [
@@ -1370,6 +1412,25 @@
     },
     {
       "authorities": [
+        "experiment_catalog_view"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.research.experimentation.catalog",
+      "provides": [
+        "experiment.catalog"
+      ],
+      "relation": "contains",
+      "requires": [
+        "experimentation/experiment",
+        "experimentation/run/identity",
+        "experimentation/study",
+        "scope"
+      ],
+      "source": "experimentation",
+      "target": "experimentation/catalog"
+    },
+    {
+      "authorities": [
         "checkpoint_state"
       ],
       "components": [],
@@ -1510,6 +1571,42 @@
       "requires": [],
       "source": "experimentation",
       "target": "experimentation/variant"
+    },
+    {
+      "authorities": [
+        "research_analysis_publication"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.research.experimentation.workbench",
+      "provides": [
+        "research.workbench"
+      ],
+      "relation": "contains",
+      "requires": [
+        "experimentation/study"
+      ],
+      "source": "experimentation",
+      "target": "experimentation/workbench"
+    },
+    {
+      "authorities": [
+        "experiment_workload_execution_contract"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.research.experimentation.workload",
+      "provides": [
+        "experiment.workload"
+      ],
+      "relation": "contains",
+      "requires": [
+        "environment/runtime",
+        "experimentation/experiment",
+        "experimentation/run",
+        "participant/method",
+        "platform"
+      ],
+      "source": "experimentation",
+      "target": "experimentation/workload"
     },
     {
       "authorities": [
@@ -2013,7 +2110,9 @@
       ],
       "components": [],
       "package_prefix": "noetrium_platform.evidence.observability.logging.routing",
-      "provides": [],
+      "provides": [
+        "logging.routing"
+      ],
       "relation": "contains",
       "requires": [],
       "source": "observability/logging",
@@ -2307,11 +2406,29 @@
     },
     {
       "authorities": [
+        "participant_runtime_abi"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.capabilities.participant.core",
+      "provides": [
+        "participant.runtime.abi"
+      ],
+      "relation": "contains",
+      "requires": [
+        "platform"
+      ],
+      "source": "participant",
+      "target": "participant/core"
+    },
+    {
+      "authorities": [
         "participant_definition"
       ],
       "components": [],
       "package_prefix": "noetrium_platform.capabilities.participant.definition",
-      "provides": [],
+      "provides": [
+        "participant.definition"
+      ],
       "relation": "contains",
       "requires": [],
       "source": "participant",
@@ -2340,7 +2457,9 @@
       ],
       "components": [],
       "package_prefix": "noetrium_platform.capabilities.participant.session",
-      "provides": [],
+      "provides": [
+        "participant.session"
+      ],
       "relation": "contains",
       "requires": [],
       "source": "participant",
@@ -2519,7 +2638,9 @@
       ],
       "components": [],
       "package_prefix": "noetrium_platform.infrastructure.reliability.recovery.execution",
-      "provides": [],
+      "provides": [
+        "recovery.execution"
+      ],
       "relation": "contains",
       "requires": [],
       "source": "reliability/recovery",
@@ -2552,7 +2673,9 @@
         "compute.scheduler"
       ],
       "relation": "contains",
-      "requires": [],
+      "requires": [
+        "runtime/process"
+      ],
       "source": "resource",
       "target": "resource/compute"
     },
@@ -2676,6 +2799,24 @@
     },
     {
       "authorities": [
+        "server_bootstrap_transaction"
+      ],
+      "components": [],
+      "package_prefix": "noetrium_platform.infrastructure.lifecycle.host.bootstrap",
+      "provides": [
+        "server.bootstrap"
+      ],
+      "relation": "contains",
+      "requires": [
+        "governance/release",
+        "platform",
+        "runtime/session"
+      ],
+      "source": "runtime/server",
+      "target": "runtime/server/bootstrap"
+    },
+    {
+      "authorities": [
         "server_health_contract"
       ],
       "components": [],
@@ -2706,7 +2847,9 @@
       "package_prefix": "noetrium_platform.infrastructure.lifecycle.server.lifecycle",
       "provides": [],
       "relation": "contains",
-      "requires": [],
+      "requires": [
+        "runtime/server/bootstrap"
+      ],
       "source": "runtime/server",
       "target": "runtime/server/lifecycle"
     },
@@ -3212,6 +3355,18 @@
       "score": 1955
     },
     {
+      "branches": 124,
+      "classes": 36,
+      "exception_handlers": 1,
+      "functions": 62,
+      "imports": 6,
+      "max_function_lines": 46,
+      "module": "noetrium_platform.research.experimentation.workbench.api.contracts",
+      "path": "noetrium_platform/research/experimentation/workbench/api/contracts.py",
+      "physical_lines": 920,
+      "score": 1940
+    },
+    {
       "branches": 98,
       "classes": 2,
       "exception_handlers": 16,
@@ -3236,28 +3391,16 @@
       "score": 1836
     },
     {
-      "branches": 124,
-      "classes": 32,
-      "exception_handlers": 1,
-      "functions": 37,
-      "imports": 6,
-      "max_function_lines": 46,
-      "module": "noetrium_platform.research.experimentation.workbench.api.contracts",
-      "path": "noetrium_platform/research/experimentation/workbench/api/contracts.py",
-      "physical_lines": 815,
-      "score": 1835
-    },
-    {
       "branches": 102,
       "classes": 10,
       "exception_handlers": 3,
-      "functions": 38,
+      "functions": 42,
       "imports": 12,
-      "max_function_lines": 80,
+      "max_function_lines": 63,
       "module": "noetrium_platform.research.experimentation.study.runtime.matrix",
       "path": "noetrium_platform/research/experimentation/study/runtime/matrix.py",
-      "physical_lines": 852,
-      "score": 1794
+      "physical_lines": 884,
+      "score": 1792
     },
     {
       "branches": 81,
@@ -3419,7 +3562,7 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 344,
+      "import_fan_in": 347,
       "import_fan_out": 10,
       "io_sites": 0,
       "lock_sites": 0,
@@ -3430,7 +3573,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1406,
+      "risk_score": 1418,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -3559,7 +3702,7 @@
     },
     {
       "exception_handlers": 13,
-      "import_fan_in": 2,
+      "import_fan_in": 3,
       "import_fan_out": 7,
       "io_sites": 0,
       "lock_sites": 2,
@@ -3571,13 +3714,13 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 322,
+      "risk_score": 326,
       "self_mutation_sites": 29,
       "serialization_sites": 0
     },
     {
       "exception_handlers": 0,
-      "import_fan_in": 76,
+      "import_fan_in": 77,
       "import_fan_out": 3,
       "io_sites": 0,
       "lock_sites": 0,
@@ -3587,7 +3730,7 @@
       "reason_codes": [
         "HIGH_FAN_IN"
       ],
-      "risk_score": 313,
+      "risk_score": 317,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -3624,6 +3767,24 @@
       "risk_score": 297,
       "self_mutation_sites": 4,
       "serialization_sites": 7
+    },
+    {
+      "exception_handlers": 8,
+      "import_fan_in": 0,
+      "import_fan_out": 28,
+      "io_sites": 1,
+      "lock_sites": 0,
+      "long_functions": 0,
+      "module": "noetrium.platform",
+      "path": "noetrium/platform.py",
+      "reason_codes": [
+        "HIGH_FAN_OUT",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION"
+      ],
+      "risk_score": 296,
+      "self_mutation_sites": 28,
+      "serialization_sites": 0
     },
     {
       "exception_handlers": 8,
@@ -3747,24 +3908,6 @@
       ],
       "risk_score": 270,
       "self_mutation_sites": 47,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 9,
-      "import_fan_in": 1,
-      "import_fan_out": 3,
-      "io_sites": 18,
-      "lock_sites": 0,
-      "long_functions": 1,
-      "module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
-      "path": "noetrium_platform/foundation/governance/evolution/providers/sqlite_store.py",
-      "reason_codes": [
-        "IO_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 264,
-      "self_mutation_sites": 3,
       "serialization_sites": 0
     }
   ]
