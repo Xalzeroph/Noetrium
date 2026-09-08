@@ -66,6 +66,10 @@ from noetrium_platform.infrastructure.lifecycle.host.providers import (
 from noetrium_platform.product.operator.runtime.run_control_application import (
     bind_run_control_application,
 )
+from noetrium_platform.research.experimentation.run.api import RunArtifactStorePort
+from noetrium_platform.research.experimentation.run.composition.artifacts import (
+    build_directory_run_artifact_store,
+)
 
 
 class MinecraftEnvironmentBinding:
@@ -357,7 +361,83 @@ def bind_qualified_project_model(
     )
 
 
+class DirectoryRunArtifactStoreBinding:
+    """Owned public binding for one durable run-local artifact store.
+
+    Downstream projects receive the existing RunArtifactStorePort while Noetrium
+    retains ownership of the serial writer actor and its structured-concurrency
+    lifetime. The binding intentionally delegates storage semantics to the
+    canonical run-artifact composition rather than reimplementing persistence.
+    """
+
+    def __init__(
+        self,
+        root: str | Path,
+        *,
+        run_id: str,
+        queue_capacity: int | None = None,
+        task_group_id: str = "project:run-artifacts",
+    ) -> None:
+        if not task_group_id.strip():
+            raise ValueError("task_group_id must be non-empty")
+        self._concurrency = build_concurrency_runtime(
+            blocking_io_thread_name_prefix="run-artifact-project-binding",
+            timer_name="run-artifact-project-binding-timer",
+        )
+        try:
+            self._task_group = self._concurrency.open_task_group(task_group_id)
+            self._store: RunArtifactStorePort = build_directory_run_artifact_store(
+                root,
+                run_id=run_id,
+                task_group=self._task_group,
+                queue_capacity=queue_capacity,
+            )
+        except BaseException:
+            self._concurrency.close()
+            raise
+        self._closed = False
+
+    @property
+    def store(self) -> RunArtifactStorePort:
+        if self._closed:
+            raise RuntimeError("run artifact store binding is closed")
+        return self._store
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._concurrency.close()
+        self._closed = True
+
+    def __enter__(self) -> "DirectoryRunArtifactStoreBinding":
+        if self._closed:
+            raise RuntimeError("run artifact store binding is closed")
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> bool:
+        self.close()
+        return False
+
+
+def bind_directory_run_artifact_store(
+    root: str | Path,
+    *,
+    run_id: str,
+    queue_capacity: int | None = None,
+    task_group_id: str = "project:run-artifacts",
+) -> DirectoryRunArtifactStoreBinding:
+    """Bind Noetrium's durable directory run-artifact authority for a project."""
+
+    return DirectoryRunArtifactStoreBinding(
+        root,
+        run_id=run_id,
+        queue_capacity=queue_capacity,
+        task_group_id=task_group_id,
+    )
+
+
 __all__ = [
+    "DirectoryRunArtifactStoreBinding",
     "MinecraftEnvironmentBinding",
     "ProjectTestStage",
     "ProjectTestStageReceipt",
@@ -369,6 +449,7 @@ __all__ = [
     "ResearchRequest",
     "ResearchResult",
     "bind_bundled_minecraft_environment",
+    "bind_directory_run_artifact_store",
     "bind_minecraft_environment",
     "bind_qualified_project_model",
     "bind_run_control_application",
