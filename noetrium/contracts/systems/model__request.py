@@ -8,8 +8,6 @@ This module is regenerated from the canonical registry and API exports.
 from noetrium_platform.capabilities.model.request.api import (
     ContentAddressedStorePort,
     ContentRef,
-    ExecutionContext,
-    ImmutableModelIdentity,
     ModelRequestEnvelope,
     ModelRequestLedgerPort,
     ModelRequestRecorderPort,
@@ -19,8 +17,6 @@ from noetrium_platform.capabilities.model.request.api import (
 from noetrium_platform.capabilities.model.request.api.contracts import (
     ContentAddressedStorePort as contracts__ContentAddressedStorePort,
     ContentRef as contracts__ContentRef,
-    ExecutionContext as contracts__ExecutionContext,
-    ImmutableModelIdentity as contracts__ImmutableModelIdentity,
     ModelRequestEnvelope as contracts__ModelRequestEnvelope,
     ModelRequestLedgerPort as contracts__ModelRequestLedgerPort,
     ModelRequestRecorderPort as contracts__ModelRequestRecorderPort,
@@ -29,4 +25,4 @@ from noetrium_platform.capabilities.model.request.api.contracts import (
 
 SYSTEM_KEY = 'model/request'
 PACKAGE_PREFIX = 'noetrium_platform.capabilities.model.request'
-__all__ = ('ContentAddressedStorePort', 'ContentRef', 'ExecutionContext', 'ImmutableModelIdentity', 'ModelRequestEnvelope', 'ModelRequestLedgerPort', 'ModelRequestRecorderPort', 'ReconstructedModelRequest', 'contracts__ContentAddressedStorePort', 'contracts__ContentRef', 'contracts__ExecutionContext', 'contracts__ImmutableModelIdentity', 'contracts__ModelRequestEnvelope', 'contracts__ModelRequestLedgerPort', 'contracts__ModelRequestRecorderPort', 'contracts__ReconstructedModelRequest')
+__all__ = ('ContentAddressedStorePort', 'ContentRef', 'ModelRequestEnvelope', 'ModelRequestLedgerPort', 'ModelRequestRecorderPort', 'ReconstructedModelRequest', 'contracts__ContentAddressedStorePort', 'contracts__ContentRef', 'contracts__ModelRequestEnvelope', 'contracts__ModelRequestLedgerPort', 'contracts__ModelRequestRecorderPort', 'contracts__ReconstructedModelRequest')
