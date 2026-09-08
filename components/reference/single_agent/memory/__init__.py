@@ -17,6 +17,7 @@ from .memory_graph import (
 )
 from .versioned_memory_graph import (
     MemoryGraphConflict,
+    MemoryGraphDiagnostics,
     MemoryGraphIntegrityError,
     VersionedMemoryGraph,
 )
@@ -37,6 +38,7 @@ __all__ = [
     "MemoryGraphTransaction",
     "MemoryNodeRecord",
     "MemoryGraphConflict",
+    "MemoryGraphDiagnostics",
     "MemoryGraphIntegrityError",
     "VersionedMemoryGraph",
 ]

@@ -23,6 +23,17 @@ class MemoryGraphIntegrityError(ValueError):
     pass
 
 
+@dataclass(frozen=True, slots=True)
+class MemoryGraphDiagnostics:
+    generation: str
+    graph_digest: str
+    node_count: int
+    active_node_count: int
+    edge_count: int
+    active_edge_count: int
+    ledger_count: int
+
+
 def _generation_number(generation: str) -> int:
     if not generation.startswith("g"):
         raise MemoryGraphIntegrityError("memory graph generation must start with g")
@@ -213,21 +224,22 @@ class VersionedMemoryGraph:
         self._snapshot = snapshot
         self._ledger.clear()
 
-    def diagnostics(self) -> Mapping[str, object]:
+    def diagnostics(self) -> MemoryGraphDiagnostics:
         snapshot = self.snapshot()
-        return {
-            "generation": snapshot.generation,
-            "graph_digest": snapshot.digest(),
-            "node_count": len(snapshot.nodes),
-            "active_node_count": sum(node.active for node in snapshot.nodes),
-            "edge_count": len(snapshot.edges),
-            "active_edge_count": sum(edge.active for edge in snapshot.edges),
-            "ledger_count": len(self._ledger),
-        }
+        return MemoryGraphDiagnostics(
+            generation=snapshot.generation,
+            graph_digest=snapshot.digest(),
+            node_count=len(snapshot.nodes),
+            active_node_count=sum(node.active for node in snapshot.nodes),
+            edge_count=len(snapshot.edges),
+            active_edge_count=sum(edge.active for edge in snapshot.edges),
+            ledger_count=len(self._ledger),
+        )
 
 
 __all__ = [
     "MemoryGraphConflict",
+    "MemoryGraphDiagnostics",
     "MemoryGraphIntegrityError",
     "VersionedMemoryGraph",
 ]

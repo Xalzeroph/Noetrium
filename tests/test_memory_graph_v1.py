@@ -31,7 +31,7 @@ def test_memory_graph_stages_and_activates_atomically() -> None:
     entry = graph.activate(transaction)
     assert entry.result_digest == graph.snapshot().digest()
     assert graph.snapshot().node("node:a") is not None
-    assert graph.diagnostics()["ledger_count"] == 1
+    assert graph.diagnostics().ledger_count == 1
 
 
 def test_memory_graph_rejects_stale_activation() -> None:
