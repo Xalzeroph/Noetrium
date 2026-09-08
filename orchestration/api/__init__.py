@@ -1,6 +1,6 @@
 """Stable downstream contracts for reusable multi-agent orchestration."""
 
-from ..multi_agent.contracts import (
+from ..multi_agent import (
     CommunicationEdge,
     CommunicationTopology,
     MultiAgentCancellationPort,
@@ -12,11 +12,22 @@ from ..multi_agent.contracts import (
     MultiAgentNodePort,
     MultiAgentRunResult,
     MultiAgentRunStatus,
+    DebateCoordinator,
+    GroupChatCoordinator,
+    HierarchicalCoordinator,
+    MultiAgentCoordinator,
+    MultiAgentMembershipPort,
+    MultiAgentTransportPort,
+    TransportBackedMultiAgentCoordinator,
+    SQLiteMultiAgentJournal,
 )
 
 __all__ = [
     "CommunicationEdge", "CommunicationTopology", "MultiAgentCancellationPort",
     "MultiAgentCheckpoint", "MultiAgentDeliveryReceipt", "MultiAgentDeliveryStatus",
     "MultiAgentJournalPort", "MultiAgentMessage", "MultiAgentNodePort",
-    "MultiAgentRunResult", "MultiAgentRunStatus",
+    "MultiAgentRunResult", "MultiAgentRunStatus", "DebateCoordinator",
+    "GroupChatCoordinator", "HierarchicalCoordinator", "MultiAgentCoordinator",
+    "MultiAgentMembershipPort", "MultiAgentTransportPort",
+    "TransportBackedMultiAgentCoordinator", "SQLiteMultiAgentJournal",
 ]

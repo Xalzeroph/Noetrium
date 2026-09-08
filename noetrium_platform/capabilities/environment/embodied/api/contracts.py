@@ -65,7 +65,7 @@ class EmbodiedEventKind(StrEnum):
 @dataclass(frozen=True, slots=True)
 class SensorSpec:
     sensor_id: str
-    modality: SensorModality
+    modality: SensorModality | str
     frame_id: str
     dtype: str
     shape: tuple[int, ...] = ()
@@ -81,14 +81,14 @@ class SensorSpec:
             raise ValueError("sensor shape must contain non-negative integers")
         if type(self.rate_hz) not in (int, float) or self.rate_hz < 0:
             raise ValueError("sensor rate_hz must be non-negative")
-        if not isinstance(self.modality, SensorModality):
-            raise TypeError("sensor modality must use SensorModality")
+        if not isinstance(self.modality, (SensorModality, str)) or not str(self.modality).strip():
+            raise TypeError("sensor modality must be a non-empty SensorModality or open modality string")
         object.__setattr__(self, "metadata", freeze_json(self.metadata))
 
     def record(self) -> JsonObject:
         return {
             "sensor_id": self.sensor_id,
-            "modality": self.modality.value,
+            "modality": self.modality.value if isinstance(self.modality, SensorModality) else self.modality,
             "frame_id": self.frame_id,
             "dtype": self.dtype,
             "shape": list(self.shape),

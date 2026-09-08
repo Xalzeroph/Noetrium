@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping
 from importlib import resources
 from pathlib import Path
 import math
+import time
 import shutil
 import subprocess
 from uuid import uuid4
@@ -44,12 +46,19 @@ from noetrium_platform.capabilities.environment.minecraft.composition.environmen
 from noetrium_platform.capabilities.model.api import (
     ModelBindingDiagnostic,
     ModelCapabilityRequirement,
+    MultimodalRequest,
+    MultimodalRequestCodecPort,
     ModelProviderProfile,
     ProjectModelClientPort,
     ProjectModelProviderPort,
+    ProjectModelRequest,
+    ProjectModelResponse,
 )
 from noetrium_platform.capabilities.model.providers import QualifiedModelProjectProvider
-from noetrium_platform.capabilities.model.request.api import ModelRequestRecorderPort
+from noetrium_platform.capabilities.model.request.api import (
+    ContentAddressedStorePort,
+    ModelRequestRecorderPort,
+)
 from noetrium_platform.capabilities.model.request.composition.recorder import (
     build_directory_model_request_recorder,
 )
@@ -71,6 +80,29 @@ from noetrium_platform.capabilities.participant.method.api import (
 from noetrium_platform.capabilities.participant.method.runtime import (
     DefaultMethodEndpointFactory as _DefaultMethodEndpointFactory,
 )
+from noetrium_platform.capabilities.participant.agent.api import (
+    AgentActionExecutorPort,
+    AgentCompletionPort,
+    AgentDiagnosticsPort,
+    AgentEvidencePort,
+    AgentGoal,
+    AgentLoopCheckpoint,
+    AgentLoopResult,
+    AgentMemoryPort,
+    AgentObservationPort,
+    AgentPlannerPort,
+    AgentProgressPort,
+    AgentReactiveModePort,
+    AgentSafetySupervisorPort,
+    AgentSkillCatalogPort,
+    AgentSkillLibraryPort,
+)
+from noetrium_platform.capabilities.participant.agent.runtime import (
+    AgentCognitionLoop,
+    AgentObservationPartSourcePort,
+    MultimodalAgentObservationPort,
+)
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonInput
 from noetrium.contracts.systems.runtime__process import (
     LocalCommandResult,
     LocalCommandStartError,
@@ -141,6 +173,8 @@ from noetrium_platform.research.experimentation.workbench.composition import (
 from noetrium_platform.product.operator.runtime.run_control_application import (
     bind_run_control_application,
 )
+
+
 
 
 class DirectoryRunArtifactBinding:
@@ -736,7 +770,260 @@ def bind_qualified_project_model(
     )
 
 
+def complete_project_model(
+    client: ProjectModelClientPort,
+    recorder: ModelRequestRecorderPort,
+    *,
+    request_id: str,
+    context: ExecutionContext,
+    request_body: Mapping[str, JsonInput],
+    compiled_prompt_text: str | None = None,
+    tool_schema_bundle: JsonInput | None = None,
+    source_artifact_refs: tuple[str, ...] = (),
+    source_state_refs: tuple[str, ...] = (),
+) -> ProjectModelResponse:
+    """Record and execute one qualified project-model generation request.
+
+    The request body remains method/provider-owned. Noetrium owns request
+    identity, provenance recording, endpoint invocation, and response fencing.
+    """
+
+    if not isinstance(client, ProjectModelClientPort):
+        raise TypeError("project model client must satisfy ProjectModelClientPort")
+    if not isinstance(recorder, ModelRequestRecorderPort):
+        raise TypeError("project model recorder must satisfy ModelRequestRecorderPort")
+    if not isinstance(context, ExecutionContext):
+        raise TypeError("project model request context must be an ExecutionContext")
+    if not isinstance(request_body, Mapping):
+        raise TypeError("project model request body must be a mapping")
+    binding = client.binding
+    prompt_fields = (
+        binding.prompt_generation_id,
+        binding.prompt_id,
+        binding.prompt_digest,
+    )
+    if any(value is None for value in prompt_fields):
+        raise ValueError(
+            "complete_project_model requires a generation binding with prompt provenance"
+        )
+    envelope = recorder.record(
+        request_id=request_id,
+        context=context,
+        role=binding.role,
+        model=binding.model,
+        prompt_generation_id=binding.prompt_generation_id,
+        prompt_id=binding.prompt_id,
+        prompt_digest=binding.prompt_digest,
+        request_body=request_body,
+        compiled_prompt_text=compiled_prompt_text,
+        tool_schema_bundle=tool_schema_bundle,
+        source_artifact_refs=source_artifact_refs,
+        source_state_refs=source_state_refs,
+    )
+    request = ProjectModelRequest(
+        requirement_digest=binding.requirement_digest,
+        envelope=envelope,
+        body=request_body,
+    )
+    response = client.complete(request)
+    if response.request_digest != request.request_digest:
+        raise RuntimeError("project model response request provenance drift")
+    if response.binding_digest != binding.digest():
+        raise RuntimeError("project model response binding provenance drift")
+    return response
+
+
+def invoke_multimodal_model(
+    client: ProjectModelClientPort,
+    recorder: ModelRequestRecorderPort,
+    codec: MultimodalRequestCodecPort,
+    content_store: ContentAddressedStorePort,
+    *,
+    request_id: str,
+    context: ExecutionContext,
+    request: MultimodalRequest,
+) -> ProjectModelResponse:
+    """Invoke an arbitrary multimodal method through a provider-owned codec.
+
+    Modality interpretation, serialization, and response decoding stay outside
+    Noetrium. The platform only preserves typed request provenance and the
+    content references used by the method.
+    """
+
+    if not isinstance(codec, MultimodalRequestCodecPort):
+        raise TypeError("multimodal codec must satisfy MultimodalRequestCodecPort")
+    if not isinstance(content_store, ContentAddressedStorePort):
+        raise TypeError("multimodal content store must satisfy ContentAddressedStorePort")
+    if not isinstance(request, MultimodalRequest):
+        raise TypeError("multimodal request must be MultimodalRequest")
+    body = codec.encode(request, content_store)
+    if not isinstance(body, Mapping):
+        raise TypeError("multimodal codec must return a mapping")
+    source_refs = tuple(part.content.sha256 for part in request.parts)
+    return complete_project_model(
+        client,
+        recorder,
+        request_id=request_id,
+        context=context,
+        request_body=body,
+        compiled_prompt_text=request.instruction,
+        source_artifact_refs=source_refs,
+    )
+
+
+class AgentResearchRuntimeBinding:
+    """Public high-level composition of the environment-neutral cognition loop.
+
+    Papers inject their method policies and providers through typed ports.
+    Noetrium owns sequencing, budgets, checkpoints and diagnostics.
+    """
+
+    def __init__(
+        self,
+        *,
+        observation: AgentObservationPort,
+        planner: AgentPlannerPort,
+        skills: AgentSkillCatalogPort,
+        executor: AgentActionExecutorPort,
+        memory: AgentMemoryPort,
+        safety: AgentSafetySupervisorPort,
+        completion: AgentCompletionPort,
+        evidence: AgentEvidencePort,
+        progress: AgentProgressPort,
+        skill_library: AgentSkillLibraryPort | None = None,
+        reactive_modes: AgentReactiveModePort | None = None,
+        diagnostics: AgentDiagnosticsPort | None = None,
+        clock: Callable[[], float] | None = None,
+    ) -> None:
+        required = {
+            "observation": ("observe",),
+            "planner": ("plan",),
+            "skills": ("describe", "expand"),
+            "executor": ("execute",),
+            "memory": ("checkpoint", "restore", "recall", "record"),
+            "safety": ("review",),
+            "completion": ("is_complete",),
+            "evidence": ("ingest",),
+            "progress": ("persist",),
+        }
+        supplied = {
+            "observation": observation,
+            "planner": planner,
+            "skills": skills,
+            "executor": executor,
+            "memory": memory,
+            "safety": safety,
+            "completion": completion,
+            "evidence": evidence,
+            "progress": progress,
+        }
+        for role, methods in required.items():
+            if any(not callable(getattr(supplied[role], name, None)) for name in methods):
+                raise TypeError(f"agent research runtime {role} port is incomplete")
+        optional = (
+            ("skill_library", skill_library, ("search", "record")),
+            ("reactive_modes", reactive_modes, ("review",)),
+            ("diagnostics", diagnostics, ("event", "failure")),
+        )
+        for role, value, methods in optional:
+            if value is not None and any(not callable(getattr(value, name, None)) for name in methods):
+                raise TypeError(f"agent research runtime {role} port is incomplete")
+        self._loop = AgentCognitionLoop(
+            observation=observation,
+            planner=planner,
+            skills=skills,
+            executor=executor,
+            memory=memory,
+            safety=safety,
+            completion=completion,
+            evidence=evidence,
+            progress=progress,
+            skill_library=skill_library,
+            reactive_modes=reactive_modes,
+            diagnostics=diagnostics,
+            clock=clock or time.monotonic,
+        )
+        self._closed = False
+
+    @property
+    def loop(self) -> AgentCognitionLoop:
+        if self._closed:
+            raise RuntimeError("agent research runtime binding is closed")
+        return self._loop
+
+    def run(
+        self,
+        goal: AgentGoal,
+        context: ExecutionContext,
+        *,
+        session_id: str | None = None,
+        checkpoint: AgentLoopCheckpoint | None = None,
+    ) -> AgentLoopResult:
+        if self._closed:
+            raise RuntimeError("agent research runtime binding is closed")
+        return self._loop.run(
+            goal,
+            context,
+            session_id=session_id,
+            checkpoint=checkpoint,
+        )
+
+    def diagnostic_failures(self) -> tuple[dict[str, object], ...]:
+        if self._closed:
+            raise RuntimeError("agent research runtime binding is closed")
+        return self._loop.diagnostic_failures()
+
+    def close(self) -> None:
+        self._closed = True
+
+    def __enter__(self) -> "AgentResearchRuntimeBinding":
+        if self._closed:
+            raise RuntimeError("agent research runtime binding is closed")
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        self.close()
+
+
+def bind_agent_research_runtime(
+    *,
+    observation: AgentObservationPort,
+    planner: AgentPlannerPort,
+    skills: AgentSkillCatalogPort,
+    executor: AgentActionExecutorPort,
+    memory: AgentMemoryPort,
+    safety: AgentSafetySupervisorPort,
+    completion: AgentCompletionPort,
+    evidence: AgentEvidencePort,
+    progress: AgentProgressPort,
+    skill_library: AgentSkillLibraryPort | None = None,
+    reactive_modes: AgentReactiveModePort | None = None,
+    diagnostics: AgentDiagnosticsPort | None = None,
+    clock: Callable[[], float] | None = None,
+) -> AgentResearchRuntimeBinding:
+    """Bind any cognition method to Noetrium's public research host."""
+
+    return AgentResearchRuntimeBinding(
+        observation=observation,
+        planner=planner,
+        skills=skills,
+        executor=executor,
+        memory=memory,
+        safety=safety,
+        completion=completion,
+        evidence=evidence,
+        progress=progress,
+        skill_library=skill_library,
+        reactive_modes=reactive_modes,
+        diagnostics=diagnostics,
+        clock=clock,
+    )
+
+
 __all__ = [
+    "AgentResearchRuntimeBinding",
+    "AgentObservationPartSourcePort",
+    "MultimodalAgentObservationPort",
     "DirectoryRunArtifactBinding",
     "MinecraftEnvironmentBinding",
     "QualifiedProjectModelBinding",
@@ -747,6 +1034,8 @@ __all__ = [
     "ResearchRequest", "ResearchResult", "bind_bundled_minecraft_environment",
     "bind_directory_run_artifact_store", "bind_durable_run_control",
     "bind_environment_category_catalog", "bind_minecraft_environment", "bind_qualified_project_model",
+    "bind_agent_research_runtime",
+    "complete_project_model", "invoke_multimodal_model",
     "bind_method_endpoint", "run_local_shell_command",
     "bind_research_workbench", "bind_run_control_application",
     "bind_study_matrix_execution", "build_basic_study_metric_aggregation",
