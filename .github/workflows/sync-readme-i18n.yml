@@ -1,0 +1,37 @@
+name: sync-readme-i18n
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'codex/server-sync-20260908'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout synchronization branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/server-sync-20260908
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Mark generated Tier-1 README surface current
+        run: python scripts/readme_i18n.py mark-current en zh-CN zh-TW ja ko
+      - name: Verify multilingual README state
+        run: python scripts/check_readme_i18n.py
+      - name: Remove one-shot synchronization workflow
+        run: git rm .github/workflows/sync-readme-i18n.yml
+      - name: Commit synchronized freshness state
+        run: |
+          git config user.name 'Noetrium README Sync'
+          git config user.email 'noetrium-readme-sync@users.noreply.github.com'
+          git add README.md README.zh-CN.md README.zh-TW.md README.ja.md README.ko.md docs/readme/TRANSLATION_STATE.json
+          git commit -m 'docs: synchronize generated README freshness'
+          git push origin HEAD:codex/server-sync-20260908
