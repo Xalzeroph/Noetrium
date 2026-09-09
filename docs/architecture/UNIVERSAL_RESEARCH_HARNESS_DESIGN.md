@@ -90,6 +90,27 @@ provider identities, or storage records. `MethodProgramBuilder` also exposes
 typed `compute`, `capability`, `agent`, `route`, `checkpoint`, `interrupt`, and
 `return_node` helpers so common method definitions do not repeat ABI plumbing.
 
+The supported application entrypoint is the product facade, not the internal
+runtime namespace:
+
+```python
+from noetrium.platform import (
+    bind_method_checkpoint_store,
+    bind_universal_method_machine,
+    run_method_program,
+)
+
+checkpoint_store = bind_method_checkpoint_store("state/method-checkpoints")
+machine = bind_universal_method_machine(checkpoint_store=checkpoint_store)
+result = run_method_program(program, runtime=runtime, machine=machine)
+```
+
+`run_method_program_async` is the async sibling. Downstream projects may use
+the generated contracts for method definitions and the `noetrium.platform`
+facade for composition, but must not import `noetrium_platform` runtime
+implementations directly. This keeps loop policy, durable checkpoint format,
+resume validation, and future provider substitution under one upstream owner.
+
 The ABI is intentionally open at the node function boundary. A node can host a
 ReAct loop, plan-and-execute, tree search, debate, self-reflection, simulator
 control, active data collection, human approval, or a conventional fixed

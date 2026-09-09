@@ -236,3 +236,25 @@ def test_platform_facade_binds_durable_method_checkpoints(tmp_path: Path) -> Non
 
     store = bind_method_checkpoint_store(tmp_path / "method-checkpoints")
     assert isinstance(store, JsonMethodCheckpointStore)
+
+
+def test_platform_facade_exposes_async_execution() -> None:
+    import asyncio
+
+    from noetrium.platform import run_method_program_async
+
+    program = (
+        MethodProgramBuilder(_identity(), entrypoint="return")
+        .return_node("return", "test.async-facade", lambda request: MethodNodeResult(value={"async": True}))
+        .build()
+    )
+
+    async def execute():
+        return await run_method_program_async(
+            program,
+            runtime=MethodRuntimeContext(_context("platform-async-facade-v2-run")),
+        )
+
+    result = asyncio.run(execute())
+    assert result.status.value == "succeeded"
+    assert result.value == {"async": True}
