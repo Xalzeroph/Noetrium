@@ -864,6 +864,20 @@ def bind_universal_method_machine(
     )
 
 
+def bind_method_checkpoint_store(root: str | Path) -> MethodCheckpointStorePort:
+    """Bind the platform-owned crash-durable method checkpoint provider.
+
+    Downstream methods can request durable checkpointing without importing a
+    provider implementation from ``noetrium_platform``.  The returned port is
+    compatible with :func:`bind_universal_method_machine` and preserves the
+    platform's checkpoint digest and monotonicity rules.
+    """
+
+    from noetrium_platform.research.execution.workflow.providers import JsonMethodCheckpointStore
+
+    return JsonMethodCheckpointStore(root)
+
+
 def run_method_program(
     program: MethodProgram,
     *,
@@ -1109,7 +1123,7 @@ __all__ = [
     "bind_environment_category_catalog", "bind_minecraft_environment", "bind_qualified_project_model",
     "bind_agent_research_runtime",
     "complete_project_model", "invoke_multimodal_model",
-    "bind_universal_method_machine", "run_method_program", "run_method_program_async",
+    "bind_universal_method_machine", "bind_method_checkpoint_store", "run_method_program", "run_method_program_async",
     "bind_method_endpoint", "run_local_shell_command",
     "bind_research_workbench", "bind_run_control_application",
     "bind_study_matrix_execution", "build_basic_study_metric_aggregation",
