@@ -362,8 +362,42 @@ class OpenAICompatibleModelEndpoint(ModelEndpointPort):
         choice = choices[0]
         message = choice.get("message")
         text = message.get("content") if isinstance(message, Mapping) else choice.get("text")
-        if not isinstance(text, str) or not text.strip():
-            raise ModelEndpointError("model endpoint choice has no text content")
+        if text is None:
+            text = ""
+        if not isinstance(text, str):
+            raise ModelEndpointError("model endpoint choice content must be text")
+        raw_tool_calls = message.get("tool_calls", ()) if isinstance(message, Mapping) else ()
+        if not isinstance(raw_tool_calls, (tuple, list)):
+            raise ModelEndpointError("model endpoint tool_calls must be an array")
+        tool_calls = []
+        for row in raw_tool_calls:
+            if not isinstance(row, Mapping):
+                raise ModelEndpointError("model endpoint tool_call must be an object")
+            call_id = row.get("id")
+            function = row.get("function")
+            if not isinstance(call_id, str) or not call_id.strip() or not isinstance(function, Mapping):
+                raise ModelEndpointError("model endpoint tool_call identity is malformed")
+            name = function.get("name")
+            raw_arguments = function.get("arguments", "{}")
+            if not isinstance(name, str) or not name.strip():
+                raise ModelEndpointError("model endpoint tool_call function name is malformed")
+            if isinstance(raw_arguments, str):
+                try:
+                    arguments = json.loads(raw_arguments)
+                except json.JSONDecodeError as exc:
+                    raise ModelEndpointError("model endpoint tool_call arguments are invalid JSON") from exc
+            else:
+                arguments = raw_arguments
+            if not isinstance(arguments, Mapping):
+                raise ModelEndpointError("model endpoint tool_call arguments must be an object")
+            tool_calls.append({
+                "id": call_id,
+                "type": "function",
+                "function": {"name": name, "arguments": dict(arguments)},
+            })
+        tool_calls = tuple(tool_calls)
+        if not text.strip() and not tool_calls:
+            raise ModelEndpointError("model endpoint choice has no text or tool_calls")
         usage = response.body.get("usage")
         input_tokens = usage.get("prompt_tokens") if isinstance(usage, Mapping) else None
         output_tokens = usage.get("completion_tokens") if isinstance(usage, Mapping) else None
@@ -378,6 +412,7 @@ class OpenAICompatibleModelEndpoint(ModelEndpointPort):
             request_id=request.request.request_id,
             deployment_id=request.deployment_id,
             text=text,
+            tool_calls=tool_calls,
             finish_reason=finish_reason,
             input_tokens=input_tokens,
             output_tokens=output_tokens,

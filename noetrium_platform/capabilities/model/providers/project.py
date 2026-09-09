@@ -106,6 +106,7 @@ class _QualifiedProjectModelClient:
             binding_digest=self._binding.digest(),
             response_digest=response.response_digest,
             text=response.text,
+            tool_calls=response.tool_calls,
             finish_reason=response.finish_reason,
             input_tokens=response.input_tokens,
             output_tokens=response.output_tokens,
