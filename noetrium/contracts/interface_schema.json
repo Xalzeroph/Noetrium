@@ -25796,6 +25796,11 @@
                   "annotation": "str",
                   "default": null,
                   "name": "surface_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "reuse_scope"
                 }
               ],
               "kind": "class",

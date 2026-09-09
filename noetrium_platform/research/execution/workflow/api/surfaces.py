@@ -34,6 +34,7 @@ class WorkflowSurfaceReuseScope(StrEnum):
 @runtime_checkable
 class WorkflowSurfaceFactory(Protocol):
     surface_id: str
+    reuse_scope: str
 
     def bind(self, context: WorkflowSurfaceBindingContext) -> object: ...
 
