@@ -1,3 +1,4 @@
+from .adapters import MethodGraphProgramAdapter, ResearchMethodProgramAdapter
 from .trial import TrialCycleExecution
 from .errors import WorkflowParticipantRequirementError
 from .surfaces import (
@@ -36,7 +37,7 @@ from .progress import (
 )
 
 __all__ = [
-    "EffectIntentOperationPort", "OperationDispatchPort", "OperationExecutionPort", "TrialCycleExecution", "WorkflowGraph",
+    "MethodGraphProgramAdapter", "ResearchMethodProgramAdapter", "EffectIntentOperationPort", "OperationDispatchPort", "OperationExecutionPort", "TrialCycleExecution", "WorkflowGraph",
     "WorkflowGraphError", "WorkflowOperationBinding", "WorkflowParticipantRequirementError", "WorkflowProgress",
     "WorkflowProgressConflict", "WorkflowProgressCorruption", "WorkflowProgressStorePort", "WorkflowRunId",
     "WorkflowStep", "WorkflowSurfaceBindingContext", "WorkflowSurfaceFactory",
