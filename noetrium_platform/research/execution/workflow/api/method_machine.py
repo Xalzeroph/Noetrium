@@ -432,6 +432,21 @@ class MethodRunResult:
         object.__setattr__(self, "state", freeze_json(self.state))
 
 
+@runtime_checkable
+class MethodEvidencePort(Protocol):
+    """Authoritative evidence sink injected by composition."""
+
+    def record_checkpoint(self, checkpoint: MethodCheckpoint) -> None: ...
+    def record_result(self, result: MethodRunResult) -> None: ...
+
+
+@runtime_checkable
+class MethodObservationPort(Protocol):
+    """Non-authoritative observation sink; failures must not change method truth."""
+
+    def publish(self, event: MethodEvent, context: ExecutionContext) -> None: ...
+
+
 @dataclass(frozen=True, slots=True)
 class MethodRuntimeContext:
     """Explicit dependency bundle; there is no ambient service registry."""
@@ -439,6 +454,8 @@ class MethodRuntimeContext:
     execution: ExecutionContext
     capabilities: CapabilityPort | None = None
     dispatcher: OperationDispatchPort | None = None
+    evidence: MethodEvidencePort | None = None
+    observation: MethodObservationPort | None = None
     async_dispatcher: "AsyncOperationDispatchPort | None" = None
     binding_plan_digest: str | None = None
     runtime_binding_digest: str | None = None
@@ -487,8 +504,8 @@ class AsyncOperationDispatchPort(Protocol):
 
 
 __all__ = [
-    "AsyncOperationDispatchPort", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvent",
+    "AsyncOperationDispatchPort", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidencePort", "MethodEvent",
     "MethodExecutionClass", "MethodGraph", "MethodInterrupt", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest",
-    "MethodNodeResult", "MethodNodeSpec", "MethodProgram", "MethodProgramBuilder", "MethodRunResult",
-    "MethodMachinePort", "MethodRunStatus", "MethodRuntimeContext",
+    "MethodNodeResult", "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder",
+    "MethodRunResult", "MethodMachinePort", "MethodRunStatus", "MethodRuntimeContext",
 ]
