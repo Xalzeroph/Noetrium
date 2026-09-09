@@ -168,7 +168,7 @@ class UniversalMethodMachine:
                                     failure=f"node visit limit reached: {node.node_id}")
             try:
                 request = self._request(program, runtime, input_value, state, node.node_id, visit)
-                node_result = await self._invoke_async(program, runtime, node, request)
+                node_result = await self._invoke_async(program, runtime, node, request, state.sequence)
             except Exception as exc:
                 return self._result(MethodRunStatus.FAILED, program, runtime, state,
                                     failure=f"{type(exc).__qualname__}: {exc}")
@@ -279,7 +279,7 @@ class UniversalMethodMachine:
         return node_result, operation.effect_receipts
 
     async def _invoke_async(self, program: MethodProgram, runtime: MethodRuntimeContext, node: object,
-                            request: MethodNodeRequest) -> MethodNodeResult:
+                            request: MethodNodeRequest, sequence: int) -> MethodNodeResult:
         dispatcher = runtime.async_dispatcher
         if dispatcher is None and callable(getattr(runtime.dispatcher, "dispatch_async", None)):
             dispatcher = runtime.dispatcher
@@ -297,7 +297,7 @@ class UniversalMethodMachine:
             "program_digest": program.program_digest,
             "node_id": request.node_id,
             "visit": request.visit,
-            "sequence": request.context.sequence,
+            "sequence": sequence,
             "state_digest": canonical_digest(request.state),
             "effect_class": node.effect_class.value,
         }
