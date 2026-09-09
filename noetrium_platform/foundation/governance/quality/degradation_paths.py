@@ -7,6 +7,7 @@ from typing import Iterator
 
 _AUDIT_IMPLEMENTATION_FILES = {
     "noetrium_platform/foundation/governance/quality/degradation_contracts.py",
+    "noetrium_platform/foundation/governance/quality/api/contracts.py",
     "noetrium_platform/foundation/governance/quality/degradation_paths.py",
     "noetrium_platform/foundation/governance/quality/degradation_python_scan.py",
     "noetrium_platform/foundation/governance/quality/degradation_config_scan.py",

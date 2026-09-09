@@ -24462,9 +24462,27 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "WorkflowSurfaceReuseScope",
+              "origin_module": ".surfaces",
+              "origin_name": "WorkflowSurfaceReuseScope",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "workflow_surface_id",
               "origin_module": ".surfaces",
               "origin_name": "workflow_surface_id",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "workflow_surface_reuse_scope",
+              "origin_module": ".surfaces",
+              "origin_name": "workflow_surface_reuse_scope",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             }
@@ -24486,7 +24504,9 @@
             "WorkflowStep",
             "WorkflowSurfaceBindingContext",
             "WorkflowSurfaceFactory",
-            "workflow_surface_id"
+            "WorkflowSurfaceReuseScope",
+            "workflow_surface_id",
+            "workflow_surface_reuse_scope"
           ]
         },
         {
@@ -25776,6 +25796,11 @@
                   "annotation": "str",
                   "default": null,
                   "name": "surface_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "reuse_scope"
                 }
               ],
               "kind": "class",
@@ -25815,6 +25840,43 @@
               "schema_version": "1"
             },
             {
+              "bases": [
+                "StrEnum"
+              ],
+              "decorators": [],
+              "doc": "Lifetime for a workflow surface binding.\n\n``cycle`` is the compatibility-safe default for stateful or unknown\ndownstream surfaces.  ``run`` is appropriate only when the surface owns\nrun-scoped collaborators and keeps no decision-cycle input in its\nconstructor.",
+              "fields": [],
+              "kind": "class",
+              "members": [
+                "CYCLE",
+                "RUN"
+              ],
+              "methods": [],
+              "name": "WorkflowSurfaceReuseScope",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "decorators": [],
+              "doc": "Resolve the explicitly declared binding lifetime for one surface factory.",
+              "kind": "function",
+              "name": "workflow_surface_reuse_scope",
+              "parameters": [
+                {
+                  "annotation": "WorkflowSurfaceFactory",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "factory",
+                  "receiver": false,
+                  "required": true
+                }
+              ],
+              "return_annotation": "WorkflowSurfaceReuseScope",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1",
+              "signature": "def workflow_surface_reuse_scope(factory: WorkflowSurfaceFactory) -> WorkflowSurfaceReuseScope:"
+            },
+            {
               "decorators": [],
               "doc": null,
               "kind": "function",
@@ -25838,6 +25900,8 @@
           "symbols": [
             "WorkflowSurfaceBindingContext",
             "WorkflowSurfaceFactory",
+            "WorkflowSurfaceReuseScope",
+            "workflow_surface_reuse_scope",
             "workflow_surface_id"
           ]
         },
@@ -135026,5 +135090,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "a6a6e15a0288ba7acc23a378d3b928067da1be62005febdac711e4a26b0b50cc"
+  "topology_digest": "c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7"
 }

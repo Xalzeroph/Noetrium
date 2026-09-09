@@ -2152,7 +2152,9 @@
       "providers",
       "composition"
     ],
-    "requires": [],
+    "requires": [
+      "model"
+    ],
     "provides": [
       "agent.contract"
     ],

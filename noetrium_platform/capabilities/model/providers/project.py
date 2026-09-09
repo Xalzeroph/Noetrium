@@ -128,6 +128,10 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
         self._bindings = bindings
         self._endpoint_factory = endpoint_factory
         self._model_requests = model_requests
+        # A provider lifetime is the run-scoped qualification boundary. Keep one
+        # immutable project client per typed requirement so repeated downstream
+        # binds do not reload receipts or rematerialize the endpoint.
+        self._client_cache: dict[str, ProjectModelClientPort] = {}
 
     @property
     def profile(self) -> ModelProviderProfile:
@@ -205,6 +209,12 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
         return diagnostics
 
     def bind(self, requirement: ModelCapabilityRequirement) -> ProjectModelClientPort:
+        if not isinstance(requirement, ModelCapabilityRequirement):
+            raise TypeError("project model requirement must be typed")
+        cache_key = requirement.digest()
+        cached = self._client_cache.get(cache_key)
+        if cached is not None:
+            return cached
         binding, diagnostics = self._resolve(requirement)
         if diagnostics or binding is None:
             raise ModelProjectBindingError(diagnostics)
@@ -256,9 +266,11 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
                     ),
                 )
             )
-        return _QualifiedProjectModelClient(
+        client = _QualifiedProjectModelClient(
             project_binding, requirement, endpoint, self._model_requests
         )
+        self._client_cache[cache_key] = client
+        return client
 
 
 __all__ = ["EndpointFactory", "QualifiedModelProjectProvider"]

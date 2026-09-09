@@ -232,6 +232,41 @@ def test_model_provider_conformance_and_binding_hide_route_process_details() -> 
     assert not hasattr(client.binding, "process_start_marker")
 
 
+def test_generation_binding_is_materialized_once_per_requirement() -> None:
+    requirement = _requirement()
+    binding = _qualified_binding()
+
+    class CountingBindingPort(_BindingPort):
+        def __init__(self, value):
+            super().__init__(value)
+            self.calls = 0
+
+        def binding_for(self, *, role: str, prompt_generation: str):
+            self.calls += 1
+            return super().binding_for(role=role, prompt_generation=prompt_generation)
+
+    bindings = CountingBindingPort(binding)
+    endpoint_calls = []
+
+    def factory(value):
+        endpoint_calls.append(value)
+        return _endpoint_factory(value)
+
+    provider = QualifiedModelProjectProvider(
+        ModelProviderProfile("qualified-local", ("chat", "tools")),
+        bindings,
+        factory,
+        _RequestVerifier(),  # type: ignore[arg-type]
+    )
+
+    first = provider.bind(requirement)
+    second = provider.bind(requirement)
+
+    assert first is second
+    assert bindings.calls == 1
+    assert len(endpoint_calls) == 1
+
+
 def test_model_request_binds_exact_prompt_tool_and_deployment_provenance() -> None:
     requirement = _requirement()
     client = _provider(_qualified_binding()).bind(requirement)

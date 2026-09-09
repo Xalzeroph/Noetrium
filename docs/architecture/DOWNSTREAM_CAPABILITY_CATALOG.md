@@ -20,8 +20,8 @@ Example:
 
 - Registered systems: 172
 - Public API modules: 500
-- Public symbols: 3659
-- Registry digest: a6a6e15a0288ba7acc23a378d3b928067da1be62005febdac711e4a26b0b50cc
+- Public symbols: 3663
+- Registry digest: c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7
 
 ## Capability domains
 
@@ -31,7 +31,7 @@ Example:
 | components | 1 | 1 | 49 |
 | data | 8 | 20 | 106 |
 | environment | 18 | 53 | 444 |
-| execution | 7 | 31 | 179 |
+| execution | 7 | 31 | 183 |
 | experimentation | 15 | 59 | 576 |
 | governance | 13 | 33 | 307 |
 | model | 16 | 54 | 476 |
@@ -715,13 +715,13 @@ Example:
 
 #### API modules
 
-- noetrium_platform.research.execution.workflow.api ?w^~)?t EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowOperationBinding, WorkflowParticipantRequirementError, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, workflow_surface_id
+- noetrium_platform.research.execution.workflow.api ?w^~)?t EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowOperationBinding, WorkflowParticipantRequirementError, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_id, workflow_surface_reuse_scope
 - noetrium_platform.research.execution.workflow.api.dispatch ?w^~)?t OperationDispatchPort, OperationExecutionPort
 - noetrium_platform.research.execution.workflow.api.effect_intents ?w^~)?t EffectIntentOperationPort
 - noetrium_platform.research.execution.workflow.api.errors ?w^~)?t WorkflowParticipantRequirementError
 - noetrium_platform.research.execution.workflow.api.graph ?w^~)?t WorkflowGraph, WorkflowGraphError, WorkflowStep
 - noetrium_platform.research.execution.workflow.api.progress ?w^~)?t WorkflowOperationBinding, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId
-- noetrium_platform.research.execution.workflow.api.surfaces ?w^~)?t WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, workflow_surface_id
+- noetrium_platform.research.execution.workflow.api.surfaces ?w^~)?t WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_reuse_scope, workflow_surface_id
 - noetrium_platform.research.execution.workflow.api.trial ?w^~)?t TrialCycleExecution
 
 ### experimentation
@@ -2061,7 +2061,7 @@ Example:
 - Authority: agent_identity
 - Owns: agent participant contracts, provider-independent agent identity and bounded cognition-loop orchestration
 - Must not own: model serving lifecycle
-- Requires: none
+- Requires: model
 - Provides: agent.contract
 - Downstream surface: public
 - Facade: noetrium.contracts.systems.participant__agent

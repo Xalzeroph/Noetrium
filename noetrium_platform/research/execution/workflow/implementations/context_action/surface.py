@@ -7,6 +7,7 @@ from .context_action_operations import ContextActionTrialOperations
 
 class ContextActionSurfaceFactory:
     surface_id = "context_action.operations.v1"
+    reuse_scope = "run"
 
     @staticmethod
     def bind(context: WorkflowSurfaceBindingContext) -> ContextActionTrialOperations:

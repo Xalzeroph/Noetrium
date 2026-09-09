@@ -3,6 +3,8 @@ from __future__ import annotations
 from noetrium_platform.research.execution.workflow.api import (
     WorkflowSurfaceBindingContext,
     WorkflowSurfaceFactory,
+    WorkflowSurfaceReuseScope,
+    workflow_surface_reuse_scope,
     workflow_surface_id,
 )
 
@@ -21,6 +23,13 @@ class ExperimentWorkflowSurfaceRegistry:
         except KeyError as exc:
             raise LookupError(f"no workflow surface factory for surface_id={surface_id!r}") from exc
         return factory.bind(context)
+
+    def reuse_scope(self, surface_id: str) -> WorkflowSurfaceReuseScope:
+        try:
+            factory = self._factories[surface_id]
+        except KeyError as exc:
+            raise LookupError(f"no workflow surface factory for surface_id={surface_id!r}") from exc
+        return workflow_surface_reuse_scope(factory)
 
 
 __all__ = ["ExperimentWorkflowSurfaceRegistry"]

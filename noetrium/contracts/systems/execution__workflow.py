@@ -23,7 +23,9 @@ from noetrium_platform.research.execution.workflow.api import (
     WorkflowStep,
     WorkflowSurfaceBindingContext,
     WorkflowSurfaceFactory,
+    WorkflowSurfaceReuseScope,
     workflow_surface_id,
+    workflow_surface_reuse_scope,
 )
 
 from noetrium_platform.research.execution.workflow.api.dispatch import (
@@ -57,6 +59,8 @@ from noetrium_platform.research.execution.workflow.api.progress import (
 from noetrium_platform.research.execution.workflow.api.surfaces import (
     WorkflowSurfaceBindingContext as surfaces__WorkflowSurfaceBindingContext,
     WorkflowSurfaceFactory as surfaces__WorkflowSurfaceFactory,
+    WorkflowSurfaceReuseScope as surfaces__WorkflowSurfaceReuseScope,
+    workflow_surface_reuse_scope as surfaces__workflow_surface_reuse_scope,
     workflow_surface_id as surfaces__workflow_surface_id,
 )
 
@@ -66,4 +70,4 @@ from noetrium_platform.research.execution.workflow.api.trial import (
 
 SYSTEM_KEY = 'execution/workflow'
 PACKAGE_PREFIX = 'noetrium_platform.research.execution.workflow'
-__all__ = ('EffectIntentOperationPort', 'OperationDispatchPort', 'OperationExecutionPort', 'TrialCycleExecution', 'WorkflowGraph', 'WorkflowGraphError', 'WorkflowOperationBinding', 'WorkflowParticipantRequirementError', 'WorkflowProgress', 'WorkflowProgressConflict', 'WorkflowProgressCorruption', 'WorkflowProgressStorePort', 'WorkflowRunId', 'WorkflowStep', 'WorkflowSurfaceBindingContext', 'WorkflowSurfaceFactory', 'workflow_surface_id', 'dispatch__OperationDispatchPort', 'dispatch__OperationExecutionPort', 'effect_intents__EffectIntentOperationPort', 'errors__WorkflowParticipantRequirementError', 'graph__WorkflowGraph', 'graph__WorkflowGraphError', 'graph__WorkflowStep', 'progress__WorkflowOperationBinding', 'progress__WorkflowProgress', 'progress__WorkflowProgressConflict', 'progress__WorkflowProgressCorruption', 'progress__WorkflowProgressStorePort', 'progress__WorkflowRunId', 'surfaces__WorkflowSurfaceBindingContext', 'surfaces__WorkflowSurfaceFactory', 'surfaces__workflow_surface_id', 'trial__TrialCycleExecution')
+__all__ = ('EffectIntentOperationPort', 'OperationDispatchPort', 'OperationExecutionPort', 'TrialCycleExecution', 'WorkflowGraph', 'WorkflowGraphError', 'WorkflowOperationBinding', 'WorkflowParticipantRequirementError', 'WorkflowProgress', 'WorkflowProgressConflict', 'WorkflowProgressCorruption', 'WorkflowProgressStorePort', 'WorkflowRunId', 'WorkflowStep', 'WorkflowSurfaceBindingContext', 'WorkflowSurfaceFactory', 'WorkflowSurfaceReuseScope', 'workflow_surface_id', 'workflow_surface_reuse_scope', 'dispatch__OperationDispatchPort', 'dispatch__OperationExecutionPort', 'effect_intents__EffectIntentOperationPort', 'errors__WorkflowParticipantRequirementError', 'graph__WorkflowGraph', 'graph__WorkflowGraphError', 'graph__WorkflowStep', 'progress__WorkflowOperationBinding', 'progress__WorkflowProgress', 'progress__WorkflowProgressConflict', 'progress__WorkflowProgressCorruption', 'progress__WorkflowProgressStorePort', 'progress__WorkflowRunId', 'surfaces__WorkflowSurfaceBindingContext', 'surfaces__WorkflowSurfaceFactory', 'surfaces__WorkflowSurfaceReuseScope', 'surfaces__workflow_surface_reuse_scope', 'surfaces__workflow_surface_id', 'trial__TrialCycleExecution')

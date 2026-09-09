@@ -2151,7 +2151,9 @@
             "WorkflowStep",
             "WorkflowSurfaceBindingContext",
             "WorkflowSurfaceFactory",
-            "workflow_surface_id"
+            "WorkflowSurfaceReuseScope",
+            "workflow_surface_id",
+            "workflow_surface_reuse_scope"
           ]
         },
         {
@@ -2203,6 +2205,8 @@
           "symbols": [
             "WorkflowSurfaceBindingContext",
             "WorkflowSurfaceFactory",
+            "WorkflowSurfaceReuseScope",
+            "workflow_surface_reuse_scope",
             "workflow_surface_id"
           ]
         },
@@ -6572,7 +6576,9 @@
       "provides": [
         "agent.contract"
       ],
-      "requires": [],
+      "requires": [
+        "model"
+      ],
       "system_key": "participant/agent"
     },
     {
@@ -9192,5 +9198,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "a6a6e15a0288ba7acc23a378d3b928067da1be62005febdac711e4a26b0b50cc"
+  "topology_digest": "c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7"
 }
