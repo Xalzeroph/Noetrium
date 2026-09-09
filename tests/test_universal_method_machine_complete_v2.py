@@ -211,3 +211,21 @@ def test_evidence_obligations_are_not_reported_complete_without_authoritative_si
     result = UniversalMethodMachine().run(program, runtime=MethodRuntimeContext(_context()))
     assert result.status.value == "succeeded"
     assert result.evidence_status is MethodEvidenceStatus.INCOMPLETE
+
+
+def test_platform_facade_hosts_the_universal_machine_without_runtime_imports() -> None:
+    from noetrium.platform import bind_universal_method_machine, run_method_program
+
+    program = (
+        MethodProgramBuilder(_identity(), entrypoint="return")
+        .return_node("return", "test.facade", lambda request: MethodNodeResult(value={"ok": True}))
+        .build()
+    )
+    machine = bind_universal_method_machine()
+    result = run_method_program(
+        program,
+        runtime=MethodRuntimeContext(_context("platform-facade-v2-run")),
+        machine=machine,
+    )
+    assert result.status.value == "succeeded"
+    assert result.value == {"ok": True}
