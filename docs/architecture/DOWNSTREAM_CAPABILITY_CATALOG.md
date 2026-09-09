@@ -21,7 +21,7 @@ Example:
 - Registered systems: 172
 - Public API modules: 500
 - Public symbols: 3659
-- Registry digest: a6a6e15a0288ba7acc23a378d3b928067da1be62005febdac711e4a26b0b50cc
+- Registry digest: c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7
 
 ## Capability domains
 
