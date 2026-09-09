@@ -2,6 +2,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from noetrium_platform.foundation.governance.quality import scan_no_degradation
+from noetrium_platform.foundation.governance.quality.degradation_paths import is_excluded_path
 
 class NoDegradationV21Tests(unittest.TestCase):
     def test_detects_explicit_runtime_degradation_api(self):
@@ -21,3 +22,9 @@ def test_runtime_state_directories_are_outside_the_source_audit(tmp_path):
         target.mkdir(parents=True, exist_ok=True)
         (target / "state.json").write_text('{"fallback_model": "unsafe"}', encoding="utf-8")
     assert scan_no_degradation(tmp_path) == ()
+
+
+def test_degradation_vocabulary_contract_is_not_self_scanned():
+    assert is_excluded_path(
+        Path("noetrium_platform/foundation/governance/quality/api/contracts.py")
+    )
