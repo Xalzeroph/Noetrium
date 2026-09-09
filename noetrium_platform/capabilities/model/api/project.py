@@ -381,6 +381,7 @@ class ProjectModelResponse:
     binding_digest: str
     response_digest: str
     text: str
+    tool_calls: JsonValue = ()
     finish_reason: str | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None

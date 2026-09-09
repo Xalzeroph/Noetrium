@@ -144,6 +144,7 @@ class ModelEndpointResponse:
     request_id: str
     deployment_id: str
     text: str
+    tool_calls: JsonValue = ()
     finish_reason: str | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None
@@ -153,8 +154,13 @@ class ModelEndpointResponse:
     def __post_init__(self) -> None:
         if not self.request_id.strip() or not self.deployment_id.strip():
             raise ValueError("model endpoint response identity is required")
-        if not isinstance(self.text, str) or not self.text.strip():
-            raise ValueError("model endpoint response text must be non-empty")
+        if not isinstance(self.text, str):
+            raise TypeError("model endpoint response text must be text")
+        object.__setattr__(self, "tool_calls", freeze_json(self.tool_calls))
+        if not isinstance(self.tool_calls, tuple):
+            raise TypeError("model endpoint response tool_calls must be a tuple")
+        if not self.text.strip() and not self.tool_calls:
+            raise ValueError("model endpoint response must contain text or tool_calls")
         for name in ("input_tokens", "output_tokens"):
             value = getattr(self, name)
             if value is not None and (type(value) is not int or value < 0):
@@ -167,6 +173,7 @@ class ModelEndpointResponse:
             "request_id": self.request_id,
             "deployment_id": self.deployment_id,
             "text": self.text,
+            "tool_calls": self.tool_calls,
             "finish_reason": self.finish_reason,
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,

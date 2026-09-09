@@ -181,3 +181,31 @@ def test_model_endpoint_observer_receives_exact_wire_bodies_and_timing(endpoint_
     assert captured_response.request_body == wire_request
     assert captured_response.raw_body == wire_response
     assert completed >= started
+
+def test_openai_compatible_endpoint_preserves_function_tool_calls(endpoint_group) -> None:
+    _runtime, group = endpoint_group
+    transport = Transport(JsonHttpResponse(200, {
+        "choices": [{
+            "message": {
+                "content": "",
+                "tool_calls": [{
+                    "id": "call-1",
+                    "type": "function",
+                    "function": {"name": "wait", "arguments": '{"ms":1000}'},
+                }],
+            },
+            "finish_reason": "tool_calls",
+        }],
+    }))
+    endpoint = OpenAICompatibleModelEndpoint(
+        route=ModelEndpointRoute("dep-1", "a" * 64, "https://model.example"),
+        transport=transport,
+        task_group=group,
+        admission=ModelAdmissionController(1),
+    )
+
+    result = endpoint.complete(_request())
+
+    assert result.text == ""
+    assert result.tool_calls[0]["function"]["name"] == "wait"
+    assert result.tool_calls[0]["function"]["arguments"]["ms"] == 1000
