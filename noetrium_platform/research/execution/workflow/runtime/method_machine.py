@@ -23,6 +23,7 @@ from ..api.method_machine import (
     MethodCheckpoint,
     MethodCheckpointStorePort,
     MethodEvent,
+    MethodEvidencePort,
     MethodGraph,
     MethodInterrupt,
     MethodNodeKind,
@@ -136,6 +137,11 @@ class UniversalMethodMachine:
                     failure="method node effect receipts changed during operation projection",
                 )
             state = self._advance(state, node, node_result)
+            self._publish_events(
+                runtime,
+                request.context,
+                (*node_result.events, MethodEvent(f"node:{node.node_id}", node_result.value)),
+            )
             if node_result.interrupt is not None:
                 checkpoint = self._save_checkpoint(program, runtime, state, node.node_id)
                 return self._result(
@@ -181,6 +187,11 @@ class UniversalMethodMachine:
                 return self._result(MethodRunStatus.FAILED, program, runtime, state,
                                     failure=f"{type(exc).__qualname__}: {exc}")
             state = self._advance(state, node, node_result)
+            self._publish_events(
+                runtime,
+                request.context,
+                (*node_result.events, MethodEvent(f"node:{node.node_id}", node_result.value)),
+            )
             if node_result.interrupt is not None:
                 checkpoint = self._save_checkpoint(program, runtime, state, node.node_id)
                 return self._result(MethodRunStatus.INTERRUPTED, program, runtime, state,
@@ -428,6 +439,8 @@ class UniversalMethodMachine:
             runtime.schema_digest,
         )
         self._checkpoints.save(checkpoint)
+        if runtime.evidence is not None:
+            runtime.evidence.record_checkpoint(checkpoint)
         return checkpoint
 
     @staticmethod
@@ -443,11 +456,10 @@ class UniversalMethodMachine:
     def _operation_id(run_id: str, program: MethodProgram, node_id: str, visit: int) -> str:
         return f"method:{run_id}:{program.program_digest[:16]}:{node_id}:{visit}"
 
-    @staticmethod
-    def _result(status: MethodRunStatus, program: MethodProgram, runtime: MethodRuntimeContext,
+    def _result(self, status: MethodRunStatus, program: MethodProgram, runtime: MethodRuntimeContext,
                 state: _ExecutionState, *, checkpoint: MethodCheckpoint | None = None,
                 interrupt: MethodInterrupt | None = None, failure: str | None = None) -> MethodRunResult:
-        return MethodRunResult(
+        result = MethodRunResult(
             status=status,
             run_id=runtime.execution.run_id,
             program_digest=program.program_digest,
@@ -458,6 +470,24 @@ class UniversalMethodMachine:
             interrupt=interrupt,
             failure=failure,
         )
+        if runtime.evidence is not None:
+            runtime.evidence.record_result(result)
+        return result
+
+    @staticmethod
+    def _publish_events(
+        runtime: MethodRuntimeContext,
+        context: object,
+        events: tuple[MethodEvent, ...],
+    ) -> None:
+        if runtime.observation is None:
+            return
+        for event in events:
+            try:
+                runtime.observation.publish(event, context)
+            except Exception:
+                # Observation is a side plane and cannot mutate method truth.
+                continue
 
 
 __all__ = ["InMemoryMethodCheckpointStore", "METHOD_MACHINE_IDENTITY", "UniversalMethodMachine"]
