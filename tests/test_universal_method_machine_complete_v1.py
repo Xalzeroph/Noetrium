@@ -207,3 +207,41 @@ def test_research_method_program_adapter_uses_canonical_machine() -> None:
     assert result.status.value == "succeeded"
     assert result.value["task"] == {"task": "x"}
     assert result.value["input"] == {"value": 7}
+
+
+def test_evidence_is_authoritative_and_observation_failures_are_isolated() -> None:
+    class Evidence:
+        def __init__(self) -> None:
+            self.checkpoints = []
+            self.results = []
+
+        def record_checkpoint(self, checkpoint) -> None:
+            self.checkpoints.append(checkpoint)
+
+        def record_result(self, result) -> None:
+            self.results.append(result)
+
+    class FailingObservation:
+        def publish(self, event, context) -> None:
+            raise RuntimeError("telemetry unavailable")
+
+    evidence = Evidence()
+    program = (
+        MethodProgramBuilder(_identity(), entrypoint="pause")
+        .add(MethodNodeSpec("pause", "test.pause", (), kind=MethodNodeKind.INTERRUPT))
+        .build()
+    )
+    result = UniversalMethodMachine(
+        checkpoint_store=InMemoryMethodCheckpointStore(),
+    ).run(
+        program,
+        runtime=MethodRuntimeContext(
+            _context(),
+            evidence=evidence,
+            observation=FailingObservation(),
+        ),
+    )
+
+    assert result.status.value == "interrupted"
+    assert len(evidence.checkpoints) == 1
+    assert evidence.results[-1] is result
