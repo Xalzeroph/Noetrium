@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, replace
 import inspect
+import time
 from threading import RLock
 from typing import Any
 
@@ -12,6 +13,7 @@ from noetrium_platform.capabilities.participant.capability.api import Capability
 from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
     EffectClass,
+    EffectReceipt,
     ExecutionContext,
     OperationRequest,
     OperationStatus,
@@ -20,10 +22,14 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 
 from ..api.method_machine import (
+    MethodAgentRequest,
+    MethodAgentResult,
     MethodCheckpoint,
     MethodCheckpointStorePort,
     MethodEvent,
+    MethodEvidenceStatus,
     MethodEvidencePort,
+    METHOD_AGENT_CHECKPOINTS_STATE_KEY,
     MethodGraph,
     MethodInterrupt,
     MethodNodeKind,
@@ -46,6 +52,10 @@ METHOD_MACHINE_IDENTITY = ComponentIdentity(
 )
 
 
+class _NodeSchemaValidationError(ValueError):
+    pass
+
+
 class InMemoryMethodCheckpointStore(MethodCheckpointStorePort):
     """Small deterministic store useful for tests and short-lived local runs."""
 
@@ -53,19 +63,35 @@ class InMemoryMethodCheckpointStore(MethodCheckpointStorePort):
 
     def __init__(self) -> None:
         self._latest: dict[str, MethodCheckpoint] = {}
+        self._history: dict[str, list[MethodCheckpoint]] = {}
         self._lock = RLock()
 
     def save(self, checkpoint: MethodCheckpoint) -> None:
         if not isinstance(checkpoint, MethodCheckpoint):
             raise TypeError("method checkpoint store accepts MethodCheckpoint")
         with self._lock:
+            previous = self._latest.get(checkpoint.run_id)
+            if previous is not None:
+                if checkpoint.sequence < previous.sequence:
+                    raise ValueError("method checkpoint sequence moved backwards")
+                if checkpoint.sequence == previous.sequence and checkpoint.checkpoint_id != previous.checkpoint_id:
+                    raise ValueError("method checkpoint sequence has conflicting content")
+                if checkpoint.checkpoint_id == previous.checkpoint_id:
+                    return
             self._latest[checkpoint.run_id] = checkpoint
+            self._history.setdefault(checkpoint.run_id, []).append(checkpoint)
 
     def load(self, run_id: str) -> MethodCheckpoint | None:
         if not isinstance(run_id, str) or not run_id.strip():
             raise ValueError("method checkpoint run_id is required")
         with self._lock:
             return self._latest.get(run_id)
+
+    def history(self, run_id: str) -> tuple[MethodCheckpoint, ...]:
+        if not isinstance(run_id, str) or not run_id.strip():
+            raise ValueError("method checkpoint run_id is required")
+        with self._lock:
+            return tuple(self._history.get(run_id, ()))
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,6 +102,7 @@ class _ExecutionState:
     previous_value: object
     events: tuple[MethodEvent, ...]
     visit_counts: Mapping[str, int]
+    effect_receipts: tuple[EffectReceipt, ...]
 
 
 class UniversalMethodMachine:
@@ -92,15 +119,26 @@ class UniversalMethodMachine:
         checkpoint_store: MethodCheckpointStorePort | None = None,
         max_steps: int = 10_000,
         checkpoint_interval: int = 1,
+        max_seconds: float | None = None,
+        clock: Callable[[], float] = time.monotonic,
         target: ComponentIdentity = METHOD_MACHINE_IDENTITY,
     ) -> None:
         if type(max_steps) is not int or max_steps < 1:
             raise ValueError("method machine max_steps must be a positive integer")
         if type(checkpoint_interval) is not int or checkpoint_interval < 1:
             raise ValueError("method machine checkpoint_interval must be a positive integer")
+        if max_seconds is not None and (
+            isinstance(max_seconds, bool) or not isinstance(max_seconds, (int, float))
+            or max_seconds <= 0 or not float(max_seconds) < float("inf")
+        ):
+            raise ValueError("method machine max_seconds must be finite and positive")
+        if not callable(clock):
+            raise TypeError("method machine clock must be callable")
         self._checkpoints = checkpoint_store
         self._max_steps = max_steps
         self._checkpoint_interval = checkpoint_interval
+        self._max_seconds = max_seconds
+        self._clock = clock
         self._target = target
 
     def run(
@@ -114,29 +152,42 @@ class UniversalMethodMachine:
     ) -> MethodRunResult:
         self._validate_inputs(program, runtime, input_value, initial_state)
         state = self._initial_state(program, runtime, initial_state, resume)
+        started = self._clock()
         graph = program.graph
         while state.sequence < self._max_steps:
+            if self._max_seconds is not None and self._clock() - started >= self._max_seconds:
+                checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
+                return self._result(
+                    MethodRunStatus.LIMIT_REACHED, program, runtime, state,
+                    checkpoint=checkpoint, failure="method wall-clock limit reached",
+                    failure_code="METHOD_TIMEOUT", failure_phase="runtime",
+                )
             node = graph.node(state.current_node)
             visit = state.visit_counts.get(node.node_id, 0)
             if visit >= node.max_visits:
                 return self._result(
                     MethodRunStatus.LIMIT_REACHED, program, runtime, state,
                     failure=f"node visit limit reached: {node.node_id}",
+                    failure_code="NODE_VISIT_LIMIT", failure_phase="runtime",
                 )
             try:
                 request = self._request(program, runtime, input_value, state, node.node_id, visit)
                 node_result, operation_effects = self._invoke_sync(program, runtime, node, request, state.sequence)
             except Exception as exc:
+                failure_code = "NODE_SCHEMA_FAILED" if isinstance(exc, _NodeSchemaValidationError) else "NODE_EXECUTION_FAILED"
+                failure_phase = "schema" if isinstance(exc, _NodeSchemaValidationError) else "node"
                 return self._result(
                     MethodRunStatus.FAILED, program, runtime, state,
                     failure=f"{type(exc).__qualname__}: {exc}",
+                    failure_code=failure_code, failure_phase=failure_phase,
                 )
             if operation_effects and node_result.effect_receipts and operation_effects != node_result.effect_receipts:
                 return self._result(
                     MethodRunStatus.FAILED, program, runtime, state,
                     failure="method node effect receipts changed during operation projection",
+                    failure_code="EFFECT_RECEIPT_MISMATCH", failure_phase="effect",
                 )
-            state = self._advance(state, node, node_result)
+            state = self._advance(state, node, node_result, operation_effects)
             self._publish_events(
                 runtime,
                 request.context,
@@ -174,19 +225,31 @@ class UniversalMethodMachine:
         """Async sibling for model/tool loops; sync handlers remain valid here."""
         self._validate_inputs(program, runtime, input_value, initial_state)
         state = self._initial_state(program, runtime, initial_state, resume)
+        started = self._clock()
         while state.sequence < self._max_steps:
+            if self._max_seconds is not None and self._clock() - started >= self._max_seconds:
+                checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
+                return self._result(
+                    MethodRunStatus.LIMIT_REACHED, program, runtime, state,
+                    checkpoint=checkpoint, failure="method wall-clock limit reached",
+                    failure_code="METHOD_TIMEOUT", failure_phase="runtime",
+                )
             node = program.graph.node(state.current_node)
             visit = state.visit_counts.get(node.node_id, 0)
             if visit >= node.max_visits:
                 return self._result(MethodRunStatus.LIMIT_REACHED, program, runtime, state,
-                                    failure=f"node visit limit reached: {node.node_id}")
+                                    failure=f"node visit limit reached: {node.node_id}",
+                                    failure_code="NODE_VISIT_LIMIT", failure_phase="runtime")
             try:
                 request = self._request(program, runtime, input_value, state, node.node_id, visit)
-                node_result = await self._invoke_async(program, runtime, node, request, state.sequence)
+                node_result, operation_effects = await self._invoke_async(program, runtime, node, request, state.sequence)
             except Exception as exc:
+                failure_code = "NODE_SCHEMA_FAILED" if isinstance(exc, _NodeSchemaValidationError) else "NODE_EXECUTION_FAILED"
+                failure_phase = "schema" if isinstance(exc, _NodeSchemaValidationError) else "node"
                 return self._result(MethodRunStatus.FAILED, program, runtime, state,
-                                    failure=f"{type(exc).__qualname__}: {exc}")
-            state = self._advance(state, node, node_result)
+                                    failure=f"{type(exc).__qualname__}: {exc}",
+                                    failure_code=failure_code, failure_phase=failure_phase)
+            state = self._advance(state, node, node_result, operation_effects)
             self._publish_events(
                 runtime,
                 request.context,
@@ -208,6 +271,7 @@ class UniversalMethodMachine:
             state,
             checkpoint=checkpoint,
             failure="method step limit reached",
+            failure_code="STEP_LIMIT", failure_phase="runtime",
         )
 
     @staticmethod
@@ -220,6 +284,9 @@ class UniversalMethodMachine:
         freeze_json(input_value)
         if initial_state is not None and not isinstance(initial_state, Mapping):
             raise TypeError("method machine initial_state must be a mapping")
+        if runtime.schemas is not None:
+            runtime.schemas.validate(program.input_schema, input_value, location="method.input")
+            runtime.schemas.validate(program.state_schema, initial_state or {}, location="method.initial_state")
         if program.required_capabilities:
             if runtime.capabilities is None:
                 raise RuntimeError("method program requires capabilities")
@@ -249,8 +316,9 @@ class UniversalMethodMachine:
                 checkpoint.previous_value,
                 checkpoint.events,
                 visit_counts,
+                checkpoint.effect_receipts,
             )
-        return _ExecutionState(program.graph.entrypoint, 0, freeze_json(initial_state or {}), None, (), {})
+        return _ExecutionState(program.graph.entrypoint, 0, freeze_json(initial_state or {}), None, (), {}, ())
 
     def _request(self, program: MethodProgram, runtime: MethodRuntimeContext, input_value: object,
                  state: _ExecutionState, node_id: str, visit: int) -> MethodNodeRequest:
@@ -272,10 +340,14 @@ class UniversalMethodMachine:
         )
 
     def _invoke_sync(self, program: MethodProgram, runtime: MethodRuntimeContext, node: object,
-                     request: MethodNodeRequest, sequence: int) -> tuple[MethodNodeResult, tuple[object, ...]]:
+                     request: MethodNodeRequest, sequence: int) -> tuple[MethodNodeResult, tuple[EffectReceipt, ...]]:
+        self._validate_node_input(runtime, node, request)
         dispatcher = runtime.dispatcher
         if dispatcher is None:
             node_result = self._invoke_node_body(runtime, node, request)
+            if inspect.isawaitable(node_result):
+                raise RuntimeError("sync method execution received an awaitable node result")
+            self._validate_node_result(runtime, node, node_result)
             return node_result, tuple(node_result.effect_receipts)
         operation_id = self._operation_id(runtime.execution.run_id, program, request.node_id, request.visit)
         payload = {
@@ -301,24 +373,27 @@ class UniversalMethodMachine:
         node_result = dispatcher.require(operation)
         if not isinstance(node_result, MethodNodeResult):
             raise TypeError("method node operation must return MethodNodeResult")
+        self._validate_node_result(runtime, node, node_result)
         if operation.effect_receipts != node_result.effect_receipts:
             raise RuntimeError("method node operation receipt projection mismatch")
         return node_result, operation.effect_receipts
 
     async def _invoke_async(self, program: MethodProgram, runtime: MethodRuntimeContext, node: object,
-                            request: MethodNodeRequest, sequence: int) -> MethodNodeResult:
+                            request: MethodNodeRequest, sequence: int) -> tuple[MethodNodeResult, tuple[EffectReceipt, ...]]:
+        self._validate_node_input(runtime, node, request)
         dispatcher = runtime.async_dispatcher
         if dispatcher is None and callable(getattr(runtime.dispatcher, "dispatch_async", None)):
             dispatcher = runtime.dispatcher
         if dispatcher is None:
             if runtime.dispatcher is not None:
                 raise RuntimeError("async method execution requires an async operation dispatcher")
-            result = self._invoke_node_body(runtime, node, request)
+            result = self._invoke_node_body(runtime, node, request, async_mode=True)
             if inspect.isawaitable(result):
                 result = await result
             if not isinstance(result, MethodNodeResult):
                 raise TypeError("method node handler must return MethodNodeResult")
-            return result
+            self._validate_node_result(runtime, node, result)
+            return result, tuple(result.effect_receipts)
         operation_id = self._operation_id(runtime.execution.run_id, program, request.node_id, request.visit)
         payload = {
             "program_digest": program.program_digest,
@@ -335,7 +410,7 @@ class UniversalMethodMachine:
             target=self._target,
             payload=payload,
             payload_schema="noetrium.method-machine.node.v2",
-            handler=lambda _envelope: self._invoke_node_body(runtime, node, request),
+            handler=lambda _envelope: self._invoke_node_body(runtime, node, request, async_mode=True),
             digest_output=True,
             effect_projector=lambda output: tuple(output.effect_receipts),
             idempotency_key=f"method:{program.program_digest}:{request.node_id}:{request.visit}",
@@ -346,12 +421,65 @@ class UniversalMethodMachine:
         node_result = require(operation)
         if not isinstance(node_result, MethodNodeResult):
             raise TypeError("method node operation must return MethodNodeResult")
+        self._validate_node_result(runtime, node, node_result)
         if operation.effect_receipts != node_result.effect_receipts:
             raise RuntimeError("method node operation receipt projection mismatch")
-        return node_result
+        return node_result, operation.effect_receipts
 
     @staticmethod
-    def _invoke_node_body(runtime: MethodRuntimeContext, node: object, request: MethodNodeRequest) -> Any:
+    def _invoke_node_body(
+        runtime: MethodRuntimeContext,
+        node: object,
+        request: MethodNodeRequest,
+        *,
+        async_mode: bool = False,
+    ) -> Any:
+        if node.kind is MethodNodeKind.AGENT:
+            if runtime.agent_loop is None:
+                raise RuntimeError("agent node requires MethodRuntimeContext.agent_loop")
+            agent_request = MethodAgentRequest(
+                agent_id=node.agent_id,
+                goal=request.input_value,
+                state=request.state,
+                input_value=request.input_value,
+                previous_value=request.previous_value,
+                context=request.context,
+                checkpoint=dict(request.state.get(METHOD_AGENT_CHECKPOINTS_STATE_KEY, {})).get(node.agent_id),
+            )
+            run_async = getattr(runtime.agent_loop, "run_async", None)
+            result = run_async(agent_request) if async_mode and callable(run_async) else runtime.agent_loop.run(agent_request)
+            if inspect.isawaitable(result):
+                async def await_agent() -> MethodNodeResult:
+                    resolved = await result
+                    if not isinstance(resolved, MethodAgentResult):
+                        raise TypeError("agent loop must return MethodAgentResult")
+                    state_update = dict(resolved.state_update)
+                    if resolved.checkpoint is not None:
+                        checkpoints = dict(request.state.get(METHOD_AGENT_CHECKPOINTS_STATE_KEY, {}))
+                        checkpoints.update(dict(state_update.get(METHOD_AGENT_CHECKPOINTS_STATE_KEY, {})))
+                        checkpoints[node.agent_id] = resolved.checkpoint
+                        state_update[METHOD_AGENT_CHECKPOINTS_STATE_KEY] = checkpoints
+                    return MethodNodeResult(
+                        value=resolved.value,
+                        state_update=state_update,
+                        events=resolved.events,
+                        effect_receipts=resolved.effect_receipts,
+                    )
+                return await_agent()
+            if not isinstance(result, MethodAgentResult):
+                raise TypeError("agent loop must return MethodAgentResult")
+            state_update = dict(result.state_update)
+            if result.checkpoint is not None:
+                checkpoints = dict(request.state.get(METHOD_AGENT_CHECKPOINTS_STATE_KEY, {}))
+                checkpoints.update(dict(state_update.get(METHOD_AGENT_CHECKPOINTS_STATE_KEY, {})))
+                checkpoints[node.agent_id] = result.checkpoint
+                state_update[METHOD_AGENT_CHECKPOINTS_STATE_KEY] = checkpoints
+            return MethodNodeResult(
+                value=result.value,
+                state_update=state_update,
+                events=result.events,
+                effect_receipts=result.effect_receipts,
+            )
         if node.kind is MethodNodeKind.CAPABILITY:
             if runtime.capabilities is None:
                 raise RuntimeError("capability node requires MethodRuntimeContext.capabilities")
@@ -393,7 +521,8 @@ class UniversalMethodMachine:
         return result
 
     @staticmethod
-    def _advance(state: _ExecutionState, node: object, result: MethodNodeResult) -> _ExecutionState:
+    def _advance(state: _ExecutionState, node: object, result: MethodNodeResult,
+                 operation_effects: tuple[EffectReceipt, ...] = ()) -> _ExecutionState:
         merged = dict(state.state)
         merged.update(result.state_update)
         visit_counts = dict(state.visit_counts)
@@ -411,7 +540,26 @@ class UniversalMethodMachine:
             result.value,
             events,
             visit_counts,
+            (*state.effect_receipts, *operation_effects),
         )
+
+    @staticmethod
+    def _validate_node_result(runtime: MethodRuntimeContext, node: object, result: MethodNodeResult) -> None:
+        if runtime.schemas is None:
+            return
+        try:
+            runtime.schemas.validate(node.output_schema, result.value, location=f"method.node.{node.node_id}.output")
+        except Exception as exc:
+            raise _NodeSchemaValidationError(str(exc)) from exc
+
+    @staticmethod
+    def _validate_node_input(runtime: MethodRuntimeContext, node: object, request: MethodNodeRequest) -> None:
+        if runtime.schemas is None:
+            return
+        try:
+            runtime.schemas.validate(node.input_schema, request.input_value, location=f"method.node.{node.node_id}.input")
+        except Exception as exc:
+            raise _NodeSchemaValidationError(str(exc)) from exc
 
     @staticmethod
     def _terminal(node: object, result: MethodNodeResult) -> bool:
@@ -425,18 +573,20 @@ class UniversalMethodMachine:
         if self._checkpoints is None:
             return None
         checkpoint = MethodCheckpoint(
-            runtime.execution.run_id,
-            program.program_digest,
-            state.sequence,
-            current_node,
-            state.state,
-            state.previous_value,
-            state.current_node,
-            tuple(sorted(state.visit_counts.items())),
-            state.events,
-            runtime.binding_plan_digest,
-            runtime.runtime_binding_digest,
-            runtime.schema_digest,
+            run_id=runtime.execution.run_id,
+            program_digest=program.program_digest,
+            sequence=state.sequence,
+            current_node=current_node,
+            state=state.state,
+            previous_value=state.previous_value,
+            next_node=state.current_node,
+            visit_counts=tuple(sorted(state.visit_counts.items())),
+            events=state.events,
+            binding_plan_digest=runtime.binding_plan_digest,
+            runtime_binding_digest=runtime.runtime_binding_digest,
+            schema_digest=runtime.schema_digest,
+            effect_receipts=state.effect_receipts,
+            evidence_status=self._evidence_status(program, runtime),
         )
         self._checkpoints.save(checkpoint)
         if runtime.evidence is not None:
@@ -456,9 +606,29 @@ class UniversalMethodMachine:
     def _operation_id(run_id: str, program: MethodProgram, node_id: str, visit: int) -> str:
         return f"method:{run_id}:{program.program_digest[:16]}:{node_id}:{visit}"
 
+    @staticmethod
+    def _evidence_status(program: MethodProgram, runtime: MethodRuntimeContext) -> MethodEvidenceStatus:
+        if not program.evidence_obligations:
+            return MethodEvidenceStatus.NOT_REQUIRED
+        if runtime.evidence is None:
+            return MethodEvidenceStatus.INCOMPLETE
+        # Validation needs the complete MethodRunResult and is performed by
+        # _result. A checkpoint is therefore conservative until termination.
+        return MethodEvidenceStatus.UNKNOWN
+
     def _result(self, status: MethodRunStatus, program: MethodProgram, runtime: MethodRuntimeContext,
                 state: _ExecutionState, *, checkpoint: MethodCheckpoint | None = None,
-                interrupt: MethodInterrupt | None = None, failure: str | None = None) -> MethodRunResult:
+                interrupt: MethodInterrupt | None = None, failure: str | None = None,
+                failure_code: str | None = None, failure_phase: str | None = None) -> MethodRunResult:
+        if status is MethodRunStatus.SUCCEEDED and runtime.schemas is not None:
+            try:
+                runtime.schemas.validate(program.output_schema, state.previous_value, location="method.output")
+            except Exception as exc:
+                status = MethodRunStatus.FAILED
+                failure = f"{type(exc).__qualname__}: {exc}"
+                failure_code = "OUTPUT_SCHEMA_FAILED"
+                failure_phase = "schema"
+        evidence_status = self._evidence_status(program, runtime)
         result = MethodRunResult(
             status=status,
             run_id=runtime.execution.run_id,
@@ -469,7 +639,28 @@ class UniversalMethodMachine:
             checkpoint=checkpoint,
             interrupt=interrupt,
             failure=failure,
+            effect_receipts=state.effect_receipts,
+            step_count=state.sequence,
+            visit_counts=tuple(sorted(state.visit_counts.items())),
+            evidence_status=evidence_status,
+            binding_plan_digest=runtime.binding_plan_digest,
+            runtime_binding_digest=runtime.runtime_binding_digest,
+            schema_digest=runtime.schema_digest,
+            failure_code=failure_code,
+            failure_phase=failure_phase,
+            diagnostics={
+                "checkpoint_id": None if checkpoint is None else checkpoint.checkpoint_id,
+                "effect_receipt_count": len(state.effect_receipts),
+            },
         )
+        validator = getattr(runtime.evidence, "validate_result", None) if runtime.evidence is not None else None
+        if program.evidence_obligations and callable(validator):
+            try:
+                evidence_status = validator(result, program.evidence_obligations)
+            except Exception:
+                evidence_status = MethodEvidenceStatus.INCOMPLETE
+            if isinstance(evidence_status, MethodEvidenceStatus) and evidence_status is not result.evidence_status:
+                result = replace(result, evidence_status=evidence_status)
         if runtime.evidence is not None:
             runtime.evidence.record_result(result)
         return result

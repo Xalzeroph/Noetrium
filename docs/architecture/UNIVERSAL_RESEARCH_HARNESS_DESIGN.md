@@ -36,7 +36,9 @@ foundation -> capabilities/evidence -> research -> product
 method machine is an execution service exposed through that system's `api` and
 `runtime` segments. It may consume the existing participant method identity,
 capability, operation, evidence, scope, and observability contracts; it does
-not own their provider truth.
+not own their provider truth. Agent cognition is a first-class `AGENT` node
+port, so methods can delegate the model/tool/reason/act loop to the platform
+without embedding a second loop inside a compute handler.
 
 The four-segment rule remains mandatory:
 
@@ -84,7 +86,9 @@ The method function receives a frozen `MethodNodeRequest` containing:
 It returns `MethodNodeResult`, which can contain a value, a state patch, an
 explicit route, events, an interrupt, a checkpoint request, and effect
 receipts. The method does not construct operation envelopes, trace IDs,
-provider identities, or storage records.
+provider identities, or storage records. `MethodProgramBuilder` also exposes
+typed `compute`, `capability`, `agent`, `route`, `checkpoint`, `interrupt`, and
+`return_node` helpers so common method definitions do not repeat ABI plumbing.
 
 The ABI is intentionally open at the node function boundary. A node can host a
 ReAct loop, plan-and-execute, tree search, debate, self-reflection, simulator
@@ -102,9 +106,9 @@ are injected behavior and are never used as an accidental configuration
 identity.
 
 `MethodGraph.graph_digest` includes entrypoint, node IDs, operation types, edges,
-node kinds, capability IDs, effect classes, and visit limits. It excludes
-process-local callable objects. `MethodProgram.program_digest` then binds the
-graph to the exact `MethodProgramIdentity` and frozen configuration.
+node kinds, capability IDs, effect classes, visit limits, and an implementation
+digest for each injected handler when source is available. `MethodProgram.program_digest`
+then binds the graph to the exact `MethodProgramIdentity` and frozen configuration.
 
 This separation makes arbitrary control expressible while keeping run identity
 reconstructable and comparable.
@@ -115,13 +119,15 @@ For each node invocation the runtime:
 
 1. derives a child execution context and stable operation ID;
 2. validates the node and visit budget;
-3. invokes a capability through `CapabilityPort` when the node is a capability;
-4. otherwise calls the downstream node handler;
-5. optionally routes the invocation through `OperationDispatchPort`;
-6. projects returned effect receipts through the Kernel operation projector;
-7. applies the immutable state patch and validates the selected edge;
-8. emits method events and persists a checkpoint at the configured interval;
-9. returns on `RETURN`, interrupt, failure, or an explicit execution limit.
+3. validates declared schemas when a schema port is bound;
+4. invokes a capability through `CapabilityPort` when the node is a capability;
+5. invokes `MethodAgentLoopPort` when the node is an agent;
+6. otherwise calls the downstream node handler;
+7. optionally routes the invocation through `OperationDispatchPort`;
+8. projects returned effect receipts through the Kernel operation projector;
+9. applies the immutable state patch and validates the selected edge;
+10. emits method events and persists a checkpoint at the configured interval;
+11. returns on `RETURN`, interrupt, failure, wall-clock, or explicit execution limit.
 
 The default operation key is derived from the frozen program digest, run ID,
 node ID, and visit number. Effectful capabilities therefore receive a stable
@@ -138,14 +144,16 @@ handlers and async capability implementations can be awaited by
 ## 6. Checkpoint and resume contract
 
 `MethodCheckpoint` is a content-addressed, immutable envelope containing run ID,
-program digest, sequence, current/next node, state, and previous value. A
+program digest, sequence, current/next node, state, previous value, visit
+counts, event lineage, and effect receipts. A
 `MethodCheckpointStorePort` is the only required persistence seam. The included
-in-memory provider is for tests and local short runs; a crash-durable provider
-belongs in `providers` and must use the existing durability/evidence contracts.
+in-memory provider is for tests and local short runs. The JSON provider offers
+atomic crash-durable files with monotonic sequence enforcement; production
+compositions may replace it with a stronger store while preserving the port.
 
-Resume rejects a checkpoint whose program digest differs from the current
-program. This prevents a changed method implementation from silently consuming
-old state. An interrupt stores the continuation edge before returning, so the
+Resume rejects a checkpoint whose program digest, binding identity, runtime
+binding identity, or schema identity differs from the current run. This prevents
+a changed method implementation from silently consuming old state. An interrupt stores the continuation edge before returning, so the
 next host invocation resumes at the approved next node rather than replaying a
 completed effectful node.
 
@@ -160,6 +168,14 @@ Models, tools, environments, memory, datasets, evaluators, and publication
 systems are all capabilities from the method's point of view. The method sees
 the typed `CapabilityPort`; it does not see a provider object, credential,
 socket, process, or ambient registry.
+
+Agent loops are also injected ports. Their normalized request/result carries
+method state, goal, continuation checkpoint, events, and effect receipts, so
+the existing cognition loop and future agent-loop implementations share the
+same UMM execution boundary. Async-only loops implement the companion
+`AsyncMethodAgentLoopPort`; continuation checkpoints are stored under a
+reserved per-agent state map so multiple agent nodes do not overwrite one
+another.
 
 The capability descriptor supplies request/result schemas, effect class, and
 determinism. Pure capabilities may be invoked without an idempotency key.
@@ -177,9 +193,13 @@ The host is deliberately mechanical. It does not serialize arbitrary handler
 objects, copy provider state, or impose a small model-observation limit. State
 patches are frozen once per node, operation payloads contain compact digests,
 and checkpoint cadence is configurable. The safe defaults are a 10,000-node
-run budget, 1,024 visits per node, and a checkpoint after every node. Production
-compositions may increase checkpoint interval only when their effect/recovery
-policy proves that replay is safe.
+run budget, one visit per node unless a
+loop node opts into a larger explicit bound, and a checkpoint after every
+node. Production compositions may increase checkpoint interval only when
+their effect/recovery policy proves that replay is safe. The host also
+supports an explicit wall-clock budget and exposes structured failure codes,
+phase information, run digests, visit counts, evidence status, and receipts in
+`MethodRunResult`.
 
 Performance work must preserve:
 

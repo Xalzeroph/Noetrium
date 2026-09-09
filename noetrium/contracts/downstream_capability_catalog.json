@@ -2156,9 +2156,16 @@
             "WorkflowSurfaceReuseScope",
             "workflow_surface_id",
             "workflow_surface_reuse_scope",
+            "AsyncMethodAgentLoopPort",
             "AsyncOperationDispatchPort",
+            "METHOD_AGENT_CHECKPOINTS_STATE_KEY",
+            "MethodAgentLoopPort",
+            "MethodAgentRequest",
+            "MethodAgentResult",
             "MethodCheckpoint",
             "MethodCheckpointStorePort",
+            "MethodEvidenceStatus",
+            "MethodEvidenceValidationPort",
             "MethodExecutionClass",
             "MethodEvidencePort",
             "MethodEvent",
@@ -2175,7 +2182,8 @@
             "MethodProgramBuilder",
             "MethodRunResult",
             "MethodRunStatus",
-            "MethodRuntimeContext"
+            "MethodRuntimeContext",
+            "MethodSchemaPort"
           ]
         },
         {
@@ -2221,10 +2229,17 @@
           "module": "noetrium_platform.research.execution.workflow.api.method_machine",
           "source": "noetrium_platform/research/execution/workflow/api/method_machine.py",
           "symbols": [
+            "AsyncMethodAgentLoopPort",
             "AsyncOperationDispatchPort",
+            "MethodAgentLoopPort",
+            "MethodAgentRequest",
+            "MethodAgentResult",
+            "METHOD_AGENT_CHECKPOINTS_STATE_KEY",
             "MethodCheckpoint",
             "MethodCheckpointStorePort",
             "MethodEvidencePort",
+            "MethodEvidenceStatus",
+            "MethodEvidenceValidationPort",
             "MethodEvent",
             "MethodExecutionClass",
             "MethodGraph",
@@ -2240,7 +2255,8 @@
             "MethodRunResult",
             "MethodMachinePort",
             "MethodRunStatus",
-            "MethodRuntimeContext"
+            "MethodRuntimeContext",
+            "MethodSchemaPort"
           ]
         },
         {
