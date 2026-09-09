@@ -2135,6 +2135,8 @@
           "module": "noetrium_platform.research.execution.workflow.api",
           "source": "noetrium_platform/research/execution/workflow/api/__init__.py",
           "symbols": [
+            "MethodGraphProgramAdapter",
+            "ResearchMethodProgramAdapter",
             "EffectIntentOperationPort",
             "OperationDispatchPort",
             "OperationExecutionPort",
@@ -2157,6 +2159,7 @@
             "AsyncOperationDispatchPort",
             "MethodCheckpoint",
             "MethodCheckpointStorePort",
+            "MethodExecutionClass",
             "MethodEvent",
             "MethodGraph",
             "MethodInterrupt",
@@ -2171,6 +2174,14 @@
             "MethodRunResult",
             "MethodRunStatus",
             "MethodRuntimeContext"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.workflow.api.adapters",
+          "source": "noetrium_platform/research/execution/workflow/api/adapters.py",
+          "symbols": [
+            "MethodGraphProgramAdapter",
+            "ResearchMethodProgramAdapter"
           ]
         },
         {
@@ -2212,6 +2223,7 @@
             "MethodCheckpoint",
             "MethodCheckpointStorePort",
             "MethodEvent",
+            "MethodExecutionClass",
             "MethodGraph",
             "MethodInterrupt",
             "MethodNodeHandler",
