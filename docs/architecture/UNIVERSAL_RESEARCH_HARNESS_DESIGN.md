@@ -1383,3 +1383,312 @@ Noe's stronger scientific-evidence requirements:
   <https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/refs/heads/master/docs/architecture.md>
 - Pi Chord provision/requirement graph and lifecycle ownership:
   <https://github.com/earendil-works/pi/tree/main/packages/chord>
+## 30. Universal Method Machine
+
+### 30.1 The generalization that removes most Pack-specific engineering
+
+The Harness should not grow by implementing one runtime package for every
+research pattern. The scalable abstraction is a Universal Method Machine: a
+small operation algebra, a typed capability model, and a managed program
+interpreter.
+
+The intended relationship is:
+
+~~~text
+registered systems
+  -> capability descriptors
+  -> typed operation handlers
+  -> compiled Method IR and BindingPlan
+  -> Universal Method Machine
+  -> arbitrary downstream Method Program
+~~~
+
+A Research Pack is then a tested declarative recipe over this machine. It is
+not a second runtime, a new source of truth, or a bespoke implementation of
+model, tool, memory, evidence, and recovery plumbing.
+
+This is the main mechanism for reducing implementation scale. The platform
+still contains domain-specific providers because models, environments, stores,
+and schedulers have real differences. What disappears is repeated integration
+code around each provider and repeated Pack-specific lifecycle code.
+
+### 30.2 Operation algebra
+
+Every interaction between a Method Program and the platform is normalized to
+one of a small number of operation kinds:
+
+| Operation | Meaning | Durable implication |
+|---|---|---|
+| READ | Read a fact, observation, model context, memory, or resource state | May be replayed or memoized according to its contract |
+| COMPUTE | Run method-owned or provider-owned pure computation | No external effect unless declared |
+| EFFECT | Invoke a model, tool, environment, remote job, or external system | Requires intent, receipt, certainty, and reconciliation |
+| COMMIT | Append or transition an owned durable fact | Only the owning domain may commit |
+| OBSERVE | Produce telemetry, metrics, traces, or projections | Side-plane only; cannot become primary truth |
+| CHECKPOINT | Persist resumable method or runtime state | Carries scope, lineage, and compatibility identity |
+| SPAWN | Create a child method, Agent, assignment, or execution unit | Creates a child scope and evidence lineage |
+| WAIT | Wait for a child, event, resource, human gate, or external job | Must be cancellation- and recovery-aware |
+| CLAIM | Register a metric, evidence statement, or scientific claim | Must reference supporting facts and artifacts |
+
+The operation algebra is a runtime semantic boundary, not a restriction on
+method control flow. A method may issue operations from arbitrary loops,
+recursion, branches, coroutines, actor mailboxes, streams, or custom
+schedulers.
+
+### 30.3 Typed capabilities, not an ambient context
+
+A capability is a statically bound, typed view of one or more platform
+operations:
+
+~~~text
+Capability
+  = Descriptor
+  + Typed Port
+  + Operation Schema
+  + Handler
+  + Lifecycle
+  + Effect Policy
+  + Evidence Policy
+~~~
+
+The BindingPlan resolves the capability before execution and injects only the
+views requested by the Method Program. It does not inject a dictionary
+containing all systems.
+
+A generated capability may look like:
+
+~~~python
+model = runtime.capabilities.model
+environment = runtime.capabilities.environment
+memory = runtime.capabilities.memory
+~~~
+
+but each attribute is a typed, pre-bound capability handle. It is not a
+string lookup, a mutable service bag, or a permission to discover arbitrary
+providers during the hot path.
+
+The existing four-segment system shape remains the source of implementation:
+
+- api declares the capability and operation contracts;
+- runtime defines deterministic semantic logic;
+- providers implement storage, network, model, environment, and other
+  concrete handlers;
+- composition resolves and binds handlers before admission.
+
+### 30.4 Managed Method Program
+
+The Method Program is the only part that must express the research algorithm.
+It owns its state and control flow but not the platform's cross-cutting
+machinery.
+
+The minimal managed surface is conceptually:
+
+~~~python
+class MethodProgram:
+    state_schema: type
+    execution_class: ExecutionClass
+
+    async def run(self, runtime: MethodRuntime) -> None:
+        ...
+~~~
+
+The runtime supplies typed capabilities and structured operations. The method
+may use ordinary Python control flow, a generator, coroutine, actor callback,
+stream processor, external worker protocol, or another supported program
+adapter.
+
+For a lower-level method, the same ABI exposes explicit operations:
+
+~~~python
+async for operation in program:
+    result = await runtime.execute(operation)
+    program.resume(result)
+~~~
+
+The two styles are equivalent at the boundary. The first is convenient for
+most researchers; the second is useful for interpreters, schedulers, and
+custom fabrics.
+
+### 30.5 Universal Handler pipeline
+
+Every operation passes through a compiled handler chain appropriate to its
+kind:
+
+~~~text
+typed call
+  -> scope and identity
+  -> authorization and policy
+  -> request canonicalization
+  -> checkpoint / deduplication
+  -> provider handler
+  -> receipt or durable commit
+  -> reconciliation
+  -> evidence linkage
+  -> observation
+~~~
+
+The handler chain is assembled during composition and frozen at Study
+admission. Handlers may be omitted when their contract proves they are
+unnecessary, but a method cannot bypass required identity, effect certainty,
+ownership, or evidence handlers.
+
+This is the practical form of an algebraic-effect architecture: method code
+describes an operation, while the runtime installs the correct handler for
+that operation. It centralizes generic behavior without forcing all scientific
+algorithms into one workflow template.
+
+### 30.6 Universal semantic core, specialized execution engines
+
+The Universal Method Machine unifies operation semantics, not every physical
+implementation. It may select specialized schedulers from the BindingPlan:
+
+- sequential or cooperative coroutine execution;
+- structured concurrent execution;
+- actor/mailbox execution;
+- event-stream execution;
+- matrix/batch execution;
+- external job execution;
+- human-gated execution.
+
+All schedulers consume the same Method Program, operation contracts, scope
+rules, effect semantics, and evidence ABI. This prevents Pack proliferation
+while preserving performance-specific implementations.
+
+The scheduler is a Strategy; the lifecycle around it is a Template Method; the
+operation handlers are typed adapters and Decorators. The Method Program
+itself remains the domain-owned algorithm.
+
+### 30.7 Research Packs become recipes
+
+Research Packs should be represented primarily as:
+
+~~~text
+Recipe
+  = required capabilities
+  + default policies
+  + execution strategy
+  + evidence obligations
+  + examples
+  + conformance tests
+~~~
+
+A recipe may generate a user-friendly API, but it should not copy the
+underlying runtime. A new combination of memory, tools, model, and evaluator
+should normally require a new recipe document or manifest, not a new runtime
+package.
+
+A genuine new Pack implementation is justified only when it introduces a new
+execution substrate, resource lifecycle, operation kind, or domain contract
+that cannot be expressed by existing capabilities.
+
+### 30.8 Automatic capability lifting
+
+A registered system should be liftable into the universal machine when its
+descriptor supplies:
+
+- public typed operations;
+- ownership of facts, effects, artifacts, or projections;
+- lifecycle and scope;
+- consistency and idempotency;
+- effect certainty behavior;
+- provider identity and version;
+- schema and digest rules;
+- conformance test reference.
+
+The compiler can then generate:
+
+- capability handles;
+- operation schemas;
+- downstream interface schemas;
+- binding and teardown plans;
+- evidence obligations;
+- method authoring hints;
+- a human-readable plan explanation.
+
+This means the 172 systems can contribute value without requiring 172
+handwritten Harness integrations.
+
+## 31. Consequences for Noe implementation
+
+### 31.1 The first implementation target
+
+The first production slice should be the smallest complete machine, not a
+catalog of Packs:
+
+1. CapabilityDescriptor and generated capability catalog;
+2. OperationKind, request, result, and error contracts;
+3. typed CapabilityHandle binding through the existing composition graph;
+4. MethodProgram and MethodRuntime ABI;
+5. compiled handler pipeline for identity, recording, effect certainty,
+   checkpoint, and evidence linkage;
+6. one sequential scheduler and one structured-concurrency scheduler;
+7. one reference method and one failure/recovery fixture;
+8. generated schema and BindingPlan explanation.
+
+Only after this vertical slice is conformance-tested should more schedulers or
+recipes be added.
+
+### 31.2 What should not be implemented
+
+The following implementations are explicitly rejected:
+
+- one Pack class for every popular Agent pattern;
+- one universal mutable Context holding all registered systems;
+- one global operation/event bus that owns every domain fact;
+- runtime string lookup of providers;
+- a mandatory fixed observe -> think -> act -> evaluate lifecycle;
+- a giant DSL that forces all arbitrary method logic into generated nodes;
+- automatic inference of scientific meaning from generic runtime events;
+- execution-time provider replacement or hidden hot reload;
+- a separate topology authority for capability metadata.
+
+### 31.3 Correctness and performance invariant
+
+The Universal Method Machine must satisfy this invariant:
+
+~~~text
+same Method Program
++ same admitted BindingPlan
++ same input/effect records
+=> same legal replay or explicitly classified non-replayable outcome
+~~~
+
+Compilation, discovery, schema generation, and architecture validation occur
+before execution or at a declared scope boundary. The hot path uses direct
+typed references, bounded handlers, and worker/run-scoped resources.
+
+### 31.4 Migration rule
+
+The preliminary Harness draft is not the target implementation if it uses
+string service locators, an ambient all-system context, or runtime discovery.
+It should be replaced or reduced to reusable contract fragments.
+
+Existing Noe systems remain the providers and authorities. The Universal
+Method Machine is a new orchestration substrate above their public contracts,
+not a second domain layer and not a replacement for the registry.
+
+### 31.5 Definition of success
+
+The architecture is successful when a new downstream method can provide:
+
+~~~text
+method-owned state
++ method program
++ semantic manifest
+~~~
+
+and receive, without handwritten infrastructure integration:
+
+~~~text
+model/tool/environment access
++ lifecycle
++ checkpoint/recovery
++ effect receipts
++ experiment identity
++ metrics and artifacts
++ evidence closure
++ generated schema
+~~~
+
+An expert can still replace the program and scheduler through the same ABI.
+A novice can stay at the recipe or policy level. Both paths produce the same
+auditable run boundary.
