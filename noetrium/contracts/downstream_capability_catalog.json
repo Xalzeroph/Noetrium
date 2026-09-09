@@ -6572,7 +6572,9 @@
       "provides": [
         "agent.contract"
       ],
-      "requires": [],
+      "requires": [
+        "model"
+      ],
       "system_key": "participant/agent"
     },
     {
@@ -6598,9 +6600,7 @@
       "owns": "binding participants to scopes, methods, environments or models",
       "package_prefix": "noetrium_platform.capabilities.participant.binding",
       "provides": [],
-      "requires": [
-        "model"
-      ],
+      "requires": [],
       "system_key": "participant/binding"
     },
     {
