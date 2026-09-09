@@ -32,6 +32,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodCheckpoint,
     MethodCheckpointStorePort,
     MethodExecutionClass,
+    MethodEvidencePort,
     MethodEvent,
     MethodGraph,
     MethodInterrupt,
@@ -41,6 +42,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodNodeRequest,
     MethodNodeResult,
     MethodNodeSpec,
+    MethodObservationPort,
     MethodProgram,
     MethodProgramBuilder,
     MethodRunResult,
@@ -76,6 +78,7 @@ from noetrium_platform.research.execution.workflow.api.method_machine import (
     AsyncOperationDispatchPort as method_machine__AsyncOperationDispatchPort,
     MethodCheckpoint as method_machine__MethodCheckpoint,
     MethodCheckpointStorePort as method_machine__MethodCheckpointStorePort,
+    MethodEvidencePort as method_machine__MethodEvidencePort,
     MethodEvent as method_machine__MethodEvent,
     MethodExecutionClass as method_machine__MethodExecutionClass,
     MethodGraph as method_machine__MethodGraph,
@@ -85,6 +88,7 @@ from noetrium_platform.research.execution.workflow.api.method_machine import (
     MethodNodeRequest as method_machine__MethodNodeRequest,
     MethodNodeResult as method_machine__MethodNodeResult,
     MethodNodeSpec as method_machine__MethodNodeSpec,
+    MethodObservationPort as method_machine__MethodObservationPort,
     MethodProgram as method_machine__MethodProgram,
     MethodProgramBuilder as method_machine__MethodProgramBuilder,
     MethodRunResult as method_machine__MethodRunResult,
@@ -116,4 +120,4 @@ from noetrium_platform.research.execution.workflow.api.trial import (
 
 SYSTEM_KEY = 'execution/workflow'
 PACKAGE_PREFIX = 'noetrium_platform.research.execution.workflow'
-__all__ = ('MethodGraphProgramAdapter', 'ResearchMethodProgramAdapter', 'EffectIntentOperationPort', 'OperationDispatchPort', 'OperationExecutionPort', 'TrialCycleExecution', 'WorkflowGraph', 'WorkflowGraphError', 'WorkflowOperationBinding', 'WorkflowParticipantRequirementError', 'WorkflowProgress', 'WorkflowProgressConflict', 'WorkflowProgressCorruption', 'WorkflowProgressStorePort', 'WorkflowRunId', 'WorkflowStep', 'WorkflowSurfaceBindingContext', 'WorkflowSurfaceFactory', 'WorkflowSurfaceReuseScope', 'workflow_surface_id', 'workflow_surface_reuse_scope', 'AsyncOperationDispatchPort', 'MethodCheckpoint', 'MethodCheckpointStorePort', 'MethodExecutionClass', 'MethodEvent', 'MethodGraph', 'MethodInterrupt', 'MethodMachinePort', 'MethodNodeHandler', 'MethodNodeKind', 'MethodNodeRequest', 'MethodNodeResult', 'MethodNodeSpec', 'MethodProgram', 'MethodProgramBuilder', 'MethodRunResult', 'MethodRunStatus', 'MethodRuntimeContext', 'adapters__MethodGraphProgramAdapter', 'adapters__ResearchMethodProgramAdapter', 'dispatch__OperationDispatchPort', 'dispatch__OperationExecutionPort', 'effect_intents__EffectIntentOperationPort', 'errors__WorkflowParticipantRequirementError', 'graph__WorkflowGraph', 'graph__WorkflowGraphError', 'graph__WorkflowStep', 'method_machine__AsyncOperationDispatchPort', 'method_machine__MethodCheckpoint', 'method_machine__MethodCheckpointStorePort', 'method_machine__MethodEvent', 'method_machine__MethodExecutionClass', 'method_machine__MethodGraph', 'method_machine__MethodInterrupt', 'method_machine__MethodNodeHandler', 'method_machine__MethodNodeKind', 'method_machine__MethodNodeRequest', 'method_machine__MethodNodeResult', 'method_machine__MethodNodeSpec', 'method_machine__MethodProgram', 'method_machine__MethodProgramBuilder', 'method_machine__MethodRunResult', 'method_machine__MethodMachinePort', 'method_machine__MethodRunStatus', 'method_machine__MethodRuntimeContext', 'progress__WorkflowOperationBinding', 'progress__WorkflowProgress', 'progress__WorkflowProgressConflict', 'progress__WorkflowProgressCorruption', 'progress__WorkflowProgressStorePort', 'progress__WorkflowRunId', 'surfaces__WorkflowSurfaceBindingContext', 'surfaces__WorkflowSurfaceFactory', 'surfaces__WorkflowSurfaceReuseScope', 'surfaces__workflow_surface_reuse_scope', 'surfaces__workflow_surface_id', 'trial__TrialCycleExecution')
+__all__ = ('MethodGraphProgramAdapter', 'ResearchMethodProgramAdapter', 'EffectIntentOperationPort', 'OperationDispatchPort', 'OperationExecutionPort', 'TrialCycleExecution', 'WorkflowGraph', 'WorkflowGraphError', 'WorkflowOperationBinding', 'WorkflowParticipantRequirementError', 'WorkflowProgress', 'WorkflowProgressConflict', 'WorkflowProgressCorruption', 'WorkflowProgressStorePort', 'WorkflowRunId', 'WorkflowStep', 'WorkflowSurfaceBindingContext', 'WorkflowSurfaceFactory', 'WorkflowSurfaceReuseScope', 'workflow_surface_id', 'workflow_surface_reuse_scope', 'AsyncOperationDispatchPort', 'MethodCheckpoint', 'MethodCheckpointStorePort', 'MethodExecutionClass', 'MethodEvidencePort', 'MethodEvent', 'MethodGraph', 'MethodInterrupt', 'MethodMachinePort', 'MethodNodeHandler', 'MethodNodeKind', 'MethodNodeRequest', 'MethodNodeResult', 'MethodNodeSpec', 'MethodObservationPort', 'MethodProgram', 'MethodProgramBuilder', 'MethodRunResult', 'MethodRunStatus', 'MethodRuntimeContext', 'adapters__MethodGraphProgramAdapter', 'adapters__ResearchMethodProgramAdapter', 'dispatch__OperationDispatchPort', 'dispatch__OperationExecutionPort', 'effect_intents__EffectIntentOperationPort', 'errors__WorkflowParticipantRequirementError', 'graph__WorkflowGraph', 'graph__WorkflowGraphError', 'graph__WorkflowStep', 'method_machine__AsyncOperationDispatchPort', 'method_machine__MethodCheckpoint', 'method_machine__MethodCheckpointStorePort', 'method_machine__MethodEvidencePort', 'method_machine__MethodEvent', 'method_machine__MethodExecutionClass', 'method_machine__MethodGraph', 'method_machine__MethodInterrupt', 'method_machine__MethodNodeHandler', 'method_machine__MethodNodeKind', 'method_machine__MethodNodeRequest', 'method_machine__MethodNodeResult', 'method_machine__MethodNodeSpec', 'method_machine__MethodObservationPort', 'method_machine__MethodProgram', 'method_machine__MethodProgramBuilder', 'method_machine__MethodRunResult', 'method_machine__MethodMachinePort', 'method_machine__MethodRunStatus', 'method_machine__MethodRuntimeContext', 'progress__WorkflowOperationBinding', 'progress__WorkflowProgress', 'progress__WorkflowProgressConflict', 'progress__WorkflowProgressCorruption', 'progress__WorkflowProgressStorePort', 'progress__WorkflowRunId', 'surfaces__WorkflowSurfaceBindingContext', 'surfaces__WorkflowSurfaceFactory', 'surfaces__WorkflowSurfaceReuseScope', 'surfaces__workflow_surface_reuse_scope', 'surfaces__workflow_surface_id', 'trial__TrialCycleExecution')

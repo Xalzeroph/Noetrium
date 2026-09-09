@@ -20,7 +20,7 @@ Example:
 
 - Registered systems: 172
 - Public API modules: 502
-- Public symbols: 3703
+- Public symbols: 3707
 - Registry digest: 2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603
 
 ## Capability domains
@@ -31,7 +31,7 @@ Example:
 | components | 1 | 1 | 49 |
 | data | 8 | 20 | 106 |
 | environment | 18 | 53 | 444 |
-| execution | 7 | 33 | 223 |
+| execution | 7 | 33 | 227 |
 | experimentation | 15 | 59 | 576 |
 | governance | 13 | 33 | 307 |
 | model | 16 | 54 | 476 |
@@ -715,13 +715,13 @@ Example:
 
 #### API modules
 
-- noetrium_platform.research.execution.workflow.api ?w^~)?t MethodGraphProgramAdapter, ResearchMethodProgramAdapter, EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowOperationBinding, WorkflowParticipantRequirementError, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_id, workflow_surface_reuse_scope, AsyncOperationDispatchPort, MethodCheckpoint, MethodCheckpointStorePort, MethodExecutionClass, MethodEvent, MethodGraph, MethodInterrupt, MethodMachinePort, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodRunStatus, MethodRuntimeContext
+- noetrium_platform.research.execution.workflow.api ?w^~)?t MethodGraphProgramAdapter, ResearchMethodProgramAdapter, EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowOperationBinding, WorkflowParticipantRequirementError, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_id, workflow_surface_reuse_scope, AsyncOperationDispatchPort, MethodCheckpoint, MethodCheckpointStorePort, MethodExecutionClass, MethodEvidencePort, MethodEvent, MethodGraph, MethodInterrupt, MethodMachinePort, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodObservationPort, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodRunStatus, MethodRuntimeContext
 - noetrium_platform.research.execution.workflow.api.adapters ?w^~)?t MethodGraphProgramAdapter, ResearchMethodProgramAdapter
 - noetrium_platform.research.execution.workflow.api.dispatch ?w^~)?t OperationDispatchPort, OperationExecutionPort
 - noetrium_platform.research.execution.workflow.api.effect_intents ?w^~)?t EffectIntentOperationPort
 - noetrium_platform.research.execution.workflow.api.errors ?w^~)?t WorkflowParticipantRequirementError
 - noetrium_platform.research.execution.workflow.api.graph ?w^~)?t WorkflowGraph, WorkflowGraphError, WorkflowStep
-- noetrium_platform.research.execution.workflow.api.method_machine ?w^~)?t AsyncOperationDispatchPort, MethodCheckpoint, MethodCheckpointStorePort, MethodEvent, MethodExecutionClass, MethodGraph, MethodInterrupt, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodMachinePort, MethodRunStatus, MethodRuntimeContext
+- noetrium_platform.research.execution.workflow.api.method_machine ?w^~)?t AsyncOperationDispatchPort, MethodCheckpoint, MethodCheckpointStorePort, MethodEvidencePort, MethodEvent, MethodExecutionClass, MethodGraph, MethodInterrupt, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodObservationPort, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodMachinePort, MethodRunStatus, MethodRuntimeContext
 - noetrium_platform.research.execution.workflow.api.progress ?w^~)?t WorkflowOperationBinding, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId
 - noetrium_platform.research.execution.workflow.api.surfaces ?w^~)?t WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_reuse_scope, workflow_surface_id
 - noetrium_platform.research.execution.workflow.api.trial ?w^~)?t TrialCycleExecution

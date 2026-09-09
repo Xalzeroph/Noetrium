@@ -24543,6 +24543,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "MethodEvidencePort",
+              "origin_module": ".method_machine",
+              "origin_name": "MethodEvidencePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "MethodEvent",
               "origin_module": ".method_machine",
               "origin_name": "MethodEvent",
@@ -24624,6 +24633,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "MethodObservationPort",
+              "origin_module": ".method_machine",
+              "origin_name": "MethodObservationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "MethodProgram",
               "origin_module": ".method_machine",
               "origin_name": "MethodProgram",
@@ -24693,6 +24711,7 @@
             "MethodCheckpoint",
             "MethodCheckpointStorePort",
             "MethodExecutionClass",
+            "MethodEvidencePort",
             "MethodEvent",
             "MethodGraph",
             "MethodInterrupt",
@@ -24702,6 +24721,7 @@
             "MethodNodeRequest",
             "MethodNodeResult",
             "MethodNodeSpec",
+            "MethodObservationPort",
             "MethodProgram",
             "MethodProgramBuilder",
             "MethodRunResult",
@@ -26051,6 +26071,79 @@
               "schema_version": "1"
             },
             {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": "Authoritative evidence sink injected by composition.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "record_checkpoint",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "MethodCheckpoint",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "checkpoint",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def record_checkpoint(self, checkpoint: MethodCheckpoint) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "record_result",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "MethodRunResult",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "result",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def record_result(self, result: MethodRunResult) -> None:"
+                }
+              ],
+              "name": "MethodEvidencePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
               "bases": [],
               "decorators": [
                 "dataclass(frozen=True, slots=True)"
@@ -26510,6 +26603,59 @@
                 }
               ],
               "name": "MethodNodeSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": "Non-authoritative observation sink; failures must not change method truth.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "publish",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "MethodEvent",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "event",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "ExecutionContext",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "context",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def publish(self, event: MethodEvent, context: ExecutionContext) -> None:"
+                }
+              ],
+              "name": "MethodObservationPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -27038,6 +27184,16 @@
                   "name": "dispatcher"
                 },
                 {
+                  "annotation": "MethodEvidencePort | None",
+                  "default": "None",
+                  "name": "evidence"
+                },
+                {
+                  "annotation": "MethodObservationPort | None",
+                  "default": "None",
+                  "name": "observation"
+                },
+                {
                   "annotation": "'AsyncOperationDispatchPort | None'",
                   "default": "None",
                   "name": "async_dispatcher"
@@ -27091,6 +27247,7 @@
             "AsyncOperationDispatchPort",
             "MethodCheckpoint",
             "MethodCheckpointStorePort",
+            "MethodEvidencePort",
             "MethodEvent",
             "MethodExecutionClass",
             "MethodGraph",
@@ -27100,6 +27257,7 @@
             "MethodNodeRequest",
             "MethodNodeResult",
             "MethodNodeSpec",
+            "MethodObservationPort",
             "MethodProgram",
             "MethodProgramBuilder",
             "MethodRunResult",
