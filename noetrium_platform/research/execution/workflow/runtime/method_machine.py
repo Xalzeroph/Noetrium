@@ -74,6 +74,7 @@ class _ExecutionState:
     state: Mapping[str, object]
     previous_value: object
     events: tuple[MethodEvent, ...]
+    visit_counts: Mapping[str, int]
 
 
 class UniversalMethodMachine:
@@ -115,7 +116,7 @@ class UniversalMethodMachine:
         graph = program.graph
         while state.sequence < self._max_steps:
             node = graph.node(state.current_node)
-            visit = self._visit_count(state.events, node.node_id)
+            visit = state.visit_counts.get(node.node_id, 0)
             if visit >= node.max_visits:
                 return self._result(
                     MethodRunStatus.LIMIT_REACHED, program, runtime, state,
@@ -161,7 +162,7 @@ class UniversalMethodMachine:
         state = self._initial_state(program, runtime, initial_state, resume)
         while state.sequence < self._max_steps:
             node = program.graph.node(state.current_node)
-            visit = self._visit_count(state.events, node.node_id)
+            visit = state.visit_counts.get(node.node_id, 0)
             if visit >= node.max_visits:
                 return self._result(MethodRunStatus.LIMIT_REACHED, program, runtime, state,
                                     failure=f"node visit limit reached: {node.node_id}")
@@ -192,6 +193,11 @@ class UniversalMethodMachine:
         freeze_json(input_value)
         if initial_state is not None and not isinstance(initial_state, Mapping):
             raise TypeError("method machine initial_state must be a mapping")
+        if program.required_capabilities:
+            if runtime.capabilities is None:
+                raise RuntimeError("method program requires capabilities")
+            for capability_id in program.required_capabilities:
+                runtime.capabilities.describe(capability_id)
 
     def _initial_state(self, program: MethodProgram, runtime: MethodRuntimeContext,
                        initial_state: Mapping[str, object] | None, resume: bool) -> _ExecutionState:
@@ -199,14 +205,25 @@ class UniversalMethodMachine:
         if checkpoint is not None:
             if checkpoint.program_digest != program.program_digest:
                 raise ValueError("method checkpoint belongs to a different program")
+            for name, checkpoint_value, runtime_value in (
+                ("binding_plan_digest", checkpoint.binding_plan_digest, runtime.binding_plan_digest),
+                ("runtime_binding_digest", checkpoint.runtime_binding_digest, runtime.runtime_binding_digest),
+                ("schema_digest", checkpoint.schema_digest, runtime.schema_digest),
+            ):
+                if checkpoint_value != runtime_value:
+                    raise ValueError(f"method checkpoint {name} does not match runtime")
+            visit_counts = dict(checkpoint.visit_counts)
+            if not visit_counts:
+                visit_counts = self._counts_from_events(checkpoint.events)
             return _ExecutionState(
                 checkpoint.next_node or checkpoint.current_node,
                 checkpoint.sequence,
                 checkpoint.state,
                 checkpoint.previous_value,
-                (),
+                checkpoint.events,
+                visit_counts,
             )
-        return _ExecutionState(program.graph.entrypoint, 0, freeze_json(initial_state or {}), None, ())
+        return _ExecutionState(program.graph.entrypoint, 0, freeze_json(initial_state or {}), None, (), {})
 
     def _request(self, program: MethodProgram, runtime: MethodRuntimeContext, input_value: object,
                  state: _ExecutionState, node_id: str, visit: int) -> MethodNodeRequest:
@@ -224,15 +241,15 @@ class UniversalMethodMachine:
             previous_value=state.previous_value,
             context=context,
             capabilities=runtime.capabilities,
+            visit_counts=tuple(sorted(state.visit_counts.items())),
         )
 
     def _invoke_sync(self, program: MethodProgram, runtime: MethodRuntimeContext, node: object,
                      request: MethodNodeRequest, sequence: int) -> tuple[MethodNodeResult, tuple[object, ...]]:
-        node_result = self._invoke_node_body(runtime, node, request)
-        effects = tuple(node_result.effect_receipts)
         dispatcher = runtime.dispatcher
         if dispatcher is None:
-            return node_result, effects
+            node_result = self._invoke_node_body(runtime, node, request)
+            return node_result, tuple(node_result.effect_receipts)
         operation_id = self._operation_id(runtime.execution.run_id, program, request.node_id, request.visit)
         payload = {
             "program_digest": program.program_digest,
@@ -240,6 +257,7 @@ class UniversalMethodMachine:
             "visit": request.visit,
             "sequence": sequence,
             "state_digest": canonical_digest(request.state),
+            "effect_class": node.effect_class.value,
         }
         operation = MethodNodeOperationAdapter(dispatcher).execute(
             root_context=runtime.execution,
@@ -247,27 +265,63 @@ class UniversalMethodMachine:
             operation_type=node.operation_type,
             target=self._target,
             payload=payload,
-            payload_schema="noetrium.method-machine.node.v1",
-            handler=lambda _envelope: node_result,
+            payload_schema="noetrium.method-machine.node.v2",
+            handler=lambda _envelope: self._invoke_node_body(runtime, node, request),
             digest_output=True,
             effect_projector=lambda output: tuple(output.effect_receipts),
             idempotency_key=f"method:{program.program_digest}:{request.node_id}:{request.visit}",
         )
-        if operation.status is not OperationStatus.SUCCEEDED:
-            dispatcher.require(operation)
-        return dispatcher.require(operation), effects
+        node_result = dispatcher.require(operation)
+        if not isinstance(node_result, MethodNodeResult):
+            raise TypeError("method node operation must return MethodNodeResult")
+        if operation.effect_receipts != node_result.effect_receipts:
+            raise RuntimeError("method node operation receipt projection mismatch")
+        return node_result, operation.effect_receipts
 
     async def _invoke_async(self, program: MethodProgram, runtime: MethodRuntimeContext, node: object,
                             request: MethodNodeRequest) -> MethodNodeResult:
-        # An async operation port is optional.  If absent, the node still keeps
-        # the same checkpoint/effect contract; a native async kernel adapter can
-        # be injected later without changing the downstream program ABI.
-        result = self._invoke_node_body(runtime, node, request)
-        if inspect.isawaitable(result):
-            result = await result
-        if not isinstance(result, MethodNodeResult):
-            raise TypeError("method node handler must return MethodNodeResult")
-        return result
+        dispatcher = runtime.async_dispatcher
+        if dispatcher is None and callable(getattr(runtime.dispatcher, "dispatch_async", None)):
+            dispatcher = runtime.dispatcher
+        if dispatcher is None:
+            if runtime.dispatcher is not None:
+                raise RuntimeError("async method execution requires an async operation dispatcher")
+            result = self._invoke_node_body(runtime, node, request)
+            if inspect.isawaitable(result):
+                result = await result
+            if not isinstance(result, MethodNodeResult):
+                raise TypeError("method node handler must return MethodNodeResult")
+            return result
+        operation_id = self._operation_id(runtime.execution.run_id, program, request.node_id, request.visit)
+        payload = {
+            "program_digest": program.program_digest,
+            "node_id": request.node_id,
+            "visit": request.visit,
+            "sequence": request.context.sequence,
+            "state_digest": canonical_digest(request.state),
+            "effect_class": node.effect_class.value,
+        }
+        operation = await MethodNodeOperationAdapter(dispatcher).execute_async(
+            root_context=runtime.execution,
+            operation_id=operation_id,
+            operation_type=node.operation_type,
+            target=self._target,
+            payload=payload,
+            payload_schema="noetrium.method-machine.node.v2",
+            handler=lambda _envelope: self._invoke_node_body(runtime, node, request),
+            digest_output=True,
+            effect_projector=lambda output: tuple(output.effect_receipts),
+            idempotency_key=f"method:{program.program_digest}:{request.node_id}:{request.visit}",
+        )
+        require = getattr(dispatcher, "require", None)
+        if not callable(require):
+            raise TypeError("async operation dispatcher must provide require")
+        node_result = require(operation)
+        if not isinstance(node_result, MethodNodeResult):
+            raise TypeError("method node operation must return MethodNodeResult")
+        if operation.effect_receipts != node_result.effect_receipts:
+            raise RuntimeError("method node operation receipt projection mismatch")
+        return node_result
 
     @staticmethod
     def _invoke_node_body(runtime: MethodRuntimeContext, node: object, request: MethodNodeRequest) -> Any:
@@ -315,13 +369,22 @@ class UniversalMethodMachine:
     def _advance(state: _ExecutionState, node: object, result: MethodNodeResult) -> _ExecutionState:
         merged = dict(state.state)
         merged.update(result.state_update)
+        visit_counts = dict(state.visit_counts)
+        visit_counts[node.node_id] = visit_counts.get(node.node_id, 0) + 1
         next_node = result.next_node
         if next_node is None and len(node.next_nodes) == 1:
             next_node = node.next_nodes[0]
         if next_node is not None and next_node not in node.next_nodes:
             raise ValueError(f"method node selected non-adjacent next node: {next_node}")
         events = (*state.events, *result.events, MethodEvent(f"node:{node.node_id}", result.value))
-        return _ExecutionState(next_node or node.node_id, state.sequence + 1, freeze_json(merged), result.value, events)
+        return _ExecutionState(
+            next_node or node.node_id,
+            state.sequence + 1,
+            freeze_json(merged),
+            result.value,
+            events,
+            visit_counts,
+        )
 
     @staticmethod
     def _terminal(node: object, result: MethodNodeResult) -> bool:
@@ -342,13 +405,23 @@ class UniversalMethodMachine:
             state.state,
             state.previous_value,
             state.current_node,
+            tuple(sorted(state.visit_counts.items())),
+            state.events,
+            runtime.binding_plan_digest,
+            runtime.runtime_binding_digest,
+            runtime.schema_digest,
         )
         self._checkpoints.save(checkpoint)
         return checkpoint
 
     @staticmethod
-    def _visit_count(events: tuple[MethodEvent, ...], node_id: str) -> int:
-        return sum(event.kind == f"node:{node_id}" for event in events)
+    def _counts_from_events(events: tuple[MethodEvent, ...]) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for event in events:
+            if event.kind.startswith("node:"):
+                node_id = event.kind[5:]
+                counts[node_id] = counts.get(node_id, 0) + 1
+        return counts
 
     @staticmethod
     def _operation_id(run_id: str, program: MethodProgram, node_id: str, visit: int) -> str:
