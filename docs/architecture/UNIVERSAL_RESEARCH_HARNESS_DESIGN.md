@@ -921,3 +921,465 @@ Recommended defaults:
 
 Once these defaults are confirmed, implementation should begin by replacing the
 preliminary runtime draft with the typed composition model above.
+## 21. Architecture review against large-repository standards
+
+### 21.1 Verdict
+
+The direction in this document is strong, but a facade-only interpretation of
+the Universal Research Harness is not the final architecture. The target must
+be a **Research Operating Kernel with an open execution model**:
+
+```text
+closed research invariants
++ open method semantics
++ pluggable execution fabrics
++ compiled binding plans
++ automatic evidence and recovery
+```
+
+This is an evolutionary refinement, not a rewrite of the current Noe
+foundation. The registry, package ownership boundaries, five semantic planes,
+three composition/runtime/event planes, domain-owned durable truth, and SEM
+freeze boundary remain authoritative.
+
+The central rule is:
+
+> Downstream code may be arbitrary at the level of scientific control flow,
+> but every interaction with models, tools, environments, durable state,
+> artifacts, and external effects must cross a typed Noe boundary.
+
+This gives downstream methods high semantic freedom without exporting the
+platform's reliability, reproducibility, and evidence burden to every method
+author.
+
+### 21.2 Evaluation criteria
+
+The architecture is judged by the following repository-scale criteria:
+
+1. **Stable core**: invariants and public contracts evolve slowly and have
+   explicit compatibility rules.
+2. **Extension without core coupling**: providers, packs, loops, and
+   evaluators can be added without editing unrelated kernel systems.
+3. **Progressive complexity**: the common path is short; advanced users can
+   escape to lower-level ports without replacing the kernel.
+4. **Predictable lifecycle**: ownership, activation, teardown, cancellation,
+   and recovery are explicit.
+5. **Reproducible execution**: the admitted run has an immutable identity and
+   a reconstructable binding plan.
+6. **Operational explainability**: failures identify the boundary, cause,
+   certainty, evidence, and next legal action.
+7. **Hot-path performance**: composition, validation, and discovery are not
+   repeated inside the decision loop.
+8. **Conformance over convention**: each adapter and execution fabric is
+   tested against contracts rather than trusted because it follows a pattern.
+
+### 21.3 Patterns adopted and their boundaries
+
+| Pattern | Noe adoption | Explicit boundary |
+|---|---|---|
+| Microkernel / plugin | Provider, pack, facade, and execution-fabric extension at composition time | No global mutable runtime plugin bus |
+| Hexagonal architecture | Scientific method depends on typed ports; providers are adapters | Domain ownership cannot be bypassed by an adapter |
+| Compiler / IR | Profile and method declarations compile to a canonical Method IR and BindingPlan | IR validates and optimizes; it must not erase arbitrary method semantics |
+| Durable workflow | Deterministic orchestration, checkpoints, replayable requests, and recorded activities | Not every external process is replayable; certainty must be explicit |
+| Actor model | Optional fabric for stateful, concurrent, long-lived agents | Actor state and ownership remain scoped and evidence-bearing |
+| Controller / reconciler | Run admission, assignment, environment, artifact, and evidence closure | Use multiple small controllers, not one monolithic controller |
+| CQRS | Separate commands, durable facts, queries, and projections | Do not turn every record into a universal event-sourced log |
+| Saga / effect system | Intent, receipt, reconciliation, and UNKNOWN handling for external effects | Never blind-retry an effect with uncertain outcome |
+| Dataflow pipeline | Evaluation, metrics, rendering, and observation fan-out | Observation pipelines cannot own primary scientific truth |
+| Strategy / Template Method | Replace loops, schedulers, evaluators, and providers under a stable lifecycle | Kernel middleware surrounds the strategy and cannot be skipped |
+| Decorator / middleware | Identity, timing, checkpoint, policy, audit, and evidence interception | Middleware cannot silently mutate method semantics |
+| Composite | Nested methods, child agents, sub-experiments, and method graphs | Child scopes and evidence lineage are mandatory |
+
+The combination is intentional. No single pattern expresses both arbitrary
+agent behavior and research-grade durability.
+
+## 22. Target architecture: Research Operating Kernel
+
+### 22.1 Four architectural layers
+
+The Harness should be implemented as four stable layers rather than as one
+large object:
+
+1. **Harness Kernel**: identity, scope, lifecycle, admission, effect safety,
+   checkpoint/recovery, evidence, compatibility, and platform invariants.
+2. **Execution Fabric**: one of several execution substrates that run a
+   method program: graph, agent loop, actor, stream, matrix, external job,
+   human gate, or custom fabric.
+3. **Research Packs**: batteries-included compositions for common research
+   families such as single-agent, multi-agent, planning, memory, tool-use,
+   interactive, streaming, RL, benchmark, training, and distributed work.
+4. **Managed Method Program**: downstream-owned scientific state, algorithm,
+   control flow, hypotheses, policies, and method-specific claims.
+
+The Kernel is closed with respect to safety and evidence invariants. The
+Method Program is open with respect to scientific semantics. Packs are
+convenience and composition units, not a second authority.
+
+### 22.2 Control, data, and observation planes
+
+Noe's existing three composition/runtime/event planes should be formalized in
+the familiar control-plane/data-plane/observation-plane vocabulary without
+replacing the existing five semantic ownership planes:
+
+| Noe plane | Responsibility | Performance rule |
+|---|---|---|
+| Control plane | Registry, profile, dependency resolution, admission, compilation, freezing, and reconciliation | May be relatively rich and slow; never runs per decision cycle |
+| Data plane | Direct typed ports, method execution, model/tool/environment calls, and scoped state transitions | Must use pre-bound references and bounded middleware |
+| Observation plane | Event spine, telemetry, projections, metrics, evaluation inputs, and diagnostics | May fan out and fail independently; cannot mutate primary truth |
+
+```mermaid
+flowchart TD
+    A["Registry and Profile"] --> B["Compile and Admit"]
+    B --> C["Frozen BindingPlan"]
+    C --> D["Execution Fabric"]
+    D --> E["Managed Method Program"]
+    D --> F["Domain Facts and Effects"]
+    D --> G["Observation and Projections"]
+```
+
+The registry remains the topology and ownership authority. The BindingPlan is
+the authority for one admitted run. Direct ports are the authority for the
+hot path. The event spine is an observation transport, not a replacement for
+domain-owned durable facts.
+
+### 22.3 Modular monolith first, distributed by fabric
+
+The logical system should remain a modular monolith until a measured scaling
+boundary requires a separate process. The 172 registered systems are not 172
+mandatory microservices. Splitting every system into a network service would
+add latency, failure modes, deployment coupling, and reproducibility concerns
+to the method hot path.
+
+Physical distribution remains supported through Execution Fabric adapters,
+worker pools, external jobs, and remote providers. The logical contracts must
+not depend on whether a provider is local, containerized, or remote.
+
+## 23. Capability facets and Research Packs
+
+### 23.1 Registry systems versus downstream surface
+
+All registered systems must remain useful, but they must not all be presented
+as equal-level downstream APIs. The public surface should be generated through
+capability facets and packs:
+
+```text
+172 registered systems
+        -> owned capabilities and typed ports
+        -> capability facets
+        -> Research Packs
+        -> small Harness authoring surface
+```
+
+The registry should eventually classify each system or public capability with
+metadata equivalent to:
+
+- `harness_role`: kernel, fabric, pack, method, evidence, or advanced escape hatch;
+- `exposure`: default, pack-only, advanced, internal, or observation-only;
+- `lifecycle`: process, worker, run, assignment, step, or projection scoped;
+- `consistency`: durable, transactional, eventually-consistent, or live;
+- `effect_class`: pure, recorded, reversible, idempotent, or uncertain;
+- `cost_class`: control-plane, setup, per-run, per-assignment, or hot-path;
+- `stability`: public, experimental, deprecated, or internal;
+- `conformance`: the contract suite required before publication.
+
+This metadata is additive to the canonical registry. It must not create a
+second topology authority.
+
+### 23.2 Packs must be composable, not combinatorially explosive
+
+Packs should declare typed provisions and requirements and be composed through
+the same dependency graph as systems. A pack may provide defaults, but every
+default must be replaceable at a declared seam.
+
+Packs must not encode every possible combination as a new class. Prefer small
+orthogonal facets:
+
+```text
+AgentLoopFacet + MemoryFacet + ToolFacet + EvaluationFacet
+```
+
+The compiler composes these facets into a BindingPlan. A pack becomes a
+curated, tested bundle of facets, defaults, policies, and examples.
+
+### 23.3 Public API tiers
+
+The downstream surface should have four intentional tiers:
+
+1. **Quickstart API**: one method definition and one run command.
+2. **Research API**: typed method state, capabilities, variants, metrics,
+   artifacts, and evaluation.
+3. **Fabric API**: custom graph, actor, stream, scheduler, or agent loop.
+4. **Kernel escape hatches**: advanced ports for platform authors and unusual
+   research infrastructure.
+
+The tier is a usability boundary, not a permission boundary. Advanced users
+can reach lower layers, but ordinary method authors should never need to know
+the entire registry.
+
+## 24. Method semantics and the universal ABI
+
+### 24.1 The strongest useful semantic model
+
+The method model should be defined as:
+
+```text
+Method Program
+  = method-owned State
+  + typed Capabilities
+  + arbitrary Control Flow
+  + typed Effects
+  + evidence-bearing Claims
+```
+
+This is stronger than a fixed `observe -> think -> act -> evaluate` template.
+That sequence remains a default AgentPack, but it is not the semantic limit of
+Noe.
+
+The method may implement loops, recursion, branching, speculative execution,
+multi-agent negotiation, asynchronous streams, curriculum changes, online
+learning, external simulators, human gates, or custom schedulers. The kernel
+only controls what crosses a platform boundary.
+
+### 24.2 Progressive authoring
+
+The authoring levels are:
+
+- **Level 0**: configuration, prompt, schema, provider, and experiment matrix;
+- **Level 1**: one or more policies such as decision, planning, memory, tool
+  selection, or evaluation;
+- **Level 2**: custom state, nodes, edges, events, child agents, and graph;
+- **Level 3**: a complete custom execution fabric or agent loop.
+
+Every level uses the same identity, scope, effect, evidence, and finalization
+contracts. Moving to a lower level increases control, not the amount of
+generic reliability code the researcher must rewrite.
+
+### 24.3 Effect boundary
+
+All nondeterministic or externally visible operations are typed effects:
+
+```python
+observation = ctx.environment.observe(request)
+completion = ctx.model.complete(model_request)
+receipt = ctx.tools.invoke(tool_call)
+checkpoint = ctx.state.save(snapshot)
+claim = ctx.evidence.assert_claim(statement, support)
+```
+
+Noe automatically adds identity, scope, request digest, provider identity,
+timing, policy checks, outcome certainty, receipts, retries where legal,
+reconciliation, and evidence lineage. The method supplies intent and consumes
+the typed result.
+
+### 24.4 Execution classes
+
+Arbitrary code and replayability cannot be promised simultaneously for every
+method. The ABI must declare an execution class:
+
+| Class | Guarantee |
+|---|---|
+| Deterministic | Replayable from canonical inputs and recorded effects |
+| Checkpointable | Recoverable from declared state checkpoints |
+| Effect-recorded | External interactions are reconstructable from receipts and evidence |
+| Live | Not replayable by default, but boundaries and evidence remain explicit |
+
+The declaration affects admission, available recovery modes, comparison
+claims, and publication gates. It does not prohibit a method from using a
+less-deterministic substrate; it prevents the platform from making a false
+reproducibility claim.
+
+## 25. Method Compiler and frozen execution
+
+### 25.1 Compilation pipeline
+
+The declarative profile and method metadata should compile once into a
+canonical intermediate representation:
+
+```text
+Method Definition
+  -> capability resolution
+  -> dependency and policy validation
+  -> Method IR
+  -> provider and version binding
+  -> generated schemas and manifests
+  -> BindingPlan
+  -> admitted frozen run
+```
+
+The compiler must:
+
+- reject missing, ambiguous, incompatible, or cyclic requirements;
+- resolve providers and versions against the canonical registry;
+- validate effect and execution-class declarations;
+- assemble direct typed ports;
+- precompute scopes, lifecycle ownership, and teardown order;
+- generate the plan digest, interface schema, and run manifest;
+- identify required evidence and finalization obligations;
+- expose a human-readable explanation of the resulting plan.
+
+The IR is an optimization and validation artifact, not a workflow language
+that every method must be forced to use. A custom Level 3 program can be
+wrapped by a Managed Method ABI adapter and still receive a compiled binding
+plan.
+
+### 25.2 Freeze and reload rules
+
+Workbench may discover, inspect, validate, and reload development generations.
+Study admission creates one immutable run generation:
+
+- provider graph is frozen;
+- plugin and pack identities are frozen;
+- model and environment identities are frozen;
+- schemas and policy versions are frozen;
+- the BindingPlan digest is persisted;
+- teardown and recovery ownership are fixed.
+
+No execution-time string lookup, implicit package installation, provider
+replacement, or hidden hot reload is allowed. This preserves the existing
+Noe rule that development flexibility ends at Study admission.
+
+## 26. Reconciliation, failure, and recovery architecture
+
+### 26.1 Small controllers
+
+Noe should use independent reconciliation loops for independently owned state:
+
+- run admission controller;
+- assignment/environment controller;
+- model/provider readiness controller;
+- execution supervision controller;
+- artifact finalization controller;
+- evidence closure controller.
+
+Each controller compares desired and observed state, writes only to its owned
+domain, and emits diagnostics or durable facts through the appropriate
+boundary. Controllers must be independently testable and must not form a
+hidden monolithic workflow.
+
+### 26.2 External effects
+
+An external effect follows:
+
+```text
+intent -> request record -> provider call -> receipt -> reconciliation -> commit
+```
+
+If the result is UNKNOWN, the next action is reconciliation, not blind retry.
+Compensation is provider-specific and must not be assumed to be rollback.
+This applies equally to model serving, tool calls, simulator actions, remote
+jobs, artifact publication, and human approval.
+
+### 26.3 Failure domains
+
+The runtime must distinguish at least:
+
+- method failure;
+- provider failure;
+- infrastructure failure;
+- policy/admission failure;
+- evidence/observation failure;
+- uncertain external effect;
+- finalization failure.
+
+Each failure domain has a different recovery and claim implication. In
+particular, observation failure cannot invalidate or mutate a durable fact,
+while an evidence closure failure must block a claim-ready publication.
+
+## 27. Performance and operability requirements
+
+The abstraction must disappear from the hot path as far as practical:
+
+1. Compile and validate once per profile or admitted run, not once per step.
+2. Inject direct typed references into worker and run scopes.
+3. Initialize expensive clients at worker startup or run setup and reuse them
+   when their identity and isolation rules permit.
+4. Keep request envelopes canonical and avoid repeated schema generation.
+5. Use bounded middleware with explicit sampling for non-authoritative traces.
+6. Make checkpoints incremental and provider-aware.
+7. Do not serialize large method state merely to pass through generic context.
+8. Never scan the full registry, resolve strings, or run release gates per
+   decision cycle.
+9. Benchmark local, container, and remote fabrics separately.
+10. Report overhead as part of run evidence when it can affect the method.
+
+The design therefore rejects a universal mutable `HarnessContext` containing
+all 172 systems. A context is a scoped, typed capability view generated from a
+BindingPlan; it is not a service bag or ambient dependency container.
+
+## 28. Large-repository acceptance gates
+
+Implementation of this architecture is not complete when the facade imports.
+It is complete only when the repository has:
+
+- contract tests for every public port and provider adapter;
+- conformance suites for every Execution Fabric;
+- deterministic replay tests for deterministic methods;
+- checkpoint and crash-recovery tests for checkpointable methods;
+- failure-injection tests for each failure domain;
+- property-based tests for idempotency and reconciliation;
+- golden tests for Method IR, BindingPlan, schema, and manifest digests;
+- compatibility tests for public schema and API evolution;
+- lifecycle tests for activation, cancellation, drain, teardown, and unwind;
+- benchmark tests proving no global graph scan or repeated admission work in
+  the hot path;
+- one complete reference method at each authoring level;
+- diagnostic output that explains why a method or run was rejected;
+- documentation generated from the same public contract source as validation.
+
+The minimum-method-size metric should be tracked as a product requirement:
+adding a new scientific method must require method semantics, not repeated
+implementation of model qualification, effect recovery, evidence transport,
+artifact closure, or plotting plumbing.
+
+## 29. Final architecture decision
+
+The recommended target is now:
+
+> **Noe Research Operating Kernel + Open Method ABI + Pluggable Execution
+> Fabrics + Capability Facets/Research Packs + Compiled BindingPlan.**
+
+Keep:
+
+- the canonical registry as the single topology authority;
+- the five semantic ownership planes and strict dependency direction;
+- the typed composition graph;
+- direct immutable runtime ports;
+- the separate observational event spine;
+- domain-owned durable truth;
+- frozen Study generations;
+- explicit external-effect certainty and reconciliation;
+- SEM's pinned frozen Noetrium boundary.
+
+Add before large-scale Harness implementation:
+
+1. registry metadata for role, exposure, lifecycle, consistency, effect, cost,
+   stability, and conformance;
+2. capability facets and Research Packs as the main downstream surface;
+3. Method IR and BindingPlan compilation with explainable diagnostics;
+4. multiple Execution Fabric contracts instead of a fixed lifecycle graph;
+5. managed Level 3 method execution through the same Effect ABI;
+6. small reconciliation controllers for run and evidence closure;
+7. contract, conformance, replay, recovery, and performance gates.
+
+This is the architecture that best balances the two apparently conflicting
+requirements: a new researcher should write very little infrastructure code,
+while an expert researcher must still be able to express an arbitrary agent
+research method without fighting the framework.
+
+### 29.1 Reference sources for the adopted patterns
+
+The design draws on the following public architectural precedents, adapted to
+Noe's stronger scientific-evidence requirements:
+
+- Kubernetes controller and reconciliation model:
+  <https://kubernetes.io/docs/concepts/architecture/controller/>
+- Temporal deterministic workflow and recorded Activity boundary:
+  <https://docs.temporal.io/workflows>
+- Ray stateful Actor execution model:
+  <https://docs.ray.io/en/latest/ray-core/actors.html>
+- OpenTelemetry extensible observation pipelines:
+  <https://opentelemetry.io/docs/collector/architecture/>
+- DeepSeek Harness profile/plugin lifecycle:
+  <https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/refs/heads/master/docs/architecture.md>
+- Pi Chord provision/requirement graph and lifecycle ownership:
+  <https://github.com/earendil-works/pi/tree/main/packages/chord>
