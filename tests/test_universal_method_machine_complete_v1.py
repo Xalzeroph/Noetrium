@@ -27,7 +27,6 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodNodeKind,
     MethodNodeResult,
     MethodNodeSpec,
-    MethodProgramAdapter,
     MethodProgramBuilder,
     MethodRuntimeContext,
 )
