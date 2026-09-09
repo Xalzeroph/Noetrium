@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ko -->
 
-<!-- readme-source-sha256:5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78 -->
+<!-- readme-source-sha256:e13fb8ae0d3beaa4b86e2989d1704546b758ab6dfe98f27886545a2a359ce03e -->
 
 <p align="center">
   <strong>Agent를 구축하고, 실험하고, 결과를 검증하세요.</strong><br>
@@ -96,7 +96,7 @@ Noetrium은 의도적으로 Agent workflow library보다 범위가 넓습니다.
 
 Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
 
-- 172 registered system surfaces; 500 public API modules; 3659 public symbols.
+- 172 registered system surfaces; 500 public API modules; 3663 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
@@ -374,28 +374,4 @@ python scripts/check_readme_i18n.py
 - 불확실한 외부 effect에서 fail-closed 유지
 - 의도적인 semantic/compatibility 변경 명시
 
-[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
-
-<!-- readme-section:license -->
-
-## 라이선스
-
-Noetrium은 Apache License 2.0을 사용합니다. 법적 권위가 있는 본문은 루트 LICENSE 파일입니다.
-
-서드파티 구성요소는 각자의 라이선스를 따릅니다. THIRD_PARTY_NOTICES.md를 참고하십시오. 독립 배포되는 모델 가중치, 데이터셋, benchmark 자산에는 별도 조건이 있을 수 있습니다.
-
-[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-
-<!-- readme-section:status -->
-
-## 개발 상태
-
-플랫폼은 아키텍처와 runtime을 계속 개발 중입니다.
-
-프로덕션, 공개, 과학적 주장에서는 오래된 green result에 의존하지 말고 관련 gate를 다시 실행한 뒤 exact source revision에 바인딩된 release evidence를 확인하십시오.
-
-역사적 변경 사항은 의도적으로 이 README에 넣지 않습니다. 불변 engineering record는 `docs/history/`를 사용하십시오.
-
-현재 개발 기준 정보는 `docs/status/CURRENT_DEVELOPMENT_BASELINE.md` 입니다. 릴리스 및 연구 주장은 평가 중인 정확한 리비전에 바인딩된 증거를 사용해야 합니다.
-
-`docs/status/` · `docs/history/`
+[Documentation Change Policy](docs/governance/DOCUMENTATI

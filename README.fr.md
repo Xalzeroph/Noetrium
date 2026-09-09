@@ -21,7 +21,7 @@
 
 <!-- readme-locale:fr -->
 
-<!-- readme-source-sha256:5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78 -->
+<!-- readme-source-sha256:e13fb8ae0d3beaa4b86e2989d1704546b758ab6dfe98f27886545a2a359ce03e -->
 
 <p align="center">
   <strong>Construisez des agents. Exécutez des expériences. Vérifiez les résultats.</strong><br>
@@ -96,7 +96,7 @@ Noetrium est volontairement plus large qu’une bibliothèque de agent workflows
 
 Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
 
-- 172 registered system surfaces; 500 public API modules; 3659 public symbols.
+- 172 registered system surfaces; 500 public API modules; 3663 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
@@ -367,35 +367,4 @@ python scripts/architecture_gate.py
 python scripts/check_readme_i18n.py
 ```
 
-- préserver system ownership et public-contract boundaries
-- ajouter ou mettre à jour une couverture de régression ciblée
-- mettre à jour la documentation de l'owner dans le même change set
-- éviter les refactors sans rapport dans le même commit
-- préserver fail-closed pour les effets externes incertains
-- documenter explicitement tout changement volontaire de sémantique ou compatibilité
-
-[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
-
-<!-- readme-section:license -->
-
-## Licence
-
-Noetrium est sous Apache License 2.0. Le texte juridique faisant autorité est le fichier LICENSE à la racine.
-
-Les composants tiers restent régis par leurs propres licences ; voir THIRD_PARTY_NOTICES.md. Les poids de modèles, datasets ou assets de benchmark distribués séparément peuvent déclarer des conditions distinctes.
-
-[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-
-<!-- readme-section:status -->
-
-## État du développement
-
-La plateforme reste en développement actif d'architecture et de runtime.
-
-Pour la production, la publication ou les affirmations scientifiques, relancez les gates pertinents et examinez release evidence liée à l'exact source revision plutôt que de vous fier à un ancien résultat vert.
-
-Les changements historiques sont volontairement exclus de ce README ; utilisez `docs/history/` pour les archives d’ingénierie immuables.
-
-La source de vérité de l’état de développement est `docs/status/CURRENT_DEVELOPMENT_BASELINE.md` ; toute affirmation de publication ou de recherche doit être liée aux preuves de la révision exacte évaluée.
-
-`docs/status/` · `docs/history/`
+- préserver system ow

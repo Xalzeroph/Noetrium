@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.participant.core.api import BoundParticipants, ParticipantSessionBinding
@@ -17,11 +18,37 @@ class WorkflowSurfaceBindingContext:
     effect_intents: EffectIntentOperationPort | None = None
 
 
+class WorkflowSurfaceReuseScope(StrEnum):
+    """Lifetime for a workflow surface binding.
+
+    ``cycle`` is the compatibility-safe default for stateful or unknown
+    downstream surfaces.  ``run`` is appropriate only when the surface owns
+    run-scoped collaborators and keeps no decision-cycle input in its
+    constructor.
+    """
+
+    CYCLE = "cycle"
+    RUN = "run"
+
+
 @runtime_checkable
 class WorkflowSurfaceFactory(Protocol):
     surface_id: str
 
     def bind(self, context: WorkflowSurfaceBindingContext) -> object: ...
+
+
+def workflow_surface_reuse_scope(factory: WorkflowSurfaceFactory) -> WorkflowSurfaceReuseScope:
+    """Resolve the explicitly declared binding lifetime for one surface factory."""
+
+    value = getattr(factory, "reuse_scope", WorkflowSurfaceReuseScope.CYCLE)
+    try:
+        return value if isinstance(value, WorkflowSurfaceReuseScope) else WorkflowSurfaceReuseScope(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"workflow surface {getattr(factory, 'surface_id', '<unknown>')!r} "
+            "declares an invalid reuse_scope; expected 'cycle' or 'run'"
+        ) from exc
 
 
 def workflow_surface_id(workflow: object) -> str:
@@ -34,5 +61,7 @@ def workflow_surface_id(workflow: object) -> str:
 __all__ = [
     "WorkflowSurfaceBindingContext",
     "WorkflowSurfaceFactory",
+    "WorkflowSurfaceReuseScope",
+    "workflow_surface_reuse_scope",
     "workflow_surface_id",
 ]

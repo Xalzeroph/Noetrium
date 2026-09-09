@@ -21,7 +21,7 @@
 
 <!-- readme-locale:zh-CN -->
 
-<!-- readme-source-sha256:5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78 -->
+<!-- readme-source-sha256:e13fb8ae0d3beaa4b86e2989d1704546b758ab6dfe98f27886545a2a359ce03e -->
 
 <p align="center">
   <strong>构建 Agent。运行实验。验证结果。</strong><br>
@@ -103,7 +103,7 @@ Noetrium 刻意比 Agent workflow library 更宽：实验设计、模型/环境 
 
 Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
 
-- 172 registered system surfaces; 500 public API modules; 3659 public symbols.
+- 172 registered system surfaces; 500 public API modules; 3663 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
@@ -342,86 +342,4 @@ python scripts/check_readme_i18n.py
 └── composition/  provider-to-port binding
 ```
 
-避免用通用 wrapper 把无关算法、provider discovery 或外部 effect 隐藏在一个接口后面。
-
-<!-- readme-section:documentation -->
-
-## 文档
-
-从文档索引开始。
-
-### 关键参考文档
-
-- [Documentation index](docs/INDEX.md)
-- [Examples](examples/README.md)
-- [Contributing](CONTRIBUTING.md)
-- [Security policy](SECURITY.md)
-- [Support](SUPPORT.md)
-- [Citation metadata](CITATION.cff)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Platform architecture](docs/architecture/PLATFORM_ARCHITECTURE.md)
-- [Detailed system map](docs/architecture/VNEXT_DETAILED_SYSTEM_MAP.md)
-- [Architecture migration contract](docs/architecture/FINAL_ARCHITECTURE_MIGRATION_CONTRACT.md)
-- [Infrastructure documentation](docs/infrastructure/README.md)
-- [Governance documentation](docs/governance/README.md)
-- [Current status](docs/status/README.md)
-- [Engineering history](docs/history/README.md)
-
-架构文档定义可复用 ownership 与 contract；status 文档描述当前开发树；history 保存其写入时刻对应状态的证据。想了解实现边界，可先读 `docs/architecture/COMPONENT_LAYERS.md` 的公共 component 分层，以及 `docs/product/PUBLIC_FACADE_AND_CLI.md` 的项目 authoring、doctor 与 test 流程。
-
-<!-- readme-section:security -->
-
-## 安全与配置
-
-- 禁止提交密码、私钥、token、runtime secret 或机器本地凭据。
-- 主机路径与 secret 放在忽略的本地 profile 或环境绑定存储中。
-- 远程自动化优先使用 key/agent 无人值守认证。
-- 外部 effect 命令必须 typed、bounded、journaled 并绑定 operation identity。
-- 日志与 evidence 应视为可能包含敏感运维信息。
-
-<!-- readme-section:contributing -->
-
-## 贡献指南
-
-变更应能按 ownership boundary 审查，并包含证明该变更所需的测试与文档。
-
-### 提交 Pull Request 前
-
-```bash
-python -m pytest -q
-python scripts/architecture_gate.py
-python scripts/check_readme_i18n.py
-```
-
-- 保持 system ownership 与公共 contract 边界
-- 增加或更新聚焦的回归覆盖
-- 在同一 change set 更新 owner 文档
-- 避免在同一 commit 混入无关重构
-- 对不确定外部 effect 保持 fail-closed
-- 明确记录有意的语义或兼容性变化
-
-[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
-
-<!-- readme-section:license -->
-
-## 许可证
-
-Noetrium 采用 Apache License 2.0。具有法律效力的权威文本是仓库根目录的 LICENSE。
-
-第三方组件继续受各自许可证约束，详见 THIRD_PARTY_NOTICES.md；独立分发的模型权重、数据集或 benchmark 资产可以另行声明许可条款。
-
-[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-
-<!-- readme-section:status -->
-
-## 开发状态
-
-Noetrium 0.44.0 是当前发布的平台基线。项目仍处于持续的架构与 runtime 开发阶段，因此下游使用者应固定 exact revision，并在依赖之前验证对应 evidence。
-
-Noetrium 不是托管式 Agent 产品，也不是开箱即用的科学 benchmark。下游项目绑定自己的 method、provider、protocol 与 claim；本仓库提供围绕它们的可复用 contract、runtime authority 与 evidence machinery。
-
-对于生产、发布或科学结论，必须重新运行相关 gate，并检查与 exact source revision 绑定的 release evidence，而不能只依赖历史绿灯。历史变更有意不写入这份 README；不可变的工程记录请查看 `docs/history/`。
-
-当前开发事实以 `docs/status/CURRENT_DEVELOPMENT_BASELINE.md` 为准；发布与科研结论必须绑定到被评估精确版本的证据。
-
-`docs/status/` · `docs/history/`
+避免用通用 wrapper 把无关算法、provider discovery 或外部 effect 隐藏在一个接口后面

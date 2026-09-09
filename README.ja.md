@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ja -->
 
-<!-- readme-source-sha256:5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78 -->
+<!-- readme-source-sha256:e13fb8ae0d3beaa4b86e2989d1704546b758ab6dfe98f27886545a2a359ce03e -->
 
 <p align="center">
   <strong>Agent を構築する。実験を走らせる。結果を検証する。</strong><br>
@@ -96,7 +96,7 @@ Noetrium は意図的に Agent workflow library より広く、experiment design
 
 Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
 
-- 172 registered system surfaces; 500 public API modules; 3659 public symbols.
+- 172 registered system surfaces; 500 public API modules; 3663 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
@@ -357,45 +357,4 @@ Architecture 文書は再利用可能な ownership と contract を定義し、s
 
 ## コントリビューション
 
-変更は ownership boundary 単位でレビュー可能にし、証明に必要な tests と documentation を含めます。
-
-### Pull Request を作成する前に
-
-```bash
-python -m pytest -q
-python scripts/architecture_gate.py
-python scripts/check_readme_i18n.py
-```
-
-- system ownership と public-contract boundary を守る
-- focused regression coverage を追加・更新する
-- 同じ change set で owner 文書を更新する
-- 同一 commit に無関係な refactor を混ぜない
-- 不確実な外部 effect で fail-closed を守る
-- 意図的な semantic/compatibility change を明示する
-
-[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
-
-<!-- readme-section:license -->
-
-## ライセンス
-
-Noetrium は Apache License 2.0 でライセンスされています。法的に権威のある本文はルートの LICENSE です。
-
-第三者コンポーネントにはそれぞれのライセンスが適用されます。THIRD_PARTY_NOTICES.md を参照してください。独立配布されるモデル重み、データセット、benchmark 資産には別条件が設定される場合があります。
-
-[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-
-<!-- readme-section:status -->
-
-## 開発状況
-
-プラットフォームは現在もアーキテクチャと runtime の継続的な開発中です。
-
-本番利用、公開、科学的主張では、古い green result に依存せず、関連 gate を再実行し exact source revision に結び付いた release evidence を確認してください。
-
-履歴変更は意図的にこの README へ入れません。不変の engineering record は `docs/history/` を参照してください。
-
-現在の開発上の正本は `docs/status/CURRENT_DEVELOPMENT_BASELINE.md` です。リリースや研究上の主張は、評価対象の正確なリビジョンに結び付いた証拠に基づく必要があります。
-
-`docs/status/` · `docs/history/`
+変更は ownership boundary 単位でレビュー�

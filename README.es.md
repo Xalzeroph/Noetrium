@@ -21,7 +21,7 @@
 
 <!-- readme-locale:es -->
 
-<!-- readme-source-sha256:5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78 -->
+<!-- readme-source-sha256:e13fb8ae0d3beaa4b86e2989d1704546b758ab6dfe98f27886545a2a359ce03e -->
 
 <p align="center">
   <strong>Construye agentes. Ejecuta experimentos. Verifica resultados.</strong><br>
@@ -96,7 +96,7 @@ Noetrium es deliberadamente más amplio que una biblioteca de agent workflows: d
 
 Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
 
-- 172 registered system surfaces; 500 public API modules; 3659 public symbols.
+- 172 registered system surfaces; 500 public API modules; 3663 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
@@ -374,28 +374,4 @@ python scripts/check_readme_i18n.py
 - preservar fail-closed para efectos externos inciertos
 - documentar explícitamente cambios intencionales de semántica o compatibilidad
 
-[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
-
-<!-- readme-section:license -->
-
-## Licencia
-
-Noetrium se distribuye bajo Apache License 2.0. El texto legal autoritativo es el archivo LICENSE en la raíz.
-
-Los componentes de terceros conservan sus propias licencias; consulta THIRD_PARTY_NOTICES.md. Pesos de modelos, datasets o assets de benchmark distribuidos de forma independiente pueden declarar términos separados.
-
-[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-
-<!-- readme-section:status -->
-
-## Estado de desarrollo
-
-La plataforma continúa en desarrollo activo de arquitectura y runtime.
-
-Para producción, publicación o afirmaciones científicas, vuelve a ejecutar los gates pertinentes y revisa release evidence vinculada a la exact source revision, en lugar de confiar en un resultado verde antiguo.
-
-Los cambios históricos se mantienen intencionadamente fuera de este README; usa `docs/history/` para los registros de ingeniería inmutables.
-
-La fuente vigente del estado de desarrollo es `docs/status/CURRENT_DEVELOPMENT_BASELINE.md`; las afirmaciones de publicación o investigación deben vincularse a evidencia de la revisión exacta evaluada.
-
-`docs/status/` · `docs/history/`
+[Do

@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:5004893a513f37199b753185cd47233c275b01de996c9d6fb2fcc5a8ffca5f78 -->
+<!-- readme-source-sha256:e13fb8ae0d3beaa4b86e2989d1704546b758ab6dfe98f27886545a2a359ce03e -->
 
 <p align="center">
   <strong>Build agents. Run experiments. Verify results.</strong><br>
@@ -103,7 +103,7 @@ Noetrium is deliberately broader than an agent workflow library: experiment desi
 
 Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
 
-- 172 registered system surfaces; 500 public API modules; 3659 public symbols.
+- 172 registered system surfaces; 500 public API modules; 3663 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
@@ -330,98 +330,4 @@ The repository uses a hierarchical test taxonomy so every test belongs to an exp
 
 ## Extending the platform
 
-Add a capability at the smallest owning boundary. Prefer a new provider when the public contract already exists; add a new contract only when the capability itself is new.
-
-A practical extension sequence is: select or define the public contract, implement the provider or component in the owning project, bind it explicitly during composition, record the resulting identity and evidence, then exercise recovery and reconciliation paths. This keeps a replaceable downstream method from becoming coupled to platform internals.
-
-```text
-<system>/
-├── api/          public contracts and identities
-├── runtime/      lifecycle and execution semantics
-├── providers/    replaceable adapters owned by the system
-└── composition/  provider-to-port binding
-```
-
-Avoid generic wrappers that hide unrelated algorithms, provider discovery or external effects behind one interface.
-
-<!-- readme-section:documentation -->
-
-## Documentation
-
-Start with the documentation index.
-
-### Key references
-
-- [Documentation index](docs/INDEX.md)
-- [Examples](examples/README.md)
-- [Contributing](CONTRIBUTING.md)
-- [Security policy](SECURITY.md)
-- [Support](SUPPORT.md)
-- [Citation metadata](CITATION.cff)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Platform architecture](docs/architecture/PLATFORM_ARCHITECTURE.md)
-- [Detailed system map](docs/architecture/VNEXT_DETAILED_SYSTEM_MAP.md)
-- [Architecture migration contract](docs/architecture/FINAL_ARCHITECTURE_MIGRATION_CONTRACT.md)
-- [Infrastructure documentation](docs/infrastructure/README.md)
-- [Governance documentation](docs/governance/README.md)
-- [Current status](docs/status/README.md)
-- [Engineering history](docs/history/README.md)
-
-Architecture documents define reusable ownership and contracts; status documents describe the current development tree; history preserves evidence for the state that existed when it was written. For implementation orientation, read `docs/architecture/COMPONENT_LAYERS.md` for the public component tiers and `docs/product/PUBLIC_FACADE_AND_CLI.md` for project authoring, doctor, and test flows.
-
-<!-- readme-section:security -->
-
-## Security and configuration
-
-- Never commit passwords, private keys, access tokens, runtime secrets or machine-local credentials.
-- Keep host-specific paths and secrets in ignored local profiles or environment-bound stores.
-- Prefer key/agent-based unattended authentication for remote automation.
-- Keep external-effect commands typed, bounded, journaled and attributable to an operation identity.
-- Treat logs and evidence as potentially sensitive operational data.
-
-<!-- readme-section:contributing -->
-
-## Contributing
-
-Changes should be reviewable by ownership boundary and include the tests and documentation needed to prove them.
-
-### Before opening a pull request
-
-```bash
-python -m pytest -q
-python scripts/architecture_gate.py
-python scripts/check_readme_i18n.py
-```
-
-- preserve system ownership and public-contract boundaries
-- add or update focused regression coverage
-- update owning documentation in the same change set
-- avoid unrelated refactors in the same commit
-- preserve fail-closed behavior for uncertain external effects
-- document intentional semantic or compatibility changes explicitly
-
-[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
-
-<!-- readme-section:license -->
-
-## License
-
-Noetrium is licensed under the Apache License, Version 2.0. The authoritative legal text is the root LICENSE file.
-
-Third-party components remain governed by their own licenses; see THIRD_PARTY_NOTICES.md. Independently distributed model weights, datasets or benchmark assets may state separate terms.
-
-[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-
-<!-- readme-section:status -->
-
-## Development status
-
-Noetrium 0.44.0 is the current released platform baseline. The project is still under active architecture and runtime development, so downstream consumers should pin an exact revision and verify its evidence before relying on it.
-
-Noetrium is not a hosted agent product or a turnkey scientific benchmark. Downstream projects bind their own methods, providers, protocols, and claims; this repository supplies the reusable contracts, runtime authority, and evidence machinery around them.
-
-For production, publication, or scientific claims, re-run the relevant gates and inspect release evidence bound to the exact source revision rather than relying on an old green result. Historical changes are intentionally kept out of this README; use `docs/history/` for immutable engineering records.
-
-The current development truth is `docs/status/CURRENT_DEVELOPMENT_BASELINE.md`; release and scientific claims must be bound to exact evidence for the revision being evaluated.
-
-`docs/status/` · `docs/history/`
+Add a capability at the smallest owning boundary. Prefer a new provider when the pub

@@ -15,6 +15,13 @@ reuse that client for the lifetime of the provider. Request-level recording,
 prompt/schema provenance checks, endpoint route fencing, response fencing, and
 artifact verification remain unchanged.
 
+The workflow layer now has the same explicit lifetime boundary. Built-in
+`context_action` and `agent_turn` surfaces are bound once for the active run,
+so action-safety/recovery and capability-operation collaborators are not
+reconstructed for every decision cycle. A custom surface remains cycle-scoped
+unless its factory explicitly declares `reuse_scope = "run"`; this keeps
+unknown downstream stateful implementations safe by default.
+
 This is a run-scope pin, not a global cache. A new provider (and therefore a
 new experiment run) still reloads the persisted qualification closure and
 performs the normal qualification checks.

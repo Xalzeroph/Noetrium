@@ -11,6 +11,7 @@ from .agent_turn_operations import AgentTurnTrialOperations
 
 class AgentTurnSurfaceFactory:
     surface_id = "agent_turn.operations.v1"
+    reuse_scope = "run"
 
     def __init__(
         self,
