@@ -146,7 +146,15 @@ class UniversalMethodMachine:
                 return self._result(MethodRunStatus.SUCCEEDED, program, runtime, state)
             if self._must_checkpoint(node_result, state.sequence):
                 self._save_checkpoint(program, runtime, state, node.node_id)
-        return self._result(MethodRunStatus.LIMIT_REACHED, program, runtime, state, failure="method step limit reached")
+        checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
+        return self._result(
+            MethodRunStatus.LIMIT_REACHED,
+            program,
+            runtime,
+            state,
+            checkpoint=checkpoint,
+            failure="method step limit reached",
+        )
 
     async def run_async(
         self,
@@ -181,7 +189,15 @@ class UniversalMethodMachine:
                 return self._result(MethodRunStatus.SUCCEEDED, program, runtime, state)
             if self._must_checkpoint(node_result, state.sequence):
                 self._save_checkpoint(program, runtime, state, node.node_id)
-        return self._result(MethodRunStatus.LIMIT_REACHED, program, runtime, state, failure="method step limit reached")
+        checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
+        return self._result(
+            MethodRunStatus.LIMIT_REACHED,
+            program,
+            runtime,
+            state,
+            checkpoint=checkpoint,
+            failure="method step limit reached",
+        )
 
     @staticmethod
     def _validate_inputs(program: MethodProgram, runtime: MethodRuntimeContext, input_value: object,
