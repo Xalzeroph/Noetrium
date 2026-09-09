@@ -25,6 +25,7 @@ class ActionRecoveryCapabilityGuard:
         self._bound = bound
         self._environment_session = environment_session
         self._journal_durability = journal_durability
+        self._validated = False
 
     @staticmethod
     def _dc(context: ExecutionContext) -> str:
@@ -32,6 +33,8 @@ class ActionRecoveryCapabilityGuard:
 
     def preflight(self, context: ExecutionContext) -> tuple[OperationResult[JsonValue], ...]:
         if self._journal_durability is None:
+            return ()
+        if self._validated:
             return ()
         dc = self._dc(context)
         operation = self._dispatcher.dispatch(
@@ -47,6 +50,7 @@ class ActionRecoveryCapabilityGuard:
             handler=lambda request: self._require_crash_reconciliation_capability(),
         )
         self._dispatcher.require(operation)
+        self._validated = True
         return (operation,)
 
     def _require_crash_reconciliation_capability(self) -> dict[str, JsonValue]:

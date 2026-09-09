@@ -41,6 +41,25 @@ SEM should:
 The optimization must not remove assignment isolation, fresh-world reset,
 effect verification, request provenance, or final artifact verification.
 
+## Validation consolidation
+
+The execution path is intentionally divided by the identity that can make a
+check stale:
+
+| Boundary | Check | Frequency | Safe optimization |
+| --- | --- | --- | --- |
+| Release/source | taxonomy, architecture, generated schemas, package evidence | source revision | run once per exact release commit |
+| Run admission | model qualification closure, participant binding, workflow surface assembly, structural Environment recovery capability | run/session | bind and prove once, then reuse |
+| Assignment | fresh environment session/world cut, participant checkpoint, assignment identity | assignment | keep per assignment |
+| Action | exact request digest, effect intent slot, provider receipt, reconciliation, commit consumption | external effect | keep per action |
+| Result | measurement coverage, finalized artifact stream, evidence/hash closure | result/artifact | keep at finalization |
+
+The run/session capability proof is now memoized in the run-scoped action
+surface. A failed proof is never cached, so retrying after a transient setup
+failure still rechecks the capability. This removes one structural capability
+dispatch from every later decision cycle without weakening any live effect or
+scientific-result proof.
+
 ## Validation boundary
 
 The remote Linux node must run the focused model-provider tests and the SEM
