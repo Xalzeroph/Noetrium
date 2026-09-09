@@ -19,9 +19,9 @@ Example:
         ...
 
 - Registered systems: 172
-- Public API modules: 500
-- Public symbols: 3663
-- Registry digest: c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7
+- Public API modules: 501
+- Public symbols: 3697
+- Registry digest: 2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603
 
 ## Capability domains
 
@@ -31,7 +31,7 @@ Example:
 | components | 1 | 1 | 49 |
 | data | 8 | 20 | 106 |
 | environment | 18 | 53 | 444 |
-| execution | 7 | 31 | 183 |
+| execution | 7 | 32 | 217 |
 | experimentation | 15 | 59 | 576 |
 | governance | 13 | 33 | 307 |
 | model | 16 | 54 | 476 |
@@ -706,20 +706,21 @@ Example:
 
 - Package: noetrium_platform.research.execution.workflow
 - Authority: workflow_state
-- Owns: workflow definitions and orchestration semantics
+- Owns: workflow definitions, universal method-machine orchestration, and resumable control semantics
 - Must not own: process supervision
-- Requires: none
-- Provides: workflow.runtime
+- Requires: participant/capability, participant/method, platform
+- Provides: workflow.runtime, method.machine, method.abi, method.checkpoint
 - Downstream surface: public
 - Facade: noetrium.contracts.systems.execution__workflow
 
 #### API modules
 
-- noetrium_platform.research.execution.workflow.api ?w^~)?t EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowOperationBinding, WorkflowParticipantRequirementError, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_id, workflow_surface_reuse_scope
+- noetrium_platform.research.execution.workflow.api ?w^~)?t EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowOperationBinding, WorkflowParticipantRequirementError, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_id, workflow_surface_reuse_scope, AsyncOperationDispatchPort, MethodCheckpoint, MethodCheckpointStorePort, MethodEvent, MethodGraph, MethodInterrupt, MethodMachinePort, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodRunStatus, MethodRuntimeContext
 - noetrium_platform.research.execution.workflow.api.dispatch ?w^~)?t OperationDispatchPort, OperationExecutionPort
 - noetrium_platform.research.execution.workflow.api.effect_intents ?w^~)?t EffectIntentOperationPort
 - noetrium_platform.research.execution.workflow.api.errors ?w^~)?t WorkflowParticipantRequirementError
 - noetrium_platform.research.execution.workflow.api.graph ?w^~)?t WorkflowGraph, WorkflowGraphError, WorkflowStep
+- noetrium_platform.research.execution.workflow.api.method_machine ?w^~)?t AsyncOperationDispatchPort, MethodCheckpoint, MethodCheckpointStorePort, MethodEvent, MethodGraph, MethodInterrupt, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodMachinePort, MethodRunStatus, MethodRuntimeContext
 - noetrium_platform.research.execution.workflow.api.progress ?w^~)?t WorkflowOperationBinding, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId
 - noetrium_platform.research.execution.workflow.api.surfaces ?w^~)?t WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_reuse_scope, workflow_surface_id
 - noetrium_platform.research.execution.workflow.api.trial ?w^~)?t TrialCycleExecution

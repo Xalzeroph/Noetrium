@@ -2153,7 +2153,24 @@
             "WorkflowSurfaceFactory",
             "WorkflowSurfaceReuseScope",
             "workflow_surface_id",
-            "workflow_surface_reuse_scope"
+            "workflow_surface_reuse_scope",
+            "AsyncOperationDispatchPort",
+            "MethodCheckpoint",
+            "MethodCheckpointStorePort",
+            "MethodEvent",
+            "MethodGraph",
+            "MethodInterrupt",
+            "MethodMachinePort",
+            "MethodNodeHandler",
+            "MethodNodeKind",
+            "MethodNodeRequest",
+            "MethodNodeResult",
+            "MethodNodeSpec",
+            "MethodProgram",
+            "MethodProgramBuilder",
+            "MethodRunResult",
+            "MethodRunStatus",
+            "MethodRuntimeContext"
           ]
         },
         {
@@ -2185,6 +2202,29 @@
             "WorkflowGraph",
             "WorkflowGraphError",
             "WorkflowStep"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.workflow.api.method_machine",
+          "source": "noetrium_platform/research/execution/workflow/api/method_machine.py",
+          "symbols": [
+            "AsyncOperationDispatchPort",
+            "MethodCheckpoint",
+            "MethodCheckpointStorePort",
+            "MethodEvent",
+            "MethodGraph",
+            "MethodInterrupt",
+            "MethodNodeHandler",
+            "MethodNodeKind",
+            "MethodNodeRequest",
+            "MethodNodeResult",
+            "MethodNodeSpec",
+            "MethodProgram",
+            "MethodProgramBuilder",
+            "MethodRunResult",
+            "MethodMachinePort",
+            "MethodRunStatus",
+            "MethodRuntimeContext"
           ]
         },
         {
@@ -2222,12 +2262,19 @@
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__workflow",
       "must_not_own": "process supervision",
-      "owns": "workflow definitions and orchestration semantics",
+      "owns": "workflow definitions, universal method-machine orchestration, and resumable control semantics",
       "package_prefix": "noetrium_platform.research.execution.workflow",
       "provides": [
-        "workflow.runtime"
+        "workflow.runtime",
+        "method.machine",
+        "method.abi",
+        "method.checkpoint"
       ],
-      "requires": [],
+      "requires": [
+        "participant/capability",
+        "participant/method",
+        "platform"
+      ],
       "system_key": "execution/workflow"
     },
     {
@@ -9198,5 +9245,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7"
+  "topology_digest": "2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603"
 }

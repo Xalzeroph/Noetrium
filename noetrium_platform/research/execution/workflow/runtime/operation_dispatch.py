@@ -14,6 +14,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 
 from .operation_policy import ProtectedOperationSemanticPolicy
+from ..api.dispatch import OperationDispatchPort
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -109,4 +110,20 @@ class KernelOperationDispatcher:
         return self._executor.require_success(result)
 
 
-__all__ = ["KernelOperationDispatcher", "WORKFLOW_RUNTIME_IDENTITY"]
+class MethodNodeOperationAdapter:
+    """Narrow operation seam used by the universal method machine.
+
+    The method machine owns control flow; this adapter owns the single legal
+    transition from a node invocation into the Operation ABI.
+    """
+
+    def __init__(self, dispatcher: OperationDispatchPort) -> None:
+        if not callable(getattr(dispatcher, "dispatch", None)):
+            raise TypeError("method node operation adapter requires an operation dispatcher")
+        self._dispatcher = dispatcher
+
+    def execute(self, **kwargs: object) -> OperationResult[object]:
+        return self._dispatcher.dispatch(**kwargs)  # type: ignore[arg-type]
+
+
+__all__ = ["KernelOperationDispatcher", "MethodNodeOperationAdapter", "WORKFLOW_RUNTIME_IDENTITY"]
