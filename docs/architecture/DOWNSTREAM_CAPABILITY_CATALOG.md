@@ -2061,7 +2061,7 @@ Example:
 - Authority: agent_identity
 - Owns: agent participant contracts, provider-independent agent identity and bounded cognition-loop orchestration
 - Must not own: model serving lifecycle
-- Requires: none
+- Requires: model
 - Provides: agent.contract
 - Downstream surface: public
 - Facade: noetrium.contracts.systems.participant__agent
