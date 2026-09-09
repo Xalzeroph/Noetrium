@@ -47,6 +47,13 @@ class MethodRunStatus(StrEnum):
     LIMIT_REACHED = "limit_reached"
 
 
+class MethodExecutionClass(StrEnum):
+    DETERMINISTIC = "deterministic"
+    CHECKPOINTABLE = "checkpointable"
+    EFFECT_RECORDED = "effect_recorded"
+    LIVE = "live"
+
+
 @dataclass(frozen=True, slots=True)
 class MethodEvent:
     kind: str
@@ -110,6 +117,7 @@ class MethodNodeRequest:
     context: ExecutionContext
     previous_value: JsonValue = None
     capabilities: CapabilityPort | None = None
+    visit_counts: tuple[tuple[str, int], ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.node_id, str) or not self.node_id.strip():
@@ -120,6 +128,13 @@ class MethodNodeRequest:
             raise TypeError("method node request state must be a mapping")
         if not isinstance(self.context, ExecutionContext):
             raise TypeError("method node request context must be ExecutionContext")
+        if not isinstance(self.visit_counts, tuple) or any(
+            not isinstance(item, tuple) or len(item) != 2
+            or not isinstance(item[0], str) or not item[0].strip()
+            or type(item[1]) is not int or item[1] < 0
+            for item in self.visit_counts
+        ):
+            raise TypeError("method node request visit_counts must be typed pairs")
         object.__setattr__(self, "state", freeze_json(self.state))
         object.__setattr__(self, "input_value", freeze_json(self.input_value))
         object.__setattr__(self, "previous_value", freeze_json(self.previous_value))
@@ -138,6 +153,9 @@ class MethodNodeSpec:
     capability_id: str | None = None
     effect_class: EffectClass = EffectClass.PURE
     max_visits: int = 1
+    input_schema: str = "json"
+    output_schema: str = "json"
+    evidence_obligations: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if any(not isinstance(value, str) or not value.strip() for value in (self.node_id, self.operation_type)):
@@ -152,6 +170,12 @@ class MethodNodeSpec:
             raise TypeError("method node effect_class must be EffectClass")
         if type(self.max_visits) is not int or self.max_visits < 1:
             raise ValueError("method node max_visits must be a positive integer")
+        if any(not isinstance(value, str) or not value.strip() for value in (self.input_schema, self.output_schema)):
+            raise ValueError("method node schemas must be non-empty text")
+        if not isinstance(self.evidence_obligations, tuple) or any(
+            not isinstance(value, str) or not value.strip() for value in self.evidence_obligations
+        ) or len(set(self.evidence_obligations)) != len(self.evidence_obligations):
+            raise ValueError("method node evidence_obligations must be unique non-empty text")
         if self.kind is MethodNodeKind.CAPABILITY:
             if not isinstance(self.capability_id, str) or not self.capability_id.strip():
                 raise ValueError("capability nodes require capability_id")
@@ -199,6 +223,9 @@ class MethodGraph:
                     "capability_id": node.capability_id,
                     "effect_class": node.effect_class.value,
                     "max_visits": node.max_visits,
+                    "input_schema": node.input_schema,
+                    "output_schema": node.output_schema,
+                    "evidence_obligations": node.evidence_obligations,
                 } for node in self.nodes),
             }),
         )
@@ -217,6 +244,14 @@ class MethodProgram:
     program_identity: MethodProgramIdentity
     graph: MethodGraph
     configuration: JsonObject = field(default_factory=dict)
+    state_schema: str = "json"
+    input_schema: str = "json"
+    output_schema: str = "json"
+    required_capabilities: tuple[str, ...] = ()
+    execution_class: MethodExecutionClass = MethodExecutionClass.EFFECT_RECORDED
+    evidence_obligations: tuple[str, ...] = ()
+    metric_names: tuple[str, ...] = ()
+    artifact_kinds: tuple[str, ...] = ()
     program_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -226,6 +261,25 @@ class MethodProgram:
             raise TypeError("method program graph must be MethodGraph")
         if not isinstance(self.configuration, Mapping):
             raise TypeError("method program configuration must be a mapping")
+        if any(not isinstance(value, str) or not value.strip() for value in (
+            self.state_schema, self.input_schema, self.output_schema,
+        )):
+            raise ValueError("method program schemas must be non-empty text")
+        if not isinstance(self.required_capabilities, tuple) or any(
+            not isinstance(value, str) or not value.strip() for value in self.required_capabilities
+        ) or len(set(self.required_capabilities)) != len(self.required_capabilities):
+            raise ValueError("method program required_capabilities must be unique non-empty text")
+        if not isinstance(self.execution_class, MethodExecutionClass):
+            raise TypeError("method program execution_class must be MethodExecutionClass")
+        for name, values in (
+            ("evidence_obligations", self.evidence_obligations),
+            ("metric_names", self.metric_names),
+            ("artifact_kinds", self.artifact_kinds),
+        ):
+            if not isinstance(values, tuple) or any(not isinstance(value, str) or not value.strip() for value in values):
+                raise ValueError(f"method program {name} must be a tuple of non-empty text")
+            if len(set(values)) != len(values):
+                raise ValueError(f"method program {name} must be unique")
         object.__setattr__(self, "configuration", freeze_json(self.configuration))
         object.__setattr__(
             self,
@@ -234,6 +288,14 @@ class MethodProgram:
                 "identity": self.program_identity,
                 "graph_digest": self.graph.graph_digest,
                 "configuration": self.configuration,
+                "state_schema": self.state_schema,
+                "input_schema": self.input_schema,
+                "output_schema": self.output_schema,
+                "required_capabilities": self.required_capabilities,
+                "execution_class": self.execution_class.value,
+                "evidence_obligations": self.evidence_obligations,
+                "metric_names": self.metric_names,
+                "artifact_kinds": self.artifact_kinds,
             }),
         )
 
@@ -252,11 +314,31 @@ class MethodProgramBuilder:
         self._nodes.append(node)
         return self
 
-    def build(self, *, configuration: Mapping[str, JsonValue] | None = None) -> MethodProgram:
+    def build(
+        self,
+        *,
+        configuration: Mapping[str, JsonValue] | None = None,
+        state_schema: str = "json",
+        input_schema: str = "json",
+        output_schema: str = "json",
+        required_capabilities: tuple[str, ...] = (),
+        execution_class: MethodExecutionClass = MethodExecutionClass.EFFECT_RECORDED,
+        evidence_obligations: tuple[str, ...] = (),
+        metric_names: tuple[str, ...] = (),
+        artifact_kinds: tuple[str, ...] = (),
+    ) -> MethodProgram:
         return MethodProgram(
             self._identity,
             MethodGraph(tuple(self._nodes), self._entrypoint),
             configuration or {},
+            state_schema,
+            input_schema,
+            output_schema,
+            required_capabilities,
+            execution_class,
+            evidence_obligations,
+            metric_names,
+            artifact_kinds,
         )
 
 
@@ -269,6 +351,11 @@ class MethodCheckpoint:
     state: JsonObject
     previous_value: JsonValue = None
     next_node: str | None = None
+    visit_counts: tuple[tuple[str, int], ...] = ()
+    events: tuple[MethodEvent, ...] = ()
+    binding_plan_digest: str | None = None
+    runtime_binding_digest: str | None = None
+    schema_digest: str | None = None
     checkpoint_id: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -279,6 +366,22 @@ class MethodCheckpoint:
             raise ValueError("method checkpoint sequence must be non-negative")
         if not isinstance(self.state, Mapping):
             raise TypeError("method checkpoint state must be a mapping")
+        if not isinstance(self.visit_counts, tuple) or any(
+            not isinstance(item, tuple) or len(item) != 2
+            or not isinstance(item[0], str) or not item[0].strip()
+            or type(item[1]) is not int or item[1] < 0
+            for item in self.visit_counts
+        ):
+            raise TypeError("method checkpoint visit_counts must be typed pairs")
+        if not isinstance(self.events, tuple) or any(not isinstance(event, MethodEvent) for event in self.events):
+            raise TypeError("method checkpoint events must be a tuple of MethodEvent")
+        for name, value in (
+            ("binding_plan_digest", self.binding_plan_digest),
+            ("runtime_binding_digest", self.runtime_binding_digest),
+            ("schema_digest", self.schema_digest),
+        ):
+            if value is not None:
+                require_sha256(value, f"method checkpoint {name}")
         object.__setattr__(self, "state", freeze_json(self.state))
         object.__setattr__(self, "previous_value", freeze_json(self.previous_value))
         object.__setattr__(self, "checkpoint_id", canonical_digest({
@@ -289,6 +392,11 @@ class MethodCheckpoint:
             "state": self.state,
             "previous_value": self.previous_value,
             "next_node": self.next_node,
+            "visit_counts": self.visit_counts,
+            "events": self.events,
+            "binding_plan_digest": self.binding_plan_digest,
+            "runtime_binding_digest": self.runtime_binding_digest,
+            "schema_digest": self.schema_digest,
         }))
 
 
@@ -331,10 +439,21 @@ class MethodRuntimeContext:
     execution: ExecutionContext
     capabilities: CapabilityPort | None = None
     dispatcher: OperationDispatchPort | None = None
+    async_dispatcher: "AsyncOperationDispatchPort | None" = None
+    binding_plan_digest: str | None = None
+    runtime_binding_digest: str | None = None
+    schema_digest: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.execution, ExecutionContext):
             raise TypeError("method runtime execution must be ExecutionContext")
+        for name, value in (
+            ("binding_plan_digest", self.binding_plan_digest),
+            ("runtime_binding_digest", self.runtime_binding_digest),
+            ("schema_digest", self.schema_digest),
+        ):
+            if value is not None:
+                require_sha256(value, f"method runtime {name}")
 
 
 @runtime_checkable
@@ -369,7 +488,7 @@ class AsyncOperationDispatchPort(Protocol):
 
 __all__ = [
     "AsyncOperationDispatchPort", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvent",
-    "MethodGraph", "MethodInterrupt", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest",
+    "MethodExecutionClass", "MethodGraph", "MethodInterrupt", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest",
     "MethodNodeResult", "MethodNodeSpec", "MethodProgram", "MethodProgramBuilder", "MethodRunResult",
     "MethodMachinePort", "MethodRunStatus", "MethodRuntimeContext",
 ]
