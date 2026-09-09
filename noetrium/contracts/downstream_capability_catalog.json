@@ -6598,7 +6598,9 @@
       "owns": "binding participants to scopes, methods, environments or models",
       "package_prefix": "noetrium_platform.capabilities.participant.binding",
       "provides": [],
-      "requires": [],
+      "requires": [
+        "model"
+      ],
       "system_key": "participant/binding"
     },
     {
