@@ -263,6 +263,210 @@ The context carries cancellation, run identity, trace identity, and immutable
 configuration references. It does not expose a universal `Any` bag or a
 string-keyed `require()` method.
 
+## 7.5 Universal method runtime: maximum reuse with unrestricted semantics
+
+The Harness must solve two seemingly conflicting requirements:
+
+1. upstream implements almost all repeated engineering work;
+2. downstream can express arbitrary agent research methods.
+
+The solution is to separate **mechanism** from **scientific semantics**.
+
+Noe owns the mechanisms: identity, scope, lifecycle, provider binding,
+model/tool execution, memory, scheduling, checkpointing, effects, recovery,
+evidence, evaluation, artifact handling, and observation.
+
+The downstream method owns the semantics: state meaning, decision policy,
+hypothesis, reward, agent interaction strategy, and domain-specific tools.
+
+This produces the following four-layer model:
+
+```text
+Harness Kernel
+  identity, scope, permissions, effects, checkpoints, recovery, evidence
+
+Execution Fabric
+  graph, actor, stream, matrix, external job, and human-loop execution
+
+Research Packs
+  single-agent, multi-agent, memory, tools, benchmark, training, and evaluation
+
+Managed Method Program
+  downstream scientific state, policy, custom nodes, or custom agent loop
+```
+
+### 7.5.1 Harness Kernel
+
+The Kernel is closed and owned entirely by Noe. A method cannot bypass it.
+It provides:
+
+- identity and version binding;
+- scope and lifecycle ownership;
+- direct typed capability ports;
+- model requests, prompt compilation, structured output, and function calling;
+- tool registration, validation, concurrency, ordering, and error conversion;
+- session, transcript, memory, and context transformation;
+- checkpoint, replay, interruption, and resume;
+- effect intent, receipt, certainty, reconciliation, and UNKNOWN handling;
+- measurement, evaluation, artifact, and evidence closure;
+- observation, logging, tracing, diagnostics, and status;
+- resource allocation, process supervision, and environment sessions.
+
+A custom method can change the algorithm above this boundary, but it cannot
+replace the truth, effect, identity, or recovery authority below it.
+
+### 7.5.2 Execution Fabric
+
+The standard research phases are convenience syntax, not the complete semantic
+model. The Execution Fabric must support multiple execution forms:
+
+- graph/DAG for branches, loops, conditional transitions, and workflows;
+- actor/mailbox for long-lived agents and asynchronous collaboration;
+- event/stream for real-time environments and incremental observations;
+- matrix/map-reduce for assignments, variants, ablations, and scale-out;
+- external-job execution for training, simulation, remote work, and long tasks;
+- human-gate execution for approvals, interventions, and interactive research;
+- hierarchical execution for planners, workers, delegation, and debate.
+
+Every execution form uses the same Kernel contracts for identity, state,
+effects, checkpoints, recovery, and evidence. This prevents the default graph
+runner from becoming an artificial limit on method semantics.
+
+### 7.5.3 Research Packs
+
+Research Packs are batteries-included compositions of registered Noe systems.
+They are selected during composition and become direct typed bindings in the
+compiled plan. They are not runtime service locators.
+
+The initial Pack families are:
+
+- SingleAgentPack;
+- MultiAgentPack;
+- PlanningPack;
+- MemoryPack;
+- ToolUsePack;
+- InteractivePack;
+- StreamingPack;
+- RLPack;
+- BenchmarkPack;
+- TrainingPack;
+- DistributedPack.
+
+A Pack automatically assembles the relevant model, environment, participant,
+execution, experimentation, data, artifact, observability, reliability,
+resource, runtime, component, and orchestration systems. Downstream authors
+select a Pack instead of manually wiring dozens of system facades.
+
+A Pack may provide defaults for lifecycle, state persistence, tool execution,
+evaluation, plotting, and publication. The downstream method overrides only
+the semantic points it actually changes.
+
+### 7.5.4 Managed Method Program
+
+A Managed Method Program is the universal downstream execution boundary. It can
+be declarative, callback-based, node-based, graph-based, actor-based, or a
+fully custom agent loop.
+
+The program may control:
+
+- method state and state transitions;
+- branching, looping, concurrency, and dynamic subtask creation;
+- agent prompts, messages, tools, memory, and delegation;
+- model-selection policy within the admitted contract;
+- reward, evaluation, stopping, and reflection logic;
+- child agents and custom execution topology.
+
+The program receives a typed managed context and high-level operations. It
+does not need to implement run management, durable writes, effect safety,
+checkpoint serialization, or observation plumbing.
+
+A custom loop is therefore free to implement any algorithm while the Kernel
+automatically provides its surrounding runtime contract.
+
+### 7.5.5 Progressive authoring levels
+
+The downstream burden is reduced through progressive disclosure:
+
+| Level | Downstream supplies | Noe supplies |
+|---|---|---|
+| 0 | configuration, prompt, schemas, and provider choices | complete standard loop and research lifecycle |
+| 1 | one decision/policy function | state, context, tools, checkpoints, effects, metrics, and finalization |
+| 2 | custom nodes, graph, state, and domain tools | execution runtime, scheduling, recovery, evidence, and publication |
+| 3 | custom agent loop or execution model | managed Kernel boundary and all cross-cutting guarantees |
+
+Level 0 and Level 1 should be the normal path for new methods. Level 2 and
+Level 3 preserve unrestricted research expressiveness without forcing every
+downstream project to rebuild platform mechanisms.
+
+### 7.5.6 Universal method ABI
+
+All four levels compile to a common Method ABI:
+
+- method identity and revision;
+- declared state schema;
+- input and output schemas;
+- required capabilities;
+- control-flow/execution model;
+- node or loop identity;
+- effect and concurrency declarations;
+- checkpoint and recovery declarations;
+- metric and artifact declarations;
+- evidence obligations.
+
+Declarative methods compile to an internal research IR. Custom methods provide
+the same ABI through a managed adapter. The IR is an optimization and
+validation target, not a restriction that every method must expose its
+internal algorithm as a fixed DAG.
+
+The minimum method-specific semantic surface should be:
+
+```text
+MethodState
+DecisionPolicy or MethodProgram
+ToolDefinitions
+EvaluationSpec
+```
+
+Everything else should be inherited from the selected Pack and Kernel.
+
+### 7.5.7 What “arbitrary” means
+
+Noe should be semantically universal for any method that declares its state,
+capabilities, control flow, and effects. This includes ReAct, planning,
+multi-agent, reflection, online learning, RL, streaming, human-in-the-loop,
+long-running jobs, distributed execution, and custom state machines.
+
+A method may contain arbitrary code, but only declared and mediated operations
+can participate in Noe-certified evidence. Hidden global state, untracked
+external effects, silent provider changes, and unrecoverable mutation are not
+additional expressive features; they are outside the reproducible research
+contract.
+
+The target is therefore:
+
+> Turing-complete method semantics with a finite, auditable, reproducible
+> runtime boundary.
+
+### 7.5.8 Automatic cross-cutting implementation
+
+Noe should wrap every Managed Method Program with standard middleware for:
+
+- run and assignment identity;
+- scope creation and disposal;
+- timing and resource accounting;
+- state snapshots and checkpoint scheduling;
+- model/tool request recording;
+- effect intent and receipt recording;
+- failure classification and recovery routing;
+- metric collection and artifact registration;
+- final evidence and manifest closure.
+
+Middleware runs at declared lifecycle boundaries. It must not introduce a
+global lookup on the hot path or require methods to call dozens of low-level
+systems manually.
+
+
+
 ## 8. Harness modes
 
 ### 8.1 Workbench mode
