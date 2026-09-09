@@ -367,4 +367,35 @@ python scripts/architecture_gate.py
 python scripts/check_readme_i18n.py
 ```
 
-- préserver system ow
+- préserver system ownership et public-contract boundaries
+- ajouter ou mettre à jour une couverture de régression ciblée
+- mettre à jour la documentation de l'owner dans le même change set
+- éviter les refactors sans rapport dans le même commit
+- préserver fail-closed pour les effets externes incertains
+- documenter explicitement tout changement volontaire de sémantique ou compatibilité
+
+[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
+
+<!-- readme-section:license -->
+
+## Licence
+
+Noetrium est sous Apache License 2.0. Le texte juridique faisant autorité est le fichier LICENSE à la racine.
+
+Les composants tiers restent régis par leurs propres licences ; voir THIRD_PARTY_NOTICES.md. Les poids de modèles, datasets ou assets de benchmark distribués séparément peuvent déclarer des conditions distinctes.
+
+[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+
+<!-- readme-section:status -->
+
+## État du développement
+
+La plateforme reste en développement actif d'architecture et de runtime.
+
+Pour la production, la publication ou les affirmations scientifiques, relancez les gates pertinents et examinez release evidence liée à l'exact source revision plutôt que de vous fier à un ancien résultat vert.
+
+Les changements historiques sont volontairement exclus de ce README ; utilisez `docs/history/` pour les archives d’ingénierie immuables.
+
+La source de vérité de l’état de développement est `docs/status/CURRENT_DEVELOPMENT_BASELINE.md` ; toute affirmation de publication ou de recherche doit être liée aux preuves de la révision exacte évaluée.
+
+`docs/status/` · `docs/history/`

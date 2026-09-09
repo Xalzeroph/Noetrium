@@ -377,3 +377,25 @@ python scripts/check_readme_i18n.py
 [Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
 
 <!-- readme-section:license -->
+
+## Licença
+
+Noetrium é licenciado sob Apache License 2.0. O texto legal autoritativo é o arquivo LICENSE na raiz.
+
+Componentes de terceiros continuam sob suas próprias licenças; consulte THIRD_PARTY_NOTICES.md. Pesos de modelos, datasets ou assets de benchmark distribuídos separadamente podem declarar termos próprios.
+
+[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+
+<!-- readme-section:status -->
+
+## Status de desenvolvimento
+
+A plataforma permanece em desenvolvimento ativo de arquitetura e runtime.
+
+Para produção, publicação ou afirmações científicas, execute novamente os gates relevantes e examine release evidence vinculada à exact source revision em vez de confiar em um resultado verde histórico.
+
+Mudanças históricas são mantidas intencionalmente fora deste README; use `docs/history/` para registros imutáveis de engenharia.
+
+A fonte vigente do estado de desenvolvimento é `docs/status/CURRENT_DEVELOPMENT_BASELINE.md`; afirmações de release ou pesquisa devem estar vinculadas às evidências da revisão exata avaliada.
+
+`docs/status/` · `docs/history/`

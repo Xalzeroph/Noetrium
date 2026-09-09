@@ -372,4 +372,30 @@ python scripts/check_readme_i18n.py
 - Owner-Dokumentation im selben change set aktualisieren
 - keine unabhängigen Refactors im selben Commit
 - fail-closed für unsichere externe effects bewahren
-- beabsichtigte Semantik- oder Kom
+- beabsichtigte Semantik- oder Kompatibilitätsänderungen explizit dokumentieren
+
+[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
+
+<!-- readme-section:license -->
+
+## Lizenz
+
+Noetrium steht unter der Apache License 2.0. Rechtlich maßgeblich ist die LICENSE-Datei im Repository-Root.
+
+Drittanbieter-Komponenten unterliegen weiterhin ihren eigenen Lizenzen; siehe THIRD_PARTY_NOTICES.md. Separat verteilte Model Weights, Datasets oder Benchmark-Assets können eigene Bedingungen angeben.
+
+[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+
+<!-- readme-section:status -->
+
+## Entwicklungsstatus
+
+Die Plattform befindet sich weiterhin in aktiver Architektur- und Runtime-Entwicklung.
+
+Für Produktion, Veröffentlichung oder wissenschaftliche Aussagen müssen die relevanten Gates erneut ausgeführt und release evidence der exact source revision geprüft werden; ein altes grünes Ergebnis reicht nicht aus.
+
+Historische Änderungen werden bewusst nicht in dieses README aufgenommen; unveränderliche Engineering-Aufzeichnungen liegen unter `docs/history/`.
+
+Die aktuelle Entwicklungswahrheit steht in `docs/status/CURRENT_DEVELOPMENT_BASELINE.md`; Release- und Forschungsaussagen müssen an Evidenz der exakt bewerteten Revision gebunden sein.
+
+`docs/status/` · `docs/history/`

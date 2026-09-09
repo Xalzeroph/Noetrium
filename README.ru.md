@@ -299,4 +299,103 @@ python scripts/check_readme_i18n.py
 6. Никакой silent degradation.
 7. Observation не является authority.
 8. Изменения performance сохраняют семантику.
-9. Документация меняется вместе с реал�
+9. Документация меняется вместе с реализацией.
+10. Проектная специфика остаётся downstream.
+
+<!-- readme-section:extending -->
+
+## Расширение платформы
+
+Добавляйте способность на минимальной owning boundary. Если публичный contract уже существует, предпочтите новый provider; добавляйте новый contract только когда сама способность действительно новая.
+
+```text
+<system>/
+├── api/          public contracts and identities
+├── runtime/      lifecycle and execution semantics
+├── providers/    replaceable adapters owned by the system
+└── composition/  provider-to-port binding
+```
+
+Не используйте универсальные wrappers, скрывающие несвязанные алгоритмы, provider discovery или внешние effects за одним интерфейсом.
+
+<!-- readme-section:documentation -->
+
+## Документация
+
+Начните с индекса документации.
+
+### Основные документы
+
+- [Documentation index](docs/INDEX.md)
+- [Examples](examples/README.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Support](SUPPORT.md)
+- [Citation metadata](CITATION.cff)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Platform architecture](docs/architecture/PLATFORM_ARCHITECTURE.md)
+- [Detailed system map](docs/architecture/VNEXT_DETAILED_SYSTEM_MAP.md)
+- [Architecture migration contract](docs/architecture/FINAL_ARCHITECTURE_MIGRATION_CONTRACT.md)
+- [Infrastructure documentation](docs/infrastructure/README.md)
+- [Governance documentation](docs/governance/README.md)
+- [Current status](docs/status/README.md)
+- [Engineering history](docs/history/README.md)
+
+Architecture-документы определяют повторно используемые ownership и contracts; status-документы описывают текущее дерево разработки; history сохраняет evidence состояния на момент записи.
+
+<!-- readme-section:security -->
+
+## Безопасность и конфигурация
+
+- Никогда не коммитьте пароли, private keys, access tokens, runtime secrets или локальные credentials.
+- Host-specific paths и secrets храните в игнорируемых local profiles или environment-bound stores.
+- Для remote automation предпочитайте unattended authentication на основе key/agent.
+- Команды с внешними effects должны быть typed, bounded, journaled и связаны с operation identity.
+- Считайте logs и evidence потенциально чувствительными operational data.
+
+<!-- readme-section:contributing -->
+
+## Участие в разработке
+
+Изменения должны быть проверяемы по ownership boundary и включать необходимые tests и documentation.
+
+### Перед открытием Pull Request
+
+```bash
+python -m pytest -q
+python scripts/architecture_gate.py
+python scripts/check_readme_i18n.py
+```
+
+- сохранять system ownership и public-contract boundaries
+- добавлять или обновлять focused regression coverage
+- обновлять документацию owner в том же change set
+- не смешивать несвязанные refactors в одном commit
+- сохранять fail-closed для неопределённых внешних effects
+- явно документировать намеренные semantic или compatibility изменения
+
+[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
+
+<!-- readme-section:license -->
+
+## Лицензия
+
+Noetrium распространяется по Apache License 2.0. Юридически авторитетный текст находится в корневом файле LICENSE.
+
+Сторонние компоненты остаются под своими лицензиями; см. THIRD_PARTY_NOTICES.md. Отдельно распространяемые веса моделей, datasets или benchmark assets могут иметь собственные условия.
+
+[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+
+<!-- readme-section:status -->
+
+## Статус разработки
+
+Платформа продолжает активную разработку архитектуры и runtime.
+
+Для production, публикации или научных утверждений повторно запускайте соответствующие gates и проверяйте release evidence, привязанное к exact source revision, вместо того чтобы полагаться на старый зелёный результат.
+
+Исторические изменения намеренно не включаются в этот README; неизменяемые инженерные записи находятся в `docs/history/`.
+
+Текущее достоверное состояние разработки зафиксировано в `docs/status/CURRENT_DEVELOPMENT_BASELINE.md`; утверждения о релизе или исследованиях должны опираться на свидетельства, привязанные к точной проверяемой ревизии.
+
+`docs/status/` · `docs/history/`
