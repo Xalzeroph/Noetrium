@@ -17,6 +17,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineIdentity,
     MachineKind,
     MachineProgramRef,
+    ProgramLock,
     MachineRuntime,
     TransitionProposal,
     canonical_digest,
@@ -55,6 +56,14 @@ def make_runtime(journal, snapshot_store=None, outbox=None):
         schema_id="run.schema.v1",
         program_kind="run",
         program_version="1",
+        program_lock=ProgramLock(
+            code_digest=canonical_digest({"code": "increment"}),
+            dependency_digest=canonical_digest({"deps": "none"}),
+            schema_digest=canonical_digest({"schema": "run.schema.v1"}),
+            interpreter_digest=canonical_digest({"interpreter": "run"}),
+            data_digest=canonical_digest({"data": "test"}),
+            config_digest=canonical_digest({"config": "default"}),
+        ),
     )
     return MachineRuntime(
         identity=identity,

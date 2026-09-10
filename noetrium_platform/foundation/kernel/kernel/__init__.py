@@ -43,6 +43,7 @@ from .machine import (
     MachinePort,
     MachineProgramRef,
     MachineSnapshot,
+    ProgramLock,
     MachineStatus,
     TransitionProposal,
 )
@@ -59,11 +60,14 @@ from .json_value import (
     JsonScalar,
     JsonValue,
 )
+from .durable_delivery import DirectoryMachineInbox, DirectoryMachineOutbox
+from .nir import NIREnvelope
 
 __all__ = [
     "ExecutionContext", "ComponentIdentity", "ImmutableModelIdentity",
     "DeliveryReceipt", "DeliveryStatus", "InMemoryMachineInbox", "InMemoryMachineOutbox",
     "MachineEnvelope", "MachineInboxPort", "MachineOutboxPort",
+    "DirectoryMachineInbox", "DirectoryMachineOutbox", "NIREnvelope",
     "InMemoryMachineFamilyRegistry", "MachineFamilyDescriptor", "MachineFamilyRegistryPort",
     "EffectCertainty", "EffectClass", "EffectReceipt", "OperationAuxiliaryFailure",
     "OperationRequest", "OperationResult", "OperationStatus",
@@ -73,7 +77,7 @@ __all__ = [
     "DigestValidationError", "Sha256Digest", "require_sha256", "freeze_json", "thaw_json",
     "OperationExecutor", "OperationFailure", "FailureRecordReceipt", "OperationFailureSink", "OperationObserver", "OperationAuxiliaryFailureSink",
     "MachineCommand", "MachineCommit", "MachineConflict", "MachineError", "MachineIdentity", "MachineInspection",
-    "MachineIntegrityError", "MachineKind", "MachinePort", "MachineProgramRef", "MachineSnapshot", "MachineStatus", "TransitionProposal",
+    "MachineIntegrityError", "MachineKind", "MachinePort", "MachineProgramRef", "MachineSnapshot", "ProgramLock", "MachineStatus", "TransitionProposal",
     "DirectoryMachineJournal", "InMemoryMachineJournal", "MachineJournalPort",
     "MachineInterpreterPort", "MachineNotOpen", "MachineRuntime", "MachineRuntimeError",
     "DirectoryMachineSnapshotStore", "InMemoryMachineSnapshotStore", "MachineSnapshotStorePort",

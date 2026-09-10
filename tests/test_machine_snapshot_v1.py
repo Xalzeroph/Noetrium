@@ -11,6 +11,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineIntegrityError,
     MachineProgramRef,
     MachineSnapshot,
+    ProgramLock,
     canonical_digest,
 )
 
@@ -24,6 +25,14 @@ def make_snapshot(revision: int = 0, state: dict[str, object] | None = None) -> 
             schema_id="schema.v1",
             program_kind="test",
             program_version="1",
+            program_lock=ProgramLock(
+                code_digest=canonical_digest({"code": "test"}),
+                dependency_digest=canonical_digest({"deps": "none"}),
+                schema_digest=canonical_digest({"schema": "schema.v1"}),
+                interpreter_digest=canonical_digest({"interpreter": "test"}),
+                data_digest=canonical_digest({"data": "test"}),
+                config_digest=canonical_digest({"config": "default"}),
+            ),
         ),
         state=state or {"value": revision},
         parent_commit_id=None if revision == 0 else f"commit-{revision}",

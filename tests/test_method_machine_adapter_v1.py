@@ -5,6 +5,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineCommand,
     MachineProgramRef,
     MachineSnapshot,
+    ProgramLock,
     canonical_digest,
 )
 from noetrium_platform.research.execution.workflow.api.method_machine import (
@@ -55,6 +56,14 @@ def test_method_machine_adapter_projects_result_into_transition() -> None:
             schema_id="method.v1",
             program_kind="method",
             program_version="1",
+            program_lock=ProgramLock(
+                code_digest=canonical_digest({"code": "machine"}),
+                dependency_digest=canonical_digest({"deps": "none"}),
+                schema_digest=canonical_digest({"schema": "method.v1"}),
+                interpreter_digest=canonical_digest({"interpreter": "method"}),
+                data_digest=canonical_digest({"data": "test"}),
+                config_digest=canonical_digest({"config": "default"}),
+            ),
         ),
         state={"counter": 0},
         parent_commit_id=None,

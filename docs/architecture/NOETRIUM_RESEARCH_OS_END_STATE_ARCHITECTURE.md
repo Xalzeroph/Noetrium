@@ -1440,3 +1440,47 @@ Research record 核心表达结果、来源与引用；不强迫全部研究采�
 Definition / Binding → Run Commit → Result Record → Evaluation / Comparison → Fork / 下一轮决策。
 
 研究图谱仍是这些对象的关系视图，不进入 Machine 提交临界路径；Evaluation 只能解释已引用的结果，不能反写运行事实。下一阶段的领域工作应以这些协议为接入门槛，直接实现 Run、Agent、Memory、Environment、Evaluation 的语义解释器，不再新增第二套提交协议。
+
+
+## 50. R7 实现闭环：ProgramLock、持久化投递、领域家族与 NIR
+
+> Revision: R7 / 2026-09-10。仅追加；前文架构裁决保持不变。
+> 本节只记录已写入代码并通过测试的能力，不把尚未完成的生产部署能力写成完成。
+
+本轮继续按 R2/R3/R4 的验收顺序实现，而不是新增顶层抽象：
+
+1. ProgramLock 固定 code、dependency、schema、interpreter、data 和 config 六类执行输入；MachineProgramRef 与 Snapshot 持久化都必须携带并校验完整锁定。
+2. DirectoryMachineOutbox 与 DirectoryMachineInbox 提供规范 JSON、原子文件发布、跨进程锁、重启恢复和 envelope/receipt 完整性校验。投递仍是 at-least-once；接收端以 envelope identity 去重，不宣称外部效果 exactly-once。
+3. ResearchRunSession 把 Research Run contract 接到 MachineRuntime，只引用 journal head，不复制机器状态；它提供运行记录、隔离分叉、比较和研究包组装。
+4. DirectoryResearchPackageStore 以不可变规范包保存研究记录；读取时验证 package digest、身份和整体编码，损坏或身份漂移 fail closed。
+5. reference_machine_families() 提供 Experiment、Run、Agent Turn、Memory、Environment、Evaluation 六个可运行参考解释器。它们只解释领域状态，不能直接写 Journal；提交仍由 MachineRuntime 唯一接管。
+6. NIREnvelope 统一跨 worker 的 typed command boundary，保留 command identity、revision、scope、effect-related command fields 和 parent transition reference；它不是新的业务 VM，也不是第二套提交协议。
+
+本轮新增验证覆盖：
+
+- ProgramLock 与 durable Snapshot 的往返和完整性；
+- 持久化 Outbox 重启后恢复、Receipt 单调更新和 Inbox 去重；
+- Run → Record → Fork → Comparison → ResearchPackage → durable store；
+- 六个领域 Machine family 通过同一个 Kernel commit path；
+- MachineCommand ↔ NIR round trip 保持 command identity；
+- test taxonomy、compileall 与相关 Kernel/研究闭环回归。
+
+这些实现把当前可用路径收敛为：
+
+ProgramLock + NIR → MachineRuntime → Journal/Snapshot/Outbox → ResearchRunSession → Record/Compare/Fork/Package
+
+仍然不能误称为完成的能力包括：分布式 lease/fencing 的真实多节点实现、远程 worker 安全执行、生产级 effect reconciliation provider、完整 nsh/SDK 编译发行版、跨实现 golden-history conformance suite，以及一百多个系统的逐项 ownership matrix。它们属于下一轮实现门槛，不能被参考解释器或本地文件锁替代。
+
+
+### 50.1 R7 的边界纪律
+
+领域解释器可以新增自己的 state schema、command kind 和 provider，但必须继续满足：
+
+- 事实只能由 Machine journal 接受；
+- Snapshot 只能加速恢复，不能脱离 commit chain；
+- Outbox/Inbox 只能传递引用和 typed command，不能成为隐藏全局总线；
+- Research record 只能引用运行事实，不能反写 Run；
+- Evaluation 只能生成独立评价事实，不能自行把结果升级为科学结论；
+- NIR 只能统一传输边界，不能抹平不同 VM 的状态语义。
+
+因此 R7 不是把 Noetrium 变成一个巨型 Universal VM，而是把“公共提交内核 + 独立领域解释器 + 研究记录闭环”落成可运行的参考架构。

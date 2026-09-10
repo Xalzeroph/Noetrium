@@ -13,7 +13,13 @@ from typing import Protocol, runtime_checkable
 
 from .canonical import canonical_bytes, strict_json_loads, thaw_json
 from .durability import InterprocessFileLock, atomic_replace_bytes
-from .machine import MachineConflict, MachineIntegrityError, MachineProgramRef, MachineSnapshot
+from .machine import (
+    MachineConflict,
+    MachineIntegrityError,
+    MachineProgramRef,
+    MachineSnapshot,
+    ProgramLock,
+)
 
 
 def _snapshot_document(snapshot: MachineSnapshot) -> dict[str, object]:
@@ -25,6 +31,15 @@ def _snapshot_document(snapshot: MachineSnapshot) -> dict[str, object]:
             "schema_id": snapshot.program.schema_id,
             "program_kind": snapshot.program.program_kind,
             "program_version": snapshot.program.program_version,
+            "program_lock": {
+                "code_digest": snapshot.program.program_lock.code_digest,
+                "dependency_digest": snapshot.program.program_lock.dependency_digest,
+                "schema_digest": snapshot.program.program_lock.schema_digest,
+                "interpreter_digest": snapshot.program.program_lock.interpreter_digest,
+                "data_digest": snapshot.program.program_lock.data_digest,
+                "config_digest": snapshot.program.program_lock.config_digest,
+                "lock_digest": snapshot.program.program_lock.lock_digest,
+            },
         },
         "state": thaw_json(snapshot.state),
         "parent_commit_id": snapshot.parent_commit_id,
@@ -55,8 +70,27 @@ def _decode_snapshot(value: object) -> MachineSnapshot:
     if set(row) != {"machine_id", "revision", "program", "state", "parent_commit_id", "snapshot_id"}:
         raise MachineIntegrityError("machine snapshot fields are not exact")
     program = _object(row["program"], "machine snapshot program")
-    if set(program) != {"program_digest", "schema_id", "program_kind", "program_version"}:
+    if set(program) != {
+        "program_digest", "schema_id", "program_kind", "program_version",
+        "program_lock",
+    }:
         raise MachineIntegrityError("machine snapshot program fields are not exact")
+    lock = _object(program["program_lock"], "machine snapshot program_lock")
+    if set(lock) != {
+        "code_digest", "dependency_digest", "schema_digest",
+        "interpreter_digest", "data_digest", "config_digest", "lock_digest",
+    }:
+        raise MachineIntegrityError("machine snapshot program_lock fields are not exact")
+    program_lock = ProgramLock(
+        code_digest=_text(lock["code_digest"], "code_digest"),
+        dependency_digest=_text(lock["dependency_digest"], "dependency_digest"),
+        schema_digest=_text(lock["schema_digest"], "schema_digest"),
+        interpreter_digest=_text(lock["interpreter_digest"], "interpreter_digest"),
+        data_digest=_text(lock["data_digest"], "data_digest"),
+        config_digest=_text(lock["config_digest"], "config_digest"),
+    )
+    if program_lock.lock_digest != _text(lock["lock_digest"], "lock_digest"):
+        raise MachineIntegrityError("machine snapshot program_lock digest mismatch")
     snapshot = MachineSnapshot(
         machine_id=_text(row["machine_id"], "machine_id"),
         revision=_revision(row["revision"], "revision"),
@@ -65,6 +99,7 @@ def _decode_snapshot(value: object) -> MachineSnapshot:
             schema_id=_text(program["schema_id"], "schema_id"),
             program_kind=_text(program["program_kind"], "program_kind"),
             program_version=_text(program["program_version"], "program_version"),
+            program_lock=program_lock,
         ),
         state=row["state"],  # type: ignore[arg-type]
         parent_commit_id=row["parent_commit_id"],  # type: ignore[arg-type]

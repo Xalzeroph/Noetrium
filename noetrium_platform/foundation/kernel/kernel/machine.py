@@ -66,14 +66,49 @@ class MachineIdentity:
 
 
 @dataclass(frozen=True, slots=True)
+class ProgramLock:
+    """Complete execution lock for a portable program definition."""
+
+    code_digest: str
+    dependency_digest: str
+    schema_digest: str
+    interpreter_digest: str
+    data_digest: str
+    config_digest: str
+    lock_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("code_digest", self.code_digest),
+            ("dependency_digest", self.dependency_digest),
+            ("schema_digest", self.schema_digest),
+            ("interpreter_digest", self.interpreter_digest),
+            ("data_digest", self.data_digest),
+            ("config_digest", self.config_digest),
+        ):
+            require_sha256(value, f"program lock {name}")
+        object.__setattr__(self, "lock_digest", canonical_digest({
+            "code_digest": self.code_digest,
+            "dependency_digest": self.dependency_digest,
+            "schema_digest": self.schema_digest,
+            "interpreter_digest": self.interpreter_digest,
+            "data_digest": self.data_digest,
+            "config_digest": self.config_digest,
+        }))
+
+
+@dataclass(frozen=True, slots=True)
 class MachineProgramRef:
     program_digest: str
     schema_id: str
     program_kind: str
     program_version: str
+    program_lock: ProgramLock
 
     def __post_init__(self) -> None:
         require_sha256(self.program_digest, "machine program_digest")
+        if not isinstance(self.program_lock, ProgramLock):
+            raise TypeError("machine program_lock must be ProgramLock")
         for value in (self.schema_id, self.program_kind, self.program_version):
             if type(value) is not str or not value.strip():
                 raise ValueError("machine program fields must be non-empty")
@@ -302,6 +337,7 @@ __all__ = [
     "MachineKind",
     "MachinePort",
     "MachineProgramRef",
+    "ProgramLock",
     "MachineSnapshot",
     "MachineStatus",
     "MachineCommit",

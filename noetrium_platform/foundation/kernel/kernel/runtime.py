@@ -71,6 +71,8 @@ class MachineRuntime:
             raise TypeError("family must be MachineFamilyDescriptor")
         if family is not None and family.kind is not identity.kind:
             raise ValueError("machine family kind must match machine identity kind")
+        if family is not None and family.implementation_version != identity.implementation_version:
+            raise ValueError("machine family implementation version must match machine identity")
         self.snapshot_store = snapshot_store
         self.outbox = outbox
         self.family = family
