@@ -4,6 +4,8 @@ Noetrium exposes two complementary downstream method paths.
 
 The component path uses reusable Agent/Participant/Model capabilities when a paper changes one mechanism. The whole-method path uses `ResearchMethodProgram[TaskT, InputT, ResultT]` when the paper owns the complete cognition/control graph.
 
+`ResearchMethodProgram` is adapted through `ResearchMethodProgramAdapter` into the canonical `MethodProgram` ABI when it enters Universal Method Machine execution. This keeps ROLE04 typed and transport-neutral while preventing a second lifecycle or execution authority.
+
 `ResearchMethodProgram` is a structural public contract in `noetrium_platform.capabilities.participant.method.api`. A downstream method does not subclass a Platform runtime class and does not register a paper algorithm name upstream.
 
 Concrete `TaskT`, `InputT`, and `ResultT` remain project-typed. They are not converted to `Any`, `object`, a universal JSON payload, or text merely to satisfy the host contract.

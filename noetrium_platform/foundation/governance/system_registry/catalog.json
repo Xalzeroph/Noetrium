@@ -708,7 +708,7 @@
   "execution/workflow": {
     "authority": "workflow_state",
     "must_not_own": "process supervision",
-    "owns": "workflow definitions and orchestration semantics",
+    "owns": "workflow definitions, universal method-machine orchestration, and resumable control semantics",
     "package_prefix": "noetrium_platform.research.execution.workflow",
     "parent": "execution",
     "shape": [
@@ -717,9 +717,16 @@
       "providers",
       "composition"
     ],
-    "requires": [],
+    "requires": [
+      "participant/capability",
+      "participant/method",
+      "platform"
+    ],
     "provides": [
-      "workflow.runtime"
+      "workflow.runtime",
+      "method.machine",
+      "method.abi",
+      "method.checkpoint"
     ],
     "components": []
   },

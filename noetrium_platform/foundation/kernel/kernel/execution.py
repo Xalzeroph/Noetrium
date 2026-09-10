@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from typing import Callable, Generic, TypeVar
 
 from .auxiliary_failures import OperationAuxiliaryFailureReporter, OperationAuxiliaryFailureSink
@@ -63,6 +64,50 @@ class OperationExecutor(Generic[T, R]):
                 failure_id=materialized.failure_id,
                 # Kernel records only stable exception taxonomy. Redacted human detail
                 # belongs to failure materialization/forensics, not operation truth.
+                diagnostics={"exception_type": type(exc).__qualname__},
+                auxiliary_failures=started_auxiliary + materialized.auxiliary_failures,
+                cause=exc,
+            )
+            return self._auxiliary.report(request, self._observation.completed(request, result))
+
+        projected = self._projection.project(
+            output,
+            digest_output=digest_output,
+            effect_projector=effect_projector,
+        )
+        result = OperationResult(
+            request.operation_id,
+            request.invocation_id,
+            OperationStatus.SUCCEEDED,
+            output=projected.output,
+            output_digest=projected.output_digest,
+            effect_receipts=projected.effect_receipts,
+            diagnostics=projected.diagnostics,
+            auxiliary_failures=started_auxiliary + projected.auxiliary_failures,
+        )
+        return self._auxiliary.report(request, self._observation.completed(request, result))
+
+    async def execute_async(
+        self,
+        request: OperationRequest[T],
+        handler: Callable[[OperationRequest[T]], R],
+        *,
+        digest_output: bool = True,
+        effect_projector: Callable[[R], tuple[EffectReceipt, ...]] | None = None,
+    ) -> OperationResult[R]:
+        """Async sibling of execute; preserves the same operation semantics."""
+        started_auxiliary = self._observation.started(request)
+        try:
+            output = handler(request)
+            if inspect.isawaitable(output):
+                output = await output
+        except Exception as exc:
+            materialized = self._failures.materialize(request, exc)  # type: ignore[arg-type]
+            result = OperationResult(
+                request.operation_id,
+                request.invocation_id,
+                OperationStatus.FAILED,
+                failure_id=materialized.failure_id,
                 diagnostics={"exception_type": type(exc).__qualname__},
                 auxiliary_failures=started_auxiliary + materialized.auxiliary_failures,
                 cause=exc,
