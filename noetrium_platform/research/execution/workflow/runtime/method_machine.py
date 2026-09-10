@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import inspect
 from threading import RLock
 from typing import Any
@@ -12,6 +12,7 @@ from noetrium_platform.capabilities.participant.capability.api import Capability
 from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
     EffectClass,
+    EffectReceipt,
     ExecutionContext,
     OperationRequest,
     OperationStatus,
@@ -20,9 +21,12 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 
 from ..api.method_machine import (
+    MethodAgentRequest,
+    MethodAgentResult,
     MethodCheckpoint,
     MethodCheckpointStorePort,
     MethodEvent,
+    MethodEvidenceStatus,
     MethodEvidencePort,
     MethodGraph,
     MethodInterrupt,
@@ -76,6 +80,8 @@ class _ExecutionState:
     previous_value: object
     events: tuple[MethodEvent, ...]
     visit_counts: Mapping[str, int]
+    effect_receipts: tuple[EffectReceipt, ...]
+    checkpoint_value: object
 
 
 class UniversalMethodMachine:
@@ -125,7 +131,9 @@ class UniversalMethodMachine:
                 )
             try:
                 request = self._request(program, runtime, input_value, state, node.node_id, visit)
+                self._validate_node_input(runtime, node, request)
                 node_result, operation_effects = self._invoke_sync(program, runtime, node, request, state.sequence)
+                self._validate_node_output(runtime, node, node_result)
             except Exception as exc:
                 return self._result(
                     MethodRunStatus.FAILED, program, runtime, state,
@@ -136,7 +144,7 @@ class UniversalMethodMachine:
                     MethodRunStatus.FAILED, program, runtime, state,
                     failure="method node effect receipts changed during operation projection",
                 )
-            state = self._advance(state, node, node_result)
+            state = self._advance(state, node, node_result, operation_effects)
             self._publish_events(
                 runtime,
                 request.context,
@@ -182,11 +190,13 @@ class UniversalMethodMachine:
                                     failure=f"node visit limit reached: {node.node_id}")
             try:
                 request = self._request(program, runtime, input_value, state, node.node_id, visit)
-                node_result = await self._invoke_async(program, runtime, node, request, state.sequence)
+                self._validate_node_input(runtime, node, request)
+                node_result, operation_effects = await self._invoke_async(program, runtime, node, request, state.sequence)
+                self._validate_node_output(runtime, node, node_result)
             except Exception as exc:
                 return self._result(MethodRunStatus.FAILED, program, runtime, state,
                                     failure=f"{type(exc).__qualname__}: {exc}")
-            state = self._advance(state, node, node_result)
+            state = self._advance(state, node, node_result, operation_effects)
             self._publish_events(
                 runtime,
                 request.context,
@@ -220,11 +230,32 @@ class UniversalMethodMachine:
         freeze_json(input_value)
         if initial_state is not None and not isinstance(initial_state, Mapping):
             raise TypeError("method machine initial_state must be a mapping")
+        if runtime.schemas is not None:
+            runtime.schemas.validate(program.input_schema, input_value, location="method.input")
+            runtime.schemas.validate(program.state_schema, initial_state or {}, location="method.initial_state")
         if program.required_capabilities:
             if runtime.capabilities is None:
                 raise RuntimeError("method program requires capabilities")
             for capability_id in program.required_capabilities:
                 runtime.capabilities.describe(capability_id)
+
+    @staticmethod
+    def _validate_node_input(runtime: MethodRuntimeContext, node: object, request: MethodNodeRequest) -> None:
+        if runtime.schemas is not None:
+            runtime.schemas.validate(
+                node.input_schema,
+                request.input_value,
+                location=f"method.node.{node.node_id}.input",
+            )
+
+    @staticmethod
+    def _validate_node_output(runtime: MethodRuntimeContext, node: object, result: MethodNodeResult) -> None:
+        if runtime.schemas is not None:
+            runtime.schemas.validate(
+                node.output_schema,
+                result.value,
+                location=f"method.node.{node.node_id}.output",
+            )
 
     def _initial_state(self, program: MethodProgram, runtime: MethodRuntimeContext,
                        initial_state: Mapping[str, object] | None, resume: bool) -> _ExecutionState:
@@ -249,8 +280,10 @@ class UniversalMethodMachine:
                 checkpoint.previous_value,
                 checkpoint.events,
                 visit_counts,
+                checkpoint.effect_receipts,
+                checkpoint.checkpoint_value,
             )
-        return _ExecutionState(program.graph.entrypoint, 0, freeze_json(initial_state or {}), None, (), {})
+        return _ExecutionState(program.graph.entrypoint, 0, freeze_json(initial_state or {}), None, (), {}, (), None)
 
     def _request(self, program: MethodProgram, runtime: MethodRuntimeContext, input_value: object,
                  state: _ExecutionState, node_id: str, visit: int) -> MethodNodeRequest:
@@ -269,6 +302,7 @@ class UniversalMethodMachine:
             context=context,
             capabilities=runtime.capabilities,
             visit_counts=tuple(sorted(state.visit_counts.items())),
+            checkpoint=state.checkpoint_value,
         )
 
     def _invoke_sync(self, program: MethodProgram, runtime: MethodRuntimeContext, node: object,
@@ -306,19 +340,17 @@ class UniversalMethodMachine:
         return node_result, operation.effect_receipts
 
     async def _invoke_async(self, program: MethodProgram, runtime: MethodRuntimeContext, node: object,
-                            request: MethodNodeRequest, sequence: int) -> MethodNodeResult:
+                            request: MethodNodeRequest, sequence: int) -> tuple[MethodNodeResult, tuple[EffectReceipt, ...]]:
         dispatcher = runtime.async_dispatcher
         if dispatcher is None and callable(getattr(runtime.dispatcher, "dispatch_async", None)):
             dispatcher = runtime.dispatcher
         if dispatcher is None:
             if runtime.dispatcher is not None:
                 raise RuntimeError("async method execution requires an async operation dispatcher")
-            result = self._invoke_node_body(runtime, node, request)
-            if inspect.isawaitable(result):
-                result = await result
+            result = await self._invoke_node_body_async(runtime, node, request)
             if not isinstance(result, MethodNodeResult):
                 raise TypeError("method node handler must return MethodNodeResult")
-            return result
+            return result, tuple(result.effect_receipts)
         operation_id = self._operation_id(runtime.execution.run_id, program, request.node_id, request.visit)
         payload = {
             "program_digest": program.program_digest,
@@ -335,7 +367,7 @@ class UniversalMethodMachine:
             target=self._target,
             payload=payload,
             payload_schema="noetrium.method-machine.node.v2",
-            handler=lambda _envelope: self._invoke_node_body(runtime, node, request),
+            handler=lambda _envelope: self._invoke_node_body_async(runtime, node, request),
             digest_output=True,
             effect_projector=lambda output: tuple(output.effect_receipts),
             idempotency_key=f"method:{program.program_digest}:{request.node_id}:{request.visit}",
@@ -348,10 +380,76 @@ class UniversalMethodMachine:
             raise TypeError("method node operation must return MethodNodeResult")
         if operation.effect_receipts != node_result.effect_receipts:
             raise RuntimeError("method node operation receipt projection mismatch")
-        return node_result
+        return node_result, operation.effect_receipts
+
+    async def _invoke_node_body_async(
+        self,
+        runtime: MethodRuntimeContext,
+        node: object,
+        request: MethodNodeRequest,
+    ) -> MethodNodeResult:
+        if node.kind is MethodNodeKind.AGENT:
+            if runtime.agent_loop is None:
+                raise RuntimeError("agent node requires MethodRuntimeContext.agent_loop")
+            runner = getattr(runtime.agent_loop, "run_async", None)
+            result = runner(request) if callable(runner) else runtime.agent_loop.run(request)
+            if inspect.isawaitable(result):
+                result = await result
+            if not isinstance(result, MethodAgentResult):
+                raise TypeError("agent loop must return MethodAgentResult")
+            return MethodNodeResult(
+                value=result.value,
+                state_update=result.state_update,
+                events=result.events,
+                effect_receipts=result.effect_receipts,
+                checkpoint=result.checkpoint is not None,
+                checkpoint_value=result.checkpoint,
+            )
+        result = self._invoke_node_body(runtime, node, request)
+        if inspect.isawaitable(result):
+            result = await result
+        if not isinstance(result, MethodNodeResult):
+            raise TypeError("method node handler must return MethodNodeResult")
+        return result
 
     @staticmethod
     def _invoke_node_body(runtime: MethodRuntimeContext, node: object, request: MethodNodeRequest) -> Any:
+        if node.kind is MethodNodeKind.AGENT:
+            if runtime.agent_loop is None:
+                raise RuntimeError("agent node requires MethodRuntimeContext.agent_loop")
+            agent_request = MethodAgentRequest(
+                agent_id=node.agent_id,
+                goal=request.input_value,
+                state=request.state,
+                input_value=request.input_value,
+                previous_value=request.previous_value,
+                context=request.context,
+            )
+            result = runtime.agent_loop.run(agent_request)
+            if inspect.isawaitable(result):
+                async def await_agent() -> MethodNodeResult:
+                    resolved = await result
+                    if not isinstance(resolved, MethodAgentResult):
+                        raise TypeError("agent loop must return MethodAgentResult")
+                    return MethodNodeResult(
+                        value=resolved.value,
+                        state_update=resolved.state_update,
+                        events=resolved.events,
+                        effect_receipts=resolved.effect_receipts,
+                        checkpoint=resolved.checkpoint is not None,
+                        checkpoint_value=resolved.checkpoint,
+                    )
+                return await_agent()
+            if not isinstance(result, MethodAgentResult):
+                raise TypeError("agent loop must return MethodAgentResult")
+            return MethodNodeResult(
+                value=result.value,
+                state_update=result.state_update,
+                events=result.events,
+                effect_receipts=result.effect_receipts,
+                checkpoint=result.checkpoint is not None,
+                checkpoint_value=result.checkpoint,
+            )
         if node.kind is MethodNodeKind.CAPABILITY:
             if runtime.capabilities is None:
                 raise RuntimeError("capability node requires MethodRuntimeContext.capabilities")
@@ -393,7 +491,8 @@ class UniversalMethodMachine:
         return result
 
     @staticmethod
-    def _advance(state: _ExecutionState, node: object, result: MethodNodeResult) -> _ExecutionState:
+    def _advance(state: _ExecutionState, node: object, result: MethodNodeResult,
+                 operation_effects: tuple[EffectReceipt, ...] = ()) -> _ExecutionState:
         merged = dict(state.state)
         merged.update(result.state_update)
         visit_counts = dict(state.visit_counts)
@@ -411,6 +510,8 @@ class UniversalMethodMachine:
             result.value,
             events,
             visit_counts,
+            (*state.effect_receipts, *operation_effects),
+            result.checkpoint_value if result.checkpoint_value is not None else state.checkpoint_value,
         )
 
     @staticmethod
@@ -425,18 +526,21 @@ class UniversalMethodMachine:
         if self._checkpoints is None:
             return None
         checkpoint = MethodCheckpoint(
-            runtime.execution.run_id,
-            program.program_digest,
-            state.sequence,
-            current_node,
-            state.state,
-            state.previous_value,
-            state.current_node,
-            tuple(sorted(state.visit_counts.items())),
-            state.events,
-            runtime.binding_plan_digest,
-            runtime.runtime_binding_digest,
-            runtime.schema_digest,
+            run_id=runtime.execution.run_id,
+            program_digest=program.program_digest,
+            sequence=state.sequence,
+            current_node=current_node,
+            state=state.state,
+            previous_value=state.previous_value,
+            next_node=state.current_node,
+            visit_counts=tuple(sorted(state.visit_counts.items())),
+            events=state.events,
+            binding_plan_digest=runtime.binding_plan_digest,
+            runtime_binding_digest=runtime.runtime_binding_digest,
+            schema_digest=runtime.schema_digest,
+            effect_receipts=state.effect_receipts,
+            evidence_status=self._evidence_status(program, runtime),
+            checkpoint_value=state.checkpoint_value,
         )
         self._checkpoints.save(checkpoint)
         if runtime.evidence is not None:
@@ -456,9 +560,39 @@ class UniversalMethodMachine:
     def _operation_id(run_id: str, program: MethodProgram, node_id: str, visit: int) -> str:
         return f"method:{run_id}:{program.program_digest[:16]}:{node_id}:{visit}"
 
+    @staticmethod
+    def _evidence_obligations(program: MethodProgram) -> tuple[str, ...]:
+        obligations = list(program.evidence_obligations)
+        for node in program.graph.nodes:
+            obligations.extend(node.evidence_obligations)
+        return tuple(dict.fromkeys(obligations))
+
+    @staticmethod
+    def _evidence_status(
+        program: MethodProgram,
+        runtime: MethodRuntimeContext,
+        result: MethodRunResult | None = None,
+    ) -> MethodEvidenceStatus:
+        obligations = UniversalMethodMachine._evidence_obligations(program)
+        if not obligations:
+            return MethodEvidenceStatus.NOT_REQUIRED
+        if runtime.evidence is None:
+            return MethodEvidenceStatus.INCOMPLETE
+        if result is None:
+            return MethodEvidenceStatus.UNKNOWN
+        validator = getattr(runtime.evidence, "validate_result", None)
+        if not callable(validator):
+            return MethodEvidenceStatus.UNKNOWN
+        try:
+            status = validator(result, obligations)
+        except Exception:
+            return MethodEvidenceStatus.INCOMPLETE
+        return status if isinstance(status, MethodEvidenceStatus) else MethodEvidenceStatus.UNKNOWN
+
     def _result(self, status: MethodRunStatus, program: MethodProgram, runtime: MethodRuntimeContext,
                 state: _ExecutionState, *, checkpoint: MethodCheckpoint | None = None,
-                interrupt: MethodInterrupt | None = None, failure: str | None = None) -> MethodRunResult:
+                interrupt: MethodInterrupt | None = None, failure: str | None = None,
+                failure_code: str | None = None, failure_phase: str | None = None) -> MethodRunResult:
         result = MethodRunResult(
             status=status,
             run_id=runtime.execution.run_id,
@@ -469,7 +603,23 @@ class UniversalMethodMachine:
             checkpoint=checkpoint,
             interrupt=interrupt,
             failure=failure,
+            effect_receipts=state.effect_receipts,
+            step_count=state.sequence,
+            visit_counts=tuple(sorted(state.visit_counts.items())),
+            evidence_status=MethodEvidenceStatus.UNKNOWN,
+            binding_plan_digest=runtime.binding_plan_digest,
+            runtime_binding_digest=runtime.runtime_binding_digest,
+            schema_digest=runtime.schema_digest,
+            failure_code=failure_code,
+            failure_phase=failure_phase,
+            diagnostics={
+                "checkpoint_id": None if checkpoint is None else checkpoint.checkpoint_id,
+                "effect_receipt_count": len(state.effect_receipts),
+            },
         )
+        evidence_status = self._evidence_status(program, runtime, result)
+        if evidence_status is not result.evidence_status:
+            result = replace(result, evidence_status=evidence_status)
         if runtime.evidence is not None:
             runtime.evidence.record_result(result)
         return result

@@ -77,6 +77,7 @@ from noetrium_platform.capabilities.participant.method.api import (
     MethodImplementation,
     MethodSessionRuntime,
 )
+from noetrium_platform.research.execution.workflow.api import MethodCheckpointStorePort, MethodMachinePort
 from noetrium_platform.capabilities.participant.method.runtime import (
     DefaultMethodEndpointFactory as _DefaultMethodEndpointFactory,
 )
@@ -985,6 +986,23 @@ class AgentResearchRuntimeBinding:
         self.close()
 
 
+def bind_universal_method_machine(
+    *,
+    checkpoint_store: MethodCheckpointStorePort | None = None,
+    max_steps: int = 10_000,
+    checkpoint_interval: int = 1,
+) -> MethodMachinePort:
+    """Bind the canonical UMM runtime behind the public product facade."""
+
+    from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
+
+    return UniversalMethodMachine(
+        checkpoint_store=checkpoint_store,
+        max_steps=max_steps,
+        checkpoint_interval=checkpoint_interval,
+    )
+
+
 def bind_agent_research_runtime(
     *,
     observation: AgentObservationPort,
@@ -1034,7 +1052,7 @@ __all__ = [
     "ResearchRequest", "ResearchResult", "bind_bundled_minecraft_environment",
     "bind_directory_run_artifact_store", "bind_durable_run_control",
     "bind_environment_category_catalog", "bind_minecraft_environment", "bind_qualified_project_model",
-    "bind_agent_research_runtime",
+    "bind_agent_research_runtime", "bind_universal_method_machine",
     "complete_project_model", "invoke_multimodal_model",
     "bind_method_endpoint", "run_local_shell_command",
     "bind_research_workbench", "bind_run_control_application",

@@ -13,7 +13,11 @@ from .dispatch import OperationDispatchPort, OperationExecutionPort
 from .graph import WorkflowGraph, WorkflowGraphError, WorkflowStep
 from .method_machine import (
     AsyncOperationDispatchPort,
+    MethodAgentLoopPort,
+    MethodAgentRequest,
+    MethodAgentResult,
     MethodCheckpoint,
+    MethodEvidenceStatus,
     MethodExecutionClass,
     MethodEvidencePort,
     MethodCheckpointStorePort,
@@ -32,6 +36,7 @@ from .method_machine import (
     MethodRunResult,
     MethodRunStatus,
     MethodRuntimeContext,
+    MethodSchemaPort,
 )
 from .progress import (
     WorkflowOperationBinding, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort,
@@ -44,7 +49,7 @@ __all__ = [
     "WorkflowProgressConflict", "WorkflowProgressCorruption", "WorkflowProgressStorePort", "WorkflowRunId",
     "WorkflowStep", "WorkflowSurfaceBindingContext", "WorkflowSurfaceFactory",
     "WorkflowSurfaceReuseScope", "workflow_surface_id", "workflow_surface_reuse_scope",
-    "AsyncOperationDispatchPort", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodExecutionClass", "MethodEvidencePort", "MethodEvent", "MethodGraph",
+    "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidenceStatus", "MethodExecutionClass", "MethodEvidencePort", "MethodEvent", "MethodGraph",
     "MethodInterrupt", "MethodMachinePort", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest", "MethodNodeResult",
     "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder", "MethodRunResult", "MethodRunStatus",
     "MethodRuntimeContext",
