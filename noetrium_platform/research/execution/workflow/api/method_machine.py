@@ -187,6 +187,8 @@ class MethodAgentResult:
     events: tuple[MethodEvent, ...] = ()
     effect_receipts: tuple[EffectReceipt, ...] = ()
     checkpoint: JsonValue = None
+    next_node: str | None = None
+    interrupt: MethodInterrupt | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.state_update, Mapping):
@@ -197,6 +199,10 @@ class MethodAgentResult:
             not isinstance(receipt, EffectReceipt) for receipt in self.effect_receipts
         ):
             raise TypeError("method agent effect_receipts must be a tuple of EffectReceipt")
+        if self.next_node is not None and (not isinstance(self.next_node, str) or not self.next_node.strip()):
+            raise ValueError("method agent next_node must be non-empty when provided")
+        if self.interrupt is not None and not isinstance(self.interrupt, MethodInterrupt):
+            raise TypeError("method agent interrupt must be MethodInterrupt")
         object.__setattr__(self, "value", freeze_json(self.value))
         object.__setattr__(self, "state_update", freeze_json(self.state_update))
         object.__setattr__(self, "checkpoint", freeze_json(self.checkpoint))
@@ -206,6 +212,9 @@ class MethodAgentResult:
 class MethodAgentLoopPort(Protocol):
     def run(self, request: MethodAgentRequest) -> MethodAgentResult: ...
 
+
+@runtime_checkable
+class AsyncMethodAgentLoopPort(Protocol):
     async def run_async(self, request: MethodAgentRequest) -> MethodAgentResult: ...
 
 
@@ -706,7 +715,7 @@ class MethodRuntimeContext:
     dispatcher: OperationDispatchPort | None = None
     evidence: MethodEvidencePort | None = None
     observation: MethodObservationPort | None = None
-    agent_loop: MethodAgentLoopPort | None = None
+    agent_loop: MethodAgentLoopPort | AsyncMethodAgentLoopPort | None = None
     schemas: MethodSchemaPort | None = None
     async_dispatcher: "AsyncOperationDispatchPort | None" = None
     binding_plan_digest: str | None = None
@@ -756,7 +765,7 @@ class AsyncOperationDispatchPort(Protocol):
 
 
 __all__ = [
-    "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult",
+    "AsyncMethodAgentLoopPort", "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult",
     "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidencePort", "MethodEvent", "MethodEvidenceStatus",
     "MethodExecutionClass", "MethodGraph", "MethodInterrupt", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest",
     "MethodNodeResult", "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder",

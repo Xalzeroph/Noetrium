@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 
+import pytest
+
 from noetrium import platform as noetrium_platform
 from noetrium_platform.capabilities.participant.method.api import (
     MethodIdentity,
@@ -11,6 +13,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
 )
 from noetrium_platform.research.execution.workflow.api import (
+    MethodAgentRequest,
     MethodAgentResult,
     MethodEvidenceStatus,
     MethodNodeResult,
@@ -114,8 +117,11 @@ def test_node_schema_port_validates_program_and_node_boundaries() -> None:
     assert [item[0] for item in calls] == [
         "program.input.v1",
         "program.state.v1",
+        "program.state.v1",
         "node.input.v1",
         "node.output.v1",
+        "program.state.v1",
+        "json",
     ]
 
 
@@ -157,3 +163,35 @@ def test_evidence_validator_receives_the_real_run_result() -> None:
 def test_public_platform_facade_binds_universal_method_machine():
     machine = noetrium_platform.bind_universal_method_machine(max_steps=3)
     assert isinstance(machine, UniversalMethodMachine)
+
+
+def test_async_agent_receives_agent_abi_and_can_route():
+    seen = []
+
+    class Agent:
+        async def run_async(self, request):
+            assert isinstance(request, MethodAgentRequest)
+            seen.append(request)
+            return MethodAgentResult(value={"agent": True}, next_node="finish")
+
+    program = (
+        MethodProgramBuilder(identity(), entrypoint="agent")
+        .agent("agent", "test.agent", "agent-1", next_nodes=("finish",))
+        .return_node("finish", "test.finish", lambda request: MethodNodeResult(value={"done": True}))
+        .build()
+    )
+    result = asyncio.run(UniversalMethodMachine().run_async(
+        program, runtime=MethodRuntimeContext(context(), agent_loop=Agent())
+    ))
+    assert result.value == {"done": True}
+    assert seen[0].agent_id == "agent-1"
+
+
+def test_resume_is_explicit_when_checkpoint_is_unavailable():
+    program = MethodProgramBuilder(identity(), entrypoint="answer").return_node(
+        "answer", "test.answer", lambda request: MethodNodeResult(value=42)
+    ).build()
+    with pytest.raises(ValueError, match="checkpoint"):
+        UniversalMethodMachine().run(
+            program, runtime=MethodRuntimeContext(context()), resume=True
+        )

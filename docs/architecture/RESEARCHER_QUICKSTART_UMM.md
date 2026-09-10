@@ -51,7 +51,8 @@ Use an `AGENT` node with `MethodAgentLoopPort` when the method needs iterative p
 - Give every method and node a stable identity and version.
 - Keep side effects behind typed ports and record their receipts.
 - Treat `UNKNOWN` as a real state; do not convert missing evidence into success.
-- Provide a checkpoint store appropriate to the deployment; the default in-memory store is for local runs and tests.
+- Provide a checkpoint store appropriate to the deployment; pass `InMemoryMethodCheckpointStore()` for local runs, and use a durable implementation for resumable deployments.
+- Treat `resume=True` as an explicit recovery operation; it requires a checkpoint store and an existing checkpoint for the run.
 - Keep research artifacts and evidence linked to the run identity.
 
 For the complete platform model, read `PLATFORM_ARCHITECTURE.md`, `UNIVERSAL_RESEARCH_HARNESS_DESIGN.md`, and `COMPOSITION_GRAPH_AND_EVENT_SPINE_DESIGN.md`.

@@ -12,6 +12,7 @@ from .effect_intents import EffectIntentOperationPort
 from .dispatch import OperationDispatchPort, OperationExecutionPort
 from .graph import WorkflowGraph, WorkflowGraphError, WorkflowStep
 from .method_machine import (
+    AsyncMethodAgentLoopPort,
     AsyncOperationDispatchPort,
     MethodAgentLoopPort,
     MethodAgentRequest,
@@ -49,7 +50,7 @@ __all__ = [
     "WorkflowProgressConflict", "WorkflowProgressCorruption", "WorkflowProgressStorePort", "WorkflowRunId",
     "WorkflowStep", "WorkflowSurfaceBindingContext", "WorkflowSurfaceFactory",
     "WorkflowSurfaceReuseScope", "workflow_surface_id", "workflow_surface_reuse_scope",
-    "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidenceStatus", "MethodExecutionClass", "MethodEvidencePort", "MethodEvent", "MethodGraph",
+    "AsyncMethodAgentLoopPort", "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidenceStatus", "MethodExecutionClass", "MethodEvidencePort", "MethodEvent", "MethodGraph",
     "MethodInterrupt", "MethodMachinePort", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest", "MethodNodeResult",
     "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder", "MethodRunResult", "MethodRunStatus",
     "MethodRuntimeContext",

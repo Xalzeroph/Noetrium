@@ -2156,6 +2156,7 @@
             "WorkflowSurfaceReuseScope",
             "workflow_surface_id",
             "workflow_surface_reuse_scope",
+            "AsyncMethodAgentLoopPort",
             "AsyncOperationDispatchPort",
             "MethodAgentLoopPort",
             "MethodAgentRequest",
@@ -2225,6 +2226,7 @@
           "module": "noetrium_platform.research.execution.workflow.api.method_machine",
           "source": "noetrium_platform/research/execution/workflow/api/method_machine.py",
           "symbols": [
+            "AsyncMethodAgentLoopPort",
             "AsyncOperationDispatchPort",
             "MethodAgentLoopPort",
             "MethodAgentRequest",

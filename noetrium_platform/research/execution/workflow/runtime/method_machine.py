@@ -63,6 +63,11 @@ class InMemoryMethodCheckpointStore(MethodCheckpointStorePort):
         if not isinstance(checkpoint, MethodCheckpoint):
             raise TypeError("method checkpoint store accepts MethodCheckpoint")
         with self._lock:
+            current = self._latest.get(checkpoint.run_id)
+            if current is not None and checkpoint.sequence < current.sequence:
+                raise ValueError("method checkpoint sequence cannot move backwards")
+            if current is not None and checkpoint.sequence == current.sequence and checkpoint.checkpoint_id != current.checkpoint_id:
+                raise ValueError("method checkpoint conflict at the same sequence")
             self._latest[checkpoint.run_id] = checkpoint
 
     def load(self, run_id: str) -> MethodCheckpoint | None:
@@ -128,38 +133,60 @@ class UniversalMethodMachine:
                 return self._result(
                     MethodRunStatus.LIMIT_REACHED, program, runtime, state,
                     failure=f"node visit limit reached: {node.node_id}",
+                    failure_code="method.node_visit_limit",
+                    failure_phase=f"node:{node.node_id}:schedule",
                 )
             try:
                 request = self._request(program, runtime, input_value, state, node.node_id, visit)
-                self._validate_node_input(runtime, node, request)
+                self._validate_node_input(program, runtime, node, request)
                 node_result, operation_effects = self._invoke_sync(program, runtime, node, request, state.sequence)
                 self._validate_node_output(runtime, node, node_result)
             except Exception as exc:
                 return self._result(
                     MethodRunStatus.FAILED, program, runtime, state,
                     failure=f"{type(exc).__qualname__}: {exc}",
+                    failure_code="method.node_execution_failed",
+                    failure_phase=f"node:{node.node_id}:invoke",
                 )
             if operation_effects and node_result.effect_receipts and operation_effects != node_result.effect_receipts:
                 return self._result(
                     MethodRunStatus.FAILED, program, runtime, state,
                     failure="method node effect receipts changed during operation projection",
                 )
-            state = self._advance(state, node, node_result, operation_effects)
+            try:
+                state = self._advance(state, node, node_result, operation_effects)
+                self._validate_state(program, runtime, state.state, node.node_id)
+            except Exception as exc:
+                return self._result(
+                    MethodRunStatus.FAILED, program, runtime, state,
+                    failure=f"{type(exc).__qualname__}: {exc}",
+                    failure_code="method.state_transition_invalid",
+                    failure_phase=f"node:{node.node_id}:advance",
+                )
             self._publish_events(
                 runtime,
                 request.context,
                 (*node_result.events, MethodEvent(f"node:{node.node_id}", node_result.value)),
             )
             if node_result.interrupt is not None:
-                checkpoint = self._save_checkpoint(program, runtime, state, node.node_id)
+                checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
                 return self._result(
                     MethodRunStatus.INTERRUPTED, program, runtime, state,
                     checkpoint=checkpoint, interrupt=node_result.interrupt,
                 )
             if self._terminal(node, node_result):
+                try:
+                    self._validate_program_output(program, runtime, state.previous_value)
+                except Exception as exc:
+                    return self._result(
+                        MethodRunStatus.FAILED, program, runtime, state,
+                        failure=f"{type(exc).__qualname__}: {exc}",
+                        failure_code="method.output_schema_invalid",
+                        failure_phase=f"node:{node.node_id}:output",
+                    )
                 return self._result(MethodRunStatus.SUCCEEDED, program, runtime, state)
             if self._must_checkpoint(node_result, state.sequence):
-                self._save_checkpoint(program, runtime, state, node.node_id)
+                self._save_checkpoint(program, runtime, state, state.current_node)
         checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
         return self._result(
             MethodRunStatus.LIMIT_REACHED,
@@ -168,6 +195,8 @@ class UniversalMethodMachine:
             state,
             checkpoint=checkpoint,
             failure="method step limit reached",
+            failure_code="method.step_limit",
+            failure_phase="scheduler",
         )
 
     async def run_async(
@@ -187,29 +216,51 @@ class UniversalMethodMachine:
             visit = state.visit_counts.get(node.node_id, 0)
             if visit >= node.max_visits:
                 return self._result(MethodRunStatus.LIMIT_REACHED, program, runtime, state,
-                                    failure=f"node visit limit reached: {node.node_id}")
+                                    failure=f"node visit limit reached: {node.node_id}",
+                                    failure_code="method.node_visit_limit",
+                                    failure_phase=f"node:{node.node_id}:schedule")
             try:
                 request = self._request(program, runtime, input_value, state, node.node_id, visit)
-                self._validate_node_input(runtime, node, request)
+                self._validate_node_input(program, runtime, node, request)
                 node_result, operation_effects = await self._invoke_async(program, runtime, node, request, state.sequence)
                 self._validate_node_output(runtime, node, node_result)
             except Exception as exc:
                 return self._result(MethodRunStatus.FAILED, program, runtime, state,
-                                    failure=f"{type(exc).__qualname__}: {exc}")
-            state = self._advance(state, node, node_result, operation_effects)
+                                    failure=f"{type(exc).__qualname__}: {exc}",
+                                    failure_code="method.node_execution_failed",
+                                    failure_phase=f"node:{node.node_id}:invoke")
+            try:
+                state = self._advance(state, node, node_result, operation_effects)
+                self._validate_state(program, runtime, state.state, node.node_id)
+            except Exception as exc:
+                return self._result(
+                    MethodRunStatus.FAILED, program, runtime, state,
+                    failure=f"{type(exc).__qualname__}: {exc}",
+                    failure_code="method.state_transition_invalid",
+                    failure_phase=f"node:{node.node_id}:advance",
+                )
             self._publish_events(
                 runtime,
                 request.context,
                 (*node_result.events, MethodEvent(f"node:{node.node_id}", node_result.value)),
             )
             if node_result.interrupt is not None:
-                checkpoint = self._save_checkpoint(program, runtime, state, node.node_id)
+                checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
                 return self._result(MethodRunStatus.INTERRUPTED, program, runtime, state,
                                     checkpoint=checkpoint, interrupt=node_result.interrupt)
             if self._terminal(node, node_result):
+                try:
+                    self._validate_program_output(program, runtime, state.previous_value)
+                except Exception as exc:
+                    return self._result(
+                        MethodRunStatus.FAILED, program, runtime, state,
+                        failure=f"{type(exc).__qualname__}: {exc}",
+                        failure_code="method.output_schema_invalid",
+                        failure_phase=f"node:{node.node_id}:output",
+                    )
                 return self._result(MethodRunStatus.SUCCEEDED, program, runtime, state)
             if self._must_checkpoint(node_result, state.sequence):
-                self._save_checkpoint(program, runtime, state, node.node_id)
+                self._save_checkpoint(program, runtime, state, state.current_node)
         checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
         return self._result(
             MethodRunStatus.LIMIT_REACHED,
@@ -218,6 +269,8 @@ class UniversalMethodMachine:
             state,
             checkpoint=checkpoint,
             failure="method step limit reached",
+            failure_code="method.step_limit",
+            failure_phase="scheduler",
         )
 
     @staticmethod
@@ -240,8 +293,18 @@ class UniversalMethodMachine:
                 runtime.capabilities.describe(capability_id)
 
     @staticmethod
-    def _validate_node_input(runtime: MethodRuntimeContext, node: object, request: MethodNodeRequest) -> None:
+    def _validate_node_input(
+        program: MethodProgram,
+        runtime: MethodRuntimeContext,
+        node: object,
+        request: MethodNodeRequest,
+    ) -> None:
         if runtime.schemas is not None:
+            runtime.schemas.validate(
+                program.state_schema,
+                request.state,
+                location=f"method.node.{node.node_id}.state",
+            )
             runtime.schemas.validate(
                 node.input_schema,
                 request.input_value,
@@ -257,9 +320,36 @@ class UniversalMethodMachine:
                 location=f"method.node.{node.node_id}.output",
             )
 
+    @staticmethod
+    def _validate_program_output(
+        program: MethodProgram,
+        runtime: MethodRuntimeContext,
+        value: object,
+    ) -> None:
+        if runtime.schemas is not None:
+            runtime.schemas.validate(program.output_schema, value, location="method.output")
+
+    @staticmethod
+    def _validate_state(
+        program: MethodProgram,
+        runtime: MethodRuntimeContext,
+        state: Mapping[str, object],
+        node_id: str,
+    ) -> None:
+        if runtime.schemas is not None:
+            runtime.schemas.validate(
+                program.state_schema,
+                state,
+                location=f"method.node.{node_id}.state_update",
+            )
+
     def _initial_state(self, program: MethodProgram, runtime: MethodRuntimeContext,
                        initial_state: Mapping[str, object] | None, resume: bool) -> _ExecutionState:
-        checkpoint = self._checkpoints.load(runtime.execution.run_id) if resume and self._checkpoints else None
+        if resume and self._checkpoints is None:
+            raise ValueError("method resume requires a checkpoint store")
+        checkpoint = self._checkpoints.load(runtime.execution.run_id) if resume else None
+        if resume and checkpoint is None:
+            raise ValueError(f"no method checkpoint found for run: {runtime.execution.run_id}")
         if checkpoint is not None:
             if checkpoint.program_digest != program.program_digest:
                 raise ValueError("method checkpoint belongs to a different program")
@@ -317,7 +407,9 @@ class UniversalMethodMachine:
             "node_id": request.node_id,
             "visit": request.visit,
             "sequence": sequence,
+            "input_digest": canonical_digest(request.input_value),
             "state_digest": canonical_digest(request.state),
+            "checkpoint_digest": canonical_digest(request.checkpoint),
             "effect_class": node.effect_class.value,
         }
         operation = MethodNodeOperationAdapter(dispatcher).execute(
@@ -357,7 +449,9 @@ class UniversalMethodMachine:
             "node_id": request.node_id,
             "visit": request.visit,
             "sequence": sequence,
+            "input_digest": canonical_digest(request.input_value),
             "state_digest": canonical_digest(request.state),
+            "checkpoint_digest": canonical_digest(request.checkpoint),
             "effect_class": node.effect_class.value,
         }
         operation = await MethodNodeOperationAdapter(dispatcher).execute_async(
@@ -392,7 +486,13 @@ class UniversalMethodMachine:
             if runtime.agent_loop is None:
                 raise RuntimeError("agent node requires MethodRuntimeContext.agent_loop")
             runner = getattr(runtime.agent_loop, "run_async", None)
-            result = runner(request) if callable(runner) else runtime.agent_loop.run(request)
+            if callable(runner):
+                result = runner(self._agent_request(node, request))
+            else:
+                sync_runner = getattr(runtime.agent_loop, "run", None)
+                if not callable(sync_runner):
+                    raise RuntimeError("async agent execution requires run_async or run")
+                result = sync_runner(self._agent_request(node, request))
             if inspect.isawaitable(result):
                 result = await result
             if not isinstance(result, MethodAgentResult):
@@ -404,6 +504,8 @@ class UniversalMethodMachine:
                 effect_receipts=result.effect_receipts,
                 checkpoint=result.checkpoint is not None,
                 checkpoint_value=result.checkpoint,
+                next_node=result.next_node,
+                interrupt=result.interrupt,
             )
         result = self._invoke_node_body(runtime, node, request)
         if inspect.isawaitable(result):
@@ -413,19 +515,26 @@ class UniversalMethodMachine:
         return result
 
     @staticmethod
+    def _agent_request(node: object, request: MethodNodeRequest) -> MethodAgentRequest:
+        return MethodAgentRequest(
+            agent_id=node.agent_id,
+            goal=request.input_value,
+            state=request.state,
+            input_value=request.input_value,
+            previous_value=request.previous_value,
+            context=request.context,
+            checkpoint=request.checkpoint,
+        )
+
+    @staticmethod
     def _invoke_node_body(runtime: MethodRuntimeContext, node: object, request: MethodNodeRequest) -> Any:
         if node.kind is MethodNodeKind.AGENT:
             if runtime.agent_loop is None:
                 raise RuntimeError("agent node requires MethodRuntimeContext.agent_loop")
-            agent_request = MethodAgentRequest(
-                agent_id=node.agent_id,
-                goal=request.input_value,
-                state=request.state,
-                input_value=request.input_value,
-                previous_value=request.previous_value,
-                context=request.context,
-            )
-            result = runtime.agent_loop.run(agent_request)
+            runner = getattr(runtime.agent_loop, "run", None)
+            if not callable(runner):
+                raise RuntimeError("synchronous agent execution requires MethodAgentLoopPort.run")
+            result = runner(UniversalMethodMachine._agent_request(node, request))
             if inspect.isawaitable(result):
                 async def await_agent() -> MethodNodeResult:
                     resolved = await result
@@ -438,6 +547,8 @@ class UniversalMethodMachine:
                         effect_receipts=resolved.effect_receipts,
                         checkpoint=resolved.checkpoint is not None,
                         checkpoint_value=resolved.checkpoint,
+                        next_node=resolved.next_node,
+                        interrupt=resolved.interrupt,
                     )
                 return await_agent()
             if not isinstance(result, MethodAgentResult):
@@ -449,6 +560,8 @@ class UniversalMethodMachine:
                 effect_receipts=result.effect_receipts,
                 checkpoint=result.checkpoint is not None,
                 checkpoint_value=result.checkpoint,
+                next_node=result.next_node,
+                interrupt=result.interrupt,
             )
         if node.kind is MethodNodeKind.CAPABILITY:
             if runtime.capabilities is None:
