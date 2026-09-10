@@ -27,6 +27,14 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
 EndpointFactory = Callable[[QualifiedModelEndpointBinding], ModelEndpointPort]
 
 
+def _exception_detail(exc: Exception) -> str:
+    """Return a compact, actionable detail without embedding a traceback."""
+    detail = " ".join(str(exc).split())
+    if not detail:
+        return type(exc).__name__
+    return f"{type(exc).__name__}: {detail[:512]}"
+
+
 def _diagnostic(
     profile: ModelProviderProfile,
     requirement: ModelCapabilityRequirement,
@@ -177,7 +185,7 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
                     self._profile,
                     requirement,
                     ModelBindingDiagnosticCode.QUALIFIED_BINDING_UNAVAILABLE,
-                    f"qualified model binding unavailable: {type(exc).__name__}",
+                    f"qualified model binding unavailable: {_exception_detail(exc)}",
                 ),
             )
         if (
@@ -249,7 +257,7 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
                         self._profile,
                         requirement,
                         ModelBindingDiagnosticCode.QUALIFIED_BINDING_UNAVAILABLE,
-                        f"qualified model endpoint materialization failed: {type(exc).__name__}",
+                        f"qualified model endpoint materialization failed: {_exception_detail(exc)}",
                     ),
                 )
             ) from exc
