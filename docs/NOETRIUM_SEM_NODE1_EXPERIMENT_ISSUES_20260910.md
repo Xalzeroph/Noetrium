@@ -342,7 +342,7 @@ noetrium experiment analyze --run-id <run-id> --partial
 
 全仓验证结果：2752 passed、9 skipped、7 subtests passed。首次全仓运行中出现的 8 个只读文件系统失败属于测试挂载方式错误，使用可写 node1 checkout 复验后全部消失；唯一真实的 secret diagnostic 失败已修复。优化镜像 noetrium-minecraft:node1-noe-ux2-20260910 的 image id 为 sha256:8f559184c5323c27cf74c1a49a7d85bf953272df62fa3787f1483da32d6e3687，已通过 minecraft-doctor。以上优化尚未用于历史 full-v2 矩阵，该矩阵仍以原 image digest 和原 launch manifest 作为可复现失败证据。
 
-## 7. 安全与边界声明
+## 8. 安全与边界声明
 
 - 本轮没有停止或重启 Qwen 服务、无关 Minecraft 服务、其他用户 Java/bridge 或其他 Docker 容器。
 - 本轮没有删除历史结果、world archive、partial request blob 或异常文件。
@@ -351,11 +351,26 @@ noetrium experiment analyze --run-id <run-id> --partial
 - full v2 使用的 image、Noetrium commit、SEM commit、closure digest 已写入 launch manifest；该运行失败事实必须保留，不能用后续优化后的成功运行覆盖历史。
 - 本文不包含 RCON 密码、模型 API key、SSH 私钥或其他可直接复用的秘密。
 
-## 8. 本轮结束时的待办
+## 9. 本轮结束状态与后续实验
 
-1. 保存并 commit 本文档；本轮只 commit，不 push。
-2. 保留 full-v2 失败运行及其 raw artifacts，后续先做 partial diagnostic。
-3. 下一轮按 P0 顺序实现 Noetrium 的 bridge/module resolution、doctor、qualification lifecycle 和 model timeout/resume。
-4. 每项优化单独增加回归测试，并用新 image digest 运行新的 full matrix。
-5. 只有新的 full matrix 完整通过、分析门禁给出 claim_ready=true，才进入论文最终表格和 claim 撰写。
+1. 优化代码已提交为 \`519d8aeb feat: harden downstream runtime experience\`；本地分支只 commit、不 push。
+2. 完整问题记录已提交为文档 commit \`cd43651d\`（本次修订后 commit 会更新）。
+3. 最终 MC 镜像为 \`noetrium-minecraft:node1-noe-519d8aeb\`，image id 为 \`sha256:99fc29b9cd3fbb337ce5a618e98bdd6c38cdf7f0a6d498c9c472fdd20b110c9b\`，已通过 \`minecraft-doctor\`。
+4. 历史 full-v2 失败运行及 raw artifacts 保持不变；它仍是可复现失败证据，不作为论文成功结果。
+5. 下一步在 node1 使用该 commit/image 重新拉起资格核验、smoke 和完整论文矩阵；只有矩阵完整通过且分析门禁给出 \`claim_ready=true\`，才进入论文最终表格和 claim 撰写。
 
+
+
+
+## 10. 本轮优化收尾新增的验证与操作问题
+
+| 编号 | 问题 | 影响 | 处理 |
+|---|---|---|---|
+| P21 | node1 没有安装 apply_patch 命令 | 直接套用常规 patch 的操作失败 | 改用 Git 原生 patch/受控文本替换；最终只保留预期文件差异，并通过 git diff --check |
+| P22 | 对只读挂载的 checkout 执行 compileall 会尝试写入 __pycache__ | 产生大量 PermissionError 噪声，容易误判为代码失败 | 测试容器使用 PYTHONDONTWRITEBYTECODE=1；编译检查放在可写环境或仅做导入/测试验证 |
+| P23 | MC 镜像 entrypoint 只接受 doctor、minecraft-doctor、verify、shell | 直接把 /opt/venv/bin/python 作为容器命令会被 entrypoint 拒绝 | 统一使用 shell 子命令进入镜像后运行 Python；后续应在部署文档和 compose wrapper 中固化该约定 |
+| P24 | 构建镜像未预装 pytest | 直接在发布镜像内运行测试失败，增加临时验证步骤 | 正式运行镜像保持轻量；测试依赖应由独立 test target/image 或 CI 安装，不写入生产镜像 |
+| P25 | 测试文件名依赖人工猜测，曾引用不存在的 test_project_model_diagnostics_v1.py | 测试命令在收集阶段失败，不代表实现失败 | 后续用测试清单/pytest --collect-only 生成稳定入口；本轮已改用真实测试文件并通过 18 项 |
+| P26 | npm ci 报告 8 个 moderate 漏洞及过时 uuid 警告 | MC bridge 依赖存在安全与维护债务 | 本轮没有未经审计执行 npm audit fix，避免无验证升级破坏桥接；下一轮单独做 lockfile 升级、兼容测试和漏洞复核 |
+
+这些是验证/运维可重复性问题，不改变历史 full-v2 结果，也没有删除或重启无关服务。
