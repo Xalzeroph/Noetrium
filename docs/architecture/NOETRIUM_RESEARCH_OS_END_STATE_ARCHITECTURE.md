@@ -1396,3 +1396,28 @@ Research record 核心表达结果、来源与引用；不强迫全部研究采�
 补充两条闭环的责任边界，明确保证组合，以及定义/绑定/运行三类身份。
 把“强大”落实为可选择但不虚假的保证、低变更传播、专用实现自由与完整研究可追溯性。
 整体架构不是要集中掌握所有能力，而是让各个系统在明确边界内独立发挥能力，同时能组成可核对的研究过程。
+
+## 48. R5 实现基线：把核心裁决落成可运行协议
+
+> Revision: R5 / 2026-09-10。仅追加；此前章节保持原样。
+> 本节记录本轮实际提交的代码能力，不把尚未完成的领域适配或部署验证写成已完成。
+
+### 48.1 已实现的公共内核
+
+1. MachineIdentity、MachineProgramRef、MachineCommand、TransitionProposal、MachineCommit、MachineSnapshot 和 MachineInspection 组成稳定的 Machine ABI。
+2. MachineCommit 同时绑定 command_digest 与 proposal_digest；同一 command identity 的不同 payload 会被拒绝，重试只在内容完全一致时幂等返回。
+3. InMemoryMachineJournal 提供进程内测试基线；DirectoryMachineJournal 提供规范 JSONL、跨进程锁、追加写入、单调 revision、前驱链校验和重启恢复。
+4. MachineRuntime 拥有提案到提交的唯一转换路径：解释器只产生 TransitionProposal，Journal 才接受事实。
+5. InMemoryMachineSnapshotStore 与 DirectoryMachineSnapshotStore 提供单调、校验、原子发布的 Snapshot；Snapshot 是恢复加速记录，不能绕过 Journal。
+6. MachineEnvelope、Outbox、Inbox 和 DeliveryReceipt 把子命令传递从状态提交中分离；重启时可依据 Journal 重建 commit/enqueue 间隙。
+
+### 48.2 已实现的第一条领域接入
+
+现有 UniversalMethodMachine 通过 MethodMachineInterpreter 接入公共 Machine Runtime。节点级方法执行、能力调用、checkpoint、interrupt、evidence 和 loop limit 仍由 Method VM 负责；Machine Runtime 负责运行身份、revision、幂等、提交、恢复和跨机派发。
+
+这确认了“通用方法 VM”不是整个系统唯一的 VM，而是一个遵守公共 Machine ABI 的领域解释器。未来 Run、Agent、Memory、Environment、Evaluation 机器应复用同一核心协议，但保留各自状态语义和能力边界。
+### 48.3 本轮验证门槛
+
+本轮新增的 ABI、Runtime、Snapshot、Outbox/Inbox 和 Method adapter 测试全部通过；全仓回归中新增路径通过。全仓仍存在与本次改动无关的 Windows 环境差异：产品入口测试要求未安装的 noetrium 模块，公共 shell 测试硬编码 Unix /bin/sh；这两项不能被解释为 Kernel 或 Machine 实现回归。
+
+实现约束已经固定：不允许领域解释器直接写 Journal；不允许 Provider 成为事实权威；不允许 UI、索引或图谱服务进入提交临界路径；不允许把 unknown effect 伪装成 succeeded；不允许用 Snapshot 取代提交链。
