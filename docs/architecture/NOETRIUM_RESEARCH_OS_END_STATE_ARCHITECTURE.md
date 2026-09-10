@@ -1484,3 +1484,135 @@ ProgramLock + NIR → MachineRuntime → Journal/Snapshot/Outbox → ResearchRun
 - NIR 只能统一传输边界，不能抹平不同 VM 的状态语义。
 
 因此 R7 不是把 Noetrium 变成一个巨型 Universal VM，而是把“公共提交内核 + 独立领域解释器 + 研究记录闭环”落成可运行的参考架构。
+
+## 51. R8：Machine Authority、Worker Admission 与跨实现一致性闭环
+
+R7 中列出的剩余能力已继续落地。新增实现遵循同一条权威链：
+
+```
+nsh/SDK source
+  -> ProgramLock + canonical manifest
+  -> NIR transport envelope
+  -> authenticated worker candidate
+  -> local MachineRuntime validation
+  -> Authority Lease epoch/fencing check
+  -> journal commit
+  -> snapshot/outbox/evidence projection
+```
+
+### 51.1 Machine Authority Lease
+
+Machine Kernel 新增 `MachineLease`、`MachineAuthorityPort`、`InMemoryMachineAuthority`
+和 `DirectoryMachineAuthority`。
+
+约束如下：
+
+1. 租约身份由 machine_id、owner_id、epoch、acquired_at、expires_at 组成，并带
+   content-addressed lease_digest。
+2. 每次重新获得同一 machine 的权威都会递增 epoch；旧 owner 即使仍在运行，也不能
+   通过旧 epoch 提交。
+3. release 不删除 epoch，而是写入 durable released tombstone；因此重启、故障转移和
+   临时目录恢复都不会把 fencing counter 重置为 1。
+4. MachineRuntime 在 proposal 前与 journal append 前各做一次 assert_held；lease
+   过期、被接管或 digest 不一致时，提交被拒绝。
+5. 该租约只保护 Machine Kernel commit authority，不替代资源租约、恢复租约或环境
+   endpoint lease；不同语义保持不同 owner。
+
+### 51.2 Effect Reconciliation Facade
+
+`EffectReconciliationService` 复用现有 `EffectIntentJournal` 与纯 transition
+函数，不复制效果状态机。
+
+- provider 只返回外部观察到的 `EffectReconciliationProof`；
+- UNKNOWN 不会被推断为成功，也不会自动重试；
+- APPLIED/REJECTED 只有在 receipt 绑定 request_digest 后才能进入 RECONCILED；
+- NOT_APPLIED 必须由绑定的 NO_EFFECT receipt 证明；
+- CONSUMED 与 NOT_APPLIED 都保持幂等，重启后只读取现有事实；
+- 所有 scope recovery 继续由现有 effect journal 的 run/lifetime 约束负责。
+
+因此 effect provider 不是事实源，journal 仍是唯一事实源。
+
+### 51.3 Authenticated Worker Boundary
+
+`AuthenticatedWorkerInterpreter` 将远程 worker 限制为 proposal candidate producer：
+
+- worker 输入是 NIR envelope + immutable snapshot；
+- envelope 固定 machine kind、machine id、program_digest、revision、scope、
+  deadline 和 payload；
+- `WorkerAdmission` 本地检查 program、scope、payload budget、revision 与 proposal
+  identity；
+- HMAC attestation 只证明共享 transport boundary，不替代本地语义检查；
+- worker 没有 journal、snapshot、outbox 或 effect journal 写权限；
+- 最终提交只发生在本地 MachineRuntime 的 authority fencing 临界区内。
+
+这意味着网络重放、错误 worker、旧 revision 和越权 scope 都只能产生 rejected
+candidate，不能直接产生 Machine fact。生产部署仍可在此边界外替换 mTLS、KMS 或
+进程隔离实现，但不能扩大 worker 的权威。
+
+### 51.4 nsh/SDK Canonical Compiler
+
+`NshCompiler` 与 `noetrium nsh compile/verify` 已落地为 Kernel-facing compiler
+projection。其输出是 portable manifest，不是第二个 runtime：
+
+- code、dependency、schema、interpreter、data、config 六项摘要组成 ProgramLock；
+- ProgramLock 再绑定 program kind/version/schema，形成 program_digest；
+- verify 会重算 lock_digest 与 program_digest，漂移即拒绝；
+- `nsh` 仅负责 source-to-manifest，运行和 commit 仍归 MachineRuntime；
+- research compiler 仍保留既有 ResearchPlan/ProjectManifest 语义，不被 nsh 旁路。
+
+### 51.5 Golden-history Conformance
+
+`MachineConformanceHarness` 支持多个 fresh implementation builder 执行相同
+MachineCommand history，并比较：
+
+- revision、commit_id、state_digest；
+- event payload digest；
+- effect intent refs；
+- emitted command ids；
+- duplicate command idempotency；
+- stale revision rejection。
+
+这把“同一程序在不同 interpreter/provider 上应得到同一事实历史”从设计原则变成
+可执行的 conformance gate。
+
+### 51.6 Ownership Matrix
+
+`system_registry/catalog.json` 继续是唯一 topology authority。新增
+`OWNERSHIP_MATRIX.json` 是其可验证派生物，不是第二份手工拓扑。
+
+矩阵明确记录 system_id、plane、parent、owner_kind、state_authority、journal_scope、
+checkpoint_scope、effect_policy、replay_level、public_abi 和 audit_required。catalog
+当前未声明的字段明确标为 `unclassified` 并进入 `audit_required`，禁止通过推断
+伪造 ownership 结论。生成器为每一行和整个矩阵产生 digest，任何 catalog 漂移都必须
+重新生成并审计。
+
+## 52. R9：最终架构验收门槛
+
+以下条件是 Noetrium Research OS 的实现门槛，而不是建议项：
+
+1. 所有 Machine state mutation 必须经过 MachineRuntime + journal；
+2. 所有跨进程 Machine authority 必须携带 monotonic epoch/fencing；
+3. 所有外部 effect 必须先进入 EffectIntentJournal，UNKNOWN 永不盲重试；
+4. 所有远程 worker 只能返回 authenticated candidate，不能持有事实写权限；
+5. 所有可运行程序必须具有完整 ProgramLock 和 canonical program_digest；
+6. 所有 Machine family 必须有固定 kind、implementation_version、state schema 与
+   admitted command kinds；
+7. 所有 provider 必须通过 golden-history/conformance 和 restart/integrity tests；
+8. topology、ownership、public facade 与 system catalog 不得出现第二权威；
+9. 观测、projection、artifact 和 status 只能消费事实，不得反向修改事实；
+10. 生产级网络一致性、KMS/mTLS、OS sandbox、容器/VM 隔离属于 composition/provider
+    qualification；它们必须接入上述 typed ports，不能在 worker 或 domain interpreter
+    中偷偷实现第二套 authority。
+
+本轮实现验证：
+
+- Machine/Research closure targeted suite：27 passed；
+- Machine Authority、nsh、worker、conformance completion suite：13 passed；
+- `compileall` 对新增 Kernel、worker、compiler、conformance、reconciliation 模块
+  通过；
+- ownership matrix 已由 catalog 自动生成并带 source/matrix digest；
+- 未向远端 push，提交只保留在当前开发分支。
+
+这版架构的中心已经明确：Machine Kernel 是状态与事实提交中心；ProgramLock 是可运行
+程序身份中心；EffectIntentJournal 是外部副作用事实中心；system catalog 是拓扑与
+ownership 中心。四者互相引用摘要和证据，但任何一个都不越权成为另一个的替代品。

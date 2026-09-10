@@ -10,6 +10,7 @@ from __future__ import annotations
 from threading import RLock
 from typing import Protocol, runtime_checkable
 
+from .authority import MachineAuthorityPort, MachineLease
 from .canonical import canonical_digest, thaw_json
 from .delivery import MachineEnvelope, MachineOutboxPort
 from .family import MachineFamilyDescriptor
@@ -59,6 +60,8 @@ class MachineRuntime:
         snapshot_store: MachineSnapshotStorePort | None = None,
         outbox: MachineOutboxPort | None = None,
         family: MachineFamilyDescriptor | None = None,
+        authority: MachineAuthorityPort | None = None,
+        authority_lease: MachineLease | None = None,
     ) -> None:
         self.identity = identity
         self.program = program
@@ -73,9 +76,17 @@ class MachineRuntime:
             raise ValueError("machine family kind must match machine identity kind")
         if family is not None and family.implementation_version != identity.implementation_version:
             raise ValueError("machine family implementation version must match machine identity")
+        if authority is not None and not isinstance(authority, MachineAuthorityPort):
+            raise TypeError("authority must implement MachineAuthorityPort")
+        if (authority is None) != (authority_lease is None):
+            raise ValueError("authority and authority_lease must be provided together")
+        if authority_lease is not None and authority_lease.machine_id != identity.machine_id:
+            raise ValueError("authority lease belongs to a different machine")
         self.snapshot_store = snapshot_store
         self.outbox = outbox
         self.family = family
+        self.authority = authority
+        self.authority_lease = authority_lease
         self._lock = RLock()
         self._snapshot: MachineSnapshot | None = None
         self._status = MachineStatus.READY
@@ -151,6 +162,11 @@ class MachineRuntime:
             raise MachineNotOpen("machine must be opened before stepping")
         return self._snapshot
 
+    def _assert_authority(self) -> None:
+        if self.authority is not None and self.authority_lease is not None:
+            self.authority.assert_held(self.authority_lease)
+
+
     def _existing_command(self, command: MachineCommand) -> MachineCommit | None:
         for commit in self.journal.commits(self.machine_id):
             if commit.command_id != command.command_id:
@@ -211,6 +227,7 @@ class MachineRuntime:
                 if self.outbox is not None:
                     self.outbox.enqueue(existing)
                 return existing
+            self._assert_authority()
             state = self._require_open()
             if command.expected_revision != state.revision:
                 raise MachineConflict(
@@ -223,6 +240,7 @@ class MachineRuntime:
             if not isinstance(merged, dict):
                 raise MachineRuntimeError("machine state must be an object")
             merged.update(thaw_json(proposal.state_delta))
+            self._assert_authority()
             commit = MachineCommit(
                 machine_id=self.machine_id,
                 command_id=command.command_id,

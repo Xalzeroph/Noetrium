@@ -1,0 +1,4307 @@
+{
+  "matrix_digest": "da17289d89a7dfbbca66929adac6abdf155b47ea96acb51f83f4ae839bffd208",
+  "rows": [
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "0c56c79fd6e8659282fec024f5169922c7a8b7fa5947ec2266c4d272543a0798",
+      "state_authority": "artifact_identity",
+      "system_id": "artifact"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "artifact",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "b015c8bdcb34e536dc2ccfb9cab1d0627146d4c94502788621c8cc1d2383cf4c",
+      "state_authority": "artifact_catalog",
+      "system_id": "artifact/catalog"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "artifact",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "71cb9a758d270e186859605740b93590f6a28e791392f83346e447b744a70d04",
+      "state_authority": "artifact_content",
+      "system_id": "artifact/content"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "artifact",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "320f12703f659c856c2923e800575227ff6a86d829ad8a80ccbeec562227d0c4",
+      "state_authority": "artifact_lineage",
+      "system_id": "artifact/lineage"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "artifact.lineage",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "83d66abbb32e1f2c5269c73f4a3536077c7977103a50b72654fb9a63839aab22",
+      "state_authority": "artifact_lineage_edge",
+      "system_id": "artifact/lineage/relation"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "artifact",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "ca95cbd71d149f4ac5fe53aa8c49793e9085e51407a80998e2b4f2ec5ad25179",
+      "state_authority": "artifact_reference",
+      "system_id": "artifact/reference"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "artifact",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "cc7faa5324eb21a0e870c75110fa020356a2e6418384e707e6f2586e538de5cc",
+      "state_authority": "artifact_retention",
+      "system_id": "artifact/retention"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "343fdd6e9ef6b1e7e9e0dc73b52df2926d37490ab657e75588972ea3c36b7541",
+      "state_authority": "reference_component_library",
+      "system_id": "components"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "4114640f169d2f3911738599a01d54ca20d0e09529cf78abeda4ab9be7c9d39c",
+      "state_authority": "data_authority",
+      "system_id": "data"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "data",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "d10baa5e82743170990556678ab10d88eccd35671fe1289bc24117c2e052bc63",
+      "state_authority": "dataset_authority",
+      "system_id": "data/dataset"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "data",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "3b37d06adad3062e3092babb35fe891c40efd2bcae6a3fd21816c34199aa90d2",
+      "state_authority": "fact_authority",
+      "system_id": "data/fact"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "data",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "8d014d8725d24b2013035fa0c42259c70b0080c345bba6ee1fb8f47baa738f67",
+      "state_authority": "projection_authority",
+      "system_id": "data/projection"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "data",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "9755ba4db4b759fc8cffe356e5574a1f84afeaee7aacfc4dd2b314447a854908",
+      "state_authority": "query_contracts",
+      "system_id": "data/query"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "data.query",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "fb75a40a35c40d353269c6ca68bd879d9e23d2fe7c2cc89f296201ae47a370d3",
+      "state_authority": "cross_query",
+      "system_id": "data/query/cross"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "data",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "cd8abb9baf301a409017d3e6cb0f27e67eeabdbb3a283928bb793c4efb0be570",
+      "state_authority": "record_authority",
+      "system_id": "data/record"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "data",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "bbb11427a2849bdb29edaf0916b27bcdb826e5938db3db94d1d3b66ab8f16b69",
+      "state_authority": "state_authority",
+      "system_id": "data/state"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "4308e5c167fe2c560a5d48d96228c21521a1ce64f40bcc2396baf66ac1ba4e3b",
+      "state_authority": "environment_state",
+      "system_id": "environment"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "b6fc80f928744ed4d765e261745c4c8a918eef1cd9199a4c7f643c94f554a091",
+      "state_authority": "environment_binding",
+      "system_id": "environment/binding"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "f82b31188e8dfa70159a2c4415431436c355039218a01e0be53debf53b9c0111",
+      "state_authority": "environment_catalog",
+      "system_id": "environment/catalog"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "118d348b2e25afdcad222972fe5c2b6c82d627c1e90f987392ac61a6659b406e",
+      "state_authority": "environment_category_catalog",
+      "system_id": "environment/category"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "395b52a692f509ab33355ef61735bd3b461e89485af7d75005b50756cdb634d1",
+      "state_authority": "embodied_environment",
+      "system_id": "environment/embodied"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "8bc02bcef59d7f9ebab5a7291d7f7cd2c657b1d3962c3e687e98ce3fd7a83382",
+      "state_authority": "gui_environment",
+      "system_id": "environment/gui"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "cc68e37f94fe8c6783a96d8c35ec101c9f133d2ccf6cd872e6e89357460f8d78",
+      "state_authority": "environment_instance",
+      "system_id": "environment/instance"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment.instance",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "2a2181c47042d4c3c2f6c390e8dc59ec13c5889265ebc8c36b657f99b3b2a3b3",
+      "state_authority": "environment_instance_identity",
+      "system_id": "environment/instance/identity"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment.instance",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "3e76b422b9e5c7e3818f49a21f3a7f1985164dab6b9db2152cafe3cb7eac22e6",
+      "state_authority": "environment_readiness",
+      "system_id": "environment/instance/readiness"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "777ab65fe514e423b32384973795a76677f25d0a73f90a841059b1798518645a",
+      "state_authority": "minecraft_environment",
+      "system_id": "environment/minecraft"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "f496c54d533486b2344ac4d73c097122160249e035ce49cebeed5e048a8fe567",
+      "state_authority": "environment_resolution",
+      "system_id": "environment/resolution"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "3f9e7213dfd6311d2678679e69da27f6909b4d206d036b37c93992e8a4c03da8",
+      "state_authority": "environment_runtime_contract",
+      "system_id": "environment/runtime"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "77a8bf6da997ae5020acb0300119dadba107a0ef966dfe4d6012c8d86f57fe46",
+      "state_authority": "software_environment",
+      "system_id": "environment/software"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "c52da8864239c3c1ca456bc2a63714159d017e9563d27db2c0bdd56218b01f87",
+      "state_authority": "environment_spec",
+      "system_id": "environment/specification"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment.specification",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "6f1b64706b9145bd0a91a82a64406e4f2d1148e53ced30199ae65f73249795dd",
+      "state_authority": "environment_digest",
+      "system_id": "environment/specification/digest"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment.specification",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "376c1a69c3603e9d92a0fd9a228871addb5f90f52f340ff883a64b9495d7c2f4",
+      "state_authority": "environment_schema",
+      "system_id": "environment/specification/schema"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "ae36eb5bab9e398c54e2c45b7b0844bb04318217f79fbf983541cec9a4683baf",
+      "state_authority": "text_world_environment",
+      "system_id": "environment/text_world"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "environment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "2c66b0a706d1b4d84601a1890bef6e9905ad3a51a9cf7fc38c53c5344cddcffa",
+      "state_authority": "web_environment",
+      "system_id": "environment/web"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "1e89bc9912275c98d3d00da70400c7276f8d1c63460a23d567c7134592ecbbd1",
+      "state_authority": "execution_operations",
+      "system_id": "execution"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "execution",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "c3fd69a1da57302ecab2da9fc5aaccb7dd49c97d46bf96e59c5ead00229e14f1",
+      "state_authority": "admission_decision",
+      "system_id": "execution/admission"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "execution",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "749b38b418ed7849aaa559000dec4af3c3a74875e7f0175535f6f87fda8d94a3",
+      "state_authority": "capability_catalog",
+      "system_id": "execution/capability"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "execution",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "2df983f31eb10bfc1fece41ab299a9a49c53771053976c17e37126c763be9ce8",
+      "state_authority": "command_intent",
+      "system_id": "execution/command"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "execution",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "cd417f24c07d3bcd61293352a55820aec1bfbe62c482d1e9e1bec6d88a4f1f33",
+      "state_authority": "operation_state",
+      "system_id": "execution/operation"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "execution",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "111b72c4c69f1c165d8680ece260f85167824b73440b8aa527d3ec507b745553",
+      "state_authority": "schedule_intent",
+      "system_id": "execution/scheduling"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "execution",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "237fb94053f04a75b32706cb4ee7c84a33f790dd95387c883fd02d6df4997d7e",
+      "state_authority": "workflow_state",
+      "system_id": "execution/workflow"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "8fe4ec116dcc5266b94128c4584c3eff7991c80515f59ab28937dd31ae5052ff",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "3e701d465436f2dd67e8e14440252baeab36b40b7cbc69733725d4e63b46a857",
+      "state_authority": "branch_state",
+      "system_id": "experimentation/branch"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "fe2853ad144328d7aa4e541a424658782dfad89170ac5d44a2be72d2f322c23e",
+      "state_authority": "experiment_catalog_view",
+      "system_id": "experimentation/catalog"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "7a1c2df21f754da904aeaba2d1aaae2815a27f3a0ebfec87cace301efc4d4054",
+      "state_authority": "checkpoint_state",
+      "system_id": "experimentation/checkpoint"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "8c5befb9f7fec50e9239a560dc1f5f3dcd11098c426291e1cece675d01ca8831",
+      "state_authority": "experiment_evaluation",
+      "system_id": "experimentation/evaluation"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "ec61369592e0386dc539f5ceff81f77e603ae5f055f6b708ef57106f2157c543",
+      "state_authority": "experiment_state",
+      "system_id": "experimentation/experiment"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "55232c269f198bd74bfb30e74a8b662aa7a4b6daf15a4aa82e172081ef8e33f3",
+      "state_authority": "run_state",
+      "system_id": "experimentation/run"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation/run",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "a87eba9e23b9f6874b58417a4ee939e560a9d50d7753b957f33c94c8b271ad37",
+      "state_authority": "run_control",
+      "system_id": "experimentation/run/control"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation.run",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "3c53733fc020655f0ac42026534b6898b297ee10f48f4289c46d233bd721e1f2",
+      "state_authority": "run_identity",
+      "system_id": "experimentation/run/identity"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation.run",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "fd264c93e4b722ad72818147859181a5b4c1f61799678b34c2f0ce6125884bb1",
+      "state_authority": "run_lifecycle",
+      "system_id": "experimentation/run/lifecycle"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation.run",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "91e5080eb73505cdac19b2abaf33e0cef886eda235ccfc964d93b2dc0ef95bd4",
+      "state_authority": "run_manifest",
+      "system_id": "experimentation/run/manifest"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "8db8ac7086fe5a4e883b3abb9c7bb84e65f20d209bd37bbd1d52a50f9bf59f56",
+      "state_authority": "study_state",
+      "system_id": "experimentation/study"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "1a7f2d52f170b3b5deb4304903a7ca1c9f8d7252be09b5d002d0180ae7d02c21",
+      "state_authority": "variant_state",
+      "system_id": "experimentation/variant"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "824c8cd21dcad9fa3aedddb76e9aee5893f8ab5c22df8180a359d5a24eb26fcc",
+      "state_authority": "research_analysis_publication",
+      "system_id": "experimentation/workbench"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "experimentation",
+      "plane": "research",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "a4b61c5666b14190001d3e68fc021433dd0f842ad9a53739c893460f96935522",
+      "state_authority": "experiment_workload_execution_contract",
+      "system_id": "experimentation/workload"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "92962accf8544fbd9d396fb12edaa8589b50702c592a761708cd490f99e558e8",
+      "state_authority": "governance_policy",
+      "system_id": "governance"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "0073d08579180474a901953394b3b48b8506df6e2e0c34932d4627596978cfa8",
+      "state_authority": "algorithm_governance",
+      "system_id": "governance/algorithm"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "817088793fafbdb4c44380362e3140f1d5ee96aaeb01272ae1964c6c17ac7450",
+      "state_authority": "architecture_policy",
+      "system_id": "governance/architecture"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "d10f625eb26743a0c16ea002e0fb1bcc94c59d78e829d65aa0e295c72213d077",
+      "state_authority": "concurrency_governance",
+      "system_id": "governance/concurrency"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "972ad588e0d46724293de3fd130801561c1f5887f69d815589e28d04c2727f49",
+      "state_authority": "system_evolution",
+      "system_id": "governance/evolution"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "f92624222a75b4b75a5a633908afc5e3a8aa937e6616b1476093d02144b69073",
+      "state_authority": "gate_policy",
+      "system_id": "governance/gate"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "6ce5fbe6ab1a9ad9ec822f275863758584a34f46a505414ade4896a07b17de62",
+      "state_authority": "performance_governance",
+      "system_id": "governance/performance"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "129c24363f5e18c6427a1307b5306c2b1445d09839477df6d402819b3d55fd8f",
+      "state_authority": "quality_policy",
+      "system_id": "governance/quality"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "79a7d291259496ccca49803f3d9425203e40bb11f21e188fefc557800c0e2e3a",
+      "state_authority": "release_authority",
+      "system_id": "governance/release"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "1fc3ba484b4b92a219206827d353e4a88edb7f227e74ded110910f4b26315d61",
+      "state_authority": "upstream_repository_boundary",
+      "system_id": "governance/repository_boundary"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "1cd660b0bc3e6de527ba46303b96f154cfa51c514a44253b8c206335b89f742a",
+      "state_authority": "schema_authority",
+      "system_id": "governance/schema"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "8dddd3550adcaf70d07f6b085a751614549ca958eb3d5404a73819b13097c2d1",
+      "state_authority": "security_policy",
+      "system_id": "governance/security"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "governance",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "1df019c9b7884ef281cc1fdce47518983d3009aad554971c5953e5784ca38dcf",
+      "state_authority": "system_topology",
+      "system_id": "governance/system_registry"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "feebd8bf2ed674ee8570e829cbf5bc4521fe08335c98600774cf10b0b7dc003e",
+      "state_authority": "model_identity",
+      "system_id": "model"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "e694224bf85452eb8215dec8c0056b9f7c5060ae3c77aa7233af51261d34b4b2",
+      "state_authority": "model_asset",
+      "system_id": "model/asset"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "9e422a391d77a4b61e19987b2241b0494419ae5cc982c8b9d9ac83176db9ab8c",
+      "state_authority": "model_assignment",
+      "system_id": "model/assignment"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "4bd893dc9d9dd524686d7ae6488f861e923de95f778f9f660244eac27e91bfca",
+      "state_authority": "model_catalog",
+      "system_id": "model/catalog"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model.catalog",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "b8bbb4574f0b5c0cadc3f0b6b27f5d5be1591079aaf2252f110bf5d87b9f4a05",
+      "state_authority": "model_family",
+      "system_id": "model/catalog/family"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model.catalog",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "f13a6adf77b9cd0e229699c08286f109cffe10fcb656c11fe3aac5a6bf4c38b7",
+      "state_authority": "model_revision",
+      "system_id": "model/catalog/revision"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "e8243f4e4bb1bbe00ad9e75752922e75a3769788380aede65bc4108da61f9213",
+      "state_authority": "model_deployment",
+      "system_id": "model/deployment"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model.deployment",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "d3c73b41994c38ce64a70e1505847586e375ba0695f393804aca1d2df43d70c9",
+      "state_authority": "deployment_closure",
+      "system_id": "model/deployment/closure"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "c432184e91cdc9deef43a8a4d4b980609cc413ecdbb3187c89820a13cb935086",
+      "state_authority": "model_qualification",
+      "system_id": "model/qualification"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "07af647eded171ca99f042b5b37015ab335a8fce0d35465a5d515bb0fe736fbf",
+      "state_authority": "model_request",
+      "system_id": "model/request"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model.request",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "14cbf0fa03ceab317e2186b5e01d00f6d4b925592664e1a15204abffec107cb9",
+      "state_authority": "request_input",
+      "system_id": "model/request/input"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model.request",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "77ca7abb1a7688cb171ae3a8cdd62275663f8bf2aa074fdc38c81970b44faacd",
+      "state_authority": "request_output",
+      "system_id": "model/request/output"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model/request",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "e22a0bd56b00583f2e55b03f2de249356a9e8508e2019878a2ccaf0e9d7c67f0",
+      "state_authority": "model_prompt_compilation",
+      "system_id": "model/request/prompt"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "a223cf06e2b0eac90f08d7de7ec84f982e80a91d954156fc9f3bd7f9bbbffdb9",
+      "state_authority": "model_serving",
+      "system_id": "model/serving"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model.serving",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "c95356844479fe7ca01d5904b1af432d2994a4639b1d1c0615a354e8d467ccdd",
+      "state_authority": "serving_endpoint",
+      "system_id": "model/serving/endpoint"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "model",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "e702b74d1b2466047bbadd0f40a5013f8eaa5aeba64e884ce7b544e747d2aeff",
+      "state_authority": "model_stack",
+      "system_id": "model/stack"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "e3b35f0e12b93e9932568e3e38d112f60a5bfe61c316843011474f87ff6253ba",
+      "state_authority": "observability",
+      "system_id": "observability"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "875fcb5354b74377513c137fccf58cc83828b3a3a9730baad9fa2e6ca2a0d3d5",
+      "state_authority": "capture_observation",
+      "system_id": "observability/capture"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "0182ede238f4945a06753766383c69705b2d9a75e40b15063e1390472c8646f5",
+      "state_authority": "diagnostic_view_contract",
+      "system_id": "observability/diagnostic"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.diagnostic",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "6f45112adab6c939bff4f80df9ad3f4bfcd0459cc74ff50acc9c1b3de625158d",
+      "state_authority": "diagnostic_correlation",
+      "system_id": "observability/diagnostic/correlation"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.diagnostic",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "601e12b60f7dd218f71f807bb31ffbfa8ef00b6eca8eacc4532df509441b75b0",
+      "state_authority": "diagnostic_query",
+      "system_id": "observability/diagnostic/query"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.diagnostic",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "9cdc17b74ec43c19745741bda6cddbd5eb422b602b86878e499d81433f674675",
+      "state_authority": "diagnostic_snapshot",
+      "system_id": "observability/diagnostic/snapshot"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "26e3f415338b29f0540200e12770efab1c50535d66e2e3209ae7cb62478ff4e9",
+      "state_authority": "log_observation",
+      "system_id": "observability/logging"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.logging",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "625257b9e4353c2ec3278293530b7eb5366aa87bfa2629cb9cc1b27a4ff2a947",
+      "state_authority": "raw_capture",
+      "system_id": "observability/logging/capture"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.logging",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "bfc6d8ffaf7f30c7799646677b06e84e0d080114a5112e93dfa07e9f410deaf9",
+      "state_authority": "log_context",
+      "system_id": "observability/logging/context"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.logging",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "198ca3291a5b08d56263a78aa01c8bb528f716009a4d30dc3506b9514ad27467",
+      "state_authority": "log_projection",
+      "system_id": "observability/logging/projection"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.logging",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "5462b156e932917f50ec92e50f5d8a937160c86b0171fc694f3aed21f1e3c5a2",
+      "state_authority": "log_query",
+      "system_id": "observability/logging/query"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.logging",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "456e9cc92c8ed5737f9e459ca468b31b37d8dec2236e7ddb93da2df101c08010",
+      "state_authority": "log_record_schema",
+      "system_id": "observability/logging/record"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.logging",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "6caa85fb35395ee53021789bf44cf0f718cbeae0e6732fed0785198b23da9244",
+      "state_authority": "log_retention",
+      "system_id": "observability/logging/retention"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.logging",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "677d002f4661ca43ea20fe8c6fff0c8afbfc2c315bac32fedeaf968b78f8ed29",
+      "state_authority": "log_routing",
+      "system_id": "observability/logging/routing"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.logging",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "cc04289aeab0f3d574fcec5b187c0c5b29e592ec3371371ac6f3cecd5cc5d941",
+      "state_authority": "log_sink_delivery",
+      "system_id": "observability/logging/sink"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.logging",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "af54d9985253c3831c434ece9c2ac07eb09ed090910419330e810c94a7f4d7b1",
+      "state_authority": "log_storage",
+      "system_id": "observability/logging/storage"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "214338d661b5914546d32ae4ba2f7d47808a93590182402883bf66d15636850b",
+      "state_authority": "observation_projection",
+      "system_id": "observability/projection"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "ac6fc3e63da2cc79764189d2594dd391f935cc85d0647c251c6b9d947cac03e8",
+      "state_authority": "status_observation",
+      "system_id": "observability/status"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.status",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "f577f56d15467b3f0ee22a4f56ab3938cb2d4b2b5c6d7ce9ba81406ffec0b394",
+      "state_authority": "health_observation",
+      "system_id": "observability/status/health"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.status",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "946baa9f205b569605f4aa9fc92b6e4412bc7a11077b82df57b29f5bc58f98a5",
+      "state_authority": "lifecycle_projection",
+      "system_id": "observability/status/lifecycle_view"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "6839399a0a7c73c2a116f039d3f9aaa4474eca65acb36cb968626aef90dc3f8f",
+      "state_authority": "telemetry_observation",
+      "system_id": "observability/telemetry"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.telemetry",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "d54d4c6369d1802ae64eff6d4fcc297072bdf6022105ec621ffca7f8f492f0df",
+      "state_authority": "telemetry_event",
+      "system_id": "observability/telemetry/event"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.telemetry",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "84fa840a022799794823b06a6466275cc04026807937bd75e8fa99c8c2984063",
+      "state_authority": "telemetry_metric",
+      "system_id": "observability/telemetry/metric"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "b9ca287081059d5c489120ce1a50d8ebebac848db4eaace2e23ac4867d0f8c95",
+      "state_authority": "trace_observation",
+      "system_id": "observability/tracing"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.tracing",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "29676a9758b31dc51e026331559c0a03b1095674582c69a1923ce6c0418f31a5",
+      "state_authority": "trace_context",
+      "system_id": "observability/tracing/context"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.tracing",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "a80844905b7fea7ab68ec7c44f4c3625dca134814cb970a58892bc0282e0cac7",
+      "state_authority": "trace_propagation",
+      "system_id": "observability/tracing/propagation"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "observability.tracing",
+      "plane": "evidence",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "17107ba3e8616807e686e3d3fba1b06c539086bd5dd62f462e203c864720e385",
+      "state_authority": "trace_storage",
+      "system_id": "observability/tracing/storage"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "product",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "df752b5316e6f9929118e92c8db255cd282abc45bc59b955b2740152068dd2fc",
+      "state_authority": "operator_surface",
+      "system_id": "operator"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "operator",
+      "plane": "product",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "480fc4331791ec03db9cba37d4815db4d271d36d84c9e06a78fc49d7db29bd71",
+      "state_authority": "operator_audit",
+      "system_id": "operator/audit"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "operator",
+      "plane": "product",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "ddd021d1c2f54ab230b37c2f3fef97762f23aed23644774ca53b54696905ea43",
+      "state_authority": "operator_commands",
+      "system_id": "operator/command"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "operator.command",
+      "plane": "product",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "275e86668cfc260bce66efeb8fe5d972b6ba24ee8ec63ea102fdc3e944d6cf35",
+      "state_authority": "operator_command_intent",
+      "system_id": "operator/command/intent"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "operator",
+      "plane": "product",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "6cb58411e16f48a0fb083aeb3500fb1c0566907a3e9ea3d95c215efcbcf474c2",
+      "state_authority": "operator_incident_view",
+      "system_id": "operator/incident"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "operator",
+      "plane": "product",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "e565ba869d3bb714f0e20ac098b7a4875bf13d41e77d3cc5b27a909ce07117fc",
+      "state_authority": "operator_maintenance",
+      "system_id": "operator/maintenance"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "operator",
+      "plane": "product",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "0f4409dd4d55c2a13772cd1c9c784ad8c27a6927f38a3134fc7279ce92693f37",
+      "state_authority": "operator_queries",
+      "system_id": "operator/query"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "operator.query",
+      "plane": "product",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "8adeae1efb6311d9ecef3fe9a39080d778ee656ccb4b284c4c845b5631c0e72b",
+      "state_authority": "operator_search",
+      "system_id": "operator/query/search"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "a2b6e9aafa4ff362de3174d0e302f20d2e7c4b6372d4acfed6252933bff56c10",
+      "state_authority": "multi_agent_orchestration",
+      "system_id": "orchestration"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "0f7cf16bef88f4501c74a3cca9a2c47017e4b4783c1981fab12cd59f34390ac4",
+      "state_authority": "participant_state",
+      "system_id": "participant"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "participant",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "60ee61380ac8127d23d63a313030b4212e72f9db3b8ee8d7da68061e72b54c82",
+      "state_authority": "agent_identity",
+      "system_id": "participant/agent"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "participant",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "5f4fd908a8988b08a040b678e6c542e3d7e8cf75e6a1c2d7876217a7475436e9",
+      "state_authority": "participant_binding",
+      "system_id": "participant/binding"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "participant",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "cfad1780e10611c52e1b91e2e2df1cc5ea26199e2c9271f474320a667ea8c73c",
+      "state_authority": "participant_capability",
+      "system_id": "participant/capability"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "participant",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "0696d35d10e9d667a02930455ff6c70eef7500c9b6b9f65f4cffcd17216d6cbc",
+      "state_authority": "participant_runtime_abi",
+      "system_id": "participant/core"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "participant",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "710edeca9387c757a65efad0797b527172ad1718a2e2e4eeb37ba1ec60a5dc9a",
+      "state_authority": "participant_definition",
+      "system_id": "participant/definition"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "participant",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "94c25129ae5486dedb2c69826b18afce5be2a47fef2ab50e553112f728ec8571",
+      "state_authority": "method_participant_binding",
+      "system_id": "participant/method"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "participant",
+      "plane": "capabilities",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "7cd0579520072d3c7ceced6257c6cc52a232f127f8b88e50b16c7063629557d9",
+      "state_authority": "participant_session",
+      "system_id": "participant/session"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "b0bb0e8d4b54666d58c006ff096cfd29b9694b0f6edc5caf34e60ca5932a98e1",
+      "state_authority": "platform_identity",
+      "system_id": "platform"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "platform",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "67e7d8d1b97413f6cead40e8b871a9ac5f0988343c5ab34a9681ebd68de1ca60",
+      "state_authority": "platform_concurrency_runtime",
+      "system_id": "platform/concurrency"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "platform",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "0dc98a077bc7d9035daec2cba6317dc009d0bf1fbe0ee346cb89e0876b7a1b00",
+      "state_authority": "platform_configuration",
+      "system_id": "platform/configuration"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "platform",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "a101f19caa5a5a674b7decd6b2129f51cb21a500a3f166a7a41babd782dcf106",
+      "state_authority": "platform_identity",
+      "system_id": "platform/identity"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "platform",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "e06ab6a9f37933a630ba1098415bfd371920a4aec52f71c10b7777f544af2278",
+      "state_authority": "platform_lifecycle",
+      "system_id": "platform/lifecycle"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "aa5580127d683643c9347c595c12c69773a2d0305c236f6a41f38474167841b4",
+      "state_authority": "portfolio_metadata",
+      "system_id": "portfolio"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "portfolio",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "d1af23ac2453c4250f0873c5c2a43f24610b6620804865c80d5adaa25bbd3ce7",
+      "state_authority": "portfolio_membership",
+      "system_id": "portfolio/membership"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "portfolio",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "3ab1d8d7570ec5435ec38a8d69110bf745dd884bf601373723d7f52cc4d26385",
+      "state_authority": "program_metadata",
+      "system_id": "portfolio/program"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "portfolio",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "3c5a1b93271d7ddf273ab03ff1c5fab87530deec3adff2c7da772a32eb9ae298",
+      "state_authority": "project_metadata",
+      "system_id": "portfolio/project"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "portfolio",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "e4ba8e5de2033eaf35344a8f984f1c2cafc1a6be219521551639dafe1c603943",
+      "state_authority": "workspace_metadata",
+      "system_id": "portfolio/workspace"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "2745ba28b427f747af1d0b889f209e8f0185725bb0c5cd08a2a0bf75d72e6728",
+      "state_authority": "reliability_authority",
+      "system_id": "reliability"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "reliability",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "aca816effd10fbe923cd46aaba665484abba3188918c1eae9b22677cbb272749",
+      "state_authority": "diagnostic_queries",
+      "system_id": "reliability/diagnostics"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "reliability",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "9e579421108a1d22bb22a6413030a8a02d7a1c2ffabdb081a4e7a1124e4ee933",
+      "state_authority": "effect_authority",
+      "system_id": "reliability/effect"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "reliability",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "f9a7f94183600d09481b4acb63b8cf0aa1c37f52ae0e249e590c9c294ee0ad85",
+      "state_authority": "failure_authority",
+      "system_id": "reliability/failure"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "reliability",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "b9efb2288a0b6b88aa8deab5e87b25d4d3d7e4cf5ff81250662abb85f3a08917",
+      "state_authority": "forensic_authority",
+      "system_id": "reliability/forensics"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "reliability",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "3174df27e43a972798c081ba16b5b7bd711328605c74333368171d70714d5e03",
+      "state_authority": "recovery_authority",
+      "system_id": "reliability/recovery"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "reliability.recovery",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "783f9bef83fd6f958032a3b9a4e78b5c2d0bc919908615c6482d73d1b2128c26",
+      "state_authority": "recovery_execution",
+      "system_id": "reliability/recovery/execution"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "a440819a266ec6621f5eb26830646c3a0178803441cc0df91e0670ffb4b8f51e",
+      "state_authority": "resource_inventory",
+      "system_id": "resource"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "resource",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "224329fd88d4cd8ee65c9667d2b855f76034422d3d1e4395c3087a80b31be712",
+      "state_authority": "resource_allocation",
+      "system_id": "resource/allocation"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "resource",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "4f952947279844e2fcc755c5b78dafa7f7f719d0e8eed5a5ae10f1f9633468b4",
+      "state_authority": "compute_inventory",
+      "system_id": "resource/compute"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "resource",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "35f5b8d67e43b7c433e4564f2c0736525c58a238ccda7000bdf7c94b7549ed72",
+      "state_authority": "directory_inventory",
+      "system_id": "resource/directory"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "resource",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "223e616e190df92db446d35938567f5d7270a64b026f54388d69d58c0c0032eb",
+      "state_authority": "resource_lease",
+      "system_id": "resource/lease"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "resource",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "6ebed93463335603a283bf88c3f6f2a16df810c85a3b7c347f40f844495bb952",
+      "state_authority": "resource_resolution",
+      "system_id": "resource/resolution"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "3e2f70f9d6cf32a1e06d6a53c366560903807456b46c207bdf3d8acfbbbc4422",
+      "state_authority": "runtime_state",
+      "system_id": "runtime"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "33a8a353c4aa0acf81034d7a68358794d542c2ea62708e5ba563c0e47ba2429a",
+      "state_authority": "host_runtime_state",
+      "system_id": "runtime/host"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "265a60d7bd619a9816cb7d2a2ebcb86783534d69cf4270e0fed0f4a5285b5003",
+      "state_authority": "process_state",
+      "system_id": "runtime/process"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime.process",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "dfb227369e0f2a4ab91e512e469c1394c977a58016d17b434965e100109cedf3",
+      "state_authority": "process_supervision",
+      "system_id": "runtime/process/supervision"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "744a991cd2ee4d27c9d978d2f8e8e362c9476be2934756a553762bcf14f6c3df",
+      "state_authority": "python_environment",
+      "system_id": "runtime/python"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "2f3757f6de0b7abc50c2fad9b8963dee2df9ab33e477bc9d1920498b719d56a8",
+      "state_authority": "server_state",
+      "system_id": "runtime/server"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime.server",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "e9fb3204dbc317ec4fd9b94cb5a51846f32abac6fc037ff3a1f8b2800f487203",
+      "state_authority": "server_bootstrap_transaction",
+      "system_id": "runtime/server/bootstrap"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime.server",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "af7191c70cbd9015f10aec1c0b089474e25142268b3c17a65ea26a9ec02981ef",
+      "state_authority": "server_health_contract",
+      "system_id": "runtime/server/health"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime.server",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "48d19f767e5bae64d10691a3a3a57414b7aaf99db8dc2d772216b4ea44613c8b",
+      "state_authority": "server_identity",
+      "system_id": "runtime/server/identity"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime.server",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "1ba467d7ac198607a01ea61e5067dcb8c7c30e76276d58b86298018d513c8871",
+      "state_authority": "server_lifecycle",
+      "system_id": "runtime/server/lifecycle"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "379c6e5a9772c0f8a39fb95a2e4ea3070e265283151d4905630b56232b46cf94",
+      "state_authority": "service_state",
+      "system_id": "runtime/service"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "dd72647e49b033f157c49becaddb6a7e3a8458c1ce86861abffd7e12c5072ff8",
+      "state_authority": "runtime_session",
+      "system_id": "runtime/session"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "runtime",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "90165fc4742ff0b4b549f3bf3e5b5cc10ae7b5cf6656548499f05ecfdc5e13f3",
+      "state_authority": "runtime_toolchain",
+      "system_id": "runtime/toolchain"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": null,
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "46e9f21449622d36b144bf9ccd1d626d9a307b96138943bd2e797328182da7f0",
+      "state_authority": "scope_tree",
+      "system_id": "scope"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "scope",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "59e3e5aee3e4217370c4e2c37e53e4b59ec7190cb86bef8fafb9aaa8492b1783",
+      "state_authority": "scope_hierarchy",
+      "system_id": "scope/hierarchy"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "scope",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "95b780a9cb5c97dbdc42bc93c7c8f7607b797acbfda9eaea59dea5b58a1db3d7",
+      "state_authority": "scope_identity",
+      "system_id": "scope/identity"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "scope",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "07b715c228f446691dc7d2eb9310d50a93aa438d1c81c4a9eef5d1f7575790d2",
+      "state_authority": "scope_membership",
+      "system_id": "scope/membership"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "scope",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "fc3429a5ab0ecdc899c1443234850d41eead721330e165bffea1195bb2183b3a",
+      "state_authority": "scope_ownership",
+      "system_id": "scope/ownership"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "scope",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "d197b0a22b5e324454bda958bd0ff06fbdaf26cc5e53f2a25b5220da6b2404da",
+      "state_authority": "scope_path",
+      "system_id": "scope/path"
+    },
+    {
+      "audit_required": [
+        "journal_scope",
+        "checkpoint_scope",
+        "effect_policy",
+        "replay_level",
+        "owner_kind"
+      ],
+      "checkpoint_scope": "unclassified",
+      "effect_policy": "unclassified",
+      "journal_scope": "unclassified",
+      "owner_kind": "system-registry",
+      "parent": "scope",
+      "plane": "foundation",
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "replay_level": "unclassified",
+      "row_digest": "b26118e425c8efb0556fc09a7597f7f74202a68b02abbd59260dc0aba04562fd",
+      "state_authority": "scope_resolution",
+      "system_id": "scope/resolution"
+    }
+  ],
+  "schema": "noetrium.ownership-matrix.v1",
+  "source_digest": "2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603"
+}

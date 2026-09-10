@@ -1,3 +1,12 @@
+from .authority import (
+    DirectoryMachineAuthority,
+    InMemoryMachineAuthority,
+    MachineAuthorityError,
+    MachineAuthorityPort,
+    MachineLease,
+    MachineLeaseBusy,
+    MachineLeaseLost,
+)
 from .semantic_policy import OperationSemanticPolicyViolation
 from .context import ExecutionContext
 from .delivery import (
@@ -31,6 +40,25 @@ from .canonical import (
 )
 from .auxiliary_failures import OperationAuxiliaryFailureSink
 from .execution import OperationExecutor, OperationFailure
+from .compiler import CompiledProgram, NshCompiler, ProgramSource
+from .conformance import (
+    CommitProjection,
+    ConformanceReport,
+    ConformanceRun,
+    MachineConformanceError,
+    MachineConformanceHarness,
+)
+from .worker import (
+    AuthenticatedWorkerInterpreter,
+    RemoteWorkerPort,
+    WorkerAdmission,
+    WorkerAdmissionError,
+    WorkerAdmissionPolicy,
+    WorkerAuthenticationError,
+    WorkerAuthenticator,
+    WorkerCandidate,
+    WorkerReply,
+)
 from .machine import (
     MachineCommand,
     MachineCommit,
@@ -65,6 +93,8 @@ from .nir import NIREnvelope
 
 __all__ = [
     "ExecutionContext", "ComponentIdentity", "ImmutableModelIdentity",
+    "DirectoryMachineAuthority", "InMemoryMachineAuthority", "MachineAuthorityError",
+    "MachineAuthorityPort", "MachineLease", "MachineLeaseBusy", "MachineLeaseLost",
     "DeliveryReceipt", "DeliveryStatus", "InMemoryMachineInbox", "InMemoryMachineOutbox",
     "MachineEnvelope", "MachineInboxPort", "MachineOutboxPort",
     "DirectoryMachineInbox", "DirectoryMachineOutbox", "NIREnvelope",
@@ -76,6 +106,10 @@ __all__ = [
     "strict_finite_json_bytes", "strict_finite_json_digest", "strict_finite_json_text", "strict_json_loads",
     "DigestValidationError", "Sha256Digest", "require_sha256", "freeze_json", "thaw_json",
     "OperationExecutor", "OperationFailure", "FailureRecordReceipt", "OperationFailureSink", "OperationObserver", "OperationAuxiliaryFailureSink",
+    "CompiledProgram", "NshCompiler", "ProgramSource",
+    "CommitProjection", "ConformanceReport", "ConformanceRun", "MachineConformanceError", "MachineConformanceHarness",
+    "AuthenticatedWorkerInterpreter", "RemoteWorkerPort", "WorkerAdmission", "WorkerAdmissionError",
+    "WorkerAdmissionPolicy", "WorkerAuthenticationError", "WorkerAuthenticator", "WorkerCandidate", "WorkerReply",
     "MachineCommand", "MachineCommit", "MachineConflict", "MachineError", "MachineIdentity", "MachineInspection",
     "MachineIntegrityError", "MachineKind", "MachinePort", "MachineProgramRef", "MachineSnapshot", "ProgramLock", "MachineStatus", "TransitionProposal",
     "DirectoryMachineJournal", "InMemoryMachineJournal", "MachineJournalPort",
