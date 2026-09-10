@@ -18,17 +18,17 @@ Example:
     def compose(bridge: MinecraftBridgePort, memory: AgentMemoryPort) -> None:
         ...
 
-- Registered systems: 172
+- Registered systems: 174
 - Public API modules: 500
-- Public symbols: 3663
-- Registry digest: c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7
+- Public symbols: 3671
+- Registry digest: def72b47c0ba665ea27a17e92f7659e5e463cf69f391e8cb4212989af8aaa26e
 
 ## Capability domains
 
 | Domain | Systems | API modules | Symbols |
 | --- | ---: | ---: | ---: |
 | artifact | 7 | 24 | 127 |
-| components | 1 | 1 | 49 |
+| components | 3 | 1 | 57 |
 | data | 8 | 20 | 106 |
 | environment | 18 | 53 | 444 |
 | execution | 7 | 31 | 183 |
@@ -2787,7 +2787,29 @@ Example:
 
 #### API modules
 
-- components.api ?w^~)?t MemoryEdgeRecord, MemoryGraphConflict, MemoryGraphIntegrityError, MemoryGraphLedgerEntry, MemoryGraphOperation, MemoryGraphPort, MemoryGraphSnapshot, MemoryGraphTransaction, MemoryNodeRecord, VersionedMemoryGraph, JsonlReferenceAgentProgress, NullReferenceAgentProgress, PlatformCapabilityToolPort, ReferenceAgentAction, ReferenceAgentActionKind, ReferenceAgentActionToolPort, ReferenceAgentDecision, ReferenceAgentDecisionPort, ReferenceAgentEvent, ReferenceAgentMessage, ReferenceAgentObservation, ReferenceAgentPlannerPort, ReferenceAgentProgressPort, ReferenceAgentReflectionPort, ReferenceAgentRunResult, ReferenceAgentSolverPort, ReferenceAgentState, ReferenceAgentStatus, ReferenceAgentToolPort, ReferencePlanAndSolveMethod, ReferenceReActMethod, ReferenceReflexionMethod, ReferenceToolRegistryPort, EpisodicMemoryStore, MemoryEmbedderPort, MemoryItem, MemoryPersistencePort, SQLiteMemoryPersistence, VectorMemoryStore, WorkingMemory, ToolArguments, ToolAuditPort, ToolAuthorization, ToolAuthorizationPort, ToolDefinition, ToolHandler, ToolRegistry, ToolResult, ToolRiskClass
+- components.api ?w^~)?t MemoryEdgeRecord, MemoryGraphConflict, MemoryGraphIntegrityError, MemoryGraphLedgerEntry, MemoryGraphOperation, MemoryGraphPort, MemoryGraphSnapshot, MemoryGraphTransaction, MemoryNodeRecord, VersionedMemoryGraph, JsonlReferenceAgentProgress, NullReferenceAgentProgress, PlatformCapabilityToolPort, ReferenceAgentAction, ReferenceAgentActionKind, ReferenceAgentActionToolPort, ReferenceAgentDecision, ReferenceAgentDecisionPort, ReferenceAgentEvent, ReferenceAgentMessage, ReferenceAgentObservation, ReferenceAgentPlannerPort, ReferenceAgentProgressPort, ReferenceAgentReflectionPort, ReferenceAgentRunResult, ReferenceAgentDecisionAdapter, ReferenceAgentDecisionCodec, ReferenceAgentGenerationControls, ReferenceAgentHarness, ReferenceAgentHooks, ReferenceAgentModelPort, ReferenceAgentModelResponse, ReferenceAgentOutputMode, ReferenceAgentSolverPort, ReferenceAgentState, ReferenceAgentStatus, ReferenceAgentToolPort, ReferencePlanAndSolveMethod, ReferenceReActMethod, ReferenceReflexionMethod, ReferenceToolRegistryPort, EpisodicMemoryStore, MemoryEmbedderPort, MemoryItem, MemoryPersistencePort, SQLiteMemoryPersistence, VectorMemoryStore, WorkingMemory, ToolArguments, ToolAuditPort, ToolAuthorization, ToolAuthorizationPort, ToolDefinition, ToolHandler, ToolRegistry, ToolResult, ToolRiskClass
+
+### components/reference
+
+- Package: components.reference
+- Authority: reference_component_namespace
+- Owns: namespace and lifecycle boundary for reusable reference components
+- Must not own: platform authority mutation, provider credentials or scientific result acceptance
+- Requires: components
+- Provides: none
+- Downstream surface: public
+- Facade: noetrium.contracts.systems.components__reference
+
+### components/reference/harness
+
+- Package: components.reference.harness
+- Authority: universal_research_harness
+- Owns: typed method-node composition, lifecycle validation, checkpointing and replayable harness execution
+- Must not own: platform authority mutation, provider credentials or scientific result acceptance
+- Requires: components, platform
+- Provides: none
+- Downstream surface: metadata_only
+- Facade: noetrium.contracts.systems.components__reference__harness
 
 ### orchestration
 

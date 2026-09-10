@@ -8915,6 +8915,14 @@
             "ReferenceAgentProgressPort",
             "ReferenceAgentReflectionPort",
             "ReferenceAgentRunResult",
+            "ReferenceAgentDecisionAdapter",
+            "ReferenceAgentDecisionCodec",
+            "ReferenceAgentGenerationControls",
+            "ReferenceAgentHarness",
+            "ReferenceAgentHooks",
+            "ReferenceAgentModelPort",
+            "ReferenceAgentModelResponse",
+            "ReferenceAgentOutputMode",
             "ReferenceAgentSolverPort",
             "ReferenceAgentState",
             "ReferenceAgentStatus",
@@ -8956,6 +8964,35 @@
         "platform"
       ],
       "system_key": "components"
+    },
+    {
+      "api_modules": [],
+      "authority": "reference_component_namespace",
+      "downstream_surface": "public",
+      "facade_module": "noetrium.contracts.systems.components__reference",
+      "must_not_own": "platform authority mutation, provider credentials or scientific result acceptance",
+      "owns": "namespace and lifecycle boundary for reusable reference components",
+      "package_prefix": "components.reference",
+      "provides": [],
+      "requires": [
+        "components"
+      ],
+      "system_key": "components/reference"
+    },
+    {
+      "api_modules": [],
+      "authority": "universal_research_harness",
+      "downstream_surface": "metadata_only",
+      "facade_module": "noetrium.contracts.systems.components__reference__harness",
+      "must_not_own": "platform authority mutation, provider credentials or scientific result acceptance",
+      "owns": "typed method-node composition, lifecycle validation, checkpointing and replayable harness execution",
+      "package_prefix": "components.reference.harness",
+      "provides": [],
+      "requires": [
+        "components",
+        "platform"
+      ],
+      "system_key": "components/reference/harness"
     },
     {
       "api_modules": [
@@ -9198,5 +9235,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7"
+  "topology_digest": "def72b47c0ba665ea27a17e92f7659e5e463cf69f391e8cb4212989af8aaa26e"
 }

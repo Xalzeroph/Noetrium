@@ -20,7 +20,7 @@ def test_each_node_declares_one_authority_and_standard_package_shape():
         assert row.authorities[0].authority_id
         assert (
             row.package_prefix.startswith('noetrium_platform.')
-            or row.package_prefix in {'components', 'orchestration'}
+            or (row.package_prefix == 'components' or row.package_prefix.startswith('components.') or row.package_prefix == 'orchestration')
         )
         assert row.owns
         assert row.must_not_own

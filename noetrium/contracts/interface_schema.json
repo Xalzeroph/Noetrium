@@ -40523,7 +40523,7 @@
                 },
                 {
                   "annotation": "TrialBudget",
-                  "default": "field(default_factory=lambda: TrialBudget('standard', max_steps=12, max_seconds=180.0))",
+                  "default": "field(default_factory=lambda : TrialBudget('standard', max_steps=12, max_seconds=180.0))",
                   "name": "trial_budget"
                 },
                 {
@@ -58471,7 +58471,7 @@
               "name": "SYSTEM_CATALOG",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1",
-              "value": "tuple((_descriptor_from_catalog(key, semantics) for key, semantics in _load_catalog_semantics().items()))"
+              "value": "tuple((_descriptor_from_catalog(key, semantics) for (key, semantics) in _load_catalog_semantics().items()))"
             },
             {
               "bases": [],
@@ -64534,6 +64534,11 @@
                   "name": "text"
                 },
                 {
+                  "annotation": "JsonValue",
+                  "default": "()",
+                  "name": "tool_calls"
+                },
+                {
                   "annotation": "str | None",
                   "default": "None",
                   "name": "finish_reason"
@@ -70530,7 +70535,7 @@
                 },
                 {
                   "annotation": "HostExecutionFacts",
-                  "default": "field(default_factory=lambda: HostExecutionFacts('unknown', 'unknown', 0))",
+                  "default": "field(default_factory=lambda : HostExecutionFacts('unknown', 'unknown', 0))",
                   "name": "host"
                 },
                 {
@@ -70540,7 +70545,7 @@
                 },
                 {
                   "annotation": "StorageCapabilityFacts",
-                  "default": "field(default_factory=lambda: StorageCapabilityFacts('unknown'))",
+                  "default": "field(default_factory=lambda : StorageCapabilityFacts('unknown'))",
                   "name": "storage"
                 }
               ],
@@ -79550,6 +79555,11 @@
                   "annotation": "str",
                   "default": null,
                   "name": "text"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": "()",
+                  "name": "tool_calls"
                 },
                 {
                   "annotation": "str | None",
@@ -133682,6 +133692,78 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "ReferenceAgentDecisionAdapter",
+              "origin_module": "..reference.single_agent.agent",
+              "origin_name": "ReferenceAgentDecisionAdapter",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ReferenceAgentDecisionCodec",
+              "origin_module": "..reference.single_agent.agent",
+              "origin_name": "ReferenceAgentDecisionCodec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ReferenceAgentGenerationControls",
+              "origin_module": "..reference.single_agent.agent",
+              "origin_name": "ReferenceAgentGenerationControls",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ReferenceAgentHarness",
+              "origin_module": "..reference.single_agent.agent",
+              "origin_name": "ReferenceAgentHarness",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ReferenceAgentHooks",
+              "origin_module": "..reference.single_agent.agent",
+              "origin_name": "ReferenceAgentHooks",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ReferenceAgentModelPort",
+              "origin_module": "..reference.single_agent.agent",
+              "origin_name": "ReferenceAgentModelPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ReferenceAgentModelResponse",
+              "origin_module": "..reference.single_agent.agent",
+              "origin_name": "ReferenceAgentModelResponse",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ReferenceAgentOutputMode",
+              "origin_module": "..reference.single_agent.agent",
+              "origin_name": "ReferenceAgentOutputMode",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "ReferenceAgentSolverPort",
               "origin_module": "..reference.single_agent.agent",
               "origin_name": "ReferenceAgentSolverPort",
@@ -133922,6 +134004,14 @@
             "ReferenceAgentProgressPort",
             "ReferenceAgentReflectionPort",
             "ReferenceAgentRunResult",
+            "ReferenceAgentDecisionAdapter",
+            "ReferenceAgentDecisionCodec",
+            "ReferenceAgentGenerationControls",
+            "ReferenceAgentHarness",
+            "ReferenceAgentHooks",
+            "ReferenceAgentModelPort",
+            "ReferenceAgentModelResponse",
+            "ReferenceAgentOutputMode",
             "ReferenceAgentSolverPort",
             "ReferenceAgentState",
             "ReferenceAgentStatus",
@@ -133952,6 +134042,18 @@
       "facade_module": "noetrium.contracts.systems.components",
       "package_prefix": "components",
       "system_key": "components"
+    },
+    {
+      "api_modules": [],
+      "facade_module": "noetrium.contracts.systems.components__reference",
+      "package_prefix": "components.reference",
+      "system_key": "components/reference"
+    },
+    {
+      "api_modules": [],
+      "facade_module": "noetrium.contracts.systems.components__reference__harness",
+      "package_prefix": "components.reference.harness",
+      "system_key": "components/reference/harness"
     },
     {
       "api_modules": [
@@ -135090,5 +135192,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7"
+  "topology_digest": "def72b47c0ba665ea27a17e92f7659e5e463cf69f391e8cb4212989af8aaa26e"
 }

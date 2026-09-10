@@ -82,6 +82,11 @@ def _uncovered_public_api_findings(
     """
 
     rows: list[SurfaceFinding] = []
+    metadata_only_prefixes = tuple(
+        str(descriptor["package_prefix"]).replace(".", "/")
+        for descriptor in _registry(root).values()
+        if descriptor.get("downstream_surface") == "metadata_only"
+    )
     for base in (root / "noetrium_platform", root / "components", root / "orchestration"):
         if not base.exists():
             continue
@@ -91,6 +96,8 @@ def _uncovered_public_api_findings(
             if not (path.name == "api.py" or "api" in parts[:-1]):
                 continue
             if path.name.startswith("_") and path.name != "__init__.py":
+                continue
+            if any(relative == prefix or relative.startswith(prefix + "/") for prefix in metadata_only_prefixes):
                 continue
             try:
                 symbols = _public_symbols(path)

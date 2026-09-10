@@ -2927,6 +2927,44 @@
     ],
     "components": []
   },
+  "components/reference": {
+    "authority": "reference_component_namespace",
+    "must_not_own": "platform authority mutation, provider credentials or scientific result acceptance",
+    "owns": "namespace and lifecycle boundary for reusable reference components",
+    "package_prefix": "components.reference",
+    "parent": "components",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "components"
+    ],
+    "provides": [],
+    "components": []
+  },
+  "components/reference/harness": {
+    "authority": "universal_research_harness",
+    "must_not_own": "platform authority mutation, provider credentials or scientific result acceptance",
+    "owns": "typed method-node composition, lifecycle validation, checkpointing and replayable harness execution",
+    "package_prefix": "components.reference.harness",
+    "parent": "components/reference",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "requires": [
+      "components",
+      "platform"
+    ],
+    "provides": [],
+    "downstream_surface": "metadata_only",
+    "components": []
+  },
   "orchestration": {
     "authority": "multi_agent_orchestration",
     "must_not_own": "single-agent cognition, memory, model providers, scientific truth or platform authority",
