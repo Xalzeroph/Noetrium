@@ -730,3 +730,232 @@ Kernel 创建 Research Run，锁定版本，按资源和权限调度子机器。
 10. 新系统必须明确 owner_kind、状态权威和 replay 等级。
 
 这套边界允许 Noetrium 同时成为研究平台、Agent runtime、实验编排器、仿真平台和可复现科学基础设施，而不需要为每种场景重新发明运行时。
+
+## 18. 第二轮架构裁决：以故障语义约束终局设计
+
+> Revision: R2 / 2026-09-10。本文第 1–17 节保持原样。
+> 本节及后续章节是追加的规范性裁决；与前文冲突时，以 R2 为准。
+> 这是目标设计，不代表现有代码已实现，也不代表已完成全部系统逐项审计。
+> 不保留旧 API 兼容层；但历史研究记录的解释能力、数据来源与访问安全不可被当成兼容包袱删除。
+
+“最强”定义为可证明的安全性、可解释的失败、可扩展的执行和低认知成本。
+Star 数不能由架构保证；架构质量应由故障注入、复现能力、扩展独立性和真实研究工作负载衡量。
+
+### 18.1 对前文的六项明确修正
+
+| 前文表述 | R2 裁决 |
+|---|---|
+| 状态、snapshot、artifact、外部 effect 全部原子提交 | 只有同一提交权威中的元数据事务原子化；外部系统采用 intent、receipt、reconciliation |
+| Transition 去重实现 exactly-once | 只保证特定 machine revision 的一次接受；外部效果还依赖 Provider 的幂等与恢复协议 |
+| Environment 必须精确恢复 | 仿真可声明快照恢复；真实世界通常只能记录观察、校准、补偿或重新初始化 |
+| 所有指标和检查都从 journal 重建 | 语义状态可重建；CPU、连接、worker 心跳属于带时效的实时观测 |
+| 每个 Research Run 都有独立 Run VM | Run 是执行聚合及监督作用域；不再额外叠加一套与 Kernel 重复的生命周期解释器 |
+| 一个固定 VM 树覆盖全部关系 | 监督关系是树，数据依赖和证据来源是图；三者不能混用 |
+
+### 18.2 Linux、Temporal、数据库借鉴边界
+
+Linux cgroup v2 的可借鉴点是分层资源约束与委派，子域不能突破祖先限制；这不等于 Noetrium 已拥有 OS 隔离能力。[Linux cgroup v2](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+Temporal 的 event history 提供工作流执行历史模型；Noetrium 借鉴记录决定执行所需事实，不把所有业务数据都塞入历史。[Temporal Event History](https://docs.temporal.io/workflow-execution/event)
+PostgreSQL 的 Serializable 隔离仍可能要求应用重试事务；Noetrium 的提交接口必须把冲突作为显式结果。[PostgreSQL Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html)
+以下协议均是 Noetrium 的设计推导，不声称上述项目实现了本规范。DSH 具体项目尚未确认，继续仅作为 shell 组合方向的暂称。
+
+## 19. 终局结构：小内核、领域解释器、可替换执行面
+
+### 19.1 五个平面与唯一权威
+
+| 平面 | 负责 | 明确不负责 |
+|---|---|---|
+| Definition | 类型、程序、编译、依赖闭包与锁定 | 当前运行状态 |
+| Control | 准入、身份、授权、revision 提交、监督、恢复 | 大规模张量计算与领域决策 |
+| Execution | 受限 worker、领域解释器、效果执行 | 自行确认权威提交 |
+| Data & Evidence | 不可变产物、事实记录、来源关系、保留策略 | 替方法决定下一步 |
+| Experience | SDK、CLI、Notebook、查询与调试 | 第二套执行语义 |
+
+Kernel 是协议与提交权威，不意味着一个全局进程、数据库锁或集中瓶颈。
+同一协议可部署为本地嵌入式运行时或分片集群；部署变化不得暗中降低持久性与权限保证。
+Scheduler 的放置策略可替换，提交校验、权限检查和 fencing 不可被插件替换掉。
+
+### 19.2 Machine 与 VM 分开定义
+
+Machine 是拥有身份、私有逻辑状态和提交序列的实例。
+VM 是解释某种版本化 Program 的执行语义；有状态不等于必须发明指令集。
+Method VM 是通用研究控制程序的解释器，Agent 和 Experiment 可以是同一机制上的领域语言。
+Agent 只有在轮次状态、暂停和恢复责任确实独立时才创建独立 Machine；简单模型调用是 Capability。
+Memory 默认是带版本的状态服务；记忆整理、晋升、冲突处理程序可成为 Memory Evolution Machine。
+Environment 分成仿真 Machine 与真实设备 Session；不得用同一个 restore 标志掩盖物理差异。
+领域语言可编译到共享控制 IR，但领域状态 schema、错误语义、证据规则仍独立。
+不预设 VM 数量是六个，也不以 VM 数量作为模块质量指标。
+
+### 19.3 三种拓扑
+
+监督树决定创建、取消、预算和故障归属；每个活跃子 Machine 有一个明确 supervisor。
+数据依赖图决定输入来自哪里、何时可运行；流与反馈回路必须声明容量和终止规则。
+证据图决定结论依赖什么；通过版本化引用连接，不依赖运行树位置。
+共享 Memory/Environment 服务可以被多 Run 使用，但写入必须经过独立 owner 与并发协议。
+机器迁移和监督权转移记录 authority epoch；不能悄悄脱离父级成为无人负责的后台任务。
+
+## 20. 统一计算契约：决定、执行、提交分离
+
+领域程序的核心接口应为纯语义函数：
+`decide(program_ref, state, recorded_input) -> TransitionProposal`。
+Proposal 包含 state_delta、commands、output_refs 和等待条件；它不是已提交事实。
+外部调用不能发生在 decide 内部；由已持久化 command 驱动执行器完成，再成为新的 recorded_input。
+大规模纯计算也可卸载成任务，其结果通过内容引用进入下一步，不强迫解释器执行张量循环。
+
+### 20.1 最小记录结构
+
+| 对象 | 必须携带 |
+|---|---|
+| Command | command_id、machine_id、expected_revision、payload_digest、scope、deadline |
+| Attempt | attempt_id、command_id、worker_id、authority_epoch |
+| Proposal | base_revision、input_refs、state_delta_ref、emitted_commands、program_lock |
+| Commit | machine_id、new_revision、proposal_digest、previous_commit_ref、causal_refs |
+| Snapshot | machine_id、revision、state_root、schema_id、program_lock、integrity_digest |
+| Result | value_ref、execution_status、evidence_status、effect_status、reproduction_profile |
+
+command_id 表示逻辑操作，attempt_id 表示尝试；重试不产生新的逻辑外部效果身份。
+同一个 command_id 配不同 payload 必须拒绝，不能静默当成重复成功。
+墙钟时间只作审计属性；排序依据 revision 与因果关系，不以时间戳判断先后。
+跨 Machine 不建立无必要的全局全序；共享资源约束由该资源 owner 串行化。
+Kernel 验证权限、revision、类型、预算与引用完整性，不自动证明任意 worker 计算结果正确。
+需要可信计算的任务另行声明校验器、冗余执行或隔离信任配置；签名只能证明发送者。
+
+## 21. 提交与外部效果：取消虚假的全局事务
+
+### 21.1 单 Machine 提交协议
+
+1. 将大型状态块和产物写入不可变存储，验证 digest 与所声明的持久性。
+2. 事务性校验 machine revision、authority epoch、command 去重和预算预留。
+3. 原子写入 Commit、状态 head、输入消费标记、outbox 命令与必要引用。
+4. 提交成功后确认；outbox 可重复投递，消费者以稳定命令身份去重。
+5. 未被提交引用的预写入对象成为待 GC 对象，不对外宣称为成功产物。
+
+Snapshot 可以延后生成；恢复使用已验证 Snapshot 加后续 Commit。
+Commit 必须包含足以应用状态变更的事实或不可变引用，不能只有无法恢复内容的 digest。
+丢失响应后的重试先查询 command 提交记录，禁止先执行业务再检查是否重复。
+单写者指唯一被接受的提交序列；多个 worker 可以计算候选，只有满足 CAS 的候选可提交。
+
+### 21.2 外部效果协议不是通用两阶段提交
+
+`IntentCommitted -> Dispatch -> ReceiptRecorded -> OutcomeApplied` 是恢复状态机，不是跨数据库和设备的 2PC。
+Intent 包含请求 digest、稳定幂等键、目标资源、权限与重试策略。
+Provider 已执行而 receipt 未记录时，状态是 UNKNOWN；Kernel 不能靠重试次数推断真实世界。
+Provider 支持幂等键及结果查询时可恢复确认；否则进入核对或人工处置，禁止盲目再次执行。
+fencing 只有被目标资源实际验证时才能阻止过期 worker 的外部写入。
+取消停止后续调度，但不能撤销已经发生的外部效果；补偿是新的操作，不是抹除历史。
+对安全关键设备另设硬件互锁、紧急停止和独立授权；通用 VM 不承担实时安全控制保证。
+
+### 21.3 崩溃推演
+
+| 崩溃位置 | 恢复动作 | 不变量 |
+|---|---|---|
+| 产物已写、Commit 未写 | 重算或复用已验证对象；延后回收孤儿 | 不产生虚假成功 |
+| Commit 已写、响应丢失 | 按 command_id 返回原 Commit | 不重复应用状态 |
+| Intent 已写、尚未投递 | outbox 恢复投递 | 不丢命令 |
+| 外部效果完成、receipt 丢失 | 查询 Provider 或进入 UNKNOWN | 不盲目重放副作用 |
+| 子机器成功、父机器未消费 | 重投结果通知，父级 inbox 去重 | 子成功事实不撤销 |
+| lease 过期、旧 worker 返回 | 拒绝旧 epoch 的提交并核对效果 | 不覆盖新 owner 状态 |
+
+## 22. 结构化并发、流和预算守恒
+
+父级必须声明子任务完成策略：all、quorum、first-success 或允许部分结果。
+first-success 不能默认安全地用于非幂等效果任务；失败分支也必须核对残留副作用。
+父级完成前必须 join、取消并确认，或显式移交子任务监督权。
+设置独立 reconciliation 状态，不能把“取消已请求”显示成“外部任务已终止”。
+等待图必须支持循环检测或有界 deadline；取消和资源清理有保留执行配额。
+数据流使用 bounded channel、credit/backpressure、分区 offset 和明确的消费确认点。
+流式模型 token 默认是临时观察；最终消息作为语义输入提交。若要据部分输出决策，必须持久化对应片段边界。
+fanout 不得复制父级全部额度；采用 reserve、consume、release，并对并发预留事务校验。
+外部计费不可强制精准截断时，预算区分 hard enforceable 与 estimated，并预留最坏风险。
+调度支持租户公平、数据局部性、deadline 和重试上限；禁止无限重试耗尽全局资源。
+
+## 23. Replay、Fork 与研究有效性
+
+### 23.1 四种操作不能混称 replay
+
+| 模式 | 读取什么 | 是否产生外部效果 |
+|---|---|---|
+| Reconstruct | Commit 与状态增量 | 否 |
+| Verify | 锁定程序和录制输入，重算并比对 | 否 |
+| Re-execute | 原始配置与新的真实执行 | 可能；创建新 Run |
+| Fork | 指定历史边界与显式变更 | 默认隔离；需重新授予能力 |
+
+随机数、时钟、模型输出、检索结果、并发 winner 和环境观察都是潜在非确定输入。
+记录这些输入或声明无法重算；随机种子本身不保证 GPU 与外部模型确定性。
+跨机器 checkpoint 是记录通道 offset、in-flight 消息与子状态引用的一致性切面，不是随便拼几个最新快照。
+Fork 必须创建新身份、预算和外部幂等命名空间；记录与源 Run 的派生关系。
+Memory 分叉使用固定版本或 copy-on-write；真实设备分叉不得假装克隆物理世界。
+训练集、测试集、检索快照、评估器版本、单位、样本身份和数据排除规则纳入研究锁文件。
+科学复现另需统计设计和独立验证，不能因 journal 完整就标为“科学结论成立”。
+执行成功、证据完整、统计有效、可复现是独立状态维度，不压成一个 success 布尔值。
+评估过程可作为独立 Machine 生成证据，方法作者不能自行把未经验证的结果标成已验证。
+
+## 24. 存储、隐私与安全不是 VM 的附属功能
+
+Journal 记录必要控制事实及引用；大型数据、prompt、模型回复进入受访问控制的产物域。
+同租户可按策略去重；不默认跨租户按内容去重，避免存在性与大小侧信道。
+hash 保证内容一致性，不证明来源真实、执行正确或科学有效。
+加密、签名、访问控制与 provenance 分别解决不同问题；秘密不得明文写入 journal。
+不可变语义历史不意味着敏感内容永久保留；支持保留期限、删除、撤回和密钥销毁策略。
+删除后记录 availability/replay degraded，不声称仍能完整重放；受限元数据也需纳入治理。
+GC 以活跃 Run、固定快照、发布结果和导出包为根，配合在途写入保护和保留窗口。
+inspect 分为 durable semantic view 与 volatile runtime view，两者都显示 revision 或观测时间。
+不可信插件必须在进程、容器或其他经过验证的沙箱中执行；Python Protocol 和 manifest 不是安全边界。
+权限委派只允许收窄，句柄绑定主体、Run、资源与有效期；实际调用时重新验证撤销状态。
+
+## 25. 编译、程序身份与开发者体验
+
+研究者使用 Method、Study、Dataset、Evaluator 等领域对象；不要求先学习 Kernel 与 NIR。
+SDK、Notebook、CLI 都编译到同一 Program 和调用协议；nsh 是投影而非独立事实来源。
+编译流水线：领域定义 -> 类型化领域 IR -> 验证 -> 控制执行计划 -> ProgramLock。
+NIR envelope 只是封装，不足以称为完整 IR；正式 IR 需要类型、控制流、效果、source map 和版本规则。
+ProgramLock 固定代码包、依赖闭包、schema、解释器、数据快照与配置，不能只 hash 函数源码。
+静态检查包括类型匹配、能力声明、效果等级、可恢复边界和有界性声明。
+动态脚本的终止性通常无法静态保证，必须有运行时预算；不声称编译器能证明任意 Python 程序安全。
+纯计算可融合或向量化以降低开销，但保留逻辑来源映射；不可跨效果或持久等待边界随意重排。
+断点、single-step、状态 diff、因果 trace 和历史 fork 均基于相同协议。
+发布包附带运行配置、证据索引、schema 与所需解释器说明；不可获得的外部数据明确标注。
+旧 API 不兼容不等于旧证据失去解释器；历史解码器以只读隔离包保存，不污染新运行 API。
+
+## 26. 一百多个系统的审计规则：不按名字发明 VM
+
+以下是归类验收规则，不是已完成的逐系统映射。只有读取实际 catalog 与实现后才能产出完整清单。
+每项记录 system_id、源码位置、领域职责、状态 owner、写入入口、事务边界、效果、恢复模式和删除/合并决定。
+service 可以拥有持久状态；区分“提供服务”和“解释程序”，不能用是否有状态作唯一 VM 判据。
+跨系统事务需求必须显式暴露：若总要同步提交，优先合并同一 authority；否则采用已定义的消息协议。
+同一语义状态只设一个 owner；SQL 表、缓存、索引和 UI 不能各自宣称为原始事实。
+不为每个类或模块创建进程；逻辑边界、故障边界、部署边界独立决策。
+先按所有权合并重复系统，再决定哪些领域值得专用 Program；拒绝一系统一 VM 的机械转换。
+
+## 27. 以可执行验收定义“最强”
+
+### 27.1 必须通过的模型与性质测试
+
+| 性质 | 验证方式 |
+|---|---|
+| 同 revision 只有一个 Commit 被接受 | 并发 CAS、网络分区和 fencing 历史检查 |
+| 已确认提交恢复后仍存在 | 每个持久化边界断电/进程 kill 注入 |
+| 恢复状态等于连续执行状态 | Snapshot + tail 与完整历史的差分测试 |
+| 逻辑命令重复不重复消费输入 | 重复投递、响应丢失、乱序组合测试 |
+| UNKNOWN 不自动变成 confirmed | Provider 超时及查询失败注入 |
+| 父级无遗留无人监管任务 | 取消、worker 丢失与监督权转移测试 |
+| 子任务不突破父级预算与权限 | 并发预留、嵌套委派及恶意插件测试 |
+| Fork 不意外污染源 Memory/设备 | 隔离和效果授权测试 |
+| SDK/worker 实现语义一致 | 跨实现 golden history 与 ABI conformance suite |
+
+用小状态空间模型检查提交、租约、outbox/inbox 与取消协议；模型假设必须与实际存储实现对应。
+基准矩阵覆盖短计算、长 Agent、百万 trial、流式环境和大产物，报告吞吐、P99、恢复时间、写放大与存储成本。
+性能目标在测量前登记，不编造“零开销”“无限扩展”；优化不得跳过权威提交和效果核对。
+通过条件必须包含 safety 与 liveness：既不产生错误事实，也能在规定依赖恢复后继续推进。
+离线本地模式、单机服务、分布式 worker 运行同一套语义测试；部署能力差异明确暴露。
+所有新增 VM、Provider 和存储后端必须随附故障模型与 conformance 结果，不能只靠 happy-path 单测。
+
+### 27.2 最终收敛
+
+终局不是六层 VM 的固定堆叠，而是小型提交内核承载可组合的领域程序。
+Research Run 聚合执行责任；Machine 私有状态和 revision 定义并发边界。
+Commit 定义已接受事实；EffectIntent/Receipt 定义现实世界不确定性。
+监督树管理生命与预算；数据图管理计算；证据图管理可追溯结论。
+领域 SDK 隐藏基础设施复杂性，但不能隐藏副作用未知、证据缺失和无法复现。
+下一阶段先完成全量系统所有权矩阵和提交协议可执行模型，再据此重写实现。
+不新增兼容壳，不复制状态权威，不以更响亮的 VM 名称替代可验证的协议。
