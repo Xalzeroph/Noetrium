@@ -1635,3 +1635,18 @@ ownership 中心。四者互相引用摘要和证据，但任何一个都不越�
   unclassified + audit_required，没有从名称或猜测补齐；
 - 本轮新增资格测试：15 passed。生产级 consensus、mTLS/KMS、OS sandbox、容器/VM 隔离
   仍是待接入 typed composition/provider port 的外部资格项，不在本轮伪装为已实现。
+
+## 54. R11：分支审阅与 main 收敛记录
+
+本节只追加审阅记录，不改写历史 R7、R8、R9 或 R10 内容。
+
+- GitHub 远端经实际 refs 查询当前只存在 `main`；node1 仅发现已发布的
+  `noetrium-runtime/releases/*` 快照，node2 未发现 Noetrium Git 工作树，二者均没有
+  可安全作为额外分支合并的仓库来源。
+- 对远端 `main` 相对当前实现的全部提交逐项检查后，吸收结构化 model tool calls、
+  qualified binding 诊断细节、持久化 release authority 复核及其测试；这些功能与现有
+  typed contracts 和 provider ports 相容。
+- 旧 single-agent harness、重复 public facade、旧 component registration 及其大规模
+  生成 schema 重写未恢复：它们与 MachineRuntime 唯一 authority、system catalog 唯一
+  topology 和禁止重复 facade 的约束冲突，且当前实现已有对应的收敛路径。
+- 最终本地分支将记录为 `main`，保留审阅后的当前工作树；本轮不执行 push。
