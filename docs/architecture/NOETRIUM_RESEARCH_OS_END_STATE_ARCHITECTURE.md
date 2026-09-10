@@ -1421,3 +1421,22 @@ Research record 核心表达结果、来源与引用；不强迫全部研究采�
 本轮新增的 ABI、Runtime、Snapshot、Outbox/Inbox 和 Method adapter 测试全部通过；全仓回归中新增路径通过。全仓仍存在与本次改动无关的 Windows 环境差异：产品入口测试要求未安装的 noetrium 模块，公共 shell 测试硬编码 Unix /bin/sh；这两项不能被解释为 Kernel 或 Machine 实现回归。
 
 实现约束已经固定：不允许领域解释器直接写 Journal；不允许 Provider 成为事实权威；不允许 UI、索引或图谱服务进入提交临界路径；不允许把 unknown effect 伪装成 succeeded；不允许用 Snapshot 取代提交链。
+
+## 49. R6 领域注册与研究记录闭环实现
+
+> Revision: R6 / 2026-09-10。仅追加；此前章节保持原样。
+
+本轮将 R3/R4 中的“领域 VM 复用公共内核、研究记录独立于运行事实”落为代码：
+
+1. MachineFamilyDescriptor 与 MachineFamilyRegistry 描述 VM 家族的状态 schema、命令集合、所需能力和提供能力；它不拥有系统拓扑，catalog.json 仍是拓扑唯一权威。
+2. MachineRuntime 可绑定一个家族描述，在解释器执行前拒绝未准入的 command kind，并验证 MachineIdentity 与家族 kind 一致。
+3. ResearchRunRecord 只引用 Run 的 head commit、Program、Binding 和 Result digest；不复制运行状态。
+4. ComparisonRecord 固定至少两个 Run、Evaluator digest、结果 digest 和比较状态；Comparison 不修改任何 Run。
+5. ForkRecord 强制新的 Run identity、明确 source commit、change digest 和 isolation policy；不允许把源 Run 伪装成新 Run。
+6. ResearchPackage 将定义、Run、Comparison、Fork 和依赖 digest 组合为可交换快照，导出与导入均经过规范编码和整体完整性校验。
+
+因此，研究闭环现在具有明确的事实方向：
+
+Definition / Binding → Run Commit → Result Record → Evaluation / Comparison → Fork / 下一轮决策。
+
+研究图谱仍是这些对象的关系视图，不进入 Machine 提交临界路径；Evaluation 只能解释已引用的结果，不能反写运行事实。下一阶段的领域工作应以这些协议为接入门槛，直接实现 Run、Agent、Memory、Environment、Evaluation 的语义解释器，不再新增第二套提交协议。

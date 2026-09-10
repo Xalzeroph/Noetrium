@@ -12,6 +12,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     InMemoryMachineOutbox,
     InMemoryMachineSnapshotStore,
     MachineCommand,
+    MachineFamilyDescriptor,
     MachineConflict,
     MachineIdentity,
     MachineKind,
@@ -61,6 +62,13 @@ def make_runtime(journal, snapshot_store=None, outbox=None):
         journal=journal,
         snapshot_store=snapshot_store,
         outbox=outbox,
+        family=MachineFamilyDescriptor(
+            family_id="run.increment.v1",
+            kind=MachineKind.RUN,
+            implementation_version="1",
+            state_schema="run.state.v1",
+            command_kinds=("increment",),
+        ),
     )
 
 
@@ -124,3 +132,20 @@ def test_runtime_reconciles_outbox_and_inbox_deduplicates() -> None:
     outbox.mark(receipt)
     assert outbox.pending() == ()
     assert first.emitted_commands[0].command_id == pending[0].command.command_id
+
+
+def test_runtime_rejects_command_outside_family_contract() -> None:
+    runtime = make_runtime(InMemoryMachineJournal())
+    runtime.open({"count": 0})
+    with pytest.raises(MachineConflict):
+        runtime.step(
+            MachineCommand(
+                command_id="wrong-kind",
+                machine_id="run-1",
+                expected_revision=0,
+                kind="stop",
+                payload=None,
+                scope=("run:run-1",),
+            ),
+            IncrementInterpreter(),
+        )

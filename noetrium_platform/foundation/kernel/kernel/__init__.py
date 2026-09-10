@@ -4,6 +4,7 @@ from .delivery import (
     DeliveryReceipt, DeliveryStatus, InMemoryMachineInbox, InMemoryMachineOutbox,
     MachineEnvelope, MachineInboxPort, MachineOutboxPort,
 )
+from .family import InMemoryMachineFamilyRegistry, MachineFamilyDescriptor, MachineFamilyRegistryPort
 from .identity import (
     ComponentIdentity,
     ImmutableModelIdentity,
@@ -63,6 +64,7 @@ __all__ = [
     "ExecutionContext", "ComponentIdentity", "ImmutableModelIdentity",
     "DeliveryReceipt", "DeliveryStatus", "InMemoryMachineInbox", "InMemoryMachineOutbox",
     "MachineEnvelope", "MachineInboxPort", "MachineOutboxPort",
+    "InMemoryMachineFamilyRegistry", "MachineFamilyDescriptor", "MachineFamilyRegistryPort",
     "EffectCertainty", "EffectClass", "EffectReceipt", "OperationAuxiliaryFailure",
     "OperationRequest", "OperationResult", "OperationStatus",
     "new_operation_invocation_id",

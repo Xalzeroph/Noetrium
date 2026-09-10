@@ -12,6 +12,7 @@ from typing import Protocol, runtime_checkable
 
 from .canonical import canonical_digest, thaw_json
 from .delivery import MachineEnvelope, MachineOutboxPort
+from .family import MachineFamilyDescriptor
 from .journal import MachineJournalPort
 from .json_value import JsonObject
 from .snapshot import MachineSnapshotStorePort
@@ -57,6 +58,7 @@ class MachineRuntime:
         journal: MachineJournalPort,
         snapshot_store: MachineSnapshotStorePort | None = None,
         outbox: MachineOutboxPort | None = None,
+        family: MachineFamilyDescriptor | None = None,
     ) -> None:
         self.identity = identity
         self.program = program
@@ -65,8 +67,13 @@ class MachineRuntime:
             raise TypeError("snapshot_store must implement MachineSnapshotStorePort")
         if outbox is not None and not isinstance(outbox, MachineOutboxPort):
             raise TypeError("outbox must implement MachineOutboxPort")
+        if family is not None and not isinstance(family, MachineFamilyDescriptor):
+            raise TypeError("family must be MachineFamilyDescriptor")
+        if family is not None and family.kind is not identity.kind:
+            raise ValueError("machine family kind must match machine identity kind")
         self.snapshot_store = snapshot_store
         self.outbox = outbox
+        self.family = family
         self._lock = RLock()
         self._snapshot: MachineSnapshot | None = None
         self._status = MachineStatus.READY
@@ -187,6 +194,8 @@ class MachineRuntime:
             raise TypeError("interpreter must implement MachineInterpreterPort")
         if command.machine_id != self.machine_id:
             raise MachineConflict("command belongs to a different machine")
+        if self.family is not None and self.family.command_kinds and command.kind not in self.family.command_kinds:
+            raise MachineConflict(f"command kind is not admitted by machine family: {command.kind}")
         with self._lock:
             existing = self._existing_command(command)
             if existing is not None:
