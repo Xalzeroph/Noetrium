@@ -2135,6 +2135,8 @@
           "module": "noetrium_platform.research.execution.workflow.api",
           "source": "noetrium_platform/research/execution/workflow/api/__init__.py",
           "symbols": [
+            "MethodGraphProgramAdapter",
+            "ResearchMethodProgramAdapter",
             "EffectIntentOperationPort",
             "OperationDispatchPort",
             "OperationExecutionPort",
@@ -2153,7 +2155,43 @@
             "WorkflowSurfaceFactory",
             "WorkflowSurfaceReuseScope",
             "workflow_surface_id",
-            "workflow_surface_reuse_scope"
+            "workflow_surface_reuse_scope",
+            "AsyncMethodAgentLoopPort",
+            "AsyncOperationDispatchPort",
+            "METHOD_AGENT_CHECKPOINTS_STATE_KEY",
+            "MethodAgentLoopPort",
+            "MethodAgentRequest",
+            "MethodAgentResult",
+            "MethodCheckpoint",
+            "MethodCheckpointStorePort",
+            "MethodEvidenceStatus",
+            "MethodEvidenceValidationPort",
+            "MethodExecutionClass",
+            "MethodEvidencePort",
+            "MethodEvent",
+            "MethodGraph",
+            "MethodInterrupt",
+            "MethodMachinePort",
+            "MethodNodeHandler",
+            "MethodNodeKind",
+            "MethodNodeRequest",
+            "MethodNodeResult",
+            "MethodNodeSpec",
+            "MethodObservationPort",
+            "MethodProgram",
+            "MethodProgramBuilder",
+            "MethodRunResult",
+            "MethodRunStatus",
+            "MethodRuntimeContext",
+            "MethodSchemaPort"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.workflow.api.adapters",
+          "source": "noetrium_platform/research/execution/workflow/api/adapters.py",
+          "symbols": [
+            "MethodGraphProgramAdapter",
+            "ResearchMethodProgramAdapter"
           ]
         },
         {
@@ -2185,6 +2223,40 @@
             "WorkflowGraph",
             "WorkflowGraphError",
             "WorkflowStep"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.workflow.api.method_machine",
+          "source": "noetrium_platform/research/execution/workflow/api/method_machine.py",
+          "symbols": [
+            "AsyncMethodAgentLoopPort",
+            "AsyncOperationDispatchPort",
+            "MethodAgentLoopPort",
+            "MethodAgentRequest",
+            "MethodAgentResult",
+            "METHOD_AGENT_CHECKPOINTS_STATE_KEY",
+            "MethodCheckpoint",
+            "MethodCheckpointStorePort",
+            "MethodEvidencePort",
+            "MethodEvidenceStatus",
+            "MethodEvidenceValidationPort",
+            "MethodEvent",
+            "MethodExecutionClass",
+            "MethodGraph",
+            "MethodInterrupt",
+            "MethodNodeHandler",
+            "MethodNodeKind",
+            "MethodNodeRequest",
+            "MethodNodeResult",
+            "MethodNodeSpec",
+            "MethodObservationPort",
+            "MethodProgram",
+            "MethodProgramBuilder",
+            "MethodRunResult",
+            "MethodMachinePort",
+            "MethodRunStatus",
+            "MethodRuntimeContext",
+            "MethodSchemaPort"
           ]
         },
         {
@@ -2222,12 +2294,19 @@
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__workflow",
       "must_not_own": "process supervision",
-      "owns": "workflow definitions and orchestration semantics",
+      "owns": "workflow definitions, universal method-machine orchestration, and resumable control semantics",
       "package_prefix": "noetrium_platform.research.execution.workflow",
       "provides": [
-        "workflow.runtime"
+        "workflow.runtime",
+        "method.machine",
+        "method.abi",
+        "method.checkpoint"
       ],
-      "requires": [],
+      "requires": [
+        "participant/capability",
+        "participant/method",
+        "platform"
+      ],
       "system_key": "execution/workflow"
     },
     {
@@ -9198,5 +9277,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "c07bdb0976a71d3a2c6102013101a02aa39f61abaa0c4a8104fb0cfc7daa24e7"
+  "topology_digest": "2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603"
 }
