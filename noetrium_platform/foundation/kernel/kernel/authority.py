@@ -155,16 +155,31 @@ class DirectoryMachineAuthority(InMemoryMachineAuthority):
         path = self._path(machine_id)
         if not path.exists():
             return None
-        raw = strict_json_loads(path.read_bytes())
+        encoded = path.read_bytes()
+        try:
+            raw = strict_json_loads(encoded)
+        except ValueError as exc:
+            raise MachineAuthorityError("machine authority document is invalid") from exc
         if not isinstance(raw, dict):
             raise MachineAuthorityError("machine authority document must be an object")
+        expected_fields = {
+            "machine_id", "owner_id", "epoch", "acquired_at", "expires_at",
+            "released", "lease_digest",
+        }
+        if set(raw) != expected_fields:
+            raise MachineAuthorityError("machine authority document fields are invalid")
         try:
-            return MachineLease(
+            lease = MachineLease(
                 raw["machine_id"], raw["owner_id"], raw["epoch"],
-                raw["acquired_at"], raw["expires_at"], raw.get("released", False),
+                raw["acquired_at"], raw["expires_at"], raw["released"],
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise MachineAuthorityError("machine authority document is invalid") from exc
+        if raw["lease_digest"] != lease.lease_digest:
+            raise MachineAuthorityError("machine authority document digest mismatch")
+        if canonical_bytes(raw) != encoded:
+            raise MachineAuthorityError("machine authority document is not canonical")
+        return lease
 
     @staticmethod
     def _encode(lease: MachineLease) -> bytes:

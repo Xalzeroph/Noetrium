@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import ast
+import json
 from pathlib import Path
 import sys
 
@@ -12,12 +14,92 @@ from noetrium_platform.foundation.governance.architecture.ownership_matrix impor
     build_ownership_matrix,
     load_catalog,
 )
+from noetrium_platform.foundation.governance.architecture.public_api_invariants import (
+    audit_registered_public_facades,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     MachineConformanceHarness,
     MachineRuntime,
     NshCompiler,
     WorkerAdmission,
 )
+from noetrium_platform.research.execution.machines.reference import (
+    reference_machine_families,
+)
+
+
+def _check_machine_families() -> int:
+    families = reference_machine_families()
+    if not families:
+        raise SystemExit("no executable machine family descriptors are registered")
+    family_ids = [family.family_id for family in families]
+    kinds = [family.kind for family in families]
+    if len(set(family_ids)) != len(family_ids):
+        raise SystemExit("machine family ids are duplicated")
+    if len(set(kinds)) != len(kinds):
+        raise SystemExit("machine family kinds have duplicate implementations")
+    for family in families:
+        if not family.implementation_version.strip():
+            raise SystemExit(f"machine family lacks implementation version: {family.family_id}")
+        if not family.state_schema.strip():
+            raise SystemExit(f"machine family lacks state schema: {family.family_id}")
+    return len(families)
+
+
+def _check_public_facades() -> int:
+    violations = audit_registered_public_facades(ROOT)
+    if violations:
+        detail = "; ".join(f"{row.path}:{row.line} {row.detail}" for row in violations)
+        raise SystemExit(f"public facade exposes duplicate authority/concrete layer: {detail}")
+    return 0
+
+
+def _check_worker_boundaries() -> int:
+    forbidden_modules = ("journal", "outbox", "effect_intent")
+    forbidden_calls = {
+        "save", "enqueue", "record_result", "record_reconciled",
+        "record_consumed", "record_not_applied",
+    }
+    violations: list[str] = []
+    for path in sorted(ROOT.rglob("*worker*.py")):
+        if "tests" in path.parts or "__pycache__" in path.parts:
+            continue
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except SyntaxError as exc:
+            violations.append(f"{path}: syntax error: {exc}")
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                module = node.module or ""
+                if any(token in module.lower() for token in forbidden_modules):
+                    violations.append(f"{path}:{node.lineno} imports {module}")
+                if any(alias.name.lower() in forbidden_modules for alias in node.names):
+                    violations.append(f"{path}:{node.lineno} imports a forbidden authority")
+            elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                if node.func.attr in forbidden_calls:
+                    violations.append(f"{path}:{node.lineno} calls {node.func.attr}()")
+    if violations:
+        raise SystemExit("worker direct fact-write boundary violated: " + "; ".join(violations))
+    return sum(
+        1 for path in ROOT.rglob("*worker*.py")
+        if "tests" not in path.parts and "__pycache__" not in path.parts
+    )
+
+
+def _check_document(doc_path: Path) -> None:
+    document = doc_path.read_text(encoding="utf-8")
+    required = (
+        "## 51. R8",
+        "## 52. R9",
+        "MachineRuntime",
+        "EffectIntentJournal",
+        "UNKNOWN",
+        "Ownership Matrix",
+    )
+    missing = [marker for marker in required if marker not in document]
+    if missing:
+        raise SystemExit("architecture document/code state mismatch: " + ", ".join(missing))
 
 
 def main() -> int:
@@ -33,16 +115,23 @@ def main() -> int:
     stored = load_catalog(matrix_path)
     if stored.get("matrix_digest") != matrix.matrix_digest:
         raise SystemExit("ownership matrix digest drift; regenerate the derived matrix")
-    if "## 52. R9" not in doc_path.read_text(encoding="utf-8"):
-        raise SystemExit("architecture document is missing the final R9 gate")
     if args.strict_unclassified and any(row.audit_required for row in matrix.rows):
         raise SystemExit("ownership matrix contains explicitly unclassified fields")
-    print({
+    _check_document(doc_path)
+    family_count = _check_machine_families()
+    facade_count = _check_public_facades()
+    worker_count = _check_worker_boundaries()
+    print(json.dumps({
         "systems": len(matrix.rows),
         "matrix_digest": matrix.matrix_digest,
         "unclassified_rows": sum(bool(row.audit_required) for row in matrix.rows),
-        "kernel_exports": all((MachineRuntime, MachineConformanceHarness, NshCompiler, WorkerAdmission)),
-    })
+        "machine_families": family_count,
+        "facade_violations": facade_count,
+        "worker_modules_checked": worker_count,
+        "kernel_exports": all(callable(value) for value in (
+            MachineRuntime, MachineConformanceHarness, NshCompiler, WorkerAdmission,
+        )),
+    }, sort_keys=True))
     return 0
 
 

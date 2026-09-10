@@ -1616,3 +1616,22 @@ checkpoint_scope、effect_policy、replay_level、public_abi 和 audit_required�
 这版架构的中心已经明确：Machine Kernel 是状态与事实提交中心；ProgramLock 是可运行
 程序身份中心；EffectIntentJournal 是外部副作用事实中心；system catalog 是拓扑与
 ownership 中心。四者互相引用摘要和证据，但任何一个都不越权成为另一个的替代品。
+
+## 53. R10：闭环资格补强记录
+
+本节只追加本轮实现状态，不改写 R7、R8 或 R9 的历史内容。
+
+- DirectoryMachineAuthority 以单一跨进程 guard 和 atomic replace 发布 lease，并校验
+  字段集合、canonical bytes、lease_digest；损坏记录拒绝恢复，旧 epoch 不能继续持有 authority；
+- EffectReconciliationService 对 UNKNOWN 保持未决，不自动转为成功或重试；request_digest
+  必须与 intent 绑定，NOT_APPLIED 必须由 NO_EFFECT 证据支撑，RECONCILED 重启后只读返回；
+- worker 资格测试覆盖 replay、错误签名、越权 scope、错误 program_digest 和过期 proposal；
+  worker 仍只产生 candidate，MachineRuntime 才能提交 journal fact；
+- nsh 资格测试通过真实 python -m noetrium nsh compile/verify subprocess，product CLI
+  入口保持独立；
+- architecture gate 现在执行 catalog/matrix digest、machine family 元数据、公共 facade、
+  worker 写权限边界和 R8/R9 文档状态检查；
+- ownership matrix 继续严格由 catalog 派生。当前 172 个系统的未声明字段保持
+  unclassified + audit_required，没有从名称或猜测补齐；
+- 本轮新增资格测试：15 passed。生产级 consensus、mTLS/KMS、OS sandbox、容器/VM 隔离
+  仍是待接入 typed composition/provider port 的外部资格项，不在本轮伪装为已实现。

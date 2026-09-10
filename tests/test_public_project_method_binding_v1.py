@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 
 from noetrium.contracts.systems.participant__method import (
     MethodIdentity,
@@ -39,9 +40,15 @@ def test_method_endpoint_is_bound_through_public_facade() -> None:
 
 
 def test_local_shell_command_returns_typed_result() -> None:
-    result = run_local_shell_command("printf public-facade", timeout_seconds=5)
+    if os.name == "nt":
+        command = "echo public-facade"
+        expected_prefix = (os.environ.get("COMSPEC", "cmd.exe"), "/d", "/s", "/c")
+    else:
+        command = "printf public-facade"
+        expected_prefix = ("/bin/sh", "-lc")
+    result = run_local_shell_command(command, timeout_seconds=5)
 
-    assert result.argv == ("/bin/sh", "-lc", "printf public-facade")
+    assert result.argv == (*expected_prefix, command)
     assert result.returncode == 0
-    assert result.stdout == "public-facade"
+    assert result.stdout.strip() == "public-facade"
     assert result.stderr == ""

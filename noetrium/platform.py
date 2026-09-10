@@ -6,6 +6,7 @@ from collections.abc import Callable, Mapping
 from importlib import resources
 from pathlib import Path
 import math
+import os
 import time
 import shutil
 import subprocess
@@ -329,10 +330,14 @@ def run_local_shell_command(
         raise ValueError("local shell command must be non-empty")
     if not math.isfinite(float(timeout_seconds)) or timeout_seconds <= 0:
         raise ValueError("local shell command timeout must be finite and positive")
+    if os.name == "nt":
+        shell_path = os.environ.get("COMSPEC", "cmd.exe")
+        argv = (shell_path, "/d", "/s", "/c", command)
+    else:
+        argv = ("/bin/sh", "-lc", command)
     try:
         completed = subprocess.run(
-            command,
-            shell=True,
+            argv,
             text=True,
             capture_output=True,
             timeout=float(timeout_seconds),
@@ -347,7 +352,7 @@ def run_local_shell_command(
             "local-shell-command", "could not start process"
         ) from exc
     return LocalCommandResult(
-        argv=("/bin/sh", "-lc", command),
+        argv=argv,
         returncode=int(completed.returncode),
         stdout=completed.stdout or "",
         stderr=completed.stderr or "",

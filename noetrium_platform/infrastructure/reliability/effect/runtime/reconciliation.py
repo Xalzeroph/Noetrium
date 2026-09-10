@@ -56,19 +56,38 @@ class EffectReconciliationService:
         if current is None:
             raise EffectRecoveryRequired(f"effect intent does not exist: {intent_id}")
         if current.phase is EffectIntentPhase.CONSUMED:
-            return EffectReconciliationResult(
-                intent_id, EffectReconciliationDisposition.APPLIED, current, False
+            disposition = (
+                EffectReconciliationDisposition.REJECTED
+                if current.effect is not None
+                and current.effect.certainty is EffectCertainty.EFFECT_REJECTED
+                else EffectReconciliationDisposition.APPLIED
             )
+            return EffectReconciliationResult(intent_id, disposition, current, False)
         if current.phase is EffectIntentPhase.NOT_APPLIED:
             return EffectReconciliationResult(
                 intent_id, EffectReconciliationDisposition.NOT_APPLIED, current, False
             )
+        if current.phase is EffectIntentPhase.RECONCILED:
+            if current.effect is None:
+                raise EffectRecoveryRequired(
+                    f"reconciled effect lacks a receipt: {intent_id}"
+                )
+            disposition = (
+                EffectReconciliationDisposition.REJECTED
+                if current.effect.certainty is EffectCertainty.EFFECT_REJECTED
+                else EffectReconciliationDisposition.APPLIED
+            )
+            return EffectReconciliationResult(intent_id, disposition, current, False)
         proof = self.provider.reconcile(current.intent, current)
         if proof.request_id != current.intent.request_id:
             raise EffectRecoveryRequired("reconciliation proof request identity mismatch")
         if proof.disposition is EffectReconciliationDisposition.UNKNOWN:
-            raise EffectRecoveryRequired(
-                f"effect remains UNKNOWN and needs authoritative follow-up: {intent_id}"
+            if proof.effect is not None:
+                raise EffectRecoveryRequired(
+                    f"UNKNOWN reconciliation cannot carry an effect receipt: {intent_id}"
+                )
+            return EffectReconciliationResult(
+                intent_id, EffectReconciliationDisposition.UNKNOWN, current, False
             )
         effect = proof.effect
         if effect is None:
