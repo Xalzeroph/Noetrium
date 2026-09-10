@@ -37,11 +37,26 @@ minecraft_doctor() {
   npm --version
   local bridge="${MC_BRIDGE_DIR:-$PACKAGE_ROOT/environment/minecraft/providers/assets/mineflayer_bridge}"
   test -f "$bridge/package.json" || die "missing Mineflayer bridge package.json"
+  echo "minecraft_bridge_root=$bridge"
   MC_BRIDGE_DIR="$bridge" node - <<'JS'
-const path = process.env.MC_BRIDGE_DIR
+const fs = require('fs')
+const path = require('path')
+const bridge = process.env.MC_BRIDGE_DIR
+function packageInfo(name) {
+  const entry = require.resolve(name, { paths: [bridge] })
+  let directory = path.dirname(entry)
+  while (directory.startsWith(bridge) && directory !== path.dirname(bridge)) {
+    const manifest = path.join(directory, 'package.json')
+    if (fs.existsSync(manifest)) {
+      return { version: JSON.parse(fs.readFileSync(manifest, 'utf8')).version, entry }
+    }
+    directory = path.dirname(directory)
+  }
+  throw new Error(`package manifest not found for ${name}: entry=${entry}`)
+}
 for (const name of ['mineflayer', 'mineflayer-pathfinder', 'mineflayer-pvp', 'vec3']) {
-  const pkg = require(`${path}/node_modules/${name}/package.json`)
-  console.log(`${name}=${pkg.version}`)
+  const info = packageInfo(name)
+  console.log(`${name}=${info.version} entry=${info.entry}`)
 }
 JS
   local data_dir="${MC_DATA_DIR:-/var/lib/minecraft}"

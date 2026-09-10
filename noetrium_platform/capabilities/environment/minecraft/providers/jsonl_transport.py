@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import dataclass
 import json
+import os
 from pathlib import Path
 import queue
 import subprocess
@@ -229,6 +230,17 @@ class JsonlProcessTransport:
         }
         if self._operating_system.is_windows:
             process_options["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        process_environment = os.environ.copy()
+        bridge_root = process_environment.get("MC_BRIDGE_DIR", "").strip()
+        if bridge_root:
+            node_modules = Path(bridge_root) / "node_modules"
+            if node_modules.is_dir():
+                node_path = [str(node_modules)]
+                existing_node_path = process_environment.get("NODE_PATH", "").strip()
+                if existing_node_path:
+                    node_path.append(existing_node_path)
+                process_environment["NODE_PATH"] = os.pathsep.join(node_path)
+        process_options["env"] = process_environment
         self._process = self._process_factory(list(self.spec.command), **process_options)
         self._stdout_task = self._task_group.submit(
             ExecutionSpec(
@@ -324,6 +336,11 @@ class JsonlProcessTransport:
                 code="BRIDGE_INVALID_JSON",
                 message=detail,
                 exception=exc,
+                attributes={
+                    "raw_line": line[:512],
+                    "raw_line_truncated": len(line) > 512,
+                    "stderr_tail": self.stderr_tail_text(),
+                },
             )
             raise MinecraftBridgeError("decode", "BRIDGE_INVALID_JSON", detail) from exc
         if not isinstance(value, Mapping):

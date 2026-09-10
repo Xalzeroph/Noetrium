@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from importlib import resources
+import os
 from pathlib import Path
 import math
 import time
@@ -623,16 +624,20 @@ def bind_bundled_minecraft_environment(
 ) -> MinecraftEnvironmentBinding:
     """Bind Noetrium's packaged Mineflayer bridge without exposing provider paths."""
 
-    bridge_root = Path(
-        str(
-            resources.files("noetrium_platform.capabilities.environment.minecraft.providers")
-            .joinpath("assets")
-            .joinpath("mineflayer_bridge")
-        )
-    ).resolve()
+    configured_bridge_root = os.environ.get("MC_BRIDGE_DIR", "").strip()
+    if configured_bridge_root:
+        bridge_root = Path(configured_bridge_root).expanduser().resolve()
+    else:
+        bridge_root = Path(
+            str(
+                resources.files("noetrium_platform.capabilities.environment.minecraft.providers")
+                .joinpath("assets")
+                .joinpath("mineflayer_bridge")
+            )
+        ).resolve()
     bridge_script = bridge_root / "bridge.js"
     if not bridge_script.is_file():
-        raise RuntimeError("Noetrium bundled Minecraft bridge asset is unavailable")
+        raise RuntimeError(f"Noetrium Minecraft bridge asset is unavailable: bridge_root={bridge_root}")
     executable = node_executable or shutil.which("node")
     if not executable:
         raise RuntimeError("Node.js executable is required for the bundled Minecraft bridge")

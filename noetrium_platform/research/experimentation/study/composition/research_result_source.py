@@ -49,6 +49,9 @@ class StudyResearchResultSource:
         self._read_port = read_port
         self._scope = scope
         self._projection_cache: OrderedDict[str, tuple[ResearchResultRecord, ...]] = OrderedDict()
+        self._snapshot_cache: OrderedDict[
+            tuple[str, ResearchResultQuery], ResearchSourceSnapshot
+        ] = OrderedDict()
         self._projection_cache_lock = RLock()
 
     @staticmethod
@@ -230,18 +233,30 @@ class StudyResearchResultSource:
             return projected
 
     def snapshot(self, query: ResearchResultQuery) -> ResearchSourceSnapshot:
-        snapshot = self._snapshot()
-        records = self._all_records(snapshot)
-        selected = (
-            records
-            if not query.kinds and not query.dimensions
-            else tuple(row for row in records if self._matches(row, query))
-        )
-        return ResearchSourceSnapshot(
-            source_id=self.source_id,
-            cut=source_cut(self.source_id, query, selected),
-            records=selected,
-        )
+        if not isinstance(query, ResearchResultQuery):
+            raise TypeError("study result source query must be ResearchResultQuery")
+        producer_snapshot = self._snapshot()
+        cache_key = (producer_snapshot.snapshot_digest, query)
+        with self._projection_cache_lock:
+            cached = self._snapshot_cache.pop(cache_key, None)
+            if cached is not None:
+                self._snapshot_cache[cache_key] = cached
+                return cached
+            records = self._all_records(producer_snapshot)
+            selected = (
+                records
+                if not query.kinds and not query.dimensions
+                else tuple(row for row in records if self._matches(row, query))
+            )
+            projected = ResearchSourceSnapshot(
+                source_id=self.source_id,
+                cut=source_cut(self.source_id, query, selected),
+                records=selected,
+            )
+            self._snapshot_cache[cache_key] = projected
+            while len(self._snapshot_cache) > 8:
+                self._snapshot_cache.popitem(last=False)
+            return projected
 
 
 __all__ = ["StudyResearchResultSource"]

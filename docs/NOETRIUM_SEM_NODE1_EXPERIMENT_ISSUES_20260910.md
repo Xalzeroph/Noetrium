@@ -325,6 +325,23 @@ noetrium experiment analyze --run-id <run-id> --partial
 - 普通用户可以完整写入结果和 world archive；
 - partial analyze 输出 claim_ready=false，正式分析绝不吸收未完成 assignment。
 
+## 7. 本轮已实际落地的 Noetrium 优化
+
+本轮在 node1 直接实现并验证了以下改进：
+
+| 改进 | 具体行为 | 验证证据 |
+|---|---|---|
+| 显式 Minecraft bridge root | public binding 读取 MC_BRIDGE_DIR；未配置时才使用 packaged asset | public binding 回归测试通过 |
+| 自动 Node 依赖路径 | JSONL transport 启动子进程时，从 MC_BRIDGE_DIR/node_modules 自动补齐 NODE_PATH，并保留已有 NODE_PATH | 新增 child environment 测试通过 |
+| bridge 诊断可定位 | invalid JSON failure 保存限长 raw_line、是否截断和 stderr_tail | transport 回归测试通过 |
+| deployment doctor 路径验证 | minecraft-doctor 使用 Node 的实际 require.resolve，并输出每个依赖的解析路径 | node1-noe-ux2-20260910 image doctor 通过，四个依赖均解析成功 |
+| timeout provenance | model admission/HTTP timeout 错误带 request_id、deployment_id、timeout_s | model endpoint 回归测试和全仓回归通过 |
+| provider diagnostic 脱敏 | model doctor 对 URL、token、api key、password、secret、authorization 等敏感片段做脱敏 | 原有 secret non-echo 测试从失败恢复 |
+| Study 结果查询缓存 | 对不可变 snapshot + query selector 缓存已验证的 source snapshot，避免并发查询重复构造和校验 | 性能测试从约 43–47 秒降至 1.85 秒 |
+| 保持 strict scientific boundary | 没有为可能已经被服务端处理的 HTTP POST 擅自自动重试；timeout 仍失败关闭并保留 provenance，避免重复推理 | 全仓测试通过；设计决策写入此处 |
+
+全仓验证结果：2752 passed、9 skipped、7 subtests passed。首次全仓运行中出现的 8 个只读文件系统失败属于测试挂载方式错误，使用可写 node1 checkout 复验后全部消失；唯一真实的 secret diagnostic 失败已修复。优化镜像 noetrium-minecraft:node1-noe-ux2-20260910 的 image id 为 sha256:8f559184c5323c27cf74c1a49a7d85bf953272df62fa3787f1483da32d6e3687，已通过 minecraft-doctor。以上优化尚未用于历史 full-v2 矩阵，该矩阵仍以原 image digest 和原 launch manifest 作为可复现失败证据。
+
 ## 7. 安全与边界声明
 
 - 本轮没有停止或重启 Qwen 服务、无关 Minecraft 服务、其他用户 Java/bridge 或其他 Docker 容器。
