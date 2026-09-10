@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 
 from noetrium_platform.capabilities.model.api.project import (
@@ -26,10 +27,22 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
 
 EndpointFactory = Callable[[QualifiedModelEndpointBinding], ModelEndpointPort]
 
+_SENSITIVE_URL = re.compile(r"https?://[^\s]+", re.IGNORECASE)
+_SENSITIVE_ASSIGNMENT = re.compile(
+    r"(?i)\b(?:token|api[_-]?key|secret|password|authorization)\s*=\s*[^\s,;]+"
+)
+_BEARER_TOKEN = re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]+")
+
 
 def _exception_detail(exc: Exception) -> str:
-    """Return a compact, actionable detail without embedding a traceback."""
+    """Return compact actionable detail with credentials and provider URLs redacted."""
     detail = " ".join(str(exc).split())
+    detail = _SENSITIVE_URL.sub("<redacted-url>", detail)
+    detail = _SENSITIVE_ASSIGNMENT.sub(
+        lambda match: match.group(0).split("=", 1)[0] + "=<redacted>",
+        detail,
+    )
+    detail = _BEARER_TOKEN.sub("Bearer <redacted>", detail)
     if not detail:
         return type(exc).__name__
     return f"{type(exc).__name__}: {detail[:512]}"
