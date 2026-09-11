@@ -209,7 +209,7 @@ def build_document(root: Path) -> dict[str, Any]:
             "facade_module": surface.facade_module,
             "api_modules": modules,
         })
-    return {
+    document = {
         "schema": SCHEMA,
         "generator": "scripts/generate_interface_schemas.py",
         "topology_digest": _digest(registry),
@@ -220,6 +220,8 @@ def build_document(root: Path) -> dict[str, Any]:
         },
         "systems": systems,
     }
+    document["interface_digest"] = _digest(document)
+    return document
 
 
 def generate(root: Path, *, check: bool = False) -> int:
@@ -236,7 +238,7 @@ def generate(root: Path, *, check: bool = False) -> int:
         "system_count": len(document["systems"]),
         "api_module_count": sum(len(row["api_modules"]) for row in document["systems"]),
         "api_symbol_count": sum(len(api["symbols"]) for row in document["systems"] for api in row["api_modules"]),
-        "catalog_digest": hashlib.sha256(expected).hexdigest(),
+        "interface_digest": hashlib.sha256(expected).hexdigest(),
         "check": check,
         "clean": clean,
     }

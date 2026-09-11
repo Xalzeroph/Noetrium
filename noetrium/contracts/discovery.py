@@ -70,10 +70,143 @@ class DownstreamCapabilityCatalog:
 def load_downstream_interface_schema() -> dict[str, Any]:
     """Load the generated schema for every public downstream interface."""
     resource = files("noetrium.contracts").joinpath("interface_schema.json")
-    document = json.loads(resource.read_text(encoding="utf-8"))
-    if not isinstance(document, dict) or document.get("schema") != "noetrium-interface-catalog.v1":
-        raise RuntimeError("invalid generated downstream interface schema")
-    return document
+    try:
+        document = json.loads(resource.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise DownstreamCatalogIntegrityError(
+            "unable to read generated downstream interface schema"
+        ) from exc
+    if not isinstance(document, dict):
+        raise DownstreamCatalogIntegrityError(
+            "generated downstream interface schema must be an object"
+        )
+    return validate_downstream_interface_schema(document)
+
+
+def validate_downstream_interface_schema(
+    document: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate generated symbol schemas against the verified capability catalog."""
+    required_keys = {
+        "schema",
+        "generator",
+        "topology_digest",
+        "interface_schema",
+        "systems",
+        "interface_digest",
+    }
+    if not isinstance(document, Mapping) or set(document) != required_keys:
+        raise DownstreamCatalogIntegrityError(
+            "generated downstream interface schema has an invalid shape"
+        )
+    if document["schema"] != "noetrium-interface-catalog.v1":
+        raise DownstreamCatalogIntegrityError("invalid generated downstream interface schema")
+    if document["generator"] != "scripts/generate_interface_schemas.py":
+        raise DownstreamCatalogIntegrityError("unexpected downstream interface schema generator")
+    interface_digest = _require_digest(document["interface_digest"], "interface_digest")
+    unsigned_document = dict(document)
+    unsigned_document.pop("interface_digest")
+    if interface_digest != _digest(unsigned_document):
+        raise DownstreamCatalogIntegrityError("downstream interface schema digest mismatch")
+
+    catalog = load_downstream_capability_catalog()
+    topology_digest = _require_digest(document["topology_digest"], "topology_digest")
+    if topology_digest != catalog.topology_digest:
+        raise DownstreamCatalogIntegrityError(
+            "downstream interface schema does not match capability catalog topology"
+        )
+    descriptor = document["interface_schema"]
+    if (
+        not isinstance(descriptor, Mapping)
+        or descriptor.get("schema_id") != "noetrium.interface-schema"
+        or descriptor.get("schema_version") != "1"
+    ):
+        raise DownstreamCatalogIntegrityError("invalid downstream interface schema descriptor")
+
+    rows = document["systems"]
+    if not isinstance(rows, list):
+        raise DownstreamCatalogIntegrityError("interface schema systems must be a list")
+    catalog_by_key = {surface.system_key: surface for surface in catalog.systems}
+    expected_system_keys = set(catalog_by_key)
+    seen_system_keys: set[str] = set()
+    for row in rows:
+        if not isinstance(row, Mapping) or set(row) != {
+            "system_key",
+            "package_prefix",
+            "facade_module",
+            "api_modules",
+        }:
+            raise DownstreamCatalogIntegrityError("interface schema system has an invalid shape")
+        system_key = row["system_key"]
+        surface = catalog_by_key.get(system_key)
+        if surface is None:
+            raise DownstreamCatalogIntegrityError(
+                f"interface schema contains unknown system: {system_key}"
+            )
+        if system_key in seen_system_keys:
+            raise DownstreamCatalogIntegrityError(
+                f"duplicate interface schema system: {system_key}"
+            )
+        seen_system_keys.add(system_key)
+        if (
+            row["package_prefix"] != surface.package_prefix
+            or row["facade_module"] != surface.facade_module
+        ):
+            raise DownstreamCatalogIntegrityError(
+                f"interface schema metadata disagrees with catalog: {system_key}"
+            )
+        api_rows = row["api_modules"]
+        if not isinstance(api_rows, list):
+            raise DownstreamCatalogIntegrityError(
+                f"{system_key}.api_modules must be a list"
+            )
+        expected_modules = [
+            {
+                "module": api.module,
+                "source": api.source,
+                "symbols": list(api.symbols),
+            }
+            for api in surface.api_modules
+        ]
+        if [
+            {
+                "module": api.get("module"),
+                "source": api.get("source"),
+                "symbols": api.get("symbols"),
+            }
+            for api in api_rows
+            if isinstance(api, Mapping)
+        ] != expected_modules or len(api_rows) != len(expected_modules):
+            raise DownstreamCatalogIntegrityError(
+                f"interface schema API surface disagrees with catalog: {system_key}"
+            )
+        for api, expected_api in zip(api_rows, expected_modules):
+            schemas = api.get("symbol_schemas")
+            if not isinstance(schemas, list):
+                raise DownstreamCatalogIntegrityError(
+                    f"{system_key}.{api['module']}.symbol_schemas must be a list"
+                )
+            names: list[str] = []
+            for schema in schemas:
+                if (
+                    not isinstance(schema, Mapping)
+                    or not isinstance(schema.get("name"), str)
+                    or schema.get("schema_id") != "noetrium.interface-schema"
+                    or schema.get("schema_version") != "1"
+                ):
+                    raise DownstreamCatalogIntegrityError(
+                        f"invalid symbol schema: {system_key}.{api['module']}"
+                    )
+                names.append(schema["name"])
+            if tuple(names) != tuple(expected_api["symbols"]):
+                raise DownstreamCatalogIntegrityError(
+                    f"interface symbol set disagrees with catalog: {system_key}.{api['module']}"
+                )
+    if seen_system_keys != expected_system_keys:
+        raise DownstreamCatalogIntegrityError(
+            "downstream interface schema does not cover the capability catalog exactly"
+        )
+    return dict(document)
 
 
 def find_downstream_symbol_schema(
@@ -346,5 +479,6 @@ __all__ = [
     "find_downstream_symbol_schema",
     "load_downstream_capability_catalog",
     "load_downstream_interface_schema",
+    "validate_downstream_interface_schema",
     "validate_downstream_capability_catalog",
 ]

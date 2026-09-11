@@ -1,5 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
+  "interface_digest": "35be2817b4d93c0215e7e48360dad56e59a5ba2e1d81d5bfcf037a05eca0f012",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -24507,9 +24508,45 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "AsyncMethodAgentLoopPort",
+              "origin_module": ".method_machine",
+              "origin_name": "AsyncMethodAgentLoopPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "AsyncOperationDispatchPort",
               "origin_module": ".method_machine",
               "origin_name": "AsyncOperationDispatchPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodAgentLoopPort",
+              "origin_module": ".method_machine",
+              "origin_name": "MethodAgentLoopPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodAgentRequest",
+              "origin_module": ".method_machine",
+              "origin_name": "MethodAgentRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodAgentResult",
+              "origin_module": ".method_machine",
+              "origin_name": "MethodAgentResult",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -24528,6 +24565,15 @@
               "name": "MethodCheckpointStorePort",
               "origin_module": ".method_machine",
               "origin_name": "MethodCheckpointStorePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodEvidenceStatus",
+              "origin_module": ".method_machine",
+              "origin_name": "MethodEvidenceStatus",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -24707,9 +24753,14 @@
             "WorkflowSurfaceReuseScope",
             "workflow_surface_id",
             "workflow_surface_reuse_scope",
+            "AsyncMethodAgentLoopPort",
             "AsyncOperationDispatchPort",
+            "MethodAgentLoopPort",
+            "MethodAgentRequest",
+            "MethodAgentResult",
             "MethodCheckpoint",
             "MethodCheckpointStorePort",
+            "MethodEvidenceStatus",
             "MethodExecutionClass",
             "MethodEvidencePort",
             "MethodEvent",
@@ -25867,6 +25918,51 @@
                   "decorators": [],
                   "doc": null,
                   "kind": "method",
+                  "name": "run_async",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "MethodAgentRequest",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "request",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "MethodAgentResult",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "async def run_async(self, request: MethodAgentRequest) -> MethodAgentResult:"
+                }
+              ],
+              "name": "AsyncMethodAgentLoopPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
                   "name": "dispatch_async",
                   "parameters": [
                     {
@@ -25893,6 +25989,193 @@
                 }
               ],
               "name": "AsyncOperationDispatchPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "run",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "MethodAgentRequest",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "request",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "MethodAgentResult",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def run(self, request: MethodAgentRequest) -> MethodAgentResult:"
+                }
+              ],
+              "name": "MethodAgentLoopPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "agent_id"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": null,
+                  "name": "goal"
+                },
+                {
+                  "annotation": "JsonObject",
+                  "default": null,
+                  "name": "state"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": null,
+                  "name": "input_value"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": null,
+                  "name": "previous_value"
+                },
+                {
+                  "annotation": "ExecutionContext",
+                  "default": null,
+                  "name": "context"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": "None",
+                  "name": "checkpoint"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "MethodAgentRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "JsonValue",
+                  "default": "None",
+                  "name": "value"
+                },
+                {
+                  "annotation": "JsonObject",
+                  "default": "field(default_factory=dict)",
+                  "name": "state_update"
+                },
+                {
+                  "annotation": "tuple[MethodEvent, ...]",
+                  "default": "()",
+                  "name": "events"
+                },
+                {
+                  "annotation": "tuple[EffectReceipt, ...]",
+                  "default": "()",
+                  "name": "effect_receipts"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": "None",
+                  "name": "checkpoint"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "next_node"
+                },
+                {
+                  "annotation": "MethodInterrupt | None",
+                  "default": "None",
+                  "name": "interrupt"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "MethodAgentResult",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -25962,6 +26245,21 @@
                   "annotation": "str | None",
                   "default": "None",
                   "name": "schema_digest"
+                },
+                {
+                  "annotation": "tuple[EffectReceipt, ...]",
+                  "default": "()",
+                  "name": "effect_receipts"
+                },
+                {
+                  "annotation": "MethodEvidenceStatus",
+                  "default": "MethodEvidenceStatus.UNKNOWN",
+                  "name": "evidence_status"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": "None",
+                  "name": "checkpoint_value"
                 },
                 {
                   "annotation": "str",
@@ -26137,6 +26435,42 @@
                   "schema_id": "noetrium.interface-schema",
                   "schema_version": "1",
                   "signature": "def record_result(self, result: MethodRunResult) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "validate_result",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "MethodRunResult",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "result",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "obligations",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "MethodEvidenceStatus",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def validate_result(self, result: MethodRunResult, obligations: tuple[str, ...]) -> MethodEvidenceStatus:"
                 }
               ],
               "name": "MethodEvidencePort",
@@ -26186,6 +26520,25 @@
                 }
               ],
               "name": "MethodEvent",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "StrEnum"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [
+                "NOT_REQUIRED",
+                "COMPLETE",
+                "INCOMPLETE",
+                "UNKNOWN"
+              ],
+              "methods": [],
+              "name": "MethodEvidenceStatus",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -26358,6 +26711,7 @@
               "members": [
                 "COMPUTE",
                 "CAPABILITY",
+                "AGENT",
                 "ROUTE",
                 "CHECKPOINT",
                 "INTERRUPT",
@@ -26414,6 +26768,11 @@
                   "annotation": "tuple[tuple[str, int], ...]",
                   "default": "()",
                   "name": "visit_counts"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": "None",
+                  "name": "checkpoint"
                 }
               ],
               "kind": "class",
@@ -26485,6 +26844,11 @@
                   "annotation": "tuple[EffectReceipt, ...]",
                   "default": "()",
                   "name": "effect_receipts"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": "None",
+                  "name": "checkpoint_value"
                 }
               ],
               "kind": "class",
@@ -26576,6 +26940,16 @@
                   "annotation": "tuple[str, ...]",
                   "default": "()",
                   "name": "evidence_obligations"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "agent_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "implementation_digest"
                 }
               ],
               "kind": "class",
@@ -26831,6 +27205,442 @@
                   "decorators": [],
                   "doc": null,
                   "kind": "method",
+                  "name": "compute",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "node_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "operation_type",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "MethodNodeHandler",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "handler",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "positional_or_keyword",
+                      "name": "next_nodes",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "int",
+                      "default": "1",
+                      "kind": "keyword_only",
+                      "name": "max_visits",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'json'",
+                      "kind": "keyword_only",
+                      "name": "input_schema",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'json'",
+                      "kind": "keyword_only",
+                      "name": "output_schema",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "keyword_only",
+                      "name": "evidence_obligations",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'MethodProgramBuilder'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def compute(self, node_id: str, operation_type: str, handler: MethodNodeHandler, next_nodes: tuple[str, ...]=(), *, max_visits: int=1, input_schema: str='json', output_schema: str='json', evidence_obligations: tuple[str, ...]=()) -> 'MethodProgramBuilder':"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "capability",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "node_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "operation_type",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "capability_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "positional_or_keyword",
+                      "name": "next_nodes",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "EffectClass",
+                      "default": "EffectClass.PURE",
+                      "kind": "keyword_only",
+                      "name": "effect_class",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "int",
+                      "default": "1",
+                      "kind": "keyword_only",
+                      "name": "max_visits",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'json'",
+                      "kind": "keyword_only",
+                      "name": "input_schema",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'json'",
+                      "kind": "keyword_only",
+                      "name": "output_schema",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "keyword_only",
+                      "name": "evidence_obligations",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'MethodProgramBuilder'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def capability(self, node_id: str, operation_type: str, capability_id: str, next_nodes: tuple[str, ...]=(), *, effect_class: EffectClass=EffectClass.PURE, max_visits: int=1, input_schema: str='json', output_schema: str='json', evidence_obligations: tuple[str, ...]=()) -> 'MethodProgramBuilder':"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "agent",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "node_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "operation_type",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "agent_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "positional_or_keyword",
+                      "name": "next_nodes",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "int",
+                      "default": "1",
+                      "kind": "keyword_only",
+                      "name": "max_visits",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'json'",
+                      "kind": "keyword_only",
+                      "name": "input_schema",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'json'",
+                      "kind": "keyword_only",
+                      "name": "output_schema",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "keyword_only",
+                      "name": "evidence_obligations",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'MethodProgramBuilder'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def agent(self, node_id: str, operation_type: str, agent_id: str, next_nodes: tuple[str, ...]=(), *, max_visits: int=1, input_schema: str='json', output_schema: str='json', evidence_obligations: tuple[str, ...]=()) -> 'MethodProgramBuilder':"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "route",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "node_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "operation_type",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "MethodNodeHandler",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "handler",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "next_nodes",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "int",
+                      "default": "1",
+                      "kind": "keyword_only",
+                      "name": "max_visits",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'MethodProgramBuilder'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def route(self, node_id: str, operation_type: str, handler: MethodNodeHandler, next_nodes: tuple[str, ...], *, max_visits: int=1) -> 'MethodProgramBuilder':"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "checkpoint",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "node_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "positional_or_keyword",
+                      "name": "next_nodes",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'MethodProgramBuilder'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def checkpoint(self, node_id: str, next_nodes: tuple[str, ...]=()) -> 'MethodProgramBuilder':"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "interrupt",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "node_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "positional_or_keyword",
+                      "name": "next_nodes",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'MethodProgramBuilder'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def interrupt(self, node_id: str, next_nodes: tuple[str, ...]=()) -> 'MethodProgramBuilder':"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "return_node",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "node_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "operation_type",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "MethodNodeHandler",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "handler",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "'MethodProgramBuilder'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def return_node(self, node_id: str, operation_type: str, handler: MethodNodeHandler) -> 'MethodProgramBuilder':"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
                   "name": "build",
                   "parameters": [
                     {
@@ -26975,6 +27785,61 @@
                   "annotation": "str | None",
                   "default": "None",
                   "name": "failure"
+                },
+                {
+                  "annotation": "tuple[EffectReceipt, ...]",
+                  "default": "()",
+                  "name": "effect_receipts"
+                },
+                {
+                  "annotation": "int",
+                  "default": "0",
+                  "name": "step_count"
+                },
+                {
+                  "annotation": "tuple[tuple[str, int], ...]",
+                  "default": "()",
+                  "name": "visit_counts"
+                },
+                {
+                  "annotation": "MethodEvidenceStatus",
+                  "default": "MethodEvidenceStatus.UNKNOWN",
+                  "name": "evidence_status"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "binding_plan_digest"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "runtime_binding_digest"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "schema_digest"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "failure_code"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "failure_phase"
+                },
+                {
+                  "annotation": "JsonObject",
+                  "default": "field(default_factory=dict)",
+                  "name": "diagnostics"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "run_digest"
                 }
               ],
               "kind": "class",
@@ -27194,6 +28059,16 @@
                   "name": "observation"
                 },
                 {
+                  "annotation": "MethodAgentLoopPort | AsyncMethodAgentLoopPort | None",
+                  "default": "None",
+                  "name": "agent_loop"
+                },
+                {
+                  "annotation": "MethodSchemaPort | None",
+                  "default": "None",
+                  "name": "schemas"
+                },
+                {
                   "annotation": "'AsyncOperationDispatchPort | None'",
                   "default": "None",
                   "name": "async_dispatcher"
@@ -27241,14 +28116,80 @@
               "name": "MethodRuntimeContext",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "validate",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "schema_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "JsonValue",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "value",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "location",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def validate(self, schema_id: str, value: JsonValue, *, location: str) -> None:"
+                }
+              ],
+              "name": "MethodSchemaPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
+            "AsyncMethodAgentLoopPort",
             "AsyncOperationDispatchPort",
+            "MethodAgentLoopPort",
+            "MethodAgentRequest",
+            "MethodAgentResult",
             "MethodCheckpoint",
             "MethodCheckpointStorePort",
             "MethodEvidencePort",
             "MethodEvent",
+            "MethodEvidenceStatus",
             "MethodExecutionClass",
             "MethodGraph",
             "MethodInterrupt",
@@ -27263,7 +28204,8 @@
             "MethodRunResult",
             "MethodMachinePort",
             "MethodRunStatus",
-            "MethodRuntimeContext"
+            "MethodRuntimeContext",
+            "MethodSchemaPort"
           ]
         },
         {
@@ -52825,6 +53767,69 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "ConsensusQualificationPort",
+              "origin_module": ".execution_qualification",
+              "origin_name": "ConsensusQualificationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExecutionQualificationPort",
+              "origin_module": ".execution_qualification",
+              "origin_name": "ExecutionQualificationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "IsolationQualificationPort",
+              "origin_module": ".execution_qualification",
+              "origin_name": "IsolationQualificationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "QualificationEvidence",
+              "origin_module": ".execution_qualification",
+              "origin_name": "QualificationEvidence",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "QualificationKind",
+              "origin_module": ".execution_qualification",
+              "origin_name": "QualificationKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "WorkerAttestationQualificationPort",
+              "origin_module": ".execution_qualification",
+              "origin_name": "WorkerAttestationQualificationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "require_production_qualification",
+              "origin_module": ".execution_qualification",
+              "origin_name": "require_production_qualification",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "SemanticBoundaryClaim",
               "origin_module": ".semantic_boundary",
               "origin_name": "SemanticBoundaryClaim",
@@ -52918,6 +53923,13 @@
             "RequirementAddress",
             "RequirementCardinality",
             "interface_contract_digest",
+            "ConsensusQualificationPort",
+            "ExecutionQualificationPort",
+            "IsolationQualificationPort",
+            "QualificationEvidence",
+            "QualificationKind",
+            "WorkerAttestationQualificationPort",
+            "require_production_qualification",
             "SemanticBoundaryClaim",
             "SemanticBoundaryClaimError",
             "SemanticBoundaryClassification",
@@ -54611,6 +55623,345 @@
             "RequirementAddress",
             "RequirementCardinality",
             "interface_contract_digest"
+          ]
+        },
+        {
+          "module": "noetrium_platform.foundation.governance.architecture.api.execution_qualification",
+          "source": "noetrium_platform/foundation/governance/architecture/api/execution_qualification.py",
+          "symbol_schemas": [
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "qualify_consensus",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "machine_id",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "QualificationEvidence",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def qualify_consensus(self, machine_id: str) -> QualificationEvidence:"
+                }
+              ],
+              "name": "ConsensusQualificationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "qualify",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "machine_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "worker_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "workload_id",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "tuple[QualificationEvidence, ...]",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def qualify(self, machine_id: str, worker_id: str, workload_id: str) -> tuple[QualificationEvidence, ...]:"
+                }
+              ],
+              "name": "ExecutionQualificationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "qualify_isolation",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "workload_id",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "QualificationEvidence",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def qualify_isolation(self, workload_id: str) -> QualificationEvidence:"
+                }
+              ],
+              "name": "IsolationQualificationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "QualificationKind",
+                  "default": null,
+                  "name": "kind"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "provider_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "provider_version"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "evidence_digest"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "constraints"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "qualification_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "QualificationEvidence",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "StrEnum"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [
+                "CONSENSUS",
+                "WORKER_ATTESTATION",
+                "ISOLATION"
+              ],
+              "methods": [],
+              "name": "QualificationKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "qualify_worker_attestation",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "worker_id",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "QualificationEvidence",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def qualify_worker_attestation(self, worker_id: str) -> QualificationEvidence:"
+                }
+              ],
+              "name": "WorkerAttestationQualificationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "decorators": [],
+              "doc": null,
+              "kind": "function",
+              "name": "require_production_qualification",
+              "parameters": [
+                {
+                  "annotation": "ExecutionQualificationPort",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "port",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "machine_id",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "worker_id",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "workload_id",
+                  "receiver": false,
+                  "required": true
+                }
+              ],
+              "return_annotation": "tuple[QualificationEvidence, ...]",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1",
+              "signature": "def require_production_qualification(port: ExecutionQualificationPort, *, machine_id: str, worker_id: str, workload_id: str) -> tuple[QualificationEvidence, ...]:"
+            }
+          ],
+          "symbols": [
+            "ConsensusQualificationPort",
+            "ExecutionQualificationPort",
+            "IsolationQualificationPort",
+            "QualificationEvidence",
+            "QualificationKind",
+            "WorkerAttestationQualificationPort",
+            "require_production_qualification"
           ]
         },
         {
@@ -66452,6 +67803,11 @@
                   "annotation": "str",
                   "default": null,
                   "name": "text"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": "()",
+                  "name": "tool_calls"
                 },
                 {
                   "annotation": "str | None",
@@ -81470,6 +82826,11 @@
                   "annotation": "str",
                   "default": null,
                   "name": "text"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": "()",
+                  "name": "tool_calls"
                 },
                 {
                   "annotation": "str | None",

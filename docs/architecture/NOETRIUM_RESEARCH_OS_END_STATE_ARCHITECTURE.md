@@ -1753,3 +1753,26 @@ modify any previous historical section.
 - Production consensus, remote attestation, strong isolation, and live
   qualification remain external typed provider obligations and are not
   implied by these local metadata fingerprints.
+
+## 62. R19: Verified interface schema closure
+
+This section records the interface-schema closure and does not modify any
+previous historical section.
+
+- interface_schema.json now carries a deterministic interface digest over
+  its unsigned canonical document. The generator reports that digest
+  explicitly and fails its check when the artifact drifts.
+- Runtime discovery validates interface topology against the verified
+  capability catalog, then checks every registered system, API module, public
+  symbol, schema identity, and schema version.
+- A catalog and an interface schema can no longer silently disagree about
+  the downstream surface. Stale or partially regenerated signatures fail
+  before symbol lookup is served.
+- validate_downstream_interface_schema is a reusable read-only boundary for
+  release tooling and downstream package verification. It does not resolve
+  providers or create another authority.
+- The capability catalog remains the source for ownership and public surface
+  metadata; the interface schema is the generated signature projection. The
+  two artifacts are independently fingerprinted and jointly checked.
+- Production provider qualification remains outside this metadata boundary
+  and must still be supplied through explicit typed composition ports.
