@@ -1728,3 +1728,28 @@ previous historical section.
   An unavailable model endpoint therefore cannot be represented as a result.
 - Consensus, mTLS/KMS attestation, OS sandboxing, container or VM isolation,
   and live node qualification remain typed external provider obligations.
+
+## 61. R18: Generated downstream contract integrity
+
+This section records the generated contract integrity boundary and does not
+modify any previous historical section.
+
+- The downstream capability catalog now carries a catalog digest and one
+  interface digest per registered system. Each digest is computed from the
+  canonical JSON payload without its own digest field.
+- Discovery validates the generated catalog against the packaged canonical
+  system registry before materializing typed metadata. It rejects stale
+  topology, unknown or duplicate systems, metadata drift, duplicate API
+  modules or symbols, malformed shapes, and digest mismatches.
+- The validation function is reusable by downstream tooling and remains a
+  read-only data boundary. It never imports providers, resolves runtime
+  authorities, writes facts, or creates a service locator.
+- Downstream projects can use the catalog digest for the generated artifact
+  and the per-system interface digest for dependency pinning. Runtime
+  composition still selects explicit typed ports and generated facades.
+- The generated contract artifacts, localized README summaries, and the
+  human-readable catalog must be regenerated together; architecture checks
+  treat generator drift as a release-blocking condition.
+- Production consensus, remote attestation, strong isolation, and live
+  qualification remain external typed provider obligations and are not
+  implied by these local metadata fingerprints.

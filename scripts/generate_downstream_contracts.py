@@ -615,7 +615,7 @@ def render_catalog(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
         "systems": [],
     }
     for surface in surfaces:
-        document["systems"].append({
+        row: dict[str, Any] = {
             "system_key": surface.system_key,
             "package_prefix": surface.package_prefix,
             "authority": surface.authority,
@@ -629,7 +629,10 @@ def render_catalog(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
                 {"module": api.module, "source": api.source, "symbols": list(api.symbols)}
                 for api in surface.api_modules
             ],
-        })
+        }
+        row["interface_digest"] = _digest(row)
+        document["systems"].append(row)
+    document["catalog_digest"] = _digest(document)
     return (json.dumps(document, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode("utf-8")
 
 

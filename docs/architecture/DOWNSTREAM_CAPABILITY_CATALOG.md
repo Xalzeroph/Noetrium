@@ -19,8 +19,8 @@ Example:
         ...
 
 - Registered systems: 172
-- Public API modules: 502
-- Public symbols: 3718
+- Public API modules: 503
+- Public symbols: 3732
 - Registry digest: 2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603
 
 ## Capability domains
@@ -33,7 +33,7 @@ Example:
 | environment | 18 | 53 | 444 |
 | execution | 7 | 33 | 238 |
 | experimentation | 15 | 59 | 576 |
-| governance | 13 | 33 | 307 |
+| governance | 13 | 34 | 321 |
 | model | 16 | 54 | 476 |
 | observability | 27 | 52 | 152 |
 | operator | 8 | 10 | 60 |
@@ -1041,9 +1041,10 @@ Example:
 
 #### API modules
 
-- noetrium_platform.foundation.governance.architecture.api ?w^~)?t AmbiguousCapabilityProvider, BindingDiagnostic, BindingDiagnosticCode, BindingDiagnosticReference, BindingDiagnosticReferenceKind, BindingDiagnosticSeverity, BindingEdge, BindingPlan, BindingProof, BindingRemediationCategory, BindingResolution, BindingResolutionState, BindingResolverPort, CapabilityBindingError, CapabilityCompositionPlannerPort, CapabilityDependencyCycle, CapabilityInterfaceMismatch, CapabilityKey, CapabilityOffer, CapabilityRequirement, CompositionContract, CompositionContractError, CompositionIdentity, CompositionSubject, CompositionSubjectKind, CompositionTopologyError, MissingCapabilityProvider, ProviderSelection, ProviderIngressContractError, ProviderIngressProtocol, ProviderIngressViolation, ProviderImplementationIdentity, ProviderIngressBoundary, ProviderQualificationIdentity, ProviderRevision, ProviderRevisionKind, provider_implementation_from_repository_source, RequirementAddress, RequirementCardinality, interface_contract_digest, SemanticBoundaryClaim, SemanticBoundaryClaimError, SemanticBoundaryClassification, SemanticBoundaryEvidence, SemanticStateAuthorityKind, validate_semantic_boundary_claim
+- noetrium_platform.foundation.governance.architecture.api ?w^~)?t AmbiguousCapabilityProvider, BindingDiagnostic, BindingDiagnosticCode, BindingDiagnosticReference, BindingDiagnosticReferenceKind, BindingDiagnosticSeverity, BindingEdge, BindingPlan, BindingProof, BindingRemediationCategory, BindingResolution, BindingResolutionState, BindingResolverPort, CapabilityBindingError, CapabilityCompositionPlannerPort, CapabilityDependencyCycle, CapabilityInterfaceMismatch, CapabilityKey, CapabilityOffer, CapabilityRequirement, CompositionContract, CompositionContractError, CompositionIdentity, CompositionSubject, CompositionSubjectKind, CompositionTopologyError, MissingCapabilityProvider, ProviderSelection, ProviderIngressContractError, ProviderIngressProtocol, ProviderIngressViolation, ProviderImplementationIdentity, ProviderIngressBoundary, ProviderQualificationIdentity, ProviderRevision, ProviderRevisionKind, provider_implementation_from_repository_source, RequirementAddress, RequirementCardinality, interface_contract_digest, ConsensusQualificationPort, ExecutionQualificationPort, IsolationQualificationPort, QualificationEvidence, QualificationKind, WorkerAttestationQualificationPort, require_production_qualification, SemanticBoundaryClaim, SemanticBoundaryClaimError, SemanticBoundaryClassification, SemanticBoundaryEvidence, SemanticStateAuthorityKind, validate_semantic_boundary_claim
 - noetrium_platform.foundation.governance.architecture.api.capabilities ?w^~)?t EXCEPTION_DESCRIPTOR_V1, HOST_OPERATING_SYSTEM_ROUTE_V1, LOG_QUERY_V1, LOG_SINK_V1, LOGGING_SYSTEM_V1, METHOD_COMPOSITION_PORTS_V1, SERVER_CONNECTION_FACTORY_V1, SERVER_FILE_TRANSFER_FACTORY_V1
 - noetrium_platform.foundation.governance.architecture.api.capability_composition ?w^~)?t AmbiguousCapabilityProvider, BindingDiagnostic, BindingDiagnosticCode, BindingDiagnosticReference, BindingDiagnosticReferenceKind, BindingDiagnosticSeverity, BindingEdge, BindingPlan, BindingProof, BindingRemediationCategory, BindingResolution, BindingResolutionState, BindingResolverPort, CapabilityBindingError, CapabilityCompositionPlannerPort, CapabilityDependencyCycle, CapabilityInterfaceMismatch, CapabilityKey, CapabilityOffer, CapabilityRequirement, CompositionContract, CompositionContractError, CompositionIdentity, CompositionSubject, CompositionSubjectKind, CompositionTopologyError, MissingCapabilityProvider, ProviderSelection, RequirementAddress, RequirementCardinality, interface_contract_digest
+- noetrium_platform.foundation.governance.architecture.api.execution_qualification ?w^~)?t ConsensusQualificationPort, ExecutionQualificationPort, IsolationQualificationPort, QualificationEvidence, QualificationKind, WorkerAttestationQualificationPort, require_production_qualification
 - noetrium_platform.foundation.governance.architecture.api.provider_ingress ?w^~)?t ProviderImplementationIdentity, ProviderIngressBoundary, ProviderIngressContractError, ProviderIngressProtocol, ProviderIngressViolation, ProviderQualificationIdentity, ProviderRevision, ProviderRevisionKind, provider_implementation_from_repository_source
 - noetrium_platform.foundation.governance.architecture.api.semantic_boundary ?w^~)?t SemanticBoundaryClaim, SemanticBoundaryClaimError, SemanticBoundaryClassification, SemanticBoundaryEvidence, SemanticStateAuthorityKind, validate_semantic_boundary_claim
 
