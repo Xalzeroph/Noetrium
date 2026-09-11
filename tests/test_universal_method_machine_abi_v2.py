@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import multiprocessing
 
 import pytest
 
@@ -11,9 +12,11 @@ from noetrium_platform.capabilities.participant.method.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
+    canonical_digest,
 )
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentRequest,
+    MethodCheckpoint,
     MethodAgentResult,
     MethodEvidenceStatus,
     MethodNodeResult,
@@ -24,6 +27,10 @@ from noetrium_platform.research.execution.workflow.runtime import (
     InMemoryMethodCheckpointStore,
     UniversalMethodMachine,
 )
+from noetrium_platform.research.execution.workflow.providers import (
+    JsonMethodCheckpointStore,
+    MethodCheckpointCorruptionError,
+)
 
 
 def identity() -> MethodProgramIdentity:
@@ -32,6 +39,48 @@ def identity() -> MethodProgramIdentity:
 
 def context() -> ExecutionContext:
     return ExecutionContext("abi-v2-run", "trace", "span")
+
+
+def _checkpoint_competitor(root, gate, result_queue, worker):
+    store = JsonMethodCheckpointStore(root)
+    checkpoint = MethodCheckpoint(
+        run_id="competing-run",
+        program_digest=canonical_digest({"program": "competition"}),
+        sequence=1,
+        current_node="finish",
+        state={"worker": worker},
+    )
+    gate.wait(10)
+    try:
+        store.save(checkpoint)
+    except Exception as exc:  # the loser must report a deterministic conflict
+        result_queue.put(type(exc).__name__)
+    else:
+        result_queue.put("ok")
+
+
+def test_durable_checkpoint_store_serializes_process_competition(tmp_path) -> None:
+    context_factory = multiprocessing.get_context("spawn")
+    gate = context_factory.Event()
+    result_queue = context_factory.Queue()
+    processes = [
+        context_factory.Process(
+            target=_checkpoint_competitor,
+            args=(str(tmp_path / "checkpoints"), gate, result_queue, worker),
+        )
+        for worker in ("one", "two")
+    ]
+    for process in processes:
+        process.start()
+    gate.set()
+    for process in processes:
+        process.join(15)
+        assert process.exitcode == 0
+    statuses = [result_queue.get(timeout=2) for _ in processes]
+    assert sorted(statuses) == ["ValueError", "ok"]
+    final = JsonMethodCheckpointStore(tmp_path / "checkpoints").load("competing-run")
+    assert final is not None
+    assert final.sequence == 1
 
 
 def test_agent_checkpoint_payload_survives_limit_and_resume() -> None:
@@ -195,3 +244,44 @@ def test_resume_is_explicit_when_checkpoint_is_unavailable():
         UniversalMethodMachine().run(
             program, runtime=MethodRuntimeContext(context()), resume=True
         )
+
+def test_public_facade_binds_durable_checkpoint_store(tmp_path) -> None:
+    store = noetrium_platform.bind_method_checkpoint_store(tmp_path / "checkpoints")
+    checkpoint = MethodCheckpoint(
+        run_id="durable-run",
+        program_digest=canonical_digest({"program": "durable"}),
+        sequence=1,
+        current_node="finish",
+        state={"value": 1},
+    )
+    store.save(checkpoint)
+    restored = noetrium_platform.bind_method_checkpoint_store(tmp_path / "checkpoints")
+    assert restored.load("durable-run") == checkpoint
+
+
+def test_durable_checkpoint_corruption_fails_closed(tmp_path) -> None:
+    root = tmp_path / "checkpoints"
+    store = noetrium_platform.bind_method_checkpoint_store(root)
+    checkpoint = MethodCheckpoint(
+        run_id="corrupt-run",
+        program_digest=canonical_digest({"program": "corrupt"}),
+        sequence=1,
+        current_node="finish",
+        state={},
+    )
+    store.save(checkpoint)
+    (root / "corrupt-run.json").write_text("{", encoding="utf-8")
+    with pytest.raises(MethodCheckpointCorruptionError):
+        store.load("corrupt-run")
+
+
+def test_public_facade_preserves_method_wall_clock_budget():
+    ticks = iter((0.0, 2.0))
+    program = MethodProgramBuilder(identity(), entrypoint="answer").return_node(
+        "answer", "test.answer", lambda request: MethodNodeResult(value=42)
+    ).build()
+    result = noetrium_platform.bind_universal_method_machine(
+        max_seconds=1, clock=lambda: next(ticks)
+    ).run(program, runtime=MethodRuntimeContext(context()))
+    assert result.status.value == "limit_reached"
+    assert result.failure_code == "METHOD_TIMEOUT"

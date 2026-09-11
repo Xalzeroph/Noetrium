@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 import inspect
+import time
 from threading import RLock
 from typing import Any
 
@@ -102,6 +103,8 @@ class UniversalMethodMachine:
         *,
         checkpoint_store: MethodCheckpointStorePort | None = None,
         max_steps: int = 10_000,
+        max_seconds: float | None = None,
+        clock: Callable[[], float] = time.monotonic,
         checkpoint_interval: int = 1,
         target: ComponentIdentity = METHOD_MACHINE_IDENTITY,
     ) -> None:
@@ -109,9 +112,18 @@ class UniversalMethodMachine:
             raise ValueError("method machine max_steps must be a positive integer")
         if type(checkpoint_interval) is not int or checkpoint_interval < 1:
             raise ValueError("method machine checkpoint_interval must be a positive integer")
+        if max_seconds is not None and (
+            isinstance(max_seconds, bool) or not isinstance(max_seconds, (int, float))
+            or max_seconds <= 0 or not float(max_seconds) < float("inf")
+        ):
+            raise ValueError("method machine max_seconds must be finite and positive")
+        if not callable(clock):
+            raise TypeError("method machine clock must be callable")
         self._checkpoints = checkpoint_store
         self._max_steps = max_steps
         self._checkpoint_interval = checkpoint_interval
+        self._max_seconds = max_seconds
+        self._clock = clock
         self._target = target
 
     def run(
@@ -125,8 +137,16 @@ class UniversalMethodMachine:
     ) -> MethodRunResult:
         self._validate_inputs(program, runtime, input_value, initial_state)
         state = self._initial_state(program, runtime, initial_state, resume)
+        started = self._clock()
         graph = program.graph
         while state.sequence < self._max_steps:
+            if self._max_seconds is not None and self._clock() - started >= self._max_seconds:
+                checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
+                return self._result(
+                    MethodRunStatus.LIMIT_REACHED, program, runtime, state,
+                    checkpoint=checkpoint, failure="method wall-clock limit reached",
+                    failure_code="METHOD_TIMEOUT", failure_phase="runtime",
+                )
             node = graph.node(state.current_node)
             visit = state.visit_counts.get(node.node_id, 0)
             if visit >= node.max_visits:
@@ -211,7 +231,15 @@ class UniversalMethodMachine:
         """Async sibling for model/tool loops; sync handlers remain valid here."""
         self._validate_inputs(program, runtime, input_value, initial_state)
         state = self._initial_state(program, runtime, initial_state, resume)
+        started = self._clock()
         while state.sequence < self._max_steps:
+            if self._max_seconds is not None and self._clock() - started >= self._max_seconds:
+                checkpoint = self._save_checkpoint(program, runtime, state, state.current_node)
+                return self._result(
+                    MethodRunStatus.LIMIT_REACHED, program, runtime, state,
+                    checkpoint=checkpoint, failure="method wall-clock limit reached",
+                    failure_code="METHOD_TIMEOUT", failure_phase="runtime",
+                )
             node = program.graph.node(state.current_node)
             visit = state.visit_counts.get(node.node_id, 0)
             if visit >= node.max_visits:

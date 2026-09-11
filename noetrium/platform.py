@@ -79,7 +79,6 @@ from noetrium_platform.capabilities.participant.method.api import (
     MethodImplementation,
     MethodSessionRuntime,
 )
-from noetrium_platform.research.execution.workflow.api import MethodCheckpointStorePort, MethodMachinePort
 from noetrium_platform.capabilities.participant.method.runtime import (
     DefaultMethodEndpointFactory as _DefaultMethodEndpointFactory,
 )
@@ -110,6 +109,13 @@ from noetrium.contracts.systems.runtime__process import (
     LocalCommandResult,
     LocalCommandStartError,
     LocalCommandTimeoutError,
+)
+from noetrium.contracts.systems.execution__workflow import (
+    MethodCheckpointStorePort,
+    MethodMachinePort,
+    MethodProgram,
+    MethodRunResult,
+    MethodRuntimeContext,
 )
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
@@ -844,6 +850,90 @@ def complete_project_model(
     return response
 
 
+def bind_universal_method_machine(
+    *,
+    checkpoint_store: MethodCheckpointStorePort | None = None,
+    max_steps: int = 10_000,
+    checkpoint_interval: int = 1,
+    max_seconds: float | None = None,
+    clock: Callable[[], float] | None = None,
+) -> MethodMachinePort:
+    """Bind the platform-owned universal method runtime.
+
+    Downstream methods receive only the public ``MethodMachinePort``. The
+    concrete loop, operation routing, checkpoint semantics, and timeout policy
+    remain platform-owned and are intentionally not imported by projects.
+    """
+
+    from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
+
+    machine_kwargs = {
+        "checkpoint_store": checkpoint_store,
+        "max_steps": max_steps,
+        "checkpoint_interval": checkpoint_interval,
+        "max_seconds": max_seconds,
+    }
+    if clock is not None:
+        machine_kwargs["clock"] = clock
+    return UniversalMethodMachine(**machine_kwargs)
+
+
+def bind_method_checkpoint_store(root: str | Path) -> MethodCheckpointStorePort:
+    """Bind the platform-owned crash-durable method checkpoint provider.
+
+    Downstream methods can request durable checkpointing without importing a
+    provider implementation from ``noetrium_platform``.  The returned port is
+    compatible with :func:`bind_universal_method_machine` and preserves the
+    platform's checkpoint digest and monotonicity rules.
+    """
+
+    from noetrium_platform.research.execution.workflow.providers import JsonMethodCheckpointStore
+
+    return JsonMethodCheckpointStore(root)
+
+
+def run_method_program(
+    program: MethodProgram,
+    *,
+    runtime: MethodRuntimeContext,
+    input_value: object = None,
+    initial_state: Mapping[str, object] | None = None,
+    resume: bool = False,
+    machine: MethodMachinePort | None = None,
+) -> MethodRunResult:
+    """Execute one downstream method through the universal platform host."""
+
+    bound = machine or bind_universal_method_machine()
+    return bound.run(
+        program,
+        runtime=runtime,
+        input_value=input_value,
+        initial_state=initial_state,
+        resume=resume,
+    )
+
+
+async def run_method_program_async(
+    program: MethodProgram,
+    *,
+    runtime: MethodRuntimeContext,
+    input_value: object = None,
+    initial_state: Mapping[str, object] | None = None,
+    resume: bool = False,
+    machine: MethodMachinePort | None = None,
+) -> MethodRunResult:
+    """Async sibling of :func:`run_method_program` for model/tool methods."""
+
+    bound = machine or bind_universal_method_machine()
+    return await bound.run_async(
+        program,
+        runtime=runtime,
+        input_value=input_value,
+        initial_state=initial_state,
+        resume=resume,
+    )
+
+
 def invoke_multimodal_model(
     client: ProjectModelClientPort,
     recorder: ModelRequestRecorderPort,
@@ -996,23 +1086,6 @@ class AgentResearchRuntimeBinding:
         self.close()
 
 
-def bind_universal_method_machine(
-    *,
-    checkpoint_store: MethodCheckpointStorePort | None = None,
-    max_steps: int = 10_000,
-    checkpoint_interval: int = 1,
-) -> MethodMachinePort:
-    """Bind the canonical UMM runtime behind the public product facade."""
-
-    from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
-
-    return UniversalMethodMachine(
-        checkpoint_store=checkpoint_store,
-        max_steps=max_steps,
-        checkpoint_interval=checkpoint_interval,
-    )
-
-
 def bind_agent_research_runtime(
     *,
     observation: AgentObservationPort,
@@ -1062,8 +1135,9 @@ __all__ = [
     "ResearchRequest", "ResearchResult", "bind_bundled_minecraft_environment",
     "bind_directory_run_artifact_store", "bind_durable_run_control",
     "bind_environment_category_catalog", "bind_minecraft_environment", "bind_qualified_project_model",
-    "bind_agent_research_runtime", "bind_universal_method_machine",
+    "bind_agent_research_runtime",
     "complete_project_model", "invoke_multimodal_model",
+    "bind_universal_method_machine", "bind_method_checkpoint_store", "run_method_program", "run_method_program_async",
     "bind_method_endpoint", "run_local_shell_command",
     "bind_research_workbench", "bind_run_control_application",
     "bind_study_matrix_execution", "build_basic_study_metric_aggregation",

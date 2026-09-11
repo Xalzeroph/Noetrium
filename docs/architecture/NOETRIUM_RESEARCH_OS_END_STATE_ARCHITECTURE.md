@@ -1706,3 +1706,25 @@ ownership 中心。四者互相引用摘要和证据，但任何一个都不越�
   composition/provider 实现并提交可审计证据。
 - 能力索引、资源监督和层级监督均不增加第二个 state/journal/facade authority：事实
   提交仍归 MachineRuntime，Machine fact 仍归 Journal，外部 effect 仍归 EffectIntentJournal。
+
+## 60. R17: Noe/SEM downstream closure
+
+This section records the current node1 integration state and does not modify any
+previous historical section.
+
+- The SEM method runtime consumes Noetrium only through the public platform
+  facade and records the exact Noe source commit in method provenance.
+- The public universal-method binding now carries both the wall-clock budget
+  and an injectable clock, while the platform runtime remains the sole commit
+  authority.
+- The durable method checkpoint provider uses a cross-process lock, unique
+  temporary files, fsync, atomic replacement, monotonic sequence checks, and
+  fail-closed corruption errors; it does not infer recovery from damaged data.
+- The integration tests cover restart, corruption, timeout, and competing
+  processes. They validate a local provider contract, not distributed
+  consensus or a production external qualification.
+- The formal SEM matrix remains claim-gated by qualified Qwen provenance,
+  world-reset receipts, complete evidence, and the full 15 by 3 by 12 matrix.
+  An unavailable model endpoint therefore cannot be represented as a result.
+- Consensus, mTLS/KMS attestation, OS sandboxing, container or VM isolation,
+  and live node qualification remain typed external provider obligations.
