@@ -47,7 +47,7 @@ def compose_local_host(
     construct this provider or ask a container to find it.
     """
 
-    operating_system = LocalOperatingSystemRoute()
+    operating_system = local_operating_system_route()
     offer = CapabilityOffer(
         offer_id="runtime.host.local-operating-system-route",
         owner=_HOST_SUBJECT,

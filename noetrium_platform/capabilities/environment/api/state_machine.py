@@ -36,11 +36,20 @@ def _freeze_json(value: JsonInput, *, path: str) -> JsonValue:
             rows[key] = _freeze_json(item, path=f"{path}.{key}")
         return MappingProxyType(rows)
     if isinstance(value, (list, tuple)):
-        return tuple(_freeze_json(item, path=f"{path}[{index}]") for index, item in enumerate(value))
-    raise TypeError(f"state-machine JSON contains unsupported {type(value).__name__} at {path}")
+        return tuple(
+            _freeze_json(item, path=f"{path}[{index}]")
+            for index, item in enumerate(value)
+        )
+    raise TypeError(
+        f"state-machine JSON contains unsupported {type(value).__name__} at {path}"
+    )
 
 
-def freeze_json_mapping(value: Mapping[str, JsonInput], *, field: str) -> Mapping[str, JsonValue]:
+def freeze_json_mapping(
+    value: Mapping[str, JsonInput],
+    *,
+    field: str,
+) -> Mapping[str, JsonValue]:
     if not isinstance(value, Mapping):
         raise TypeError(f"{field} must be a mapping")
     frozen = _freeze_json(value, path=field)
@@ -67,18 +76,28 @@ class StateMachineDynamicsIdentity:
     artifact_digest: str
 
     def __post_init__(self) -> None:
-        if not self.dynamics_id.strip() or not self.implementation_version.strip():
+        if (
+            not isinstance(self.dynamics_id, str)
+            or not self.dynamics_id.strip()
+            or not isinstance(self.implementation_version, str)
+            or not self.implementation_version.strip()
+        ):
             raise ValueError("state-machine dynamics identity is incomplete")
         if (
-            len(self.artifact_digest) != 64
+            not isinstance(self.artifact_digest, str)
             or self.artifact_digest != self.artifact_digest.lower()
-            or any(char not in "0123456789abcdef" for char in self.artifact_digest)
+            or len(self.artifact_digest) != 64
+            or any(
+                char not in "0123456789abcdef" for char in self.artifact_digest
+            )
         ):
             raise ValueError("state-machine dynamics artifact_digest must be SHA-256")
 
 
 @dataclass(frozen=True, slots=True)
 class StateMachineEnvironmentSpec:
+    """Immutable scientific configuration for one deterministic closed world."""
+
     environment_id: str
     dynamics: StateMachineDynamicsIdentity
     initial_state: Mapping[str, JsonValue]
@@ -94,13 +113,19 @@ class StateMachineEnvironmentSpec:
             self.abi_version,
             self.schema_version,
         )
-        if any(not value.strip() for value in required):
+        if any(not isinstance(value, str) or not value.strip() for value in required):
             raise ValueError("state-machine environment identity is incomplete")
-        if not self.action_types or any(not item.strip() for item in self.action_types):
+        if not self.action_types or any(
+            not isinstance(item, str) or not item.strip() for item in self.action_types
+        ):
             raise ValueError("state-machine action types must be non-empty")
         if len(self.action_types) != len(set(self.action_types)):
             raise ValueError("state-machine action types must be unique")
-        object.__setattr__(self, "initial_state", freeze_json_mapping(self.initial_state, field="initial_state"))
+        object.__setattr__(
+            self,
+            "initial_state",
+            freeze_json_mapping(self.initial_state, field="initial_state"),
+        )
 
     def scientific_identity_digest(self) -> str:
         return canonical_digest(self)
@@ -108,6 +133,8 @@ class StateMachineEnvironmentSpec:
 
 @dataclass(frozen=True, slots=True)
 class StateTransition:
+    """Pure transition output; the runtime owns mutation and action identity."""
+
     state: Mapping[str, JsonValue]
     accepted: bool
     diagnostics: Mapping[str, JsonValue]
@@ -116,15 +143,23 @@ class StateTransition:
     def __post_init__(self) -> None:
         if not isinstance(self.accepted, bool):
             raise TypeError("state-machine transition accepted must be boolean")
-        if any(not ref.strip() for ref in self.artifact_refs):
+        if any(
+            not isinstance(ref, str) or not ref.strip() for ref in self.artifact_refs
+        ):
             raise ValueError("state-machine transition artifact refs must be non-empty")
         if len(self.artifact_refs) != len(set(self.artifact_refs)):
             raise ValueError("state-machine transition artifact refs must be unique")
         object.__setattr__(self, "state", freeze_json_mapping(self.state, field="state"))
-        object.__setattr__(self, "diagnostics", freeze_json_mapping(self.diagnostics, field="diagnostics"))
+        object.__setattr__(
+            self,
+            "diagnostics",
+            freeze_json_mapping(self.diagnostics, field="diagnostics"),
+        )
 
 
 class StateMachineDynamicsPort(Protocol):
+    """Domain semantics injected behind the generic closed-world runtime."""
+
     @property
     def identity(self) -> StateMachineDynamicsIdentity: ...
 

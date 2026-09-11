@@ -257,7 +257,9 @@ def _check_document(doc_path: Path) -> None:
         "CAPABILITY_INDEX.json",
         "DirectoryResourceScheduler",
         "DirectoryChildMachineSupervisor",
+        "## 66. R23",
         "## 63. R20",
+        "## 65. R22",
     )
     missing = [marker for marker in required if marker not in document]
     if missing:

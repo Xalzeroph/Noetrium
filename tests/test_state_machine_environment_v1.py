@@ -13,6 +13,7 @@ from noetrium_platform.capabilities.environment.runtime.api import (
     StateTransition,
     thaw_json_mapping,
 )
+from noetrium_platform.capabilities.environment.api import state_machine as canonical_state_machine
 from noetrium_platform.capabilities.environment.runtime.composition import (
     compose_state_machine_environment,
 )
@@ -170,3 +171,18 @@ def test_rejected_transition_cannot_mutate_authoritative_state() -> None:
     )
     with pytest.raises(ValueError, match="rejected.*cannot mutate"):
         session.act(request)
+
+
+def test_runtime_state_machine_surface_forwards_canonical_contracts() -> None:
+    from noetrium_platform.capabilities.environment.runtime.api import state_machine as runtime_state_machine
+
+    for name in (
+        "StateMachineDynamicsIdentity",
+        "StateMachineEnvironmentSpec",
+        "StateTransition",
+        "StateMachineDynamicsPort",
+        "freeze_json_mapping",
+        "thaw_json",
+        "thaw_json_mapping",
+    ):
+        assert getattr(runtime_state_machine, name) is getattr(canonical_state_machine, name)

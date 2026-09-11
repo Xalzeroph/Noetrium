@@ -31,3 +31,11 @@ def test_public_platform_bindings_have_one_runtime_owner() -> None:
     assert root_platform.__all__ == public_platform.__all__
     for name in root_platform.__all__:
         assert getattr(root_platform, name) is getattr(public_platform, name)
+
+
+def test_host_route_provider_is_constructed_at_one_authority() -> None:
+    source = (
+        ROOT / "noetrium_platform/infrastructure/lifecycle/host/composition/authorities.py"
+    ).read_text(encoding="utf-8")
+    assert source.count("LocalOperatingSystemRoute()") == 1
+    assert "operating_system = local_operating_system_route()" in source

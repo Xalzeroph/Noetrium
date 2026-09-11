@@ -1804,3 +1804,29 @@ cross-process acquisition, atomic file publication, and directory durability;
 capability providers own artifact validation and domain outcomes. The
 architecture gate and regression test fail closed if the artifact adapter
 reintroduces operating-system lock or flush code.
+
+## 65. R22: Single host provider construction site
+
+The host composition authority now contains the only construction site for
+the local operating-system route. Higher-level platform assembly consumes the
+typed route factory and does not instantiate or select a host provider itself.
+This keeps provider selection, identity, and host capability metadata in the
+host subsystem while leaving platform assembly responsible only for wiring.
+
+The regression test checks the construction count and the architecture
+invariants continue to reject direct host-provider selection outside the
+approved host composition authority.
+
+## 66. R23: Canonical environment contract plane
+
+The environment system's public API is now the sole owner of state-machine
+value semantics, action identity contracts, failure contracts, and environment
+session contracts. The runtime API path is a forwarding view only; it defines
+no duplicate state-machine types or validation logic.
+
+The public environment facade uses explicit imports from those canonical API
+modules. It has no lazy runtime lookup or hidden fallback, so missing contract
+exports fail at import time and downstream generators can rely on one typed
+surface. The architecture audit also validates nested API facades against the
+catalog package prefix, closing a previous blind spot in concrete-layer
+re-export detection.
