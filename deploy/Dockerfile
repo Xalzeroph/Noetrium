@@ -17,8 +17,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PLATFORM_EMBEDDED_WHEEL=/opt/noetrium-artifact/noetrium_platform.whl
 
 WORKDIR /opt/noetrium
-COPY *.whl /tmp/wheelhouse/
-COPY container-entrypoint.sh /usr/local/bin/noetrium-entrypoint
+COPY deploy/*.whl /tmp/wheelhouse/
+COPY deploy/container-entrypoint.sh /usr/local/bin/noetrium-entrypoint
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
