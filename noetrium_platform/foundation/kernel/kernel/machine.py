@@ -12,6 +12,7 @@ from typing import Protocol, runtime_checkable
 
 from .canonical import canonical_digest, freeze_json, require_sha256
 from .json_value import JsonObject, JsonValue
+from .contracts import ChildMachineLink
 
 
 class MachineKind(StrEnum):
@@ -166,6 +167,19 @@ class TransitionProposal:
     event_payloads: tuple[JsonValue, ...] = ()
     effect_intent_refs: tuple[str, ...] = ()
     wait_reason: str | None = None
+    before_state_digest: str | None = None
+    input_digest: str | None = None
+    program_digest: str | None = None
+    machine_kind: str | None = None
+    machine_version: str | None = None
+    input_refs: tuple[str, ...] = ()
+    state_delta_ref: str | None = None
+    evidence_refs: tuple[str, ...] = ()
+    artifact_refs: tuple[str, ...] = ()
+    parent_transition_id: str | None = None
+    attempt_id: str | None = None
+    authority_epoch: int | None = None
+    child_links: tuple[ChildMachineLink, ...] = ()
     proposal_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -180,8 +194,41 @@ class TransitionProposal:
             not isinstance(item, MachineCommand) for item in self.emitted_commands
         ):
             raise TypeError("transition proposal emitted_commands must be typed tuple")
-        if any(type(value) is not str or not value.strip() for value in self.output_refs):
-            raise ValueError("transition proposal output_refs must be non-empty text")
+        if type(self.child_links) is not tuple or any(
+            not isinstance(item, ChildMachineLink) or item.parent_machine_id != self.machine_id
+            for item in self.child_links
+        ):
+            raise TypeError("transition proposal child_links must belong to the parent machine")
+        for name, values in ((
+            ("output_refs", self.output_refs),
+            ("input_refs", self.input_refs),
+            ("evidence_refs", self.evidence_refs),
+            ("artifact_refs", self.artifact_refs),
+        )):
+            if type(values) is not tuple or any(
+                type(value) is not str or not value.strip() for value in values
+            ):
+                raise TypeError(f"transition proposal {name} must be non-empty text tuple")
+        for name, value in ((
+            ("before_state_digest", self.before_state_digest),
+            ("input_digest", self.input_digest),
+            ("program_digest", self.program_digest),
+        )):
+            if value is not None:
+                require_sha256(value, f"transition proposal {name}")
+        for name, value in ((
+            ("machine_kind", self.machine_kind),
+            ("machine_version", self.machine_version),
+            ("state_delta_ref", self.state_delta_ref),
+            ("parent_transition_id", self.parent_transition_id),
+            ("attempt_id", self.attempt_id),
+        )):
+            if value is not None and (type(value) is not str or not value.strip()):
+                raise ValueError(f"transition proposal {name} must be non-empty text")
+        if self.authority_epoch is not None and (
+            type(self.authority_epoch) is not int or self.authority_epoch < 0
+        ):
+            raise ValueError("transition proposal authority_epoch must be non-negative")
         if self.wait_reason is not None and (
             type(self.wait_reason) is not str or not self.wait_reason.strip()
         ):
@@ -205,6 +252,19 @@ class TransitionProposal:
                 "event_payloads": self.event_payloads,
                 "effect_intent_refs": self.effect_intent_refs,
                 "wait_reason": self.wait_reason,
+                "before_state_digest": self.before_state_digest,
+                "input_digest": self.input_digest,
+                "program_digest": self.program_digest,
+                "machine_kind": self.machine_kind,
+                "machine_version": self.machine_version,
+                "input_refs": self.input_refs,
+                "state_delta_ref": self.state_delta_ref,
+                "evidence_refs": self.evidence_refs,
+                "artifact_refs": self.artifact_refs,
+                "parent_transition_id": self.parent_transition_id,
+                "attempt_id": self.attempt_id,
+                "authority_epoch": self.authority_epoch,
+                "child_links": self.child_links,
             }),
         )
 
@@ -223,6 +283,19 @@ class MachineCommit:
     effect_intent_refs: tuple[str, ...] = ()
     emitted_commands: tuple[MachineCommand, ...] = ()
     previous_commit_id: str | None = None
+    before_state_digest: str | None = None
+    input_digest: str | None = None
+    program_digest: str | None = None
+    machine_kind: str | None = None
+    machine_version: str | None = None
+    input_refs: tuple[str, ...] = ()
+    state_delta_ref: str | None = None
+    evidence_refs: tuple[str, ...] = ()
+    artifact_refs: tuple[str, ...] = ()
+    parent_transition_id: str | None = None
+    attempt_id: str | None = None
+    authority_epoch: int | None = None
+    child_links: tuple[ChildMachineLink, ...] = ()
     state_digest: str = field(init=False)
     commit_id: str = field(init=False)
 
@@ -240,6 +313,41 @@ class MachineCommit:
             type(self.previous_commit_id) is not str or not self.previous_commit_id.strip()
         ):
             raise ValueError("machine commit previous_commit_id must be non-empty")
+        if type(self.child_links) is not tuple or any(
+            not isinstance(item, ChildMachineLink) or item.parent_machine_id != self.machine_id
+            for item in self.child_links
+        ):
+            raise TypeError("machine commit child_links must belong to the parent machine")
+        for name, values in ((
+            ("output_refs", self.output_refs),
+            ("input_refs", self.input_refs),
+            ("evidence_refs", self.evidence_refs),
+            ("artifact_refs", self.artifact_refs),
+        )):
+            if type(values) is not tuple or any(
+                type(value) is not str or not value.strip() for value in values
+            ):
+                raise TypeError(f"machine commit {name} must be non-empty text tuple")
+        for name, value in ((
+            ("before_state_digest", self.before_state_digest),
+            ("input_digest", self.input_digest),
+            ("program_digest", self.program_digest),
+        )):
+            if value is not None:
+                require_sha256(value, f"machine commit {name}")
+        for name, value in ((
+            ("machine_kind", self.machine_kind),
+            ("machine_version", self.machine_version),
+            ("state_delta_ref", self.state_delta_ref),
+            ("parent_transition_id", self.parent_transition_id),
+            ("attempt_id", self.attempt_id),
+        )):
+            if value is not None and (type(value) is not str or not value.strip()):
+                raise ValueError(f"machine commit {name} must be non-empty text")
+        if self.authority_epoch is not None and (
+            type(self.authority_epoch) is not int or self.authority_epoch < 0
+        ):
+            raise ValueError("machine commit authority_epoch must be non-negative")
         object.__setattr__(self, "state", freeze_json(self.state))
         object.__setattr__(
             self,
@@ -263,6 +371,19 @@ class MachineCommit:
                 "effect_intent_refs": self.effect_intent_refs,
                 "emitted_commands": self.emitted_commands,
                 "previous_commit_id": self.previous_commit_id,
+                "before_state_digest": self.before_state_digest,
+                "input_digest": self.input_digest,
+                "program_digest": self.program_digest,
+                "machine_kind": self.machine_kind,
+                "machine_version": self.machine_version,
+                "input_refs": self.input_refs,
+                "state_delta_ref": self.state_delta_ref,
+                "evidence_refs": self.evidence_refs,
+                "artifact_refs": self.artifact_refs,
+                "parent_transition_id": self.parent_transition_id,
+                "attempt_id": self.attempt_id,
+                "authority_epoch": self.authority_epoch,
+                "child_links": self.child_links,
             }),
         )
 
@@ -325,6 +446,7 @@ class MachinePort(Protocol):
     def step(self, command: MachineCommand, state: MachineSnapshot) -> TransitionProposal: ...
     def checkpoint(self, state: MachineSnapshot) -> MachineSnapshot: ...
     def restore(self, snapshot: MachineSnapshot) -> MachineSnapshot: ...
+    def replay(self, journal: object) -> MachineSnapshot: ...
     def inspect(self, state: MachineSnapshot) -> MachineInspection: ...
 
 

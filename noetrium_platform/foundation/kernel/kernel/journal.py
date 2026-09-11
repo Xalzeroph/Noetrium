@@ -19,6 +19,7 @@ from .machine import (
     MachineConflict,
     MachineIntegrityError,
 )
+from .contracts import ChildMachineLink
 
 
 def _command_document(command: MachineCommand) -> dict[str, object]:
@@ -50,6 +51,19 @@ def _commit_document(commit: MachineCommit) -> dict[str, object]:
         "effect_intent_refs": list(commit.effect_intent_refs),
         "emitted_commands": [_command_document(value) for value in commit.emitted_commands],
         "previous_commit_id": commit.previous_commit_id,
+        "before_state_digest": commit.before_state_digest,
+        "input_digest": commit.input_digest,
+        "program_digest": commit.program_digest,
+        "machine_kind": commit.machine_kind,
+        "machine_version": commit.machine_version,
+        "input_refs": list(commit.input_refs),
+        "state_delta_ref": commit.state_delta_ref,
+        "evidence_refs": list(commit.evidence_refs),
+        "artifact_refs": list(commit.artifact_refs),
+        "parent_transition_id": commit.parent_transition_id,
+        "attempt_id": commit.attempt_id,
+        "authority_epoch": commit.authority_epoch,
+        "child_links": [value.as_dict() for value in commit.child_links],
     }
 
 
@@ -102,18 +116,49 @@ def _decode_command(value: object) -> MachineCommand:
     return command
 
 
+def _decode_child_link(value: object) -> ChildMachineLink:
+    row = _require_object(value, "journal child link")
+    _require_exact(row, {
+        "parent_machine_id", "child_machine_id", "child_program_digest",
+        "child_snapshot_ref", "child_transition_start", "child_transition_end",
+        "child_result_ref", "failure_policy", "link_digest",
+    }, "journal child link")
+    link = ChildMachineLink(
+        parent_machine_id=_require_text(row["parent_machine_id"], "parent_machine_id"),
+        child_machine_id=_require_text(row["child_machine_id"], "child_machine_id"),
+        child_program_digest=_require_text(row["child_program_digest"], "child_program_digest"),
+        child_snapshot_ref=_require_text(row["child_snapshot_ref"], "child_snapshot_ref"),
+        child_transition_start=_require_int(row["child_transition_start"], "child_transition_start"),
+        child_transition_end=_require_int(row["child_transition_end"], "child_transition_end"),
+        child_result_ref=row["child_result_ref"],  # type: ignore[arg-type]
+        failure_policy=_require_text(row["failure_policy"], "failure_policy"),
+    )
+    if link.link_digest != _require_text(row["link_digest"], "link_digest"):
+        raise MachineIntegrityError("journal child link digest mismatch")
+    return link
+
+
 def _decode_commit(value: object) -> MachineCommit:
     row = _require_object(value, "journal commit")
     _require_exact(row, {
         "machine_id", "command_id", "base_revision", "revision",
         "proposal_digest", "command_digest", "state", "output_refs", "event_payloads",
-        "effect_intent_refs", "emitted_commands", "previous_commit_id",
+        "effect_intent_refs", "emitted_commands", "previous_commit_id", "before_state_digest",
+        "input_digest", "program_digest", "machine_kind", "machine_version", "input_refs",
+        "state_delta_ref", "evidence_refs", "artifact_refs", "parent_transition_id", "attempt_id",
+        "authority_epoch", "child_links",
     }, "journal commit")
     output_refs = row["output_refs"]
     effect_refs = row["effect_intent_refs"]
+    input_refs = row["input_refs"]
+    evidence_refs = row["evidence_refs"]
+    artifact_refs = row["artifact_refs"]
+    child_links = row["child_links"]
     events = row["event_payloads"]
     commands = row["emitted_commands"]
-    if not all(isinstance(item, list) for item in (output_refs, effect_refs, events, commands)):
+    if not all(isinstance(item, list) for item in (
+        output_refs, effect_refs, input_refs, evidence_refs, artifact_refs, child_links, events, commands
+    )):
         raise MachineIntegrityError("journal commit collection fields must be lists")
     commit = MachineCommit(
         machine_id=_require_text(row["machine_id"], "machine_id"),
@@ -128,6 +173,19 @@ def _decode_commit(value: object) -> MachineCommit:
         effect_intent_refs=tuple(_require_text(item, "effect ref") for item in effect_refs),
         emitted_commands=tuple(_decode_command(item) for item in commands),
         previous_commit_id=row["previous_commit_id"],  # type: ignore[arg-type]
+        before_state_digest=row["before_state_digest"],  # type: ignore[arg-type]
+        input_digest=row["input_digest"],  # type: ignore[arg-type]
+        program_digest=row["program_digest"],  # type: ignore[arg-type]
+        machine_kind=row["machine_kind"],  # type: ignore[arg-type]
+        machine_version=row["machine_version"],  # type: ignore[arg-type]
+        input_refs=tuple(_require_text(item, "input ref") for item in input_refs),
+        state_delta_ref=row["state_delta_ref"],  # type: ignore[arg-type]
+        evidence_refs=tuple(_require_text(item, "evidence ref") for item in evidence_refs),
+        artifact_refs=tuple(_require_text(item, "artifact ref") for item in artifact_refs),
+        parent_transition_id=row["parent_transition_id"],  # type: ignore[arg-type]
+        attempt_id=row["attempt_id"],  # type: ignore[arg-type]
+        authority_epoch=row["authority_epoch"],  # type: ignore[arg-type]
+        child_links=tuple(_decode_child_link(item) for item in child_links),
     )
     return commit
 
@@ -268,14 +326,9 @@ class DirectoryMachineJournal(MachineJournalPort):
             return commit
 
     def _history(self, machine_id: str) -> tuple[MachineCommit, ...]:
-        with self._cache_lock:
-            cached = self._cache.get(machine_id)
-        if cached is not None:
-            return cached
-        history = tuple(self._read(machine_id))
-        with self._cache_lock:
-            self._cache[machine_id] = history
-        return history
+        # A long-lived process must observe commits written by other processes;
+        # the append path still uses the lock for the authoritative CAS.
+        return tuple(self._read(machine_id))
 
     def latest(self, machine_id: str) -> MachineCommit | None:
         history = self._history(machine_id)

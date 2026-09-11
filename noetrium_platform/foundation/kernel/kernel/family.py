@@ -20,6 +20,7 @@ class MachineFamilyDescriptor:
     kind: MachineKind
     implementation_version: str
     state_schema: str
+    replay_level: str = "replayable"
     command_kinds: tuple[str, ...] = ()
     required_capabilities: tuple[str, ...] = ()
     provided_capabilities: tuple[str, ...] = ()
@@ -30,6 +31,7 @@ class MachineFamilyDescriptor:
             self.family_id,
             self.implementation_version,
             self.state_schema,
+            self.replay_level,
         ):
             if type(value) is not str or not value.strip():
                 raise ValueError("machine family identity fields are required")
@@ -54,6 +56,7 @@ class MachineFamilyDescriptor:
                 "kind": self.kind.value,
                 "implementation_version": self.implementation_version,
                 "state_schema": self.state_schema,
+                "replay_level": self.replay_level,
                 "command_kinds": self.command_kinds,
                 "required_capabilities": self.required_capabilities,
                 "provided_capabilities": self.provided_capabilities,

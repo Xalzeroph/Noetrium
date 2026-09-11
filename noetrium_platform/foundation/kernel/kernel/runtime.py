@@ -7,11 +7,13 @@ and lets the journal decide whether that commit becomes fact.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from threading import RLock
 from typing import Protocol, runtime_checkable
 
 from .authority import MachineAuthorityPort, MachineLease
 from .canonical import canonical_digest, thaw_json
+from .contracts import CapabilityDescriptor
 from .delivery import MachineEnvelope, MachineOutboxPort
 from .family import MachineFamilyDescriptor
 from .journal import MachineJournalPort
@@ -60,6 +62,7 @@ class MachineRuntime:
         snapshot_store: MachineSnapshotStorePort | None = None,
         outbox: MachineOutboxPort | None = None,
         family: MachineFamilyDescriptor | None = None,
+        capabilities: tuple[CapabilityDescriptor, ...] = (),
         authority: MachineAuthorityPort | None = None,
         authority_lease: MachineLease | None = None,
     ) -> None:
@@ -76,6 +79,17 @@ class MachineRuntime:
             raise ValueError("machine family kind must match machine identity kind")
         if family is not None and family.implementation_version != identity.implementation_version:
             raise ValueError("machine family implementation version must match machine identity")
+        if type(capabilities) is not tuple or any(
+            not isinstance(item, CapabilityDescriptor) for item in capabilities
+        ):
+            raise TypeError("capabilities must be a tuple of CapabilityDescriptor")
+        capability_ids = tuple(item.capability_id for item in capabilities)
+        if len(set(capability_ids)) != len(capability_ids):
+            raise ValueError("capability identities must be unique")
+        if family is not None:
+            missing = set(family.required_capabilities) - set(capability_ids)
+            if missing:
+                raise ValueError(f"required machine capabilities are not granted: {sorted(missing)}")
         if authority is not None and not isinstance(authority, MachineAuthorityPort):
             raise TypeError("authority must implement MachineAuthorityPort")
         if (authority is None) != (authority_lease is None):
@@ -85,6 +99,7 @@ class MachineRuntime:
         self.snapshot_store = snapshot_store
         self.outbox = outbox
         self.family = family
+        self.capabilities = capabilities
         self.authority = authority
         self.authority_lease = authority_lease
         self._lock = RLock()
@@ -214,6 +229,13 @@ class MachineRuntime:
             raise MachineConflict("command belongs to a different machine")
         if self.family is not None and self.family.command_kinds and command.kind not in self.family.command_kinds:
             raise MachineConflict(f"command kind is not admitted by machine family: {command.kind}")
+        if self.capabilities:
+            granted_scopes = {
+                scope for capability in self.capabilities for scope in capability.permission_scope
+            }
+            denied = set(command.scope) - granted_scopes
+            if denied:
+                raise MachineConflict(f"command capability scope is not granted: {sorted(denied)}")
         with self._lock:
             existing = self._existing_command(command)
             if existing is not None:
@@ -236,6 +258,24 @@ class MachineRuntime:
                 )
             proposal = interpreter.propose(command, state)
             self._validate_proposal(command, state, proposal)
+            proposal = replace(
+                proposal,
+                before_state_digest=canonical_digest(state.state),
+                input_digest=command.payload_digest,
+                program_digest=self.program.program_digest,
+                machine_kind=self.identity.kind.value,
+                machine_version=self.identity.implementation_version,
+                state_delta_ref=canonical_digest(proposal.state_delta),
+                parent_transition_id=state.parent_commit_id,
+                attempt_id=canonical_digest({
+                    "command_id": command.command_id,
+                    "base_revision": state.revision,
+                    "worker": "machine-runtime",
+                }),
+                authority_epoch=(
+                    None if self.authority_lease is None else self.authority_lease.epoch
+                ),
+            )
             merged = thaw_json(state.state)
             if not isinstance(merged, dict):
                 raise MachineRuntimeError("machine state must be an object")
@@ -254,6 +294,19 @@ class MachineRuntime:
                 effect_intent_refs=proposal.effect_intent_refs,
                 emitted_commands=proposal.emitted_commands,
                 previous_commit_id=state.parent_commit_id,
+                before_state_digest=proposal.before_state_digest,
+                input_digest=proposal.input_digest,
+                program_digest=proposal.program_digest,
+                machine_kind=proposal.machine_kind,
+                machine_version=proposal.machine_version,
+                input_refs=proposal.input_refs,
+                state_delta_ref=proposal.state_delta_ref,
+                evidence_refs=proposal.evidence_refs,
+                artifact_refs=proposal.artifact_refs,
+                parent_transition_id=proposal.parent_transition_id,
+                attempt_id=proposal.attempt_id,
+                authority_epoch=proposal.authority_epoch,
+                child_links=proposal.child_links,
             )
             accepted = self.journal.append(commit)
             self._snapshot = MachineSnapshot(
@@ -271,6 +324,41 @@ class MachineRuntime:
                 else MachineStatus.RUNNABLE
             )
             return accepted
+
+    def replay(self, revision: int | None = None) -> MachineSnapshot:
+        """Reconstruct a verified snapshot from the authoritative journal."""
+        with self._lock:
+            history = self.journal.commits(self.machine_id)
+            if not history:
+                return self.open()
+            selected = None
+            previous = None
+            states = {}
+            for commit in history:
+                if commit.machine_id != self.machine_id:
+                    raise MachineIntegrityError("journal contains a foreign machine commit")
+                if commit.program_digest is not None and commit.program_digest != self.program.program_digest:
+                    raise MachineIntegrityError("journal commit belongs to a different program")
+                if commit.previous_commit_id != previous:
+                    raise MachineIntegrityError("journal replay predecessor chain is invalid")
+                if commit.before_state_digest is not None and previous is not None:
+                    if commit.before_state_digest != canonical_digest(states[previous]):
+                        raise MachineIntegrityError("journal replay before_state_digest mismatch")
+                states[commit.commit_id] = commit.state
+                previous = commit.commit_id
+                if revision is None or commit.revision <= revision:
+                    selected = commit
+            if selected is None:
+                raise MachineConflict("requested replay revision is outside journal history")
+            self._snapshot = MachineSnapshot(
+                machine_id=self.machine_id,
+                revision=selected.revision,
+                program=self.program,
+                state=selected.state,
+                parent_commit_id=selected.commit_id,
+            )
+            self._status = MachineStatus.RUNNABLE
+            return self._snapshot
 
     def reconcile_outbox(self) -> tuple[MachineEnvelope, ...]:
         if self.outbox is None:

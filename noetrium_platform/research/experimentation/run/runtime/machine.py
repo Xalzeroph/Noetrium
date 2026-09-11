@@ -16,6 +16,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineRuntime,
     MachineSnapshot,
     MachineInterpreterPort,
+    RunBinding,
     canonical_digest,
     require_sha256,
 )
@@ -40,11 +41,21 @@ class ResearchRunSession:
 
     runtime: MachineRuntime
     binding_digest: str
+    binding: RunBinding | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.runtime, MachineRuntime):
             raise TypeError("research run session requires MachineRuntime")
         require_sha256(self.binding_digest, "research run binding_digest")
+        if self.binding is not None:
+            if not isinstance(self.binding, RunBinding):
+                raise TypeError("research run binding must be RunBinding")
+            if self.binding.program_digest != self.runtime.program.program_digest:
+                raise ValueError("research run binding program_digest does not match runtime")
+            expected_machine = canonical_digest(self.runtime.identity)
+            if self.binding.machine_implementation_digest != expected_machine:
+                raise ValueError("research run binding machine digest does not match runtime")
+            object.__setattr__(self, "binding_digest", self.binding.binding_digest)
 
     @property
     def run_id(self) -> str:

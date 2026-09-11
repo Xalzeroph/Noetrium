@@ -9,6 +9,7 @@ from .authority import (
 )
 from .semantic_policy import OperationSemanticPolicyViolation
 from .context import ExecutionContext
+from .contracts import CapabilityDescriptor, ChildMachineLink, MachineAttempt, RunBinding
 from .delivery import (
     DeliveryReceipt, DeliveryStatus, InMemoryMachineInbox, InMemoryMachineOutbox,
     MachineEnvelope, MachineInboxPort, MachineOutboxPort,
@@ -38,6 +39,8 @@ from .canonical import (
     strict_finite_json_bytes, strict_finite_json_digest, strict_finite_json_text,
     strict_json_loads, thaw_json,
 )
+from .inspection import JournalInspectionPort, JournalInspectionService, MachineHistoryInspection
+from .plugin import InMemoryPluginRegistry, PluginManifest, PluginRegistryPort, PluginSignatureVerifier
 from .auxiliary_failures import OperationAuxiliaryFailureSink
 from .execution import OperationExecutor, OperationFailure
 from .compiler import CompiledProgram, NshCompiler, ProgramSource
@@ -95,6 +98,9 @@ __all__ = [
     "ExecutionContext", "ComponentIdentity", "ImmutableModelIdentity",
     "DirectoryMachineAuthority", "InMemoryMachineAuthority", "MachineAuthorityError",
     "MachineAuthorityPort", "MachineLease", "MachineLeaseBusy", "MachineLeaseLost",
+    "CapabilityDescriptor", "ChildMachineLink", "MachineAttempt", "RunBinding",
+    "JournalInspectionPort", "JournalInspectionService", "MachineHistoryInspection",
+    "InMemoryPluginRegistry", "PluginManifest", "PluginRegistryPort", "PluginSignatureVerifier",
     "DeliveryReceipt", "DeliveryStatus", "InMemoryMachineInbox", "InMemoryMachineOutbox",
     "MachineEnvelope", "MachineInboxPort", "MachineOutboxPort",
     "DirectoryMachineInbox", "DirectoryMachineOutbox", "NIREnvelope",

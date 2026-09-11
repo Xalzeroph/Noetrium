@@ -1650,3 +1650,28 @@ ownership 中心。四者互相引用摘要和证据，但任何一个都不越�
   生成 schema 重写未恢复：它们与 MachineRuntime 唯一 authority、system catalog 唯一
   topology 和禁止重复 facade 的约束冲突，且当前实现已有对应的收敛路径。
 - 最终本地分支将记录为 `main`，保留审阅后的当前工作树；本轮不执行 push。
+
+
+## 55. R12：Machine end-state contract completion
+
+本节只追加当前实现状态，不修改 R7、R8、R9、R10 或 R11。
+
+- TransitionProposal 与 MachineCommit 现在显式绑定 before/after state digest、input digest、program digest、machine kind/version、input/evidence/artifact refs、parent transition、attempt、authority epoch 和 child machine links。
+- Journal 对新增字段执行 exact-field、canonical encoding、digest、前驱链和子机链接完整性校验；`MachineRuntime.replay` 提供 journal-backed replay。
+- MachineFamilyDescriptor 固定 replay level；RunBinding 将 Kernel ABI、machine implementation、program、provider、schema、environment 和 policy 版本绑定到一个不可变 digest。
+- JournalInspectionService 从事实 Journal 重建 transitions、children、effects、evidence、artifacts 和 pending delivery，不读取 worker 内存作为权威。
+- PluginManifest 与签名验证 registry 只记录扩展声明，不授予 capability 权限；权限仍由 Run scope 与 Kernel policy 决定。
+- nsh 新增 experiment compile、run start/inspect/pause/resume/complete/fail/replay、evidence 和 artifact 查询投影；运行与提交继续由 MachineRuntime 负责。
+- architecture gate 现在校验 ownership matrix schema/source/rows、完整文档状态、family replay metadata 及更广泛的 worker import/write 边界。
+- DirectoryMachineJournal 不再使用跨进程不可见的历史缓存；读取路径每次从 durable journal 重建，避免长生命周期进程观察旧 head。
+- 仍属于生产 composition/provider qualification 的 consensus、mTLS/KMS、OS sandbox 和 container/VM isolation 不由参考实现伪装完成，必须由 `ExecutionQualificationPort` typed provider 接入并提供资格证据。
+
+## 56. R13：跨语言与命令面闭环
+
+本节只追加当前实现状态，不修改此前任何历史节。
+
+- nsh 的公开命令面固定为 `experiment compile`、`run start|inspect|pause|resume|complete|fail|replay`、`evidence explain` 和 `artifact list`；所有运行命令均通过 `python -m noetrium nsh` 进入，不复用 product CLI 的解析器。
+- run descriptor 持久化并校验 RunBinding；重启后的 inspect/replay 先验证 program、machine identity 和 binding digest，再读取 Journal。
+- TypeScript 与 Rust SDK 提供同一组 snake_case wire contract、canonical JSON、SHA-256、MachineCommand identity、ProgramLock/RunBinding 类型和 scope assertion；architecture gate 会检查 SDK surface 是否完整。
+- 新增的 subprocess、跨进程 CAS、Journal replay、binding、plugin signature、capability scope 和 test-system 分类测试纳入全量测试目录。
+- SDK 编译资格取决于环境是否提供 `tsc` 与 `cargo`；没有工具链时只允许报告未执行，不能宣称跨语言编译已通过。

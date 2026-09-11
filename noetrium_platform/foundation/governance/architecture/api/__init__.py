@@ -46,6 +46,16 @@ from .provider_ingress import (
     provider_implementation_from_repository_source,
 )
 
+from .execution_qualification import (
+    ConsensusQualificationPort,
+    ExecutionQualificationPort,
+    IsolationQualificationPort,
+    QualificationEvidence,
+    QualificationKind,
+    WorkerAttestationQualificationPort,
+    require_production_qualification,
+)
+
 from .semantic_boundary import (
     SemanticBoundaryClaim,
     SemanticBoundaryClaimError,
@@ -96,6 +106,13 @@ __all__ = [
     "RequirementAddress",
     "RequirementCardinality",
     "interface_contract_digest",
+    "ConsensusQualificationPort",
+    "ExecutionQualificationPort",
+    "IsolationQualificationPort",
+    "QualificationEvidence",
+    "QualificationKind",
+    "WorkerAttestationQualificationPort",
+    "require_production_qualification",
     "SemanticBoundaryClaim",
     "SemanticBoundaryClaimError",
     "SemanticBoundaryClassification",
