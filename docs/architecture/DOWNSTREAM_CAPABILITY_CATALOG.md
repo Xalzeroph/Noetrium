@@ -18,20 +18,20 @@ Example:
     def compose(bridge: MinecraftBridgePort, memory: AgentMemoryPort) -> None:
         ...
 
-- Registered systems: 174
-- Public API modules: 500
-- Public symbols: 3671
-- Registry digest: def72b47c0ba665ea27a17e92f7659e5e463cf69f391e8cb4212989af8aaa26e
+- Registered systems: 172
+- Public API modules: 502
+- Public symbols: 3718
+- Registry digest: 2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603
 
 ## Capability domains
 
 | Domain | Systems | API modules | Symbols |
 | --- | ---: | ---: | ---: |
 | artifact | 7 | 24 | 127 |
-| components | 3 | 1 | 57 |
+| components | 1 | 1 | 49 |
 | data | 8 | 20 | 106 |
 | environment | 18 | 53 | 444 |
-| execution | 7 | 31 | 183 |
+| execution | 7 | 33 | 238 |
 | experimentation | 15 | 59 | 576 |
 | governance | 13 | 33 | 307 |
 | model | 16 | 54 | 476 |
@@ -706,20 +706,22 @@ Example:
 
 - Package: noetrium_platform.research.execution.workflow
 - Authority: workflow_state
-- Owns: workflow definitions and orchestration semantics
+- Owns: workflow definitions, universal method-machine orchestration, and resumable control semantics
 - Must not own: process supervision
-- Requires: none
-- Provides: workflow.runtime
+- Requires: participant/capability, participant/method, platform
+- Provides: workflow.runtime, method.machine, method.abi, method.checkpoint
 - Downstream surface: public
 - Facade: noetrium.contracts.systems.execution__workflow
 
 #### API modules
 
-- noetrium_platform.research.execution.workflow.api ?w^~)?t EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowOperationBinding, WorkflowParticipantRequirementError, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_id, workflow_surface_reuse_scope
+- noetrium_platform.research.execution.workflow.api ?w^~)?t MethodGraphProgramAdapter, ResearchMethodProgramAdapter, EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowOperationBinding, WorkflowParticipantRequirementError, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_id, workflow_surface_reuse_scope, AsyncMethodAgentLoopPort, AsyncOperationDispatchPort, MethodAgentLoopPort, MethodAgentRequest, MethodAgentResult, MethodCheckpoint, MethodCheckpointStorePort, MethodEvidenceStatus, MethodExecutionClass, MethodEvidencePort, MethodEvent, MethodGraph, MethodInterrupt, MethodMachinePort, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodObservationPort, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodRunStatus, MethodRuntimeContext
+- noetrium_platform.research.execution.workflow.api.adapters ?w^~)?t MethodGraphProgramAdapter, ResearchMethodProgramAdapter
 - noetrium_platform.research.execution.workflow.api.dispatch ?w^~)?t OperationDispatchPort, OperationExecutionPort
 - noetrium_platform.research.execution.workflow.api.effect_intents ?w^~)?t EffectIntentOperationPort
 - noetrium_platform.research.execution.workflow.api.errors ?w^~)?t WorkflowParticipantRequirementError
 - noetrium_platform.research.execution.workflow.api.graph ?w^~)?t WorkflowGraph, WorkflowGraphError, WorkflowStep
+- noetrium_platform.research.execution.workflow.api.method_machine ?w^~)?t AsyncMethodAgentLoopPort, AsyncOperationDispatchPort, MethodAgentLoopPort, MethodAgentRequest, MethodAgentResult, MethodCheckpoint, MethodCheckpointStorePort, MethodEvidencePort, MethodEvent, MethodEvidenceStatus, MethodExecutionClass, MethodGraph, MethodInterrupt, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodObservationPort, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodMachinePort, MethodRunStatus, MethodRuntimeContext, MethodSchemaPort
 - noetrium_platform.research.execution.workflow.api.progress ?w^~)?t WorkflowOperationBinding, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort, WorkflowRunId
 - noetrium_platform.research.execution.workflow.api.surfaces ?w^~)?t WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_reuse_scope, workflow_surface_id
 - noetrium_platform.research.execution.workflow.api.trial ?w^~)?t TrialCycleExecution
@@ -2787,29 +2789,7 @@ Example:
 
 #### API modules
 
-- components.api ?w^~)?t MemoryEdgeRecord, MemoryGraphConflict, MemoryGraphIntegrityError, MemoryGraphLedgerEntry, MemoryGraphOperation, MemoryGraphPort, MemoryGraphSnapshot, MemoryGraphTransaction, MemoryNodeRecord, VersionedMemoryGraph, JsonlReferenceAgentProgress, NullReferenceAgentProgress, PlatformCapabilityToolPort, ReferenceAgentAction, ReferenceAgentActionKind, ReferenceAgentActionToolPort, ReferenceAgentDecision, ReferenceAgentDecisionPort, ReferenceAgentEvent, ReferenceAgentMessage, ReferenceAgentObservation, ReferenceAgentPlannerPort, ReferenceAgentProgressPort, ReferenceAgentReflectionPort, ReferenceAgentRunResult, ReferenceAgentDecisionAdapter, ReferenceAgentDecisionCodec, ReferenceAgentGenerationControls, ReferenceAgentHarness, ReferenceAgentHooks, ReferenceAgentModelPort, ReferenceAgentModelResponse, ReferenceAgentOutputMode, ReferenceAgentSolverPort, ReferenceAgentState, ReferenceAgentStatus, ReferenceAgentToolPort, ReferencePlanAndSolveMethod, ReferenceReActMethod, ReferenceReflexionMethod, ReferenceToolRegistryPort, EpisodicMemoryStore, MemoryEmbedderPort, MemoryItem, MemoryPersistencePort, SQLiteMemoryPersistence, VectorMemoryStore, WorkingMemory, ToolArguments, ToolAuditPort, ToolAuthorization, ToolAuthorizationPort, ToolDefinition, ToolHandler, ToolRegistry, ToolResult, ToolRiskClass
-
-### components/reference
-
-- Package: components.reference
-- Authority: reference_component_namespace
-- Owns: namespace and lifecycle boundary for reusable reference components
-- Must not own: platform authority mutation, provider credentials or scientific result acceptance
-- Requires: components
-- Provides: none
-- Downstream surface: public
-- Facade: noetrium.contracts.systems.components__reference
-
-### components/reference/harness
-
-- Package: components.reference.harness
-- Authority: universal_research_harness
-- Owns: typed method-node composition, lifecycle validation, checkpointing and replayable harness execution
-- Must not own: platform authority mutation, provider credentials or scientific result acceptance
-- Requires: components, platform
-- Provides: none
-- Downstream surface: metadata_only
-- Facade: noetrium.contracts.systems.components__reference__harness
+- components.api ?w^~)?t MemoryEdgeRecord, MemoryGraphConflict, MemoryGraphIntegrityError, MemoryGraphLedgerEntry, MemoryGraphOperation, MemoryGraphPort, MemoryGraphSnapshot, MemoryGraphTransaction, MemoryNodeRecord, VersionedMemoryGraph, JsonlReferenceAgentProgress, NullReferenceAgentProgress, PlatformCapabilityToolPort, ReferenceAgentAction, ReferenceAgentActionKind, ReferenceAgentActionToolPort, ReferenceAgentDecision, ReferenceAgentDecisionPort, ReferenceAgentEvent, ReferenceAgentMessage, ReferenceAgentObservation, ReferenceAgentPlannerPort, ReferenceAgentProgressPort, ReferenceAgentReflectionPort, ReferenceAgentRunResult, ReferenceAgentSolverPort, ReferenceAgentState, ReferenceAgentStatus, ReferenceAgentToolPort, ReferencePlanAndSolveMethod, ReferenceReActMethod, ReferenceReflexionMethod, ReferenceToolRegistryPort, EpisodicMemoryStore, MemoryEmbedderPort, MemoryItem, MemoryPersistencePort, SQLiteMemoryPersistence, VectorMemoryStore, WorkingMemory, ToolArguments, ToolAuditPort, ToolAuthorization, ToolAuthorizationPort, ToolDefinition, ToolHandler, ToolRegistry, ToolResult, ToolRiskClass
 
 ### orchestration
 

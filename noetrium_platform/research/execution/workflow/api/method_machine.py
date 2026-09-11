@@ -63,9 +63,6 @@ class MethodEvidenceStatus(StrEnum):
     UNKNOWN = "unknown"
 
 
-METHOD_AGENT_CHECKPOINTS_STATE_KEY = "__noetrium_agent_checkpoints"
-
-
 @dataclass(frozen=True, slots=True)
 class MethodEvent:
     kind: str
@@ -100,6 +97,7 @@ class MethodNodeResult:
     events: tuple[MethodEvent, ...] = ()
     interrupt: MethodInterrupt | None = None
     effect_receipts: tuple[EffectReceipt, ...] = ()
+    checkpoint_value: JsonValue = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.state_update, Mapping):
@@ -118,6 +116,7 @@ class MethodNodeResult:
             raise TypeError("method node effect_receipts must be a tuple of EffectReceipt")
         object.__setattr__(self, "value", freeze_json(self.value))
         object.__setattr__(self, "state_update", freeze_json(self.state_update))
+        object.__setattr__(self, "checkpoint_value", freeze_json(self.checkpoint_value))
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,6 +129,7 @@ class MethodNodeRequest:
     previous_value: JsonValue = None
     capabilities: CapabilityPort | None = None
     visit_counts: tuple[tuple[str, int], ...] = ()
+    checkpoint: JsonValue = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.node_id, str) or not self.node_id.strip():
@@ -150,6 +150,7 @@ class MethodNodeRequest:
         object.__setattr__(self, "state", freeze_json(self.state))
         object.__setattr__(self, "input_value", freeze_json(self.input_value))
         object.__setattr__(self, "previous_value", freeze_json(self.previous_value))
+        object.__setattr__(self, "checkpoint", freeze_json(self.checkpoint))
 
 
 MethodNodeHandler = Callable[[MethodNodeRequest], MethodNodeResult]
@@ -157,8 +158,6 @@ MethodNodeHandler = Callable[[MethodNodeRequest], MethodNodeResult]
 
 @dataclass(frozen=True, slots=True)
 class MethodAgentRequest:
-    """The platform-owned agent-loop input for an ``AGENT`` node."""
-
     agent_id: str
     goal: JsonValue
     state: JsonObject
@@ -183,13 +182,13 @@ class MethodAgentRequest:
 
 @dataclass(frozen=True, slots=True)
 class MethodAgentResult:
-    """Normalized result returned by a platform agent loop."""
-
     value: JsonValue = None
     state_update: JsonObject = field(default_factory=dict)
     events: tuple[MethodEvent, ...] = ()
     effect_receipts: tuple[EffectReceipt, ...] = ()
     checkpoint: JsonValue = None
+    next_node: str | None = None
+    interrupt: MethodInterrupt | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.state_update, Mapping):
@@ -200,6 +199,10 @@ class MethodAgentResult:
             not isinstance(receipt, EffectReceipt) for receipt in self.effect_receipts
         ):
             raise TypeError("method agent effect_receipts must be a tuple of EffectReceipt")
+        if self.next_node is not None and (not isinstance(self.next_node, str) or not self.next_node.strip()):
+            raise ValueError("method agent next_node must be non-empty when provided")
+        if self.interrupt is not None and not isinstance(self.interrupt, MethodInterrupt):
+            raise TypeError("method agent interrupt must be MethodInterrupt")
         object.__setattr__(self, "value", freeze_json(self.value))
         object.__setattr__(self, "state_update", freeze_json(self.state_update))
         object.__setattr__(self, "checkpoint", freeze_json(self.checkpoint))
@@ -220,32 +223,18 @@ class MethodSchemaPort(Protocol):
     def validate(self, schema_id: str, value: JsonValue, *, location: str) -> None: ...
 
 
-@runtime_checkable
-class MethodEvidenceValidationPort(Protocol):
-    def validate_result(self, result: "MethodRunResult", obligations: tuple[str, ...]) -> MethodEvidenceStatus: ...
-
-
 def _handler_digest(handler: MethodNodeHandler | None) -> str:
-    """Bind checkpoint identity to implementation text when source is available."""
-
     if handler is None:
         return canonical_digest({"handler": None})
     try:
         source = inspect.getsource(handler)
     except (OSError, TypeError):
         source = ""
-    identity = {
+    return canonical_digest({
         "module": getattr(handler, "__module__", ""),
-        "qualname": getattr(handler, "__qualname__", ""),
+        "qualname": getattr(handler, "__qualname__", repr(handler)),
         "source": source,
-    }
-    if not source:
-        handler_type = type(handler)
-        identity["handler_type"] = (
-            getattr(handler_type, "__module__", ""),
-            getattr(handler_type, "__qualname__", ""),
-        )
-    return canonical_digest(identity)
+    })
 
 
 @dataclass(frozen=True, slots=True)
@@ -478,7 +467,6 @@ class MethodProgramBuilder:
         agent_id: str,
         next_nodes: tuple[str, ...] = (),
         *,
-        effect_class: EffectClass = EffectClass.PURE,
         max_visits: int = 1,
         input_schema: str = "json",
         output_schema: str = "json",
@@ -486,7 +474,7 @@ class MethodProgramBuilder:
     ) -> "MethodProgramBuilder":
         return self.add(MethodNodeSpec(
             node_id, operation_type, next_nodes, kind=MethodNodeKind.AGENT,
-            agent_id=agent_id, effect_class=effect_class, max_visits=max_visits,
+            agent_id=agent_id, max_visits=max_visits,
             input_schema=input_schema, output_schema=output_schema,
             evidence_obligations=evidence_obligations,
         ))
@@ -515,20 +503,9 @@ class MethodProgramBuilder:
             node_id, "method.interrupt", next_nodes, kind=MethodNodeKind.INTERRUPT,
         ))
 
-    def return_node(
-        self,
-        node_id: str,
-        operation_type: str,
-        handler: MethodNodeHandler,
-        *,
-        input_schema: str = "json",
-        output_schema: str = "json",
-        evidence_obligations: tuple[str, ...] = (),
-    ) -> "MethodProgramBuilder":
+    def return_node(self, node_id: str, operation_type: str, handler: MethodNodeHandler) -> "MethodProgramBuilder":
         return self.add(MethodNodeSpec(
             node_id, operation_type, (), handler, kind=MethodNodeKind.RETURN,
-            input_schema=input_schema, output_schema=output_schema,
-            evidence_obligations=evidence_obligations,
         ))
 
     def build(
@@ -575,6 +552,7 @@ class MethodCheckpoint:
     schema_digest: str | None = None
     effect_receipts: tuple[EffectReceipt, ...] = ()
     evidence_status: MethodEvidenceStatus = MethodEvidenceStatus.UNKNOWN
+    checkpoint_value: JsonValue = None
     checkpoint_id: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -609,6 +587,7 @@ class MethodCheckpoint:
                 require_sha256(value, f"method checkpoint {name}")
         object.__setattr__(self, "state", freeze_json(self.state))
         object.__setattr__(self, "previous_value", freeze_json(self.previous_value))
+        object.__setattr__(self, "checkpoint_value", freeze_json(self.checkpoint_value))
         object.__setattr__(self, "checkpoint_id", canonical_digest({
             "run_id": self.run_id,
             "program_digest": self.program_digest,
@@ -624,6 +603,7 @@ class MethodCheckpoint:
             "schema_digest": self.schema_digest,
             "effect_receipts": self.effect_receipts,
             "evidence_status": self.evidence_status.value,
+            "checkpoint_value": self.checkpoint_value,
         }))
 
 
@@ -716,6 +696,8 @@ class MethodEvidencePort(Protocol):
     def record_checkpoint(self, checkpoint: MethodCheckpoint) -> None: ...
     def record_result(self, result: MethodRunResult) -> None: ...
 
+    def validate_result(self, result: MethodRunResult, obligations: tuple[str, ...]) -> MethodEvidenceStatus: ...
+
 
 @runtime_checkable
 class MethodObservationPort(Protocol):
@@ -784,7 +766,7 @@ class AsyncOperationDispatchPort(Protocol):
 
 __all__ = [
     "AsyncMethodAgentLoopPort", "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult",
-    "METHOD_AGENT_CHECKPOINTS_STATE_KEY", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidencePort", "MethodEvidenceStatus", "MethodEvidenceValidationPort", "MethodEvent",
+    "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidencePort", "MethodEvent", "MethodEvidenceStatus",
     "MethodExecutionClass", "MethodGraph", "MethodInterrupt", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest",
     "MethodNodeResult", "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder",
     "MethodRunResult", "MethodMachinePort", "MethodRunStatus", "MethodRuntimeContext", "MethodSchemaPort",

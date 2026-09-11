@@ -827,7 +827,13 @@ def generate(root: Path, *, check: bool = False) -> int:
         for readme_path, updated in readme_updates.items():
             temporary = readme_path.with_name(readme_path.name + ".tmp")
             temporary.write_text(updated, encoding="utf-8", newline="\n")
-            temporary.replace(readme_path)
+            try:
+                temporary.replace(readme_path)
+            except PermissionError:
+                # Windows scanners/editors can deny replace while allowing a direct write.
+                # Preserve the generated content and clean up the transient file.
+                readme_path.write_text(updated, encoding="utf-8", newline="\n")
+                temporary.unlink(missing_ok=True)
         facade_root.mkdir(parents=True, exist_ok=True)
         for path in facade_root.glob("*.py"):
             if path.name == "__init__.py":

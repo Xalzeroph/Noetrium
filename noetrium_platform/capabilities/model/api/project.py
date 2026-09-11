@@ -390,13 +390,7 @@ class ProjectModelResponse:
         _sha256(self.request_digest, "project model response request_digest")
         _sha256(self.binding_digest, "project model response binding_digest")
         _sha256(self.response_digest, "project model response response_digest")
-        if not isinstance(self.text, str):
-            raise TypeError("project model response text must be text")
-        object.__setattr__(self, "tool_calls", freeze_json(self.tool_calls))
-        if not isinstance(self.tool_calls, tuple):
-            raise TypeError("project model response tool_calls must be a tuple")
-        if not self.text.strip() and not self.tool_calls:
-            raise ValueError("project model response must contain text or tool_calls")
+        _text(self.text, "project model response text")
         if self.finish_reason is not None and not isinstance(self.finish_reason, str):
             raise TypeError("project model response finish_reason must be text when provided")
         for field_name in ("input_tokens", "output_tokens"):

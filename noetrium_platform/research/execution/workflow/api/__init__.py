@@ -18,9 +18,8 @@ from .method_machine import (
     MethodAgentRequest,
     MethodAgentResult,
     MethodCheckpoint,
-    MethodExecutionClass,
-    MethodEvidenceValidationPort,
     MethodEvidenceStatus,
+    MethodExecutionClass,
     MethodEvidencePort,
     MethodCheckpointStorePort,
     MethodEvent,
@@ -39,7 +38,6 @@ from .method_machine import (
     MethodRunStatus,
     MethodRuntimeContext,
     MethodSchemaPort,
-    METHOD_AGENT_CHECKPOINTS_STATE_KEY,
 )
 from .progress import (
     WorkflowOperationBinding, WorkflowProgress, WorkflowProgressConflict, WorkflowProgressCorruption, WorkflowProgressStorePort,
@@ -52,8 +50,8 @@ __all__ = [
     "WorkflowProgressConflict", "WorkflowProgressCorruption", "WorkflowProgressStorePort", "WorkflowRunId",
     "WorkflowStep", "WorkflowSurfaceBindingContext", "WorkflowSurfaceFactory",
     "WorkflowSurfaceReuseScope", "workflow_surface_id", "workflow_surface_reuse_scope",
-    "AsyncMethodAgentLoopPort", "AsyncOperationDispatchPort", "METHOD_AGENT_CHECKPOINTS_STATE_KEY", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidenceStatus", "MethodEvidenceValidationPort", "MethodExecutionClass", "MethodEvidencePort", "MethodEvent", "MethodGraph",
+    "AsyncMethodAgentLoopPort", "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidenceStatus", "MethodExecutionClass", "MethodEvidencePort", "MethodEvent", "MethodGraph",
     "MethodInterrupt", "MethodMachinePort", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest", "MethodNodeResult",
     "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder", "MethodRunResult", "MethodRunStatus",
-    "MethodRuntimeContext", "MethodSchemaPort",
+    "MethodRuntimeContext",
 ]
