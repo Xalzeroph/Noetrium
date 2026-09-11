@@ -16,8 +16,10 @@ from noetrium_platform.foundation.kernel.kernel import (
     ChildMachineRecord,
     ChildMachineStatus,
     ContentAddressedStoreError,
+    DirectoryChildMachineSupervisor,
     DirectoryContentAddressedStore,
     DirectoryMachineJournal,
+    DirectoryResourceScheduler,
     EvidenceBundle,
     InMemoryChildMachineSupervisor,
     InMemoryPluginRegistry,
@@ -168,6 +170,18 @@ def _append_candidate(root: str, command_id: str, queue) -> None:
         journal.append(commit)
     except MachineConflict:
         queue.put("conflict")
+    else:
+        queue.put("accepted")
+
+
+def _acquire_resource_candidate(root: str, owner_id: str, queue) -> None:
+    scheduler = DirectoryResourceScheduler(
+        Path(root), ResourceCapacity(1, 1, 1, 1)
+    )
+    try:
+        scheduler.acquire(owner_id, ResourceBudget(1, 1, 1, 1))
+    except ResourceAdmissionError:
+        queue.put("rejected")
     else:
         queue.put("accepted")
 
@@ -326,3 +340,72 @@ def test_runtime_reservation_is_released_after_interpreter_failure(tmp_path: Pat
             })(),
         )
     assert scheduler.active() == ()
+
+def test_directory_resource_scheduler_survives_restart(tmp_path: Path) -> None:
+    capacity = ResourceCapacity(4, 40, 2, 20)
+    first = DirectoryResourceScheduler(tmp_path, capacity)
+    lease = first.acquire("process-a", ResourceBudget(2, 20, 1, 10))
+    second = DirectoryResourceScheduler(tmp_path, capacity)
+    assert second.active() == (lease,)
+    with pytest.raises(ResourceAdmissionError):
+        second.acquire("process-b", ResourceBudget(3, 1, 1, 1))
+    second.release(lease)
+    assert DirectoryResourceScheduler(tmp_path, capacity).active() == ()
+
+
+def test_directory_resource_scheduler_cross_process_capacity_is_atomic(tmp_path: Path) -> None:
+    context = get_context("spawn")
+    queue = context.Queue()
+    processes = [
+        context.Process(
+            target=_acquire_resource_candidate,
+            args=(str(tmp_path), f"resource-owner-{index}", queue),
+        )
+        for index in range(2)
+    ]
+    for process in processes:
+        process.start()
+    for process in processes:
+        process.join(10)
+        assert process.exitcode == 0
+    results = [queue.get(timeout=2), queue.get(timeout=2)]
+    assert results.count("accepted") == 1
+    assert results.count("rejected") == 1
+    assert len(DirectoryResourceScheduler(
+        tmp_path, ResourceCapacity(1, 1, 1, 1)
+    ).active()) == 1
+
+
+def test_directory_resource_and_child_records_reject_corruption(tmp_path: Path) -> None:
+    capacity = ResourceCapacity(2, 2, 2, 2)
+    scheduler = DirectoryResourceScheduler(tmp_path / "resources", capacity)
+    scheduler.acquire("owner", ResourceBudget(1, 1, 1, 1))
+    (tmp_path / "resources" / "capacity.json").write_text("{}", encoding="utf-8")
+    with pytest.raises(ResourceAdmissionError, match="capacity"):
+        DirectoryResourceScheduler(tmp_path / "resources", capacity)
+
+    link = ChildMachineLink(
+        "parent-corrupt", "child-corrupt", canonical_digest("program"),
+        "snapshot/child", 1, 3, "result/child", "fail_parent",
+    )
+    child_root = tmp_path / "children"
+    child = DirectoryChildMachineSupervisor(child_root)
+    child.register(link)
+    (child_root / "children.json").write_text("[]x", encoding="utf-8")
+    with pytest.raises(ValueError, match="corrupt"):
+        DirectoryChildMachineSupervisor(child_root)
+
+
+def test_directory_child_supervisor_survives_restart(tmp_path: Path) -> None:
+    link = ChildMachineLink(
+        "parent-durable", "child-durable", canonical_digest("program"),
+        "snapshot/child", 1, 3, "result/child", "fail_parent",
+    )
+    first = DirectoryChildMachineSupervisor(tmp_path)
+    first.register(link)
+    first.observe(ChildMachineRecord(
+        link, ChildMachineStatus.COMPLETED, 3, result_ref="result/child",
+    ))
+    restarted = DirectoryChildMachineSupervisor(tmp_path)
+    assert restarted.join("child-durable").status is ChildMachineStatus.COMPLETED
+    assert restarted.list("parent-durable")[0].record_digest

@@ -1689,3 +1689,20 @@ ownership 中心。四者互相引用摘要和证据，但任何一个都不越�
 ## 58. R15：门禁契约引用补全
 
 本节只追加当前实现状态，不修改此前历史节。architecture gate 将 `ContentAddressedStorePort` 与 `RunArtifactStorePort` 作为 kernel 的内容寻址持久化端口；它们分别约束内容读取校验和运行产物记录，具体实现仍通过显式 store 注入，不能由 facade 或全局 registry 偷换。
+
+
+## 59. R16：能力索引与跨进程持久化闭环
+
+本节只追加当前实现状态，不修改此前任何历史节。
+
+- `CAPABILITY_INDEX.json` 是由 kernel public exports 与 reference machine family
+  descriptors 自动生成的派生索引；它携带源文件摘要、family digest 和 index digest，
+  architecture gate 会重新生成并按 canonical JSON 比较，漂移即拒绝。
+- `DirectoryResourceScheduler` 为资源容量与 reservation 提供跨进程锁、atomic replace、
+  canonical metadata 和重启可恢复读取；`DirectoryChildMachineSupervisor` 对 child link
+  与 child record 使用同一套 durable contract，损坏记录拒绝恢复。
+- 这些目录实现只完成可验证的本地 crash-durable provider contract；它们不声称具备
+  生产级 consensus、租约回收、远程故障探测或跨节点故障转移。生产资格必须由显式
+  composition/provider 实现并提交可审计证据。
+- 能力索引、资源监督和层级监督均不增加第二个 state/journal/facade authority：事实
+  提交仍归 MachineRuntime，Machine fact 仍归 Journal，外部 effect 仍归 EffectIntentJournal。

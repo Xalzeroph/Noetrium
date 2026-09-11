@@ -48,6 +48,8 @@ from .resources import (
     InMemoryResourceScheduler, ResourceAdmissionError, ResourceBudget,
     ResourceCapacity, ResourceLease, ResourceSchedulerPort,
 )
+from .directory_resources import DirectoryResourceScheduler
+from .directory_supervision import DirectoryChildMachineSupervisor
 from .supervision import (
     ChildMachinePending, ChildMachineRecord, ChildMachineStatus,
     ChildMachineSupervisorPort, InMemoryChildMachineSupervisor,
@@ -115,9 +117,9 @@ __all__ = [
     "ArtifactRecord", "ContentAddressedRef", "ContentAddressedStoreError",
     "ContentAddressedStorePort", "DirectoryContentAddressedStore", "EvidenceBundle",
     "EvidenceStorePort", "InMemoryContentAddressedStore", "RunArtifactStorePort",
-    "InMemoryResourceScheduler", "ResourceAdmissionError", "ResourceBudget",
+    "DirectoryResourceScheduler", "InMemoryResourceScheduler", "ResourceAdmissionError", "ResourceBudget",
     "ResourceCapacity", "ResourceLease", "ResourceSchedulerPort",
-    "ChildMachinePending", "ChildMachineRecord", "ChildMachineStatus",
+    "DirectoryChildMachineSupervisor", "ChildMachinePending", "ChildMachineRecord", "ChildMachineStatus",
     "ChildMachineSupervisorPort", "InMemoryChildMachineSupervisor",
     "JournalInspectionPort", "JournalInspectionService", "MachineHistoryInspection",
     "InMemoryPluginRegistry", "PluginManifest", "PluginRegistryPort", "PluginSignatureVerifier",

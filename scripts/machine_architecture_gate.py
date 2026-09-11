@@ -14,6 +14,10 @@ from noetrium_platform.foundation.governance.architecture.api import (
     ExecutionQualificationPort,
     require_production_qualification,
 )
+from noetrium_platform.foundation.governance.architecture.capability_index import (
+    build_capability_index,
+    load_capability_index,
+)
 from noetrium_platform.foundation.governance.architecture.ownership_matrix import (
     build_ownership_matrix,
     load_catalog,
@@ -117,6 +121,17 @@ def _check_worker_boundaries() -> int:
         raise SystemExit("worker direct fact-write boundary violated: " + "; ".join(violations))
     return len(paths)
 
+def _check_capability_index() -> str:
+    path = ROOT / "docs/architecture/CAPABILITY_INDEX.json"
+    if not path.exists():
+        raise SystemExit("capability index is missing; run generate_capability_index.py")
+    stored = load_capability_index(path)
+    expected = build_capability_index(ROOT)
+    if canonical_bytes(stored) != canonical_bytes(expected):
+        raise SystemExit("capability index drift; regenerate the derived index")
+    return str(path.relative_to(ROOT))
+
+
 def _check_sdk_surfaces() -> tuple[str, ...]:
     required = {
         ROOT / "sdk/typescript/package.json": ("@noetrium/machine-sdk", "src/index.ts"),
@@ -163,6 +178,10 @@ def _check_document(doc_path: Path) -> None:
         "EffectIntentJournal",
         "UNKNOWN",
         "Ownership Matrix",
+        "## 59. R16",
+        "CAPABILITY_INDEX.json",
+        "DirectoryResourceScheduler",
+        "DirectoryChildMachineSupervisor",
     )
     missing = [marker for marker in required if marker not in document]
     if missing:
@@ -195,6 +214,7 @@ def main() -> int:
     family_count = _check_machine_families()
     facade_count = _check_public_facades()
     worker_count = _check_worker_boundaries()
+    capability_index = _check_capability_index()
     sdk_surfaces = _check_sdk_surfaces()
     print(json.dumps({
         "systems": len(matrix.rows),
@@ -203,6 +223,7 @@ def main() -> int:
         "machine_families": family_count,
         "facade_violations": facade_count,
         "worker_modules_checked": worker_count,
+        "capability_index": capability_index,
         "sdk_surfaces": sdk_surfaces,
         "qualification_ports": all(callable(value) for value in (
             ExecutionQualificationPort, require_production_qualification,
