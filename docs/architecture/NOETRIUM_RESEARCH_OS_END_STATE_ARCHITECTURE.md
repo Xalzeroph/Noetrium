@@ -1675,3 +1675,17 @@ ownership 中心。四者互相引用摘要和证据，但任何一个都不越�
 - TypeScript 与 Rust SDK 提供同一组 snake_case wire contract、canonical JSON、SHA-256、MachineCommand identity、ProgramLock/RunBinding 类型和 scope assertion；architecture gate 会检查 SDK surface 是否完整。
 - 新增的 subprocess、跨进程 CAS、Journal replay、binding、plugin signature、capability scope 和 test-system 分类测试纳入全量测试目录。
 - SDK 编译资格取决于环境是否提供 `tsc` 与 `cargo`；没有工具链时只允许报告未执行，不能宣称跨语言编译已通过。
+
+## 57. R14：资源、层级监督与内容寻址闭环
+
+本节只追加当前实现状态，不修改此前历史节。
+
+- `ResourceBudget`、`ResourceCapacity` 和 `ResourceSchedulerPort` 提供显式资源 admission；`MachineRuntime` 可在解释执行前申请并在成功或异常路径释放 reservation，禁止通过隐式全局配额运行。
+- `ChildMachineSupervisorPort` 与 typed child records 提供 register、observe、join、cancel 生命周期；join 只接受 terminal child，父 Journal 仍是父事实的唯一权威。
+- `ContentAddressedRef`、`EvidenceBundle` 和 `ArtifactRecord` 提供 SHA-256 内容寻址；Directory store 使用 canonical metadata、atomic replace、跨进程锁和重启后完整性校验。
+- 上述能力已进入 public kernel exports、architecture gate 和回归测试；测试只证明本地 reference/provider contract，不把 process-local scheduler 或 supervisor 伪装成生产集群服务。
+- 生产级 consensus、远程 attestation、强隔离和 live qualification 仍必须由外部 typed provider 提供资格证据，不能由 reference implementation 自证。
+
+## 58. R15：门禁契约引用补全
+
+本节只追加当前实现状态，不修改此前历史节。architecture gate 将 `ContentAddressedStorePort` 与 `RunArtifactStorePort` 作为 kernel 的内容寻址持久化端口；它们分别约束内容读取校验和运行产物记录，具体实现仍通过显式 store 注入，不能由 facade 或全局 registry 偷换。

@@ -9,10 +9,22 @@ import sys
 import pytest
 
 from noetrium_platform.foundation.kernel.kernel import (
+    ArtifactRecord,
     CapabilityDescriptor,
     ChildMachineLink,
+    ChildMachinePending,
+    ChildMachineRecord,
+    ChildMachineStatus,
+    ContentAddressedStoreError,
+    DirectoryContentAddressedStore,
     DirectoryMachineJournal,
+    EvidenceBundle,
+    InMemoryChildMachineSupervisor,
     InMemoryPluginRegistry,
+    InMemoryResourceScheduler,
+    ResourceAdmissionError,
+    ResourceBudget,
+    ResourceCapacity,
     JournalInspectionService,
     MachineCommand,
     MachineCommit,
@@ -243,3 +255,74 @@ def test_runtime_enforces_granted_capability_scopes(tmp_path: Path) -> None:
             ),
             _Interpreter(),
         )
+
+def test_resource_scheduler_enforces_capacity_and_releases() -> None:
+    scheduler = InMemoryResourceScheduler(ResourceCapacity(10, 100, 1, 5))
+    budget = ResourceBudget(8, 80, 1, 3)
+    lease = scheduler.acquire("owner-a", budget)
+    assert scheduler.acquire("owner-a", budget) == lease
+    with pytest.raises(ResourceAdmissionError):
+        scheduler.acquire("owner-b", ResourceBudget(3, 1, 0, 1))
+    scheduler.release(lease)
+    assert scheduler.available() == ResourceCapacity(10, 100, 1, 5)
+    with pytest.raises(ResourceAdmissionError):
+        scheduler.release(lease)
+
+
+def test_child_supervisor_requires_terminal_join() -> None:
+    link = ChildMachineLink(
+        "parent-1", "child-supervised", canonical_digest("child-program"),
+        "snapshot/child", 0, 2, None, "fail_parent",
+    )
+    supervisor = InMemoryChildMachineSupervisor()
+    created = supervisor.register(link)
+    assert created.status is ChildMachineStatus.CREATED
+    with pytest.raises(ChildMachinePending):
+        supervisor.join("child-supervised")
+    supervisor.observe(ChildMachineRecord(link, ChildMachineStatus.RUNNING, 1))
+    completed = supervisor.observe(ChildMachineRecord(
+        link, ChildMachineStatus.COMPLETED, 2, result_ref="result/child",
+    ))
+    assert supervisor.join("child-supervised") == completed
+    assert supervisor.list("parent-1") == (completed,)
+
+
+def test_content_addressed_evidence_and_artifact_survive_restart(tmp_path: Path) -> None:
+    store = DirectoryContentAddressedStore(tmp_path)
+    ref = store.put(b"evidence-bytes", kind="evidence", media_type="text/plain",
+                    metadata={"source": "test"})
+    bundle = store.save_bundle(EvidenceBundle(
+        "evidence-1", "claim", (ref,), {"run_id": "run-1"},
+    ))
+    artifact = store.save_artifact(ArtifactRecord(
+        "artifact-1", ref, "run-1", "result",
+    ))
+    restarted = DirectoryContentAddressedStore(tmp_path)
+    assert restarted.get(ref) == b"evidence-bytes"
+    assert restarted.load_bundle("evidence-1") == bundle
+    assert restarted.load_artifact("artifact-1") == artifact
+    assert restarted.verify(ref)
+    (tmp_path / "blobs" / f"{ref.content_digest}.bin").write_bytes(b"tampered")
+    assert not restarted.verify(ref)
+    with pytest.raises(ContentAddressedStoreError):
+        restarted.get(ref)
+
+def test_runtime_reservation_is_released_after_interpreter_failure(tmp_path: Path) -> None:
+    scheduler = InMemoryResourceScheduler(ResourceCapacity(1, 1, 1, 1))
+    runtime, _, identity = _runtime(tmp_path)
+    runtime = MachineRuntime(
+        identity=identity, program=runtime.program, journal=runtime.journal,
+        family=runtime.family, resource_scheduler=scheduler,
+        resource_budget=ResourceBudget(1, 1, 1, 1),
+    )
+    runtime.open({})
+    with pytest.raises(ValueError):
+        runtime.step(
+            MachineCommand("bad-resource", identity.machine_id, 0, "run.start", {}),
+            type("RejectingInterpreter", (), {
+                "propose": lambda self, command, state: (_ for _ in ()).throw(
+                    ValueError("interpreter failed")
+                )
+            })(),
+        )
+    assert scheduler.active() == ()

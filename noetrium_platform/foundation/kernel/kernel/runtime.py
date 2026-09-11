@@ -14,6 +14,7 @@ from typing import Protocol, runtime_checkable
 from .authority import MachineAuthorityPort, MachineLease
 from .canonical import canonical_digest, thaw_json
 from .contracts import CapabilityDescriptor
+from .resources import ResourceBudget, ResourceSchedulerPort
 from .delivery import MachineEnvelope, MachineOutboxPort
 from .family import MachineFamilyDescriptor
 from .journal import MachineJournalPort
@@ -63,6 +64,8 @@ class MachineRuntime:
         outbox: MachineOutboxPort | None = None,
         family: MachineFamilyDescriptor | None = None,
         capabilities: tuple[CapabilityDescriptor, ...] = (),
+        resource_scheduler: ResourceSchedulerPort | None = None,
+        resource_budget: ResourceBudget | None = None,
         authority: MachineAuthorityPort | None = None,
         authority_lease: MachineLease | None = None,
     ) -> None:
@@ -90,6 +93,12 @@ class MachineRuntime:
             missing = set(family.required_capabilities) - set(capability_ids)
             if missing:
                 raise ValueError(f"required machine capabilities are not granted: {sorted(missing)}")
+        if resource_scheduler is not None and not isinstance(resource_scheduler, ResourceSchedulerPort):
+            raise TypeError("resource_scheduler must implement ResourceSchedulerPort")
+        if (resource_scheduler is None) != (resource_budget is None):
+            raise ValueError("resource_scheduler and resource_budget must be provided together")
+        if resource_budget is not None and not isinstance(resource_budget, ResourceBudget):
+            raise TypeError("resource_budget must be ResourceBudget")
         if authority is not None and not isinstance(authority, MachineAuthorityPort):
             raise TypeError("authority must implement MachineAuthorityPort")
         if (authority is None) != (authority_lease is None):
@@ -100,6 +109,8 @@ class MachineRuntime:
         self.outbox = outbox
         self.family = family
         self.capabilities = capabilities
+        self.resource_scheduler = resource_scheduler
+        self.resource_budget = resource_budget
         self.authority = authority
         self.authority_lease = authority_lease
         self._lock = RLock()
@@ -256,8 +267,18 @@ class MachineRuntime:
                     f"stale command revision: expected={state.revision} "
                     f"actual={command.expected_revision}"
                 )
-            proposal = interpreter.propose(command, state)
-            self._validate_proposal(command, state, proposal)
+            resource_lease = None
+            if self.resource_scheduler is not None and self.resource_budget is not None:
+                resource_lease = self.resource_scheduler.acquire(
+                    f"{self.machine_id}:{command.command_id}", self.resource_budget
+                )
+            try:
+                proposal = interpreter.propose(command, state)
+                self._validate_proposal(command, state, proposal)
+            finally:
+                if resource_lease is not None:
+                    self.resource_scheduler.release(resource_lease)
+
             proposal = replace(
                 proposal,
                 before_state_digest=canonical_digest(state.state),

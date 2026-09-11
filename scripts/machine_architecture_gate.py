@@ -24,6 +24,9 @@ from noetrium_platform.foundation.governance.architecture.public_api_invariants 
 from noetrium_platform.foundation.kernel.kernel import (
     MachineConformanceHarness,
     MachineRuntime,
+    ResourceSchedulerPort,
+    ChildMachineSupervisorPort,
+    ContentAddressedStorePort,
     NshCompiler,
     WorkerAdmission,
     canonical_bytes,
@@ -152,6 +155,11 @@ def _check_document(doc_path: Path) -> None:
         "PluginManifest",
         "RunBinding",
         "ExecutionQualificationPort",
+        "ResourceSchedulerPort",
+        "ChildMachineSupervisorPort",
+        "ContentAddressedStorePort",
+        "RunArtifactStorePort",
+        "EvidenceBundle",
         "EffectIntentJournal",
         "UNKNOWN",
         "Ownership Matrix",
@@ -201,6 +209,7 @@ def main() -> int:
         )),
         "kernel_exports": all(callable(value) for value in (
             MachineRuntime, MachineConformanceHarness, NshCompiler, WorkerAdmission,
+            ResourceSchedulerPort, ChildMachineSupervisorPort, ContentAddressedStorePort,
         )),
     }, sort_keys=True))
     return 0

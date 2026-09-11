@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+from noetrium_platform.foundation.kernel.kernel.canonical import canonical_digest, require_sha256
 
 
 class QualificationKind(StrEnum):
@@ -24,6 +24,8 @@ class QualificationEvidence:
     qualification_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.kind, QualificationKind):
+            raise TypeError("qualification kind must be typed")
         if type(self.provider_id) is not str or not self.provider_id.strip():
             raise ValueError("qualification provider_id is required")
         if type(self.provider_version) is not str or not self.provider_version.strip():
@@ -77,6 +79,10 @@ def require_production_qualification(
     evidence = port.qualify(machine_id, worker_id, workload_id)
     if type(evidence) is not tuple or not evidence:
         raise ValueError("production qualification must return evidence")
+    if any(not isinstance(item, QualificationEvidence) for item in evidence):
+        raise TypeError("production qualification must return typed evidence")
+    if len({item.qualification_digest for item in evidence}) != len(evidence):
+        raise ValueError("production qualification evidence must be unique")
     kinds = tuple(item.kind for item in evidence)
     if set(kinds) != set(QualificationKind):
         raise ValueError("production qualification must cover consensus, attestation and isolation")

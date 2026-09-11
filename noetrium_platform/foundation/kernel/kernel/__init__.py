@@ -39,6 +39,19 @@ from .canonical import (
     strict_finite_json_bytes, strict_finite_json_digest, strict_finite_json_text,
     strict_json_loads, thaw_json,
 )
+from .content_store import (
+    ArtifactRecord, ContentAddressedRef, ContentAddressedStoreError,
+    ContentAddressedStorePort, DirectoryContentAddressedStore, EvidenceBundle,
+    EvidenceStorePort, InMemoryContentAddressedStore, RunArtifactStorePort,
+)
+from .resources import (
+    InMemoryResourceScheduler, ResourceAdmissionError, ResourceBudget,
+    ResourceCapacity, ResourceLease, ResourceSchedulerPort,
+)
+from .supervision import (
+    ChildMachinePending, ChildMachineRecord, ChildMachineStatus,
+    ChildMachineSupervisorPort, InMemoryChildMachineSupervisor,
+)
 from .inspection import JournalInspectionPort, JournalInspectionService, MachineHistoryInspection
 from .plugin import InMemoryPluginRegistry, PluginManifest, PluginRegistryPort, PluginSignatureVerifier
 from .auxiliary_failures import OperationAuxiliaryFailureSink
@@ -99,6 +112,13 @@ __all__ = [
     "DirectoryMachineAuthority", "InMemoryMachineAuthority", "MachineAuthorityError",
     "MachineAuthorityPort", "MachineLease", "MachineLeaseBusy", "MachineLeaseLost",
     "CapabilityDescriptor", "ChildMachineLink", "MachineAttempt", "RunBinding",
+    "ArtifactRecord", "ContentAddressedRef", "ContentAddressedStoreError",
+    "ContentAddressedStorePort", "DirectoryContentAddressedStore", "EvidenceBundle",
+    "EvidenceStorePort", "InMemoryContentAddressedStore", "RunArtifactStorePort",
+    "InMemoryResourceScheduler", "ResourceAdmissionError", "ResourceBudget",
+    "ResourceCapacity", "ResourceLease", "ResourceSchedulerPort",
+    "ChildMachinePending", "ChildMachineRecord", "ChildMachineStatus",
+    "ChildMachineSupervisorPort", "InMemoryChildMachineSupervisor",
     "JournalInspectionPort", "JournalInspectionService", "MachineHistoryInspection",
     "InMemoryPluginRegistry", "PluginManifest", "PluginRegistryPort", "PluginSignatureVerifier",
     "DeliveryReceipt", "DeliveryStatus", "InMemoryMachineInbox", "InMemoryMachineOutbox",
