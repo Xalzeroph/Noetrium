@@ -67,6 +67,81 @@ def _check_public_facades() -> int:
         raise SystemExit(f"public facade exposes duplicate authority/concrete layer: {detail}")
     return 0
 
+def _check_public_platform_entrypoint() -> str:
+    """Keep the root product entrypoint as a forwarding surface only."""
+
+    entrypoint = ROOT / "noetrium/platform.py"
+    owner = "noetrium_platform.platform"
+    if not entrypoint.is_file():
+        raise SystemExit("public product entrypoint is missing: noetrium/platform.py")
+    tree = ast.parse(entrypoint.read_text(encoding="utf-8"), filename=str(entrypoint))
+    definitions = [
+        node for node in ast.walk(tree)
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
+    ]
+    if definitions:
+        raise SystemExit(
+            "noetrium/platform.py must not define product behavior; "
+            "use the single operator composition owner"
+        )
+    imports = [node for node in tree.body if isinstance(node, ast.ImportFrom)]
+    if not any(node.module == owner and any(alias.name == "*" for alias in node.names) for node in imports):
+        raise SystemExit("noetrium/platform.py does not forward the operator composition owner")
+    if not any(node.module == owner and any(alias.name == "__all__" for alias in node.names) for node in imports):
+        raise SystemExit("noetrium/platform.py does not forward the owner's export contract")
+    if not (ROOT / "noetrium_platform/platform.py").is_file():
+        raise SystemExit("platform composition owner is missing")
+    return owner
+
+
+def _check_durability_ownership() -> str:
+    """Artifact publication must reuse the kernel durability authority."""
+
+    path = ROOT / "noetrium_platform/evidence/artifact/content/providers/_publication.py"
+    if not path.is_file():
+        raise SystemExit("artifact publication durability adapter is missing")
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    forbidden_imports = {"fcntl", "ctypes", "msvcrt", "threading"}
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            imported = {alias.name.split(".", 1)[0] for alias in node.names}
+            if imported & forbidden_imports:
+                raise SystemExit(
+                    "artifact publication must not define a second durability implementation"
+                )
+        elif isinstance(node, ast.ImportFrom) and (node.module or "").split(".", 1)[0] in forbidden_imports:
+            raise SystemExit(
+                "artifact publication must not define a second durability implementation"
+            )
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            raise SystemExit(
+                "artifact publication must not define a second durability implementation"
+            )
+        elif isinstance(node, ast.ClassDef):
+            methods = [
+                child for child in node.body
+                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+            ]
+            if (
+                node.name != "PublicationLock"
+                or len(methods) != 1
+                or methods[0].name != "__init__"
+            ):
+                raise SystemExit(
+                    "artifact publication must not define a second durability implementation"
+                )
+    required = (
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
+    )
+    imported_modules = {
+        node.module for node in tree.body
+        if isinstance(node, ast.ImportFrom)
+    }
+    if not all(module in imported_modules for module in required):
+        raise SystemExit("artifact publication does not delegate to kernel durability")
+    return "noetrium_platform.foundation.kernel.kernel.durability"
+
 
 def _worker_source_paths() -> tuple[Path, ...]:
     paths: list[Path] = []
@@ -182,11 +257,11 @@ def _check_document(doc_path: Path) -> None:
         "CAPABILITY_INDEX.json",
         "DirectoryResourceScheduler",
         "DirectoryChildMachineSupervisor",
+        "## 63. R20",
     )
     missing = [marker for marker in required if marker not in document]
     if missing:
         raise SystemExit("architecture document/code state mismatch: " + ", ".join(missing))
-
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -213,6 +288,8 @@ def main() -> int:
     _check_document(doc_path)
     family_count = _check_machine_families()
     facade_count = _check_public_facades()
+    platform_owner = _check_public_platform_entrypoint()
+    durability_owner = _check_durability_ownership()
     worker_count = _check_worker_boundaries()
     capability_index = _check_capability_index()
     sdk_surfaces = _check_sdk_surfaces()
@@ -222,6 +299,8 @@ def main() -> int:
         "unclassified_rows": sum(bool(row.audit_required) for row in matrix.rows),
         "machine_families": family_count,
         "facade_violations": facade_count,
+        "public_platform_owner": platform_owner,
+        "durability_owner": durability_owner,
         "worker_modules_checked": worker_count,
         "capability_index": capability_index,
         "sdk_surfaces": sdk_surfaces,

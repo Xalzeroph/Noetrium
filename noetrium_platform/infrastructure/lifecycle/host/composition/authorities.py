@@ -76,4 +76,10 @@ def compose_local_host(
     return HostComposition(operating_system, plan, offer)
 
 
-__all__ = ["HostComposition", "compose_local_host"]
+def local_operating_system_route() -> OperatingSystemRoute:
+    """Select the one local host route for higher-level composition."""
+
+    return LocalOperatingSystemRoute()
+
+
+__all__ = ["HostComposition", "compose_local_host", "local_operating_system_route"]

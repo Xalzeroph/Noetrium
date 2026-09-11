@@ -1776,3 +1776,31 @@ previous historical section.
   two artifacts are independently fingerprinted and jointly checked.
 - Production provider qualification remains outside this metadata boundary
   and must still be supplied through explicit typed composition ports.
+
+## 63. R20: Single product composition owner
+
+The public product bindings now have one implementation owner:
+noetrium_platform.platform.  The
+noetrium.platform module is only a forwarding entrypoint and contains no
+classes or functions.  This closes the previous horizontal split where the
+root facade itself also assembled environment, model, method, experiment,
+workbench, and agent capabilities.
+
+The split is now explicit by layer: capability contracts and providers remain
+owned by their registered systems, the operator composition layer owns
+cross-capability wiring, and the root module exposes only that owner's export
+contract.  The architecture gate and regression test fail closed if the root
+entrypoint gains behavior or a second composition owner is introduced.
+
+## 64. R21: Unified durability authority
+
+Artifact acquisition and archive materialization no longer carry a second
+cross-platform lock or directory-flush implementation. Their publication
+adapter aliases the kernel durability primitives, while artifact providers
+retain only their domain-specific error translation and publication policy.
+
+This makes the ownership boundary explicit: the kernel owns lock identity,
+cross-process acquisition, atomic file publication, and directory durability;
+capability providers own artifact validation and domain outcomes. The
+architecture gate and regression test fail closed if the artifact adapter
+reintroduces operating-system lock or flush code.
