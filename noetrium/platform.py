@@ -62,6 +62,7 @@ from noetrium_platform.capabilities.model.request.api import (
 from noetrium_platform.capabilities.model.request.composition.recorder import (
     build_directory_model_request_recorder,
 )
+from noetrium_platform.capabilities.model.request.prompt.runtime.budget import TokenCounter, check_model_request_budget
 from noetrium_platform.capabilities.model.serving.endpoint.composition import (
     PersistedQualifiedModelEndpointBinding,
     build_openai_compatible_qualified_endpoint,
@@ -778,6 +779,7 @@ def complete_project_model(
     context: ExecutionContext,
     request_body: Mapping[str, JsonInput],
     compiled_prompt_text: str | None = None,
+    input_token_counter: TokenCounter | None = None,
     tool_schema_bundle: JsonInput | None = None,
     source_artifact_refs: tuple[str, ...] = (),
     source_state_refs: tuple[str, ...] = (),
@@ -797,6 +799,7 @@ def complete_project_model(
     if not isinstance(request_body, Mapping):
         raise TypeError("project model request body must be a mapping")
     binding = client.binding
+    check_model_request_budget(request_body, context_length=binding.model.context_length, compiled_prompt_text=compiled_prompt_text, token_counter=input_token_counter)
     prompt_fields = (
         binding.prompt_generation_id,
         binding.prompt_id,

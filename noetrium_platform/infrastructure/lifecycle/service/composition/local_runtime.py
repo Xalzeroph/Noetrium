@@ -11,6 +11,7 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime.environment impo
 from noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend import LinuxProcessBackend
 from noetrium_platform.infrastructure.lifecycle.service.runtime.process_adapter import LocalServiceProcessAdapter
 from noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts import ExactProcessBackend, ServiceReadinessProbe
+from noetrium_platform.infrastructure.lifecycle.service.runtime.preflight import LocalServiceLaunchPreflight
 from noetrium_platform.infrastructure.lifecycle.service.runtime.runtime_endpoint import ExactServiceRuntimeEndpoint
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
@@ -81,7 +82,9 @@ class LocalServiceRuntimeComposer:
         *,
         environment: MaterializedServiceEnvironment,
         readiness: ServiceReadinessProbe,
+        preflight: LocalServiceLaunchPreflight | None = None,
     ) -> ExactServiceRuntimePort:
+        if preflight is not None: preflight.validate(contract, environment)
         if environment.digest != contract.environment_digest:
             raise ServiceContractDrift(
                 "materialized service environment does not match the launch contract"

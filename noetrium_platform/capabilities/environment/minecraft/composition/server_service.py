@@ -19,6 +19,7 @@ from noetrium_platform.infrastructure.lifecycle.service.api import (
 from noetrium_platform.infrastructure.lifecycle.service.composition import LocalServiceRuntimeComposer
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
 from noetrium_platform.infrastructure.lifecycle.service.runtime.environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.runtime.preflight import LocalServiceLaunchPreflight
 from noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts import (
     ExactProcessBackend,
 )
@@ -209,6 +210,7 @@ def compose_minecraft_server_service_runtime(
     capture_root: Path,
     operating_system: OperatingSystemRoute,
     process_backend: ExactProcessBackend | None = None,
+    preflight: LocalServiceLaunchPreflight | None = None,
     rcon_password_provider: Callable[[], str] | None = None,
     task_group: TaskGroupPort,
 ) -> ExactServiceRuntimePort:
@@ -245,6 +247,7 @@ def compose_minecraft_server_service_runtime(
         contract,
         environment=environment,
         readiness=readiness,
+        preflight=preflight,
     )
 
 

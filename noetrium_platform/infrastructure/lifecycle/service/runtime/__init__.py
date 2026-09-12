@@ -17,6 +17,7 @@ from .environment import (
     StaticServiceEnvironmentProvider,
     service_environment_digest,
 )
+from .preflight import LocalServiceLaunchPreflight, ServiceLaunchPreflightError, ServiceLaunchPreflightReport
 from .capture_paths import DirectoryCapturePathProvider, ServiceCapturePathProvider, ServiceCapturePaths
 from .linux_backend import LinuxProcessBackend
 from .process_adapter import LocalServiceProcessAdapter
