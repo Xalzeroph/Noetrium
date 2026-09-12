@@ -4,7 +4,13 @@ import importlib
 import json
 from pathlib import Path
 
-from noetrium.contracts.discovery import load_downstream_capability_catalog
+import pytest
+
+from noetrium.contracts.discovery import (
+    DownstreamCatalogIntegrityError,
+    load_downstream_capability_catalog,
+    validate_downstream_capability_catalog,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,3 +73,40 @@ def test_reusable_memory_graph_is_downstream_visible() -> None:
     assert expected.issubset(set(module.__all__))
     graph = module.VersionedMemoryGraph(module.MemoryGraphSnapshot("g0", (), ()))
     assert graph.snapshot().generation == "g0"
+
+
+def test_catalog_exposes_stable_document_and_surface_fingerprints() -> None:
+    catalog = load_downstream_capability_catalog()
+    assert len(catalog.catalog_digest) == 64
+    assert all(len(surface.interface_digest) == 64 for surface in catalog.systems)
+
+    capability = next(
+        capability
+        for surface in catalog.systems
+        for capability in surface.provides
+    )
+    providers = catalog.providers(capability)
+    assert providers
+    assert all(capability in surface.provides for surface in providers)
+
+
+def test_catalog_validation_rejects_stale_topology() -> None:
+    document = json.loads(
+        (ROOT / "noetrium/contracts/downstream_capability_catalog.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    document["topology_digest"] = "0" * 64
+    with pytest.raises(DownstreamCatalogIntegrityError, match="canonical system registry"):
+        validate_downstream_capability_catalog(document)
+
+
+def test_catalog_validation_rejects_tampered_document_digest() -> None:
+    document = json.loads(
+        (ROOT / "noetrium/contracts/downstream_capability_catalog.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    document["catalog_digest"] = "0" * 64
+    with pytest.raises(DownstreamCatalogIntegrityError, match="catalog digest"):
+        validate_downstream_capability_catalog(document)

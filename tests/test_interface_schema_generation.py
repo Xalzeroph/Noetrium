@@ -3,9 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from noetrium.contracts.discovery import (
+    DownstreamCatalogIntegrityError,
     find_downstream_symbol_schema,
     load_downstream_interface_schema,
+    validate_downstream_interface_schema,
 )
 
 
@@ -20,6 +24,7 @@ def test_generated_interface_schema_covers_every_public_export() -> None:
         )
     )
     assert {row["system_key"] for row in document["systems"]} == set(registry)
+    assert len(document["interface_digest"]) == 64
     assert document["interface_schema"]["schema_id"] == "noetrium.interface-schema"
 
     for system in document["systems"]:
@@ -51,3 +56,14 @@ def test_generated_interface_schema_exposes_protocol_methods_and_reexports() -> 
     )
     assert reexport["kind"] == "reexport"
     assert reexport["origin_name"] == "MinecraftBridgePort"
+
+
+def test_interface_schema_validation_rejects_tampered_digest() -> None:
+    document = json.loads(
+        (ROOT / "noetrium/contracts/interface_schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    document["interface_digest"] = "0" * 64
+    with pytest.raises(DownstreamCatalogIntegrityError, match="interface schema digest"):
+        validate_downstream_interface_schema(document)

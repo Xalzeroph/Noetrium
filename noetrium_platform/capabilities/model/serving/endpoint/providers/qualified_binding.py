@@ -126,7 +126,12 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
         if receipt.created_at > now:
             raise ValueError("runtime qualification receipt is from the future")
         if receipt.valid_until < now:
-            raise ValueError("runtime qualification receipt is stale")
+            raise ValueError(
+                "runtime qualification receipt is stale: "
+                f"valid_until={receipt.valid_until:.3f}; now={now:.3f}; "
+                f"expired_by={now - receipt.valid_until:.3f}s; "
+                "refresh the live qualification closure before launching"
+            )
         canaries = self._canaries_by_binding.get((deployment_id, role), ())
         if not canaries:
             raise ValueError(f"runtime canary evidence does not qualify role: {role}")

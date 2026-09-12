@@ -45,7 +45,7 @@ def audit_registered_public_facades(root: Path) -> list[SourceInvariantViolation
             for edge in edges:
                 if edge.source_module != source_module:
                     continue
-                if not _is_concrete_target(edge.target_module, source_module):
+                if not _is_concrete_target(edge.target_module, prefix):
                     continue
                 rows.append(
                     violation(

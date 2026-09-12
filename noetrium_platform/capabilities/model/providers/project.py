@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+import re
 
 from noetrium_platform.capabilities.model.api.project import (
     ModelBindingDiagnostic,
@@ -25,6 +26,25 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
 
 
 EndpointFactory = Callable[[QualifiedModelEndpointBinding], ModelEndpointPort]
+
+
+_DIAGNOSTIC_URL = re.compile(r"(?i)\b(?:https?|wss?)://[^\s<>\"']+")
+_DIAGNOSTIC_SECRET = re.compile(
+    r"(?i)\b(?:token|api[_-]?key|password|passwd|secret|authorization)\s*=\s*[^\s,;]+"
+)
+
+
+def _safe_diagnostic_detail(value: str) -> str:
+    value = _DIAGNOSTIC_URL.sub("<redacted-url>", value)
+    return _DIAGNOSTIC_SECRET.sub(lambda match: match.group(0).split("=", 1)[0] + "=<redacted>", value)
+
+
+def _exception_detail(exc: Exception) -> str:
+    """Return a compact, actionable detail without embedding secrets or a traceback."""
+    detail = " ".join(str(exc).split())
+    if not detail:
+        return type(exc).__name__
+    return f"{type(exc).__name__}: {_safe_diagnostic_detail(detail[:512])}"
 
 
 def _diagnostic(
@@ -177,7 +197,7 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
                     self._profile,
                     requirement,
                     ModelBindingDiagnosticCode.QUALIFIED_BINDING_UNAVAILABLE,
-                    f"qualified model binding unavailable: {type(exc).__name__}",
+                    f"qualified model binding unavailable: {_exception_detail(exc)}",
                 ),
             )
         if (
@@ -249,7 +269,7 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
                         self._profile,
                         requirement,
                         ModelBindingDiagnosticCode.QUALIFIED_BINDING_UNAVAILABLE,
-                        f"qualified model endpoint materialization failed: {type(exc).__name__}",
+                        f"qualified model endpoint materialization failed: {_exception_detail(exc)}",
                     ),
                 )
             ) from exc

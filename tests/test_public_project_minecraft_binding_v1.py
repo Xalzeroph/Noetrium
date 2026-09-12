@@ -43,3 +43,19 @@ def test_bundled_minecraft_binding_locates_packaged_bridge_asset(tmp_path: Path)
         assert spec.bridge.action_recovery_root == str((tmp_path / "recovery").resolve())
     finally:
         binding.close()
+
+
+def test_bundled_minecraft_binding_honors_explicit_bridge_root(tmp_path: Path, monkeypatch) -> None:
+    bridge_root = tmp_path / "bridge"
+    bridge_root.mkdir()
+    (bridge_root / "bridge.js").write_text("// test bridge\n", encoding="utf-8")
+    monkeypatch.setenv("MC_BRIDGE_DIR", str(bridge_root))
+    binding = bind_bundled_minecraft_environment(
+        node_executable="node",
+        task_group_id="test-public-minecraft-configured-root",
+    )
+    try:
+        assert Path(binding.spec.bridge.command[1]) == bridge_root / "bridge.js"
+        assert Path(binding.spec.bridge.cwd) == bridge_root
+    finally:
+        binding.close()

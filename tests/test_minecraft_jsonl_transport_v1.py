@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+from pathlib import Path
 
 import pytest
 
@@ -86,3 +87,35 @@ def test_transport_rejects_send_before_start() -> None:
     transport = _transport(_ExitedProcess(""))
     with pytest.raises(MinecraftBridgeError, match="BRIDGE_NOT_STARTED"):
         transport.send("ping", {}, request_id="req-1")
+
+
+def test_transport_adds_bridge_node_modules_to_child_environment(
+    tmp_path: Path, monkeypatch
+) -> None:
+    bridge_root = tmp_path / "bridge"
+    (bridge_root / "node_modules").mkdir(parents=True)
+    monkeypatch.setenv("MC_BRIDGE_DIR", str(bridge_root))
+    monkeypatch.delenv("NODE_PATH", raising=False)
+    process = _ExitedProcess("")
+    captured: dict[str, object] = {}
+
+    def factory(_command, **kwargs):
+        captured.update(kwargs)
+        return process
+
+    transport = JsonlProcessTransport(
+        spec=MinecraftBridgeSpec(
+            command=("fake-node",), cwd=".", command_timeout_s=1, connect_timeout_s=1
+        ),
+        operating_system=LocalOperatingSystemRoute(),
+        task_group=make_task_group("minecraft-jsonl-node-path"),
+        bridge_identity="node-path-test",
+        process_factory=factory,
+    )
+    transport.start()
+    try:
+        environment = captured["env"]
+        assert isinstance(environment, dict)
+        assert environment["NODE_PATH"] == str(bridge_root / "node_modules")
+    finally:
+        transport.close()

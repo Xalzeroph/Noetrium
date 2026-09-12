@@ -322,7 +322,11 @@ class OpenAICompatibleModelEndpoint(ModelEndpointPort):
                 timeout_seconds=max(0.0, deadline.remaining_seconds)
             )
         except ModelAdmissionTimeout as exc:
-            raise ModelEndpointError("model endpoint admission timed out") from exc
+            raise ModelEndpointError(
+                "model endpoint admission timed out; "
+                f"request_id={request.request.request_id}; "
+                f"timeout_s={self.route.timeout_s:.3f}"
+            ) from exc
         except ModelAdmissionClosed as exc:
             raise ModelEndpointError("model endpoint admission is closed") from exc
         try:
@@ -344,7 +348,12 @@ class OpenAICompatibleModelEndpoint(ModelEndpointPort):
             response = handle.result(timeout=max(0.001, deadline.remaining_seconds))
         except (TimeoutError, TaskDeadlineExceeded) as exc:
             handle.cancel()
-            raise ModelEndpointError("model endpoint HTTP transport failed: TimeoutError") from exc
+            raise ModelEndpointError(
+                "model endpoint HTTP transport failed: TimeoutError; "
+                f"request_id={request.request.request_id}; "
+                f"deployment_id={request.deployment_id}; "
+                f"timeout_s={self.route.timeout_s:.3f}"
+            ) from exc
         except (TaskCancelled, CancelledError) as exc:
             raise ModelEndpointError("model endpoint HTTP transport cancelled at deadline") from exc
         self._notify_exchange(

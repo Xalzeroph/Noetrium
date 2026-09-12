@@ -35,6 +35,7 @@ _REQUIRED_WORKFLOW_OPERATIONS = {
 }
 
 _DISPATCH_AUTHORITIES = frozenset({
+    "noetrium_platform/research/execution/workflow/runtime/operation_dispatch.py",
     "noetrium_platform/research/execution/participants/resolution.py",
     "noetrium_platform/research/execution/participants/checkpoint_operations.py",
     "noetrium_platform/research/execution/participants/session_lifecycle.py",

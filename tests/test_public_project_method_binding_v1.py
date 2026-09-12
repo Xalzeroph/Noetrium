@@ -45,7 +45,7 @@ def test_local_shell_command_returns_host_typed_result() -> None:
     result = run_local_shell_command(command, timeout_seconds=5)
 
     expected_argv = (
-        ("cmd.exe", "/d", "/s", "/c", command)
+        (os.environ.get("COMSPEC", "cmd.exe"), "/d", "/s", "/c", command)
         if os.name == "nt"
         else ("/bin/sh", "-c", command)
     )

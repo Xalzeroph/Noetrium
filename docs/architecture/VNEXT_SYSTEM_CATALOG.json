@@ -708,7 +708,7 @@
   "execution/workflow": {
     "authority": "workflow_state",
     "must_not_own": "process supervision",
-    "owns": "workflow definitions and orchestration semantics",
+    "owns": "workflow definitions, universal method-machine orchestration, and resumable control semantics",
     "package_prefix": "noetrium_platform.research.execution.workflow",
     "parent": "execution",
     "shape": [
@@ -717,9 +717,16 @@
       "providers",
       "composition"
     ],
-    "requires": [],
+    "requires": [
+      "participant/capability",
+      "participant/method",
+      "platform"
+    ],
     "provides": [
-      "workflow.runtime"
+      "workflow.runtime",
+      "method.machine",
+      "method.abi",
+      "method.checkpoint"
     ],
     "components": []
   },
@@ -2925,44 +2932,6 @@
       "reference.agent.components",
       "reference.agent.runtime.bridge"
     ],
-    "components": []
-  },
-  "components/reference": {
-    "authority": "reference_component_namespace",
-    "must_not_own": "platform authority mutation, provider credentials or scientific result acceptance",
-    "owns": "namespace and lifecycle boundary for reusable reference components",
-    "package_prefix": "components.reference",
-    "parent": "components",
-    "shape": [
-      "api",
-      "runtime",
-      "providers",
-      "composition"
-    ],
-    "requires": [
-      "components"
-    ],
-    "provides": [],
-    "components": []
-  },
-  "components/reference/harness": {
-    "authority": "universal_research_harness",
-    "must_not_own": "platform authority mutation, provider credentials or scientific result acceptance",
-    "owns": "typed method-node composition, lifecycle validation, checkpointing and replayable harness execution",
-    "package_prefix": "components.reference.harness",
-    "parent": "components/reference",
-    "shape": [
-      "api",
-      "runtime",
-      "providers",
-      "composition"
-    ],
-    "requires": [
-      "components",
-      "platform"
-    ],
-    "provides": [],
-    "downstream_surface": "metadata_only",
     "components": []
   },
   "orchestration": {

@@ -120,7 +120,10 @@ def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> N
             )
         if receipt.valid_until < now:
             raise QualifiedModelClosurePublicationError(
-                f"runtime qualification receipt is stale: {deployment_id}"
+                "runtime qualification receipt is stale: "
+                f"{deployment_id}; valid_until={receipt.valid_until:.3f}; "
+                f"now={now:.3f}; expired_by={now - receipt.valid_until:.3f}s; "
+                "refresh the live qualification closure before publishing"
             )
 
     covered: set[tuple[str, str]] = set()

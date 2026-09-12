@@ -58,7 +58,6 @@ class ToolDefinition:
     capability_id: str = ""
     risk_class: ToolRiskClass = ToolRiskClass.OBSERVE
     sandbox_profile: str = "reference"
-    input_schema: JsonValue | None = None
     definition_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -75,16 +74,11 @@ class ToolDefinition:
             raise ValueError("high-risk tools require an explicit capability_id")
         if self.capability_id and not self.capability_id.strip():
             raise ValueError("tool capability_id must be non-empty when present")
-        if self.input_schema is not None:
-            if not isinstance(self.input_schema, Mapping):
-                raise TypeError("tool definition input_schema must be a mapping when present")
-            object.__setattr__(self, "input_schema", freeze_json(self.input_schema))
         object.__setattr__(
             self,
             "definition_digest",
             canonical_digest({
                 "name": self.name,
-                "input_schema": self.input_schema,
                 "description": self.description,
                 "input_schema_id": self.input_schema_id,
                 "capability_id": self.capability_id,
@@ -189,20 +183,6 @@ class ToolRegistry:
                 raise ValueError(f"tool already registered: {definition.name}")
             self._handlers[definition.name] = (definition, handler)
 
-
-    def model_tool_schema(self) -> tuple[JsonValue, ...]:
-        """Return a deterministic OpenAI-compatible function schema bundle."""
-        result: list[JsonValue] = []
-        for definition in self.definitions():
-            parameters = definition.input_schema
-            if parameters is None:
-                parameters = {"type": "object", "additionalProperties": True, "$comment": f"schema:{definition.input_schema_id}"}
-            result.append({"type": "function", "function": {"name": definition.name, "description": definition.description, "parameters": parameters}})
-        return tuple(result)
-
-    @property
-    def model_tool_schema_sha256(self) -> str:
-        return canonical_digest(self.model_tool_schema())
     def definitions(self) -> tuple[ToolDefinition, ...]:
         with self._lock:
             values = tuple(self._handlers.values())

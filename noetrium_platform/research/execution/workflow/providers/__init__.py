@@ -1,3 +1,4 @@
 from .sqlite_progress import SQLiteWorkflowProgressStore
+from .method_checkpoint import JsonMethodCheckpointStore, MethodCheckpointCorruptionError
 
-__all__ = ["SQLiteWorkflowProgressStore"]
+__all__ = ["JsonMethodCheckpointStore", "MethodCheckpointCorruptionError", "SQLiteWorkflowProgressStore"]

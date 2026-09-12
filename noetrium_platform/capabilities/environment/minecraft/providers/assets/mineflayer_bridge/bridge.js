@@ -142,7 +142,8 @@ function connect (options) {
     username: options.username || 'ResearchBot',
     auth: options.auth || 'offline',
     version: options.version || false,
-    checkTimeoutInterval: Number(options.checkTimeoutInterval || 30000)
+    checkTimeoutInterval: Number(options.checkTimeoutInterval || 30000),
+    hideErrors: true
   })
   runtime.bindBot(bot)
   actionRecovery.configure(options.action_recovery_dir || null)

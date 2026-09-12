@@ -8,6 +8,11 @@ from .persistence import (
 from .persistent import PersistentEffectIntentJournal
 from .sqlite import SQLiteEffectIntentJournal
 from .sqlite_backend import SQLiteEffectJournalBackend
+from .reconciliation import (
+    EffectReconciliationProvider,
+    EffectReconciliationResult,
+    EffectReconciliationService,
+)
 
 __all__ = [
     "EffectJournalDocumentCodec",
@@ -18,4 +23,7 @@ __all__ = [
     "PersistentEffectIntentJournal",
     "SQLiteEffectIntentJournal",
     "SQLiteEffectJournalBackend",
+    "EffectReconciliationProvider",
+    "EffectReconciliationResult",
+    "EffectReconciliationService",
 ]

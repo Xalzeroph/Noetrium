@@ -1,12 +1,38 @@
 from __future__ import annotations
 
+from .action_identity import (
+    ActionIdentityViolation,
+    ActionSemanticIdentity,
+    require_action_recovery_handle_identity,
+    require_action_result_identity,
+    require_effect_receipt_digest,
+    require_reconciliation_identity,
+    require_recovery_handle_reconciliation_identity,
+)
+from .errors import (
+    ActionNotApplied,
+    ActionRecoveryRequired,
+    ActionSafetyCapabilityMissing,
+    ActionScientificCommitContradiction,
+    EnvironmentCapabilityUnsupported,
+)
 from .contracts import (
     EnvironmentAssignmentIdentity,
     EnvironmentAssignmentIsolationPort,
     EnvironmentAssignmentIsolationReceipt,
+    ActionReconciliationDisposition,
+    ActionReconciliationResult,
+    ActionRequest,
+    ActionResult,
+    DurablePreparedActionSession,
+    EnvironmentIdentity,
+    EnvironmentImplementation,
+    EnvironmentSession,
+    Observation,
     SystemIdentity,
     SystemPort,
     SystemSpec,
+    action_request_digest,
 )
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.foundation.kernel.kernel.operation import EffectClass, EffectCertainty, EffectReceipt
@@ -38,53 +64,19 @@ from .interaction import (
     EnvironmentRawEventRecord,
     EnvironmentRawRecordSinkPort,
 )
-
-_LAZY_RUNTIME_EXPORTS = frozenset({
-    "ActionIdentityViolation",
-    "ActionNotApplied",
-    "ActionRecoveryRequired",
-    "ActionReconciliationDisposition",
-    "ActionReconciliationResult",
-    "ActionRequest",
-    "ActionResult",
-    "ActionSafetyCapabilityMissing",
-    "ActionScientificCommitContradiction",
-    "EnvironmentCapabilityUnsupported",
-    "ActionSemanticIdentity",
-    "DurablePreparedActionSession",
-    "EnvironmentIdentity",
-    "EnvironmentImplementation",
-    "EnvironmentSession",
-    "Observation",
-    "action_request_digest",
-    "require_action_recovery_handle_identity",
-    "require_action_result_identity",
-    "require_effect_receipt_digest",
-    "require_reconciliation_identity",
-    "require_recovery_handle_reconciliation_identity",
-    "JsonScalar",
-    "JsonInput",
-    "JsonMutableValue",
-    "JsonValue",
-    "StateMachineDynamicsIdentity",
-    "StateMachineDynamicsPort",
-    "StateMachineEnvironmentSpec",
-    "StateTransition",
-    "freeze_json_mapping",
-    "thaw_json",
-    "thaw_json_mapping",
-})
-
-
-def __getattr__(name: str):
-    if name not in _LAZY_RUNTIME_EXPORTS:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-    import noetrium_platform.capabilities.environment.runtime.api as runtime_api
-
-    value = getattr(runtime_api, name)
-    globals()[name] = value
-    return value
-
+from .state_machine import (
+    JsonScalar,
+    JsonInput,
+    JsonMutableValue,
+    JsonValue,
+    StateMachineDynamicsIdentity,
+    StateMachineDynamicsPort,
+    StateMachineEnvironmentSpec,
+    StateTransition,
+    freeze_json_mapping,
+    thaw_json,
+    thaw_json_mapping,
+)
 
 __all__ = [
     "SystemIdentity", "SystemSpec", "SystemPort", "ExecutionContext",
