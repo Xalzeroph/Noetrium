@@ -49,6 +49,32 @@ class ServiceReadyObservation:
 
 
 
+class ServiceEnvironmentPort(Protocol):
+    @property
+    def digest(self) -> str: ...
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceLaunchPreflightReport:
+    contract_digest: str
+    checks: tuple[tuple[str, bool], ...]
+    errors: tuple[str, ...] = ()
+
+    @property
+    def ready(self) -> bool:
+        return not self.errors and all(passed for _, passed in self.checks)
+
+
+class ServiceLaunchPreflightPort(Protocol):
+    """Validate a frozen service contract before any process-side effect."""
+
+    def validate(
+        self,
+        contract: ServiceLaunchContract,
+        environment: ServiceEnvironmentPort,
+    ) -> ServiceLaunchPreflightReport: ...
+
+
 class ExactServiceRuntimePort(Protocol):
     """Cross-system semantic Service runtime ABI; no supervisor state escapes."""
 
@@ -60,6 +86,9 @@ class ExactServiceRuntimePort(Protocol):
 
 __all__ = [
     "ExactServiceRuntimePort",
+    "ServiceEnvironmentPort",
+    "ServiceLaunchPreflightReport",
+    "ServiceLaunchPreflightPort",
     "ServiceReadyObservation",
     "ServiceReconcileObservation",
     "ServiceStartOutcome",

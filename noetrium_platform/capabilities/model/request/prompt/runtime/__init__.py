@@ -23,6 +23,7 @@ __all__ = [
     "PromptOutcomeLink","PromptOutcomeSummary","summarize_outcomes",
     "OutputSchemaRegistry","OutputSchemaSpec","default_output_schemas","ConservativeCharTokenCounter",
     "PromptBudgetExceeded","PromptBudgetPlanner","PromptBudgetReport","TokenCounter",
+    "ModelRequestBudgetExceeded","ModelRequestBudgetReport","check_model_request_budget",
     "DurablePromptRegistry","PromptGenerationManifest","PromptPromotionEvidence","PromptPromotionRecord","PromptPublicationError","PromptExecutionContract","build_execution_contract","PromptBoundRequest","PromptRequestBuildTransaction",
     "PromptRequestTrace",
 ]

@@ -23,7 +23,7 @@ def digest(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
 
 
-def service_contract(tmp_path: Path, *, required_paths: tuple[str, ...] = ()) -> ServiceLaunchContract:
+def service_contract(tmp_path: Path) -> ServiceLaunchContract:
     environment = MaterializedServiceEnvironment.from_mapping({"PATH": "/usr/bin"}, "env:test")
     return ServiceLaunchContract(
         service_id="test.service",
@@ -92,3 +92,26 @@ def test_service_preflight_accepts_complete_runtime_inputs(tmp_path: Path) -> No
     report = LocalServiceLaunchPreflight(required_paths=(str(required),)).validate(contract, environment)
     assert report.ready
     assert all(passed for _, passed in report.checks)
+
+
+def test_service_preflight_requires_absolute_paths() -> None:
+    with pytest.raises(ValueError, match="absolute"):
+        LocalServiceLaunchPreflight(required_paths=("relative/server.properties",))
+
+
+def test_minecraft_preflight_derives_prepared_server_files(tmp_path: Path) -> None:
+    from noetrium_platform.capabilities.environment.minecraft.api import MinecraftServerSpec
+    from noetrium_platform.capabilities.environment.minecraft.composition.server_service import (
+        build_minecraft_server_preflight,
+    )
+
+    spec = MinecraftServerSpec(
+        jar_path=str(tmp_path / "server.jar"),
+        workdir=str(tmp_path),
+        java_executable="/usr/bin/java",
+    )
+    preflight = build_minecraft_server_preflight(spec)
+    assert preflight.required_paths == (
+        str(tmp_path / "eula.txt"),
+        str(tmp_path / "server.properties"),
+    )

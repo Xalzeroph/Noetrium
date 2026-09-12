@@ -31,6 +31,7 @@ from .process_contracts import (
 from .readiness import ProcessAliveReadinessProbe
 
 __all__ += (
+    "LocalServiceLaunchPreflight","ServiceLaunchPreflightError","ServiceLaunchPreflightReport",
     "MaterializedServiceEnvironment",
     "ServiceEnvironmentProvider",
     "StaticServiceEnvironmentProvider",

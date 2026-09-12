@@ -1,21 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
+from noetrium_platform.infrastructure.lifecycle.service.api import (
+    ServiceLaunchContract,
+    ServiceLaunchPreflightReport,
+)
 from .environment import MaterializedServiceEnvironment
-
-
-@dataclass(frozen=True, slots=True)
-class ServiceLaunchPreflightReport:
-    contract_digest: str
-    checks: tuple[tuple[str, bool], ...]
-    errors: tuple[str, ...] = ()
-
-    @property
-    def ready(self) -> bool:
-        return not self.errors and all(passed for _, passed in self.checks)
 
 
 class ServiceLaunchPreflightError(RuntimeError):
@@ -31,6 +22,8 @@ class LocalServiceLaunchPreflight:
         self.required_paths = tuple(str(path) for path in required_paths)
         if any(not path for path in self.required_paths):
             raise ValueError("required service paths must be non-empty")
+        if any(not Path(path).is_absolute() for path in self.required_paths):
+            raise ValueError("required service paths must be absolute")
         if len(set(self.required_paths)) != len(self.required_paths):
             raise ValueError("required service paths must be unique")
 

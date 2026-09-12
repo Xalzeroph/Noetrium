@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.infrastructure.lifecycle.service.api import ExactServiceRuntimePort, ServiceContractDrift, ServiceLaunchContract
+from noetrium_platform.infrastructure.lifecycle.service.api import (
+    ExactServiceRuntimePort,
+    ServiceContractDrift,
+    ServiceLaunchContract,
+    ServiceLaunchPreflightPort,
+)
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemFamily, OperatingSystemRoute
 from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
@@ -11,7 +16,6 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime.environment impo
 from noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend import LinuxProcessBackend
 from noetrium_platform.infrastructure.lifecycle.service.runtime.process_adapter import LocalServiceProcessAdapter
 from noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts import ExactProcessBackend, ServiceReadinessProbe
-from noetrium_platform.infrastructure.lifecycle.service.runtime.preflight import LocalServiceLaunchPreflight
 from noetrium_platform.infrastructure.lifecycle.service.runtime.runtime_endpoint import ExactServiceRuntimeEndpoint
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
@@ -82,7 +86,7 @@ class LocalServiceRuntimeComposer:
         *,
         environment: MaterializedServiceEnvironment,
         readiness: ServiceReadinessProbe,
-        preflight: LocalServiceLaunchPreflight | None = None,
+        preflight: ServiceLaunchPreflightPort | None = None,
     ) -> ExactServiceRuntimePort:
         if preflight is not None: preflight.validate(contract, environment)
         if environment.digest != contract.environment_digest:

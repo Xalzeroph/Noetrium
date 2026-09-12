@@ -11,6 +11,7 @@ import time
 from noetrium_platform.infrastructure.lifecycle.service.api import (
     ExactServiceRuntimePort,
     ServiceLaunchContract,
+    ServiceLaunchPreflightPort,
     ServiceReadyObservation,
     ServiceReconcileObservation,
     ServiceStartOutcome,
@@ -200,6 +201,25 @@ def build_server_service_contract(
     )
 
 
+def build_minecraft_server_preflight(spec: MinecraftServerSpec) -> LocalServiceLaunchPreflight:
+    """Build the standard preflight for a prepared Minecraft work directory.
+
+    The server process expects both files in its working directory. Deriving
+    these paths from the immutable spec keeps downstream callers from
+    duplicating deployment-specific checks.
+    """
+
+    if not isinstance(spec, MinecraftServerSpec):
+        raise TypeError("Minecraft preflight spec must be typed")
+    workdir = Path(spec.workdir)
+    return LocalServiceLaunchPreflight(
+        required_paths=(
+            str(workdir / "eula.txt"),
+            str(workdir / "server.properties"),
+        )
+    )
+
+
 def compose_minecraft_server_service_runtime(
     spec: MinecraftServerSpec,
     contract: ServiceLaunchContract,
@@ -210,7 +230,7 @@ def compose_minecraft_server_service_runtime(
     capture_root: Path,
     operating_system: OperatingSystemRoute,
     process_backend: ExactProcessBackend | None = None,
-    preflight: LocalServiceLaunchPreflight | None = None,
+    preflight: ServiceLaunchPreflightPort | None = None,
     rcon_password_provider: Callable[[], str] | None = None,
     task_group: TaskGroupPort,
 ) -> ExactServiceRuntimePort:
@@ -426,6 +446,7 @@ class MinecraftServerServiceFactory:
             capture_root=self.config.capture_root,
             operating_system=self.config.operating_system,
             process_backend=self.config.process_backend,
+            preflight=build_minecraft_server_preflight(spec),
             rcon_password_provider=(
                 (lambda: rcon_password)
                 if spec.rcon_endpoint is not None
@@ -444,5 +465,6 @@ __all__ = [
     "MinecraftServerServiceError",
     "MinecraftTcpReadinessProbe",
     "build_server_service_contract",
+    "build_minecraft_server_preflight",
     "compose_minecraft_server_service_runtime",
 ]

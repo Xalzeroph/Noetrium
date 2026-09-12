@@ -1,6 +1,9 @@
 from .contracts import ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
 from .ports import (
     ExactServiceRuntimePort,
+    ServiceEnvironmentPort,
+    ServiceLaunchPreflightPort,
+    ServiceLaunchPreflightReport,
     ServiceReadyObservation,
     ServiceReconcileObservation,
     ServiceStartOutcome,
@@ -9,6 +12,9 @@ from .ports import (
 
 __all__ = [
     "ExactServiceRuntimePort",
+    "ServiceEnvironmentPort",
+    "ServiceLaunchPreflightPort",
+    "ServiceLaunchPreflightReport",
     "ServiceContractDrift",
     "ServiceLaunchContract",
     "ServiceProcessIdentity",
