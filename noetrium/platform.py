@@ -6,6 +6,7 @@ from collections.abc import Callable, Mapping
 from importlib import resources
 from pathlib import Path
 import math
+import os
 import time
 import shutil
 import subprocess
@@ -312,6 +313,13 @@ def bind_method_endpoint(
     return _DefaultMethodEndpointFactory().bind(implementation, runtime)
 
 
+
+def _host_shell_argv(command: str) -> tuple[str, ...]:
+    if os.name == "nt":
+        return ("cmd.exe", "/d", "/s", "/c", command)
+    return ("/bin/sh", "-c", command)
+
+
 def run_local_shell_command(
     command: str,
     *,
@@ -347,7 +355,51 @@ def run_local_shell_command(
             "local-shell-command", "could not start process"
         ) from exc
     return LocalCommandResult(
-        argv=("/bin/sh", "-lc", command),
+        argv=_host_shell_argv(command),
+        returncode=int(completed.returncode),
+        stdout=completed.stdout or "",
+        stderr=completed.stderr or "",
+    )
+
+
+def run_local_command(
+    argv: tuple[str, ...],
+    *,
+    timeout_seconds: float = 300.0,
+    cwd: str | Path | None = None,
+    environment: Mapping[str, str] | None = None,
+) -> LocalCommandResult:
+    """Execute an exact argv without selecting or interpreting a shell."""
+
+    if not isinstance(argv, tuple) or not argv or any(
+        not isinstance(value, str) or not value or "\x00" in value for value in argv
+    ):
+        raise ValueError("local command argv must be a non-empty tuple of safe strings")
+    if not math.isfinite(float(timeout_seconds)) or timeout_seconds <= 0:
+        raise ValueError("local command timeout must be finite and positive")
+    env = None
+    if environment is not None:
+        env = {str(key): str(value) for key, value in environment.items()}
+    try:
+        completed = subprocess.run(
+            list(argv),
+            shell=False,
+            text=True,
+            capture_output=True,
+            timeout=float(timeout_seconds),
+            cwd=str(cwd) if cwd is not None else None,
+            env=env,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise LocalCommandTimeoutError(
+            "local-command", f"execution exceeded {float(timeout_seconds):g}s"
+        ) from exc
+    except OSError as exc:
+        raise LocalCommandStartError(
+            "local-command", "could not start process"
+        ) from exc
+    return LocalCommandResult(
+        argv=argv,
         returncode=int(completed.returncode),
         stdout=completed.stdout or "",
         stderr=completed.stderr or "",
@@ -1039,7 +1091,7 @@ __all__ = [
     "bind_environment_category_catalog", "bind_minecraft_environment", "bind_qualified_project_model",
     "bind_agent_research_runtime",
     "complete_project_model", "invoke_multimodal_model",
-    "bind_method_endpoint", "run_local_shell_command",
+    "bind_method_endpoint", "run_local_command", "run_local_shell_command",
     "bind_research_workbench", "bind_run_control_application",
     "bind_study_matrix_execution", "build_basic_study_metric_aggregation",
     "build_checkpointed_workload_batch_executor", "build_project_run_checkpoint_store",
