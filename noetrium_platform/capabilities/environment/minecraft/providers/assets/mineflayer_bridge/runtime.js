@@ -1,6 +1,6 @@
 'use strict'
 
-const { Movements, goals: { GoalNear, GoalFollow } } = require('mineflayer-pathfinder')
+const { Movements, goals: { GoalNear, GoalFollow, GoalLookAtBlock } } = require('mineflayer-pathfinder')
 const { Vec3 } = require('vec3')
 
 let bot = null
@@ -440,6 +440,32 @@ async function gotoPos (position, radius = 1.5, timeoutMs = 30000) {
   }
 }
 
+// Prefer pathfinder's interaction-aware goal for block actions. A GoalNear can
+// leave the bot technically close enough while still unable to raycast/interact
+// with the target (obstructions, ledges, or a bad facing angle). Keep the
+// provider-neutral fallback for test doubles and older pathfinder providers that
+// do not expose a world/GoalLookAtBlock combination.
+async function gotoBlockInteraction (position, timeoutMs = 30000) {
+  const activeBot = requireBot()
+  if (!activeBot.world || typeof GoalLookAtBlock !== 'function') {
+    return { ...(await gotoPos(position, 3, timeoutMs)), navigation_goal: 'near_fallback' }
+  }
+  if (!activeBot.pathfinder.movements) await ensureMovements()
+  const target = new Vec3(Number(position.x), Number(position.y), Number(position.z))
+  await withTimeout(
+    activeBot.pathfinder.goto(new GoalLookAtBlock(target, activeBot.world)),
+    timeoutMs,
+    'PATHFINDER_LOOK_AT_BLOCK'
+  )
+  const distance = activeBot.entity.position.distanceTo(target)
+  return {
+    target: vec(target),
+    position: vec(activeBot.entity.position),
+    distance,
+    navigation_goal: 'look_at_block'
+  }
+}
+
 function result (tool, action, status, code, details = {}) {
   if (!['applied', 'partial', 'rejected'].includes(status)) throw new Error(`invalid action status ${status}`)
   return {
@@ -465,6 +491,7 @@ module.exports = {
   findInventoryItem,
   findNearbyDroppedItem,
   getBot,
+  gotoBlockInteraction,
   gotoEntity,
   gotoPos,
   inventoryCount,

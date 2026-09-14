@@ -105,7 +105,7 @@ async function collectBlock (msg) {
     const distance = activeBot.entity.position.distanceTo(position)
     if (distance > 4.0) {
       try {
-        await runtime.gotoPos(position, 3, runtime.remainingMs(deadline, 30000))
+        await runtime.gotoBlockInteraction(position, runtime.remainingMs(deadline, 30000))
       } catch (error) {
         errors.push({ phase: 'approach', message: String(error.message || error), position: runtime.vec(position) })
         break

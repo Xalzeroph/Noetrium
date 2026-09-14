@@ -337,6 +337,49 @@ test('collect_block skips pathfinding when the block is already reachable', asyn
   assert.equal(gotoCalls, 0)
 })
 
+test('collect_block uses an interaction-aware goal for distant blocks', async () => {
+  const items = [{ name: 'stone_pickaxe', type: 877, count: 1, slot: 0 }]
+  const bot = fakeBot(items)
+  bot.world = {}
+  bot.pathfinder.movements = {}
+  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
+  bot.registry.itemsByName = { dirt: { id: 9 }, cobblestone: { id: 35, name: 'cobblestone' } }
+  bot.registry.blocksByName = {
+    chest: { id: 1 }, fire: { id: 2 }, lava: { id: 3 }, water: { id: 4 },
+    sand: { id: 5 }, gravel: { id: 6 }, ladder: { id: 7 }, air: { id: 8 }
+  }
+  bot.registry.blocksArray = []
+  const position = new Vec3(8, 64, 0)
+  let live = {
+    name: 'stone',
+    position,
+    drops: [35],
+    canHarvest: type => type === 877,
+    digTime: type => type === 877 ? 1 : 100
+  }
+  let goalName = null
+  bot.findBlock = () => live && live.name === 'stone' ? live : null
+  bot.blockAt = () => live
+  bot.lookAt = async () => {}
+  bot.equip = async item => { bot.heldItem = item }
+  bot.pathfinder.goto = async goal => {
+    goalName = goal.constructor.name
+    bot.entity.position = new Vec3(7, 64, 0)
+  }
+  bot.dig = async () => {
+    live = { name: 'air', position }
+    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 1 })
+  }
+  runtime.bindBot(bot)
+
+  const result = await withoutMovementConstruction(() => resources.collect_block({
+    block: 'stone', count: 1, max_distance: 16, _action_timeout_ms: 2000
+  }))
+
+  assert.equal(result.verified, true)
+  assert.equal(goalName, 'GoalLookAtBlock')
+})
+
 test('collect_block waits for delayed pickup from a vertical block stack', async () => {
   const items = []
   const bot = fakeBot(items)
