@@ -39,7 +39,13 @@ from noetrium_platform.capabilities.participant.agent.runtime.skill_library impo
 
 from ..api import MINECRAFT_ACTION_TYPES, minecraft_action_catalog, validate_minecraft_action
 from ..api.contracts import MinecraftActionCategory, MinecraftJsonValue
-from ..runtime.planning import MinecraftBlueprintBlock, MinecraftBlueprintBuilder, MinecraftPlannedSequence
+from ..runtime.planning import (
+    MinecraftBlueprintBlock,
+    MinecraftBlueprintBuilder,
+    MinecraftPlannedSequence,
+    MinecraftRecipe,
+    MinecraftResourcePlanner,
+)
 
 
 def _json_value(value: MinecraftJsonValue | tuple[MinecraftJsonValue, ...]) -> MinecraftJsonValue | list[MinecraftJsonValue]:
@@ -165,7 +171,13 @@ class MinecraftAgentSkillCatalog(AgentSkillCatalogPort):
         "activate": "activate_nearest_block", "trade": "trade_villager", "use": "use_tool_on",
     }
     _HIGH_LEVEL = (
-        AgentSkillDescription("minecraft.resource_plan", "planning", "Expand a validated resource plan into typed actions.", "{steps:[{action_type:string,payload:json_value,timeout_s?:number}]}", True),
+        AgentSkillDescription(
+            "minecraft.resource_plan",
+            "planning",
+            "Expand typed steps or a deterministic recipe/dependency goal into actions.",
+            "{steps:[{action_type:string,payload:json_value,timeout_s?:number}] or target:string,count:integer,inventory:object,recipes:object}",
+            True,
+        ),
         AgentSkillDescription("minecraft.build", "construction", "Place an ordered declarative blueprint.", "{blocks:[{item:string,position:{x:number,y:number,z:number},level?:integer}],observed_blocks?:object}", True),
         AgentSkillDescription("minecraft.explore", "exploration", "Refresh nearby entities and world affordances.", "{max_distance?:1..128,limit?:1..100}", False),
         AgentSkillDescription("minecraft.survive", "survival", "Use a bounded defensive response to immediate threats.", "{radius?:1..32,max_targets?:1..16,max_hits?:1..40}", True),
@@ -211,7 +223,48 @@ class MinecraftAgentSkillCatalog(AgentSkillCatalogPort):
                 skill_id=selection.skill_id,
             ))
         if selection.skill_id == "minecraft.resource_plan":
-            raw_steps = selection.arguments.get("steps", [])
+            raw_steps = selection.arguments.get("steps")
+            if raw_steps is None:
+                target = selection.arguments.get("target")
+                raw_count = selection.arguments.get("count", 1)
+                raw_inventory = selection.arguments.get("inventory", {})
+                raw_recipes = selection.arguments.get("recipes", {})
+                if not isinstance(target, str) or not target.strip():
+                    raise ValueError("minecraft.resource_plan requires steps or a target")
+                if isinstance(raw_count, bool) or not isinstance(raw_count, int) or raw_count < 1:
+                    raise ValueError("minecraft.resource_plan target count must be a positive integer")
+                if not isinstance(raw_inventory, Mapping) or not isinstance(raw_recipes, Mapping):
+                    raise ValueError("minecraft.resource_plan inventory and recipes must be mappings")
+                inventory: dict[str, int] = {}
+                for item, value in raw_inventory.items():
+                    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                        raise ValueError("minecraft.resource_plan inventory counts must be non-negative integers")
+                    inventory[str(item)] = value
+                recipes: dict[str, MinecraftRecipe] = {}
+                for recipe_name, raw_recipe in raw_recipes.items():
+                    if not isinstance(raw_recipe, Mapping):
+                        raise ValueError("minecraft.resource_plan recipe must be a mapping")
+                    ingredients = raw_recipe.get("ingredients", {})
+                    if not isinstance(ingredients, Mapping):
+                        raise ValueError("minecraft.resource_plan recipe ingredients must be a mapping")
+                    normalized_ingredients: dict[str, int] = {}
+                    for ingredient, value in ingredients.items():
+                        if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                            raise ValueError("minecraft.resource_plan ingredient counts must be positive integers")
+                        normalized_ingredients[str(ingredient)] = value
+                    recipe_item = str(raw_recipe.get("item", recipe_name))
+                    recipe_count = raw_recipe.get("count", 1)
+                    process = str(raw_recipe.get("process", "craft"))
+                    if isinstance(recipe_count, bool) or not isinstance(recipe_count, int) or recipe_count < 1:
+                        raise ValueError("minecraft.resource_plan recipe count must be a positive integer")
+                    recipes[str(recipe_name)] = MinecraftRecipe(
+                        item=recipe_item, count=recipe_count,
+                        ingredients=normalized_ingredients, process=process,
+                    )
+                resource_plan = MinecraftResourcePlanner(recipes).plan(target, raw_count, inventory)
+                return _agent_sequence(
+                    resource_plan.to_action_sequence(sequence_id=sequence_id, skill_id=selection.skill_id)
+                )
             if not isinstance(raw_steps, (list, tuple)):
                 raise ValueError("minecraft.resource_plan requires a steps list")
             steps: list[AgentActionStep] = []

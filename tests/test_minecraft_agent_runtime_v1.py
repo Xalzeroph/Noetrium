@@ -32,9 +32,11 @@ class _Session:
             "hostile_entities": [],
         }
         self.sequence = 0
+        self.observe_calls = 0
 
     def observe(self, context: ExecutionContext) -> Observation:
         del context
+        self.observe_calls += 1
         self.sequence += 1
         return Observation(f"obs:{self.sequence}", "world-v1", {"state": dict(self.state)})
 
@@ -111,6 +113,7 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         self.assertEqual(result.steps, 1)
         self.assertEqual(result.action_receipts[0].effect_certainty, "confirmed")
         self.assertGreaterEqual(len(evidence.rows), 2)
+        self.assertEqual(session.observe_calls, 1)
         self.assertTrue(progress.checkpoints)
         self.assertEqual(runner.ports.memory.records[-1].kind, "spatial_landmark")
 
@@ -121,6 +124,29 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         plan = planner.plan("iron_ingot", 2, {})
         self.assertEqual(tuple(step[0] for step in plan.steps), ("collect_block", "smelt_item"))
         self.assertEqual(plan.to_action_sequence(sequence_id="resource").steps[-1].action_type, "smelt_item")
+
+        catalog = MinecraftAgentSkillCatalog()
+        goal_plan = catalog.expand(
+            AgentSkillSelection(
+                "minecraft.resource_plan",
+                {
+                    "target": "iron_ingot",
+                    "count": 2,
+                    "inventory": {},
+                    "recipes": {
+                        "iron_ingot": {
+                            "count": 1,
+                            "ingredients": {"raw_iron": 1},
+                            "process": "smelt",
+                        }
+                    },
+                },
+            ),
+            observation=None,  # type: ignore[arg-type]
+            context=ExecutionContext("run", "trace", "span"),
+            sequence_id="resource-goal",
+        )
+        self.assertEqual(tuple(step.action_type for step in goal_plan.steps), ("collect_block", "smelt_item"))
 
         blueprint = MinecraftBlueprintBuilder().build(
             (MinecraftBlueprintBlock({"x": 1, "y": 64, "z": 1}, "oak_planks", 0),),
