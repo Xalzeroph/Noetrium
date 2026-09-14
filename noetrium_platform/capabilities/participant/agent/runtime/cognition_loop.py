@@ -179,6 +179,10 @@ class AgentCognitionLoop:
             raise ValueError("agent cognition checkpoint belongs to another goal")
         if checkpoint is not None and checkpoint.session_id != run_session_id:
             raise ValueError("agent cognition checkpoint belongs to another session")
+        if checkpoint is None:
+            reset_goal = getattr(self.completion, "reset_goal", None)
+            if callable(reset_goal):
+                reset_goal(goal)
         if checkpoint is not None and checkpoint.memory_checkpoint is not None:
             try:
                 self._memory.restore(checkpoint.memory_checkpoint)
@@ -249,6 +253,7 @@ class AgentCognitionLoop:
                 step=counters.step,
                 plan_call=counters.plan_calls,
                 prior_actions=tuple(summaries),
+                last_receipt=last_receipt,
             )
             planning = self._planning.plan(
                 selection=reasoning.selection,

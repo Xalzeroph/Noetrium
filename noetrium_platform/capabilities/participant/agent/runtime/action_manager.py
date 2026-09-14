@@ -109,7 +109,7 @@ class AgentActionManager(AgentActionExecutorPort):
         *,
         policy: ActionExecutionPolicy | None = None,
     ) -> AgentStepReceipt:
-        selected = policy or ActionExecutionPolicy()
+        selected = policy or ActionExecutionPolicy(timeout_s=step.timeout_s)
         if self._state is ActionLifecycleState.RUNNING:
             raise AgentActionManagerError("ACTION_ALREADY_RUNNING", "another action is active")
         if self._interrupt_reason:

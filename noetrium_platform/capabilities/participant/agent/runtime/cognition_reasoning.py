@@ -13,6 +13,7 @@ from ..api.cognition import (
     AgentPlanningRequest,
     AgentSkillDescription,
     AgentSkillSelection,
+    AgentStepReceipt,
 )
 from ..api.cognition_ports import AgentPlannerPort
 from .cognition_context import CognitionContextSnapshot
@@ -51,6 +52,7 @@ class CognitionReasoningPhase:
         step: int,
         plan_call: int,
         prior_actions: tuple[AgentActionSummary, ...],
+        last_receipt: AgentStepReceipt | None = None,
     ) -> CognitionReasoningResult:
         try:
             request = AgentPlanningRequest(
@@ -63,6 +65,7 @@ class CognitionReasoningPhase:
                 context=plan_context,
                 available_skills=self._available_skills,
                 retrieved_skills=context_snapshot.retrieved_skills,
+                last_receipt=last_receipt,
             )
             selection = self._planner.plan(request)
             if not isinstance(selection, AgentSkillSelection):

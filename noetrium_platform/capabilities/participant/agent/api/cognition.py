@@ -160,6 +160,7 @@ class AgentActionSummary:
     observation_digest: str = ""
     rationale: str = ""
     payload: Mapping[str, JsonValue] = field(default_factory=dict)
+    timeout_s: float = 120.0
 
     def __post_init__(self) -> None:
         if any(not isinstance(value, str) or not value.strip() for value in (self.action_id, self.action_type, self.skill_id)):
@@ -168,6 +169,13 @@ class AgentActionSummary:
             raise TypeError("agent action summary acceptance/verification is invalid")
         if not isinstance(self.payload, Mapping):
             raise TypeError("agent action summary payload must be a mapping")
+        if (
+            isinstance(self.timeout_s, bool)
+            or not isinstance(self.timeout_s, (int, float))
+            or not math.isfinite(float(self.timeout_s))
+            or self.timeout_s <= 0
+        ):
+            raise ValueError("agent action summary timeout_s is invalid")
         object.__setattr__(
             self, "payload", freeze_json(self.payload)
         )
@@ -185,6 +193,7 @@ def action_summary_payload(summary: AgentActionSummary) -> dict[str, JsonValue]:
         "observation_digest": summary.observation_digest,
         "rationale": summary.rationale,
         "payload": dict(summary.payload),
+        "timeout_s": summary.timeout_s,
     }
 
 
@@ -199,6 +208,7 @@ class AgentPlanningRequest:
     context: ExecutionContext
     available_skills: tuple[AgentSkillDescription, ...] = ()
     retrieved_skills: tuple[AgentSkillRecord, ...] = ()
+    last_receipt: "AgentStepReceipt | None" = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -271,12 +281,20 @@ class AgentActionStep:
     sequence_index: int
     interruptible: bool = True
     rationale: str = ""
+    timeout_s: float = 120.0
 
     def __post_init__(self) -> None:
         if any(not value.strip() for value in (self.action_id, self.action_type, self.skill_id, self.sequence_id)):
             raise ValueError("agent action step identity is required")
         if not isinstance(self.payload, Mapping) or self.sequence_index < 0:
             raise ValueError("agent action step payload/index is invalid")
+        if (
+            isinstance(self.timeout_s, bool)
+            or not isinstance(self.timeout_s, (int, float))
+            or not math.isfinite(float(self.timeout_s))
+            or self.timeout_s <= 0
+        ):
+            raise ValueError("agent action step timeout_s is invalid")
         object.__setattr__(
             self, "payload", freeze_json(self.payload)
         )
@@ -347,6 +365,7 @@ class AgentStepReceipt:
     effect_id: str | None = None
     effect_certainty: str = "unknown"
     diagnostics: Mapping[str, JsonValue] = field(default_factory=dict)
+    payload: Mapping[str, JsonValue] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if any(not value.strip() for value in (self.action_id, self.action_type, self.skill_id, self.sequence_id)):
@@ -355,9 +374,12 @@ class AgentStepReceipt:
             raise ValueError("agent step receipt effect certainty is invalid")
         if not isinstance(self.diagnostics, Mapping):
             raise TypeError("agent step receipt diagnostics must be a mapping")
+        if not isinstance(self.payload, Mapping):
+            raise TypeError("agent step receipt payload must be a mapping")
         object.__setattr__(
             self, "diagnostics", freeze_json(self.diagnostics)
         )
+        object.__setattr__(self, "payload", freeze_json(self.payload))
 
 
 @dataclass(frozen=True, slots=True)
@@ -370,6 +392,8 @@ class AgentReceiptCheckpoint:
     verified: bool | None
     effect_id: str | None = None
     effect_certainty: str = "unknown"
+    diagnostics: Mapping[str, JsonValue] = field(default_factory=dict)
+    payload: Mapping[str, JsonValue] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if any(not value.strip() for value in (self.action_id, self.action_type, self.skill_id, self.sequence_id)):
@@ -380,12 +404,17 @@ class AgentReceiptCheckpoint:
             raise ValueError("agent receipt checkpoint effect id is invalid")
         if self.effect_certainty not in {"confirmed", "rejected", "possible", "unknown"}:
             raise ValueError("agent receipt checkpoint effect certainty is invalid")
+        if not isinstance(self.diagnostics, Mapping) or not isinstance(self.payload, Mapping):
+            raise TypeError("agent receipt checkpoint maps are invalid")
+        object.__setattr__(self, "diagnostics", freeze_json(self.diagnostics))
+        object.__setattr__(self, "payload", freeze_json(self.payload))
 
     @classmethod
     def from_receipt(cls, receipt: AgentStepReceipt) -> "AgentReceiptCheckpoint":
         return cls(
             receipt.action_id, receipt.action_type, receipt.skill_id, receipt.sequence_id,
             receipt.accepted, receipt.verified, receipt.effect_id, receipt.effect_certainty,
+            receipt.diagnostics, receipt.payload,
         )
 
     def to_receipt(self) -> AgentStepReceipt:
@@ -393,6 +422,8 @@ class AgentReceiptCheckpoint:
             self.action_id, self.action_type, self.skill_id, self.sequence_id,
             self.accepted, self.verified, effect_id=self.effect_id,
             effect_certainty=self.effect_certainty,
+            diagnostics=self.diagnostics,
+            payload=self.payload,
         )
 
 
@@ -454,6 +485,8 @@ class AgentLoopCheckpoint:
                 "verified": self.last_receipt.verified,
                 "effect_id": self.last_receipt.effect_id,
                 "effect_certainty": self.last_receipt.effect_certainty,
+                "diagnostics": dict(self.last_receipt.diagnostics),
+                "payload": dict(self.last_receipt.payload),
             },
         })
 

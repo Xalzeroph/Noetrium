@@ -65,6 +65,7 @@ class CognitionActionPhase:
             observation_digest="" if receipt.observation is None else receipt.observation.state_digest,
             rationale=step.rationale,
             payload=dict(step.payload),
+            timeout_s=step.timeout_s,
         )
 
     def execute(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Mapping
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
@@ -31,9 +32,18 @@ class MinecraftPlannedStep:
     payload: Mapping[str, MinecraftJsonValue]
     sequence_index: int
     rationale: str = ""
+    timeout_s: float = 120.0
 
     def __post_init__(self) -> None:
-        if not self.action_type.strip() or self.sequence_index < 0 or not isinstance(self.payload, Mapping):
+        if (
+            not self.action_type.strip()
+            or self.sequence_index < 0
+            or not isinstance(self.payload, Mapping)
+            or isinstance(self.timeout_s, bool)
+            or not isinstance(self.timeout_s, (int, float))
+            or not math.isfinite(float(self.timeout_s))
+            or self.timeout_s <= 0
+        ):
             raise ValueError("Minecraft planned step is invalid")
 
 
