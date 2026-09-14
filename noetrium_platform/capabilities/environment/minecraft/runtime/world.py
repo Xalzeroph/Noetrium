@@ -22,8 +22,14 @@ class MinecraftWorldQuery:
         inventory = state.get("inventory")
         if not isinstance(inventory, Mapping):
             return 0
-        needle = item.lower()
-        return sum(int(value) for key, value in inventory.items() if needle in str(key).lower())
+        needle = item.strip().lower()
+        if not needle:
+            return 0
+        return sum(
+            int(value)
+            for key, value in inventory.items()
+            if str(key).strip().lower() == needle
+        )
 
     @staticmethod
     def nearest_entity(state: Mapping[str, MinecraftJsonValue], query: str = "") -> MinecraftEntityMatch | None:

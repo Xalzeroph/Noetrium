@@ -25,47 +25,31 @@ function dropNamesForBlock (activeBot, block) {
   return names
 }
 
-function miningTime (activeBot, block, item) {
-  if (!block || typeof block.digTime !== 'function') return Number.MAX_SAFE_INTEGER
-  try {
-    const effects = activeBot.entity && activeBot.entity.effects ? activeBot.entity.effects : {}
-    const value = block.digTime(item ? item.type : null, false, false, false, [], effects)
-    return Number.isFinite(Number(value)) ? Number(value) : Number.MAX_SAFE_INTEGER
-  } catch {
-    return Number.MAX_SAFE_INTEGER
-  }
-}
-
 async function equipBestHarvestTool (activeBot, block) {
   const held = activeBot.heldItem || null
-  if (typeof block.canHarvest !== 'function') {
-    return { ok: true, selected: held ? runtime.itemSummary(held) : null, changed: false }
+  if (!activeBot.pathfinder || typeof activeBot.pathfinder.bestHarvestTool !== 'function') {
+    return {
+      ok: false,
+      selected: null,
+      changed: false,
+      error: 'MINEFLAYER_PATHFINDER_HARVEST_TOOL_UNAVAILABLE'
+    }
   }
-  const inventoryItems = activeBot.inventory && typeof activeBot.inventory.items === 'function'
-    ? activeBot.inventory.items()
-    : []
-  const canHarvest = item => typeof block.canHarvest === 'function' && block.canHarvest(item ? item.type : null)
   let best = null
-  if (activeBot.pathfinder && typeof activeBot.pathfinder.bestHarvestTool === 'function') {
-    try {
-      const providerBest = activeBot.pathfinder.bestHarvestTool(block)
-      if (providerBest && canHarvest(providerBest)) best = providerBest
-    } catch (_) {}
+  try {
+    best = activeBot.pathfinder.bestHarvestTool(block) || null
+  } catch (error) {
+    return {
+      ok: false,
+      selected: null,
+      changed: false,
+      error: String(error.message || error)
+    }
   }
-  if (!best) {
-    const candidates = inventoryItems
-      .filter(item => item && canHarvest(item))
-      .sort((left, right) => {
-        const timeDelta = miningTime(activeBot, block, left) - miningTime(activeBot, block, right)
-        return timeDelta || String(left.name || '').localeCompare(String(right.name || ''))
-      })
-    best = candidates[0] || null
-  }
-  if (!best && held && canHarvest(held)) best = held
   if (!best) {
     return { ok: false, selected: null, changed: false }
   }
-  if (held && (held.slot === best.slot || miningTime(activeBot, block, held) <= miningTime(activeBot, block, best))) {
+  if (held && held.slot === best.slot) {
     return { ok: true, selected: runtime.itemSummary(held), changed: false }
   }
   if (typeof activeBot.equip !== 'function') {

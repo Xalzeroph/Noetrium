@@ -9,6 +9,7 @@ from noetrium_platform.capabilities.environment.minecraft.composition import (
     MinecraftRecipeCatalog,
     MinecraftResourcePlanner,
     MinecraftAgentSkillCatalog,
+    MinecraftAgentCompletion,
 )
 from noetrium_platform.capabilities.environment.runtime.api import ActionResult, Observation, action_request_digest
 from noetrium_platform.capabilities.participant.agent.api import (
@@ -18,8 +19,11 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentPlanningRequest,
     AgentProgressPort,
     AgentSkillSelection,
+    AgentObservation,
+    AgentStepReceipt,
 )
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
+from noetrium_platform.capabilities.participant.agent.runtime.memory import InMemoryAgentMemory
 
 
 class _Session:
@@ -97,6 +101,7 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
             planner=_Planner(),
             evidence=evidence,
             progress=progress,
+            memory=InMemoryAgentMemory(),
             clock=lambda: 1.0,
         )
         result = runner.run(
@@ -133,6 +138,22 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         plan = planner.plan("iron_ingot", 2, {})
         self.assertEqual(tuple(step[0] for step in plan.steps), ("collect_block", "smelt_item"))
         self.assertEqual(plan.to_action_sequence(sequence_id="resource").steps[-1].action_type, "smelt_item")
+
+        alternatives = MinecraftRecipeCatalog.from_minecraft_data(
+            {"4": [{
+                "inShape": [[[35, 159], 35], [None, 35]],
+                "result": {"id": 4, "count": 1},
+            }]},
+            [
+                {"id": 35, "name": "oak_log"},
+                {"id": 159, "name": "spruce_log"},
+                {"id": 4, "name": "crafted_block"},
+            ],
+            version="1.21.8",
+        )
+        alternative_recipe = alternatives.recipes_for("crafted_block")[0]
+        self.assertEqual(alternative_recipe.ingredients, {"oak_log": 2})
+        self.assertEqual(alternative_recipe.ingredient_options, (("oak_log", "spruce_log"),))
 
         catalog = MinecraftRecipeCatalog.from_minecraft_data(
             {"5": [{"inShape": [[4, 4], [4, 4]], "result": {"id": 5, "count": 4}}]},
@@ -204,6 +225,73 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         )
         self.assertEqual(blueprint.steps[0].action_type, "place_block")
         self.assertEqual(blueprint.steps[0].payload["item"], "oak_planks")
+
+    def test_completion_uses_exact_inventory_and_grounded_blueprint_position(self) -> None:
+        completion = MinecraftAgentCompletion()
+        inventory_goal = AgentGoal(
+            "goal:exact-inventory",
+            "collect stone",
+            context={"success": {"kind": "inventory_any_min", "items": ["stone"], "count": 1}},
+        )
+        inventory_observation = AgentObservation(
+            "obs:exact-inventory",
+            "world-v1",
+            {"inventory": {"stone_pickaxe": 4}},
+        )
+        self.assertFalse(completion.is_complete(
+            inventory_goal,
+            inventory_observation,
+            planner_finished=False,
+            last_receipt=None,
+        ))
+
+        blueprint_goal = AgentGoal(
+            "goal:exact-blueprint",
+            "place one oak plank at the target",
+            context={
+                "success": {
+                    "kind": "blueprint_complete",
+                    "blocks": [{
+                        "item": "oak_planks",
+                        "position": {"x": 2, "y": 64, "z": 3},
+                    }],
+                }
+            },
+        )
+        receipt = AgentStepReceipt(
+            "action:place",
+            "place_block",
+            "minecraft.build",
+            "sequence:1",
+            True,
+            True,
+            observation=AgentObservation(
+                "obs:place",
+                "world-v1",
+                {},
+                evidence_payload={
+                    "events": [{
+                        "kind": "action_result",
+                        "payload": {
+                            "outcome": {
+                                "status": "applied",
+                                "code": "BLOCK_PLACED",
+                                "placed": "oak_planks",
+                                "position": {"x": 2, "y": 64, "z": 3},
+                            }
+                        },
+                    }]
+                },
+            ),
+            effect_certainty="confirmed",
+            payload={"item": "oak_planks", "position": {"x": 2, "y": 64, "z": 3}},
+        )
+        self.assertTrue(completion.is_complete(
+            blueprint_goal,
+            AgentObservation("obs:blueprint", "world-v1", {}),
+            planner_finished=False,
+            last_receipt=receipt,
+        ))
 
     def test_high_level_skill_selection_expands_to_typed_sequence(self) -> None:
         catalog = MinecraftAgentSkillCatalog()

@@ -79,6 +79,7 @@ class MinecraftRecipeCatalog:
                     continue
                 options = cls._ingredient_options(raw, names_by_id)
                 ingredients = dict(cls._ingredient_counts(options))
+                alternatives = tuple(option for option in options if len(option) > 1)
                 recipe_type = str(raw.get("type", ""))
                 process = "smelt" if recipe_type in {
                     "furnace", "blast_furnace", "smoker", "campfire", "soul_campfire",
@@ -89,7 +90,7 @@ class MinecraftRecipeCatalog:
                         count=result_count,
                         ingredients=ingredients,
                         process=process,
-                        ingredient_options=options if not ingredients else (),
+                        ingredient_options=alternatives,
                         station=recipe_type or None,
                         recipe_id=str(raw.get("name") or f"{edition}:{version}:{raw_item_id}:{index}"),
                     )
@@ -136,12 +137,18 @@ class MinecraftRecipeCatalog:
 
     @classmethod
     def _ingredient_option(cls, value: Any, names_by_id: Mapping[int, str]) -> tuple[str, ...]:
-        if value is None:
+        if value is None or value == 0:
             return ()
         if isinstance(value, Mapping):
             choices = value.get("options", value.get("choices"))
             if isinstance(choices, (list, tuple)):
                 return tuple(name for name in (cls._name(choice, names_by_id) for choice in choices) if name)
+        if isinstance(value, (list, tuple)):
+            return tuple(
+                name
+                for name in (cls._name(choice, names_by_id) for choice in value)
+                if name and name != "id:0"
+            )
         name = cls._name(value, names_by_id)
         return (name,) if name else ()
 

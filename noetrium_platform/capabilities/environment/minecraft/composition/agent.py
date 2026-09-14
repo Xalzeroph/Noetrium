@@ -33,7 +33,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
 )
 from noetrium_platform.capabilities.participant.agent.runtime import AgentCognitionLoop
 from noetrium_platform.capabilities.participant.agent.runtime.action_manager import AgentActionManager
-from noetrium_platform.capabilities.participant.agent.runtime.memory import InMemoryAgentMemory
+from noetrium_platform.capabilities.participant.agent.runtime.memory import DisabledAgentMemory
 from noetrium_platform.capabilities.participant.agent.runtime.modes import ReactiveModeController
 from noetrium_platform.capabilities.participant.agent.runtime.skill_library import InMemorySkillLibrary
 
@@ -361,6 +361,7 @@ class MinecraftAgentCompletion(AgentCompletionPort):
         self._combat_receipts_by_goal: dict[str, set[str]] = {}
         self._placement_receipts_by_goal: dict[str, set[str]] = {}
         self._placed_items_by_goal: dict[str, dict[str, int]] = {}
+        self._placed_positions_by_goal: dict[str, set[tuple[str, str]]] = {}
 
     @staticmethod
     def _goal_key(goal: AgentGoal) -> str:
@@ -372,15 +373,44 @@ class MinecraftAgentCompletion(AgentCompletionPort):
         self._combat_receipts_by_goal.pop(key, None)
         self._placement_receipts_by_goal.pop(key, None)
         self._placed_items_by_goal.pop(key, None)
+        self._placed_positions_by_goal.pop(key, None)
+
+    @staticmethod
+    def _receipt_outcome(receipt: AgentStepReceipt | None) -> Mapping[str, object] | None:
+        if receipt is None or receipt.observation is None:
+            return None
+        evidence = receipt.observation.evidence_payload
+        events = evidence.get("events") if isinstance(evidence, Mapping) else None
+        if not isinstance(events, (list, tuple)):
+            return None
+        for event in reversed(events):
+            if not isinstance(event, Mapping) or event.get("kind") != "action_result":
+                continue
+            outcome = event.get("payload", {}).get("outcome") if isinstance(event.get("payload"), Mapping) else None
+            return outcome if isinstance(outcome, Mapping) else None
+        return None
+
+    @staticmethod
+    def _position_key(position: object) -> str | None:
+        if not isinstance(position, Mapping):
+            return None
+        try:
+            return ",".join(
+                str(int(float(position[axis]))) for axis in ("x", "y", "z")
+            )
+        except (KeyError, TypeError, ValueError):
+            return None
 
     @staticmethod
     def _inventory_count(inventory: object, item: str) -> int:
         if not isinstance(inventory, Mapping):
             return 0
-        needle = item.lower()
+        needle = item.strip().lower()
+        if not needle:
+            return 0
         total = 0
         for key, value in inventory.items():
-            if needle not in str(key).lower():
+            if str(key).strip().lower() != needle:
                 continue
             try:
                 total += int(value)
@@ -418,6 +448,16 @@ class MinecraftAgentCompletion(AgentCompletionPort):
             current = self._inventory_count(observation.state.get("inventory"), item)
             initial = self._inventory_count(success.get("initial_inventory"), item)
             return current - initial >= count
+        if kind == "inventory_any_min":
+            raw_items = success.get("items")
+            if not isinstance(raw_items, (list, tuple)) or not raw_items:
+                return False
+            count = int(success.get("count", 1))
+            return sum(
+                self._inventory_count(observation.state.get("inventory"), str(item))
+                for item in raw_items
+                if isinstance(item, str) and item.strip()
+            ) >= count
         if kind == "away_then_return":
             position = observation.state.get("position")
             anchors = observation.state.get("anchors")
@@ -457,13 +497,28 @@ class MinecraftAgentCompletion(AgentCompletionPort):
             required = success.get("blocks", ())
             if not isinstance(required, (list, tuple)):
                 return False
-            required_items: dict[str, int] = {}
+            requirements: list[tuple[str, str | None]] = []
+            anchors = observation.state.get("anchors")
+            anchor_name = str(success.get("anchor", ""))
+            anchor = anchors.get(anchor_name) if isinstance(anchors, Mapping) else None
             for row in required:
-                item = row.get("item") if isinstance(row, Mapping) else row
-                item_name = str(item or "").strip().lower()
+                if isinstance(row, str):
+                    item_name = row.strip().lower()
+                    position_key = None
+                elif isinstance(row, Mapping):
+                    item_name = str(row.get("item", "")).strip().lower()
+                    raw_position = row.get("position")
+                    if raw_position is None and isinstance(row.get("offset"), Mapping) and isinstance(anchor, Mapping):
+                        raw_position = {
+                            axis: float(anchor.get(axis, 0)) + float(row["offset"].get(axis, 0))
+                            for axis in ("x", "y", "z")
+                        }
+                    position_key = self._position_key(raw_position)
+                else:
+                    item_name, position_key = "", None
                 if item_name:
-                    required_items[item_name] = required_items.get(item_name, 0) + 1
-            if not required_items:
+                    requirements.append((item_name, position_key))
+            if not requirements or any(position is not None and position == "" for _, position in requirements):
                 return False
             receipt_id = last_receipt.action_id if last_receipt is not None else ""
             key = self._goal_key(goal)
@@ -474,14 +529,39 @@ class MinecraftAgentCompletion(AgentCompletionPort):
                 and last_receipt.action_type == "place_block"
                 and _grounded_action_receipt(last_receipt)
             ):
-                item = last_receipt.payload.get("item") or last_receipt.payload.get("block")
-                item_name = str(item or "").strip().lower()
-                if item_name in required_items:
+                outcome = self._receipt_outcome(last_receipt)
+                requested_item = str(last_receipt.payload.get("item", "")).strip().lower()
+                observed_item = str(outcome.get("placed", "")).strip().lower() if outcome else ""
+                observed_position = self._position_key(outcome.get("position")) if outcome else None
+                if (
+                    outcome is not None
+                    and outcome.get("code") == "BLOCK_PLACED"
+                    and requested_item
+                    and observed_item == requested_item
+                    and any(
+                        item == requested_item
+                        and (position is None or position == observed_position)
+                        for item, position in requirements
+                    )
+                ):
                     seen.add(receipt_id)
-                    placed = self._placed_items_by_goal.setdefault(key, {})
-                    placed[item_name] = placed.get(item_name, 0) + 1
+                    if observed_position is not None:
+                        self._placed_positions_by_goal.setdefault(key, set()).add(
+                            (requested_item, observed_position)
+                        )
+                    else:
+                        placed = self._placed_items_by_goal.setdefault(key, {})
+                        placed[requested_item] = placed.get(requested_item, 0) + 1
             placed = self._placed_items_by_goal.get(key, {})
-            return all(placed.get(item, 0) >= count for item, count in required_items.items())
+            positions = self._placed_positions_by_goal.get(key, set())
+            return all(
+                (item, position) in positions if position is not None
+                else placed.get(item, 0) >= sum(
+                    1 for required_item, required_position in requirements
+                    if required_item == item and required_position is None
+                )
+                for item, position in requirements
+            )
         if kind == "observed_entity":
             entities = observation.state.get("nearby_entities")
             query = str(success.get("entity", "")).lower()
@@ -558,7 +638,7 @@ def compose_minecraft_agent_ports(
 ) -> MinecraftAgentPortBundle:
     skills = MinecraftAgentSkillCatalog()
     return MinecraftAgentPortBundle(
-        MinecraftAgentObservationPort(session), skills, MinecraftAgentActionExecutor(session), memory or InMemoryAgentMemory(),
+        MinecraftAgentObservationPort(session), skills, MinecraftAgentActionExecutor(session), memory or DisabledAgentMemory(),
         InMemorySkillLibrary(), MinecraftAgentSafetySupervisor(), MinecraftAgentCompletion(), MinecraftReactiveModeController(skills),
     )
 

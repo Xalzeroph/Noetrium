@@ -21,7 +21,20 @@ function fakeBot (items = []) {
     items: () => items,
     slots: items
   }
-  bot.pathfinder = { movements: { safeToBreak: () => true }, setMovements: () => {}, goto: async () => {} }
+  bot.heldItem = items[0] || { name: 'hand', type: null, count: 1, slot: 0 }
+  bot.pathfinder = {
+    movements: { safeToBreak: () => true },
+    setMovements: () => {},
+    goto: async () => {},
+    bestHarvestTool: block => items.find(item =>
+      typeof block.canHarvest !== 'function' || block.canHarvest(item.type)
+    ) || (
+      bot.heldItem &&
+      (typeof block.canHarvest !== 'function' || block.canHarvest(bot.heldItem.type))
+        ? bot.heldItem
+        : null
+    )
+  }
   bot.world = { getBlock: () => null }
   bot.registry = { itemsByName: {}, blocksByName: {} }
   return bot
