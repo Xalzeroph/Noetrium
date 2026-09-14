@@ -487,6 +487,38 @@ test('collect_block rejects an unharvestable block before destructive dig', asyn
   assert.deepEqual(result.outcome.errors[0].required_tool_ids, [877])
 })
 
+test('collect_block equips the fastest harvestable inventory tool before digging', async () => {
+  const items = [{ name: 'stone_pickaxe', type: 877, count: 1, slot: 0 }]
+  const bot = fakeBot(items)
+  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
+  const position = new Vec3(2, 64, 0)
+  const live = {
+    name: 'stone',
+    position,
+    drops: [35],
+    canHarvest: type => type === 877,
+    digTime: type => type === 877 ? 1 : 100
+  }
+  bot.findBlock = () => live.name === 'stone' ? live : null
+  bot.blockAt = () => live
+  bot.lookAt = async () => {}
+  bot.equip = async item => { bot.heldItem = item }
+  bot.dig = async block => {
+    block.name = 'air'
+    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 1 })
+  }
+  runtime.bindBot(bot)
+
+  const result = await withoutMovementConstruction(() => resources.collect_block({
+    block: 'stone', count: 1, max_distance: 16, _action_timeout_ms: 2000
+  }))
+
+  assert.equal(result.verified, true)
+  assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
+  assert.equal(bot.heldItem.name, 'stone_pickaxe')
+  assert.equal(result.outcome.broken[0].selected_tool.name, 'stone_pickaxe')
+})
+
 
 test('collect_block follows the actual stone drop identity instead of the block name', async () => {
   const items = []

@@ -26,6 +26,48 @@ function dropNamesForBlock (activeBot, block) {
   return names
 }
 
+function miningTime (activeBot, block, item) {
+  if (!block || typeof block.digTime !== 'function') return Number.MAX_SAFE_INTEGER
+  try {
+    const effects = activeBot.entity && activeBot.entity.effects ? activeBot.entity.effects : {}
+    const value = block.digTime(item ? item.type : null, false, false, false, [], effects)
+    return Number.isFinite(Number(value)) ? Number(value) : Number.MAX_SAFE_INTEGER
+  } catch {
+    return Number.MAX_SAFE_INTEGER
+  }
+}
+
+async function equipBestHarvestTool (activeBot, block) {
+  const held = activeBot.heldItem || null
+  if (typeof block.canHarvest !== 'function' || block.canHarvest(held ? held.type : null)) {
+    return { ok: true, selected: held ? runtime.itemSummary(held) : null, changed: false }
+  }
+  const inventoryItems = activeBot.inventory && typeof activeBot.inventory.items === 'function'
+    ? activeBot.inventory.items()
+    : []
+  const candidates = inventoryItems
+    .filter(item => item && typeof block.canHarvest === 'function' && block.canHarvest(item.type))
+    .sort((left, right) => {
+      const timeDelta = miningTime(activeBot, block, left) - miningTime(activeBot, block, right)
+      return timeDelta || String(left.name || '').localeCompare(String(right.name || ''))
+    })
+  const best = candidates[0] || null
+  if (!best || typeof activeBot.equip !== 'function') {
+    return { ok: false, selected: null, changed: false }
+  }
+  try {
+    await activeBot.equip(best, 'hand')
+    return { ok: true, selected: runtime.itemSummary(best), changed: true }
+  } catch (error) {
+    return {
+      ok: false,
+      selected: runtime.itemSummary(best),
+      changed: false,
+      error: String(error.message || error)
+    }
+  }
+}
+
 async function waitForAnyInventoryIncrease (names, before, timeoutMs) {
   const deadline = Date.now() + Math.max(1, timeoutMs)
   while (Date.now() < deadline) {
@@ -72,12 +114,23 @@ async function collectBlock (msg) {
     const live = activeBot.blockAt(position)
     if (!live || live.name === 'air') continue
     const blockName = live.name
-    const heldType = activeBot.heldItem && activeBot.heldItem.type != null ? activeBot.heldItem.type : null
-    if (typeof live.canHarvest === 'function' && !live.canHarvest(heldType)) {
+    const harvestTool = await equipBestHarvestTool(activeBot, live)
+    if (!harvestTool.ok) {
       errors.push({
         phase: 'harvest', code: 'HARVEST_TOOL_REQUIRED', block: blockName,
         held_item: activeBot.heldItem ? activeBot.heldItem.name : null,
-        required_tool_ids: Object.keys(live.harvestTools || {}).map(Number).filter(Number.isFinite)
+        required_tool_ids: Object.keys(live.harvestTools || {}).map(Number).filter(Number.isFinite),
+        selected_tool: harvestTool.selected,
+        tool_error: harvestTool.error || null
+      })
+      break
+    }
+    if (activeBot.pathfinder.movements &&
+        typeof activeBot.pathfinder.movements.safeToBreak === 'function' &&
+        !activeBot.pathfinder.movements.safeToBreak(live)) {
+      errors.push({
+        phase: 'harvest', code: 'UNSAFE_BLOCK_BREAK', block: blockName,
+        position: runtime.vec(position), selected_tool: harvestTool.selected
       })
       break
     }
@@ -107,7 +160,13 @@ async function collectBlock (msg) {
     }
     try {
       const afterDig = activeBot.blockAt(position)
-      if (!afterDig || afterDig.name !== blockName) broken.push({ name: blockName, position: runtime.vec(position) })
+      if (!afterDig || afterDig.name !== blockName) {
+        broken.push({
+          name: blockName,
+          position: runtime.vec(position),
+          selected_tool: harvestTool.selected
+        })
+      }
       const observedDropName = dropped ? runtime.droppedItemName(dropped) : null
       const watchedNames = observedDropName ? [observedDropName] : dropNames
       let gained = await waitForAnyInventoryIncrease(

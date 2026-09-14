@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 import math
 from typing import Mapping
@@ -16,12 +17,21 @@ class MinecraftRecipe:
     count: int
     ingredients: Mapping[str, int]
     process: str = "craft"
+    ingredient_options: tuple[tuple[str, ...], ...] = ()
+    station: str | None = None
+    fuel: str | None = None
+    recipe_id: str = ""
 
     def __post_init__(self) -> None:
         if not self.item.strip() or self.count < 1 or self.process not in {"craft", "smelt"}:
             raise ValueError("Minecraft recipe is invalid")
         if any(not str(name).strip() or int(value) < 1 for name, value in self.ingredients.items()):
             raise ValueError("Minecraft recipe ingredients are invalid")
+        if any(
+            not options or any(not str(option).strip() for option in options)
+            for options in self.ingredient_options
+        ):
+            raise ValueError("Minecraft recipe ingredient options are invalid")
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,8 +102,58 @@ class MinecraftResourcePlan:
 class MinecraftResourcePlanner:
     """Deterministic recipe/dependency expansion with cycle detection."""
 
-    def __init__(self, recipes: Mapping[str, MinecraftRecipe]) -> None:
-        self._recipes = dict(recipes)
+    def __init__(self, recipes: Mapping[str, MinecraftRecipe] | object) -> None:
+        """Build a planner from legacy mappings or a recipe catalog.
+
+        The catalog seam accepts a small duck-typed recipes_for method. The
+        runtime stays independent of minecraft-data while providers or offline
+        importers can supply versioned recipes.
+        """
+        if hasattr(recipes, "recipes_for"):
+            self._catalog = recipes
+            self._recipes: dict[str, MinecraftRecipe | tuple[MinecraftRecipe, ...]] = {}
+        else:
+            self._catalog = None
+            self._recipes = dict(recipes)  # type: ignore[arg-type]
+
+    def _recipes_for(self, item: str) -> tuple[MinecraftRecipe, ...]:
+        if self._catalog is not None:
+            return tuple(self._catalog.recipes_for(item))
+        value = self._recipes.get(item)
+        if value is None:
+            return ()
+        if isinstance(value, MinecraftRecipe):
+            return (value,)
+        if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            return tuple(value)
+        raise TypeError(f"Minecraft recipes for {item} must be recipe objects")
+
+    @staticmethod
+    def _requirements(recipe: MinecraftRecipe, available: Mapping[str, int]) -> dict[str, int]:
+        requirements = {str(name): int(value) for name, value in recipe.ingredients.items()}
+        for options in recipe.ingredient_options:
+            chosen = max(options, key=lambda name: (int(available.get(name, 0)), str(name)))
+            requirements[chosen] = requirements.get(chosen, 0) + 1
+        return requirements
+
+    def _choose_recipe(
+        self,
+        candidates: tuple[MinecraftRecipe, ...],
+        available: Mapping[str, int],
+    ) -> MinecraftRecipe | None:
+        if not candidates:
+            return None
+        return max(
+            candidates,
+            key=lambda recipe: (
+                sum(
+                    min(int(available.get(name, 0)), amount)
+                    for name, amount in self._requirements(recipe, available).items()
+                ),
+                -sum(self._requirements(recipe, available).values()),
+                recipe.recipe_id,
+            ),
+        )
 
     def plan(self, target: str, count: int, inventory: Mapping[str, int], *, max_depth: int = 32) -> MinecraftResourcePlan:
         if not target.strip() or count < 1 or max_depth < 1:
@@ -115,20 +175,29 @@ class MinecraftResourcePlanner:
                 return
             deficit = required - current
             available[item] = 0
-            recipe = self._recipes.get(item)
+            candidates = self._recipes_for(item)
+            recipe = self._choose_recipe(candidates, available)
             if recipe is None:
                 missing.append(item)
                 steps.append(("collect_block", validate_minecraft_action("collect_block", {"block": item, "count": deficit})))
                 available[item] = deficit
                 return
             if item in visiting:
-                raise ValueError(f"circular Minecraft recipe dependency: {item}")
+                missing.append(f"cycle:{item}")
+                return
             visiting.add(item)
             batches = (deficit + recipe.count - 1) // recipe.count
-            for ingredient, ingredient_count in recipe.ingredients.items():
+            missing_count_before = len(missing)
+            for ingredient, ingredient_count in self._requirements(recipe, available).items():
                 ensure(ingredient, ingredient_count * batches, depth + 1)
+            if any(value.startswith("cycle:") for value in missing[missing_count_before:]):
+                visiting.remove(item)
+                missing.append(item)
+                return
             action_type = "craft_item" if recipe.process == "craft" else "smelt_item"
             payload: dict[str, MinecraftJsonValue] = {"item": item, "count": batches * recipe.count}
+            if action_type == "smelt_item" and recipe.fuel:
+                payload["fuel"] = recipe.fuel
             if action_type == "smelt_item":
                 payload["max_wait_s"] = 90
             steps.append((action_type, validate_minecraft_action(action_type, payload)))

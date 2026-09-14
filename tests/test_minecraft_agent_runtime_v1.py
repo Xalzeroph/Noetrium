@@ -7,6 +7,7 @@ from noetrium_platform.capabilities.environment.minecraft.composition import (
     MinecraftBlueprintBuilder,
     MinecraftCognitionRunner,
     MinecraftRecipe,
+    MinecraftRecipeCatalog,
     MinecraftResourcePlanner,
     MinecraftAgentSkillCatalog,
 )
@@ -124,6 +125,14 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         plan = planner.plan("iron_ingot", 2, {})
         self.assertEqual(tuple(step[0] for step in plan.steps), ("collect_block", "smelt_item"))
         self.assertEqual(plan.to_action_sequence(sequence_id="resource").steps[-1].action_type, "smelt_item")
+
+        catalog = MinecraftRecipeCatalog.from_minecraft_data(
+            {"5": [{"inShape": [[4, 4], [4, 4]], "result": {"id": 5, "count": 4}}]},
+            [{"id": 4, "name": "oak_log"}, {"id": 5, "name": "oak_planks"}],
+            version="1.21.8",
+        )
+        catalog_plan = MinecraftResourcePlanner(catalog).plan("oak_planks", 4, {})
+        self.assertEqual(tuple(step[0] for step in catalog_plan.steps), ("collect_block", "craft_item"))
 
         catalog = MinecraftAgentSkillCatalog()
         goal_plan = catalog.expand(

@@ -59,6 +59,7 @@ from ..runtime.planning import (
     MinecraftResourcePlan,
     MinecraftResourcePlanner,
 )
+from ..runtime.recipe_catalog import MinecraftRecipeCatalog
 
 __all__ = [
     "MinecraftParticipantRuntimeAdapter",
@@ -106,4 +107,5 @@ __all__ = [
     "MinecraftRecipe",
     "MinecraftResourcePlan",
     "MinecraftResourcePlanner",
+    "MinecraftRecipeCatalog",
 ]

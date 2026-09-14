@@ -19,6 +19,7 @@ from .planning import (
     MinecraftResourcePlan,
     MinecraftResourcePlanner,
 )
+from .recipe_catalog import MinecraftRecipeCatalog
 from .world import MinecraftEntityMatch, MinecraftRoutine, MinecraftRoutineController, MinecraftWorldQuery
 from .tasks import MinecraftBlueprintCell, MinecraftConstructionScore, MinecraftTaskKind, MinecraftTaskSpec, score_blueprint
 
@@ -42,6 +43,7 @@ __all__ = [
     "MinecraftRecipe",
     "MinecraftResourcePlan",
     "MinecraftResourcePlanner",
+    "MinecraftRecipeCatalog",
     "MinecraftEntityMatch",
     "MinecraftRoutine",
     "MinecraftRoutineController",
