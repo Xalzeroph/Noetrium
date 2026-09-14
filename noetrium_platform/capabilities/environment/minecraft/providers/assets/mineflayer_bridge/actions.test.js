@@ -21,7 +21,8 @@ function fakeBot (items = []) {
     items: () => items,
     slots: items
   }
-  bot.pathfinder = { setMovements: () => {}, goto: async () => {} }
+  bot.pathfinder = { movements: { safeToBreak: () => true }, setMovements: () => {}, goto: async () => {} }
+  bot.world = { getBlock: () => null }
   bot.registry = { itemsByName: {}, blocksByName: {} }
   return bot
 }
@@ -72,6 +73,38 @@ test('craft_item proves the requested inventory delta', async () => {
   assert.equal(result.verified, true)
   assert.equal(result.outcome.code, 'ITEM_CRAFTED')
   assert.equal(result.outcome.crafted, 4)
+})
+
+test('place_block delegates reference-face selection to pathfinder placement navigation', async () => {
+  const items = [{ name: 'torch', type: 10, count: 1, slot: 0 }]
+  const bot = fakeBot(items)
+  const target = new Vec3(1, 64, 0)
+  let placedName = 'air'
+  let navigationCalled = false
+  bot.equip = async item => { bot.heldItem = item }
+  bot.blockAt = position => position.equals(target)
+    ? { name: placedName, position }
+    : { name: 'stone', position }
+  bot.placeBlock = async (reference, face) => {
+    assert.deepEqual(reference.position, new Vec3(0, 64, 0))
+    assert.deepEqual(face, new Vec3(1, 0, 0))
+    placedName = 'torch'
+  }
+  const original = runtime.gotoBlockPlacement
+  runtime.gotoBlockPlacement = async position => {
+    navigationCalled = true
+    assert.deepEqual(position, target)
+    return { reference: { name: 'stone', position: new Vec3(0, 64, 0) }, face: new Vec3(1, 0, 0) }
+  }
+  runtime.bindBot(bot)
+  try {
+    const result = await withoutMovementConstruction(() => resources.place_block({ item: 'torch', position: target }))
+    assert.equal(result.verified, true)
+    assert.equal(result.outcome.code, 'BLOCK_PLACED')
+    assert.equal(navigationCalled, true)
+  } finally {
+    runtime.gotoBlockPlacement = original
+  }
 })
 
 test('discard_item rejects unavailable counts and verifies exact removal', async () => {
@@ -136,8 +169,10 @@ test('chest_deposit closes the container and proves inventory removal', async ()
   const bot = fakeBot(items)
   const chestBlock = { name: 'chest', position: new Vec3(1, 64, 0) }
   let closed = false
+  let goalName = null
   bot.findBlock = () => chestBlock
   bot.blockAt = () => chestBlock
+  bot.pathfinder.goto = async goal => { goalName = goal.constructor.name }
   bot.openContainer = async () => ({
     deposit: async (_type, _metadata, count) => { items[0].count -= count },
     close: () => { closed = true }
@@ -151,6 +186,7 @@ test('chest_deposit closes the container and proves inventory removal', async ()
   assert.equal(result.verified, true)
   assert.equal(result.outcome.deposited, 2)
   assert.equal(closed, true)
+  assert.equal(goalName, 'GoalLookAtBlock')
 })
 
 test('mineflayer-pvp combat verifies only damage attributed to this bot', async () => {
@@ -341,7 +377,7 @@ test('collect_block uses an interaction-aware goal for distant blocks', async ()
   const items = [{ name: 'stone_pickaxe', type: 877, count: 1, slot: 0 }]
   const bot = fakeBot(items)
   bot.world = {}
-  bot.pathfinder.movements = {}
+  bot.pathfinder.movements = { safeToBreak: () => true }
   bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
   bot.registry.itemsByName = { dirt: { id: 9 }, cobblestone: { id: 35, name: 'cobblestone' } }
   bot.registry.blocksByName = {

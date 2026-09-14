@@ -1,6 +1,5 @@
 'use strict'
 
-const { goals: { GoalNear } } = require('mineflayer-pathfinder')
 const { Vec3 } = require('vec3')
 const runtime = require('./runtime')
 
@@ -16,14 +15,8 @@ const BED_NAMES = new Set([
 const RIDEABLE_NAMES = new Set(['boat', 'chest_boat', 'minecart', 'horse', 'donkey', 'mule', 'camel', 'pig', 'strider'])
 
 function blockProperty (block, name) {
-  if (!block) return undefined
-  if (typeof block.getProperties === 'function') {
-    const properties = block.getProperties()
-    if (properties && Object.prototype.hasOwnProperty.call(properties, name)) return properties[name]
-  }
-  if (block[name] !== undefined) return block[name]
-  if (block._properties && block._properties[name] !== undefined) return block._properties[name]
-  return undefined
+  const properties = block && block.getProperties()
+  return properties && Object.prototype.hasOwnProperty.call(properties, name) ? properties[name] : undefined
 }
 
 function nearbyBlock (predicate, maxDistance) {
@@ -33,10 +26,8 @@ function nearbyBlock (predicate, maxDistance) {
     : null
 }
 
-async function navigateToBlock (block, radius = 3) {
-  const bot = runtime.getBot()
-  await runtime.ensureMovements()
-  return bot.pathfinder.goto(new GoalNear(block.position.x, block.position.y, block.position.z, radius))
+async function navigateToBlock (block) {
+  return runtime.gotoBlockInteraction(block.position)
 }
 
 async function activateBlock (block) {
@@ -146,11 +137,18 @@ async function autoLight (msg) {
   if (nearbyTorch) return runtime.applied('auto_light', action, 'LIGHT_ALREADY_PRESENT', { position: runtime.vec(nearbyTorch.position) })
   const origin = bot.entity.position.floored()
   const target = origin.offset(0, 0, 1)
-  const reference = bot.blockAt(target.offset(0, -1, 0))
-  if (!reference || reference.name === 'air') return runtime.rejected('auto_light', action, 'NO_PLACEMENT_SURFACE')
-  await runtime.gotoPos(target, 3)
+  let navigation
+  try {
+    navigation = await runtime.gotoBlockPlacement(target)
+  } catch (error) {
+    return runtime.rejected('auto_light', action, 'PATHFINDER_PLACE_BLOCK_FAILED', { error: error.message })
+  }
   await bot.equip(torch, 'hand')
-  await bot.placeBlock(reference, new Vec3(0, 1, 0))
+  try {
+    await bot.placeBlock(navigation.reference, navigation.face)
+  } catch (error) {
+    return runtime.rejected('auto_light', action, 'PLACE_TORCH_FAILED', { error: error.message })
+  }
   const placed = bot.blockAt(target)
   return placed && (placed.name === 'torch' || placed.name === 'soul_torch')
     ? runtime.applied('auto_light', action, 'TORCH_PLACED', { position: runtime.vec(target), block: placed.name })

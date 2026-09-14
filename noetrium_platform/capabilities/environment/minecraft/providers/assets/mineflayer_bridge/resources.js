@@ -1,6 +1,5 @@
 'use strict'
 
-const { goals: { GoalNear } } = require('mineflayer-pathfinder')
 const { Vec3 } = require('vec3')
 const runtime = require('./runtime')
 
@@ -142,9 +141,7 @@ async function collectBlock (msg) {
       })
       break
     }
-    if (activeBot.pathfinder.movements &&
-        typeof activeBot.pathfinder.movements.safeToBreak === 'function' &&
-        !activeBot.pathfinder.movements.safeToBreak(live)) {
+    if (!activeBot.pathfinder.movements.safeToBreak(live)) {
       errors.push({
         phase: 'harvest', code: 'UNSAFE_BLOCK_BREAK', block: blockName,
         position: runtime.vec(position), selected_tool: harvestTool.selected
@@ -307,7 +304,7 @@ async function craftItem (msg) {
       tableBlock = activeBot.blockAt(placement)
     }
     await runtime.ensureMovements()
-    await activeBot.pathfinder.goto(new GoalNear(tableBlock.position.x, tableBlock.position.y, tableBlock.position.z, 3))
+    await runtime.gotoBlockInteraction(tableBlock.position)
     table = activeBot.blockAt(tableBlock.position)
     recipes = activeBot.recipesFor(item.id, null, 1, table)
   }
@@ -370,7 +367,7 @@ async function smeltItem (msg) {
     maxDistance: action.max_distance
   })
   if (!block) return runtime.rejected('smelt_item', action, 'FURNACE_NOT_FOUND')
-  await activeBot.pathfinder.goto(new GoalNear(block.position.x, block.position.y, block.position.z, 3))
+  await runtime.gotoBlockInteraction(block.position)
   const before = runtime.inventoryMap()
   let furnace = null
   let outputObserved = null
@@ -435,7 +432,7 @@ async function clearFurnace (msg) {
     maxDistance: action.max_distance
   })
   if (!block) return runtime.rejected('clear_furnace', action, 'FURNACE_NOT_FOUND')
-  await activeBot.pathfinder.goto(new GoalNear(block.position.x, block.position.y, block.position.z, 3))
+  await runtime.gotoBlockInteraction(block.position)
   const before = runtime.inventoryMap()
   let furnace = null
   try {
@@ -461,29 +458,29 @@ async function placeBlock (msg) {
   if (!item) return runtime.rejected('place_block', action, 'ITEM_NOT_AVAILABLE')
   const position = action.position || runtime.vec(activeBot.entity.position.floored().offset(1, 0, 0))
   const target = new Vec3(Math.floor(Number(position.x)), Math.floor(Number(position.y)), Math.floor(Number(position.z)))
-  await runtime.gotoPos(target, 3)
-  await activeBot.equip(item, 'hand')
-  const faces = [
-    new Vec3(0, -1, 0), new Vec3(0, 1, 0), new Vec3(-1, 0, 0),
-    new Vec3(1, 0, 0), new Vec3(0, 0, -1), new Vec3(0, 0, 1)
-  ]
-  let lastError = null
-  for (const face of faces) {
-    const reference = activeBot.blockAt(target.minus(face))
-    if (!reference || reference.name === 'air') continue
-    try {
-      await activeBot.placeBlock(reference, face)
-      const placed = activeBot.blockAt(target)
-      const details = { position: runtime.vec(target), placed: placed ? placed.name : null }
-      if (placed && placed.name !== 'air') return runtime.applied('place_block', action, 'BLOCK_PLACED', details)
-    } catch (error) {
-      lastError = error
-    }
+  let navigation
+  try {
+    navigation = await runtime.gotoBlockPlacement(target)
+  } catch (error) {
+    return runtime.rejected('place_block', action, 'PATHFINDER_PLACE_BLOCK_FAILED', {
+      position: runtime.vec(target),
+      error: error.message
+    })
   }
-  return runtime.rejected('place_block', action, 'NO_VALID_PLACEMENT_FACE', {
-    position: runtime.vec(target),
-    error: lastError ? lastError.message : null
-  })
+  await activeBot.equip(item, 'hand')
+  try {
+    await activeBot.placeBlock(navigation.reference, navigation.face)
+  } catch (error) {
+    return runtime.rejected('place_block', action, 'PLACE_BLOCK_FAILED', {
+      position: runtime.vec(target),
+      error: error.message
+    })
+  }
+  const placed = activeBot.blockAt(target)
+  const details = { position: runtime.vec(target), placed: placed ? placed.name : null }
+  return placed && placed.name !== 'air'
+    ? runtime.applied('place_block', action, 'BLOCK_PLACED', details)
+    : runtime.rejected('place_block', action, 'BLOCK_NOT_OBSERVED', details)
 }
 
 module.exports = {

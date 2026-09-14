@@ -10,6 +10,16 @@
 
 This evidence is the source lock for Minecraft provider changes. The cached archive is an immutable read-only input; provider behavior must not be inferred from an unpinned latest package.
 
+## Upstream design absorption
+
+The bridge uses the locked Mineflayer ecosystem as its execution substrate and reimplements the higher-level policy inside Noetrium:
+
+- mineflayer-pathfinder 2.4.5 supplies GoalFollow for moving entities, GoalLookAtBlock for every block interaction, GoalPlaceBlock for placement, and bestHarvestTool for tool ranking. The provider never replaces these with a second navigation or tool-selection framework.
+- mineflayer-collectblock informed the dynamic target refresh and interaction-aware approach model, but its task loop is not imported. Noetrium retains its own bounded drop correlation and durable action/effect receipts.
+- Voyager/MindCraft-style skill composition informed the separation between primitive provider actions and higher-level planning. Their agent loops, prompts and skill stores are not runtime dependencies of the bridge.
+
+The resulting rule is strict: Mineflayer APIs own transport and world interaction; Noetrium owns action identity, bounded policy, verification and recovery.
+
 ## Upstream semantics used by the provider
 
 The locked Mineflayer API exposes separate entity lifecycle events including `entitySpawn`, `itemDrop`, and `playerCollect(collector, collected)`. The official API also defines `bot.nearestEntity(predicate)` as nearest matching-entity selection. The provider uses these semantics only as observations/selection meaning: it does not hide an unbounded global entity scan behind that helper. Drop association remains action-local and bounded; a transport/event occurrence by itself is not durable external-effect certainty.

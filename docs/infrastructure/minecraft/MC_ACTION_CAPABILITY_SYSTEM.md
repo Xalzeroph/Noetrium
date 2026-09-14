@@ -80,6 +80,11 @@ builtin inheritance.
 - Crafting resolves the canonical registry item, uses a nearby crafting table
   or places an available one, computes recipe output per execution and verifies
   the requested inventory increase.
+- Every block interaction approaches through Mineflayer PathFinder's
+  GoalLookAtBlock, so proximity is not mistaken for a valid raycast or click
+  surface. Every placement approaches through GoalPlaceBlock, and uses the
+  exact reference face selected by that goal; the old hand-written face
+  enumeration is not an execution path.
 - Smelting rejects conflicting furnace contents, calculates bounded fuel use,
   closes the furnace in all paths and verifies output returned to inventory.
 - Furnace clearing and chest operations close windows in `finally` paths.

@@ -1,6 +1,5 @@
 'use strict'
 
-const { goals: { GoalNear } } = require('mineflayer-pathfinder')
 const runtime = require('./runtime')
 
 async function equipItem (msg) {
@@ -11,9 +10,7 @@ async function equipItem (msg) {
   await activeBot.equip(item, action.destination)
   const equipped = action.destination === 'hand'
     ? activeBot.heldItem
-    : typeof activeBot.getEquipmentDestSlot === 'function'
-      ? activeBot.inventory.slots[activeBot.getEquipmentDestSlot(action.destination)]
-      : activeBot.inventory.slots.find(candidate => candidate && candidate.name === action.item)
+    : activeBot.inventory.slots[activeBot.getEquipmentDestSlot(action.destination)]
   return equipped && equipped.name === action.item
     ? runtime.applied('equip_item', action, 'ITEM_EQUIPPED', { equipped: runtime.itemSummary(equipped) })
     : runtime.partial('equip_item', action, 'EQUIP_NOT_CONFIRMED')
@@ -91,12 +88,10 @@ async function withContainer (maxDistance, callback) {
   await runtime.ensureMovements()
   const block = findContainerBlock(maxDistance)
   if (!block) return { missing: true, position: null, value: null }
-  await activeBot.pathfinder.goto(new GoalNear(block.position.x, block.position.y, block.position.z, 3))
+  await runtime.gotoBlockInteraction(block.position)
   let container = null
   try {
-    container = typeof activeBot.openContainer === 'function'
-      ? await activeBot.openContainer(activeBot.blockAt(block.position))
-      : await activeBot.openChest(activeBot.blockAt(block.position))
+    container = await activeBot.openContainer(activeBot.blockAt(block.position))
     return { missing: false, position: runtime.vec(block.position), value: await callback(container) }
   } finally {
     if (container) container.close()

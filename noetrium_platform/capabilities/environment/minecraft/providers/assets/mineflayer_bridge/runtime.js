@@ -1,6 +1,6 @@
 'use strict'
 
-const { Movements, goals: { GoalNear, GoalFollow, GoalLookAtBlock } } = require('mineflayer-pathfinder')
+const { Movements, goals: { GoalNear, GoalFollow, GoalPlaceBlock, GoalLookAtBlock } } = require('mineflayer-pathfinder')
 const { Vec3 } = require('vec3')
 
 let bot = null
@@ -461,6 +461,29 @@ async function gotoBlockInteraction (position, timeoutMs = 30000) {
   }
 }
 
+async function gotoBlockPlacement (position, timeoutMs = 30000) {
+  const activeBot = requireBot()
+  if (!activeBot.pathfinder.movements) await ensureMovements()
+  const target = new Vec3(Number(position.x), Number(position.y), Number(position.z))
+  const goal = new GoalPlaceBlock(target, activeBot.world, {})
+  await withTimeout(
+    activeBot.pathfinder.goto(goal),
+    timeoutMs,
+    'PATHFINDER_PLACE_BLOCK'
+  )
+  const headPosition = activeBot.entity.position.offset(0, 1.6, 0)
+  const placement = goal.getFaceAndRef(headPosition)
+  if (!placement) throw new Error('PATHFINDER_NO_PLACEMENT_FACE')
+  return {
+    target: vec(target),
+    position: vec(activeBot.entity.position),
+    distance: activeBot.entity.position.distanceTo(target),
+    navigation_goal: 'place_block',
+    reference: placement.ref,
+    face: placement.face
+  }
+}
+
 function result (tool, action, status, code, details = {}) {
   if (!['applied', 'partial', 'rejected'].includes(status)) throw new Error(`invalid action status ${status}`)
   return {
@@ -487,6 +510,7 @@ module.exports = {
   findNearbyDroppedItem,
   getBot,
   gotoBlockInteraction,
+  gotoBlockPlacement,
   gotoEntity,
   gotoPos,
   inventoryCount,
