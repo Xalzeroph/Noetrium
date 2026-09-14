@@ -46,6 +46,7 @@ from ..runtime.planning import (
     MinecraftRecipe,
     MinecraftResourcePlanner,
 )
+from ..runtime.recipe_catalog import MinecraftRecipeCatalog
 
 
 def _json_value(value: MinecraftJsonValue | tuple[MinecraftJsonValue, ...]) -> MinecraftJsonValue | list[MinecraftJsonValue]:

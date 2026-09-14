@@ -134,6 +134,31 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         catalog_plan = MinecraftResourcePlanner(catalog).plan("oak_planks", 4, {})
         self.assertEqual(tuple(step[0] for step in catalog_plan.steps), ("collect_block", "craft_item"))
 
+        catalog_goal = MinecraftAgentSkillCatalog().expand(
+            AgentSkillSelection(
+                "minecraft.resource_plan",
+                {
+                    "target": "oak_planks",
+                    "count": 4,
+                    "inventory": {},
+                    "recipe_data": {
+                        "recipes": {
+                            "5": [{"inShape": [[4, 4], [4, 4]], "result": {"id": 5, "count": 4}}],
+                        },
+                        "items": [
+                            {"id": 4, "name": "oak_log"},
+                            {"id": 5, "name": "oak_planks"},
+                        ],
+                        "version": "1.21.8",
+                    },
+                },
+            ),
+            observation=None,  # type: ignore[arg-type]
+            context=ExecutionContext("run", "trace", "span"),
+            sequence_id="catalog-goal",
+        )
+        self.assertEqual(tuple(step.action_type for step in catalog_goal.steps), ("collect_block", "craft_item"))
+
         catalog = MinecraftAgentSkillCatalog()
         goal_plan = catalog.expand(
             AgentSkillSelection(

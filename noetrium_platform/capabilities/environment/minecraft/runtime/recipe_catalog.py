@@ -68,7 +68,7 @@ class MinecraftRecipeCatalog:
 
         normalized: dict[str, list[MinecraftRecipe]] = {}
         for raw_item_id, raw_entries in recipes_data.items():
-            entries = raw_entries if isinstance(raw_entries, list) else [raw_entries]
+            entries = raw_entries if isinstance(raw_entries, (list, tuple)) else [raw_entries]
             fallback_item = cls._name(raw_item_id, names_by_id)
             for index, raw in enumerate(entries):
                 if not isinstance(raw, Mapping):
@@ -112,7 +112,7 @@ class MinecraftRecipeCatalog:
 
     @classmethod
     def _result(cls, value: Any, fallback: str, names_by_id: Mapping[int, str]) -> tuple[str, int]:
-        if isinstance(value, list) and value and isinstance(value[0], (Mapping, list, tuple)):
+        if isinstance(value, (list, tuple)) and value and isinstance(value[0], (Mapping, list, tuple)):
             value = value[0]
         count = 1
         if isinstance(value, Mapping):
@@ -124,7 +124,7 @@ class MinecraftRecipeCatalog:
     def _ingredient_options(cls, raw: Mapping[str, Any], names_by_id: Mapping[int, str]) -> tuple[tuple[str, ...], ...]:
         values: Any = raw.get("inShape")
         if values is not None:
-            values = [cell for row in values if isinstance(row, list) for cell in row]
+            values = [cell for row in values if isinstance(row, (list, tuple)) for cell in row]
         else:
             values = raw.get("ingredients", raw.get("input", ()))
         options: list[tuple[str, ...]] = []
