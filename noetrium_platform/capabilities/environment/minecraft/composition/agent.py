@@ -220,6 +220,24 @@ class MinecraftAgentActionExecutor(AgentActionExecutorPort):
         payload = validate_minecraft_action(step.action_type, step.payload)
         result = self._session.act(ActionRequest(step.action_id, step.action_type, payload, context))
         diagnostics = dict(result.diagnostics)
+        if result.effect is not None:
+            effect_payload = {
+                "effect_id": result.effect.effect_id,
+                "request_digest": result.effect.request_digest,
+                "certainty": getattr(result.effect.certainty, "value", result.effect.certainty),
+                "before_artifact": result.effect.before_artifact,
+                "after_artifact": result.effect.after_artifact,
+                "provider_receipt": result.effect.provider_receipt,
+            }
+            diagnostics.setdefault("effect_receipt", effect_payload)
+            anchors = diagnostics.get("anchors")
+            if not isinstance(anchors, (list, tuple)) or not anchors:
+                anchors = [f"effect:{result.effect.effect_id}"]
+                if result.effect.before_artifact:
+                    anchors.append(f"before:{result.effect.before_artifact}")
+                if result.effect.after_artifact:
+                    anchors.append(f"after:{result.effect.after_artifact}")
+                diagnostics["anchors"] = anchors
         verified_value = diagnostics.get("verified")
         verified = verified_value if isinstance(verified_value, bool) else None
         observation = None
@@ -251,10 +269,35 @@ def _number(value: MinecraftJsonValue | None, default: float) -> float:
 
 
 class MinecraftAgentCompletion(AgentCompletionPort):
-    def is_complete(self, goal: AgentGoal, observation: AgentObservation, *, planner_finished: bool, last_receipt: AgentStepReceipt | None) -> bool:
+    def __init__(self) -> None:
+        self._max_distance_by_goal: dict[str, float] = {}
+        self._combat_receipts_by_goal: dict[str, set[str]] = {}
+        self._placement_receipts_by_goal: dict[str, set[str]] = {}
+
+    @staticmethod
+    def _inventory_count(inventory: object, item: str) -> int:
+        if not isinstance(inventory, Mapping):
+            return 0
+        needle = item.lower()
+        return sum(
+            int(value)
+            for key, value in inventory.items()
+            if needle in str(key).lower()
+        )
+
+    def is_complete(
+        self,
+        goal: AgentGoal,
+        observation: AgentObservation,
+        *,
+        planner_finished: bool,
+        last_receipt: AgentStepReceipt | None,
+    ) -> bool:
         success = goal.context.get("success")
         if not isinstance(success, Mapping):
-            return bool(observation.state.get("goal_complete", False)) or (planner_finished and _grounded_action_receipt(last_receipt))
+            return bool(observation.state.get("goal_complete", False)) or (
+                planner_finished and _grounded_action_receipt(last_receipt)
+            )
         kind = str(success.get("kind", "planner_finish"))
         if kind == "always":
             return True
@@ -265,27 +308,87 @@ class MinecraftAgentCompletion(AgentCompletionPort):
         if kind == "health_positive":
             return _number(observation.state.get("health"), 0) > 0
         if kind == "inventory_min":
-            inventory = observation.state.get("inventory")
-            if not isinstance(inventory, Mapping):
-                return False
             item, count = str(success.get("item", "")), int(success.get("count", 1))
-            return sum(int(value) for key, value in inventory.items() if item.lower() in str(key).lower()) >= count
+            return self._inventory_count(observation.state.get("inventory"), item) >= count
+        if kind == "inventory_delta_min":
+            item, count = str(success.get("item", "")), int(success.get("count", 1))
+            current = self._inventory_count(observation.state.get("inventory"), item)
+            initial = self._inventory_count(success.get("initial_inventory"), item)
+            return current - initial >= count
+        if kind == "away_then_return":
+            position = observation.state.get("position")
+            anchors = observation.state.get("anchors")
+            anchor_name = str(success.get("anchor", "spawn"))
+            anchor = anchors.get(anchor_name) if isinstance(anchors, Mapping) else None
+            if not isinstance(position, Mapping) or not isinstance(anchor, Mapping):
+                return False
+            distance = sum(
+                (float(position.get(axis, 0)) - float(anchor.get(axis, 0))) ** 2
+                for axis in ("x", "y", "z")
+            ) ** 0.5
+            previous = self._max_distance_by_goal.get(goal.goal_id, 0.0)
+            self._max_distance_by_goal[goal.goal_id] = max(previous, distance)
+            return (
+                self._max_distance_by_goal[goal.goal_id]
+                >= float(success.get("min_departure_distance", 16))
+                and distance <= float(success.get("return_radius", 5))
+            )
+        if kind == "combat_survived":
+            receipt_id = last_receipt.action_id if last_receipt is not None else ""
+            combat_types = {
+                "defend_self", "attack_nearest", "attack_entity", "ranged_attack"
+            }
+            seen = self._combat_receipts_by_goal.setdefault(goal.goal_id, set())
+            if (
+                last_receipt is not None
+                and receipt_id not in seen
+                and last_receipt.action_type in combat_types
+                and _grounded_action_receipt(last_receipt)
+            ):
+                seen.add(receipt_id)
+            return (
+                _number(observation.state.get("health"), 0) > 0
+                and len(seen) >= int(success.get("min_verified_combat_actions", 1))
+            )
+        if kind == "blueprint_complete":
+            required = success.get("blocks", ())
+            if not isinstance(required, (list, tuple)):
+                return False
+            receipt_id = last_receipt.action_id if last_receipt is not None else ""
+            seen = self._placement_receipts_by_goal.setdefault(goal.goal_id, set())
+            if (
+                last_receipt is not None
+                and receipt_id not in seen
+                and last_receipt.action_type == "place_block"
+                and _grounded_action_receipt(last_receipt)
+            ):
+                seen.add(receipt_id)
+            return len(seen) >= len(required)
         if kind == "observed_entity":
-            entities, query = observation.state.get("nearby_entities"), str(success.get("entity", "")).lower()
-            return isinstance(entities, (list, tuple)) and any(query in str(row).lower() for row in entities)
+            entities = observation.state.get("nearby_entities")
+            query = str(success.get("entity", "")).lower()
+            return isinstance(entities, (list, tuple)) and any(
+                query in str(row).lower() for row in entities
+            )
         if kind == "near_position":
             position, target = observation.state.get("position"), success.get("position")
             if not isinstance(position, Mapping) or not isinstance(target, Mapping):
                 return False
             radius = float(success.get("radius", 2))
-            return sum((float(position.get(axis, 0)) - float(target.get(axis, 0))) ** 2 for axis in ("x", "y", "z")) <= radius ** 2
+            return sum(
+                (float(position.get(axis, 0)) - float(target.get(axis, 0))) ** 2
+                for axis in ("x", "y", "z")
+            ) <= radius ** 2
         if kind == "near_anchor":
             position, anchors = observation.state.get("position"), observation.state.get("anchors")
             anchor = anchors.get(str(success.get("anchor", ""))) if isinstance(anchors, Mapping) else None
             if not isinstance(position, Mapping) or not isinstance(anchor, Mapping):
                 return False
             radius = float(success.get("radius", 3))
-            return sum((float(position.get(axis, 0)) - float(anchor.get(axis, 0))) ** 2 for axis in ("x", "y", "z")) <= radius ** 2
+            return sum(
+                (float(position.get(axis, 0)) - float(anchor.get(axis, 0))) ** 2
+                for axis in ("x", "y", "z")
+            ) <= radius ** 2
         raise ValueError(f"unknown Minecraft completion kind: {kind}")
 
 

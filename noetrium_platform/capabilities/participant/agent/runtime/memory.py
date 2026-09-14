@@ -48,6 +48,28 @@ def _tokens(value: str) -> set[str]:
     return {token for token in re.findall(r"[a-z0-9_:-]+", value.lower()) if len(token) > 1}
 
 
+class DisabledAgentMemory(AgentMemoryPort):
+    """Explicit no-memory implementation for controlled ablations."""
+
+    def recall(self, goal: AgentGoal, observation: AgentObservation, context: ExecutionContext) -> AgentMemoryContext:
+        del goal, context
+        return AgentMemoryContext(
+            context_text="",
+            generation=observation.generation,
+            query_id="memory-disabled",
+        )
+
+    def record(self, receipt: AgentStepReceipt, context: ExecutionContext) -> None:
+        del receipt, context
+
+    def checkpoint(self) -> AgentMemoryCheckpoint:
+        return AgentMemoryCheckpoint(sequence_counter=0, records=())
+
+    def restore(self, checkpoint: AgentMemoryCheckpoint) -> None:
+        if not isinstance(checkpoint, AgentMemoryCheckpoint):
+            raise TypeError("checkpoint must be an AgentMemoryCheckpoint")
+
+
 class InMemoryAgentMemory(AgentMemoryPort):
     """Episodic + spatial memory with a strict verified-memory read firewall."""
 
@@ -197,4 +219,4 @@ class InMemoryAgentMemory(AgentMemoryPort):
         self._sequence_counter = checkpoint.sequence_counter
 
 
-__all__ = ["AgentMemoryRecord", "InMemoryAgentMemory", "MemoryPlane"]
+__all__ = ["AgentMemoryRecord", "DisabledAgentMemory", "InMemoryAgentMemory", "MemoryPlane"]
