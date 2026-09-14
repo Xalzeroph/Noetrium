@@ -6,7 +6,6 @@ from noetrium_platform.capabilities.environment.minecraft.composition import (
     MinecraftBlueprintBlock,
     MinecraftBlueprintBuilder,
     MinecraftCognitionRunner,
-    MinecraftRecipe,
     MinecraftRecipeCatalog,
     MinecraftResourcePlanner,
     MinecraftAgentSkillCatalog,
@@ -119,9 +118,18 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         self.assertEqual(runner.ports.memory.records[-1].kind, "spatial_landmark")
 
     def test_resource_plan_and_blueprint_are_typed(self) -> None:
-        planner = MinecraftResourcePlanner({
-            "iron_ingot": MinecraftRecipe("iron_ingot", 1, {"raw_iron": 1}, "smelt"),
-        })
+        iron_catalog = MinecraftRecipeCatalog.from_minecraft_data(
+            {
+                "iron_ingot": [{
+                    "type": "furnace",
+                    "input": [{"id": 4, "count": 1}],
+                    "output": [{"id": 5, "count": 1}],
+                }],
+            },
+            [{"id": 4, "name": "raw_iron"}, {"id": 5, "name": "iron_ingot"}],
+            version="1.21.8",
+        )
+        planner = MinecraftResourcePlanner(iron_catalog)
         plan = planner.plan("iron_ingot", 2, {})
         self.assertEqual(tuple(step[0] for step in plan.steps), ("collect_block", "smelt_item"))
         self.assertEqual(plan.to_action_sequence(sequence_id="resource").steps[-1].action_type, "smelt_item")
@@ -167,12 +175,19 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
                     "target": "iron_ingot",
                     "count": 2,
                     "inventory": {},
-                    "recipes": {
-                        "iron_ingot": {
-                            "count": 1,
-                            "ingredients": {"raw_iron": 1},
-                            "process": "smelt",
-                        }
+                    "recipe_data": {
+                        "recipes": {
+                            "iron_ingot": [{
+                                "type": "furnace",
+                                "input": [{"id": 4, "count": 1}],
+                                "output": [{"id": 5, "count": 1}],
+                            }],
+                        },
+                        "items": [
+                            {"id": 4, "name": "raw_iron"},
+                            {"id": 5, "name": "iron_ingot"},
+                        ],
+                        "version": "1.21.8",
                     },
                 },
             ),

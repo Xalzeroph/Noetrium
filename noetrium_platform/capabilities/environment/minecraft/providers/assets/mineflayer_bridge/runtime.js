@@ -440,16 +440,11 @@ async function gotoPos (position, radius = 1.5, timeoutMs = 30000) {
   }
 }
 
-// Prefer pathfinder's interaction-aware goal for block actions. A GoalNear can
-// leave the bot technically close enough while still unable to raycast/interact
-// with the target (obstructions, ledges, or a bad facing angle). Keep the
-// provider-neutral fallback for test doubles and older pathfinder providers that
-// do not expose a world/GoalLookAtBlock combination.
+// Prefer pathfinder's interaction-aware goal for every block action. A GoalNear
+// can leave the bot technically close enough while still unable to
+// raycast/interact with the target.
 async function gotoBlockInteraction (position, timeoutMs = 30000) {
   const activeBot = requireBot()
-  if (!activeBot.world || typeof GoalLookAtBlock !== 'function') {
-    return { ...(await gotoPos(position, 3, timeoutMs)), navigation_goal: 'near_fallback' }
-  }
   if (!activeBot.pathfinder.movements) await ensureMovements()
   const target = new Vec3(Number(position.x), Number(position.y), Number(position.z))
   await withTimeout(

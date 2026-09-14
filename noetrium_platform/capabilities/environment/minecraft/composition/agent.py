@@ -43,7 +43,6 @@ from ..runtime.planning import (
     MinecraftBlueprintBlock,
     MinecraftBlueprintBuilder,
     MinecraftPlannedSequence,
-    MinecraftRecipe,
     MinecraftResourcePlanner,
 )
 from ..runtime.recipe_catalog import MinecraftRecipeCatalog
@@ -176,7 +175,7 @@ class MinecraftAgentSkillCatalog(AgentSkillCatalogPort):
             "minecraft.resource_plan",
             "planning",
             "Expand typed steps or a deterministic recipe/dependency goal into actions.",
-            "{steps:[{action_type:string,payload:json_value,timeout_s?:number}] or target:string,count:integer,inventory:object,recipes:object or recipe_data:{recipes:object,items:array,edition?:string,version?:string}}",
+            "{steps:[{action_type:string,payload:json_value,timeout_s?:number}] or target:string,count:integer,inventory:object,recipe_data:{recipes:object,items:array,edition?:string,version?:string}}",
             True,
         ),
         AgentSkillDescription("minecraft.build", "construction", "Place an ordered declarative blueprint.", "{blocks:[{item:string,position:{x:number,y:number,z:number},level?:integer}],observed_blocks?:object}", True),
@@ -229,60 +228,31 @@ class MinecraftAgentSkillCatalog(AgentSkillCatalogPort):
                 target = selection.arguments.get("target")
                 raw_count = selection.arguments.get("count", 1)
                 raw_inventory = selection.arguments.get("inventory", {})
-                raw_recipes = selection.arguments.get("recipes", {})
+                raw_recipe_data = selection.arguments.get("recipe_data")
                 if not isinstance(target, str) or not target.strip():
                     raise ValueError("minecraft.resource_plan requires steps or a target")
                 if isinstance(raw_count, bool) or not isinstance(raw_count, int) or raw_count < 1:
                     raise ValueError("minecraft.resource_plan target count must be a positive integer")
-                raw_recipe_data = selection.arguments.get("recipe_data")
                 if not isinstance(raw_inventory, Mapping):
                     raise ValueError("minecraft.resource_plan inventory must be a mapping")
-                if raw_recipe_data is not None and not isinstance(raw_recipe_data, Mapping):
+                if not isinstance(raw_recipe_data, Mapping):
                     raise ValueError("minecraft.resource_plan recipe_data must be a mapping")
-                if raw_recipe_data is None and not isinstance(raw_recipes, Mapping):
-                    raise ValueError("minecraft.resource_plan recipes must be a mapping")
                 inventory: dict[str, int] = {}
                 for item, value in raw_inventory.items():
                     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
                         raise ValueError("minecraft.resource_plan inventory counts must be non-negative integers")
                     inventory[str(item)] = value
-                if isinstance(raw_recipe_data, Mapping):
-                    recipe_rows = raw_recipe_data.get("recipes")
-                    item_rows = raw_recipe_data.get("items")
-                    if not isinstance(recipe_rows, Mapping) or not isinstance(item_rows, (list, tuple, Mapping)):
-                        raise ValueError("minecraft.resource_plan recipe_data requires recipes and items")
-                    catalog = MinecraftRecipeCatalog.from_minecraft_data(
-                        recipe_rows,
-                        item_rows,
-                        edition=str(raw_recipe_data.get("edition", "pc")),
-                        version=str(raw_recipe_data.get("version", "")),
-                    )
-                    resource_plan = MinecraftResourcePlanner(catalog).plan(target, raw_count, inventory)
-                    return _agent_sequence(
-                        resource_plan.to_action_sequence(sequence_id=sequence_id, skill_id=selection.skill_id)
-                    )
-                recipes: dict[str, MinecraftRecipe] = {}
-                for recipe_name, raw_recipe in raw_recipes.items():
-                    if not isinstance(raw_recipe, Mapping):
-                        raise ValueError("minecraft.resource_plan recipe must be a mapping")
-                    ingredients = raw_recipe.get("ingredients", {})
-                    if not isinstance(ingredients, Mapping):
-                        raise ValueError("minecraft.resource_plan recipe ingredients must be a mapping")
-                    normalized_ingredients: dict[str, int] = {}
-                    for ingredient, value in ingredients.items():
-                        if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-                            raise ValueError("minecraft.resource_plan ingredient counts must be positive integers")
-                        normalized_ingredients[str(ingredient)] = value
-                    recipe_item = str(raw_recipe.get("item", recipe_name))
-                    recipe_count = raw_recipe.get("count", 1)
-                    process = str(raw_recipe.get("process", "craft"))
-                    if isinstance(recipe_count, bool) or not isinstance(recipe_count, int) or recipe_count < 1:
-                        raise ValueError("minecraft.resource_plan recipe count must be a positive integer")
-                    recipes[str(recipe_name)] = MinecraftRecipe(
-                        item=recipe_item, count=recipe_count,
-                        ingredients=normalized_ingredients, process=process,
-                    )
-                resource_plan = MinecraftResourcePlanner(recipes).plan(target, raw_count, inventory)
+                recipe_rows = raw_recipe_data.get("recipes")
+                item_rows = raw_recipe_data.get("items")
+                if not isinstance(recipe_rows, Mapping) or not isinstance(item_rows, (list, tuple, Mapping)):
+                    raise ValueError("minecraft.resource_plan recipe_data requires recipes and items")
+                catalog = MinecraftRecipeCatalog.from_minecraft_data(
+                    recipe_rows,
+                    item_rows,
+                    edition=str(raw_recipe_data.get("edition", "pc")),
+                    version=str(raw_recipe_data.get("version", "")),
+                )
+                resource_plan = MinecraftResourcePlanner(catalog).plan(target, raw_count, inventory)
                 return _agent_sequence(
                     resource_plan.to_action_sequence(sequence_id=sequence_id, skill_id=selection.skill_id)
                 )

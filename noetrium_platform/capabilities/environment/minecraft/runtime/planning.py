@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from dataclasses import dataclass
 import math
 from typing import Mapping
@@ -102,31 +101,14 @@ class MinecraftResourcePlan:
 class MinecraftResourcePlanner:
     """Deterministic recipe/dependency expansion with cycle detection."""
 
-    def __init__(self, recipes: Mapping[str, MinecraftRecipe] | object) -> None:
-        """Build a planner from legacy mappings or a recipe catalog.
-
-        The catalog seam accepts a small duck-typed recipes_for method. The
-        runtime stays independent of minecraft-data while providers or offline
-        importers can supply versioned recipes.
-        """
-        if hasattr(recipes, "recipes_for"):
-            self._catalog = recipes
-            self._recipes: dict[str, MinecraftRecipe | tuple[MinecraftRecipe, ...]] = {}
-        else:
-            self._catalog = None
-            self._recipes = dict(recipes)  # type: ignore[arg-type]
+    def __init__(self, catalog: object) -> None:
+        """Build a planner from the canonical versioned recipe catalog."""
+        if not callable(getattr(catalog, "recipes_for", None)):
+            raise TypeError("MinecraftResourcePlanner requires a recipe catalog")
+        self._catalog = catalog
 
     def _recipes_for(self, item: str) -> tuple[MinecraftRecipe, ...]:
-        if self._catalog is not None:
-            return tuple(self._catalog.recipes_for(item))
-        value = self._recipes.get(item)
-        if value is None:
-            return ()
-        if isinstance(value, MinecraftRecipe):
-            return (value,)
-        if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
-            return tuple(value)
-        raise TypeError(f"Minecraft recipes for {item} must be recipe objects")
+        return tuple(self._catalog.recipes_for(item))
 
     @staticmethod
     def _requirements(recipe: MinecraftRecipe, available: Mapping[str, int]) -> dict[str, int]:

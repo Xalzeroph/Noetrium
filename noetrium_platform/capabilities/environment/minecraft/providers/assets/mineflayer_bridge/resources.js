@@ -39,20 +39,37 @@ function miningTime (activeBot, block, item) {
 
 async function equipBestHarvestTool (activeBot, block) {
   const held = activeBot.heldItem || null
-  if (typeof block.canHarvest !== 'function' || block.canHarvest(held ? held.type : null)) {
+  if (typeof block.canHarvest !== 'function') {
     return { ok: true, selected: held ? runtime.itemSummary(held) : null, changed: false }
   }
   const inventoryItems = activeBot.inventory && typeof activeBot.inventory.items === 'function'
     ? activeBot.inventory.items()
     : []
-  const candidates = inventoryItems
-    .filter(item => item && typeof block.canHarvest === 'function' && block.canHarvest(item.type))
-    .sort((left, right) => {
-      const timeDelta = miningTime(activeBot, block, left) - miningTime(activeBot, block, right)
-      return timeDelta || String(left.name || '').localeCompare(String(right.name || ''))
-    })
-  const best = candidates[0] || null
-  if (!best || typeof activeBot.equip !== 'function') {
+  const canHarvest = item => typeof block.canHarvest === 'function' && block.canHarvest(item ? item.type : null)
+  let best = null
+  if (activeBot.pathfinder && typeof activeBot.pathfinder.bestHarvestTool === 'function') {
+    try {
+      const providerBest = activeBot.pathfinder.bestHarvestTool(block)
+      if (providerBest && canHarvest(providerBest)) best = providerBest
+    } catch (_) {}
+  }
+  if (!best) {
+    const candidates = inventoryItems
+      .filter(item => item && canHarvest(item))
+      .sort((left, right) => {
+        const timeDelta = miningTime(activeBot, block, left) - miningTime(activeBot, block, right)
+        return timeDelta || String(left.name || '').localeCompare(String(right.name || ''))
+      })
+    best = candidates[0] || null
+  }
+  if (!best && held && canHarvest(held)) best = held
+  if (!best) {
+    return { ok: false, selected: null, changed: false }
+  }
+  if (held && (held.slot === best.slot || miningTime(activeBot, block, held) <= miningTime(activeBot, block, best))) {
+    return { ok: true, selected: runtime.itemSummary(held), changed: false }
+  }
+  if (typeof activeBot.equip !== 'function') {
     return { ok: false, selected: null, changed: false }
   }
   try {

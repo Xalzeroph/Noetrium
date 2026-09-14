@@ -562,6 +562,41 @@ test('collect_block equips the fastest harvestable inventory tool before digging
   assert.equal(result.outcome.broken[0].selected_tool.name, 'stone_pickaxe')
 })
 
+test('collect_block delegates harvest-tool ranking to pathfinder when available', async () => {
+  const items = [
+    { name: 'wooden_pickaxe', type: 877, count: 1, slot: 0 },
+    { name: 'diamond_pickaxe', type: 878, count: 1, slot: 1 }
+  ]
+  const bot = fakeBot(items)
+  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
+  bot.heldItem = items[0]
+  bot.pathfinder.bestHarvestTool = block => block.name === 'stone' ? items[1] : null
+  const position = new Vec3(2, 64, 0)
+  const live = {
+    name: 'stone',
+    position,
+    drops: [35],
+    canHarvest: type => type === 877 || type === 878,
+    digTime: type => type === 878 ? 1 : 10
+  }
+  bot.findBlock = () => live.name === 'stone' ? live : null
+  bot.blockAt = () => live
+  bot.lookAt = async () => {}
+  bot.equip = async item => { bot.heldItem = item }
+  bot.dig = async () => {
+    live.name = 'air'
+    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 2 })
+  }
+  runtime.bindBot(bot)
+
+  const result = await withoutMovementConstruction(() => resources.collect_block({
+    block: 'stone', count: 1, max_distance: 16, _action_timeout_ms: 2000
+  }))
+
+  assert.equal(result.verified, true)
+  assert.equal(bot.heldItem.name, 'diamond_pickaxe')
+})
+
 
 test('collect_block follows the actual stone drop identity instead of the block name', async () => {
   const items = []
@@ -592,7 +627,7 @@ test('collect_block follows the actual stone drop identity instead of the block 
     const result = await withoutMovementConstruction(() => resources.collect_block({
       block: 'stone', count: 1, max_distance: 16, _action_timeout_ms: 5000
     }))
-    assert.equal(result.verified, true)
+    assert.equal(result.verified, true, JSON.stringify(result))
     assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
     assert.equal(result.outcome.inventory_delta.cobblestone, 1)
     assert.equal(result.outcome.inventory_delta.dirt, 5)
