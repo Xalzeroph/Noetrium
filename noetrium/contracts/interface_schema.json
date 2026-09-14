@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "35be2817b4d93c0215e7e48360dad56e59a5ba2e1d81d5bfcf037a05eca0f012",
+  "interface_digest": "62c65feb3171d907ee5ec95d238ce5c99aad4fd619d68837d60bb2334c18c791",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -6551,71 +6551,91 @@
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionIdentityViolation",
+              "origin_module": ".action_identity",
+              "origin_name": "ActionIdentityViolation",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionNotApplied",
+              "origin_module": ".errors",
+              "origin_name": "ActionNotApplied",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionRecoveryRequired",
+              "origin_module": ".errors",
+              "origin_name": "ActionRecoveryRequired",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionReconciliationDisposition",
+              "origin_module": ".contracts",
+              "origin_name": "ActionReconciliationDisposition",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionReconciliationResult",
+              "origin_module": ".contracts",
+              "origin_name": "ActionReconciliationResult",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionRequest",
+              "origin_module": ".contracts",
+              "origin_name": "ActionRequest",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionResult",
+              "origin_module": ".contracts",
+              "origin_name": "ActionResult",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionSafetyCapabilityMissing",
+              "origin_module": ".errors",
+              "origin_name": "ActionSafetyCapabilityMissing",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionScientificCommitContradiction",
+              "origin_module": ".errors",
+              "origin_name": "ActionScientificCommitContradiction",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "ActionSemanticIdentity",
+              "origin_module": ".action_identity",
+              "origin_name": "ActionSemanticIdentity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -6648,8 +6668,10 @@
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "EnvironmentCapabilityUnsupported",
+              "origin_module": ".errors",
+              "origin_name": "EnvironmentCapabilityUnsupported",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -6853,155 +6875,199 @@
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "DurablePreparedActionSession",
+              "origin_module": ".contracts",
+              "origin_name": "DurablePreparedActionSession",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "EnvironmentIdentity",
+              "origin_module": ".contracts",
+              "origin_name": "EnvironmentIdentity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "EnvironmentImplementation",
+              "origin_module": ".contracts",
+              "origin_name": "EnvironmentImplementation",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "EnvironmentSession",
+              "origin_module": ".contracts",
+              "origin_name": "EnvironmentSession",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "Observation",
+              "origin_module": ".contracts",
+              "origin_name": "Observation",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "action_request_digest",
+              "origin_module": ".contracts",
+              "origin_name": "action_request_digest",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "require_action_recovery_handle_identity",
+              "origin_module": ".action_identity",
+              "origin_name": "require_action_recovery_handle_identity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "require_action_result_identity",
+              "origin_module": ".action_identity",
+              "origin_name": "require_action_result_identity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "require_effect_receipt_digest",
+              "origin_module": ".action_identity",
+              "origin_name": "require_effect_receipt_digest",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "require_reconciliation_identity",
+              "origin_module": ".action_identity",
+              "origin_name": "require_reconciliation_identity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "require_recovery_handle_reconciliation_identity",
+              "origin_module": ".action_identity",
+              "origin_name": "require_recovery_handle_reconciliation_identity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "JsonScalar",
+              "origin_module": ".state_machine",
+              "origin_name": "JsonScalar",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "JsonInput",
+              "origin_module": ".state_machine",
+              "origin_name": "JsonInput",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "JsonMutableValue",
+              "origin_module": ".state_machine",
+              "origin_name": "JsonMutableValue",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "JsonValue",
+              "origin_module": ".state_machine",
+              "origin_name": "JsonValue",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "StateMachineDynamicsIdentity",
+              "origin_module": ".state_machine",
+              "origin_name": "StateMachineDynamicsIdentity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "StateMachineDynamicsPort",
+              "origin_module": ".state_machine",
+              "origin_name": "StateMachineDynamicsPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "StateMachineEnvironmentSpec",
+              "origin_module": ".state_machine",
+              "origin_name": "StateMachineEnvironmentSpec",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "StateTransition",
+              "origin_module": ".state_machine",
+              "origin_name": "StateTransition",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "freeze_json_mapping",
+              "origin_module": ".state_machine",
+              "origin_name": "freeze_json_mapping",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "thaw_json",
+              "origin_module": ".state_machine",
+              "origin_name": "thaw_json",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
-              "kind": "unknown",
+              "kind": "reexport",
               "name": "thaw_json_mapping",
+              "origin_module": ".state_machine",
+              "origin_name": "thaw_json_mapping",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             }
@@ -9848,7 +9914,7 @@
                 "Protocol"
               ],
               "decorators": [],
-              "doc": null,
+              "doc": "Domain semantics injected behind the generic closed-world runtime.",
               "fields": [],
               "kind": "class",
               "members": [],
@@ -9929,7 +9995,7 @@
               "decorators": [
                 "dataclass(frozen=True, slots=True)"
               ],
-              "doc": null,
+              "doc": "Immutable scientific configuration for one deterministic closed world.",
               "fields": [
                 {
                   "annotation": "str",
@@ -10020,7 +10086,7 @@
               "decorators": [
                 "dataclass(frozen=True, slots=True)"
               ],
-              "doc": null,
+              "doc": "Pure transition output; the runtime owns mutation and action identity.",
               "fields": [
                 {
                   "annotation": "Mapping[str, JsonValue]",
@@ -19312,387 +19378,103 @@
           "source": "noetrium_platform/capabilities/environment/runtime/api/state_machine.py",
           "symbol_schemas": [
             {
-              "annotation": "TypeAlias",
               "doc": null,
-              "kind": "value",
+              "kind": "reexport",
               "name": "JsonScalar",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "JsonScalar",
               "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "str | int | float | bool | None"
+              "schema_version": "1"
             },
             {
-              "annotation": "TypeAlias",
               "doc": null,
-              "kind": "value",
+              "kind": "reexport",
               "name": "JsonInput",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "JsonInput",
               "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "JsonScalar | list['JsonInput'] | tuple['JsonInput', ...] | Mapping[str, 'JsonInput']"
+              "schema_version": "1"
             },
             {
-              "annotation": "TypeAlias",
               "doc": null,
-              "kind": "value",
+              "kind": "reexport",
               "name": "JsonMutableValue",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "JsonMutableValue",
               "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "JsonScalar | list['JsonMutableValue'] | dict[str, 'JsonMutableValue']"
+              "schema_version": "1"
             },
             {
-              "annotation": "TypeAlias",
               "doc": null,
-              "kind": "value",
+              "kind": "reexport",
               "name": "JsonValue",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "JsonValue",
               "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "JsonScalar | tuple['JsonValue', ...] | Mapping[str, 'JsonValue']"
+              "schema_version": "1"
             },
             {
-              "bases": [],
-              "decorators": [
-                "dataclass(frozen=True, slots=True)"
-              ],
               "doc": null,
-              "fields": [
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "dynamics_id"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "implementation_version"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "artifact_digest"
-                }
-              ],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "__post_init__",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "None",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def __post_init__(self) -> None:"
-                }
-              ],
+              "kind": "reexport",
               "name": "StateMachineDynamicsIdentity",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "StateMachineDynamicsIdentity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
-              "bases": [
-                "Protocol"
-              ],
-              "decorators": [],
-              "doc": "Domain semantics injected behind the generic closed-world runtime.",
-              "fields": [],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [
-                    "property"
-                  ],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "identity",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "StateMachineDynamicsIdentity",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "@property"
-                },
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "transition",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    },
-                    {
-                      "annotation": "Mapping[str, JsonValue]",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "state",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "ActionRequest",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "request",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "ExecutionContext",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "context",
-                      "receiver": false,
-                      "required": true
-                    }
-                  ],
-                  "return_annotation": "StateTransition",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def transition(self, state: Mapping[str, JsonValue], request: ActionRequest, context: ExecutionContext) -> StateTransition:"
-                }
-              ],
+              "doc": null,
+              "kind": "reexport",
               "name": "StateMachineDynamicsPort",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "StateMachineDynamicsPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
-              "bases": [],
-              "decorators": [
-                "dataclass(frozen=True, slots=True)"
-              ],
-              "doc": "Immutable scientific configuration for one deterministic closed world.",
-              "fields": [
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "environment_id"
-                },
-                {
-                  "annotation": "StateMachineDynamicsIdentity",
-                  "default": null,
-                  "name": "dynamics"
-                },
-                {
-                  "annotation": "Mapping[str, JsonValue]",
-                  "default": null,
-                  "name": "initial_state"
-                },
-                {
-                  "annotation": "tuple[str, ...]",
-                  "default": null,
-                  "name": "action_types"
-                },
-                {
-                  "annotation": "str",
-                  "default": "'1'",
-                  "name": "implementation_version"
-                },
-                {
-                  "annotation": "str",
-                  "default": "'1'",
-                  "name": "abi_version"
-                },
-                {
-                  "annotation": "str",
-                  "default": "'1'",
-                  "name": "schema_version"
-                }
-              ],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "__post_init__",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "None",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def __post_init__(self) -> None:"
-                },
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "scientific_identity_digest",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "str",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def scientific_identity_digest(self) -> str:"
-                }
-              ],
+              "doc": null,
+              "kind": "reexport",
               "name": "StateMachineEnvironmentSpec",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "StateMachineEnvironmentSpec",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
-              "bases": [],
-              "decorators": [
-                "dataclass(frozen=True, slots=True)"
-              ],
-              "doc": "Pure transition output; the runtime owns mutation and action identity.",
-              "fields": [
-                {
-                  "annotation": "Mapping[str, JsonValue]",
-                  "default": null,
-                  "name": "state"
-                },
-                {
-                  "annotation": "bool",
-                  "default": null,
-                  "name": "accepted"
-                },
-                {
-                  "annotation": "Mapping[str, JsonValue]",
-                  "default": null,
-                  "name": "diagnostics"
-                },
-                {
-                  "annotation": "tuple[str, ...]",
-                  "default": "()",
-                  "name": "artifact_refs"
-                }
-              ],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "__post_init__",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "None",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def __post_init__(self) -> None:"
-                }
-              ],
+              "doc": null,
+              "kind": "reexport",
               "name": "StateTransition",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "StateTransition",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
-              "decorators": [],
               "doc": null,
-              "kind": "function",
+              "kind": "reexport",
               "name": "freeze_json_mapping",
-              "parameters": [
-                {
-                  "annotation": "Mapping[str, JsonInput]",
-                  "default": null,
-                  "kind": "positional_or_keyword",
-                  "name": "value",
-                  "receiver": false,
-                  "required": true
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "kind": "keyword_only",
-                  "name": "field",
-                  "receiver": false,
-                  "required": true
-                }
-              ],
-              "return_annotation": "Mapping[str, JsonValue]",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "freeze_json_mapping",
               "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def freeze_json_mapping(value: Mapping[str, JsonInput], *, field: str) -> Mapping[str, JsonValue]:"
+              "schema_version": "1"
             },
             {
-              "decorators": [],
               "doc": null,
-              "kind": "function",
+              "kind": "reexport",
               "name": "thaw_json",
-              "parameters": [
-                {
-                  "annotation": "JsonValue",
-                  "default": null,
-                  "kind": "positional_or_keyword",
-                  "name": "value",
-                  "receiver": false,
-                  "required": true
-                }
-              ],
-              "return_annotation": "JsonMutableValue",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "thaw_json",
               "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def thaw_json(value: JsonValue) -> JsonMutableValue:"
+              "schema_version": "1"
             },
             {
-              "decorators": [],
               "doc": null,
-              "kind": "function",
+              "kind": "reexport",
               "name": "thaw_json_mapping",
-              "parameters": [
-                {
-                  "annotation": "Mapping[str, JsonValue]",
-                  "default": null,
-                  "kind": "positional_or_keyword",
-                  "name": "value",
-                  "receiver": false,
-                  "required": true
-                }
-              ],
-              "return_annotation": "dict[str, JsonMutableValue]",
+              "origin_module": "noetrium_platform.capabilities.environment.api.state_machine",
+              "origin_name": "thaw_json_mapping",
               "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def thaw_json_mapping(value: Mapping[str, JsonValue]) -> dict[str, JsonMutableValue]:"
+              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -132454,6 +132236,33 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "ServiceEnvironmentPort",
+              "origin_module": ".ports",
+              "origin_name": "ServiceEnvironmentPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ServiceLaunchPreflightPort",
+              "origin_module": ".ports",
+              "origin_name": "ServiceLaunchPreflightPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ServiceLaunchPreflightReport",
+              "origin_module": ".ports",
+              "origin_name": "ServiceLaunchPreflightReport",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "ServiceContractDrift",
               "origin_module": ".contracts",
               "origin_name": "ServiceContractDrift",
@@ -132517,6 +132326,9 @@
           ],
           "symbols": [
             "ExactServiceRuntimePort",
+            "ServiceEnvironmentPort",
+            "ServiceLaunchPreflightPort",
+            "ServiceLaunchPreflightReport",
             "ServiceContractDrift",
             "ServiceLaunchContract",
             "ServiceProcessIdentity",
@@ -132852,6 +132664,147 @@
               "schema_version": "1"
             },
             {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "digest",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "str",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                }
+              ],
+              "name": "ServiceEnvironmentPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "contract_digest"
+                },
+                {
+                  "annotation": "tuple[tuple[str, bool], ...]",
+                  "default": null,
+                  "name": "checks"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "errors"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "ready",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "bool",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                }
+              ],
+              "name": "ServiceLaunchPreflightReport",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [],
+              "doc": "Validate a frozen service contract before any process-side effect.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "validate",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ServiceLaunchContract",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "contract",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "ServiceEnvironmentPort",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "environment",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "ServiceLaunchPreflightReport",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def validate(self, contract: ServiceLaunchContract, environment: ServiceEnvironmentPort) -> ServiceLaunchPreflightReport:"
+                }
+              ],
+              "name": "ServiceLaunchPreflightPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
               "bases": [],
               "decorators": [
                 "dataclass(frozen=True, slots=True)"
@@ -133036,6 +132989,9 @@
           ],
           "symbols": [
             "ExactServiceRuntimePort",
+            "ServiceEnvironmentPort",
+            "ServiceLaunchPreflightReport",
+            "ServiceLaunchPreflightPort",
             "ServiceReadyObservation",
             "ServiceReconcileObservation",
             "ServiceStartOutcome",

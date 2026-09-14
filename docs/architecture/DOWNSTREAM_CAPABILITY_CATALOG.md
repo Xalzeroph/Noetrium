@@ -20,7 +20,7 @@ Example:
 
 - Registered systems: 172
 - Public API modules: 503
-- Public symbols: 3732
+- Public symbols: 3738
 - Registry digest: 2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603
 
 ## Capability domains
@@ -43,7 +43,7 @@ Example:
 | portfolio | 5 | 7 | 75 |
 | reliability | 7 | 31 | 162 |
 | resource | 6 | 17 | 114 |
-| runtime | 13 | 47 | 282 |
+| runtime | 13 | 47 | 288 |
 | scope | 7 | 12 | 32 |
 
 ## System surfaces
@@ -2718,9 +2718,9 @@ Example:
 
 #### API modules
 
-- noetrium_platform.infrastructure.lifecycle.service.api ?w^~)?t ExactServiceRuntimePort, ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity, ServiceReadyObservation, ServiceReconcileObservation, ServiceStartOutcome, ServiceStopOutcome
+- noetrium_platform.infrastructure.lifecycle.service.api ?w^~)?t ExactServiceRuntimePort, ServiceEnvironmentPort, ServiceLaunchPreflightPort, ServiceLaunchPreflightReport, ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity, ServiceReadyObservation, ServiceReconcileObservation, ServiceStartOutcome, ServiceStopOutcome
 - noetrium_platform.infrastructure.lifecycle.service.api.contracts ?w^~)?t ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
-- noetrium_platform.infrastructure.lifecycle.service.api.ports ?w^~)?t ExactServiceRuntimePort, ServiceReadyObservation, ServiceReconcileObservation, ServiceStartOutcome, ServiceStopOutcome
+- noetrium_platform.infrastructure.lifecycle.service.api.ports ?w^~)?t ExactServiceRuntimePort, ServiceEnvironmentPort, ServiceLaunchPreflightReport, ServiceLaunchPreflightPort, ServiceReadyObservation, ServiceReconcileObservation, ServiceStartOutcome, ServiceStopOutcome
 - noetrium_platform.infrastructure.lifecycle.service.api.runtime ?w^~)?t ExactServiceRuntimePort, ServiceReadyObservation, ServiceReconcileObservation, ServiceStartOutcome, ServiceStopOutcome
 
 ### runtime/session

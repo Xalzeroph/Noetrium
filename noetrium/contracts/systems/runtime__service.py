@@ -8,6 +8,9 @@ This module is regenerated from the canonical registry and API exports.
 
 from noetrium_platform.infrastructure.lifecycle.service.api import (
     ExactServiceRuntimePort,
+    ServiceEnvironmentPort,
+    ServiceLaunchPreflightPort,
+    ServiceLaunchPreflightReport,
     ServiceContractDrift,
     ServiceLaunchContract,
     ServiceProcessIdentity,
@@ -25,6 +28,9 @@ from noetrium_platform.infrastructure.lifecycle.service.api.contracts import (
 
 from noetrium_platform.infrastructure.lifecycle.service.api.ports import (
     ExactServiceRuntimePort as ports__ExactServiceRuntimePort,
+    ServiceEnvironmentPort as ports__ServiceEnvironmentPort,
+    ServiceLaunchPreflightReport as ports__ServiceLaunchPreflightReport,
+    ServiceLaunchPreflightPort as ports__ServiceLaunchPreflightPort,
     ServiceReadyObservation as ports__ServiceReadyObservation,
     ServiceReconcileObservation as ports__ServiceReconcileObservation,
     ServiceStartOutcome as ports__ServiceStartOutcome,
@@ -41,4 +47,4 @@ from noetrium_platform.infrastructure.lifecycle.service.api.runtime import (
 
 SYSTEM_KEY = 'runtime/service'
 PACKAGE_PREFIX = 'noetrium_platform.infrastructure.lifecycle.service'
-__all__ = ('ExactServiceRuntimePort', 'ServiceContractDrift', 'ServiceLaunchContract', 'ServiceProcessIdentity', 'ServiceReadyObservation', 'ServiceReconcileObservation', 'ServiceStartOutcome', 'ServiceStopOutcome', 'contracts__ServiceContractDrift', 'contracts__ServiceLaunchContract', 'contracts__ServiceProcessIdentity', 'ports__ExactServiceRuntimePort', 'ports__ServiceReadyObservation', 'ports__ServiceReconcileObservation', 'ports__ServiceStartOutcome', 'ports__ServiceStopOutcome', 'runtime__ExactServiceRuntimePort', 'runtime__ServiceReadyObservation', 'runtime__ServiceReconcileObservation', 'runtime__ServiceStartOutcome', 'runtime__ServiceStopOutcome')
+__all__ = ('ExactServiceRuntimePort', 'ServiceEnvironmentPort', 'ServiceLaunchPreflightPort', 'ServiceLaunchPreflightReport', 'ServiceContractDrift', 'ServiceLaunchContract', 'ServiceProcessIdentity', 'ServiceReadyObservation', 'ServiceReconcileObservation', 'ServiceStartOutcome', 'ServiceStopOutcome', 'contracts__ServiceContractDrift', 'contracts__ServiceLaunchContract', 'contracts__ServiceProcessIdentity', 'ports__ExactServiceRuntimePort', 'ports__ServiceEnvironmentPort', 'ports__ServiceLaunchPreflightReport', 'ports__ServiceLaunchPreflightPort', 'ports__ServiceReadyObservation', 'ports__ServiceReconcileObservation', 'ports__ServiceStartOutcome', 'ports__ServiceStopOutcome', 'runtime__ExactServiceRuntimePort', 'runtime__ServiceReadyObservation', 'runtime__ServiceReconcileObservation', 'runtime__ServiceStartOutcome', 'runtime__ServiceStopOutcome')

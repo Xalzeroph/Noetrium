@@ -1,4 +1,4 @@
-# Noetrium: Reproducible Research Infrastructure for AI Agents
+# Noetrium Research OS：面向 AI Agent 研究的证据保全基础设施
 
 
 
@@ -21,11 +21,11 @@
 
 <!-- readme-locale:zh-CN -->
 
-<!-- readme-source-sha256:7895125ec5943a26b48eafc3377b00164904e55cfdb64bfa9eae799254b4a8a5 -->
+<!-- readme-source-sha256:bcc18c44579d2b7d9f2b3ee7c3857bc210a62e2b3920d05bdb94e6489d4a888f -->
 
 <p align="center">
-  <strong>构建 Agent。运行实验。验证结果。</strong><br>
-  面向可复现、证据驱动 AI Agent 研究的严谨系统基础设施。
+  <strong>组合研究系统。运行可归因执行。验证证据。</strong><br>
+  面向可复现、可恢复、证据驱动 AI Agent 研究的 Research Operating System。
 </p>
 
 <p align="center">
@@ -47,7 +47,11 @@
 
 ## 项目概览
 
-Noetrium 是一个开源的上游平台，用于构建、运行和验证长时运行的 AI Agent 研究。它为下游项目提供一组小而稳定的 typed、显式、可检查的接缝，覆盖 identity、binding、execution、effect、checkpoint、Artifact、恢复和 evidence。
+Noetrium 更准确的定位是 Research Operating System，而不是另一个 Agent workflow library。它让长时研究执行可归因、可恢复、可重放，并受显式 authority 约束。method、model、environment、tool 或 orchestration framework 可以在 typed port 后替换；run identity、提交的事实、已经造成的 effect，以及支撑 claim 的 evidence 都必须保持显式。
+
+平台遵循单向依赖：research intent -> composition -> compiled identity -> kernel-controlled transitions -> durable evidence -> inspection, recovery, replay, and verification。
+
+Kernel 负责最小执行语义，domain VM 负责各自状态机，typed service/provider 负责外部能力，composition root 负责组装，projection 与 operator surface 只负责观察。Noetrium 覆盖 experiment/run identity、machine lifecycle、model/environment binding、memory、Artifact、checkpoint/recovery、effect certainty、observability、governance、deployment 与 release evidence；论文语义、科学结论与下游 claims 仍由下游拥有。它为下游项目提供一组小而稳定的 typed、显式、可检查的接缝，覆盖 identity、binding、execution、effect、checkpoint、Artifact、恢复和 evidence。
 
 它位于 Agent 方法与可支撑结论的实验之间：Noetrium 负责可复用的基础设施和 authority；下游项目负责方法、任务、scientific protocol、metric 与结论。
 
@@ -103,7 +107,7 @@ Noetrium 刻意比 Agent workflow library 更宽：实验设计、模型/环境 
 
 Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
 
-- 172 registered system surfaces; 503 public API modules; 3732 public symbols.
+- 172 registered system surfaces; 503 public API modules; 3738 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
@@ -137,6 +141,10 @@ Discover a capability in the catalog, import its generated facade, and inject it
 After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
 <!-- noetrium-interface-catalog:end -->
 
+该目录是 API 地图，不是下游代码应当编辑的 authority registry。每个 system surface 声明自己拥有和禁止拥有的内容、需要和提供的能力，以及对外暴露的公共 facade。生成的 facade 是下游接缝；内部实现可以重组，而不会把实现路径意外变成公共 contract。
+
+目录还让平台可以按责任组合。新增能力应进入其 owner system，通过窄 port 绑定，再由生成 surface 暴露；不能因为不同调用方需要不同视图，就在多个层重复实现同一份 durable fact、provider authority 或 effect lifecycle。
+
 <!-- readme-section:architecture -->
 
 ## 架构
@@ -167,6 +175,30 @@ flowchart LR
 `ExperimentRunSpec` 会被编译成 immutable plan，再通过 `ExperimentRunApplication` 应用；`StudyMatrixExecutor` 通过显式的 `StudyUnitExecutionPort` implementation 调度 unit。MC 与 non-MC 路径可以绑定不同 execution port，同时保持相同的 identity 与 evidence discipline。
 
 长时运行 provider 在适用时使用 world cut、branch、snapshot、checkpoint 与 resume 语义。每份 durable state 只有一个 owner；不确定的外部 effect 在 reconciliation 证明之前保持 `UNKNOWN`。
+
+### Research OS 层级
+
+Noetrium 的范围很大，但 ownership 必须分层。层级用于聚合责任，不用于制造万能 VM 或巨型 registry。
+
+| 层级 | 主要责任 | 边界 |
+| --- | --- | --- |
+| Noetrium Kernel | identity、transition commit、journal、snapshot、调度、隔离、effect protocol、replay、inspection | 不拥有科学 method 语义 |
+| Experiment VM | study、variant、trial、repetition、budget 与实验级决策 | 编排 run，不实现 method node |
+| Research Run VM | 一次可归因执行、锁定 binding、子机器 transition 与最终 evidence | 单个 run 的业务中心 |
+| Method VM | 可执行 method、有界控制流、capability call、checkpoint、resume、replay | 解释 method program，不是全局 Kernel |
+| Agent Turn VM | 可恢复的 goal/context/decision/capability/observation 循环 | 将 model-visible input 与 tool effect 记录为事实 |
+| Memory VM | 有 scope 的 memory state、检索/更新 transition、snapshot、lineage | 不变成隐式全局 context |
+| Environment VM | 有状态外部世界、session、reset、branch、snapshot、resume | 暴露 typed capability，不泄漏私有状态 |
+| Typed service/provider | model、tool、evidence、artifact、metric、policy、resource、process、deployment | 通过 port 可替换，不成为第二 Kernel |
+| Projection/operator surface | telemetry、diagnostic、forensic、report、CLI、release evidence | 读取和解释 authority，不静默变更 |
+
+### Authority 与执行闭环
+
+每一种 truth 只有一个 owner。worker 可以提出 candidate，但不能写 journal、snapshot、outbox、inbox 或 effect journal。没有被证明已应用或被证明无 effect 的外部 effect 必须保持 UNKNOWN；timeout 或 restart 不是成功证据，也不是盲重试许可。
+
+一次下游 study 依次经历 Define、Compose、Compile、Admit and run、Commit、Recover and reconcile、Inspect and replay、Verify。Kernel 原子提交 transition 与 evidence；snapshot 只是恢复加速，journal 才是事实来源；projection、cache、log、UI 不能成为第二真相源。
+
+高度聚合意味着每项责任只有一个归属，而不是把所有功能塞进一个对象。新增能力应扩展 owner system 与窄 port，不应新增 shadow registry、隐藏 global context、重复 facade、重复 provider 或跨层写路径。
 
 `noetrium_platform/foundation/governance/system_registry/catalog.json`
 
@@ -414,6 +446,7 @@ Noetrium 采用 Apache License 2.0。具有法律效力的权威文本是仓库�
 
 <!-- readme-section:status -->
 
+这里描述的是已实现的平台边界，也是持续 VM materialization 的组织目标；README 不宣称每个未来 VM 已经是独立部署进程。
 ## 开发状态
 
 Noetrium 0.44.0 是当前发布的平台基线。项目仍处于持续的架构与 runtime 开发阶段，因此下游使用者应固定 exact revision，并在依赖之前验证对应 evidence。

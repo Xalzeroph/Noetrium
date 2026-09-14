@@ -1,4 +1,4 @@
-# Noetrium: Reproducible Research Infrastructure for AI Agents
+# Noetrium Research OS：面向 AI Agent 研究的證據保存基礎設施
 
 
 
@@ -21,11 +21,11 @@
 
 <!-- readme-locale:zh-TW -->
 
-<!-- readme-source-sha256:7895125ec5943a26b48eafc3377b00164904e55cfdb64bfa9eae799254b4a8a5 -->
+<!-- readme-source-sha256:bcc18c44579d2b7d9f2b3ee7c3857bc210a62e2b3920d05bdb94e6489d4a888f -->
 
 <p align="center">
-  <strong>建構 Agent。執行實驗。驗證結果。</strong><br>
-  面向可重現、證據驅動 AI Agent 研究的嚴謹系統基礎設施。
+  <strong>組合研究系統。執行可歸因執行。驗證證據。</strong><br>
+  面向可重現、可復原、證據驅動 AI Agent 研究的 Research Operating System.
 </p>
 
 <p align="center">
@@ -96,7 +96,7 @@ Noetrium 刻意比 Agent workflow library 更寬：實驗設計、模型/環境 
 
 Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
 
-- 172 registered system surfaces; 503 public API modules; 3732 public symbols.
+- 172 registered system surfaces; 503 public API modules; 3738 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
@@ -130,6 +130,10 @@ Discover a capability in the catalog, import its generated facade, and inject it
 After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
 <!-- noetrium-interface-catalog:end -->
 
+此目錄是 API 地圖，不是下游程式碼應編輯的 authority registry。每個 system surface 宣告自己擁有與禁止擁有的內容、需要與提供的能力，以及對外暴露的公共 facade。生成的 facade 是下游接縫；內部實作可以重組，而不會讓實作路徑意外成為公共 contract。
+
+目錄也讓平台能按責任組合。新增能力應進入其 owner system，透過窄 port 綁定，再由生成 surface 暴露；不能因不同呼叫方需要不同視圖，就在多個層重複實作同一份 durable fact、provider authority 或 effect lifecycle。
+
 <!-- readme-section:architecture -->
 
 ## 架構
@@ -152,6 +156,30 @@ flowchart LR
 每個轉換都必須保留 identity，或產生能解釋 identity 為何變化的 evidence。Composition、Execution 與 Observation 維持為彼此獨立的 authority plane；runtime 只接收窄的 injected port，而不是透過全域查找發現 provider。
 
 每份 durable state 只有一個 owner；不確定的外部 effect 在 reconciliation 證明之前保持 `UNKNOWN`。
+
+### Research OS hierarchy
+
+Noetrium has broad scope, but ownership is hierarchical. The hierarchy aggregates responsibility without creating a universal VM or a monolithic registry.
+
+| Layer | Responsibility | Boundary |
+| --- | --- | --- |
+| Kernel | identity, transition commit, journal, snapshot, scheduling, isolation, effect protocol, replay, inspection | no scientific method semantics |
+| Experiment VM | studies, variants, trials, repetitions, budgets, experiment decisions | orchestrates runs, not method nodes |
+| Research Run VM | one attributable execution, locked bindings, child transitions, final evidence | business center of one run |
+| Method VM | executable method, bounded control flow, capability calls, checkpoint, resume, replay | interprets method programs, not the global Kernel |
+| Agent Turn VM | recoverable goal/context/decision/capability/observation cycle | records model-visible inputs and tool effects |
+| Memory VM | scoped memory state, retrieval/update transitions, snapshots, lineage | never an implicit global context |
+| Environment VM | stateful external world, sessions, reset, branch, snapshot, resume | typed capabilities, private state stays private |
+| Services/providers | model, tool, evidence, artifact, metrics, policy, resource, process, deployment | replaceable behind ports |
+| Projections/operators | telemetry, diagnostics, forensics, reports, CLI, release evidence | observe authority, never silently mutate it |
+
+### Authority and execution loop
+
+Each kind of truth has one owner. A worker may propose a candidate but cannot write journal, snapshot, outbox, inbox, or effect-journal facts. An external effect remains UNKNOWN until applied or no-effect is proven; timeout and restart are not success evidence or permission to blindly retry.
+
+A study proceeds through Define, Compose, Compile, Admit and run, Commit, Recover and reconcile, Inspect and replay, and Verify. The Kernel commits transitions and evidence atomically; snapshots accelerate recovery, journals remain the fact source; projections, caches, logs, and UIs never become a second truth source.
+
+High aggregation means one home for each responsibility, not one object for every feature. New capability belongs in its owner system and narrow port; it must not create a shadow registry, hidden global context, duplicate facade, duplicate provider, or cross-layer write path.
 
 `noetrium_platform/foundation/governance/system_registry/catalog.json`
 
@@ -302,6 +330,12 @@ python scripts/check_readme_i18n.py
 9. 實作變化必須同步文件。
 10. 專案特定語義必須留在下游。
 
+11. Aggregation means one authority per responsibility, not one object for every responsibility.
+12. Typed boundaries carry values, commands, and references; mutable internals do not cross layers.
+13. Failures, cancellation, partial completion, and effect uncertainty are first-class outcomes.
+14. A projection, cache, log, UI, or convenience facade can never silently become truth.
+15. Every claim-grade output is tied to an exact source revision, program identity, and evidence closure.
+
 <!-- readme-section:extending -->
 
 ## 擴充平台
@@ -388,6 +422,7 @@ Noetrium 採用 Apache License 2.0。具有法律效力的權威文本是儲存�
 
 <!-- readme-section:status -->
 
+本文既描述已實作的平台邊界，也描述持續 VM materialization 的組織目標；README 不宣稱每個未來 VM 已是獨立部署程序。
 ## 開發狀態
 
 平台仍處於持續的架構與 runtime 開發階段。

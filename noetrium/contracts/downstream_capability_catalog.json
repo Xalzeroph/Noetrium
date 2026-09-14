@@ -1,5 +1,5 @@
 {
-  "catalog_digest": "3b596f248a36c0d5f9e5a50c08e7f22e07a3b8fa5d40c732e8e351dc1d97c246",
+  "catalog_digest": "0adc40400b9d8171b3d8900721aea9e395fa17ca497f0d8c23da71d7847b337c",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v1",
   "systems": [
@@ -8876,6 +8876,9 @@
           "source": "noetrium_platform/infrastructure/lifecycle/service/api/__init__.py",
           "symbols": [
             "ExactServiceRuntimePort",
+            "ServiceEnvironmentPort",
+            "ServiceLaunchPreflightPort",
+            "ServiceLaunchPreflightReport",
             "ServiceContractDrift",
             "ServiceLaunchContract",
             "ServiceProcessIdentity",
@@ -8899,6 +8902,9 @@
           "source": "noetrium_platform/infrastructure/lifecycle/service/api/ports.py",
           "symbols": [
             "ExactServiceRuntimePort",
+            "ServiceEnvironmentPort",
+            "ServiceLaunchPreflightReport",
+            "ServiceLaunchPreflightPort",
             "ServiceReadyObservation",
             "ServiceReconcileObservation",
             "ServiceStartOutcome",
@@ -8920,7 +8926,7 @@
       "authority": "service_state",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__service",
-      "interface_digest": "f1a27e5e2803bc3b0c387dcea5b8acc83bdf2871a77f270e21a82e674c0f8652",
+      "interface_digest": "916193adcd6d570c349f50c52d2e4b177518065f0cae8cdd65a6d94ad63bd87b",
       "must_not_own": "scientific truth",
       "owns": "managed service identity, registration and lifecycle",
       "package_prefix": "noetrium_platform.infrastructure.lifecycle.service",
