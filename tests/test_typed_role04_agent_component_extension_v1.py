@@ -4,6 +4,7 @@ from noetrium_platform.capabilities.participant.agent.runtime import AgentCognit
 from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionSequence,
     AgentActionStep,
+    AgentCompletionDecision,
     AgentGoal,
     AgentMemoryCheckpoint,
     AgentMemoryContext,
@@ -81,9 +82,11 @@ class Safety:
 
 
 class Completion:
-    def is_complete(self, goal, observation, *, planner_finished, last_receipt):
+    def evaluate(self, goal, observation, *, planner_finished, last_receipt):
         del goal, planner_finished, last_receipt
-        return observation.state["done"] is True
+        if observation.state["done"] is True:
+            return AgentCompletionDecision.succeeded("paper_observation_done")
+        return AgentCompletionDecision.continue_("paper_observation_running")
 
 
 class Evidence:
