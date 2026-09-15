@@ -18,6 +18,15 @@ from .participant_message_facts import (
     record_participant_message_delivery,
     record_participant_message_dispatch,
 )
+from .scheduled_messaging import (
+    PARTICIPANT_MESSAGE_ROUTE_SCHEMA,
+    InProcessParticipantMessageRouter,
+    ParticipantMessageRecipientReceipt,
+    ParticipantMessageRouteReceipt,
+    ParticipantMessageRouteRequest,
+    ParticipantMessageRouterPort,
+    participant_message_content_digest,
+)
 from .prompt import AgentPromptAssembler, AgentPromptBudgetExceeded, CompiledAgentPrompt, PromptBlock
 from .goals import AgentGoalGraph, AgentSubgoal, GoalStatus
 from .self_prompter import AgentSelfPrompter, SelfPromptEvent, SelfPrompterLifecycle, SelfPrompterState
@@ -29,6 +38,7 @@ from .multimodal_adapter import AgentObservationPartSourcePort, MultimodalAgentO
 
 __all__ = [
     "AGENT_TURN_FACT_SCHEMA",
+    "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
     "ActionExecutionPolicy",
     "AgentActionHistoryProjection",
     "AgentActionHistoryProjectionReceipt",
@@ -59,8 +69,13 @@ __all__ = [
     "DisabledAgentMemory",
     "InMemoryAgentMemory",
     "InMemorySkillLibrary",
+    "InProcessParticipantMessageRouter",
     "MemoryPlane",
     "ParticipantMessageFactBinding",
+    "ParticipantMessageRecipientReceipt",
+    "ParticipantMessageRouteReceipt",
+    "ParticipantMessageRouteRequest",
+    "ParticipantMessageRouterPort",
     "AgentSubgoal",
     "GoalStatus",
     "PromptBlock",
@@ -73,6 +88,7 @@ __all__ = [
     "VisionInterpretation",
     "VisionObservationProjector",
     "MultimodalAgentObservationPort",
+    "participant_message_content_digest",
     "project_action_history",
     "record_participant_message_delivery",
     "record_participant_message_dispatch",
