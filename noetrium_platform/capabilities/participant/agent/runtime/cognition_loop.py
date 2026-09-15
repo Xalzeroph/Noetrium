@@ -7,6 +7,7 @@ from typing import Callable
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception, redact_text
 
+from ..api.completion import AgentCompletionDisposition
 from ..api.cognition import (
     AgentCognitionError,
     AgentGoal,
@@ -32,6 +33,7 @@ from ..api.cognition_ports import (
 )
 from .cognition_action import CognitionActionPhase
 from .cognition_checkpoint import CognitionCheckpointPhase, build_cognition_result
+from .cognition_completion import evaluate_agent_completion
 from .cognition_context import CognitionContextPhase
 from .cognition_observation import CognitionObservationPhase
 from .cognition_planning import CognitionPlanningPhase, PlanningDisposition
@@ -42,11 +44,11 @@ from .cognition_state import CognitionCounters
 class AgentCognitionLoop:
     """Durable, environment-neutral cognition loop.
 
-    The loop deliberately owns only cognition sequencing.  It does not know
+    The loop deliberately owns only cognition sequencing. It does not know
     environment actions, model providers, storage backends, or experiment
-    semantics.  Those concerns enter through the typed ports and therefore
-    remain replaceable while every decision, action, observation, and
-    checkpoint is still attributable to one goal and one execution context.
+    semantics. Those concerns enter through typed ports. Terminality and task
+    success are distinct: an environment may terminate unsuccessfully without
+    the OS issuing further actions into a dead episode.
     """
 
     def __init__(
@@ -120,8 +122,6 @@ class AgentCognitionLoop:
         try:
             self.diagnostics.event(name, level=level, attributes=normalized)
         except Exception as exc:
-            # A diagnostic sink must never mask an environment or planner
-            # result, but its failure is itself observable forensic evidence.
             self._record_diagnostic_failure("event", name, exc)
             return
 
@@ -153,8 +153,6 @@ class AgentCognitionLoop:
         )
 
     def diagnostic_failures(self) -> tuple[dict[str, object], ...]:
-        """Return auxiliary diagnostic-sink failures without masking primary work."""
-
         return tuple(dict(item) for item in self._diagnostic_failures)
 
     @staticmethod
@@ -218,24 +216,30 @@ class AgentCognitionLoop:
                 )
 
             try:
-                initially_complete = self.completion.is_complete(
-                    goal, observation, planner_finished=False, last_receipt=last_receipt
+                initial_completion = evaluate_agent_completion(
+                    self.completion,
+                    goal,
+                    observation,
+                    planner_finished=False,
+                    last_receipt=last_receipt,
                 )
             except AgentCognitionError:
                 raise
             except BaseException as exc:
-                self._failure("AGENT_PLANNING_FAILED", str(exc), phase="planning")
-                raise AgentCognitionError("planning", "AGENT_PLANNING_FAILED", str(exc), cause=exc) from exc
-            if initially_complete:
+                self._failure("AGENT_COMPLETION_FAILED", str(exc), phase="completion")
+                raise AgentCognitionError("completion", "AGENT_COMPLETION_FAILED", str(exc), cause=exc) from exc
+            if initial_completion.terminal:
                 checkpoint_value = self._checkpoint_phase.persist(
                     goal=goal, session_id=run_session_id, counters=counters,
                     observation=observation, summaries=tuple(summaries), last_receipt=last_receipt, context=loop_context,
                 )
+                succeeded = initial_completion.disposition is AgentCompletionDisposition.SUCCEEDED
                 return build_cognition_result(
-                    success=True, termination=AgentLoopTerminationReason.COMPLETED,
+                    success=succeeded, termination=AgentLoopTerminationReason.COMPLETED,
                     counters=counters, memory_queries=memory_queries,
                     selected_skills=tuple(selected_skills), receipts=tuple(receipts),
                     observation=observation, checkpoint=checkpoint_value,
+                    failure_code=None if succeeded else "AGENT_TASK_TERMINAL_FAILURE",
                 )
 
             plan_context = self._context(context, goal, f"plan:{counters.plan_calls}")
@@ -300,6 +304,18 @@ class AgentCognitionLoop:
                     selected_skills=tuple(selected_skills), receipts=tuple(receipts),
                     observation=observation, checkpoint=checkpoint_value,
                 )
+            if planning.disposition is PlanningDisposition.TERMINAL_FAILURE:
+                checkpoint_value = self._checkpoint_phase.persist(
+                    goal=goal, session_id=run_session_id, counters=counters,
+                    observation=observation, summaries=tuple(summaries), last_receipt=last_receipt, context=plan_context,
+                )
+                return build_cognition_result(
+                    success=False, termination=AgentLoopTerminationReason.COMPLETED,
+                    counters=counters, memory_queries=memory_queries,
+                    selected_skills=tuple(selected_skills), receipts=tuple(receipts),
+                    observation=observation, checkpoint=checkpoint_value,
+                    failure_code="AGENT_TASK_TERMINAL_FAILURE",
+                )
             if planning.disposition is PlanningDisposition.UNGROUNDED_COMPLETION:
                 invalid_completion_claims += 1
                 if invalid_completion_claims > goal.max_replans:
@@ -349,17 +365,24 @@ class AgentCognitionLoop:
                     goal=goal, session_id=run_session_id, counters=counters,
                     observation=observation, summaries=tuple(summaries), last_receipt=last_receipt, context=action_context,
                 )
-                if self.completion.is_complete(
-                    goal, observation, planner_finished=False, last_receipt=last_receipt
-                ):
+                completion = evaluate_agent_completion(
+                    self.completion,
+                    goal,
+                    observation,
+                    planner_finished=False,
+                    last_receipt=last_receipt,
+                )
+                if completion.terminal:
+                    succeeded = completion.disposition is AgentCompletionDisposition.SUCCEEDED
                     self._planning.record_skill(
-                        sequence, tuple(sequence_receipts), success=True, context=action_context
+                        sequence, tuple(sequence_receipts), success=succeeded, context=action_context
                     )
                     return build_cognition_result(
-                        success=True, termination=AgentLoopTerminationReason.COMPLETED,
+                        success=succeeded, termination=AgentLoopTerminationReason.COMPLETED,
                         counters=counters, memory_queries=memory_queries,
                         selected_skills=tuple(selected_skills), receipts=tuple(receipts),
                         observation=observation, checkpoint=checkpoint_value,
+                        failure_code=None if succeeded else "AGENT_TASK_TERMINAL_FAILURE",
                     )
                 if not receipt.accepted:
                     sequence_failed = True
@@ -389,14 +412,10 @@ class AgentCognitionLoop:
             self._planning.record_skill(
                 sequence,
                 tuple(sequence_receipts),
-                success=not sequence_failed and self.completion.is_complete(
-                    goal, observation, planner_finished=False, last_receipt=last_receipt
-                ),
+                success=False,
                 context=loop_context,
             )
             if sequence_failed:
-                # The failed receipt remains in the trajectory; the next plan
-                # receives it through prior_actions and may choose recovery.
                 continue
 
         checkpoint_value = self._checkpoint_phase.persist(
