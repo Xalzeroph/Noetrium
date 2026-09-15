@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Mapping
 
 from noetrium_platform.foundation.kernel.kernel import (
+    JsonDocument,
+    JsonInput,
     canonical_bytes,
     canonical_digest,
     strict_json_loads,
@@ -51,7 +53,7 @@ class OwnershipRow:
             "audit_required": self.audit_required,
         }))
 
-    def as_dict(self) -> dict[str, object]:
+    def as_dict(self) -> dict[str, JsonInput]:
         return {
             "system_id": self.system_id,
             "plane": self.plane,
@@ -87,7 +89,7 @@ class OwnershipMatrix:
             }),
         )
 
-    def as_dict(self) -> dict[str, object]:
+    def as_dict(self) -> dict[str, JsonInput]:
         return {
             "schema": "noetrium.ownership-matrix.v1",
             "source_digest": self.source_digest,
@@ -101,7 +103,7 @@ def _plane(package_prefix: str) -> str:
     return parts[1] if len(parts) > 1 and parts[1] in PLANES else "foundation"
 
 
-def build_ownership_matrix(catalog: Mapping[str, object]) -> OwnershipMatrix:
+def build_ownership_matrix(catalog: JsonDocument) -> OwnershipMatrix:
     if not isinstance(catalog, Mapping) or not catalog:
         raise ValueError("system registry catalog must be a non-empty object")
     source_digest = canonical_digest(catalog)
@@ -117,10 +119,12 @@ def build_ownership_matrix(catalog: Mapping[str, object]) -> OwnershipMatrix:
             if name not in descriptor
         )
         package_prefix = str(descriptor.get("package_prefix", ""))
+        parent_value = descriptor.get("parent")
+        parent = None if parent_value is None else str(parent_value)
         rows.append(OwnershipRow(
             system_id=system_id,
             plane=_plane(package_prefix),
-            parent=descriptor.get("parent"),
+            parent=parent,
             owner_kind=str(descriptor.get("owner_kind", "system-registry")),
             state_authority=str(descriptor.get("authority", "")),
             journal_scope=str(descriptor.get("journal_scope", "unclassified")),
@@ -133,7 +137,7 @@ def build_ownership_matrix(catalog: Mapping[str, object]) -> OwnershipMatrix:
     return OwnershipMatrix(tuple(rows), source_digest)
 
 
-def load_catalog(path: str | Path) -> dict[str, object]:
+def load_catalog(path: str | Path) -> dict[str, JsonInput]:
     value = strict_json_loads(Path(path).read_bytes())
     if not isinstance(value, dict):
         raise ValueError("system registry catalog must be an object")
