@@ -5,6 +5,8 @@ from dataclasses import dataclass
 import math
 from typing import Protocol
 
+from noetrium_platform.foundation.kernel.kernel import JsonDocument
+
 from .blocks import PromptBlock
 from .runtime import ActivePromptBundle
 
@@ -77,7 +79,7 @@ def _collect_text(value: object, output: list[str]) -> None:
 
 
 def check_model_request_budget(
-    body: Mapping[str, object],
+    body: JsonDocument,
     *,
     context_length: int,
     compiled_prompt_text: str | None = None,
@@ -123,14 +125,14 @@ def check_model_request_budget(
 
 
 def fit_model_request_budget(
-    body: Mapping[str, object],
+    body: JsonDocument,
     *,
     context_length: int,
     compiled_prompt_text: str | None = None,
     token_counter: TokenCounter | None = None,
     safety_tokens: int = 0,
     minimum_output_tokens: int = 1,
-) -> tuple[Mapping[str, object], ModelRequestBudgetReport | None]:
+) -> tuple[JsonDocument, ModelRequestBudgetReport | None]:
     """Cap only output reservation; never discard or rewrite input context."""
 
     if type(minimum_output_tokens) is not int or minimum_output_tokens < 0:
