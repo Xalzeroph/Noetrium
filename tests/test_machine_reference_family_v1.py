@@ -47,7 +47,12 @@ def program(kind: MachineKind) -> MachineProgramRef:
 CASES = (
     (MachineKind.EXPERIMENT, ExperimentMachineInterpreter(), "experiment.trial.define", {"trial_id": "t1"}),
     (MachineKind.RUN, RunLifecycleInterpreter(), "run.start", {}),
-    (MachineKind.AGENT, AgentTurnMachineInterpreter(), "agent.turn.begin", {"turn_id": "turn-1"}),
+    (
+        MachineKind.AGENT,
+        AgentTurnMachineInterpreter(),
+        "agent.turn.begin",
+        {"turn_id": "turn-1", "session_id": "session-1"},
+    ),
     (MachineKind.MEMORY, MemoryMachineInterpreter(), "memory.write", {"entry_id": "m1", "value": "x"}),
     (MachineKind.ENVIRONMENT, EnvironmentMachineInterpreter(), "environment.observe", {"step_id": "s1"}),
     (MachineKind.EVALUATION, EvaluationMachineInterpreter(), "evaluation.metric", {"name": "score", "value": 1.0}),
@@ -61,7 +66,7 @@ def test_reference_machine_family_commits_through_shared_kernel(
     descriptor = next(item for item in reference_machine_families() if item.kind is kind)
     machine_id = f"{kind.value}-1"
     runtime = MachineRuntime(
-        identity=MachineIdentity(machine_id, kind, "1", "g1"),
+        identity=MachineIdentity(machine_id, kind, descriptor.implementation_version, "g1"),
         program=program(kind),
         journal=InMemoryMachineJournal(),
         family=descriptor,
