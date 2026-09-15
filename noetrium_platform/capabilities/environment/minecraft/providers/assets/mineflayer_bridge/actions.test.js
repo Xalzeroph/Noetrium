@@ -35,6 +35,30 @@ function fakeBot (items = []) {
         : null
     )
   }
+  bot.equip = async item => { bot.heldItem = item }
+  bot.findBlocks = options => {
+    const block = typeof bot.findBlock === 'function' ? bot.findBlock(options) : null
+    return block ? [block.position] : []
+  }
+  bot.tool = {
+    equipForBlock: async block => {
+      const best = bot.pathfinder.bestHarvestTool(block)
+      if (!best || (typeof block.canHarvest === 'function' && !block.canHarvest(best.type))) {
+        const error = new Error('Bot does not have a harvestable tool!')
+        error.name = 'NoItem'
+        throw error
+      }
+      await bot.equip(best, 'hand')
+    }
+  }
+  bot.collectBlock = {
+    collect: async targets => {
+      for (const target of targets) {
+        await bot.tool.equipForBlock(target)
+        await bot.dig(target)
+      }
+    }
+  }
   bot.world = { getBlock: () => null }
   bot.registry = { itemsByName: {}, blocksByName: {} }
   return bot
@@ -373,100 +397,79 @@ test('playerCollect only confirms collection by this bot', async () => {
   assert.equal(await confirmed, true)
 })
 
-test('collect_block skips pathfinding when the block is already reachable', async () => {
+test('collect_block delegates the full target batch to native Mineflayer plugins', async () => {
   const items = []
   const bot = fakeBot(items)
-  const position = new Vec3(2, 64, 0)
-  let live = { name: 'oak_log', position }
-  let gotoCalls = 0
-  bot.findBlock = () => live && live.name === 'oak_log' ? live : null
-  bot.blockAt = () => live
-  bot.lookAt = async () => {}
-  bot.pathfinder.goto = async () => { gotoCalls += 1; throw new Error('unexpected goto') }
-  bot.dig = async () => {
-    live = { name: 'air', position }
-    items.push({ name: 'oak_log', type: 9, count: 1, slot: 0 })
+  const positions = [new Vec3(2, 64, 0), new Vec3(2, 65, 0)]
+  const live = [true, true]
+  const blocks = positions.map((position, index) => ({
+    name: 'oak_log', position, drops: [9], index
+  }))
+  bot.registry.items = { 9: { id: 9, name: 'oak_log' } }
+  bot.findBlocks = () => positions
+  bot.blockAt = position => {
+    const index = positions.findIndex(value => value.equals(position))
+    return live[index] ? { ...blocks[index] } : { name: 'air', position }
+  }
+  let collectCalls = 0
+  let toolCalls = 0
+  bot.tool.equipForBlock = async block => {
+    toolCalls += 1
+    bot.heldItem = { name: 'stone_pickaxe', type: 877, count: 1, slot: 0 }
+    assert.equal(block.name, 'oak_log')
+  }
+  bot.collectBlock.collect = async targets => {
+    collectCalls += 1
+    assert.equal(targets.length, 2)
+    for (const target of targets) {
+      const index = positions.findIndex(value => value.equals(target.position))
+      await bot.tool.equipForBlock(target)
+      live[index] = false
+      items.push({ name: 'oak_log', type: 9, count: 1, slot: index + 1 })
+    }
   }
   runtime.bindBot(bot)
 
   const result = await withoutMovementConstruction(() => resources.collect_block({
-    block: 'oak_log', count: 1, max_distance: 16, _action_timeout_ms: 2000
+    block: 'oak_log', count: 2, max_distance: 16, _action_timeout_ms: 3000
   }))
 
-  assert.equal(result.verified, true)
+  assert.equal(result.verified, true, JSON.stringify(result))
   assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
-  assert.equal(result.outcome.collected_count, 1)
-  assert.equal(gotoCalls, 0)
+  assert.equal(result.outcome.native_provider, 'mineflayer-collectblock')
+  assert.equal(result.outcome.collected_count, 2)
+  assert.equal(result.outcome.inventory_delta.oak_log, 2)
+  assert.equal(collectCalls, 1)
+  assert.equal(toolCalls, 2)
 })
 
-test('collect_block uses an interaction-aware goal for distant blocks', async () => {
-  const items = [{ name: 'stone_pickaxe', type: 877, count: 1, slot: 0 }]
+test('collect_block fails closed when the native collector cannot harvest', async () => {
+  const items = []
   const bot = fakeBot(items)
-  bot.world = {}
-  bot.pathfinder.movements = { safeToBreak: () => true }
+  const position = new Vec3(2, 64, 0)
+  const live = { name: 'stone', position, drops: [35] }
   bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
-  bot.registry.itemsByName = { dirt: { id: 9 }, cobblestone: { id: 35, name: 'cobblestone' } }
-  bot.registry.blocksByName = {
-    chest: { id: 1 }, fire: { id: 2 }, lava: { id: 3 }, water: { id: 4 },
-    sand: { id: 5 }, gravel: { id: 6 }, ladder: { id: 7 }, air: { id: 8 }
+  bot.findBlocks = () => [position]
+  bot.blockAt = () => ({ ...live })
+  let digCalls = 0
+  bot.tool.equipForBlock = async () => {
+    const error = new Error('no harvestable tool')
+    error.name = 'NoItem'
+    throw error
   }
-  bot.registry.blocksArray = []
-  const position = new Vec3(8, 64, 0)
-  let live = {
-    name: 'stone',
-    position,
-    drops: [35],
-    canHarvest: type => type === 877,
-    digTime: type => type === 877 ? 1 : 100
-  }
-  let goalName = null
-  bot.findBlock = () => live && live.name === 'stone' ? live : null
-  bot.blockAt = () => live
-  bot.lookAt = async () => {}
-  bot.equip = async item => { bot.heldItem = item }
-  bot.pathfinder.goto = async goal => {
-    goalName = goal.constructor.name
-    bot.entity.position = new Vec3(7, 64, 0)
-  }
-  bot.dig = async () => {
-    live = { name: 'air', position }
-    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 1 })
-  }
+  bot.collectBlock.collect = async targets => bot.tool.equipForBlock(targets[0])
+  bot.dig = async () => { digCalls += 1 }
   runtime.bindBot(bot)
 
   const result = await withoutMovementConstruction(() => resources.collect_block({
     block: 'stone', count: 1, max_distance: 16, _action_timeout_ms: 2000
   }))
 
-  assert.equal(result.verified, true)
-  assert.equal(goalName, 'GoalLookAtBlock')
-})
-
-test('collect_block waits for delayed pickup from a vertical block stack', async () => {
-  const items = []
-  const bot = fakeBot(items)
-  const blocks = [
-    { name: 'oak_log', position: new Vec3(3, 64, 0) },
-    { name: 'oak_log', position: new Vec3(3, 65, 0) }
-  ]
-  bot.findBlock = () => blocks.find(block => block.name === 'oak_log') || null
-  bot.blockAt = position => blocks.find(block => block.position.equals(position)) || { name: 'air', position }
-  bot.lookAt = async () => {}
-  bot.dig = async live => {
-    live.name = 'air'
-    setTimeout(() => {
-      const held = items.find(item => item.name === 'oak_log')
-      if (held) held.count += 1
-      else items.push({ name: 'oak_log', type: 9, count: 1, slot: 0 })
-    }, 80)
-  }
-  runtime.bindBot(bot)
-  const result = await withoutMovementConstruction(() => resources.collect_block({
-    block: 'oak_log', count: 2, max_distance: 16, _action_timeout_ms: 5000
-  }))
-  assert.equal(result.verified, true)
-  assert.equal(result.outcome.collected_count, 2)
-  assert.equal(result.outcome.errors.length, 0)
+  assert.equal(result.verified, false)
+  assert.equal(result.outcome.code, 'HARVEST_TOOL_REQUIRED')
+  assert.equal(result.outcome.native_provider, 'mineflayer-collectblock')
+  assert.equal(digCalls, 0)
+  assert.equal(result.outcome.errors[0].phase, 'collectblock')
 })
 
 test('drop capture tracks entitySpawn before item metadata and own collection', async () => {
@@ -483,50 +486,6 @@ test('drop capture tracks entitySpawn before item metadata and own collection', 
   assert.equal(watcher.hasOwnCollection(), true)
   assert.equal(watcher.collection_candidates[0].entity_id, 6)
   watcher.cancel()
-})
-
-
-test('collect_block follows spawned item when itemDrop metadata is delayed', async () => {
-  const items = []
-  const bot = fakeBot(items)
-  const blocks = [
-    { name: 'oak_log', position: new Vec3(3, 64, 0) },
-    { name: 'oak_log', position: new Vec3(3, 65, 0) }
-  ]
-  let nextEntityId = 10
-  bot.findBlock = () => blocks.find(block => block.name === 'oak_log') || null
-  bot.blockAt = position => blocks.find(block => block.position.equals(position)) || { name: 'air', position }
-  bot.lookAt = async () => {}
-  bot.dig = async live => {
-    const position = live.position.clone()
-    live.name = 'air'
-    const drop = { id: nextEntityId++, name: 'item', position: position.offset(0.5, 0.5, 0.5), isValid: true, getDroppedItem: () => null }
-    bot.entities[drop.id] = drop
-    setImmediate(() => { bot.emit('entitySpawn', drop); for (let i = 0; i < 10; i++) bot.emit('physicsTick') })
-  }
-
-  runtime.bindBot(bot)
-  const originalGotoEntity = runtime.gotoEntity
-  runtime.gotoEntity = async entity => {
-    const held = items.find(item => item.name === 'oak_log')
-    if (held) held.count += 1
-    else items.push({ name: 'oak_log', type: 9, count: 1, slot: 0 })
-    bot.emit('playerCollect', bot.entity, entity)
-    entity.isValid = false
-    delete bot.entities[entity.id]
-    return { entity_id: entity.id, position: runtime.vec(entity.position), valid: false }
-  }
-  try {
-    const result = await withoutMovementConstruction(() => resources.collect_block({
-      block: 'oak_log', count: 2, max_distance: 16, _action_timeout_ms: 8000
-    }))
-    assert.equal(result.verified, true)
-    assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
-    assert.equal(result.outcome.collected_count, 2)
-    assert.equal(result.outcome.errors.length, 0)
-  } finally {
-    runtime.gotoEntity = originalGotoEntity
-  }
 })
 
 
@@ -573,134 +532,24 @@ test('goto_entity delegates moving targets to runtime GoalFollow navigation', as
 })
 
 
-test('collect_block rejects an unharvestable block before destructive dig', async () => {
+test('collect_block rejects unsafe targets before invoking the native collector', async () => {
   const bot = fakeBot([])
   const position = new Vec3(2, 64, 0)
-  const live = { name: 'stone', position, harvestTools: { 877: true }, canHarvest: () => false }
-  let digCalls = 0
-  bot.findBlock = () => live
-  bot.blockAt = () => live
-  bot.lookAt = async () => {}
-  bot.dig = async () => { digCalls += 1 }
+  bot.findBlocks = () => [position]
+  bot.blockAt = () => ({ name: 'stone', position, drops: [35] })
+  bot.pathfinder.movements.safeToBreak = () => false
+  let collectCalls = 0
+  bot.collectBlock.collect = async () => { collectCalls += 1 }
   runtime.bindBot(bot)
+
   const result = await withoutMovementConstruction(() => resources.collect_block({
     block: 'stone', count: 1, max_distance: 16, _action_timeout_ms: 2000
   }))
+
   assert.equal(result.verified, false)
-  assert.equal(result.outcome.code, 'HARVEST_TOOL_REQUIRED')
-  assert.equal(digCalls, 0)
-  assert.deepEqual(result.outcome.errors[0].required_tool_ids, [877])
+  assert.equal(result.outcome.code, 'UNSAFE_BLOCK_BREAK')
+  assert.equal(collectCalls, 0)
 })
-
-test('collect_block equips the fastest harvestable inventory tool before digging', async () => {
-  const items = [{ name: 'stone_pickaxe', type: 877, count: 1, slot: 0 }]
-  const bot = fakeBot(items)
-  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
-  const position = new Vec3(2, 64, 0)
-  const live = {
-    name: 'stone',
-    position,
-    drops: [35],
-    canHarvest: type => type === 877,
-    digTime: type => type === 877 ? 1 : 100
-  }
-  bot.findBlock = () => live.name === 'stone' ? live : null
-  bot.blockAt = () => live
-  bot.lookAt = async () => {}
-  bot.equip = async item => { bot.heldItem = item }
-  bot.dig = async block => {
-    block.name = 'air'
-    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 1 })
-  }
-  runtime.bindBot(bot)
-
-  const result = await withoutMovementConstruction(() => resources.collect_block({
-    block: 'stone', count: 1, max_distance: 16, _action_timeout_ms: 2000
-  }))
-
-  assert.equal(result.verified, true)
-  assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
-  assert.equal(bot.heldItem.name, 'stone_pickaxe')
-  assert.equal(result.outcome.broken[0].selected_tool.name, 'stone_pickaxe')
-})
-
-test('collect_block delegates harvest-tool ranking to pathfinder when available', async () => {
-  const items = [
-    { name: 'wooden_pickaxe', type: 877, count: 1, slot: 0 },
-    { name: 'diamond_pickaxe', type: 878, count: 1, slot: 1 }
-  ]
-  const bot = fakeBot(items)
-  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
-  bot.heldItem = items[0]
-  bot.pathfinder.bestHarvestTool = block => block.name === 'stone' ? items[1] : null
-  const position = new Vec3(2, 64, 0)
-  const live = {
-    name: 'stone',
-    position,
-    drops: [35],
-    canHarvest: type => type === 877 || type === 878,
-    digTime: type => type === 878 ? 1 : 10
-  }
-  bot.findBlock = () => live.name === 'stone' ? live : null
-  bot.blockAt = () => live
-  bot.lookAt = async () => {}
-  bot.equip = async item => { bot.heldItem = item }
-  bot.dig = async () => {
-    live.name = 'air'
-    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 2 })
-  }
-  runtime.bindBot(bot)
-
-  const result = await withoutMovementConstruction(() => resources.collect_block({
-    block: 'stone', count: 1, max_distance: 16, _action_timeout_ms: 2000
-  }))
-
-  assert.equal(result.verified, true)
-  assert.equal(bot.heldItem.name, 'diamond_pickaxe')
-})
-
-
-test('collect_block follows the actual stone drop identity instead of the block name', async () => {
-  const items = []
-  const bot = fakeBot(items)
-  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
-  bot.heldItem = { name: 'wooden_pickaxe', type: 877 }
-  const position = new Vec3(2, 64, 0)
-  const live = { name: 'stone', position, drops: [35], canHarvest: type => type === 877 }
-  bot.findBlock = () => live.name === 'stone' ? live : null
-  bot.blockAt = () => live
-  bot.lookAt = async () => {}
-  bot.dig = async block => {
-    block.name = 'air'
-    const drop = { id: 30, name: 'item', isValid: true, position: position.offset(0.5, 0.5, 0.5), getDroppedItem: () => ({ name: 'cobblestone' }) }
-    bot.entities[drop.id] = drop
-    setImmediate(() => bot.emit('itemDrop', drop))
-  }
-  runtime.bindBot(bot)
-  const oldGoto = runtime.gotoEntity
-  runtime.gotoEntity = async entity => {
-    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 0 })
-    items.push({ name: 'dirt', type: 10, count: 5, slot: 1 })
-    bot.emit('playerCollect', bot.entity, entity)
-    entity.isValid = false
-    return { entity_id: entity.id, valid: false }
-  }
-  try {
-    const result = await withoutMovementConstruction(() => resources.collect_block({
-      block: 'stone', count: 1, max_distance: 16, _action_timeout_ms: 5000
-    }))
-    assert.equal(result.verified, true, JSON.stringify(result))
-    assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
-    assert.equal(result.outcome.inventory_delta.cobblestone, 1)
-    assert.equal(result.outcome.inventory_delta.dirt, 5)
-    assert.equal(result.outcome.collected_count, 1)
-    assert.equal(result.outcome.grounded_collected_items, 1)
-    assert.equal(result.outcome.grounded_collected_blocks, 1)
-  } finally {
-    runtime.gotoEntity = oldGoto
-  }
-})
-
 
 test('read-only observe_entities without action_id bypasses action recovery identity', async () => {
   const { spawn } = require('node:child_process')
