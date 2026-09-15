@@ -8,7 +8,7 @@ from noetrium_platform.capabilities.participant.agent.runtime.turn_facts import 
     AgentTurnFactBuffer,
     AgentTurnFactKind,
 )
-from noetrium_platform.foundation.kernel.kernel import MachineJournalPort, thaw_json
+from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, MachineJournalPort, freeze_json
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,17 +58,18 @@ class AgentTurnJournalProjection:
         return value
 
     @staticmethod
-    def _event(value: object) -> dict[str, object]:
-        row = thaw_json(value)
-        if not isinstance(row, dict):
+    def _event(value: JsonValue) -> JsonObject:
+        row = freeze_json(value)
+        if not isinstance(row, Mapping):
             raise ValueError("agent turn journal event must be an object")
         return row
 
     @staticmethod
-    def _fact_document(value: object) -> Mapping[str, object]:
-        if not isinstance(value, Mapping):
+    def _fact_document(value: JsonValue) -> JsonObject:
+        row = freeze_json(value)
+        if not isinstance(row, Mapping):
             raise ValueError("agent turn journal fact must be an object")
-        return value
+        return row
 
     def rebuild(
         self,
@@ -114,7 +115,7 @@ class AgentTurnJournalProjection:
                     if self._text(event.get("turn_id"), "turn_id") != turn_id:
                         raise ValueError("agent turn journal turn_id mismatch")
                     document = self._fact_document(event.get("fact"))
-                    fact = AgentTurnFact.from_payload(document)  # type: ignore[arg-type]
+                    fact = AgentTurnFact.from_payload(document)
                     if fact.session_id != session_id:
                         raise ValueError("agent turn fact session_id mismatch")
                     facts.append(fact)
