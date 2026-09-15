@@ -1,0 +1,40 @@
+name: integration-generated-sync
+
+on:
+  push:
+    branches:
+      - codex/noetrium-main-integration-20260915
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/noetrium-main-integration-20260915
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install package
+        run: python -m pip install -e '.[test]'
+      - name: Regenerate canonical public artifacts
+        run: python scripts/update_generated_docs.py
+      - name: Commit generated drift only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add noetrium/contracts docs/architecture README*.md docs/readme/TRANSLATION_STATE.json
+          if git diff --cached --quiet; then
+            echo 'GENERATED_SYNC_CLEAN'
+            exit 0
+          fi
+          git config user.name 'Noetrium Generated Sync'
+          git config user.email 'noetrium-generated-sync@users.noreply.github.com'
+          git commit -m 'chore(generated): sync public interface artifacts'
+          git push origin HEAD:codex/noetrium-main-integration-20260915
