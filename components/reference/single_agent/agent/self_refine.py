@@ -119,7 +119,7 @@ class ReferenceSelfRefineMethod:
         task: str,
         state: ReferenceAgentState,
         context: ExecutionContext | None,
-        error: BaseException,
+        error: Exception,
     ) -> ReferenceAgentRunResult:
         message = f"{type(error).__name__}: {error}"
         self._emit("failed", state, context, error=message)
@@ -152,7 +152,7 @@ class ReferenceSelfRefineMethod:
                 self._generator.generate(task),
                 owner="generator",
             )
-        except BaseException as exc:
+        except Exception as exc:
             return self._failed(task, state, context, exc)
 
         state = ReferenceAgentState(
@@ -174,7 +174,7 @@ class ReferenceSelfRefineMethod:
                     raise TypeError(
                         "Self-Refine feedback port must return ReferenceSelfRefineFeedback"
                     )
-            except BaseException as exc:
+            except Exception as exc:
                 return self._failed(task, state, context, exc)
 
             state = ReferenceAgentState(
@@ -218,7 +218,7 @@ class ReferenceSelfRefineMethod:
                     ),
                     owner="refiner",
                 )
-            except BaseException as exc:
+            except Exception as exc:
                 return self._failed(task, state, context, exc)
 
             state = ReferenceAgentState(
