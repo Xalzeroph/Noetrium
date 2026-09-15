@@ -72,12 +72,21 @@ def test_squared_l2_projection_matches_classic_memgpt_archival_neighbor_semantic
     snapshot = _snapshot()
     result = SemanticRetrievalEngine().query(
         snapshot,
-        SemanticSimilarityQuery((0.9, 0.1), SemanticSimilarityMetric.SQUARED_L2_DISTANCE, limit=3),
+        SemanticSimilarityQuery((0.82, 0.18), SemanticSimilarityMetric.SQUARED_L2_DISTANCE, limit=3),
     )
     assert [row.reference.record_id for row in result.matches] == ["c", "a", "b"]
     assert [row.rank for row in result.matches] == [1, 2, 3]
     assert result.candidate_count == 3
     assert result.source_cut_digest == snapshot.source_cut_digest
+
+
+def test_squared_l2_ties_use_canonical_source_reference_order() -> None:
+    snapshot = _snapshot()
+    result = SemanticRetrievalEngine().query(
+        snapshot,
+        SemanticSimilarityQuery((0.9, 0.1), SemanticSimilarityMetric.SQUARED_L2_DISTANCE, limit=3),
+    )
+    assert [row.reference.record_id for row in result.matches] == ["a", "c", "b"]
 
 
 def test_candidate_queries_fail_closed_on_projection_drift() -> None:
