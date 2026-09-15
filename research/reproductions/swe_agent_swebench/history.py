@@ -27,6 +27,13 @@ def _record(row: Mapping[str, JsonValue]) -> JsonObject:
     return freeze_json(dict(row))
 
 
+def _tags(row: Mapping[str, JsonValue]) -> set[str]:
+    values = row.get("tags", ())
+    if not isinstance(values, (tuple, list)):
+        return set()
+    return {item for item in values if isinstance(item, str)}
+
+
 def project_paper_era_history(
     records: Sequence[Mapping[str, JsonValue]],
     *,
@@ -40,17 +47,20 @@ def project_paper_era_history(
         for index, row in enumerate(frozen)
         if row.get("message_type") == "observation" and not bool(row.get("is_demo", False))
     ]
-    # The paper-era processor never elides the first instance observation.
-    removable = observation_indices[1 : max(1, len(observation_indices) - keep_observations)]
-    removable_set = set(removable)
+    # SWE-agent 0.7's LastNObservations never drops the first instance
+    # observation. The historical processor also honors keep/remove tags.
+    removable = set(observation_indices[1 : max(1, len(observation_indices) - keep_observations)])
     projected: list[JsonObject] = []
     for index, row in enumerate(frozen):
-        if index not in removable_set:
-            projected.append(row)
-            continue
-        tags = row.get("tags", ())
-        tag_values = set(tags) if isinstance(tags, (tuple, list)) else set()
-        if "keep_output" in tag_values:
+        tags = _tags(row)
+        should_elide = (
+            row.get("message_type") == "observation"
+            and (
+                (index in removable and "keep_output" not in tags)
+                or "remove_output" in tags
+            )
+        )
+        if not should_elide:
             projected.append(row)
             continue
         data = dict(row)
