@@ -5,10 +5,11 @@ from dataclasses import dataclass, field
 from hashlib import sha256
 from pathlib import Path
 from threading import RLock
-from typing import Mapping, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from .canonical import canonical_bytes, canonical_digest, require_sha256, strict_json_loads
 from .durability import InterprocessFileLock, atomic_replace_bytes
+from .json_value import JsonObject, JsonValue
 
 
 def _digest_bytes(value: bytes) -> str:
@@ -27,7 +28,7 @@ class ContentAddressedRef:
     content_digest: str
     media_type: str
     size_bytes: int
-    metadata: Mapping[str, object] = field(default_factory=dict)
+    metadata: JsonObject = field(default_factory=dict)
     ref_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -53,7 +54,7 @@ class EvidenceBundle:
     evidence_id: str
     claim: str
     refs: tuple[ContentAddressedRef, ...]
-    provenance: Mapping[str, object] = field(default_factory=dict)
+    provenance: JsonObject = field(default_factory=dict)
     bundle_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -99,7 +100,7 @@ class ArtifactRecord:
 @runtime_checkable
 class ContentAddressedStorePort(Protocol):
     def put(self, content: bytes, *, kind: str, media_type: str,
-            metadata: Mapping[str, object] | None = None) -> ContentAddressedRef: ...
+            metadata: JsonObject | None = None) -> ContentAddressedRef: ...
     def get(self, ref: ContentAddressedRef) -> bytes: ...
     def verify(self, ref: ContentAddressedRef) -> bool: ...
 
@@ -130,7 +131,7 @@ class InMemoryContentAddressedStore(
         self._lock = RLock()
 
     def put(self, content: bytes, *, kind: str, media_type: str,
-            metadata: Mapping[str, object] | None = None) -> ContentAddressedRef:
+            metadata: JsonObject | None = None) -> ContentAddressedRef:
         if type(content) is not bytes:
             raise TypeError("content must be bytes")
         ref = ContentAddressedRef(
@@ -216,7 +217,7 @@ class DirectoryContentAddressedStore(
         return self.refs / f"{digest}.json"
 
     def put(self, content: bytes, *, kind: str, media_type: str,
-            metadata: Mapping[str, object] | None = None) -> ContentAddressedRef:
+            metadata: JsonObject | None = None) -> ContentAddressedRef:
         if type(content) is not bytes:
             raise TypeError("content must be bytes")
         ref = ContentAddressedRef(
@@ -277,7 +278,7 @@ class DirectoryContentAddressedStore(
         return bundle
 
     @staticmethod
-    def _ref_document(ref: ContentAddressedRef) -> dict[str, object]:
+    def _ref_document(ref: ContentAddressedRef) -> dict[str, JsonValue]:
         return {
             "kind": ref.kind, "content_digest": ref.content_digest,
             "media_type": ref.media_type, "size_bytes": ref.size_bytes,
