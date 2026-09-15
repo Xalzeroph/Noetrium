@@ -226,7 +226,10 @@ class MinecraftEnvironmentSession(EnvironmentSession):
             if self._bridge.supports_command("observe_entities"):
                 entities = self._bridge.command(
                     "observe_entities",
-                    {"max_distance": 32, "limit": self.implementation.spec.max_entities},
+                    {
+                        "max_distance": self.implementation.spec.entity_observation_distance,
+                        "limit": self.implementation.spec.max_entities,
+                    },
                     timeout_s=self.implementation.spec.bridge.command_timeout_s,
                 )
             else:

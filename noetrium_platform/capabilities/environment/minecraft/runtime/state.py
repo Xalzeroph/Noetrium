@@ -12,6 +12,25 @@ from ..api import MinecraftJsonValue, MinecraftObservationEvent
 from .state_views import MinecraftEntityState, minecraft_position
 
 
+def _optional_finite(value: Any, field_name: str) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise ValueError(f"Minecraft {field_name} must be numeric")
+    parsed = float(value)
+    if not math.isfinite(parsed):
+        raise ValueError(f"Minecraft {field_name} must be finite")
+    return parsed
+
+
+def _item_snapshot(value: Any, field_name: str) -> dict[str, MinecraftJsonValue] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise ValueError(f"Minecraft {field_name} must be an item mapping")
+    return {str(key): item for key, item in value.items()}
+
+
 @dataclass(slots=True)
 class MinecraftStateProjection:
     """Deterministic read model reduced from grounded bridge observations.
@@ -25,8 +44,12 @@ class MinecraftStateProjection:
     max_entities: int = 256
     username: str = ""
     position: dict[str, float] | None = None
+    yaw: float | None = None
+    pitch: float | None = None
     health: float | None = None
     food: float | None = None
+    held_item: dict[str, MinecraftJsonValue] | None = None
+    equipment: dict[str, MinecraftJsonValue] = field(default_factory=dict)
     dimension: str | None = None
     inventory: dict[str, int] = field(default_factory=dict)
     entities: dict[str, MinecraftEntityState] = field(default_factory=dict)
@@ -80,10 +103,30 @@ class MinecraftStateProjection:
         if position is not None:
             self.position = position
             self.anchors.setdefault("spawn", dict(position))
+        if "yaw" in payload:
+            self.yaw = _optional_finite(payload["yaw"], "yaw")
+        if "pitch" in payload:
+            self.pitch = _optional_finite(payload["pitch"], "pitch")
         if payload.get("health") is not None:
             self.health = float(payload["health"])
         if payload.get("food") is not None:
             self.food = float(payload["food"])
+        if "held_item" in payload:
+            self.held_item = _item_snapshot(payload["held_item"], "held_item")
+        if "equipment" in payload:
+            equipment = payload["equipment"]
+            if not isinstance(equipment, Mapping):
+                raise ValueError("Minecraft equipment must be a mapping")
+            self.equipment = {
+                str(slot): item
+                for slot, item in equipment.items()
+                if _item_snapshot(item, f"equipment[{slot!r}]") is not None
+            }
+            self.equipment.update({
+                str(slot): None
+                for slot, item in equipment.items()
+                if item is None
+            })
         if payload.get("dimension") is not None:
             self.dimension = str(payload["dimension"])
 
@@ -132,8 +175,15 @@ class MinecraftStateProjection:
         return {
             "username": self.username,
             "position": dict(self.position) if self.position else None,
+            "yaw": self.yaw,
+            "pitch": self.pitch,
             "health": self.health,
             "food": self.food,
+            "held_item": dict(self.held_item) if self.held_item else None,
+            "equipment": {
+                key: (dict(value) if isinstance(value, Mapping) else value)
+                for key, value in sorted(self.equipment.items())
+            },
             "dimension": self.dimension,
             "inventory": dict(sorted(self.inventory.items())),
             "nearby_entities": entities,
@@ -163,8 +213,12 @@ class MinecraftStateProjection:
         expected = {
             "username",
             "position",
+            "yaw",
+            "pitch",
             "health",
             "food",
+            "held_item",
+            "equipment",
             "dimension",
             "inventory",
             "nearby_entities",
@@ -184,12 +238,28 @@ class MinecraftStateProjection:
         position = None if document["position"] is None else minecraft_position(document["position"])
         if document["position"] is not None and position is None:
             raise ValueError("Minecraft state checkpoint position is invalid")
+        yaw = _optional_finite(document["yaw"], "checkpoint yaw")
+        pitch = _optional_finite(document["pitch"], "checkpoint pitch")
         if isinstance(document["health"], bool) or isinstance(document["food"], bool):
             raise ValueError("Minecraft state checkpoint health/food is invalid")
         health = None if document["health"] is None else float(document["health"])
         food = None if document["food"] is None else float(document["food"])
         if any(value is not None and not math.isfinite(value) for value in (health, food)):
             raise ValueError("Minecraft state checkpoint health/food is non-finite")
+        held_item = _item_snapshot(document["held_item"], "checkpoint held_item")
+        equipment_raw = document["equipment"]
+        if not isinstance(equipment_raw, Mapping):
+            raise ValueError("Minecraft state checkpoint equipment is invalid")
+        equipment = {
+            str(slot): item
+            for slot, item in equipment_raw.items()
+            if _item_snapshot(item, f"checkpoint equipment[{slot!r}]") is not None
+        }
+        equipment.update({
+            str(slot): None
+            for slot, item in equipment_raw.items()
+            if item is None
+        })
         inventory_raw = document["inventory"]
         if not isinstance(inventory_raw, Mapping):
             raise ValueError("Minecraft state checkpoint inventory is invalid")
@@ -250,8 +320,12 @@ class MinecraftStateProjection:
             max_entities=max_entities,
             username=username,
             position=position,
+            yaw=yaw,
+            pitch=pitch,
             health=health,
             food=food,
+            held_item=held_item,
+            equipment=equipment,
             dimension=dimension,
             inventory=inventory,
             entities=entities,

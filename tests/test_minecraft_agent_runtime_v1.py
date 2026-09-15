@@ -132,6 +132,7 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
                 }],
             },
             [{"id": 4, "name": "raw_iron"}, {"id": 5, "name": "iron_ingot"}],
+            [{"id": 44, "name": "iron_ore", "drops": [4]}],
             version="1.21.8",
         )
         planner = MinecraftResourcePlanner(iron_catalog)
@@ -149,6 +150,7 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
                 {"id": 159, "name": "spruce_log"},
                 {"id": 4, "name": "crafted_block"},
             ],
+            [],
             version="1.21.8",
         )
         alternative_recipe = alternatives.recipes_for("crafted_block")[0]
@@ -158,6 +160,7 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         catalog = MinecraftRecipeCatalog.from_minecraft_data(
             {"5": [{"inShape": [[4, 4], [4, 4]], "result": {"id": 5, "count": 4}}]},
             [{"id": 4, "name": "oak_log"}, {"id": 5, "name": "oak_planks"}],
+            [{"id": 49, "name": "oak_log", "drops": [4]}],
             version="1.21.8",
         )
         catalog_plan = MinecraftResourcePlanner(catalog).plan("oak_planks", 4, {})
@@ -178,6 +181,7 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
                             {"id": 4, "name": "oak_log"},
                             {"id": 5, "name": "oak_planks"},
                         ],
+                        "blocks": [{"id": 49, "name": "oak_log", "drops": [4]}],
                         "version": "1.21.8",
                     },
                 },
@@ -208,6 +212,7 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
                             {"id": 4, "name": "raw_iron"},
                             {"id": 5, "name": "iron_ingot"},
                         ],
+                        "blocks": [{"id": 44, "name": "iron_ore", "drops": [4]}],
                         "version": "1.21.8",
                     },
                 },
@@ -225,6 +230,20 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         )
         self.assertEqual(blueprint.steps[0].action_type, "place_block")
         self.assertEqual(blueprint.steps[0].payload["item"], "oak_planks")
+
+    def test_resource_plan_fails_closed_for_unknown_resource_sources(self) -> None:
+        catalog = MinecraftRecipeCatalog.from_minecraft_data(
+            {"5": [{"inShape": [[4]], "result": {"id": 5, "count": 1}}]},
+            [{"id": 4, "name": "opaque_input"}, {"id": 5, "name": "crafted_item"}],
+            [],
+            version="1.21.8",
+        )
+
+        plan = MinecraftResourcePlanner(catalog).plan("crafted_item", 1, {})
+
+        self.assertEqual(plan.steps, ())
+        self.assertEqual(plan.missing, ("opaque_input", "crafted_item"))
+
 
     def test_completion_uses_exact_inventory_and_grounded_blueprint_position(self) -> None:
         completion = MinecraftAgentCompletion()
@@ -289,6 +308,20 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
         self.assertTrue(completion.is_complete(
             blueprint_goal,
             AgentObservation("obs:blueprint", "world-v1", {}),
+            planner_finished=False,
+            last_receipt=receipt,
+        ))
+
+        malformed_position_goal = AgentGoal(
+            "goal:malformed-position",
+            "place one oak plank at a malformed target",
+            context={"success": {"kind": "blueprint_complete", "blocks": [{
+                "item": "oak_planks", "position": {"x": "not-a-coordinate", "y": 64, "z": 3}
+            }]}},
+        )
+        self.assertFalse(completion.is_complete(
+            malformed_position_goal,
+            AgentObservation("obs:malformed-position", "world-v1", {}),
             planner_finished=False,
             last_receipt=receipt,
         ))

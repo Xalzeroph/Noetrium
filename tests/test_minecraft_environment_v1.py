@@ -522,6 +522,7 @@ def test_minecraft_session_persists_state_projection_and_validates_before_bridge
         endpoint=MinecraftEndpointSpec(),
         bridge=MinecraftBridgeSpec(command=("fake-node",), cwd="."),
         max_entities=2,
+        entity_observation_distance=64,
     )
     implementation = MinecraftEnvironmentImplementation(
         spec=spec,
@@ -537,6 +538,8 @@ def test_minecraft_session_persists_state_projection_and_validates_before_bridge
     observed = session.observe(context)
     assert observed.payload["state"]["position"] == {"x": 1.0, "y": 2.0, "z": 3.0}
     assert observed.payload["state"]["inventory"] == {"oak_log": 2}
+    assert bridge.calls[1][0] == "observe_entities"
+    assert bridge.calls[1][1]["max_distance"] == 64
 
     acted = session.act(ActionRequest("action-1", "wait", {}, context))
     assert acted.observation is not None

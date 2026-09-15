@@ -34,14 +34,20 @@ async function equipStrongestMelee () {
 
 async function attackTarget (tool, action, target, maxHits) {
   const activeBot = runtime.getBot()
+  const pvpAvailable = Boolean(
+    activeBot.pvp &&
+    typeof activeBot.pvp.attack === 'function' &&
+    typeof activeBot.pvp.stop === 'function'
+  )
+  if (!pvpAvailable) {
+    return runtime.rejected(tool, action, 'MINEFLAYER_PVP_UNAVAILABLE')
+  }
   await runtime.ensureMovements()
   const targetId = target.id
   const weapon = await equipStrongestMelee()
   let attackSignals = 0
   let hurtSignals = 0
   let ownHurtSignals = 0
-  let navigationFailures = 0
-  const pvpAvailable = Boolean(activeBot.pvp && typeof activeBot.pvp.attack === 'function')
   let lastAttackSignalAt = 0
   let pvpStopped = false
   const stopPvp = () => {
@@ -57,41 +63,18 @@ async function attackTarget (tool, action, target, maxHits) {
   activeBot.on('attackedTarget', onAttackedTarget)
   activeBot.on('entityHurt', onEntityHurt)
   try {
-    if (pvpAvailable) {
-      activeBot.pvp.attack(target)
-      const attackDeadline = Date.now() + Math.max(1800, Number(maxHits) * 1500)
-      let confirmationDeadline = null
-      while (Date.now() < attackDeadline) {
-        const live = activeBot.entities[targetId]
-        if (!live || live.isValid === false || !live.position || ownHurtSignals > 0) break
-        if (attackSignals >= maxHits) {
-          stopPvp()
-          if (confirmationDeadline == null) confirmationDeadline = Math.max(Date.now(), lastAttackSignalAt) + 750
-          if (Date.now() >= confirmationDeadline) break
-        }
-        await runtime.sleep(50)
+    activeBot.pvp.attack(target)
+    const attackDeadline = Date.now() + Math.max(1800, Number(maxHits) * 1500)
+    let confirmationDeadline = null
+    while (Date.now() < attackDeadline) {
+      const live = activeBot.entities[targetId]
+      if (!live || live.isValid === false || !live.position || ownHurtSignals > 0) break
+      if (attackSignals >= maxHits) {
+        stopPvp()
+        if (confirmationDeadline == null) confirmationDeadline = Math.max(Date.now(), lastAttackSignalAt) + 750
+        if (Date.now() >= confirmationDeadline) break
       }
-    } else {
-      for (let index = 0; index < maxHits; index++) {
-        const live = activeBot.entities[targetId]
-        if (!live || live.isValid === false || !live.position) break
-        const distance = live.position.distanceTo(activeBot.entity.position)
-        if (distance > 3.2) {
-          try {
-            await runtime.gotoEntity(live, 2)
-          } catch (_) {
-            navigationFailures++
-            if (navigationFailures >= 2) break
-            continue
-          }
-        }
-        const current = activeBot.entities[targetId]
-        if (!current || current.isValid === false || !current.position) break
-        await activeBot.lookAt(current.position.offset(0, Math.max(0.5, Number(current.height || 1.6) * 0.6), 0), true)
-        await activeBot.attack(current)
-        attackSignals++
-        await runtime.sleep(550)
-      }
+      await runtime.sleep(50)
     }
   } finally {
     stopPvp()
@@ -104,12 +87,11 @@ async function attackTarget (tool, action, target, maxHits) {
     target_id: targetId,
     target_name: target.username || target.displayName || target.name || null,
     weapon,
-    combat_mode: pvpAvailable ? 'mineflayer-pvp' : 'bounded-melee',
+    combat_mode: 'mineflayer-pvp',
     hits: attackSignals,
     attack_signals: attackSignals,
     hurt_signals: hurtSignals,
     own_hurt_signals: ownHurtSignals,
-    navigation_failures: navigationFailures,
     target_valid_after: !defeated
   }
   if (defeated && ownHurtSignals > 0) return runtime.applied(tool, action, 'TARGET_DEFEATED', details)

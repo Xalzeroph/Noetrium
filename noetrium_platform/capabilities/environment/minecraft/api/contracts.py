@@ -207,6 +207,7 @@ class MinecraftEnvironmentSpec:
     schema_version: str = "1"
     provider_id: str = "minecraft.mineflayer.jsonl.v1"
     max_entities: int = 256
+    entity_observation_distance: int = 32
 
     def __post_init__(self) -> None:
         if any(
@@ -221,6 +222,8 @@ class MinecraftEnvironmentSpec:
             raise ValueError("Minecraft environment identity fields must be non-empty")
         if self.max_entities < 1:
             raise ValueError("Minecraft environment max_entities must be positive")
+        if not 4 <= self.entity_observation_distance <= 128:
+            raise ValueError("Minecraft entity_observation_distance must be in [4, 128]")
 
     def scientific_identity_digest(self) -> str:
         """Identity of conditions that can change a scientific paired comparison."""
@@ -233,6 +236,7 @@ class MinecraftEnvironmentSpec:
                 "schema_version": self.schema_version,
                 "provider_id": self.provider_id,
                 "max_entities": self.max_entities,
+                "entity_observation_distance": self.entity_observation_distance,
                 "bridge_contract": {
                     "command": self.bridge.command,
                     "cwd": self.bridge.cwd,

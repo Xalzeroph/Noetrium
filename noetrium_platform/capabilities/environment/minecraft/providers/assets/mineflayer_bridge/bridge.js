@@ -39,6 +39,8 @@ function ack (cmd, payload = {}, requestId = null) {
 
 function selfSnapshot (requestId = null) {
   const activeBot = runtime.getBot()
+  const equipment = activeBot.entity.equipment || []
+  const equipmentSlots = ['hand', 'off_hand', 'feet', 'legs', 'torso', 'head']
   emit('self_snapshot', {
     username: activeBot.username,
     position: runtime.vec(activeBot.entity.position),
@@ -47,6 +49,9 @@ function selfSnapshot (requestId = null) {
     health: activeBot.health,
     food: activeBot.food,
     held_item: runtime.itemSummary(activeBot.heldItem),
+    equipment: Object.fromEntries(
+      equipmentSlots.map((slot, index) => [slot, runtime.itemSummary(equipment[index])])
+    ),
     inventory: activeBot.inventory.items().map(runtime.itemSummary),
     dimension: activeBot.game ? activeBot.game.dimension : null
   }, requestId)

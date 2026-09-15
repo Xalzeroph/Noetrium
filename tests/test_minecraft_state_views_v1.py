@@ -31,6 +31,44 @@ def _state_with_entity() -> MinecraftStateProjection:
     return state
 
 
+def test_self_snapshot_preserves_native_pose_and_equipment_across_checkpoint() -> None:
+    state = MinecraftStateProjection(max_entities=4)
+    state.ingest(
+        MinecraftObservationEvent(
+            "self_snapshot",
+            {
+                "username": "bot",
+                "position": {"x": 1, "y": 64, "z": 3},
+                "yaw": 1.25,
+                "pitch": -0.5,
+                "health": 20,
+                "food": 18,
+                "held_item": {"name": "iron_pickaxe", "count": 1, "slot": 36},
+                "equipment": {
+                    "hand": {"name": "iron_pickaxe", "count": 1, "slot": 36},
+                    "off_hand": None,
+                    "feet": None,
+                    "legs": None,
+                    "torso": None,
+                    "head": None,
+                },
+                "inventory": [{"name": "oak_log", "count": 3}],
+                "dimension": "overworld",
+            },
+            sequence=1,
+        )
+    )
+
+    compact = state.compact()
+    assert compact["yaw"] == 1.25
+    assert compact["pitch"] == -0.5
+    assert compact["held_item"]["name"] == "iron_pickaxe"
+    assert compact["equipment"]["hand"]["name"] == "iron_pickaxe"
+
+    restored = MinecraftStateProjection.from_compact(compact, max_entities=4)
+    assert restored.compact() == compact
+
+
 def test_entity_state_is_frozen_and_projection_owns_typed_rows() -> None:
     state = _state_with_entity()
     entity = state.entities["entity-1"]

@@ -33,6 +33,7 @@ class MinecraftRecipeCatalog:
         *,
         edition: str = "pc",
         version: str = "",
+        block_drops: Mapping[str, Sequence[tuple[str, int]]] | None = None,
     ) -> None:
         self.edition = str(edition)
         self.version = str(version)
@@ -43,9 +44,16 @@ class MinecraftRecipeCatalog:
                 raise TypeError(f"recipe catalog entry {item!r} contains a non-recipe value")
             normalized[str(item)] = candidates
         self._recipes = normalized
+        self._block_drops = {
+            str(item): tuple((str(block), int(count)) for block, count in sources)
+            for item, sources in (block_drops or {}).items()
+        }
 
     def recipes_for(self, item: str) -> tuple[MinecraftRecipe, ...]:
         return self._recipes.get(str(item), ())
+
+    def blocks_for(self, item: str) -> tuple[tuple[str, int], ...]:
+        return self._block_drops.get(str(item), ())
 
     def items(self) -> tuple[str, ...]:
         return tuple(sorted(self._recipes))
@@ -55,6 +63,7 @@ class MinecraftRecipeCatalog:
         cls,
         recipes_data: Mapping[str, Any],
         items_data: Sequence[Mapping[str, Any]] | Mapping[Any, Mapping[str, Any]],
+        blocks_data: Sequence[Mapping[str, Any]] | Mapping[Any, Mapping[str, Any]],
         *,
         edition: str = "pc",
         version: str = "",
@@ -65,6 +74,24 @@ class MinecraftRecipeCatalog:
         for row in _rows(items_data):
             if isinstance(row, Mapping) and isinstance(row.get("id"), int) and row.get("name"):
                 names_by_id[int(row["id"])] = str(row["name"])
+
+        block_drops: dict[str, list[tuple[str, int]]] = {}
+        for raw_block in _rows(blocks_data):
+            if not isinstance(raw_block, Mapping) or not raw_block.get("name"):
+                continue
+            block_name = str(raw_block["name"])
+            drops = raw_block.get("drops", ())
+            for raw_drop in drops if isinstance(drops, (list, tuple)) else ():
+                drop_count = 1
+                drop_value = raw_drop
+                if isinstance(raw_drop, Mapping):
+                    drop_count = raw_drop.get("count", raw_drop.get("amount", 1))
+                    drop_value = raw_drop.get("id", raw_drop.get("name"))
+                if isinstance(drop_count, bool) or not isinstance(drop_count, int) or drop_count < 1:
+                    continue
+                item_name = cls._name(drop_value, names_by_id)
+                if item_name:
+                    block_drops.setdefault(item_name, []).append((block_name, drop_count))
 
         normalized: dict[str, list[MinecraftRecipe]] = {}
         for raw_item_id, raw_entries in recipes_data.items():
@@ -95,7 +122,12 @@ class MinecraftRecipeCatalog:
                         recipe_id=str(raw.get("name") or f"{edition}:{version}:{raw_item_id}:{index}"),
                     )
                 )
-        return cls(normalized, edition=edition, version=version)
+        return cls(
+            normalized,
+            edition=edition,
+            version=version,
+            block_drops=block_drops,
+        )
 
     @staticmethod
     def _name(value: Any, names_by_id: Mapping[int, str]) -> str:

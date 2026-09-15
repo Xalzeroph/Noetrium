@@ -202,6 +202,19 @@ test('chest_deposit closes the container and proves inventory removal', async ()
   assert.equal(goalName, 'GoalLookAtBlock')
 })
 
+test('combat rejects missing mineflayer-pvp instead of using a second melee engine', async () => {
+  const bot = fakeBot()
+  bot.entities[2] = { id: 2, name: 'zombie', position: new Vec3(1, 64, 0), isValid: true }
+  runtime.bindBot(bot)
+
+  const result = await combat.attack_entity({ entity_id: 2, max_distance: 8, max_hits: 1 })
+
+  assert.equal(result.verified, false)
+  assert.equal(result.outcome.status, 'rejected')
+  assert.equal(result.outcome.code, 'MINEFLAYER_PVP_UNAVAILABLE')
+})
+
+
 test('mineflayer-pvp combat verifies only damage attributed to this bot', async () => {
   const items = [{ name: 'iron_sword', type: 8, count: 1, slot: 0 }]
   const bot = fakeBot(items)

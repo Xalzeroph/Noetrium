@@ -12,7 +12,6 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentDiagnosticsPort,
     AgentActionStep,
     AgentCompletionPort,
-    AgentDiagnosticsPort,
     AgentEvidencePort,
     AgentGoal,
     AgentLoopCheckpoint,
@@ -130,6 +129,9 @@ class MinecraftAgentObservationPort:
         allowed_keys = (
             "health",
             "position",
+            "yaw",
+            "pitch",
+            "held_item",
             "inventory",
             "equipment",
             "nearby_entities",
@@ -148,6 +150,9 @@ class MinecraftAgentObservationPort:
         state.setdefault("world_generation", raw.generation)
         state.setdefault("nearby_entities", [])
         state.setdefault("hostile_entities", [])
+        state.setdefault("yaw", None)
+        state.setdefault("pitch", None)
+        state.setdefault("held_item", None)
         state.setdefault("inventory", {})
         state.setdefault("equipment", {})
         state.setdefault("nearby_blocks", [])
@@ -175,7 +180,7 @@ class MinecraftAgentSkillCatalog(AgentSkillCatalogPort):
             "minecraft.resource_plan",
             "planning",
             "Expand typed steps or a deterministic recipe/dependency goal into actions.",
-            "{steps:[{action_type:string,payload:json_value,timeout_s?:number}] or target:string,count:integer,inventory:object,recipe_data:{recipes:object,items:array,edition?:string,version?:string}}",
+            "{steps:[{action_type:string,payload:json_value,timeout_s?:number}] or target:string,count:integer,inventory:object,recipe_data:{recipes:object,items:array,blocks:array,edition?:string,version?:string}}",
             True,
         ),
         AgentSkillDescription("minecraft.build", "construction", "Place an ordered declarative blueprint.", "{blocks:[{item:string,position:{x:number,y:number,z:number},level?:integer}],observed_blocks?:object}", True),
@@ -244,11 +249,17 @@ class MinecraftAgentSkillCatalog(AgentSkillCatalogPort):
                     inventory[str(item)] = value
                 recipe_rows = raw_recipe_data.get("recipes")
                 item_rows = raw_recipe_data.get("items")
-                if not isinstance(recipe_rows, Mapping) or not isinstance(item_rows, (list, tuple, Mapping)):
-                    raise ValueError("minecraft.resource_plan recipe_data requires recipes and items")
+                block_rows = raw_recipe_data.get("blocks")
+                if (
+                    not isinstance(recipe_rows, Mapping)
+                    or not isinstance(item_rows, (list, tuple, Mapping))
+                    or not isinstance(block_rows, (list, tuple, Mapping))
+                ):
+                    raise ValueError("minecraft.resource_plan recipe_data requires recipes, items and blocks")
                 catalog = MinecraftRecipeCatalog.from_minecraft_data(
                     recipe_rows,
                     item_rows,
+                    block_rows,
                     edition=str(raw_recipe_data.get("edition", "pc")),
                     version=str(raw_recipe_data.get("version", "")),
                 )
@@ -398,7 +409,7 @@ class MinecraftAgentCompletion(AgentCompletionPort):
             return ",".join(
                 str(int(float(position[axis]))) for axis in ("x", "y", "z")
             )
-        except (KeyError, TypeError, ValueError):
+        except (KeyError, OverflowError, TypeError, ValueError):
             return None
 
     @staticmethod
@@ -497,7 +508,8 @@ class MinecraftAgentCompletion(AgentCompletionPort):
             required = success.get("blocks", ())
             if not isinstance(required, (list, tuple)):
                 return False
-            requirements: list[tuple[str, str | None]] = []
+            requirements: list[tuple[str, str | None, bool]] = []
+            invalid_position = False
             anchors = observation.state.get("anchors")
             anchor_name = str(success.get("anchor", ""))
             anchor = anchors.get(anchor_name) if isinstance(anchors, Mapping) else None
@@ -505,20 +517,27 @@ class MinecraftAgentCompletion(AgentCompletionPort):
                 if isinstance(row, str):
                     item_name = row.strip().lower()
                     position_key = None
+                    position_required = False
                 elif isinstance(row, Mapping):
                     item_name = str(row.get("item", "")).strip().lower()
+                    position_required = "position" in row or "offset" in row
                     raw_position = row.get("position")
-                    if raw_position is None and isinstance(row.get("offset"), Mapping) and isinstance(anchor, Mapping):
-                        raw_position = {
-                            axis: float(anchor.get(axis, 0)) + float(row["offset"].get(axis, 0))
-                            for axis in ("x", "y", "z")
-                        }
-                    position_key = self._position_key(raw_position)
+                    if "offset" in row:
+                        if isinstance(row.get("offset"), Mapping) and isinstance(anchor, Mapping):
+                            raw_position = {
+                                axis: float(anchor.get(axis, 0)) + float(row["offset"].get(axis, 0))
+                                for axis in ("x", "y", "z")
+                            }
+                        elif raw_position is None:
+                            invalid_position = True
+                    position_key = self._position_key(raw_position) if position_required else None
+                    if position_required and position_key is None:
+                        invalid_position = True
                 else:
-                    item_name, position_key = "", None
+                    item_name, position_key, position_required = "", None, False
                 if item_name:
-                    requirements.append((item_name, position_key))
-            if not requirements or any(position is not None and position == "" for _, position in requirements):
+                    requirements.append((item_name, position_key, position_required))
+            if invalid_position or not requirements:
                 return False
             receipt_id = last_receipt.action_id if last_receipt is not None else ""
             key = self._goal_key(goal)
@@ -540,8 +559,8 @@ class MinecraftAgentCompletion(AgentCompletionPort):
                     and observed_item == requested_item
                     and any(
                         item == requested_item
-                        and (position is None or position == observed_position)
-                        for item, position in requirements
+                        and (not position_required or position == observed_position)
+                        for item, position, position_required in requirements
                     )
                 ):
                     seen.add(receipt_id)
@@ -555,12 +574,12 @@ class MinecraftAgentCompletion(AgentCompletionPort):
             placed = self._placed_items_by_goal.get(key, {})
             positions = self._placed_positions_by_goal.get(key, set())
             return all(
-                (item, position) in positions if position is not None
+                (item, position) in positions if position_required
                 else placed.get(item, 0) >= sum(
-                    1 for required_item, required_position in requirements
-                    if required_item == item and required_position is None
+                    1 for required_item, _, required_position in requirements
+                    if required_item == item and not required_position
                 )
-                for item, position in requirements
+                for item, position, position_required in requirements
             )
         if kind == "observed_entity":
             entities = observation.state.get("nearby_entities")

@@ -103,8 +103,13 @@ class MinecraftResourcePlanner:
 
     def __init__(self, catalog: object) -> None:
         """Build a planner from the canonical versioned recipe catalog."""
-        if not callable(getattr(catalog, "recipes_for", None)):
-            raise TypeError("MinecraftResourcePlanner requires a recipe catalog")
+        if (
+            not callable(getattr(catalog, "recipes_for", None))
+            or not callable(getattr(catalog, "blocks_for", None))
+        ):
+            raise TypeError(
+                "MinecraftResourcePlanner requires a canonical recipe and block-drop catalog"
+            )
         self._catalog = catalog
 
     def _recipes_for(self, item: str) -> tuple[MinecraftRecipe, ...]:
@@ -160,9 +165,23 @@ class MinecraftResourcePlanner:
             candidates = self._recipes_for(item)
             recipe = self._choose_recipe(candidates, available)
             if recipe is None:
-                missing.append(item)
-                steps.append(("collect_block", validate_minecraft_action("collect_block", {"block": item, "count": deficit})))
-                available[item] = deficit
+                sources = tuple(self._catalog.blocks_for(item))
+                if not sources:
+                    missing.append(item)
+                    return
+                block, yield_count = max(
+                    sources,
+                    key=lambda source: (int(source[1]), str(source[0])),
+                )
+                batches = (deficit + yield_count - 1) // yield_count
+                steps.append((
+                    "collect_block",
+                    validate_minecraft_action(
+                        "collect_block",
+                        {"block": block, "count": batches},
+                    ),
+                ))
+                available[item] = batches * yield_count
                 return
             if item in visiting:
                 missing.append(f"cycle:{item}")
@@ -172,7 +191,7 @@ class MinecraftResourcePlanner:
             missing_count_before = len(missing)
             for ingredient, ingredient_count in self._requirements(recipe, available).items():
                 ensure(ingredient, ingredient_count * batches, depth + 1)
-            if any(value.startswith("cycle:") for value in missing[missing_count_before:]):
+            if len(missing) > missing_count_before:
                 visiting.remove(item)
                 missing.append(item)
                 return
