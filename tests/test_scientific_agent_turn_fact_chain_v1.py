@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.capabilities.participant.agent.api import (
+from noetrium_platform.capabilities.participant.agent.runtime import (
     AGENT_TURN_FACT_SCHEMA,
     AgentTurnFact,
+    AgentTurnFactBuffer,
     AgentTurnFactKind,
 )
-from noetrium_platform.capabilities.participant.agent.runtime import AgentTurnFactBuffer
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 
