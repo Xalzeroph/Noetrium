@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 import math
 from typing import Protocol
 
-from noetrium_platform.foundation.kernel.kernel import JsonDocument
+from noetrium_platform.foundation.kernel.kernel import JsonDocument, canonical_digest
 
 from .blocks import PromptBlock
 from .runtime import ActivePromptBundle
@@ -64,6 +64,76 @@ class ModelRequestBudgetExceeded(ValueError):
             f"input={report.input_tokens}, output={report.requested_output_tokens}, "
             f"safety={report.safety_tokens}, context={report.context_length}"
         )
+
+
+MODEL_REQUEST_REPROJECTION_SCHEMA = "model-request-reprojection.v1"
+
+
+@dataclass(frozen=True, slots=True)
+class ModelRequestProjection:
+    """Semantic-owner replacement for one model-visible request projection."""
+
+    projection_id: str
+    body: JsonDocument
+    compiled_prompt_text: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.projection_id, str) or not self.projection_id.strip():
+            raise ValueError("model request projection_id is required")
+        if not isinstance(self.body, Mapping):
+            raise TypeError("model request projection body must be a mapping")
+        if self.compiled_prompt_text is not None and not isinstance(self.compiled_prompt_text, str):
+            raise TypeError("model request projection compiled_prompt_text must be text")
+
+
+@dataclass(frozen=True, slots=True)
+class ModelRequestReprojectionReceipt:
+    schema_version: str
+    projection_id: str
+    source_request_digest: str
+    projected_request_digest: str
+    source_input_tokens: int
+    projected_input_tokens: int
+    requested_output_tokens: int
+    final_output_tokens: int
+    safety_tokens: int
+    attempt_count: int = 1
+
+    def __post_init__(self) -> None:
+        if self.schema_version != MODEL_REQUEST_REPROJECTION_SCHEMA:
+            raise ValueError("unsupported model request reprojection schema")
+        if not self.projection_id.strip():
+            raise ValueError("model request reprojection projection_id is required")
+        for name in ("source_request_digest", "projected_request_digest"):
+            value = getattr(self, name)
+            if not isinstance(value, str) or len(value) != 64:
+                raise ValueError(f"{name} must be a SHA-256 digest")
+        for name in (
+            "source_input_tokens", "projected_input_tokens",
+            "requested_output_tokens", "final_output_tokens", "safety_tokens",
+        ):
+            value = getattr(self, name)
+            if type(value) is not int or value < 0:
+                raise ValueError(f"{name} must be a non-negative integer")
+        if self.attempt_count != 1:
+            raise ValueError("model request reprojection is deliberately single-attempt")
+
+    @property
+    def reduced_input(self) -> bool:
+        return self.projected_input_tokens < self.source_input_tokens
+
+
+class ModelRequestReprojectionFailed(ModelRequestBudgetExceeded):
+    def __init__(
+        self,
+        report: ModelRequestBudgetReport,
+        *,
+        initial_report: ModelRequestBudgetReport,
+        receipt: ModelRequestReprojectionReceipt,
+    ) -> None:
+        self.initial_report = initial_report
+        self.receipt = receipt
+        super().__init__(report)
 
 
 def _collect_text(value: object, output: list[str]) -> None:
@@ -166,6 +236,91 @@ def fit_model_request_budget(
         safety_tokens=safety_tokens,
     )
     return fitted, report
+
+
+def fit_model_request_budget_with_reprojection(
+    body: JsonDocument,
+    *,
+    context_length: int,
+    compiled_prompt_text: str | None = None,
+    token_counter: TokenCounter | None = None,
+    safety_tokens: int = 0,
+    minimum_output_tokens: int = 1,
+    reproject: Callable[[ModelRequestBudgetReport], ModelRequestProjection] | None = None,
+) -> tuple[JsonDocument, str | None, ModelRequestBudgetReport | None, ModelRequestReprojectionReceipt | None]:
+    """Admit a request, allowing exactly one semantic-owner reprojection on input overflow.
+
+    The admission layer never edits messages/history. If the input leaves less
+    than ``minimum_output_tokens``, an injected semantic owner may return one
+    complete replacement projection. It may not change the requested output
+    ceiling. The replacement is admitted once; another overflow fails closed.
+    """
+
+    try:
+        fitted, report = fit_model_request_budget(
+            body,
+            context_length=context_length,
+            compiled_prompt_text=compiled_prompt_text,
+            token_counter=token_counter,
+            safety_tokens=safety_tokens,
+            minimum_output_tokens=minimum_output_tokens,
+        )
+        return fitted, compiled_prompt_text, report, None
+    except ModelRequestBudgetExceeded as first_error:
+        if reproject is None:
+            raise
+        initial = first_error.report
+
+    projection = reproject(initial)
+    if not isinstance(projection, ModelRequestProjection):
+        raise TypeError("model request reprojector must return ModelRequestProjection")
+    if "max_tokens" not in body or "max_tokens" not in projection.body:
+        raise ValueError("model request reprojection requires max_tokens in both projections")
+    if projection.body["max_tokens"] != body["max_tokens"]:
+        raise ValueError("semantic reprojection cannot change model output reservation")
+
+    source_digest = canonical_digest(body)
+    projected_digest = canonical_digest(projection.body)
+    try:
+        fitted, final_report = fit_model_request_budget(
+            projection.body,
+            context_length=context_length,
+            compiled_prompt_text=projection.compiled_prompt_text,
+            token_counter=token_counter,
+            safety_tokens=safety_tokens,
+            minimum_output_tokens=minimum_output_tokens,
+        )
+    except ModelRequestBudgetExceeded as second_error:
+        projected = second_error.report
+        receipt = ModelRequestReprojectionReceipt(
+            MODEL_REQUEST_REPROJECTION_SCHEMA,
+            projection.projection_id,
+            source_digest,
+            projected_digest,
+            initial.input_tokens,
+            projected.input_tokens,
+            initial.requested_output_tokens,
+            projected.requested_output_tokens,
+            safety_tokens,
+        )
+        raise ModelRequestReprojectionFailed(
+            projected, initial_report=initial, receipt=receipt
+        ) from second_error
+
+    if final_report is None:
+        raise RuntimeError("reprojected model request unexpectedly has no output budget report")
+    receipt = ModelRequestReprojectionReceipt(
+        MODEL_REQUEST_REPROJECTION_SCHEMA,
+        projection.projection_id,
+        source_digest,
+        projected_digest,
+        initial.input_tokens,
+        final_report.input_tokens,
+        initial.requested_output_tokens,
+        final_report.requested_output_tokens,
+        safety_tokens,
+    )
+    return fitted, projection.compiled_prompt_text, final_report, receipt
 
 
 @dataclass(frozen=True, slots=True)
