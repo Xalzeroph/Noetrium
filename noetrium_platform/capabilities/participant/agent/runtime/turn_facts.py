@@ -146,16 +146,33 @@ class AgentTurnFact:
 class AgentTurnFactBuffer:
     """Proposal-local digest chain for one Agent Turn VM session.
 
-    This object deliberately has no persistence API. It only builds a typed
-    candidate fact sequence that an enclosing Method/Run Machine may project
-    into its TransitionProposal. Kernel Journal remains the sole authority for
-    accepted ordered machine facts.
+    The buffer may be anchored at a previously committed fact head. The anchor
+    is only a recovery cursor; it does not contain or persist historical facts.
+    A later Journal projection must verify that the claimed head actually
+    belongs to the accepted Machine history before recovery is trusted.
     """
 
-    def __init__(self, session_id: str) -> None:
+    def __init__(
+        self,
+        session_id: str,
+        *,
+        committed_count: int = 0,
+        committed_head_digest: str | None = None,
+    ) -> None:
         if not isinstance(session_id, str) or not session_id.strip():
             raise ValueError("agent turn fact buffer requires session_id")
+        if type(committed_count) is not int or committed_count < 0:
+            raise ValueError("agent turn committed_count must be non-negative")
+        if committed_count == 0:
+            if committed_head_digest is not None:
+                raise ValueError("empty agent turn fact anchor cannot have a head digest")
+        else:
+            if committed_head_digest is None:
+                raise ValueError("non-empty agent turn fact anchor requires a head digest")
+            require_sha256(committed_head_digest, "agent turn committed_head_digest")
         self._session_id = session_id
+        self._committed_count = committed_count
+        self._committed_head_digest = committed_head_digest
         self._facts: list[AgentTurnFact] = []
 
     @property
@@ -167,12 +184,20 @@ class AgentTurnFactBuffer:
         return tuple(self._facts)
 
     @property
+    def committed_count(self) -> int:
+        return self._committed_count
+
+    @property
+    def total_count(self) -> int:
+        return self._committed_count + len(self._facts)
+
+    @property
     def head_digest(self) -> str | None:
-        return None if not self._facts else self._facts[-1].fact_digest
+        return self._committed_head_digest if not self._facts else self._facts[-1].fact_digest
 
     @property
     def next_sequence(self) -> int:
-        return len(self._facts) + 1
+        return self.total_count + 1
 
     def append(
         self,
@@ -195,12 +220,28 @@ class AgentTurnFactBuffer:
         return fact
 
     @classmethod
+    def resume_candidate(
+        cls,
+        session_id: str,
+        *,
+        committed_count: int,
+        committed_head_digest: str | None,
+    ) -> "AgentTurnFactBuffer":
+        """Continue a proposal chain from a checkpoint cursor, without history copy."""
+
+        return cls(
+            session_id,
+            committed_count=committed_count,
+            committed_head_digest=committed_head_digest,
+        )
+
+    @classmethod
     def replay_candidate(
         cls,
         session_id: str,
         facts: tuple[AgentTurnFact, ...],
     ) -> "AgentTurnFactBuffer":
-        """Validate a chain reconstructed from authoritative Machine facts."""
+        """Validate a complete chain reconstructed from authoritative Machine facts."""
 
         buffer = cls(session_id)
         for expected_sequence, fact in enumerate(facts, start=1):
