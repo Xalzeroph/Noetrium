@@ -89,10 +89,18 @@ def check_model_request_budget(
     if compiled_prompt_text is not None and not isinstance(compiled_prompt_text, str):
         raise TypeError("compiled_prompt_text must be text when provided")
     parts: list[str] = []
-    _collect_text(
-        compiled_prompt_text if compiled_prompt_text is not None else body.get("messages", body),
-        parts,
-    )
+    # Budget the transport payload, not only the caller's compiled prompt.
+    # System instructions, response schemas, tool descriptions and message
+    # metadata also consume the provider context window. The compiled prompt
+    # remains an evidence/recording field; when messages are present it is
+    # already represented in the payload and must not be counted twice.
+    if "messages" in body:
+        _collect_text(body, parts)
+    elif compiled_prompt_text is not None:
+        _collect_text(compiled_prompt_text, parts)
+        _collect_text(body, parts)
+    else:
+        _collect_text(body, parts)
     counter = token_counter or ConservativeCharTokenCounter()
     input_tokens = counter.count("\n".join(parts))
     if type(input_tokens) is not int or input_tokens < 0:
@@ -107,6 +115,59 @@ def check_model_request_budget(
     if not report.fits:
         raise ModelRequestBudgetExceeded(report)
     return report
+
+
+def fit_model_request_budget(
+    body: Mapping[str, object],
+    *,
+    context_length: int,
+    compiled_prompt_text: str | None = None,
+    token_counter: TokenCounter | None = None,
+    safety_tokens: int = 0,
+    minimum_output_tokens: int = 1,
+) -> tuple[Mapping[str, object], ModelRequestBudgetReport | None]:
+    """Return the request with output capped to the true transport fit.
+
+    Input context is never discarded or silently rewritten. Only the
+    provider's output ceiling may be lowered, and only when the resulting
+    response still has the caller-declared minimum budget.
+    """
+
+    if type(minimum_output_tokens) is not int or minimum_output_tokens < 0:
+        raise ValueError("minimum_output_tokens must be a non-negative integer")
+    if "max_tokens" not in body:
+        return body, None
+    try:
+        initial = check_model_request_budget(
+            body,
+            context_length=context_length,
+            compiled_prompt_text=compiled_prompt_text,
+            token_counter=token_counter,
+            safety_tokens=safety_tokens,
+        )
+    except ModelRequestBudgetExceeded as exc:
+        initial = exc.report
+    if initial is not None and initial.fits:
+        return body, initial
+    available = (
+        initial.context_length - initial.input_tokens - initial.safety_tokens
+        if initial is not None
+        else 0
+    )
+    if available < minimum_output_tokens:
+        if initial is not None:
+            raise ModelRequestBudgetExceeded(initial)
+        raise ValueError("model request has no output budget")
+    fitted = dict(body)
+    fitted["max_tokens"] = min(int(body["max_tokens"]), available)
+    report = check_model_request_budget(
+        fitted,
+        context_length=context_length,
+        compiled_prompt_text=compiled_prompt_text,
+        token_counter=token_counter,
+        safety_tokens=safety_tokens,
+    )
+    return fitted, report
 
 
 @dataclass(frozen=True, slots=True)

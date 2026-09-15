@@ -9,7 +9,12 @@ from .qualification import CanaryObservation, CanarySuite, PromptCanary, PromptQ
 from .outcome import PromptOutcomeLink, PromptOutcomeSummary, summarize_outcomes
 from .schema import OutputSchemaRegistry, OutputSchemaSpec, default_output_schemas
 from .budget import ConservativeCharTokenCounter, PromptBudgetExceeded, PromptBudgetPlanner, PromptBudgetReport, TokenCounter
-from .budget import ModelRequestBudgetExceeded, ModelRequestBudgetReport, check_model_request_budget
+from .budget import (
+    ModelRequestBudgetExceeded,
+    ModelRequestBudgetReport,
+    check_model_request_budget,
+    fit_model_request_budget,
+)
 from .publication import DurablePromptRegistry, PromptGenerationManifest, PromptPromotionEvidence, PromptPromotionRecord, PromptPublicationError
 from .execution_contract import PromptExecutionContract, build_execution_contract
 from .request_build import PromptBoundRequest, PromptRequestBuildTransaction
@@ -23,7 +28,7 @@ __all__ = [
     "PromptOutcomeLink","PromptOutcomeSummary","summarize_outcomes",
     "OutputSchemaRegistry","OutputSchemaSpec","default_output_schemas","ConservativeCharTokenCounter",
     "PromptBudgetExceeded","PromptBudgetPlanner","PromptBudgetReport","TokenCounter",
-    "ModelRequestBudgetExceeded","ModelRequestBudgetReport","check_model_request_budget",
+    "ModelRequestBudgetExceeded","ModelRequestBudgetReport","check_model_request_budget","fit_model_request_budget",
     "DurablePromptRegistry","PromptGenerationManifest","PromptPromotionEvidence","PromptPromotionRecord","PromptPublicationError","PromptExecutionContract","build_execution_contract","PromptBoundRequest","PromptRequestBuildTransaction",
     "PromptRequestTrace",
 ]

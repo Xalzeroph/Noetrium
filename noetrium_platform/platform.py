@@ -56,7 +56,7 @@ from noetrium_platform.capabilities.model.api import (
     ProjectModelResponse,
 )
 from noetrium_platform.capabilities.model.providers import QualifiedModelProjectProvider
-from noetrium_platform.capabilities.model.request.prompt.runtime.budget import TokenCounter, check_model_request_budget
+from noetrium_platform.capabilities.model.request.prompt.runtime.budget import TokenCounter, fit_model_request_budget
 from noetrium_platform.capabilities.model.request.api import (
     ContentAddressedStorePort,
     ModelRequestRecorderPort,
@@ -863,11 +863,13 @@ def complete_project_model(
     if not isinstance(request_body, Mapping):
         raise TypeError("project model request body must be a mapping")
     binding = client.binding
-    check_model_request_budget(
+    request_body, _budget_report = fit_model_request_budget(
         request_body,
         context_length=binding.model.context_length,
         compiled_prompt_text=compiled_prompt_text,
         token_counter=input_token_counter,
+        safety_tokens=64,
+        minimum_output_tokens=256,
     )
     prompt_fields = (
         binding.prompt_generation_id,

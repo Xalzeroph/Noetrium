@@ -8,6 +8,7 @@ import pytest
 from noetrium_platform.capabilities.model.request.prompt.runtime.budget import (
     ModelRequestBudgetExceeded,
     check_model_request_budget,
+    fit_model_request_budget,
 )
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
 from noetrium_platform.infrastructure.lifecycle.service.runtime.environment import (
@@ -71,6 +72,58 @@ def test_model_request_budget_accepts_explicitly_fitting_request() -> None:
 def test_model_request_budget_rejects_invalid_output_reservation() -> None:
     with pytest.raises(ValueError, match="max_tokens"):
         check_model_request_budget({"max_tokens": True}, context_length=100)
+
+
+def test_model_request_budget_counts_full_transport_payload() -> None:
+    class RecordingCounter:
+        def __init__(self) -> None:
+            self.text = ""
+
+        def count(self, text: str) -> int:
+            self.text = text
+            return 70
+
+    counter = RecordingCounter()
+    report = check_model_request_budget(
+        {
+            "messages": [
+                {"role": "system", "content": "system instruction"},
+                {"role": "user", "content": "compiled prompt"},
+            ],
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {"name": "action_plan"},
+            },
+            "max_tokens": 20,
+        },
+        context_length=100,
+        compiled_prompt_text="compiled prompt",
+        token_counter=counter,
+    )
+    assert report is not None
+    assert report.fits
+    assert "system instruction" in counter.text
+    assert "compiled prompt" in counter.text
+    assert "action_plan" in counter.text
+
+
+def test_fit_model_request_budget_caps_only_output() -> None:
+    class ExactCounter:
+        def count(self, text: str) -> int:
+            return 80
+
+    body = {"messages": [{"role": "user", "content": "state"}], "max_tokens": 40}
+    fitted, report = fit_model_request_budget(
+        body,
+        context_length=100,
+        token_counter=ExactCounter(),
+        minimum_output_tokens=16,
+    )
+    assert fitted["max_tokens"] == 20
+    assert body["max_tokens"] == 40
+    assert report is not None
+    assert report.fits
+    assert report.input_tokens == 80
 
 
 def test_service_preflight_reports_missing_runtime_inputs(tmp_path: Path) -> None:

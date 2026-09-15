@@ -27,10 +27,46 @@ class CompiledAgentPrompt:
     text: str
     block_ids: tuple[str, ...]
     truncated: bool
+    omitted_block_ids: tuple[str, ...] = ()
+    truncated_block_ids: tuple[str, ...] = ()
+
+
+_PROMPT_TRUNCATION_MARKER = "\n...[omitted middle context]...\n"
+
+
+def _bounded_prompt_text(text: str, max_chars: int) -> tuple[str, bool]:
+    """Keep a deterministic head/tail view with explicit loss evidence."""
+
+    if len(text) <= max_chars:
+        return text, False
+    if max_chars <= len(_PROMPT_TRUNCATION_MARKER):
+        return _PROMPT_TRUNCATION_MARKER[:max_chars], True
+    remaining = max_chars - len(_PROMPT_TRUNCATION_MARKER)
+    head = (remaining + 1) // 2
+    tail = remaining // 2
+    return text[:head] + _PROMPT_TRUNCATION_MARKER + text[-tail:], True
+
+
+def _render_block_with_budget(block: PromptBlock, budget: int) -> tuple[str, bool]:
+    """Render one block without ever slicing the assembled prompt."""
+
+    prefix = f"\n[{block.block_id}]\n"
+    suffix = "\n"
+    content_budget = max(0, budget - len(prefix) - len(suffix))
+    if content_budget == 0:
+        return (prefix + suffix)[:budget], True
+    content, truncated = _bounded_prompt_text(block.text, content_budget)
+    return prefix + content + suffix, truncated
 
 
 class AgentPromptAssembler:
-    """Context-budgeted structured prompt compiler with stable block order."""
+    """Structured, deterministic context assembly with explicit omission evidence.
+
+    Required blocks always retain a labeled representation. Optional blocks are
+    admitted by priority and never consume the reserved envelope of later
+    required state. The assembler is domain-neutral: it does not invent skills,
+    retrieve a skill library, or execute model-produced code.
+    """
 
     def __init__(self, *, max_chars: int = 12000) -> None:
         if max_chars < 512:
@@ -56,18 +92,62 @@ class AgentPromptAssembler:
             PromptBlock("prior_actions", json.dumps(json.loads(canonical_bytes(tuple(prior_actions))), ensure_ascii=False, sort_keys=True), 40),
             *tuple(extra),
         ]
+        ordered = sorted(blocks, key=lambda item: (-item.priority, item.block_id))
+        required = [block for block in ordered if block.required]
+        optional = [block for block in ordered if not block.required]
         selected: list[PromptBlock] = []
+        rendered: list[str] = []
         used = 0
-        for block in sorted(blocks, key=lambda item: (-item.priority, item.block_id)):
-            encoded = f"\n[{block.block_id}]\n{block.text}\n"
-            if used + len(encoded) <= self._max_chars or block.required:
-                selected.append(block)
-                used += len(encoded)
-        text = "".join(f"\n[{block.block_id}]\n{block.text}\n" for block in selected)
-        if len(text) > self._max_chars:
-            required_text = "".join(f"\n[{block.block_id}]\n{block.text}\n" for block in selected if block.required)
-            text = required_text[: self._max_chars]
-        return CompiledAgentPrompt("agent-prompt.v1", text, tuple(block.block_id for block in selected), len(selected) != len(blocks))
+        truncated = False
+        omitted_block_ids: list[str] = []
+        truncated_block_ids: list[str] = []
+
+        # Reserve each later required envelope before admitting current content.
+        required_minimum = {
+            block.block_id: len(f"\n[{block.block_id}]\n\n")
+            for block in required
+        }
+        for index, block in enumerate(required):
+            future = sum(required_minimum[item.block_id] for item in required[index + 1 :])
+            budget = max(1, self._max_chars - used - future)
+            rendered_block, was_truncated = _render_block_with_budget(block, budget)
+            selected.append(block)
+            rendered.append(rendered_block)
+            used += len(rendered_block)
+            truncated = truncated or was_truncated
+            if was_truncated:
+                truncated_block_ids.append(block.block_id)
+
+        for block in optional:
+            remaining = self._max_chars - used
+            minimum = len(f"\n[{block.block_id}]\n\n") + 1
+            if remaining < minimum:
+                truncated = True
+                omitted_block_ids.append(block.block_id)
+                continue
+            rendered_block, was_truncated = _render_block_with_budget(block, remaining)
+            if len(rendered_block) > remaining:
+                truncated = True
+                omitted_block_ids.append(block.block_id)
+                continue
+            selected.append(block)
+            rendered.append(rendered_block)
+            used += len(rendered_block)
+            truncated = truncated or was_truncated
+            if was_truncated:
+                truncated_block_ids.append(block.block_id)
+
+        result = "".join(rendered)
+        if len(result) > self._max_chars:
+            raise RuntimeError("agent prompt assembler exceeded its hard budget")
+        return CompiledAgentPrompt(
+            "agent-prompt.v1",
+            result,
+            tuple(block.block_id for block in selected),
+            truncated or len(selected) != len(blocks),
+            tuple(omitted_block_ids),
+            tuple(truncated_block_ids),
+        )
 
 
 __all__ = ["AgentPromptAssembler", "CompiledAgentPrompt", "PromptBlock"]
