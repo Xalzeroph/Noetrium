@@ -41,6 +41,11 @@ from .skill_checkpoint import (
     AGENT_SKILL_LIBRARY_CHECKPOINT_SCHEMA,
     AgentSkillLibraryCheckpoint,
 )
+from .turn_facts import (
+    AGENT_TURN_FACT_SCHEMA,
+    AgentTurnFact,
+    AgentTurnFactKind,
+)
 from .cognition_ports import (
     AgentActionExecutorPort,
     AgentCompletionPort,
@@ -60,6 +65,7 @@ __all__ = [
     "AGENT_COORDINATION_CHECKPOINT_SCHEMA",
     "AGENT_MEMORY_CHECKPOINT_SCHEMA",
     "AGENT_SKILL_LIBRARY_CHECKPOINT_SCHEMA",
+    "AGENT_TURN_FACT_SCHEMA",
     "AgentConversationCheckpoint",
     "AgentConversationMessageCheckpoint",
     "AgentConversationSessionCheckpoint",
@@ -106,6 +112,8 @@ __all__ = [
     "AgentSkillRecord",
     "AgentSkillSelection",
     "AgentStepReceipt",
+    "AgentTurnFact",
+    "AgentTurnFactKind",
     "action_summary_payload",
     "JsonObject",
     "JsonValue",
