@@ -8,6 +8,13 @@ from .runtime import (
     JsonlReferenceAgentProgress, NullReferenceAgentProgress, PlatformCapabilityToolPort,
     ReferenceAgentEvent, ReferenceAgentProgressPort,
 )
+from .self_refine import (
+    ReferenceSelfRefineFeedback,
+    ReferenceSelfRefineFeedbackPort,
+    ReferenceSelfRefineGeneratorPort,
+    ReferenceSelfRefineMethod,
+    ReferenceSelfRefineRefinerPort,
+)
 from .tool_adapter import ReferenceToolRegistryPort
 
 __all__ = [
@@ -15,6 +22,8 @@ __all__ = [
     "ReferenceAgentMessage", "ReferenceAgentObservation", "ReferenceAgentPlannerPort", "ReferenceAgentReflectionPort",
     "ReferenceAgentRunResult", "ReferenceAgentSolverPort", "ReferenceAgentState", "ReferenceAgentStatus", "ReferenceAgentToolPort",
     "ReferencePlanAndSolveMethod", "ReferenceReActMethod", "ReferenceReflexionMethod", "ReferenceToolRegistryPort",
+    "ReferenceSelfRefineFeedback", "ReferenceSelfRefineFeedbackPort", "ReferenceSelfRefineGeneratorPort",
+    "ReferenceSelfRefineMethod", "ReferenceSelfRefineRefinerPort",
     "JsonlReferenceAgentProgress", "NullReferenceAgentProgress", "PlatformCapabilityToolPort",
     "ReferenceAgentEvent", "ReferenceAgentProgressPort",
 ]
