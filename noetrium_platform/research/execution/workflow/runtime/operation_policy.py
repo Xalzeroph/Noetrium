@@ -29,6 +29,7 @@ class ProtectedOperationSemanticPolicy:
         "effect.intent.reconciled",
         "effect.intent.consumed",
         "effect.intent.not_applied",
+        "participant.message.route",
     })
 
     @classmethod
