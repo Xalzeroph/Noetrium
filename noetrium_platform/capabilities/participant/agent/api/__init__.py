@@ -1,4 +1,5 @@
 from .contracts import AgentIdentity, AgentSession, AgentSnapshot, AgentTurnRequest, AgentTurnResult, AgentImplementation
+from .completion import AgentCompletionDecision, AgentCompletionDisposition
 from .cognition import (
     AgentActionSequence,
     AgentActionStep,
@@ -75,6 +76,8 @@ __all__ = [
     "AgentActionStep",
     "AgentActionSummary",
     "AgentCognitionError",
+    "AgentCompletionDecision",
+    "AgentCompletionDisposition",
     "AgentCompletionPort",
     "AgentDiagnosticsPort",
     "AgentEvidencePort",
