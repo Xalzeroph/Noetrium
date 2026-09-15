@@ -6,6 +6,7 @@ evidence and experiment execution.
 """
 
 from .fidelity import REACT_ALFWORLD_FIDELITY, ReactAlfworldFidelity
+from .run_spec import REACT_ALFWORLD_RUN_SPEC, ReactAlfworldRunSpec
 from .semantics import (
     ReactProtocolError,
     is_think_action,
@@ -16,7 +17,9 @@ from .trajectory import ReactAlfworldTranscript, render_react_alfworld_transcrip
 
 __all__ = [
     "REACT_ALFWORLD_FIDELITY",
+    "REACT_ALFWORLD_RUN_SPEC",
     "ReactAlfworldFidelity",
+    "ReactAlfworldRunSpec",
     "ReactAlfworldTranscript",
     "ReactProtocolError",
     "is_think_action",
