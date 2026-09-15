@@ -6,6 +6,7 @@ from typing import Callable
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
+from ..api.completion import AgentCompletionDecision, AgentCompletionDisposition
 from ..api.cognition import (
     AgentActionSequence,
     AgentCognitionError,
@@ -26,12 +27,14 @@ from ..api.cognition_ports import (
     AgentSkillCatalogPort,
     AgentSkillLibraryPort,
 )
+from .cognition_completion import evaluate_agent_completion
 
 
 class PlanningDisposition(StrEnum):
     EXECUTE = "execute"
     REPLAN = "replan"
     COMPLETED = "completed"
+    TERMINAL_FAILURE = "terminal_failure"
     SAFETY_ABORT = "safety_abort"
     MODE_ABORT = "mode_abort"
     UNGROUNDED_COMPLETION = "ungrounded_completion"
@@ -44,6 +47,7 @@ class CognitionPlanningResult:
     selection: AgentSkillSelection
     sequence: AgentActionSequence
     next_plan_call: int
+    completion: AgentCompletionDecision | None = None
 
 
 class CognitionPlanningPhase:
@@ -163,11 +167,30 @@ class CognitionPlanningPhase:
                             )
                         sequence = mode_decision.replacement
             if selection.completion_claim or sequence.completion_claim:
-                if self._completion.is_complete(
-                    goal, observation, planner_finished=True, last_receipt=last_receipt
-                ):
+                completion = evaluate_agent_completion(
+                    self._completion,
+                    goal,
+                    observation,
+                    planner_finished=True,
+                    last_receipt=last_receipt,
+                )
+                if completion.disposition is AgentCompletionDisposition.SUCCEEDED:
                     return CognitionPlanningResult(
-                        PlanningDisposition.COMPLETED, plan_context, selection, sequence, next_plan_call
+                        PlanningDisposition.COMPLETED,
+                        plan_context,
+                        selection,
+                        sequence,
+                        next_plan_call,
+                        completion,
+                    )
+                if completion.disposition is AgentCompletionDisposition.FAILED:
+                    return CognitionPlanningResult(
+                        PlanningDisposition.TERMINAL_FAILURE,
+                        plan_context,
+                        selection,
+                        sequence,
+                        next_plan_call,
+                        completion,
                     )
                 return CognitionPlanningResult(
                     PlanningDisposition.UNGROUNDED_COMPLETION,
@@ -175,6 +198,7 @@ class CognitionPlanningPhase:
                     selection,
                     sequence,
                     next_plan_call,
+                    completion,
                 )
             return CognitionPlanningResult(
                 PlanningDisposition.EXECUTE, plan_context, selection, sequence, next_plan_call
