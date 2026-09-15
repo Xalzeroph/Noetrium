@@ -5,7 +5,7 @@ import time
 from typing import Callable, Mapping
 
 from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, EnvironmentSession, Observation
-from noetrium_platform.foundation.kernel.kernel import EffectCertainty
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, JsonObject
 from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionExecutorPort,
     AgentActionSequence,
@@ -387,7 +387,7 @@ class MinecraftAgentCompletion(AgentCompletionPort):
         self._placed_positions_by_goal.pop(key, None)
 
     @staticmethod
-    def _receipt_outcome(receipt: AgentStepReceipt | None) -> Mapping[str, object] | None:
+    def _receipt_outcome(receipt: AgentStepReceipt | None) -> JsonObject | None:
         if receipt is None or receipt.observation is None:
             return None
         evidence = receipt.observation.evidence_payload
