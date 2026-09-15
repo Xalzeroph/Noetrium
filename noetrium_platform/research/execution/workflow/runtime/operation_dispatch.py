@@ -185,7 +185,9 @@ class MethodNodeOperationAdapter:
     """Narrow operation seam used by the universal method machine.
 
     The method machine owns control flow; this adapter owns the single legal
-    transition from a node invocation into the Operation ABI.
+    transition from a node invocation into the Operation ABI.  Its forwarding
+    contract is explicit so method nodes never escape through an untyped
+    ``**kwargs`` boundary.
     """
 
     def __init__(self, dispatcher: OperationDispatchPort) -> None:
@@ -195,13 +197,61 @@ class MethodNodeOperationAdapter:
             raise TypeError("method node operation adapter requires an operation dispatcher")
         self._dispatcher = dispatcher
 
-    def execute(self, **kwargs: object) -> OperationResult[object]:
-        return self._dispatcher.dispatch(**kwargs)  # type: ignore[arg-type]
+    def execute(
+        self,
+        *,
+        root_context: ExecutionContext,
+        operation_id: str,
+        operation_type: str,
+        target: ComponentIdentity,
+        payload: T,
+        payload_schema: str,
+        handler: Callable[[OperationRequest[T]], R],
+        digest_output: bool = True,
+        effect_projector=None,
+        idempotency_key: str | None = None,
+    ) -> OperationResult[R]:
+        return self._dispatcher.dispatch(
+            root_context=root_context,
+            operation_id=operation_id,
+            operation_type=operation_type,
+            target=target,
+            payload=payload,
+            payload_schema=payload_schema,
+            handler=handler,
+            digest_output=digest_output,
+            effect_projector=effect_projector,
+            idempotency_key=idempotency_key,
+        )
 
-    async def execute_async(self, **kwargs: object) -> OperationResult[object]:
+    async def execute_async(
+        self,
+        *,
+        root_context: ExecutionContext,
+        operation_id: str,
+        operation_type: str,
+        target: ComponentIdentity,
+        payload: T,
+        payload_schema: str,
+        handler: Callable[[OperationRequest[T]], R],
+        digest_output: bool = True,
+        effect_projector=None,
+        idempotency_key: str | None = None,
+    ) -> OperationResult[R]:
         dispatch_async = getattr(self._dispatcher, "dispatch_async", None)
         if not callable(dispatch_async):
             raise TypeError("operation dispatcher does not provide async dispatch")
-        return await dispatch_async(**kwargs)
+        return await dispatch_async(
+            root_context=root_context,
+            operation_id=operation_id,
+            operation_type=operation_type,
+            target=target,
+            payload=payload,
+            payload_schema=payload_schema,
+            handler=handler,
+            digest_output=digest_output,
+            effect_projector=effect_projector,
+            idempotency_key=idempotency_key,
+        )
 
 __all__ = ["KernelOperationDispatcher", "MethodNodeOperationAdapter", "WORKFLOW_RUNTIME_IDENTITY"]
