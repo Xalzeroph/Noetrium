@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "62c65feb3171d907ee5ec95d238ce5c99aad4fd619d68837d60bb2334c18c791",
+  "interface_digest": "3245d6fa8d2ca8a54f52eb0b8794936ab7592729f8afbe4df3ee88c3c5ee06e8",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -13201,6 +13201,11 @@
                   "annotation": "int",
                   "default": "256",
                   "name": "max_entities"
+                },
+                {
+                  "annotation": "int",
+                  "default": "32",
+                  "name": "entity_observation_distance"
                 }
               ],
               "kind": "class",
@@ -97729,6 +97734,11 @@
                   "annotation": "str",
                   "default": "''",
                   "name": "rationale"
+                },
+                {
+                  "annotation": "float",
+                  "default": "120.0",
+                  "name": "timeout_s"
                 }
               ],
               "kind": "class",
@@ -97805,6 +97815,11 @@
                   "annotation": "Mapping[str, JsonValue]",
                   "default": "field(default_factory=dict)",
                   "name": "payload"
+                },
+                {
+                  "annotation": "float",
+                  "default": "120.0",
+                  "name": "timeout_s"
                 }
               ],
               "kind": "class",
@@ -98482,6 +98497,11 @@
                   "annotation": "tuple[AgentSkillRecord, ...]",
                   "default": "()",
                   "name": "retrieved_skills"
+                },
+                {
+                  "annotation": "'AgentStepReceipt | None'",
+                  "default": "None",
+                  "name": "last_receipt"
                 }
               ],
               "kind": "class",
@@ -98537,6 +98557,16 @@
                   "annotation": "str",
                   "default": "'unknown'",
                   "name": "effect_certainty"
+                },
+                {
+                  "annotation": "Mapping[str, JsonValue]",
+                  "default": "field(default_factory=dict)",
+                  "name": "diagnostics"
+                },
+                {
+                  "annotation": "Mapping[str, JsonValue]",
+                  "default": "field(default_factory=dict)",
+                  "name": "payload"
                 }
               ],
               "kind": "class",
@@ -98956,6 +98986,11 @@
                   "annotation": "Mapping[str, JsonValue]",
                   "default": "field(default_factory=dict)",
                   "name": "diagnostics"
+                },
+                {
+                  "annotation": "Mapping[str, JsonValue]",
+                  "default": "field(default_factory=dict)",
+                  "name": "payload"
                 }
               ],
               "kind": "class",
