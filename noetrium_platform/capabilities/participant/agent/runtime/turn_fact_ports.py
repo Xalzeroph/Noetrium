@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_digest
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonObject, canonical_digest
 
 from ..api.cognition import (
     AgentActionStep,
@@ -11,10 +11,10 @@ from ..api.cognition import (
     action_summary_payload,
 )
 from ..api.cognition_ports import AgentActionExecutorPort, AgentObservationPort, AgentPlannerPort
-from .turn_facts import AgentTurnFactBuffer, AgentTurnFactKind
+from .turn_facts import AgentTurnFactKind, AgentTurnFactSink
 
 
-def _observation_payload(observation: AgentObservation) -> dict[str, object]:
+def _observation_payload(observation: AgentObservation) -> JsonObject:
     return {
         "observation_id": observation.observation_id,
         "generation": observation.generation,
@@ -28,7 +28,7 @@ def _observation_payload(observation: AgentObservation) -> dict[str, object]:
 class FactRecordingObservationPort:
     """Observe normally, then propose the exact model-visible observation fact."""
 
-    def __init__(self, delegate: AgentObservationPort, facts: AgentTurnFactBuffer) -> None:
+    def __init__(self, delegate: AgentObservationPort, facts: AgentTurnFactSink) -> None:
         self._delegate = delegate
         self._facts = facts
 
@@ -48,7 +48,7 @@ class FactRecordingObservationPort:
 class FactRecordingPlannerPort:
     """Record planning input identity and the planner's typed decision."""
 
-    def __init__(self, delegate: AgentPlannerPort, facts: AgentTurnFactBuffer) -> None:
+    def __init__(self, delegate: AgentPlannerPort, facts: AgentTurnFactSink) -> None:
         self._delegate = delegate
         self._facts = facts
 
@@ -94,7 +94,7 @@ class FactRecordingPlannerPort:
 class FactRecordingActionExecutorPort:
     """Record an action proposal, its effect receipt, and receipt-carried observation."""
 
-    def __init__(self, delegate: AgentActionExecutorPort, facts: AgentTurnFactBuffer) -> None:
+    def __init__(self, delegate: AgentActionExecutorPort, facts: AgentTurnFactSink) -> None:
         self._delegate = delegate
         self._facts = facts
 
