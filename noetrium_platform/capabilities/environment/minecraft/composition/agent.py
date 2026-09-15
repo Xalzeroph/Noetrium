@@ -11,6 +11,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionSequence,
     AgentDiagnosticsPort,
     AgentActionStep,
+    AgentCompletionDecision,
     AgentCompletionPort,
     AgentEvidencePort,
     AgentGoal,
@@ -429,7 +430,7 @@ class MinecraftAgentCompletion(AgentCompletionPort):
                 continue
         return total
 
-    def is_complete(
+    def _satisfied(
         self,
         goal: AgentGoal,
         observation: AgentObservation,
@@ -628,6 +629,38 @@ class MinecraftAgentCompletion(AgentCompletionPort):
                 for axis in ("x", "y", "z")
             ) <= radius ** 2
         raise ValueError(f"unknown Minecraft completion kind: {kind}")
+
+    def evaluate(
+        self,
+        goal: AgentGoal,
+        observation: AgentObservation,
+        *,
+        planner_finished: bool,
+        last_receipt: AgentStepReceipt | None,
+    ) -> AgentCompletionDecision:
+        success_spec = goal.context.get("success")
+        kind = str(success_spec.get("kind", "planner_finish")) if isinstance(success_spec, Mapping) else "implicit"
+        evidence: JsonObject = {
+            "completion_kind": kind,
+            "observation_id": observation.observation_id,
+            "state_digest": observation.state_digest,
+        }
+        if self._satisfied(
+            goal,
+            observation,
+            planner_finished=planner_finished,
+            last_receipt=last_receipt,
+        ):
+            return AgentCompletionDecision.succeeded(
+                "minecraft_objective_satisfied",
+                evidence=evidence,
+            )
+        if _number(observation.state.get("health"), 20) <= 0:
+            return AgentCompletionDecision.failed(
+                "minecraft_player_dead",
+                evidence=evidence,
+            )
+        return AgentCompletionDecision.continue_("minecraft_objective_not_terminal")
 
 
 class MinecraftAgentSafetySupervisor:
