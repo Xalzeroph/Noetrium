@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
+from typing import Protocol
 
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
@@ -32,14 +33,7 @@ class AgentTurnFactKind(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class AgentTurnFact:
-    """Immutable candidate fact owned by Agent Turn VM, never a journal record.
-
-    The Agent Turn VM can propose these values. Only an enclosing Method/Run
-    Machine may project them into a TransitionProposal; Kernel Journal remains
-    the sole durable authority for accepted ordered machine facts. Large model
-    payloads remain in their owning content-addressed stores and are referenced
-    here by identity/digest rather than duplicated.
-    """
+    """Immutable candidate fact owned by Agent Turn VM, never a journal record."""
 
     schema_version: str
     session_id: str
@@ -143,14 +137,21 @@ class AgentTurnFact:
         return payload
 
 
-class AgentTurnFactBuffer:
-    """Proposal-local digest chain for one Agent Turn VM session.
+class AgentTurnFactSink(Protocol):
+    """Narrow candidate-fact seam; persistence authority is composition-owned."""
 
-    The buffer may be anchored at a previously committed fact head. The anchor
-    is only a recovery cursor; it does not contain or persist historical facts.
-    A later Journal projection must verify that the claimed head actually
-    belongs to the accepted Machine history before recovery is trusted.
-    """
+    def append(
+        self,
+        kind: AgentTurnFactKind,
+        *,
+        context: ExecutionContext,
+        payload: Mapping[str, JsonValue] | None = None,
+        artifact_refs: tuple[str, ...] = (),
+    ) -> AgentTurnFact: ...
+
+
+class AgentTurnFactBuffer:
+    """Process-local fact chain with no persistence API."""
 
     def __init__(
         self,
@@ -227,8 +228,6 @@ class AgentTurnFactBuffer:
         committed_count: int,
         committed_head_digest: str | None,
     ) -> "AgentTurnFactBuffer":
-        """Continue a proposal chain from a checkpoint cursor, without history copy."""
-
         return cls(
             session_id,
             committed_count=committed_count,
@@ -241,8 +240,6 @@ class AgentTurnFactBuffer:
         session_id: str,
         facts: tuple[AgentTurnFact, ...],
     ) -> "AgentTurnFactBuffer":
-        """Validate a complete chain reconstructed from authoritative Machine facts."""
-
         buffer = cls(session_id)
         for expected_sequence, fact in enumerate(facts, start=1):
             if not isinstance(fact, AgentTurnFact):
@@ -262,4 +259,5 @@ __all__ = [
     "AgentTurnFact",
     "AgentTurnFactBuffer",
     "AgentTurnFactKind",
+    "AgentTurnFactSink",
 ]
