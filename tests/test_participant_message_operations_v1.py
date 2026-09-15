@@ -14,6 +14,10 @@ from noetrium_platform.capabilities.participant.agent.runtime import (
     InProcessParticipantMessageRouter,
     ParticipantMessageRouteRequest,
 )
+from noetrium_platform.composition.participant_message import (
+    PARTICIPANT_MESSAGE_ROUTE_OPERATION,
+    ParticipantMessageOperations,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
     EffectCertainty,
@@ -21,10 +25,6 @@ from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     OperationExecutor,
     OperationStatus,
-)
-from noetrium_platform.research.execution.workflow.implementations.participant_message import (
-    PARTICIPANT_MESSAGE_ROUTE_OPERATION,
-    ParticipantMessageOperations,
 )
 from noetrium_platform.research.execution.workflow.runtime.operation_dispatch import KernelOperationDispatcher
 
