@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "3245d6fa8d2ca8a54f52eb0b8794936ab7592729f8afbe4df3ee88c3c5ee06e8",
+  "interface_digest": "bdd328c87af3fcdb9eb58ceff2644120cbf8196c9fa22b480aab5f3c08a9133c",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -97269,6 +97269,24 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "AgentCompletionDecision",
+              "origin_module": ".completion",
+              "origin_name": "AgentCompletionDecision",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "AgentCompletionDisposition",
+              "origin_module": ".completion",
+              "origin_name": "AgentCompletionDisposition",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "AgentCompletionPort",
               "origin_module": ".cognition_ports",
               "origin_name": "AgentCompletionPort",
@@ -97592,6 +97610,8 @@
             "AgentActionStep",
             "AgentActionSummary",
             "AgentCognitionError",
+            "AgentCompletionDecision",
+            "AgentCompletionDisposition",
             "AgentCompletionPort",
             "AgentDiagnosticsPort",
             "AgentEvidencePort",
@@ -99155,7 +99175,7 @@
                   "decorators": [],
                   "doc": null,
                   "kind": "method",
-                  "name": "is_complete",
+                  "name": "evaluate",
                   "parameters": [
                     {
                       "annotation": null,
@@ -99198,10 +99218,10 @@
                       "required": true
                     }
                   ],
-                  "return_annotation": "bool",
+                  "return_annotation": "AgentCompletionDecision",
                   "schema_id": "noetrium.interface-schema",
                   "schema_version": "1",
-                  "signature": "def is_complete(self, goal: AgentGoal, observation: AgentObservation, *, planner_finished: bool, last_receipt: AgentStepReceipt | None) -> bool:"
+                  "signature": "def evaluate(self, goal: AgentGoal, observation: AgentObservation, *, planner_finished: bool, last_receipt: AgentStepReceipt | None) -> AgentCompletionDecision:"
                 }
               ],
               "name": "AgentCompletionPort",
@@ -100012,6 +100032,235 @@
             "AgentSafetySupervisorPort",
             "AgentSkillCatalogPort",
             "AgentSkillLibraryPort"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.agent.api.completion",
+          "source": "noetrium_platform/capabilities/participant/agent/api/completion.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Typed episode/objective terminal decision.\n\n``CONTINUE`` means the Agent Turn may act again. ``SUCCEEDED`` and\n``FAILED`` are both terminal. This deliberately separates liveness from\nscientific/task success so an environment may terminate unsuccessfully\nwithout the OS issuing actions into a dead episode.",
+              "fields": [
+                {
+                  "annotation": "AgentCompletionDisposition",
+                  "default": null,
+                  "name": "disposition"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "reason"
+                },
+                {
+                  "annotation": "JsonObject",
+                  "default": "field(default_factory=dict)",
+                  "name": "evidence"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "terminal",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "bool",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                },
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "success",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "bool | None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                },
+                {
+                  "decorators": [
+                    "classmethod"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "continue_",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "cls",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'objective_not_terminal'",
+                      "kind": "positional_or_keyword",
+                      "name": "reason",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'AgentCompletionDecision'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@classmethod"
+                },
+                {
+                  "decorators": [
+                    "classmethod"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "succeeded",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "cls",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'objective_satisfied'",
+                      "kind": "positional_or_keyword",
+                      "name": "reason",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "JsonObject | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "evidence",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'AgentCompletionDecision'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@classmethod"
+                },
+                {
+                  "decorators": [
+                    "classmethod"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "failed",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "cls",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'objective_terminal_failure'",
+                      "kind": "positional_or_keyword",
+                      "name": "reason",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "JsonObject | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "evidence",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'AgentCompletionDecision'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@classmethod"
+                }
+              ],
+              "name": "AgentCompletionDecision",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "StrEnum"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [
+                "CONTINUE",
+                "SUCCEEDED",
+                "FAILED"
+              ],
+              "methods": [],
+              "name": "AgentCompletionDisposition",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "AgentCompletionDecision",
+            "AgentCompletionDisposition"
           ]
         },
         {

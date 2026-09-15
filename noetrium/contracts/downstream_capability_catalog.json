@@ -1,5 +1,5 @@
 {
-  "catalog_digest": "0adc40400b9d8171b3d8900721aea9e395fa17ca497f0d8c23da71d7847b337c",
+  "catalog_digest": "a3d7d3606b6f3e1bb138c7f91dd8d73f2e6f685f61d99825ce7cf34b9c75895f",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v1",
   "systems": [
@@ -6652,6 +6652,8 @@
             "AgentActionStep",
             "AgentActionSummary",
             "AgentCognitionError",
+            "AgentCompletionDecision",
+            "AgentCompletionDisposition",
             "AgentCompletionPort",
             "AgentDiagnosticsPort",
             "AgentEvidencePort",
@@ -6736,6 +6738,14 @@
           ]
         },
         {
+          "module": "noetrium_platform.capabilities.participant.agent.api.completion",
+          "source": "noetrium_platform/capabilities/participant/agent/api/completion.py",
+          "symbols": [
+            "AgentCompletionDecision",
+            "AgentCompletionDisposition"
+          ]
+        },
+        {
           "module": "noetrium_platform.capabilities.participant.agent.api.contracts",
           "source": "noetrium_platform/capabilities/participant/agent/api/contracts.py",
           "symbols": [
@@ -6786,7 +6796,7 @@
       "authority": "agent_identity",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__agent",
-      "interface_digest": "7b56ee76daa11d394405de8c592f9f80b059188b27d296daf4ce814db8c2f9bc",
+      "interface_digest": "832b7df642b4b256713c6f15f5ed04cbaeb778e3264e05e202e90fe11df4d917",
       "must_not_own": "model serving lifecycle",
       "owns": "agent participant contracts, provider-independent agent identity and bounded cognition-loop orchestration",
       "package_prefix": "noetrium_platform.capabilities.participant.agent",

@@ -19,8 +19,8 @@ Example:
         ...
 
 - Registered systems: 172
-- Public API modules: 503
-- Public symbols: 3738
+- Public API modules: 504
+- Public symbols: 3742
 - Registry digest: 2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603
 
 ## Capability domains
@@ -38,7 +38,7 @@ Example:
 | observability | 27 | 52 | 152 |
 | operator | 8 | 10 | 60 |
 | orchestration | 1 | 1 | 19 |
-| participant | 8 | 39 | 410 |
+| participant | 8 | 40 | 414 |
 | platform | 5 | 9 | 89 |
 | portfolio | 5 | 7 | 75 |
 | reliability | 7 | 31 | 162 |
@@ -2071,9 +2071,10 @@ Example:
 
 #### API modules
 
-- noetrium_platform.capabilities.participant.agent.api ?w^~)?t AGENT_COORDINATION_CHECKPOINT_SCHEMA, AGENT_MEMORY_CHECKPOINT_SCHEMA, AGENT_SKILL_LIBRARY_CHECKPOINT_SCHEMA, AgentConversationCheckpoint, AgentConversationMessageCheckpoint, AgentConversationSessionCheckpoint, AgentCoordinationCheckpoint, AgentIdentity, AgentSession, AgentSnapshot, AgentTurnRequest, AgentTurnResult, AgentImplementation, AgentActionExecutorPort, AgentActionSequence, AgentActionStep, AgentActionSummary, AgentCognitionError, AgentCompletionPort, AgentDiagnosticsPort, AgentEvidencePort, AgentGoal, AgentLoopCheckpoint, AgentLoopResult, AgentLoopTerminationReason, AgentMemoryContext, AgentMemoryCheckpoint, AgentMemoryCheckpointRecord, AgentModeDecision, AgentModeDisposition, AgentMemoryPort, AgentObservation, AgentObservationPort, AgentPlannerPort, AgentPlanningRequest, AgentPeerCheckpoint, AgentProgressPort, AgentReactiveModePort, AgentReceiptCheckpoint, AgentSafetyDecision, AgentSafetyDisposition, AgentSafetySupervisorPort, AgentSkillCatalogPort, AgentSkillDescription, AgentSkillLibraryCheckpoint, AgentSkillLibraryPort, AgentSkillRecord, AgentSkillSelection, AgentStepReceipt, action_summary_payload, JsonObject, JsonValue
+- noetrium_platform.capabilities.participant.agent.api ?w^~)?t AGENT_COORDINATION_CHECKPOINT_SCHEMA, AGENT_MEMORY_CHECKPOINT_SCHEMA, AGENT_SKILL_LIBRARY_CHECKPOINT_SCHEMA, AgentConversationCheckpoint, AgentConversationMessageCheckpoint, AgentConversationSessionCheckpoint, AgentCoordinationCheckpoint, AgentIdentity, AgentSession, AgentSnapshot, AgentTurnRequest, AgentTurnResult, AgentImplementation, AgentActionExecutorPort, AgentActionSequence, AgentActionStep, AgentActionSummary, AgentCognitionError, AgentCompletionDecision, AgentCompletionDisposition, AgentCompletionPort, AgentDiagnosticsPort, AgentEvidencePort, AgentGoal, AgentLoopCheckpoint, AgentLoopResult, AgentLoopTerminationReason, AgentMemoryContext, AgentMemoryCheckpoint, AgentMemoryCheckpointRecord, AgentModeDecision, AgentModeDisposition, AgentMemoryPort, AgentObservation, AgentObservationPort, AgentPlannerPort, AgentPlanningRequest, AgentPeerCheckpoint, AgentProgressPort, AgentReactiveModePort, AgentReceiptCheckpoint, AgentSafetyDecision, AgentSafetyDisposition, AgentSafetySupervisorPort, AgentSkillCatalogPort, AgentSkillDescription, AgentSkillLibraryCheckpoint, AgentSkillLibraryPort, AgentSkillRecord, AgentSkillSelection, AgentStepReceipt, action_summary_payload, JsonObject, JsonValue
 - noetrium_platform.capabilities.participant.agent.api.cognition ?w^~)?t AgentActionSequence, AgentActionStep, AgentActionSummary, AgentCognitionError, AgentGoal, AgentLoopCheckpoint, AgentLoopResult, AgentLoopTerminationReason, AgentMemoryContext, AgentModeDecision, AgentModeDisposition, AgentObservation, AgentPlanningRequest, AgentReceiptCheckpoint, AgentSafetyDecision, AgentSafetyDisposition, AgentSkillDescription, AgentSkillRecord, AgentSkillSelection, AgentStepReceipt, action_summary_payload, JsonObject, JsonValue
 - noetrium_platform.capabilities.participant.agent.api.cognition_ports ?w^~)?t AgentActionExecutorPort, AgentCompletionPort, AgentDiagnosticsPort, AgentEvidencePort, AgentMemoryPort, AgentObservationPort, AgentPlannerPort, AgentProgressPort, AgentReactiveModePort, AgentSafetySupervisorPort, AgentSkillCatalogPort, AgentSkillLibraryPort
+- noetrium_platform.capabilities.participant.agent.api.completion ?w^~)?t AgentCompletionDecision, AgentCompletionDisposition
 - noetrium_platform.capabilities.participant.agent.api.contracts ?w^~)?t CapabilityPort, ExecutionContext, JsonInput, JsonValue, freeze_json, require_sha256, AgentIdentity, AgentSnapshot, AgentTurnRequest, AgentTurnResult, AgentSession, AgentImplementation
 - noetrium_platform.capabilities.participant.agent.api.coordination_checkpoint ?w^~)?t AGENT_COORDINATION_CHECKPOINT_SCHEMA, AgentConversationCheckpoint, AgentConversationMessageCheckpoint, AgentConversationSessionCheckpoint, AgentCoordinationCheckpoint, AgentPeerCheckpoint
 - noetrium_platform.capabilities.participant.agent.api.memory_checkpoint ?w^~)?t AGENT_MEMORY_CHECKPOINT_SCHEMA, AgentMemoryCheckpoint, AgentMemoryCheckpointRecord
