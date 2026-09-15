@@ -5,6 +5,7 @@ import pytest
 from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionSequence,
     AgentActionSummary,
+    AgentCompletionDecision,
     AgentGoal,
     AgentLoopCheckpoint,
     AgentMemoryCheckpoint,
@@ -71,9 +72,9 @@ class _Safety:
 
 
 class _Completion:
-    def is_complete(self, goal, observation, *, planner_finished, last_receipt):
+    def evaluate(self, goal, observation, *, planner_finished, last_receipt):
         del goal, observation
-        return bool(
+        grounded = bool(
             planner_finished
             and last_receipt
             and last_receipt.accepted
@@ -81,6 +82,9 @@ class _Completion:
             and last_receipt.effect_id == "effect:1"
             and last_receipt.effect_certainty == "confirmed"
         )
+        if grounded:
+            return AgentCompletionDecision.succeeded("test_grounded_resume_completion")
+        return AgentCompletionDecision.continue_("test_resume_not_complete")
 
 
 class _Evidence:
