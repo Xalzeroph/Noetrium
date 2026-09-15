@@ -6,6 +6,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionSequence,
     AgentActionStep,
     AgentCognitionError,
+    AgentCompletionDecision,
     AgentGoal,
     AgentMemoryCheckpoint,
     AgentMemoryContext,
@@ -138,9 +139,11 @@ class _Safety:
 
 
 class _Completion:
-    def is_complete(self, goal, observation, *, planner_finished, last_receipt):
+    def evaluate(self, goal, observation, *, planner_finished, last_receipt):
         del goal, planner_finished, last_receipt
-        return observation.state.get("done") is True
+        if observation.state.get("done") is True:
+            return AgentCompletionDecision.succeeded("test_observation_done")
+        return AgentCompletionDecision.continue_("test_observation_running")
 
 
 class _Progress:
