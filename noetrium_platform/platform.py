@@ -104,7 +104,7 @@ from noetrium_platform.capabilities.participant.agent.runtime import (
     AgentObservationPartSourcePort,
     MultimodalAgentObservationPort,
 )
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonInput
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonInput, JsonObject
 from noetrium.contracts.systems.runtime__process import (
     LocalCommandResult,
     LocalCommandStartError,
@@ -954,7 +954,7 @@ def run_method_program(
     *,
     runtime: MethodRuntimeContext,
     input_value: object = None,
-    initial_state: Mapping[str, object] | None = None,
+    initial_state: JsonObject | None = None,
     resume: bool = False,
     machine: MethodMachinePort | None = None,
 ) -> MethodRunResult:
@@ -975,7 +975,7 @@ async def run_method_program_async(
     *,
     runtime: MethodRuntimeContext,
     input_value: object = None,
-    initial_state: Mapping[str, object] | None = None,
+    initial_state: JsonObject | None = None,
     resume: bool = False,
     machine: MethodMachinePort | None = None,
 ) -> MethodRunResult:
