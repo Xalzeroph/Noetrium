@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 
 from noetrium_platform.foundation.kernel.kernel import (
+    JsonObject,
     MachineFamilyDescriptor,
     MachineKind,
     MachineSnapshot,
@@ -137,7 +138,7 @@ class AgentTurnMachineInterpreter:
             turn_id = _text(payload.get("turn_id"), "turn_id")
             session_id = _text(payload.get("session_id"), "session_id")
             goal_digest = _optional_digest(payload.get("goal_digest"), "goal_digest")
-            delta = {
+            delta: JsonObject = {
                 "turn_id": turn_id,
                 "session_id": session_id,
                 "status": "active",
@@ -147,7 +148,7 @@ class AgentTurnMachineInterpreter:
                 "last_fact_kind": None,
                 "termination": None,
             }
-            event = {
+            event: JsonObject = {
                 "type": "agent_turn_started",
                 "turn_id": turn_id,
                 "session_id": session_id,
@@ -212,8 +213,8 @@ class AgentTurnMachineInterpreter:
     def _proposal(
         command: object,
         state: MachineSnapshot,
-        delta: Mapping[str, object],
-        event: Mapping[str, object],
+        delta: JsonObject,
+        event: JsonObject,
     ) -> TransitionProposal:
         return TransitionProposal(
             machine_id=state.machine_id,
