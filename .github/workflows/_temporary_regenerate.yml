@@ -1,0 +1,41 @@
+name: temporary-regenerate-integration
+
+on:
+  push:
+    branches:
+      - codex/noetrium-main-integration-20260915
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install project
+        run: python -m pip install -e '.[test]'
+      - name: Regenerate canonical public surfaces
+        run: python scripts/update_generated_docs.py
+      - name: Verify generated tree
+        run: |
+          python scripts/update_generated_docs.py --check
+          git diff --check
+      - name: Commit generated surfaces
+        shell: bash
+        run: |
+          git add -u
+          if git diff --cached --quiet; then
+            echo 'No generated drift.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore(generated): sync research os public surfaces'
+          git push origin HEAD:codex/noetrium-main-integration-20260915
