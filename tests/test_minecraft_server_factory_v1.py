@@ -28,7 +28,7 @@ def _spec(root: Path) -> MinecraftServerSpec:
     return MinecraftServerSpec(
         jar_path=str(jar),
         workdir=str(root / "world"),
-        java_executable="C:/Java/bin/java.exe",
+        java_executable="/usr/bin/java",
         host="127.0.0.1",
         port=25566,
         level_name="branch-world",
@@ -38,7 +38,7 @@ def _spec(root: Path) -> MinecraftServerSpec:
 def _config(root: Path, *, accept_eula: bool) -> MinecraftServerServiceFactoryConfig:
     return MinecraftServerServiceFactoryConfig(
         environment=MaterializedServiceEnvironment.from_mapping(
-            {"JAVA_HOME": "C:/Java"},
+            {"JAVA_HOME": "/usr"},
             "env:evidence",
         ),
         state_root=root / "state",

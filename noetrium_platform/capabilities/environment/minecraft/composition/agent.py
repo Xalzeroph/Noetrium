@@ -469,6 +469,27 @@ class MinecraftAgentCompletion(AgentCompletionPort):
                 for item in raw_items
                 if isinstance(item, str) and item.strip()
             ) >= count
+        if kind == "inventory_all_min":
+            raw_items = success.get("items")
+            if not isinstance(raw_items, Mapping) or not raw_items:
+                return False
+            return all(
+                self._inventory_count(observation.state.get("inventory"), str(item)) >= int(count)
+                for item, count in raw_items.items()
+                if isinstance(item, str) and item.strip()
+            )
+        if kind == "inventory_all_delta_min":
+            raw_items = success.get("items")
+            if not isinstance(raw_items, Mapping) or not raw_items:
+                return False
+            current_inventory = observation.state.get("inventory")
+            initial_inventory = success.get("initial_inventory")
+            return all(
+                self._inventory_count(current_inventory, str(item))
+                - self._inventory_count(initial_inventory, str(item)) >= int(count)
+                for item, count in raw_items.items()
+                if isinstance(item, str) and item.strip()
+            )
         if kind == "away_then_return":
             position = observation.state.get("position")
             anchors = observation.state.get("anchors")

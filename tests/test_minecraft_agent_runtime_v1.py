@@ -264,6 +264,23 @@ class MinecraftAgentRuntimeTest(unittest.TestCase):
             last_receipt=None,
         ))
 
+        all_inventory_goal = AgentGoal(
+            "goal:all-inventory",
+            "collect the complete target set",
+            context={"success": {"kind": "inventory_all_delta_min", "items": {"stone": 1, "oak_log": 2}, "initial_inventory": {"stone": 1}}},
+        )
+        all_inventory_observation = AgentObservation(
+            "obs:all-inventory",
+            "world-v1",
+            {"inventory": {"stone": 2, "oak_log": 2}},
+        )
+        self.assertTrue(completion.is_complete(
+            all_inventory_goal,
+            all_inventory_observation,
+            planner_finished=False,
+            last_receipt=None,
+        ))
+
         blueprint_goal = AgentGoal(
             "goal:exact-blueprint",
             "place one oak plank at the target",

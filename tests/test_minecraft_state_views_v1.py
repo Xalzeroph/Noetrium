@@ -43,6 +43,14 @@ def test_self_snapshot_preserves_native_pose_and_equipment_across_checkpoint() -
                 "pitch": -0.5,
                 "health": 20,
                 "food": 18,
+                "time_of_day": 7000,
+                "weather": "rain",
+                "surroundings": {
+                    "below": "grass_block",
+                    "legs": "air",
+                    "head": "air",
+                    "first_solid_above_head": {"name": "oak_leaves", "blocks_up": 4},
+                },
                 "held_item": {"name": "iron_pickaxe", "count": 1, "slot": 36},
                 "equipment": {
                     "hand": {"name": "iron_pickaxe", "count": 1, "slot": 36},
@@ -62,6 +70,9 @@ def test_self_snapshot_preserves_native_pose_and_equipment_across_checkpoint() -
     compact = state.compact()
     assert compact["yaw"] == 1.25
     assert compact["pitch"] == -0.5
+    assert compact["time_of_day"] == 7000
+    assert compact["weather"] == "rain"
+    assert compact["surroundings"]["first_solid_above_head"]["name"] == "oak_leaves"
     assert compact["held_item"]["name"] == "iron_pickaxe"
     assert compact["equipment"]["hand"]["name"] == "iron_pickaxe"
 

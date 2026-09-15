@@ -39,17 +39,51 @@ function ack (cmd, payload = {}, requestId = null) {
   process.stdout.write(JSON.stringify(value) + '\n')
 }
 
+function blockNameAt (activeBot, position) {
+  const block = activeBot.blockAt(position)
+  return block && block.name ? String(block.name) : null
+}
+
+function firstSolidAboveHead (activeBot, maxDistance = 32) {
+  const origin = activeBot.entity.position
+  const ignored = new Set(['air', 'cave_air', 'void_air'])
+  for (let blocksUp = 0; blocksUp < maxDistance; blocksUp += 1) {
+    const block = activeBot.blockAt(origin.offset(0, blocksUp + 2, 0))
+    if (block && block.name && !ignored.has(String(block.name))) {
+      return { name: String(block.name), blocks_up: blocksUp }
+    }
+  }
+  return null
+}
+
 function selfSnapshot (requestId = null) {
   const activeBot = runtime.getBot()
   const equipment = activeBot.entity.equipment || []
   const equipmentSlots = ['hand', 'off_hand', 'feet', 'legs', 'torso', 'head']
+  const timeOfDay = activeBot.time && Number.isFinite(Number(activeBot.time.timeOfDay))
+    ? Number(activeBot.time.timeOfDay)
+    : null
+  const weather = activeBot.thunderState > 0
+    ? 'thunder'
+    : activeBot.rainState > 0
+      ? 'rain'
+      : 'clear'
+  const position = activeBot.entity.position
   emit('self_snapshot', {
     username: activeBot.username,
-    position: runtime.vec(activeBot.entity.position),
+    position: runtime.vec(position),
     yaw: activeBot.entity.yaw,
     pitch: activeBot.entity.pitch,
     health: activeBot.health,
     food: activeBot.food,
+    time_of_day: timeOfDay,
+    weather,
+    surroundings: {
+      below: blockNameAt(activeBot, position.offset(0, -1, 0)),
+      legs: blockNameAt(activeBot, position),
+      head: blockNameAt(activeBot, position.offset(0, 1, 0)),
+      first_solid_above_head: firstSolidAboveHead(activeBot)
+    },
     held_item: runtime.itemSummary(activeBot.heldItem),
     equipment: Object.fromEntries(
       equipmentSlots.map((slot, index) => [slot, runtime.itemSummary(equipment[index])])
