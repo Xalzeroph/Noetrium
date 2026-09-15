@@ -15,6 +15,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     EffectClass,
     EffectReceipt,
     ExecutionContext,
+    JsonObject,
     OperationRequest,
     OperationStatus,
     canonical_digest,
@@ -82,7 +83,7 @@ class InMemoryMethodCheckpointStore(MethodCheckpointStorePort):
 class _ExecutionState:
     current_node: str
     sequence: int
-    state: Mapping[str, object]
+    state: JsonObject
     previous_value: object
     events: tuple[MethodEvent, ...]
     visit_counts: Mapping[str, int]
@@ -132,7 +133,7 @@ class UniversalMethodMachine:
         *,
         runtime: MethodRuntimeContext,
         input_value: object = None,
-        initial_state: Mapping[str, object] | None = None,
+        initial_state: JsonObject | None = None,
         resume: bool = False,
     ) -> MethodRunResult:
         self._validate_inputs(program, runtime, input_value, initial_state)
@@ -225,7 +226,7 @@ class UniversalMethodMachine:
         *,
         runtime: MethodRuntimeContext,
         input_value: object = None,
-        initial_state: Mapping[str, object] | None = None,
+        initial_state: JsonObject | None = None,
         resume: bool = False,
     ) -> MethodRunResult:
         """Async sibling for model/tool loops; sync handlers remain valid here."""
@@ -303,7 +304,7 @@ class UniversalMethodMachine:
 
     @staticmethod
     def _validate_inputs(program: MethodProgram, runtime: MethodRuntimeContext, input_value: object,
-                         initial_state: Mapping[str, object] | None) -> None:
+                         initial_state: JsonObject | None) -> None:
         if not isinstance(program, MethodProgram):
             raise TypeError("method machine requires MethodProgram")
         if not isinstance(runtime, MethodRuntimeContext):
@@ -361,7 +362,7 @@ class UniversalMethodMachine:
     def _validate_state(
         program: MethodProgram,
         runtime: MethodRuntimeContext,
-        state: Mapping[str, object],
+        state: JsonObject,
         node_id: str,
     ) -> None:
         if runtime.schemas is not None:
@@ -372,7 +373,7 @@ class UniversalMethodMachine:
             )
 
     def _initial_state(self, program: MethodProgram, runtime: MethodRuntimeContext,
-                       initial_state: Mapping[str, object] | None, resume: bool) -> _ExecutionState:
+                       initial_state: JsonObject | None, resume: bool) -> _ExecutionState:
         if resume and self._checkpoints is None:
             raise ValueError("method resume requires a checkpoint store")
         checkpoint = self._checkpoints.load(runtime.execution.run_id) if resume else None
