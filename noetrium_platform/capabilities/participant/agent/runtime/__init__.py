@@ -13,6 +13,11 @@ from .cognition_loop import AgentCognitionLoop
 from .memory import AgentMemoryRecord, DisabledAgentMemory, InMemoryAgentMemory, MemoryPlane
 from .model_view import AgentActionHistoryProjection, AgentActionHistoryProjectionReceipt, project_action_history
 from .modes import ReactiveModeController, ReactiveModeSpec
+from .participant_message_facts import (
+    ParticipantMessageFactBinding,
+    record_participant_message_delivery,
+    record_participant_message_dispatch,
+)
 from .prompt import AgentPromptAssembler, AgentPromptBudgetExceeded, CompiledAgentPrompt, PromptBlock
 from .goals import AgentGoalGraph, AgentSubgoal, GoalStatus
 from .self_prompter import AgentSelfPrompter, SelfPromptEvent, SelfPrompterLifecycle, SelfPrompterState
@@ -55,6 +60,7 @@ __all__ = [
     "InMemoryAgentMemory",
     "InMemorySkillLibrary",
     "MemoryPlane",
+    "ParticipantMessageFactBinding",
     "AgentSubgoal",
     "GoalStatus",
     "PromptBlock",
@@ -68,4 +74,6 @@ __all__ = [
     "VisionObservationProjector",
     "MultimodalAgentObservationPort",
     "project_action_history",
+    "record_participant_message_delivery",
+    "record_participant_message_dispatch",
 ]
