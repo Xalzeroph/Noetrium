@@ -15,6 +15,7 @@ class LATSWebShopFidelity:
     think_prefix: str = "think["
     think_observation: str = "OK."
     success_reward: float = 1.0
+    max_tree_depth: int = 15
     uct_exploration_constant: float = 2.0
     reflection_failed_trajectory_limit_exclusive: int = 4
     unique_failed_trajectory_limit: int = 3
@@ -25,6 +26,8 @@ class LATSWebShopFidelity:
             raise ValueError("LATS audited commit must be a git SHA")
         if self.environment != "webshop" or self.success_reward != 1.0:
             raise ValueError("LATS WebShop environment semantics drifted")
+        if self.max_tree_depth != 15:
+            raise ValueError("LATS WebShop max tree depth drifted")
         if self.uct_exploration_constant != 2.0:
             raise ValueError("LATS UCT exploration constant drifted")
         if (
