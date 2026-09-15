@@ -17,8 +17,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PLATFORM_EMBEDDED_WHEEL=/opt/noetrium-artifact/noetrium_platform.whl
 
 WORKDIR /opt/noetrium
-COPY deploy/*.whl /tmp/wheelhouse/
-COPY deploy/container-entrypoint.sh /usr/local/bin/noetrium-entrypoint
+# The formal container context is materialized by prepare_container_context.py.
+# It contains exactly one evidence-bound wheel plus exact Git blobs for this
+# Dockerfile and the entrypoint at the context root; never copy mutable source.
+COPY *.whl /tmp/wheelhouse/
+COPY container-entrypoint.sh /usr/local/bin/noetrium-entrypoint
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
