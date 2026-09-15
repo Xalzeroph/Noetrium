@@ -17,12 +17,13 @@ from .prompt import AgentPromptAssembler, AgentPromptBudgetExceeded, CompiledAge
 from .goals import AgentGoalGraph, AgentSubgoal, GoalStatus
 from .self_prompter import AgentSelfPrompter, SelfPromptEvent, SelfPrompterLifecycle, SelfPrompterState
 from .skill_library import InMemorySkillLibrary
-from .turn_facts import AgentTurnFactBuffer
+from .turn_facts import AGENT_TURN_FACT_SCHEMA, AgentTurnFact, AgentTurnFactBuffer, AgentTurnFactKind
 from .vision import AgentVisionProviderPort, VisionFrame, VisionInterpretation, VisionObservationProjector
 from .multimodal import AgentMultimodalObservationProjector
 from .multimodal_adapter import AgentObservationPartSourcePort, MultimodalAgentObservationPort
 
 __all__ = [
+    "AGENT_TURN_FACT_SCHEMA",
     "ActionExecutionPolicy",
     "AgentActionHistoryProjection",
     "AgentActionHistoryProjectionReceipt",
@@ -35,7 +36,9 @@ __all__ = [
     "AgentConversationManager",
     "AgentCoordinationHub",
     "AgentPeerStatus",
+    "AgentTurnFact",
     "AgentTurnFactBuffer",
+    "AgentTurnFactKind",
     "ConversationKind",
     "AgentCognitionLoop",
     "AgentGoalGraph",
