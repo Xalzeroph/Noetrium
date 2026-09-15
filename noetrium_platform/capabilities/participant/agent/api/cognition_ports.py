@@ -5,6 +5,7 @@ from typing import Protocol
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonScalar
 
+from .completion import AgentCompletionDecision
 from .cognition import (
     AgentActionSequence,
     AgentActionStep,
@@ -109,14 +110,14 @@ class AgentReactiveModePort(Protocol):
 
 
 class AgentCompletionPort(Protocol):
-    def is_complete(
+    def evaluate(
         self,
         goal: AgentGoal,
         observation: AgentObservation,
         *,
         planner_finished: bool,
         last_receipt: AgentStepReceipt | None,
-    ) -> bool: ...
+    ) -> AgentCompletionDecision: ...
 
 
 class AgentEvidencePort(Protocol):
