@@ -31,7 +31,12 @@ def build_architecture_report(
     # Repository gates must inspect the exact working tree being evaluated.
     # Git-backed snapshots remain available through the explicit source_index/
     # historical path, but a default gate must never validate stale HEAD bytes.
+    default_working_tree = source_index is None
     resolved_index = source_index or RepositorySourceTree(root).index()
+    working_tree_reference_source_index = (
+        GitRepositorySourceTree(root, revision="HEAD", git_executable=git_executable).index()
+        if default_working_tree else None
+    )
     if migration_approval_set is None:
         approval_path = os.environ.get("NOETRIUM_ARCHITECTURE_MIGRATION_APPROVALS", "").strip()
         approval_sha = os.environ.get("NOETRIUM_ARCHITECTURE_MIGRATION_APPROVALS_SHA256", "").strip()
@@ -53,6 +58,7 @@ def build_architecture_report(
         source_index=resolved_index,
         historical_source_index_factory=historical_factory,
         migration_approval_set=migration_approval_set,
+        working_tree_reference_source_index=working_tree_reference_source_index,
     )
 
 

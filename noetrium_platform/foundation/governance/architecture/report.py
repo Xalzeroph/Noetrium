@@ -160,6 +160,7 @@ def build_architecture_report(
     source_index: RepositorySourceIndexPort | None = None,
     historical_source_index_factory: Callable[[str], RepositorySourceIndexPort] | None = None,
     migration_approval_set: ArchitectureMigrationApprovalSet | None = None,
+    working_tree_reference_source_index: RepositorySourceIndexPort | None = None,
 ) -> ArchitectureReport:
     root = Path(root).resolve()
     if source_index is None:
@@ -205,6 +206,18 @@ def build_architecture_report(
         _build_historical_observation_resolver(root, historical_source_index_factory)
         if historical_source_index_factory is not None else None
     )
+    working_tree_reference = None
+    if working_tree_reference_source_index is not None:
+        if working_tree_reference_source_index.source_authority != "git":
+            raise ValueError("working-tree architecture reference must use Git source authority")
+        reference_profile = scan_architecture_source_profile(
+            root, source_index=working_tree_reference_source_index,
+            authority_rules=authority_rules,
+        )
+        working_tree_reference = source_catalog_complexity(
+            working_tree_reference_source_index,
+            import_edges=len(reference_profile.import_edges),
+        )
     architecture_complexity, architecture_complexity_budget, architecture_budget_violations = (
         audit_architecture_complexity_budget(
             root,
@@ -215,6 +228,7 @@ def build_architecture_report(
             source_index=source_index,
             approval_set=migration_approval_set,
             historical_observation_resolver=historical_observation_resolver,
+            working_tree_reference=working_tree_reference,
         )
     )
     declared_audit = build_platform_audit()

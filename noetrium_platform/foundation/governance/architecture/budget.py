@@ -800,6 +800,7 @@ def audit_architecture_complexity_budget(
     approval_set: ArchitectureMigrationApprovalSet | None = None,
     historical_observation_resolver: _HistoricalObservationResolver | None = None,
     verify_provenance: bool | None = None,
+    working_tree_reference: ArchitectureComplexity | None = None,
 ) -> tuple[
     ArchitectureComplexity,
     ArchitectureComplexityBudget | None,
@@ -831,6 +832,12 @@ def audit_architecture_complexity_budget(
         source_index=source_index,
         approved_observations=approved,
     )
+    if formal and working_tree_reference is not None:
+        raise ArchitectureBudgetProvenanceError(
+            "formal architecture verification cannot use a working-tree reference"
+        )
+    if not formal and working_tree_reference is not None:
+        evaluated = replace(evaluated, effective_limits=working_tree_reference)
     if formal:
         if historical_observation_resolver is None:
             raise ArchitectureBudgetProvenanceError(

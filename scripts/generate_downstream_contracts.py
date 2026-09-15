@@ -810,6 +810,7 @@ def generate(root: Path, *, check: bool = False) -> int:
         expected[root / "noetrium/contracts" / f"{facade_name}.py"] = (
             render_convenience_facade(facade_name, surfaces).encode("utf-8")
         )
+    ok = True
     readme_block = render_readme_interface_block(surfaces)
     readme_updates: dict[Path, str] = {}
     for readme_path in _readme_paths(root):
@@ -848,7 +849,6 @@ def generate(root: Path, *, check: bool = False) -> int:
                 continue
             if path not in expected:
                 path.unlink()
-    ok = True
     for path, content in expected.items():
         if not _write_or_check(path, content, check):
             ok = False

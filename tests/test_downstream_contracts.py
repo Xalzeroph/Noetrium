@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib
+import importlib.util
+import sys
 import json
 from pathlib import Path
 
@@ -110,3 +112,29 @@ def test_catalog_validation_rejects_tampered_document_digest() -> None:
     document["catalog_digest"] = "0" * 64
     with pytest.raises(DownstreamCatalogIntegrityError, match="catalog digest"):
         validate_downstream_capability_catalog(document)
+
+
+def test_generator_readme_drift_fails_closed(tmp_path, monkeypatch) -> None:
+    script = ROOT / "scripts/generate_downstream_contracts.py"
+    spec = importlib.util.spec_from_file_location("_noetrium_generate_contracts_test", script)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    registry = tmp_path / "noetrium_platform/foundation/governance/system_registry/catalog.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text("{}\n", encoding="utf-8")
+    readme = tmp_path / "README.md"
+    readme.write_text(
+        module.README_BLOCK_START + "\nstale\n" + module.README_BLOCK_END + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(module, "build_surfaces", lambda _root: ())
+    monkeypatch.setattr(module, "render_init", lambda _surfaces: "")
+    monkeypatch.setattr(module, "render_catalog", lambda _root, _surfaces: b"{}\n")
+    monkeypatch.setattr(module, "render_markdown", lambda _root, _surfaces: b"")
+    monkeypatch.setattr(module, "render_root_contract_init", lambda _root: "")
+    monkeypatch.setattr(module, "_CONVENIENCE_FACADES", {})
+    monkeypatch.setattr(module, "_readme_paths", lambda _root: (readme,))
+    monkeypatch.setattr(module, "_write_or_check", lambda *_args, **_kwargs: True)
+    assert module.generate(tmp_path, check=True) == 1

@@ -1,4 +1,4 @@
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 import tempfile
 import unittest
@@ -9,6 +9,10 @@ from noetrium_platform.foundation.governance.architecture import (
     audit_import_rules,
     package_cycles,
     scan_imports,
+)
+from noetrium_platform.foundation.governance.architecture.budget import (
+    audit_architecture_complexity_budget,
+    current_architecture_complexity,
 )
 from noetrium_platform.foundation.governance.architecture.import_graph import (
     ImportEdge,
@@ -28,7 +32,28 @@ class ArchitectureAnalyzerTests(unittest.TestCase):
         self.assertEqual(report.import_violations,())
         self.assertEqual(report.package_cycles,())
         self.assertEqual(report.declared_authority_violations,())
+        self.assertEqual(report.architecture_budget_violations,())
         self.assertEqual(len(report.report_sha256),64)
+
+
+    def test_working_tree_budget_compares_against_explicit_head_reference(self):
+        root = Path(__file__).resolve().parents[1]
+        reference = current_architecture_complexity(import_edges=0)
+        current, evaluated, violations = audit_architecture_complexity_budget(
+            root, import_edges=0, working_tree_reference=reference
+        )
+        self.assertEqual(current, reference)
+        self.assertEqual(violations, ())
+        self.assertIsNotNone(evaluated)
+        assert evaluated is not None
+        self.assertEqual(evaluated.limits, reference)
+        self.assertNotEqual(evaluated.baseline.complexity, reference)
+
+        tighter = replace(reference, authorities=reference.authorities - 1)
+        _current, _evaluated, violations = audit_architecture_complexity_budget(
+            root, import_edges=0, working_tree_reference=tighter
+        )
+        self.assertEqual(tuple(row.dimension for row in violations), ("authorities",))
 
     def test_report_violation_records_preserve_flat_json_shape(self):
         edge=ImportEdge("noetrium_platform.a","projects.b","noetrium_platform/a.py",7)
