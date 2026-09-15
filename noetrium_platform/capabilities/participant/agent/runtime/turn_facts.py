@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol
@@ -16,6 +16,21 @@ from noetrium_platform.foundation.kernel.kernel import (
 
 
 AGENT_TURN_FACT_SCHEMA = "agent-turn-fact.v1"
+_AGENT_TURN_FACT_FIELDS = frozenset({
+    "schema_version",
+    "session_id",
+    "sequence",
+    "kind",
+    "run_id",
+    "trace_id",
+    "span_id",
+    "task_id",
+    "decision_cycle_id",
+    "payload",
+    "artifact_refs",
+    "previous_fact_digest",
+    "fact_digest",
+})
 
 
 class AgentTurnFactKind(StrEnum):
@@ -116,6 +131,85 @@ class AgentTurnFact:
             artifact_refs,
             previous_fact_digest,
         )
+
+    @classmethod
+    def from_payload(cls, document: Mapping[str, JsonValue]) -> "AgentTurnFact":
+        """Strictly reconstruct one fact from a Kernel Journal event payload.
+
+        This is a decoder, not a persistence seam. The supplied digest is
+        checked against the canonical reconstructed fact so Journal remains the
+        authority and malformed read-side projections fail closed.
+        """
+
+        if not isinstance(document, Mapping):
+            raise TypeError("agent turn fact document must be a mapping")
+        if frozenset(document) != _AGENT_TURN_FACT_FIELDS:
+            raise ValueError("agent turn fact fields mismatch")
+        if document["schema_version"] != AGENT_TURN_FACT_SCHEMA:
+            raise ValueError("unsupported agent turn fact schema")
+
+        kind_value = document["kind"]
+        if not isinstance(kind_value, str):
+            raise TypeError("agent turn fact kind must be text")
+        try:
+            kind = AgentTurnFactKind(kind_value)
+        except ValueError as exc:
+            raise ValueError("unsupported agent turn fact kind") from exc
+
+        sequence = document["sequence"]
+        if type(sequence) is not int or sequence <= 0:
+            raise ValueError("agent turn fact sequence must be positive")
+        payload = document["payload"]
+        if not isinstance(payload, Mapping):
+            raise TypeError("agent turn fact payload must be a mapping")
+        refs = document["artifact_refs"]
+        if isinstance(refs, (str, bytes, bytearray)) or not isinstance(refs, Sequence):
+            raise TypeError("agent turn fact artifact_refs must be a sequence")
+        artifact_refs = tuple(refs)
+        if any(not isinstance(ref, str) for ref in artifact_refs):
+            raise TypeError("agent turn fact artifact_refs must contain text")
+
+        def required_text(field: str) -> str:
+            value = document[field]
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"agent turn fact {field} is required")
+            return value
+
+        def optional_text(field: str) -> str | None:
+            value = document[field]
+            if value is None:
+                return None
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"agent turn fact {field} must be non-empty when present")
+            return value
+
+        previous = document["previous_fact_digest"]
+        if previous is not None:
+            if not isinstance(previous, str):
+                raise TypeError("agent turn previous_fact_digest must be text")
+            require_sha256(previous, "agent turn previous_fact_digest")
+        supplied_digest = document["fact_digest"]
+        if not isinstance(supplied_digest, str):
+            raise TypeError("agent turn fact_digest must be text")
+        require_sha256(supplied_digest, "agent turn fact_digest")
+
+        fact = cls(
+            AGENT_TURN_FACT_SCHEMA,
+            required_text("session_id"),
+            sequence,
+            kind,
+            required_text("run_id"),
+            required_text("trace_id"),
+            required_text("span_id"),
+            dict(payload),
+            optional_text("task_id"),
+            optional_text("decision_cycle_id"),
+            artifact_refs,
+            previous,
+        )
+        if fact.fact_digest != supplied_digest:
+            raise ValueError("agent turn fact digest mismatch")
+        return fact
 
     def as_payload(self, *, include_digest: bool = True) -> JsonObject:
         payload: JsonObject = {
