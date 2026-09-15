@@ -11,8 +11,9 @@ from .conversation import AgentConversationManager, ConversationKind, Conversati
 from .coordination import AgentCoordinationHub, AgentPeerStatus
 from .cognition_loop import AgentCognitionLoop
 from .memory import AgentMemoryRecord, DisabledAgentMemory, InMemoryAgentMemory, MemoryPlane
+from .model_view import AgentActionHistoryProjection, AgentActionHistoryProjectionReceipt, project_action_history
 from .modes import ReactiveModeController, ReactiveModeSpec
-from .prompt import AgentPromptAssembler, CompiledAgentPrompt, PromptBlock
+from .prompt import AgentPromptAssembler, AgentPromptBudgetExceeded, CompiledAgentPrompt, PromptBlock
 from .goals import AgentGoalGraph, AgentSubgoal, GoalStatus
 from .self_prompter import AgentSelfPrompter, SelfPromptEvent, SelfPrompterLifecycle, SelfPrompterState
 from .skill_library import InMemorySkillLibrary
@@ -22,6 +23,8 @@ from .multimodal_adapter import AgentObservationPartSourcePort, MultimodalAgentO
 
 __all__ = [
     "ActionExecutionPolicy",
+    "AgentActionHistoryProjection",
+    "AgentActionHistoryProjectionReceipt",
     "AgentMultimodalObservationProjector",
     "AgentObservationPartSourcePort",
     "ActionLifecycleState",
@@ -36,6 +39,7 @@ __all__ = [
     "AgentGoalGraph",
     "AgentMemoryRecord",
     "AgentPromptAssembler",
+    "AgentPromptBudgetExceeded",
     "AgentSelfPrompter",
     "AgentVisionProviderPort",
     "CompiledAgentPrompt",
@@ -58,4 +62,5 @@ __all__ = [
     "VisionInterpretation",
     "VisionObservationProjector",
     "MultimodalAgentObservationPort",
+    "project_action_history",
 ]

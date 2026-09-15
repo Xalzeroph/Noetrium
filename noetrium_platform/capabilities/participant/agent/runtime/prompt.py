@@ -7,6 +7,7 @@ from typing import Iterable, Mapping
 from noetrium_platform.foundation.kernel.kernel import canonical_bytes
 
 from ..api.cognition import AgentGoal, AgentMemoryContext, AgentObservation, AgentSkillDescription, JsonValue
+from .model_view import AgentActionHistoryProjectionReceipt, project_action_history
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,47 +30,45 @@ class CompiledAgentPrompt:
     truncated: bool
     omitted_block_ids: tuple[str, ...] = ()
     truncated_block_ids: tuple[str, ...] = ()
+    compacted_block_ids: tuple[str, ...] = ()
+    history_projection: AgentActionHistoryProjectionReceipt | None = None
 
 
-_PROMPT_TRUNCATION_MARKER = "\n...[omitted middle context]...\n"
+class AgentPromptBudgetExceeded(ValueError):
+    def __init__(self, *, required_chars: int, max_chars: int) -> None:
+        self.required_chars = required_chars
+        self.max_chars = max_chars
+        super().__init__(
+            "required agent host facts exceed model-view character envelope: "
+            f"required={required_chars}, max={max_chars}; no required fact was truncated"
+        )
 
 
-def _bounded_prompt_text(text: str, max_chars: int) -> tuple[str, bool]:
-    """Keep a deterministic head/tail view with explicit loss evidence."""
-
-    if len(text) <= max_chars:
-        return text, False
-    if max_chars <= len(_PROMPT_TRUNCATION_MARKER):
-        return _PROMPT_TRUNCATION_MARKER[:max_chars], True
-    remaining = max_chars - len(_PROMPT_TRUNCATION_MARKER)
-    head = (remaining + 1) // 2
-    tail = remaining // 2
-    return text[:head] + _PROMPT_TRUNCATION_MARKER + text[-tail:], True
+def _render_atomic_block(block: PromptBlock) -> str:
+    return f"\n[{block.block_id}]\n{block.text}\n"
 
 
-def _render_block_with_budget(block: PromptBlock, budget: int) -> tuple[str, bool]:
-    """Render one block without ever slicing the assembled prompt."""
-
-    prefix = f"\n[{block.block_id}]\n"
-    suffix = "\n"
-    content_budget = max(0, budget - len(prefix) - len(suffix))
-    if content_budget == 0:
-        return (prefix + suffix)[:budget], True
-    content, truncated = _bounded_prompt_text(block.text, content_budget)
-    return prefix + content + suffix, truncated
+def _canonical_json(value: object) -> str:
+    return json.dumps(
+        json.loads(canonical_bytes(value)),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
 
 
 class AgentPromptAssembler:
-    """Structured, deterministic context assembly with explicit omission evidence.
+    """Build a loss-explicit model view while preserving durable host truth.
 
-    Required blocks always retain a labeled representation. Optional blocks are
-    admitted by priority and never consume the reserved envelope of later
-    required state. The assembler is domain-neutral: it does not invent skills,
-    retrieve a skill library, or execute model-produced code.
+    Required host facts are atomic and fail closed if they do not fit. Optional
+    text blocks are admitted whole or omitted. Action history is the only block
+    compacted here, and compaction keeps complete action records plus a digest
+    receipt. Final token admission/output reservation is still owned by
+    ``model/request``.
     """
 
     def __init__(self, *, max_chars: int = 12000) -> None:
-        if max_chars < 512:
+        if type(max_chars) is not int or max_chars < 512:
             raise ValueError("agent prompt budget is too small")
         self._max_chars = max_chars
 
@@ -83,71 +82,124 @@ class AgentPromptAssembler:
         prior_actions: Iterable[Mapping[str, JsonValue]] = (),
         extra: Iterable[PromptBlock] = (),
     ) -> CompiledAgentPrompt:
-        blocks = [
-            PromptBlock("system", "Choose one typed skill and never claim completion without state evidence.", 100, True),
-            PromptBlock("goal", json.dumps(json.loads(canonical_bytes({"goal_id": goal.goal_id, "objective": goal.objective, "context": goal.context})), sort_keys=True), 90, True),
-            PromptBlock("observation", json.dumps(json.loads(canonical_bytes(observation.state)), ensure_ascii=False, sort_keys=True), 80, True),
-            PromptBlock("skills", json.dumps([{"skill_id": skill.skill_id, "category": skill.category, "description": skill.description, "arguments": skill.argument_contract} for skill in skills], ensure_ascii=False, sort_keys=True), 70, True),
-            PromptBlock("memory", memory.context_text or "(no verified memory)", 50),
-            PromptBlock("prior_actions", json.dumps(json.loads(canonical_bytes(tuple(prior_actions))), ensure_ascii=False, sort_keys=True), 40),
-            *tuple(extra),
+        skill_rows = tuple(skills)
+        history_rows = tuple(prior_actions)
+        required = sorted(
+            (
+                PromptBlock(
+                    "system",
+                    "Choose one typed skill and never claim completion without state evidence.",
+                    100,
+                    True,
+                ),
+                PromptBlock(
+                    "goal",
+                    _canonical_json(
+                        {
+                            "goal_id": goal.goal_id,
+                            "objective": goal.objective,
+                            "context": goal.context,
+                        }
+                    ),
+                    90,
+                    True,
+                ),
+                PromptBlock("observation", _canonical_json(observation.state), 80, True),
+                PromptBlock(
+                    "skills",
+                    _canonical_json(
+                        tuple(
+                            {
+                                "skill_id": skill.skill_id,
+                                "category": skill.category,
+                                "description": skill.description,
+                                "arguments": skill.argument_contract,
+                            }
+                            for skill in skill_rows
+                        )
+                    ),
+                    70,
+                    True,
+                ),
+            ),
+            key=lambda item: (-item.priority, item.block_id),
+        )
+        required_rendered = tuple(_render_atomic_block(block) for block in required)
+        required_chars = sum(map(len, required_rendered))
+        if required_chars > self._max_chars:
+            raise AgentPromptBudgetExceeded(
+                required_chars=required_chars,
+                max_chars=self._max_chars,
+            )
+
+        rendered = list(required_rendered)
+        selected_ids = [block.block_id for block in required]
+        used = required_chars
+        omitted_ids: list[str] = []
+        compacted_ids: list[str] = []
+        history_receipt: AgentActionHistoryProjectionReceipt | None = None
+
+        optional_entries: list[tuple[int, str, PromptBlock | None]] = [
+            (50, "memory", PromptBlock("memory", memory.context_text or "(no verified memory)", 50)),
+            (40, "prior_actions", None),
         ]
-        ordered = sorted(blocks, key=lambda item: (-item.priority, item.block_id))
-        required = [block for block in ordered if block.required]
-        optional = [block for block in ordered if not block.required]
-        selected: list[PromptBlock] = []
-        rendered: list[str] = []
-        used = 0
-        truncated = False
-        omitted_block_ids: list[str] = []
-        truncated_block_ids: list[str] = []
+        optional_entries.extend((block.priority, block.block_id, block) for block in extra)
+        optional_entries.sort(key=lambda item: (-item[0], item[1]))
 
-        # Reserve each later required envelope before admitting current content.
-        required_minimum = {
-            block.block_id: len(f"\n[{block.block_id}]\n\n")
-            for block in required
-        }
-        for index, block in enumerate(required):
-            future = sum(required_minimum[item.block_id] for item in required[index + 1 :])
-            budget = max(1, self._max_chars - used - future)
-            rendered_block, was_truncated = _render_block_with_budget(block, budget)
-            selected.append(block)
-            rendered.append(rendered_block)
-            used += len(rendered_block)
-            truncated = truncated or was_truncated
-            if was_truncated:
-                truncated_block_ids.append(block.block_id)
-
-        for block in optional:
+        known_ids = set(selected_ids)
+        for _, block_id, block in optional_entries:
+            if block_id in known_ids:
+                raise ValueError(f"duplicate agent prompt block id: {block_id}")
+            known_ids.add(block_id)
             remaining = self._max_chars - used
-            minimum = len(f"\n[{block.block_id}]\n\n") + 1
-            if remaining < minimum:
-                truncated = True
-                omitted_block_ids.append(block.block_id)
+            if block_id == "prior_actions":
+                prefix = "\n[prior_actions]\n"
+                suffix = "\n"
+                content_budget = max(0, remaining - len(prefix) - len(suffix))
+                projection = project_action_history(history_rows, max_chars=content_budget)
+                history_receipt = projection.receipt
+                if not projection.text:
+                    if history_rows:
+                        omitted_ids.append(block_id)
+                    continue
+                rendered_block = prefix + projection.text + suffix
+                if len(rendered_block) > remaining:
+                    raise RuntimeError("agent history projection exceeded its declared envelope")
+                rendered.append(rendered_block)
+                selected_ids.append(block_id)
+                used += len(rendered_block)
+                if projection.receipt.compacted:
+                    compacted_ids.append(block_id)
                 continue
-            rendered_block, was_truncated = _render_block_with_budget(block, remaining)
+
+            assert block is not None
+            rendered_block = _render_atomic_block(block)
             if len(rendered_block) > remaining:
-                truncated = True
-                omitted_block_ids.append(block.block_id)
+                omitted_ids.append(block_id)
                 continue
-            selected.append(block)
             rendered.append(rendered_block)
+            selected_ids.append(block_id)
             used += len(rendered_block)
-            truncated = truncated or was_truncated
-            if was_truncated:
-                truncated_block_ids.append(block.block_id)
 
         result = "".join(rendered)
         if len(result) > self._max_chars:
             raise RuntimeError("agent prompt assembler exceeded its hard budget")
+        lossy = bool(omitted_ids or compacted_ids)
         return CompiledAgentPrompt(
-            "agent-prompt.v1",
-            result,
-            tuple(block.block_id for block in selected),
-            truncated or len(selected) != len(blocks),
-            tuple(omitted_block_ids),
-            tuple(truncated_block_ids),
+            schema_version="agent-prompt.v2",
+            text=result,
+            block_ids=tuple(selected_ids),
+            truncated=lossy,
+            omitted_block_ids=tuple(omitted_ids),
+            truncated_block_ids=(),
+            compacted_block_ids=tuple(compacted_ids),
+            history_projection=history_receipt,
         )
 
 
-__all__ = ["AgentPromptAssembler", "CompiledAgentPrompt", "PromptBlock"]
+__all__ = [
+    "AgentPromptAssembler",
+    "AgentPromptBudgetExceeded",
+    "CompiledAgentPrompt",
+    "PromptBlock",
+]
