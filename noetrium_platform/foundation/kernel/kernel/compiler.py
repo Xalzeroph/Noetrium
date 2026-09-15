@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping
 
 from .canonical import canonical_digest, freeze_json, require_sha256
-from .json_value import JsonValue
+from .json_value import JsonDocument, JsonInput, JsonValue
 from .machine import MachineProgramRef, ProgramLock
 
 
@@ -33,8 +32,8 @@ class ProgramSource:
             object.__setattr__(self, name, freeze_json(getattr(self, name)))
 
     @classmethod
-    def from_mapping(cls, value: Mapping[str, object]) -> "ProgramSource":
-        if not isinstance(value, Mapping):
+    def from_mapping(cls, value: JsonDocument) -> "ProgramSource":
+        if not isinstance(value, dict):
             raise TypeError("nsh source must be an object")
         return cls(
             value["program_kind"], value["program_version"], value["schema_id"],
@@ -49,7 +48,7 @@ class CompiledProgram:
     program: MachineProgramRef
     compiler_digest: str
 
-    def manifest(self) -> dict[str, object]:
+    def manifest(self) -> dict[str, JsonInput]:
         lock = self.program.program_lock
         return {
             "program_digest": self.program.program_digest,
@@ -113,11 +112,11 @@ class NshCompiler:
             self.compiler_digest,
         )
 
-    def verify_manifest(self, manifest: Mapping[str, object]) -> MachineProgramRef:
-        if not isinstance(manifest, Mapping):
+    def verify_manifest(self, manifest: JsonDocument) -> MachineProgramRef:
+        if not isinstance(manifest, dict):
             raise TypeError("program manifest must be an object")
         lock_data = manifest.get("program_lock")
-        if not isinstance(lock_data, Mapping):
+        if not isinstance(lock_data, dict):
             raise ValueError("program manifest requires program_lock")
         lock = ProgramLock(
             lock_data["code_digest"], lock_data["dependency_digest"],
