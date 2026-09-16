@@ -9,6 +9,7 @@ from noetrium_platform.evidence.data.projection.api import (
     SemanticProjectionSnapshot,
     SemanticSourceReference,
 )
+from noetrium_platform.foundation.kernel.kernel import require_sha256
 
 
 class SemanticSimilarityMetric(StrEnum):
@@ -19,6 +20,7 @@ class SemanticSimilarityMetric(StrEnum):
 @dataclass(frozen=True, slots=True)
 class SemanticSimilarityQuery:
     vector: tuple[float, ...]
+    embedding_model_digest: str
     metric: SemanticSimilarityMetric = SemanticSimilarityMetric.COSINE_SIMILARITY
     limit: int = 10
     candidates: tuple[SemanticSourceReference, ...] = ()
@@ -35,6 +37,7 @@ class SemanticSimilarityQuery:
             for value in self.vector
         ):
             raise ValueError("semantic query vector must contain finite numbers")
+        require_sha256(self.embedding_model_digest, "semantic query embedding_model_digest")
         if type(self.limit) is not int or not 1 <= self.limit <= 10_000:
             raise ValueError("semantic query limit must be in [1, 10000]")
         if not isinstance(self.candidates, tuple) or any(
