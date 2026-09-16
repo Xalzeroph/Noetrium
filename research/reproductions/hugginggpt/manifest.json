@@ -1,0 +1,29 @@
+{
+  "schema": "noetrium.reproduction-manifest.v1",
+  "package": "hugginggpt",
+  "discovery": {
+    "id": "hugginggpt",
+    "year": 2023,
+    "source": "https://arxiv.org/abs/2303.17580",
+    "domains": ["multimodal", "tool-use", "planning-search", "runtime-systems"]
+  },
+  "program_method": {
+    "method_id": "hugginggpt",
+    "title": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
+    "year": 2023,
+    "paper_uri": "https://arxiv.org/abs/2303.17580",
+    "reference_repositories": ["https://github.com/microsoft/JARVIS"],
+    "families": ["multimodal", "model_orchestration", "planning", "tool_use"],
+    "reproduction_status": "scaffolded",
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": ["participant/method", "model/request", "participant/capability", "execution", "artifact/lineage"],
+    "method_owned": ["task decomposition policy", "expert-model selection policy", "dependency-aware execution policy", "response aggregation policy"],
+    "platform_owned": ["method graph execution", "model and capability invocation", "artifact references", "parallel scheduling", "evidence and telemetry"],
+    "evidence_refs": []
+  },
+  "source_cuts": [
+    {"repository": "https://github.com/microsoft/JARVIS", "commit": "2c19142b56663a54b2c85f8622b38f98c5b2580f"}
+  ],
+  "scientific_tests": ["tests/test_scientific_hugginggpt_v1.py"]
+}
