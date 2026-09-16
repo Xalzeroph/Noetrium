@@ -7,6 +7,7 @@ from noetrium.contracts.systems.environment__embodied import (
     EmbodimentKind,
     SensorModality,
 )
+from noetrium_platform.foundation.kernel.kernel import freeze_json
 from research.reproductions.pi05_openpi import (
     PI05_OPENPI_FIDELITY,
     build_pi05_action_command,
@@ -67,8 +68,19 @@ def test_pi05_action_command_preserves_50_by_32_chunk_and_exact_raw_evidence() -
     assert command.normalized_payload["action_dim"] == 32
     assert len(command.normalized_payload["actions"]) == 50
     assert len(command.normalized_payload["actions"][0]) == 32
+
+    # raw_payload is authoritative JSON evidence and therefore decodes to mutable
+    # JSON-native dict/list containers. EmbodiedActionCommand intentionally freezes
+    # normalized_payload to mapping/tuple containers. Compare their semantics only
+    # after passing the wire representation through the same freeze boundary.
     decoded = json.loads(command.raw_payload.decode("utf-8"))
-    assert decoded == command.normalized_payload
+    assert freeze_json(decoded) == command.normalized_payload
+    assert command.raw_payload == json.dumps(
+        decoded,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
     assert len(command.raw_payload_sha256) == 64
 
 
