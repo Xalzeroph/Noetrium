@@ -1,0 +1,29 @@
+{
+  "schema": "noetrium.reproduction-manifest.v1",
+  "package": "pi05_openpi",
+  "discovery": {
+    "id": "pi0.5",
+    "year": 2025,
+    "source": "https://arxiv.org/abs/2504.16054",
+    "domains": ["embodied-robotics", "multimodal", "training"]
+  },
+  "program_method": {
+    "method_id": "pi0.5",
+    "title": "π0.5: a Vision-Language-Action Model with Open-World Generalization",
+    "year": 2025,
+    "paper_uri": "https://arxiv.org/abs/2504.16054",
+    "reference_repositories": ["https://github.com/Physical-Intelligence/openpi"],
+    "families": ["embodied", "vla", "multimodal", "robot_policy"],
+    "reproduction_status": "scaffolded",
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": ["participant/agent", "environment/embodied", "model/request", "experimentation/study"],
+    "method_owned": ["heterogeneous co-training semantics", "discrete state tokenization", "flow-based continuous action policy"],
+    "platform_owned": ["multimodal embodied observation transport", "continuous action ABI", "model execution", "trajectory evidence and evaluation"],
+    "evidence_refs": []
+  },
+  "source_cuts": [
+    {"repository": "https://github.com/Physical-Intelligence/openpi", "commit": "8999e55c55ad43b976fa71949ec070ee0128a8bc"}
+  ],
+  "scientific_tests": ["tests/test_scientific_pi05_openpi_v1.py"]
+}
