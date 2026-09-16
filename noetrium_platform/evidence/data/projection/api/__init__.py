@@ -5,6 +5,11 @@ from .contracts import (
     ProjectionReducerPort,
     ProjectionTail,
 )
+from .semantic import (
+    SemanticProjectionEntry,
+    SemanticProjectionSnapshot,
+    SemanticSourceReference,
+)
 
 __all__ = [
     "ProjectionCheckpoint",
@@ -12,4 +17,7 @@ __all__ = [
     "ProjectionCursor",
     "ProjectionReducerPort",
     "ProjectionTail",
+    "SemanticProjectionEntry",
+    "SemanticProjectionSnapshot",
+    "SemanticSourceReference",
 ]
