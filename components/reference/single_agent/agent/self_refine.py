@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue
 
 from .contracts import (
     ReferenceAgentMessage,
@@ -94,7 +94,7 @@ class ReferenceSelfRefineMethod:
         event_type: str,
         state: ReferenceAgentState,
         context: ExecutionContext | None,
-        **payload: object,
+        **payload: JsonValue,
     ) -> None:
         if context is not None:
             self._progress.emit(
