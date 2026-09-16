@@ -1,5 +1,5 @@
 {
-  "catalog_digest": "2b15686abf56f920abd08a3794169f81aaeadd7970a00b95317e03303e737157",
+  "catalog_digest": "c8a8284f1d272d8b7b7c1d11d439e3276ed542e94b9c94097a6e2b3a43128f8e",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v1",
   "systems": [
@@ -6888,6 +6888,8 @@
             "CapabilityProviderSession",
             "CapabilityRequest",
             "CapabilityResult",
+            "CapabilitySelectionReference",
+            "CapabilitySelectionView",
             "DurablePreparedCapabilitySession",
             "GuardDecision",
             "GuardVerdict",
@@ -6899,6 +6901,7 @@
             "decode_typed_capability_result",
             "make_typed_capability_request",
             "make_typed_capability_result",
+            "materialize_capability_selection_view",
             "require_pure_typed_descriptor"
           ]
         },
@@ -6945,6 +6948,15 @@
           ]
         },
         {
+          "module": "noetrium_platform.capabilities.participant.capability.api.selection",
+          "source": "noetrium_platform/capabilities/participant/capability/api/selection.py",
+          "symbols": [
+            "CapabilitySelectionReference",
+            "CapabilitySelectionView",
+            "materialize_capability_selection_view"
+          ]
+        },
+        {
           "module": "noetrium_platform.capabilities.participant.capability.api.typed",
           "source": "noetrium_platform/capabilities/participant/capability/api/typed.py",
           "symbols": [
@@ -6964,7 +6976,7 @@
       "authority": "participant_capability",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__capability",
-      "interface_digest": "dfd72ec4c3c09454f6c5757aea663fe7c04bd08596921a9130a2abcebcafee2f",
+      "interface_digest": "6dc38fc47ee8a6892628457da518f5b2fdca35f4c701177fa342044f7770410f",
       "must_not_own": "execution capability implementation",
       "owns": "participant capability declarations and exposure",
       "package_prefix": "noetrium_platform.capabilities.participant.capability",

@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:ae2f8096cc5f3000a26eea8e7ecb09dfaea74526be8a8ffb9f960b0023ac59c1 -->
+<!-- readme-source-sha256:88be749eb0783637d6ba78c20cac39f973803ae83b69364b59b59e2bdbc05398 -->
 
 <p align="center">
   <strong>Compose research systems. Run attributable executions. Verify evidence.</strong><br>
@@ -110,7 +110,7 @@ Noetrium is deliberately broader than an agent workflow library: experiment desi
 
 Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
 
-- 172 registered system surfaces; 506 public API modules; 3758 public symbols.
+- 172 registered system surfaces; 507 public API modules; 3764 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.

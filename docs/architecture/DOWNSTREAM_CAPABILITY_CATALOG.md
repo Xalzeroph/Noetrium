@@ -19,8 +19,8 @@ Example:
         ...
 
 - Registered systems: 172
-- Public API modules: 506
-- Public symbols: 3758
+- Public API modules: 507
+- Public symbols: 3764
 - Registry digest: 2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603
 
 ## Capability domains
@@ -38,7 +38,7 @@ Example:
 | observability | 27 | 52 | 152 |
 | operator | 8 | 10 | 60 |
 | orchestration | 1 | 1 | 19 |
-| participant | 8 | 40 | 414 |
+| participant | 8 | 41 | 420 |
 | platform | 5 | 9 | 89 |
 | portfolio | 5 | 7 | 75 |
 | reliability | 7 | 31 | 162 |
@@ -2110,9 +2110,10 @@ Example:
 
 #### API modules
 
-- noetrium_platform.capabilities.participant.capability.api ?w^~)?t CapabilityApprovalDenied, CapabilityApprovalPort, CapabilityCarrierTransportPort, CapabilityDescriptor, CapabilityEffectReconciliationResult, CapabilityExportSession, CapabilityGuardPort, CapabilityInputCarrier, CapabilityOutputCarrier, CapabilityPolicyDenied, CapabilityPolicySet, CapabilityPort, CapabilityPostPolicyPort, CapabilityPostPolicyViolation, CapabilityProviderImplementation, CapabilityProviderIdentity, CapabilityProviderSession, CapabilityRequest, CapabilityResult, DurablePreparedCapabilitySession, GuardDecision, GuardVerdict, TypedCapabilityCarrierCodec, TypedCarrierReference, capability_effect_request_id, capability_request_digest, decode_typed_capability_input, decode_typed_capability_result, make_typed_capability_request, make_typed_capability_result, require_pure_typed_descriptor
+- noetrium_platform.capabilities.participant.capability.api ?w^~)?t CapabilityApprovalDenied, CapabilityApprovalPort, CapabilityCarrierTransportPort, CapabilityDescriptor, CapabilityEffectReconciliationResult, CapabilityExportSession, CapabilityGuardPort, CapabilityInputCarrier, CapabilityOutputCarrier, CapabilityPolicyDenied, CapabilityPolicySet, CapabilityPort, CapabilityPostPolicyPort, CapabilityPostPolicyViolation, CapabilityProviderImplementation, CapabilityProviderIdentity, CapabilityProviderSession, CapabilityRequest, CapabilityResult, CapabilitySelectionReference, CapabilitySelectionView, DurablePreparedCapabilitySession, GuardDecision, GuardVerdict, TypedCapabilityCarrierCodec, TypedCarrierReference, capability_effect_request_id, capability_request_digest, decode_typed_capability_input, decode_typed_capability_result, make_typed_capability_request, make_typed_capability_result, materialize_capability_selection_view, require_pure_typed_descriptor
 - noetrium_platform.capabilities.participant.capability.api.contracts ?w^~)?t EffectReconciliationDisposition, PreparedEffectHandle, EffectClass, EffectReceipt, ExecutionContext, JsonObject, JsonValue, canonical_digest, freeze_json, CapabilityProviderIdentity, CapabilityDescriptor, CapabilityRequest, capability_effect_request_id, capability_request_digest, CapabilityResult, CapabilityEffectReconciliationResult, DurablePreparedCapabilitySession, CapabilityPort, CapabilityExportSession, CapabilityProviderSession, CapabilityProviderImplementation
 - noetrium_platform.capabilities.participant.capability.api.policy ?w^~)?t CapabilityApprovalDenied, CapabilityApprovalPort, CapabilityGuardPort, CapabilityPolicyDenied, CapabilityPolicySet, CapabilityPostPolicyPort, CapabilityPostPolicyViolation, GuardDecision, GuardVerdict
+- noetrium_platform.capabilities.participant.capability.api.selection ?w^~)?t CapabilitySelectionReference, CapabilitySelectionView, materialize_capability_selection_view
 - noetrium_platform.capabilities.participant.capability.api.typed ?w^~)?t CapabilityCarrierTransportPort, CapabilityInputCarrier, CapabilityOutputCarrier, TypedCapabilityCarrierCodec, TypedCarrierReference, decode_typed_capability_input, decode_typed_capability_result, make_typed_capability_request, make_typed_capability_result, require_pure_typed_descriptor
 
 ### participant/definition

@@ -26,6 +26,8 @@ from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityProviderSession,
     CapabilityRequest,
     CapabilityResult,
+    CapabilitySelectionReference,
+    CapabilitySelectionView,
     DurablePreparedCapabilitySession,
     GuardDecision,
     GuardVerdict,
@@ -37,6 +39,7 @@ from noetrium_platform.capabilities.participant.capability.api import (
     decode_typed_capability_result,
     make_typed_capability_request,
     make_typed_capability_result,
+    materialize_capability_selection_view,
     require_pure_typed_descriptor,
 )
 
@@ -76,6 +79,12 @@ from noetrium_platform.capabilities.participant.capability.api.policy import (
     GuardVerdict as policy__GuardVerdict,
 )
 
+from noetrium_platform.capabilities.participant.capability.api.selection import (
+    CapabilitySelectionReference as selection__CapabilitySelectionReference,
+    CapabilitySelectionView as selection__CapabilitySelectionView,
+    materialize_capability_selection_view as selection__materialize_capability_selection_view,
+)
+
 from noetrium_platform.capabilities.participant.capability.api.typed import (
     CapabilityCarrierTransportPort as typed__CapabilityCarrierTransportPort,
     CapabilityInputCarrier as typed__CapabilityInputCarrier,
@@ -91,4 +100,4 @@ from noetrium_platform.capabilities.participant.capability.api.typed import (
 
 SYSTEM_KEY = 'participant/capability'
 PACKAGE_PREFIX = 'noetrium_platform.capabilities.participant.capability'
-__all__ = ('CapabilityApprovalDenied', 'CapabilityApprovalPort', 'CapabilityCarrierTransportPort', 'CapabilityDescriptor', 'CapabilityEffectReconciliationResult', 'CapabilityExportSession', 'CapabilityGuardPort', 'CapabilityInputCarrier', 'CapabilityOutputCarrier', 'CapabilityPolicyDenied', 'CapabilityPolicySet', 'CapabilityPort', 'CapabilityPostPolicyPort', 'CapabilityPostPolicyViolation', 'CapabilityProviderImplementation', 'CapabilityProviderIdentity', 'CapabilityProviderSession', 'CapabilityRequest', 'CapabilityResult', 'DurablePreparedCapabilitySession', 'GuardDecision', 'GuardVerdict', 'TypedCapabilityCarrierCodec', 'TypedCarrierReference', 'capability_effect_request_id', 'capability_request_digest', 'decode_typed_capability_input', 'decode_typed_capability_result', 'make_typed_capability_request', 'make_typed_capability_result', 'require_pure_typed_descriptor', 'EffectReconciliationDisposition', 'PreparedEffectHandle', 'EffectClass', 'EffectReceipt', 'ExecutionContext', 'JsonObject', 'JsonValue', 'canonical_digest', 'freeze_json', 'contracts__CapabilityProviderIdentity', 'contracts__CapabilityDescriptor', 'contracts__CapabilityRequest', 'contracts__capability_effect_request_id', 'contracts__capability_request_digest', 'contracts__CapabilityResult', 'contracts__CapabilityEffectReconciliationResult', 'contracts__DurablePreparedCapabilitySession', 'contracts__CapabilityPort', 'contracts__CapabilityExportSession', 'contracts__CapabilityProviderSession', 'contracts__CapabilityProviderImplementation', 'policy__CapabilityApprovalDenied', 'policy__CapabilityApprovalPort', 'policy__CapabilityGuardPort', 'policy__CapabilityPolicyDenied', 'policy__CapabilityPolicySet', 'policy__CapabilityPostPolicyPort', 'policy__CapabilityPostPolicyViolation', 'policy__GuardDecision', 'policy__GuardVerdict', 'typed__CapabilityCarrierTransportPort', 'typed__CapabilityInputCarrier', 'typed__CapabilityOutputCarrier', 'typed__TypedCapabilityCarrierCodec', 'typed__TypedCarrierReference', 'typed__decode_typed_capability_input', 'typed__decode_typed_capability_result', 'typed__make_typed_capability_request', 'typed__make_typed_capability_result', 'typed__require_pure_typed_descriptor')
+__all__ = ('CapabilityApprovalDenied', 'CapabilityApprovalPort', 'CapabilityCarrierTransportPort', 'CapabilityDescriptor', 'CapabilityEffectReconciliationResult', 'CapabilityExportSession', 'CapabilityGuardPort', 'CapabilityInputCarrier', 'CapabilityOutputCarrier', 'CapabilityPolicyDenied', 'CapabilityPolicySet', 'CapabilityPort', 'CapabilityPostPolicyPort', 'CapabilityPostPolicyViolation', 'CapabilityProviderImplementation', 'CapabilityProviderIdentity', 'CapabilityProviderSession', 'CapabilityRequest', 'CapabilityResult', 'CapabilitySelectionReference', 'CapabilitySelectionView', 'DurablePreparedCapabilitySession', 'GuardDecision', 'GuardVerdict', 'TypedCapabilityCarrierCodec', 'TypedCarrierReference', 'capability_effect_request_id', 'capability_request_digest', 'decode_typed_capability_input', 'decode_typed_capability_result', 'make_typed_capability_request', 'make_typed_capability_result', 'materialize_capability_selection_view', 'require_pure_typed_descriptor', 'EffectReconciliationDisposition', 'PreparedEffectHandle', 'EffectClass', 'EffectReceipt', 'ExecutionContext', 'JsonObject', 'JsonValue', 'canonical_digest', 'freeze_json', 'contracts__CapabilityProviderIdentity', 'contracts__CapabilityDescriptor', 'contracts__CapabilityRequest', 'contracts__capability_effect_request_id', 'contracts__capability_request_digest', 'contracts__CapabilityResult', 'contracts__CapabilityEffectReconciliationResult', 'contracts__DurablePreparedCapabilitySession', 'contracts__CapabilityPort', 'contracts__CapabilityExportSession', 'contracts__CapabilityProviderSession', 'contracts__CapabilityProviderImplementation', 'policy__CapabilityApprovalDenied', 'policy__CapabilityApprovalPort', 'policy__CapabilityGuardPort', 'policy__CapabilityPolicyDenied', 'policy__CapabilityPolicySet', 'policy__CapabilityPostPolicyPort', 'policy__CapabilityPostPolicyViolation', 'policy__GuardDecision', 'policy__GuardVerdict', 'selection__CapabilitySelectionReference', 'selection__CapabilitySelectionView', 'selection__materialize_capability_selection_view', 'typed__CapabilityCarrierTransportPort', 'typed__CapabilityInputCarrier', 'typed__CapabilityOutputCarrier', 'typed__TypedCapabilityCarrierCodec', 'typed__TypedCarrierReference', 'typed__decode_typed_capability_input', 'typed__decode_typed_capability_result', 'typed__make_typed_capability_request', 'typed__make_typed_capability_result', 'typed__require_pure_typed_descriptor')

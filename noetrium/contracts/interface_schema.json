@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "66c88e12258678384535941ad4fbb8e9731da03ab1676a198df69debef4ef1f0",
+  "interface_digest": "64414e5ff311cf147cc4d2524ea4a9bf8a604ff7d2f7a00db0e3385d1f053a61",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -102638,6 +102638,24 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "CapabilitySelectionReference",
+              "origin_module": ".selection",
+              "origin_name": "CapabilitySelectionReference",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CapabilitySelectionView",
+              "origin_module": ".selection",
+              "origin_name": "CapabilitySelectionView",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "DurablePreparedCapabilitySession",
               "origin_module": ".contracts",
               "origin_name": "DurablePreparedCapabilitySession",
@@ -102737,6 +102755,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "materialize_capability_selection_view",
+              "origin_module": ".selection",
+              "origin_name": "materialize_capability_selection_view",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "require_pure_typed_descriptor",
               "origin_module": ".typed",
               "origin_name": "require_pure_typed_descriptor",
@@ -102764,6 +102791,8 @@
             "CapabilityProviderSession",
             "CapabilityRequest",
             "CapabilityResult",
+            "CapabilitySelectionReference",
+            "CapabilitySelectionView",
             "DurablePreparedCapabilitySession",
             "GuardDecision",
             "GuardVerdict",
@@ -102775,6 +102804,7 @@
             "decode_typed_capability_result",
             "make_typed_capability_request",
             "make_typed_capability_result",
+            "materialize_capability_selection_view",
             "require_pure_typed_descriptor"
           ]
         },
@@ -104125,6 +104155,183 @@
             "CapabilityPostPolicyViolation",
             "GuardDecision",
             "GuardVerdict"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.capability.api.selection",
+          "source": "noetrium_platform/capabilities/participant/capability/api/selection.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "One selected capability bound to the descriptor digest seen by selection.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "capability_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "descriptor_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "digest",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "str",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def digest(self) -> str:"
+                }
+              ],
+              "name": "CapabilitySelectionReference",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Immutable exact capability surface exposed after a method-owned selection step.\n\nThe view owns no retrieval/ranking policy and no capability definitions. It binds\nan opaque source cut plus selection provenance to authoritative descriptors\nre-materialized from CapabilityPort.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "source_cut_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "selection_provenance_digest"
+                },
+                {
+                  "annotation": "tuple[CapabilityDescriptor, ...]",
+                  "default": null,
+                  "name": "descriptors"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "view_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "CapabilitySelectionView",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "decorators": [],
+              "doc": "Resolve selected refs against the capability authority and fail closed on drift.",
+              "kind": "function",
+              "name": "materialize_capability_selection_view",
+              "parameters": [
+                {
+                  "annotation": "tuple[CapabilitySelectionReference, ...]",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "references",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "source_cut_digest",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "selection_provenance_digest",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "CapabilityPort",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "capability_port",
+                  "receiver": false,
+                  "required": true
+                }
+              ],
+              "return_annotation": "CapabilitySelectionView",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1",
+              "signature": "def materialize_capability_selection_view(references: tuple[CapabilitySelectionReference, ...], *, source_cut_digest: str, selection_provenance_digest: str, capability_port: CapabilityPort) -> CapabilitySelectionView:"
+            }
+          ],
+          "symbols": [
+            "CapabilitySelectionReference",
+            "CapabilitySelectionView",
+            "materialize_capability_selection_view"
           ]
         },
         {
