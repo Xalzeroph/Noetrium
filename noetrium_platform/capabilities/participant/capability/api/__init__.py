@@ -23,6 +23,11 @@ from .policy import (
     GuardDecision,
     GuardVerdict,
 )
+from .selection import (
+    CapabilitySelectionReference,
+    CapabilitySelectionView,
+    materialize_capability_selection_view,
+)
 from .typed import (
     CapabilityCarrierTransportPort,
     CapabilityInputCarrier,
@@ -56,6 +61,8 @@ __all__ = [
     "CapabilityProviderSession",
     "CapabilityRequest",
     "CapabilityResult",
+    "CapabilitySelectionReference",
+    "CapabilitySelectionView",
     "DurablePreparedCapabilitySession",
     "GuardDecision",
     "GuardVerdict",
@@ -67,5 +74,6 @@ __all__ = [
     "decode_typed_capability_result",
     "make_typed_capability_request",
     "make_typed_capability_result",
+    "materialize_capability_selection_view",
     "require_pure_typed_descriptor",
 ]
