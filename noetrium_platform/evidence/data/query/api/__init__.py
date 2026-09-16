@@ -1,4 +1,4 @@
-"""Typed research-result query contracts."""
+"""Typed research-result and semantic query contracts."""
 
 from .contracts import (
     ResearchDimension,
@@ -17,6 +17,13 @@ from .contracts import (
     ResearchSourceStatus,
 )
 from .ports import ResearchResultQueryPort, ResearchResultSourcePort
+from .semantic import (
+    SemanticSimilarityMatch,
+    SemanticSimilarityMetric,
+    SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort,
+    SemanticSimilarityResult,
+)
 
 __all__ = [
     "ResearchDimension", "ResearchDimensionKind", "ResearchQueryGap",
@@ -24,5 +31,6 @@ __all__ = [
     "ResearchResultPage", "ResearchResultQuery", "ResearchResultQueryPort",
     "ResearchResultRecord", "ResearchResultReference", "ResearchResultSourcePort",
     "ResearchSourceCut", "ResearchSourceDisposition", "ResearchSourceSnapshot",
-    "ResearchSourceStatus",
+    "ResearchSourceStatus", "SemanticSimilarityMatch", "SemanticSimilarityMetric",
+    "SemanticSimilarityQuery", "SemanticSimilarityQueryPort", "SemanticSimilarityResult",
 ]
