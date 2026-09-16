@@ -86,6 +86,7 @@ def test_toolllm_retrieval_uses_semantic_refs_then_authoritative_capability_desc
     view = retrieve_capability_view(
         snapshot=snapshot,
         query_vector=(0.95, 0.05),
+        query_embedding_model_digest=snapshot.embedding_model_digest,
         capability_port=_CapabilityCatalog(descriptors),
         query_port=SemanticRetrievalEngine(),
         limit=1,
@@ -96,6 +97,24 @@ def test_toolllm_retrieval_uses_semantic_refs_then_authoritative_capability_desc
     assert view.source_cut_digest == snapshot.source_cut_digest
     assert view.embedding_model_digest == snapshot.embedding_model_digest
     assert len(view.view_digest) == 64
+
+
+def test_toolllm_retrieval_fails_closed_on_embedding_model_drift() -> None:
+    descriptors = (
+        _descriptor("weather.current", "weather"),
+        _descriptor("calendar.create", "calendar"),
+    )
+    snapshot = _projection(descriptors)
+
+    with pytest.raises(ValueError, match="embedding model does not match pinned projection"):
+        retrieve_capability_view(
+            snapshot=snapshot,
+            query_vector=(1.0, 0.0),
+            query_embedding_model_digest=_digest("different-retriever-model"),
+            capability_port=_CapabilityCatalog(descriptors),
+            query_port=SemanticRetrievalEngine(),
+            limit=1,
+        )
 
 
 def test_toolllm_capability_materialization_fails_closed_on_schema_drift() -> None:
@@ -116,6 +135,7 @@ def test_toolllm_capability_materialization_fails_closed_on_schema_drift() -> No
         retrieve_capability_view(
             snapshot=snapshot,
             query_vector=(1.0, 0.0),
+            query_embedding_model_digest=snapshot.embedding_model_digest,
             capability_port=catalog,
             query_port=SemanticRetrievalEngine(),
             limit=1,
