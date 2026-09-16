@@ -1,52 +1,55 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityPort,
+    CapabilitySelectionReference,
+    CapabilitySelectionView,
+    materialize_capability_selection_view,
 )
 from noetrium_platform.evidence.data.projection.api import SemanticProjectionSnapshot
 from noetrium_platform.evidence.data.query.api import (
     SemanticSimilarityQuery,
     SemanticSimilarityQueryPort,
 )
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 
 
 @dataclass(frozen=True, slots=True)
 class ToolLLMCapabilityView:
-    """Exact retrieved capability set after authoritative descriptor re-materialization."""
+    """ToolLLM-specific semantic provenance around the generic immutable capability view."""
 
     projection_digest: str
-    source_cut_digest: str
     embedding_model_digest: str
-    descriptors: tuple[CapabilityDescriptor, ...]
-    view_digest: str = field(init=False)
+    selection_view: CapabilitySelectionView
 
     def __post_init__(self) -> None:
-        for name in ("projection_digest", "source_cut_digest", "embedding_model_digest"):
-            value = getattr(self, name)
-            if not isinstance(value, str) or len(value) != 64 or any(char not in "0123456789abcdef" for char in value):
-                raise ValueError(f"ToolLLM capability view {name} must be lowercase SHA-256")
-        if not isinstance(self.descriptors, tuple) or any(
-            not isinstance(descriptor, CapabilityDescriptor) for descriptor in self.descriptors
-        ):
-            raise TypeError("ToolLLM capability view requires CapabilityDescriptor values")
-        capability_ids = tuple(descriptor.capability_id for descriptor in self.descriptors)
-        if len(set(capability_ids)) != len(capability_ids):
-            raise ValueError("ToolLLM capability view cannot contain duplicate capabilities")
-        object.__setattr__(
-            self,
-            "view_digest",
-            canonical_digest(
-                {
-                    "projection_digest": self.projection_digest,
-                    "source_cut_digest": self.source_cut_digest,
-                    "embedding_model_digest": self.embedding_model_digest,
-                    "descriptor_digests": [descriptor.digest() for descriptor in self.descriptors],
-                }
-            ),
+        require_sha256(self.projection_digest, "ToolLLM capability view projection_digest")
+        require_sha256(
+            self.embedding_model_digest,
+            "ToolLLM capability view embedding_model_digest",
+        )
+        if not isinstance(self.selection_view, CapabilitySelectionView):
+            raise TypeError("ToolLLM capability view requires CapabilitySelectionView")
+
+    @property
+    def source_cut_digest(self) -> str:
+        return self.selection_view.source_cut_digest
+
+    @property
+    def descriptors(self) -> tuple[CapabilityDescriptor, ...]:
+        return self.selection_view.descriptors
+
+    @property
+    def view_digest(self) -> str:
+        return canonical_digest(
+            {
+                "projection_digest": self.projection_digest,
+                "embedding_model_digest": self.embedding_model_digest,
+                "selection_view_digest": self.selection_view.view_digest,
+            }
         )
 
 
@@ -59,12 +62,10 @@ def retrieve_capability_view(
     query_port: SemanticSimilarityQueryPort,
     limit: int = 5,
 ) -> ToolLLMCapabilityView:
-    """Retrieve refs, then fail closed unless authoritative descriptors still match them.
+    """Semantic-select refs, then freeze exact authoritative descriptors generically.
 
-    The semantic projection is disposable discovery state. The CapabilityPort remains
-    the authority for the exact interface/schema exposed to the ToolLLM method. The
-    query embedding identity is supplied independently and must match the pinned
-    projection model identity before ranking can occur.
+    ToolLLM owns semantic selection policy. The platform capability-selection view
+    owns only the immutable selected surface and descriptor drift checks.
     """
 
     if not isinstance(snapshot, SemanticProjectionSnapshot):
@@ -82,22 +83,40 @@ def retrieve_capability_view(
             limit=limit,
         ),
     )
-    descriptors: list[CapabilityDescriptor] = []
-    for match in result.matches:
-        descriptor = capability_port.describe(match.reference.record_id)
-        if not isinstance(descriptor, CapabilityDescriptor):
-            raise TypeError("CapabilityPort.describe must return CapabilityDescriptor")
-        if descriptor.capability_id != match.reference.record_id:
-            raise ValueError("retrieved capability reference resolved to another capability")
-        if descriptor.digest() != match.reference.content_digest:
-            raise ValueError("retrieved capability descriptor drifted from the pinned semantic projection")
-        descriptors.append(descriptor)
-
+    references = tuple(
+        CapabilitySelectionReference(
+            capability_id=match.reference.record_id,
+            descriptor_digest=match.reference.content_digest,
+        )
+        for match in result.matches
+    )
+    selection_provenance_digest = canonical_digest(
+        {
+            "projection_digest": result.projection_digest,
+            "source_cut_digest": result.source_cut_digest,
+            "embedding_model_digest": result.embedding_model_digest,
+            "metric": result.metric.value,
+            "candidate_count": result.candidate_count,
+            "matches": [
+                {
+                    "reference_digest": reference.digest(),
+                    "score": match.score,
+                    "rank": match.rank,
+                }
+                for reference, match in zip(references, result.matches)
+            ],
+        }
+    )
+    selection_view = materialize_capability_selection_view(
+        references,
+        source_cut_digest=result.source_cut_digest,
+        selection_provenance_digest=selection_provenance_digest,
+        capability_port=capability_port,
+    )
     return ToolLLMCapabilityView(
         projection_digest=result.projection_digest,
-        source_cut_digest=result.source_cut_digest,
         embedding_model_digest=result.embedding_model_digest,
-        descriptors=tuple(descriptors),
+        selection_view=selection_view,
     )
 
 
