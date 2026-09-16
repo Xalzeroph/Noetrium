@@ -19,8 +19,8 @@ Example:
         ...
 
 - Registered systems: 172
-- Public API modules: 504
-- Public symbols: 3742
+- Public API modules: 506
+- Public symbols: 3758
 - Registry digest: 2b9611559374246a679e11a4eeacc00ff6205b118d7a55d04339f4a81416c603
 
 ## Capability domains
@@ -29,7 +29,7 @@ Example:
 | --- | ---: | ---: | ---: |
 | artifact | 7 | 24 | 127 |
 | components | 1 | 1 | 49 |
-| data | 8 | 20 | 106 |
+| data | 8 | 22 | 122 |
 | environment | 18 | 53 | 444 |
 | execution | 7 | 33 | 238 |
 | experimentation | 15 | 59 | 576 |
@@ -225,8 +225,9 @@ Example:
 
 #### API modules
 
-- noetrium_platform.evidence.data.projection.api ?w^~)?t ProjectionCheckpoint, ProjectionCheckpointStorePort, ProjectionCursor, ProjectionReducerPort, ProjectionTail
+- noetrium_platform.evidence.data.projection.api ?w^~)?t ProjectionCheckpoint, ProjectionCheckpointStorePort, ProjectionCursor, ProjectionReducerPort, ProjectionTail, SemanticProjectionEntry, SemanticProjectionSnapshot, SemanticSourceReference
 - noetrium_platform.evidence.data.projection.api.contracts ?w^~)?t ProjectionCheckpoint, ProjectionCheckpointStorePort, ProjectionCursor, ProjectionReducerPort, ProjectionTail
+- noetrium_platform.evidence.data.projection.api.semantic ?w^~)?t SemanticProjectionEntry, SemanticProjectionSnapshot, SemanticSourceReference
 
 ### data/query
 
@@ -241,10 +242,11 @@ Example:
 
 #### API modules
 
-- noetrium_platform.evidence.data.query.api ?w^~)?t ResearchDimension, ResearchDimensionKind, ResearchQueryGap, ResearchQueryGapKind, ResearchQuerySourceError, ResearchResultKind, ResearchResultPage, ResearchResultQuery, ResearchResultQueryPort, ResearchResultRecord, ResearchResultReference, ResearchResultSourcePort, ResearchSourceCut, ResearchSourceDisposition, ResearchSourceSnapshot, ResearchSourceStatus
+- noetrium_platform.evidence.data.query.api ?w^~)?t ResearchDimension, ResearchDimensionKind, ResearchQueryGap, ResearchQueryGapKind, ResearchQuerySourceError, ResearchResultKind, ResearchResultPage, ResearchResultQuery, ResearchResultQueryPort, ResearchResultRecord, ResearchResultReference, ResearchResultSourcePort, ResearchSourceCut, ResearchSourceDisposition, ResearchSourceSnapshot, ResearchSourceStatus, SemanticSimilarityMatch, SemanticSimilarityMetric, SemanticSimilarityQuery, SemanticSimilarityQueryPort, SemanticSimilarityResult
 - noetrium_platform.evidence.data.query.api.contracts ?w^~)?t ResearchDimension, ResearchDimensionKind, ResearchQueryGap, ResearchQueryGapKind, ResearchQuerySourceError, ResearchResultKind, ResearchResultPage, ResearchResultQuery, ResearchResultRecord, ResearchResultReference, ResearchSourceCut, ResearchSourceDisposition, ResearchSourceSnapshot, ResearchSourceStatus
 - noetrium_platform.evidence.data.query.api.identity ?w^~)?t input_cut_digest, query_document, record_document, research_query_digest, source_cut
 - noetrium_platform.evidence.data.query.api.ports ?w^~)?t ResearchResultQueryPort, ResearchResultSourcePort
+- noetrium_platform.evidence.data.query.api.semantic ?w^~)?t SemanticSimilarityMatch, SemanticSimilarityMetric, SemanticSimilarityQuery, SemanticSimilarityQueryPort, SemanticSimilarityResult
 
 ### data/query/cross
 

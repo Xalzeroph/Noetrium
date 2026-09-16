@@ -1,5 +1,5 @@
 {
-  "catalog_digest": "a3d7d3606b6f3e1bb138c7f91dd8d73f2e6f685f61d99825ce7cf34b9c75895f",
+  "catalog_digest": "2b15686abf56f920abd08a3794169f81aaeadd7970a00b95317e03303e737157",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v1",
   "systems": [
@@ -507,7 +507,10 @@
             "ProjectionCheckpointStorePort",
             "ProjectionCursor",
             "ProjectionReducerPort",
-            "ProjectionTail"
+            "ProjectionTail",
+            "SemanticProjectionEntry",
+            "SemanticProjectionSnapshot",
+            "SemanticSourceReference"
           ]
         },
         {
@@ -520,12 +523,21 @@
             "ProjectionReducerPort",
             "ProjectionTail"
           ]
+        },
+        {
+          "module": "noetrium_platform.evidence.data.projection.api.semantic",
+          "source": "noetrium_platform/evidence/data/projection/api/semantic.py",
+          "symbols": [
+            "SemanticProjectionEntry",
+            "SemanticProjectionSnapshot",
+            "SemanticSourceReference"
+          ]
         }
       ],
       "authority": "projection_authority",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__projection",
-      "interface_digest": "18a3a3ccf9b3cc0a5e7bf79fdcc256faf201a4ad4a7c9b86c2d403b35fb6d438",
+      "interface_digest": "e8aab1b90a35c5e710a363be358c65877b3fb87ce9e80bb5b08288a81fa2d0a0",
       "must_not_own": "source-of-truth mutation",
       "owns": "derived read models and projection lifecycle",
       "package_prefix": "noetrium_platform.evidence.data.projection",
@@ -556,7 +568,12 @@
             "ResearchSourceCut",
             "ResearchSourceDisposition",
             "ResearchSourceSnapshot",
-            "ResearchSourceStatus"
+            "ResearchSourceStatus",
+            "SemanticSimilarityMatch",
+            "SemanticSimilarityMetric",
+            "SemanticSimilarityQuery",
+            "SemanticSimilarityQueryPort",
+            "SemanticSimilarityResult"
           ]
         },
         {
@@ -597,12 +614,23 @@
             "ResearchResultQueryPort",
             "ResearchResultSourcePort"
           ]
+        },
+        {
+          "module": "noetrium_platform.evidence.data.query.api.semantic",
+          "source": "noetrium_platform/evidence/data/query/api/semantic.py",
+          "symbols": [
+            "SemanticSimilarityMatch",
+            "SemanticSimilarityMetric",
+            "SemanticSimilarityQuery",
+            "SemanticSimilarityQueryPort",
+            "SemanticSimilarityResult"
+          ]
         }
       ],
       "authority": "query_contracts",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__query",
-      "interface_digest": "cd5fc970353e2eb6d39c14cdf3121bb15db935df16f4a8f4099a613607375546",
+      "interface_digest": "fa43a7ef75f53fd1c60b65ebc387e994d8fb390df044fa0cb236843e41ba8eaf",
       "must_not_own": "durable writes",
       "owns": "read query contracts spanning non-authoritative projections",
       "package_prefix": "noetrium_platform.evidence.data.query",

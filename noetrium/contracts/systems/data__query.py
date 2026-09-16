@@ -23,6 +23,11 @@ from noetrium_platform.evidence.data.query.api import (
     ResearchSourceDisposition,
     ResearchSourceSnapshot,
     ResearchSourceStatus,
+    SemanticSimilarityMatch,
+    SemanticSimilarityMetric,
+    SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort,
+    SemanticSimilarityResult,
 )
 
 from noetrium_platform.evidence.data.query.api.contracts import (
@@ -55,6 +60,14 @@ from noetrium_platform.evidence.data.query.api.ports import (
     ResearchResultSourcePort as ports__ResearchResultSourcePort,
 )
 
+from noetrium_platform.evidence.data.query.api.semantic import (
+    SemanticSimilarityMatch as semantic__SemanticSimilarityMatch,
+    SemanticSimilarityMetric as semantic__SemanticSimilarityMetric,
+    SemanticSimilarityQuery as semantic__SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort as semantic__SemanticSimilarityQueryPort,
+    SemanticSimilarityResult as semantic__SemanticSimilarityResult,
+)
+
 SYSTEM_KEY = 'data/query'
 PACKAGE_PREFIX = 'noetrium_platform.evidence.data.query'
-__all__ = ('ResearchDimension', 'ResearchDimensionKind', 'ResearchQueryGap', 'ResearchQueryGapKind', 'ResearchQuerySourceError', 'ResearchResultKind', 'ResearchResultPage', 'ResearchResultQuery', 'ResearchResultQueryPort', 'ResearchResultRecord', 'ResearchResultReference', 'ResearchResultSourcePort', 'ResearchSourceCut', 'ResearchSourceDisposition', 'ResearchSourceSnapshot', 'ResearchSourceStatus', 'contracts__ResearchDimension', 'contracts__ResearchDimensionKind', 'contracts__ResearchQueryGap', 'contracts__ResearchQueryGapKind', 'contracts__ResearchQuerySourceError', 'contracts__ResearchResultKind', 'contracts__ResearchResultPage', 'contracts__ResearchResultQuery', 'contracts__ResearchResultRecord', 'contracts__ResearchResultReference', 'contracts__ResearchSourceCut', 'contracts__ResearchSourceDisposition', 'contracts__ResearchSourceSnapshot', 'contracts__ResearchSourceStatus', 'input_cut_digest', 'query_document', 'record_document', 'research_query_digest', 'source_cut', 'ports__ResearchResultQueryPort', 'ports__ResearchResultSourcePort')
+__all__ = ('ResearchDimension', 'ResearchDimensionKind', 'ResearchQueryGap', 'ResearchQueryGapKind', 'ResearchQuerySourceError', 'ResearchResultKind', 'ResearchResultPage', 'ResearchResultQuery', 'ResearchResultQueryPort', 'ResearchResultRecord', 'ResearchResultReference', 'ResearchResultSourcePort', 'ResearchSourceCut', 'ResearchSourceDisposition', 'ResearchSourceSnapshot', 'ResearchSourceStatus', 'SemanticSimilarityMatch', 'SemanticSimilarityMetric', 'SemanticSimilarityQuery', 'SemanticSimilarityQueryPort', 'SemanticSimilarityResult', 'contracts__ResearchDimension', 'contracts__ResearchDimensionKind', 'contracts__ResearchQueryGap', 'contracts__ResearchQueryGapKind', 'contracts__ResearchQuerySourceError', 'contracts__ResearchResultKind', 'contracts__ResearchResultPage', 'contracts__ResearchResultQuery', 'contracts__ResearchResultRecord', 'contracts__ResearchResultReference', 'contracts__ResearchSourceCut', 'contracts__ResearchSourceDisposition', 'contracts__ResearchSourceSnapshot', 'contracts__ResearchSourceStatus', 'input_cut_digest', 'query_document', 'record_document', 'research_query_digest', 'source_cut', 'ports__ResearchResultQueryPort', 'ports__ResearchResultSourcePort', 'semantic__SemanticSimilarityMatch', 'semantic__SemanticSimilarityMetric', 'semantic__SemanticSimilarityQuery', 'semantic__SemanticSimilarityQueryPort', 'semantic__SemanticSimilarityResult')

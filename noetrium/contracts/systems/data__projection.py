@@ -12,6 +12,9 @@ from noetrium_platform.evidence.data.projection.api import (
     ProjectionCursor,
     ProjectionReducerPort,
     ProjectionTail,
+    SemanticProjectionEntry,
+    SemanticProjectionSnapshot,
+    SemanticSourceReference,
 )
 
 from noetrium_platform.evidence.data.projection.api.contracts import (
@@ -22,6 +25,12 @@ from noetrium_platform.evidence.data.projection.api.contracts import (
     ProjectionTail as contracts__ProjectionTail,
 )
 
+from noetrium_platform.evidence.data.projection.api.semantic import (
+    SemanticProjectionEntry as semantic__SemanticProjectionEntry,
+    SemanticProjectionSnapshot as semantic__SemanticProjectionSnapshot,
+    SemanticSourceReference as semantic__SemanticSourceReference,
+)
+
 SYSTEM_KEY = 'data/projection'
 PACKAGE_PREFIX = 'noetrium_platform.evidence.data.projection'
-__all__ = ('ProjectionCheckpoint', 'ProjectionCheckpointStorePort', 'ProjectionCursor', 'ProjectionReducerPort', 'ProjectionTail', 'contracts__ProjectionCheckpoint', 'contracts__ProjectionCheckpointStorePort', 'contracts__ProjectionCursor', 'contracts__ProjectionReducerPort', 'contracts__ProjectionTail')
+__all__ = ('ProjectionCheckpoint', 'ProjectionCheckpointStorePort', 'ProjectionCursor', 'ProjectionReducerPort', 'ProjectionTail', 'SemanticProjectionEntry', 'SemanticProjectionSnapshot', 'SemanticSourceReference', 'contracts__ProjectionCheckpoint', 'contracts__ProjectionCheckpointStorePort', 'contracts__ProjectionCursor', 'contracts__ProjectionReducerPort', 'contracts__ProjectionTail', 'semantic__SemanticProjectionEntry', 'semantic__SemanticProjectionSnapshot', 'semantic__SemanticSourceReference')

@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "bdd328c87af3fcdb9eb58ceff2644120cbf8196c9fa22b480aab5f3c08a9133c",
+  "interface_digest": "1e28c8fe6468e5e2c6f4460cd94d29b74abe671f54ff8e7447c376de1fd5b15b",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -4407,6 +4407,33 @@
               "origin_name": "ProjectionTail",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticProjectionEntry",
+              "origin_module": ".semantic",
+              "origin_name": "SemanticProjectionEntry",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticProjectionSnapshot",
+              "origin_module": ".semantic",
+              "origin_name": "SemanticProjectionSnapshot",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticSourceReference",
+              "origin_module": ".semantic",
+              "origin_name": "SemanticSourceReference",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -4414,7 +4441,10 @@
             "ProjectionCheckpointStorePort",
             "ProjectionCursor",
             "ProjectionReducerPort",
-            "ProjectionTail"
+            "ProjectionTail",
+            "SemanticProjectionEntry",
+            "SemanticProjectionSnapshot",
+            "SemanticSourceReference"
           ]
         },
         {
@@ -4762,6 +4792,185 @@
             "ProjectionReducerPort",
             "ProjectionTail"
           ]
+        },
+        {
+          "module": "noetrium_platform.evidence.data.projection.api.semantic",
+          "source": "noetrium_platform/evidence/data/projection/api/semantic.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "One disposable vector projection entry bound to source identity.",
+              "fields": [
+                {
+                  "annotation": "SemanticSourceReference",
+                  "default": null,
+                  "name": "reference"
+                },
+                {
+                  "annotation": "tuple[float, ...]",
+                  "default": null,
+                  "name": "embedding"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "SemanticProjectionEntry",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Immutable rebuildable semantic projection over one exact authoritative source cut.\n\nA snapshot stores only source references, vectors and provenance. It deliberately\nowns no source text/content and exposes no source mutation API.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "projection_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "projection_version"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "source_cut_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "embedding_model_digest"
+                },
+                {
+                  "annotation": "tuple[SemanticProjectionEntry, ...]",
+                  "default": null,
+                  "name": "entries"
+                },
+                {
+                  "annotation": "int",
+                  "default": "field(init=False)",
+                  "name": "dimension"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "projection_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "SemanticProjectionSnapshot",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True, order=True)"
+              ],
+              "doc": "Stable pointer to authoritative source content, never the content itself.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "source_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "record_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "content_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "SemanticSourceReference",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "SemanticProjectionEntry",
+            "SemanticProjectionSnapshot",
+            "SemanticSourceReference"
+          ]
         }
       ],
       "facade_module": "noetrium.contracts.systems.data__projection",
@@ -4917,6 +5126,51 @@
               "origin_name": "ResearchSourceStatus",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticSimilarityMatch",
+              "origin_module": ".semantic",
+              "origin_name": "SemanticSimilarityMatch",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticSimilarityMetric",
+              "origin_module": ".semantic",
+              "origin_name": "SemanticSimilarityMetric",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticSimilarityQuery",
+              "origin_module": ".semantic",
+              "origin_name": "SemanticSimilarityQuery",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticSimilarityQueryPort",
+              "origin_module": ".semantic",
+              "origin_name": "SemanticSimilarityQueryPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticSimilarityResult",
+              "origin_module": ".semantic",
+              "origin_name": "SemanticSimilarityResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -4935,7 +5189,12 @@
             "ResearchSourceCut",
             "ResearchSourceDisposition",
             "ResearchSourceSnapshot",
-            "ResearchSourceStatus"
+            "ResearchSourceStatus",
+            "SemanticSimilarityMatch",
+            "SemanticSimilarityMetric",
+            "SemanticSimilarityQuery",
+            "SemanticSimilarityQueryPort",
+            "SemanticSimilarityResult"
           ]
         },
         {
@@ -5931,6 +6190,262 @@
           "symbols": [
             "ResearchResultQueryPort",
             "ResearchResultSourcePort"
+          ]
+        },
+        {
+          "module": "noetrium_platform.evidence.data.query.api.semantic",
+          "source": "noetrium_platform/evidence/data/query/api/semantic.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "SemanticSourceReference",
+                  "default": null,
+                  "name": "reference"
+                },
+                {
+                  "annotation": "float",
+                  "default": null,
+                  "name": "score"
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "name": "rank"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "SemanticSimilarityMatch",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "StrEnum"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [
+                "COSINE_SIMILARITY",
+                "SQUARED_L2_DISTANCE"
+              ],
+              "methods": [],
+              "name": "SemanticSimilarityMetric",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "tuple[float, ...]",
+                  "default": null,
+                  "name": "vector"
+                },
+                {
+                  "annotation": "SemanticSimilarityMetric",
+                  "default": "SemanticSimilarityMetric.COSINE_SIMILARITY",
+                  "name": "metric"
+                },
+                {
+                  "annotation": "int",
+                  "default": "10",
+                  "name": "limit"
+                },
+                {
+                  "annotation": "tuple[SemanticSourceReference, ...]",
+                  "default": "()",
+                  "name": "candidates"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "SemanticSimilarityQuery",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "query",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "SemanticProjectionSnapshot",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "snapshot",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "SemanticSimilarityQuery",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "query",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "SemanticSimilarityResult",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def query(self, snapshot: SemanticProjectionSnapshot, query: SemanticSimilarityQuery) -> SemanticSimilarityResult:"
+                }
+              ],
+              "name": "SemanticSimilarityQueryPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "projection_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "source_cut_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "embedding_model_digest"
+                },
+                {
+                  "annotation": "SemanticSimilarityMetric",
+                  "default": null,
+                  "name": "metric"
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "name": "candidate_count"
+                },
+                {
+                  "annotation": "tuple[SemanticSimilarityMatch, ...]",
+                  "default": null,
+                  "name": "matches"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "SemanticSimilarityResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "SemanticSimilarityMatch",
+            "SemanticSimilarityMetric",
+            "SemanticSimilarityQuery",
+            "SemanticSimilarityQueryPort",
+            "SemanticSimilarityResult"
           ]
         }
       ],
