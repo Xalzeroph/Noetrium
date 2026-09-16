@@ -38,6 +38,23 @@ def _snapshot() -> SemanticProjectionSnapshot:
     )
 
 
+def _query(
+    snapshot: SemanticProjectionSnapshot,
+    vector: tuple[float, ...],
+    *,
+    metric: SemanticSimilarityMetric = SemanticSimilarityMetric.COSINE_SIMILARITY,
+    limit: int = 10,
+    candidates: tuple[SemanticSourceReference, ...] = (),
+) -> SemanticSimilarityQuery:
+    return SemanticSimilarityQuery(
+        vector=vector,
+        embedding_model_digest=snapshot.embedding_model_digest,
+        metric=metric,
+        limit=limit,
+        candidates=candidates,
+    )
+
+
 def test_semantic_projection_contains_refs_vectors_and_provenance_not_source_text() -> None:
     snapshot = _snapshot()
     assert snapshot.dimension == 2
@@ -52,7 +69,7 @@ def test_cosine_projection_supplies_generative_agents_relevance_component() -> N
     snapshot = _snapshot()
     result = SemanticRetrievalEngine().query(
         snapshot,
-        SemanticSimilarityQuery((1.0, 0.0), SemanticSimilarityMetric.COSINE_SIMILARITY, limit=3),
+        _query(snapshot, (1.0, 0.0), limit=3),
     )
     raw = {match.reference.record_id: match.score for match in result.matches}
     method = score_memories(
@@ -74,7 +91,12 @@ def test_squared_l2_projection_matches_classic_memgpt_archival_neighbor_semantic
     snapshot = _snapshot()
     result = SemanticRetrievalEngine().query(
         snapshot,
-        SemanticSimilarityQuery((0.82, 0.18), SemanticSimilarityMetric.SQUARED_L2_DISTANCE, limit=3),
+        _query(
+            snapshot,
+            (0.82, 0.18),
+            metric=SemanticSimilarityMetric.SQUARED_L2_DISTANCE,
+            limit=3,
+        ),
     )
     assert [row.reference.record_id for row in result.matches] == ["c", "a", "b"]
     assert [row.rank for row in result.matches] == [1, 2, 3]
@@ -87,7 +109,12 @@ def test_squared_l2_ties_use_canonical_source_reference_order() -> None:
     snapshot = _snapshot()
     result = SemanticRetrievalEngine().query(
         snapshot,
-        SemanticSimilarityQuery((0.9, 0.1), SemanticSimilarityMetric.SQUARED_L2_DISTANCE, limit=3),
+        _query(
+            snapshot,
+            (0.9, 0.1),
+            metric=SemanticSimilarityMetric.SQUARED_L2_DISTANCE,
+            limit=3,
+        ),
     )
     assert [row.reference.record_id for row in result.matches] == ["a", "c", "b"]
 
@@ -98,9 +125,22 @@ def test_candidate_queries_fail_closed_on_projection_drift() -> None:
     with pytest.raises(ValueError, match="absent from the pinned projection"):
         SemanticRetrievalEngine().query(
             snapshot,
-            SemanticSimilarityQuery(
+            _query(
+                snapshot,
                 (1.0, 0.0),
                 candidates=(snapshot.entries[0].reference, absent),
+            ),
+        )
+
+
+def test_queries_fail_closed_on_embedding_model_drift() -> None:
+    snapshot = _snapshot()
+    with pytest.raises(ValueError, match="embedding model does not match pinned projection"):
+        SemanticRetrievalEngine().query(
+            snapshot,
+            SemanticSimilarityQuery(
+                vector=(1.0, 0.0),
+                embedding_model_digest=_digest("different-embedding-model"),
             ),
         )
 
@@ -115,10 +155,14 @@ def test_cosine_rejects_zero_vectors_but_l2_remains_defined() -> None:
     )
     engine = SemanticRetrievalEngine()
     with pytest.raises(ValueError, match="zero vectors"):
-        engine.query(zero_snapshot, SemanticSimilarityQuery((1.0, 0.0)))
+        engine.query(zero_snapshot, _query(zero_snapshot, (1.0, 0.0)))
     l2 = engine.query(
         zero_snapshot,
-        SemanticSimilarityQuery((1.0, 0.0), SemanticSimilarityMetric.SQUARED_L2_DISTANCE),
+        _query(
+            zero_snapshot,
+            (1.0, 0.0),
+            metric=SemanticSimilarityMetric.SQUARED_L2_DISTANCE,
+        ),
     )
     assert l2.matches[0].score == 1.0
 
@@ -142,7 +186,7 @@ def test_same_projection_contract_can_index_capability_refs_without_owning_capab
     )
     result = SemanticRetrievalEngine().query(
         snapshot,
-        SemanticSimilarityQuery((0.95, 0.05), limit=1),
+        _query(snapshot, (0.95, 0.05), limit=1),
     )
     assert [row.reference.record_id for row in result.matches] == ["weather.current"]
     assert all(not hasattr(entry, "schema") for entry in snapshot.entries)
