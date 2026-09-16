@@ -1,3 +1,11 @@
+"""Lightweight branch-lineage identities for intra-workload execution search.
+
+This module does not replace the research workload checkpoint subsystem.
+``WorkloadExecutionCut`` owns durable task-boundary capture/restore and component
+payload consistency; these values only bind independently owned state digests to
+one logical branch source without taking ownership of those payloads.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -24,7 +32,7 @@ def _require_sha256(name: str, value: str) -> str:
     return value
 
 
-@dataclass(frozen=True, slots=True, order=True)
+@dataclass(frozen=True, slots=True)
 class ExecutionStateAnchor:
     """Content identity for one authority-owned piece of execution state.
 
@@ -75,7 +83,11 @@ class ExecutionSourceCut:
         identities = tuple((anchor.authority, anchor.state_id) for anchor in self.anchors)
         if len(set(identities)) != len(identities):
             raise ValueError("execution lineage source cut contains duplicate state identity")
-        object.__setattr__(self, "anchors", tuple(sorted(self.anchors)))
+        object.__setattr__(
+            self,
+            "anchors",
+            tuple(sorted(self.anchors, key=lambda anchor: (anchor.authority, anchor.state_id, anchor.sha256))),
+        )
 
     @property
     def digest(self) -> str:
