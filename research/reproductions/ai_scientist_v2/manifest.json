@@ -1,0 +1,29 @@
+{
+  "schema": "noetrium.reproduction-manifest.v1",
+  "package": "ai_scientist_v2",
+  "discovery": {
+    "id": "ai-scientist-v2",
+    "year": 2025,
+    "source": "https://arxiv.org/abs/2504.08066",
+    "domains": ["scientific-research", "planning-search", "self-improvement", "runtime-systems"]
+  },
+  "program_method": {
+    "method_id": "ai-scientist-v2",
+    "title": "The AI Scientist-v2: Workshop-Level Automated Scientific Discovery via Agentic Tree Search",
+    "year": 2025,
+    "paper_uri": "https://arxiv.org/abs/2504.08066",
+    "reference_repositories": ["https://github.com/SakanaAI/AI-Scientist-v2"],
+    "families": ["scientific_agent", "tree_search", "experimentation", "code_execution", "paper_writing", "review"],
+    "reproduction_status": "scaffolded",
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": ["environment/software", "model/request", "experimentation/study", "experimentation/workbench", "artifact/lineage", "reliability/recovery", "resource"],
+    "method_owned": ["progressive agentic tree-search policy", "experiment-manager guidance", "citation and multimodal review policy", "downstream method journal"],
+    "platform_owned": ["isolated branch execution", "experiment identity and metrics", "resource scheduling", "artifact lineage", "Kernel Journal facts", "recovery and evidence"],
+    "evidence_refs": []
+  },
+  "source_cuts": [
+    {"repository": "https://github.com/SakanaAI/AI-Scientist-v2", "commit": "940d59b9008f8d157f03a23e50e49fd81c0a4d11"}
+  ],
+  "scientific_tests": ["tests/test_scientific_ai_scientist_family_v1.py"]
+}
