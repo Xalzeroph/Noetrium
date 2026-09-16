@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "1e28c8fe6468e5e2c6f4460cd94d29b74abe671f54ff8e7447c376de1fd5b15b",
+  "interface_digest": "66c88e12258678384535941ad4fbb8e9731da03ab1676a198df69debef4ef1f0",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -6275,6 +6275,11 @@
                   "annotation": "tuple[float, ...]",
                   "default": null,
                   "name": "vector"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "embedding_model_digest"
                 },
                 {
                   "annotation": "SemanticSimilarityMetric",
