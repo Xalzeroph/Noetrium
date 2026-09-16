@@ -1,0 +1,29 @@
+{
+  "schema": "noetrium.reproduction-manifest.v1",
+  "package": "ai_scientist_v1",
+  "discovery": {
+    "id": "ai-scientist",
+    "year": 2024,
+    "source": "https://arxiv.org/abs/2408.06292",
+    "domains": ["scientific-research", "self-improvement"]
+  },
+  "program_method": {
+    "method_id": "ai-scientist",
+    "title": "The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery",
+    "year": 2024,
+    "paper_uri": "https://arxiv.org/abs/2408.06292",
+    "reference_repositories": ["https://github.com/SakanaAI/AI-Scientist"],
+    "families": ["scientific_agent", "experimentation", "code_execution", "paper_writing", "review"],
+    "reproduction_status": "scaffolded",
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": ["environment/software", "model/request", "experimentation/study", "experimentation/workbench", "artifact/lineage", "reliability/recovery"],
+    "method_owned": ["idea generation and novelty policy", "template-bound experiment editing loop", "writeup and review policy"],
+    "platform_owned": ["isolated project execution", "experiment identity and metrics", "artifact lineage", "parallel resource scheduling", "recovery and evidence"],
+    "evidence_refs": []
+  },
+  "source_cuts": [
+    {"repository": "https://github.com/SakanaAI/AI-Scientist", "commit": "0eccd134221c5ebec3fe0d2d6e8f67bfdbb69978"}
+  ],
+  "scientific_tests": ["tests/test_scientific_ai_scientist_family_v1.py"]
+}
