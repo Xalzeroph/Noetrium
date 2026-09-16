@@ -4,6 +4,7 @@ import math
 
 import pytest
 
+from noetrium_platform.composition.execution_lineage import ExecutionStateAnchor
 from research.reproductions.lats_webshop import (
     FailedTrajectory,
     LATSNode,
@@ -104,15 +105,31 @@ def test_lats_candidate_executes_only_after_parent_cut_is_restored() -> None:
         parent,
         parent_session_id="parent:1",
         child_session_id="child:1",
+        parent_branch_id="branch:parent",
         branch_id="branch:1",
         source_cut_id="cut:1",
+        fork_id="fork:1",
         open_child=open_child,
         execute=lambda child: child.checkpoint(),
+        source_anchors=(
+            ExecutionStateAnchor(
+                authority="participant.agent.cognition",
+                state_id="agent:parent",
+                sha256="a" * 64,
+            ),
+        ),
     )
 
     assert execution.child is opened[0]
     assert execution.result == b"parent-state"
     assert execution.fork_receipt.branch_id == "branch:1"
+    assert execution.lineage_receipt.parent_branch_id == "branch:parent"
+    assert execution.lineage_receipt.child_branch_id == "branch:1"
+    assert execution.lineage_receipt.source_cut_id == "cut:1"
+    assert tuple(anchor.authority for anchor in execution.lineage_receipt.source_cut.anchors) == (
+        "environment.session",
+        "participant.agent.cognition",
+    )
     assert parent.payload == b"parent-state"
 
 
@@ -128,9 +145,30 @@ def test_lats_candidate_failure_closes_branch_child() -> None:
             parent,
             parent_session_id="parent:1",
             child_session_id="child:1",
+            parent_branch_id="branch:parent",
             branch_id="branch:1",
             source_cut_id="cut:1",
+            fork_id="fork:1",
             open_child=lambda _session_id: child,
             execute=fail,
+        )
+    assert child.closed
+
+
+def test_lats_invalid_lineage_closes_restored_child_before_propagating() -> None:
+    parent = _Session(b"parent-state")
+    child = _Session(b"empty")
+
+    with pytest.raises(ValueError, match="differ from parent"):
+        execute_candidate_from_parent(
+            parent,
+            parent_session_id="parent:1",
+            child_session_id="child:1",
+            parent_branch_id="branch:1",
+            branch_id="branch:1",
+            source_cut_id="cut:1",
+            fork_id="fork:1",
+            open_child=lambda _session_id: child,
+            execute=lambda _child: b"unreachable",
         )
     assert child.closed

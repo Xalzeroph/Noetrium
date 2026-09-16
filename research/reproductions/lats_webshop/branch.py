@@ -10,6 +10,12 @@ from noetrium_platform.composition.environment_fork import (
     EnvironmentSessionOpener,
     fork_environment_session,
 )
+from noetrium_platform.composition.execution_lineage import (
+    ExecutionForkReceipt,
+    ExecutionSourceCut,
+    ExecutionStateAnchor,
+    bind_execution_fork,
+)
 
 
 _ResultT = TypeVar("_ResultT")
@@ -19,6 +25,7 @@ _ResultT = TypeVar("_ResultT")
 class LATSBranchExecution(Generic[_ResultT]):
     child: EnvironmentSession
     fork_receipt: EnvironmentForkReceipt
+    lineage_receipt: ExecutionForkReceipt
     result: _ResultT
 
 
@@ -27,10 +34,13 @@ def execute_candidate_from_parent(
     *,
     parent_session_id: str,
     child_session_id: str,
+    parent_branch_id: str,
     branch_id: str,
     source_cut_id: str,
+    fork_id: str,
     open_child: EnvironmentSessionOpener,
     execute: Callable[[EnvironmentSession], _ResultT],
+    source_anchors: tuple[ExecutionStateAnchor, ...] = (),
 ) -> LATSBranchExecution[_ResultT]:
     """Restore a child from the exact parent cut before executing a candidate.
 
@@ -42,6 +52,8 @@ def execute_candidate_from_parent(
 
     if not callable(execute):
         raise TypeError("LATS branch execution callback must be callable")
+    if type(source_anchors) is not tuple:
+        raise TypeError("LATS source anchors must be a tuple")
     child, receipt = fork_environment_session(
         parent,
         parent_session_id=parent_session_id,
@@ -51,11 +63,33 @@ def execute_candidate_from_parent(
         open_child=open_child,
     )
     try:
+        source_cut = ExecutionSourceCut(
+            cut_id=receipt.source_cut_id,
+            branch_id=parent_branch_id,
+            anchors=(
+                ExecutionStateAnchor(
+                    authority="environment.session",
+                    state_id=receipt.parent_session_id,
+                    sha256=receipt.source_checkpoint_sha256,
+                ),
+                *source_anchors,
+            ),
+        )
+        lineage_receipt = bind_execution_fork(
+            source_cut,
+            fork_id=fork_id,
+            child_branch_id=receipt.branch_id,
+        )
         result = execute(child)
     except BaseException:
         child.close()
         raise
-    return LATSBranchExecution(child=child, fork_receipt=receipt, result=result)
+    return LATSBranchExecution(
+        child=child,
+        fork_receipt=receipt,
+        lineage_receipt=lineage_receipt,
+        result=result,
+    )
 
 
 __all__ = ["LATSBranchExecution", "execute_candidate_from_parent"]
