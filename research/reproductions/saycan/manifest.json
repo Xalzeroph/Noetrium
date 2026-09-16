@@ -1,0 +1,29 @@
+{
+  "schema": "noetrium.reproduction-manifest.v1",
+  "package": "saycan",
+  "discovery": {
+    "id": "saycan",
+    "year": 2022,
+    "source": "https://arxiv.org/abs/2204.01691",
+    "domains": ["embodied-robotics", "planning-search"]
+  },
+  "program_method": {
+    "method_id": "saycan",
+    "title": "Do As I Can, Not As I Say: Grounding Language in Robotic Affordances",
+    "year": 2022,
+    "paper_uri": "https://arxiv.org/abs/2204.01691",
+    "reference_repositories": ["https://github.com/google-research/google-research"],
+    "families": ["embodied", "planning", "affordance", "language_grounding"],
+    "reproduction_status": "scaffolded",
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": ["participant/method", "environment/embodied", "model/request", "participant/capability", "experimentation/study"],
+    "method_owned": ["language-score and affordance composition", "skill selection policy"],
+    "platform_owned": ["model invocation", "embodied skill capability execution", "effect evidence", "evaluation"],
+    "evidence_refs": []
+  },
+  "source_cuts": [
+    {"repository": "https://github.com/google-research/google-research", "commit": "8c56e5dfc49613a57b80d6cfa2c9d6605cc08d10"}
+  ],
+  "scientific_tests": ["tests/test_scientific_saycan_v1.py"]
+}
