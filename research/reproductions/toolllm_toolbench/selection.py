@@ -54,6 +54,7 @@ def retrieve_capability_view(
     *,
     snapshot: SemanticProjectionSnapshot,
     query_vector: tuple[float, ...],
+    query_embedding_model_digest: str,
     capability_port: CapabilityPort,
     query_port: SemanticSimilarityQueryPort,
     limit: int = 5,
@@ -61,7 +62,9 @@ def retrieve_capability_view(
     """Retrieve refs, then fail closed unless authoritative descriptors still match them.
 
     The semantic projection is disposable discovery state. The CapabilityPort remains
-    the authority for the exact interface/schema exposed to the ToolLLM method.
+    the authority for the exact interface/schema exposed to the ToolLLM method. The
+    query embedding identity is supplied independently and must match the pinned
+    projection model identity before ranking can occur.
     """
 
     if not isinstance(snapshot, SemanticProjectionSnapshot):
@@ -71,7 +74,14 @@ def retrieve_capability_view(
     if type(limit) is not int or not 1 <= limit <= 10_000:
         raise ValueError("ToolLLM retrieval limit must be in [1, 10000]")
 
-    result = query_port.query(snapshot, SemanticSimilarityQuery(query_vector, limit=limit))
+    result = query_port.query(
+        snapshot,
+        SemanticSimilarityQuery(
+            vector=query_vector,
+            embedding_model_digest=query_embedding_model_digest,
+            limit=limit,
+        ),
+    )
     descriptors: list[CapabilityDescriptor] = []
     for match in result.matches:
         descriptor = capability_port.describe(match.reference.record_id)
