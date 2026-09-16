@@ -1,0 +1,27 @@
+{
+  "schema": "noetrium.reproduction-manifest-policy.v1",
+  "manifest_schema": "noetrium.reproduction-manifest.v1",
+  "manifest_filename": "manifest.json",
+  "rule": "Every new reproduction package must own a manifest. Legacy packages may remain temporarily unmanifested only while listed here; this list may shrink but must never grow.",
+  "legacy_unmanifested_packages": [
+    "adas_meta_agent_search",
+    "autogen_agentchat",
+    "camel_role_playing",
+    "generative_agents_memory",
+    "lats_webshop",
+    "live_swe_agent",
+    "memevolve",
+    "memgpt_classic",
+    "metagpt_software_company",
+    "multiagent_debate",
+    "rap_reasoning",
+    "react_alfworld",
+    "reflexion_alfworld",
+    "self_refine",
+    "swe_agent_swebench",
+    "toolllm_toolbench",
+    "tree_of_thoughts",
+    "voyager_minecraft",
+    "webvoyager"
+  ]
+}
