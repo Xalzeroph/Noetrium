@@ -38,6 +38,8 @@ class SemanticRetrievalEngine:
             raise TypeError("semantic retrieval requires SemanticProjectionSnapshot")
         if not isinstance(query, SemanticSimilarityQuery):
             raise TypeError("semantic retrieval requires SemanticSimilarityQuery")
+        if query.embedding_model_digest != snapshot.embedding_model_digest:
+            raise ValueError("semantic query embedding model does not match pinned projection")
         if len(query.vector) != snapshot.dimension:
             raise ValueError("semantic query vector dimension does not match projection")
 
