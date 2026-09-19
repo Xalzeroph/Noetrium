@@ -2797,7 +2797,7 @@
       "reproductions": [
         {
           "package": "jarvis1_minecraft",
-          "package_digest": "770ccc8829e7dd01494de82996e84633d8be6e9514d6f319e6635c1b4f47a893",
+          "package_digest": "d2d7251467943ebbead325961a49f1107a3f489cba72072402f6371046a3ba9c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "jarvis1-offline-185"
@@ -2832,6 +2832,11 @@
               "content_sha256": "56db5dca6934beb809d854737059cfb9eb21fda8305edcb26e8b8af06987e84c"
             },
             {
+              "kind": "method_program",
+              "path": "research/reproductions/jarvis1_minecraft/program.py",
+              "content_sha256": "66c4fede901e2fc6931ffb17b7db84f87b0335d0d1ff511ab25a87dfb8bcb96a"
+            },
+            {
               "kind": "research_program",
               "path": "research/reproductions/jarvis1_minecraft/memory.py",
               "content_sha256": "c84d5e59ccae11e90cd626b661feb15964185fcfebcb6c1880f5fed430841fcd"
@@ -2864,6 +2869,10 @@
             {
               "path": "tests/test_scientific_jarvis1_memory_v1.py",
               "content_sha256": "0ea5396c39ff99a00eb45a232e88d20cdbc675848ab793b57cc6f360dce3e5af"
+            },
+            {
+              "path": "tests/test_scientific_jarvis1_method_program_v1.py",
+              "content_sha256": "f1cad9629f327c5cce647c84fc708cc6d044c6126610f7307e53478b2c17d1a8"
             }
           ]
         }
@@ -2957,5 +2966,5 @@
       ]
     }
   ],
-  "projection_digest": "df74ecb1a533d8fddf392c81d0806b5cbc69ece4d3da2460db5c3f7b2374dc4a"
+  "projection_digest": "46704dd6117845aa427f8154049d4046f95088806af3e213d575ba637383cd1d"
 }

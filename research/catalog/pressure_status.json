@@ -866,16 +866,18 @@
       "asset_kinds": [
         "benchmark",
         "fidelity",
+        "method_program",
         "research_program",
         "study",
         "support"
       ],
       "executable_asset_kinds": [
+        "method_program",
         "research_program"
       ],
       "primary_executable": {
-        "kind": "research_program",
-        "path": "research/reproductions/jarvis1_minecraft/memory.py"
+        "kind": "method_program",
+        "path": "research/reproductions/jarvis1_minecraft/program.py"
       },
       "benchmark_ids": [
         "jarvis1-offline-185"
@@ -883,7 +885,7 @@
       "benchmark_packages": [
         "jarvis1_offline"
       ],
-      "scientific_test_count": 2,
+      "scientific_test_count": 3,
       "reported_result_count": 0,
       "blocker_count": 3,
       "ready": true,
