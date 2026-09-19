@@ -595,6 +595,17 @@
       "priority_class": "P1_FLAGSHIP",
       "reproduction_method_id": "optimus1-minecraft",
       "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html"
+    },
+    {
+      "id": "optimus2",
+      "kind": "method",
+      "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
+      "year": 2025,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "optimus2-minecraft",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html"
     }
   ],
   "explicitly_ineligible_current_items": [
