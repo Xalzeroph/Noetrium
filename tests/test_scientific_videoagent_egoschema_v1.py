@@ -67,7 +67,7 @@ def test_videoagent_public_egoschema_cut_is_offline_verifiable_and_study_bound()
     assert protocol.protocol_id == (
         "videoagent.eccv2024.egoschema.public-500.v1"
     )
-    assert len(protocol.protocol_digest) == 64
+    assert len(protocol.digest()) == 64
     assert study.benchmark.cut_digest == benchmark.cut_digest
     assert study.benchmark_split_id == EGOSCHEMA_PUBLIC_SPLIT
     assert VIDEOAGENT_METHOD_PROGRAM.program_digest

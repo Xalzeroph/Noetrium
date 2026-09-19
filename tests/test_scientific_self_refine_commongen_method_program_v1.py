@@ -85,7 +85,7 @@ def test_self_refine_commongen_program_freezes_paper_batch_budget_and_shared_mod
     assert len(program.configuration["prompt_blobs"]) == 3
     agent_ids = {
         node.agent_id
-        for node in program.nodes
+        for node in program.graph.nodes
         if node.agent_id is not None
     }
     assert agent_ids == {"self-refine.model"}

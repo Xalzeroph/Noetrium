@@ -53,5 +53,5 @@ def test_cogagent_mind2web_study_is_protocol_bound() -> None:
         "cogagent.cvpr2024.mind2web.v1"
     )
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
-    ) == ("step_success_rate", "model_call_count")
+        row.measurement_id for row in study.measurement_protocol.definitions
+    ) == ("model_call_count", "step_success_rate")

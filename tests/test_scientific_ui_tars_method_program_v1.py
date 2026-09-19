@@ -239,7 +239,7 @@ def test_ui_tars_osworld_study_binds_exact_cut_and_metrics() -> None:
     assert study.benchmark.cut_digest == benchmark.cut_digest
     assert study.binding_requirements.participants[0].method_id == "ui-tars-desktop-v001"
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     ) == (
         "device_action_count",
         "loop_count",

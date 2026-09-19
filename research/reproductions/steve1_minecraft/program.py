@@ -397,10 +397,7 @@ def _prepare_environment(request: MethodNodeRequest) -> MethodNodeResult:
         },
     )
     return MethodNodeResult(
-        value={
-            "step_index": step_index,
-            "controls": controls,
-        },
+        value=envelope,
         state_update=envelope,
     )
 

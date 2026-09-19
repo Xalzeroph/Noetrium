@@ -44,7 +44,7 @@ def test_toolllm_toolbench_oracle_study_freezes_program_and_tooleval_metrics() -
     assert study.benchmark.benchmark_id == "toolbench"
     assert study.trial_protocol_identity.protocol_id == "toolllm.toolbench.oracle.v1"
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     ) == (
         "give_up_count",
         "query_count",
@@ -57,7 +57,7 @@ def test_toolllm_toolbench_oracle_study_freezes_program_and_tooleval_metrics() -
         for row in study.binding_requirements.participants
         if row.role == "toolllm"
     )
-    assert method.capabilities == capabilities
+    assert method.capability_requirement_ids == capabilities
 
 
 def test_toolllm_retrieval_study_adds_semantic_capability_and_changes_protocol() -> None:
@@ -70,7 +70,7 @@ def test_toolllm_retrieval_study_adds_semantic_capability_and_changes_protocol()
         capabilities,
         retrieval_mode="retrieved-top5",
     )
-    assert oracle.protocol_digest != retrieved.protocol_digest
+    assert oracle.digest() != retrieved.digest()
 
     study = build_toolllm_toolbench_study(
         _benchmark("retrieved-top5"),
@@ -83,7 +83,7 @@ def test_toolllm_retrieval_study_adds_semantic_capability_and_changes_protocol()
         for row in study.binding_requirements.participants
         if row.role == "toolllm"
     )
-    assert method.capabilities == (
+    assert method.capability_requirement_ids == (
         "data.semantic-similarity",
         "weather_for_alpha",
         "news_for_beta",

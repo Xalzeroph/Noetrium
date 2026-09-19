@@ -94,7 +94,7 @@ def test_react_and_reflexion_share_one_alfworld_cut_but_keep_distinct_trial_sema
     assert react.benchmark.cut_digest == reflexion.benchmark.cut_digest
     assert react.repetitions == reflexion.repetitions == 1
     assert react.execution_policy.trial_budget.max_steps == 49
-    assert reflexion.execution_policy.trial_budget.max_steps == 10 * 49
+    assert reflexion.execution_policy.trial_budget.max_turns == 10 * 49
     assert tuple(
         (row.role, row.requirement_id)
         for row in reflexion.binding_requirements.model_roles
@@ -112,7 +112,7 @@ def test_tot_rap_and_lats_compile_search_budget_into_typed_study_identity() -> N
 
     assert tot.execution_policy.trial_budget.max_steps == 4
     assert rap.execution_policy.trial_budget.max_steps == 10
-    assert lats.execution_policy.trial_budget.max_steps == 30
+    assert lats.execution_policy.trial_budget.max_turns == 30
     assert tuple(row.method_id for row in tot.binding_requirements.participants) == ("tree-of-thoughts",)
     assert tuple(row.method_id for row in rap.binding_requirements.participants) == ("rap",)
     assert tuple(row.method_id for row in lats.binding_requirements.participants) == ("lats",)
@@ -122,7 +122,7 @@ def test_tot_rap_and_lats_compile_search_budget_into_typed_study_identity() -> N
         (row.role, row.requirement_id)
         for row in lats.binding_requirements.model_roles
     ) == (
-        ("action", "model.lats.agent"),
+        ("policy", "model.lats.agent"),
         ("reflection", "model.lats.reflection"),
         ("value", "model.lats.value"),
     )

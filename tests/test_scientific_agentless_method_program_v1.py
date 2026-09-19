@@ -46,7 +46,12 @@ def test_agentless_preserves_fixed_non_autonomous_three_stage_semantics() -> Non
 def test_agentless_swebench_study_is_bound_to_generic_swebench_authority() -> None:
     study = build_agentless_swebench_lite_study(_benchmark(), split_id="test")
     assert study.benchmark.benchmark_id == "swe-bench"
-    assert study.method.implementation == "agentless-v1.5.0"
-    assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
-    ) == ("task_resolved", "model_call_count", "validation_count")
+    method = next(
+        row
+        for row in study.binding_requirements.participants
+        if row.role == "workflow"
+    )
+    assert method.method_id == "agentless-v1.5.0"
+    assert {
+        row.measurement_id for row in study.measurement_protocol.definitions
+    } == {"task_resolved", "model_call_count", "validation_count"}
