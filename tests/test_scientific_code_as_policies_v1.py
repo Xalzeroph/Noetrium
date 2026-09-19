@@ -158,7 +158,7 @@ def test_code_as_policies_fidelity_does_not_call_exec_safe_a_sandbox() -> None:
 
 def test_code_as_policies_method_program_uses_environment_effect_authority() -> None:
     program = CODE_AS_POLICIES_METHOD_PROGRAM
-    node_ids = tuple(node.node_id for node in program.nodes)
+    node_ids = tuple(node.node_id for node in program.graph.nodes)
     assert node_ids == (
         "synthesize",
         "prepare_execute",

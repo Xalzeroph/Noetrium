@@ -175,11 +175,18 @@ def saycan_source_content_digest() -> str:
     })
 
 
+def saycan_revision() -> str:
+    return (
+        f"saycan-v0@{SAYCAN_DATA_COMMIT}:"
+        f"{saycan_source_content_digest()}"
+    )
+
+
 def build_saycan_source() -> BenchmarkSourceSpec:
     return BenchmarkSourceSpec(
         source_id=SAYCAN_BENCHMARK_ID,
         kind=BenchmarkSourceKind.GIT,
-        revision_id=SAYCAN_DATA_COMMIT,
+        revision_id=saycan_revision(),
         locator=SAYCAN_DATA_REPOSITORY,
         content_digest=saycan_source_content_digest(),
         metadata={
@@ -211,10 +218,7 @@ def bind_saycan_v0(
         raise ValueError("SayCan records must cover indices 1..101 exactly")
 
     source = build_saycan_source()
-    revision = (
-        f"saycan-v0@{SAYCAN_DATA_COMMIT}:"
-        f"{source.content_digest}"
-    )
+    revision = source.revision_id
     tasks: list[TaskDefinition] = []
     for row in ordered:
         task_digest = canonical_digest({
@@ -301,5 +305,6 @@ __all__ = [
     "bind_saycan_v0_tsv",
     "build_saycan_source",
     "parse_saycan_initial_conditions_tsv",
+    "saycan_revision",
     "saycan_source_content_digest",
 ]

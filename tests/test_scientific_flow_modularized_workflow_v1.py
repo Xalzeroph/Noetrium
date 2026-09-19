@@ -252,7 +252,7 @@ def test_flow_paper_native_study_binds_three_tasks_and_metrics() -> None:
         "flow.iclr2025.three-designed-tasks.v1"
     )
     assert {
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     } == {
         "task_success",
         "human_rating",

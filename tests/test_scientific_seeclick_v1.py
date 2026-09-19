@@ -51,5 +51,5 @@ def test_seeclick_method_and_screenspot_study_are_protocol_bound() -> None:
         "seeclick.acl2024.screenspot.v1"
     )
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     ) == ("grounding_accuracy", "model_call_count")
