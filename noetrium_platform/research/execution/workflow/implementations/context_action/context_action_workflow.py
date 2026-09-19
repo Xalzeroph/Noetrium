@@ -162,6 +162,7 @@ def _observe(request, surface: object, frame: TrialProgramFrame) -> ProgramNodeR
         },
         state_update={
             "observation_digest": observation_digest,
+            "observation": observation_payload(observation),
             "environment_generation": observation.generation,
             "observe_operation_id": operation.operation_id,
             "participant_generations": frame.context.participant_generations,
@@ -207,6 +208,7 @@ def _recall(request, surface: object, frame: TrialProgramFrame) -> ProgramNodeRe
         },
         state_update={
             "context_digest": context_digest,
+            "context_text": recall.context_text,
             "method_generation": recall.method_generation,
             "recall_operation_id": operation.operation_id,
             "participant_generations": frame.context.participant_generations,
