@@ -172,6 +172,6 @@ def test_swe_agent_study_binds_exact_swe_bench_cut_and_measurements() -> None:
     assert study.benchmark_split_id == "test"
     assert study.binding_requirements.participants[0].method_id == "swe-agent-paper-era"
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     ) == ("command_count", "task_resolved", "turn_count")
     assert study.trial_protocol_identity.protocol_id == "swe-agent.paper-era.swe-bench.v1"
