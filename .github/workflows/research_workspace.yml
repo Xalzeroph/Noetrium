@@ -6,8 +6,6 @@ on:
     paths:
       - "research/**"
       - "benchmarks/**"
-      - "tests/test_scientific_*.py"
-      - "tests/test_research_*.py"
       - "tests/test_reproduction_*.py"
       - "tests/test_publication_*.py"
       - "tests/test_lineage_*.py"
@@ -23,8 +21,6 @@ on:
     paths:
       - "research/**"
       - "benchmarks/**"
-      - "tests/test_scientific_*.py"
-      - "tests/test_research_*.py"
       - "tests/test_reproduction_*.py"
       - "tests/test_publication_*.py"
       - "tests/test_lineage_*.py"
@@ -76,31 +72,8 @@ jobs:
           python scripts/sync_research_program.py --check
           python scripts/sync_lineage_status.py --check
 
-      - name: Run research workspace tests
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import subprocess
-          import sys
+      - name: Verify research workspace test ownership
+        run: python research/tools/test_selection.py check
 
-          prefixes = (
-              "test_scientific_",
-              "test_research_",
-              "test_reproduction_",
-              "test_publication_",
-              "test_lineage_",
-          )
-          tests = sorted(
-              str(path)
-              for path in Path("tests").glob("test_*.py")
-              if path.name.startswith(prefixes)
-          )
-          if not tests:
-              raise SystemExit("research workspace test selection is empty")
-          raise SystemExit(
-              subprocess.run(
-                  [sys.executable, "-m", "pytest", "-q", *tests],
-                  check=False,
-              ).returncode
-          )
-          PY
+      - name: Run research workspace tests
+        run: python research/tools/test_selection.py run
