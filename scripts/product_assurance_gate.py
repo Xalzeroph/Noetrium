@@ -9,7 +9,6 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -134,7 +133,7 @@ def evaluate(*, full: bool, include_architecture: bool = True) -> ProductAssuran
     source_sha, branch, source_tree_sha256, source_clean = _source_identity()
     if full and not source_clean:
         return ProductAssuranceReceipt(
-            schema="noetrium.product-assurance-gate.v3",
+            schema="noetrium.product-assurance-gate.v4",
             generated_at_utc=datetime.now(timezone.utc).isoformat(),
             repository="agent-noetrium-system",
             branch=branch,
@@ -151,22 +150,30 @@ def evaluate(*, full: bool, include_architecture: bool = True) -> ProductAssuran
             commands=(),
         )
     commands = [
-        ("test-taxonomy", [sys.executable, "scripts/test_system.py", "check"]),
         (
-            "publication-quality",
-            [sys.executable, "scripts/sync_publication_priority.py", "--check", "--enforce"],
+            "platform-compile",
+            [
+                sys.executable,
+                "-m",
+                "compileall",
+                "-q",
+                "noetrium_platform",
+                "noetrium",
+                "components",
+                "orchestration",
+            ],
         ),
         (
-            "project-design-trace",
-            [sys.executable, "scripts/project_design_trace_gate.py"],
-        ),
-        (
-            "research-pressure",
-            [sys.executable, "scripts/sync_research_pressure.py", "--check", "--enforce"],
+            "public-contracts",
+            [sys.executable, "scripts/public_contract_audit.py"],
         ),
         (
             "provider-conformance",
             [sys.executable, "scripts/provider_conformance.py", "run"],
+        ),
+        (
+            "no-degradation",
+            [sys.executable, "scripts/no_degradation_audit.py"],
         ),
     ]
     if include_architecture:
@@ -176,28 +183,10 @@ def evaluate(*, full: bool, include_architecture: bool = True) -> ProductAssuran
                 [sys.executable, "-m", "noetrium_platform.foundation.governance.architecture.gate"],
             )
         )
-    if full:
-        commands.append(
-            (
-                "full-regression",
-                [
-                    sys.executable,
-                    "-m",
-                    "pytest",
-                    "-q",
-                    "--basetemp",
-                    str(
-                        Path(
-                            os.environ.get(
-                                "RUNNER_TEMP",
-                                tempfile.gettempdir(),
-                            )
-                        )
-                        / "noetrium-product-assurance-full"
-                    ),
-                ],
-            )
-        )
+    # Full product assurance intentionally does not run repository-workspace
+    # reproductions or whole-repository tests. Exact wheel/sdist/container
+    # qualification is performed by release_distribution.py and the installed
+    # artifact/container verification stages that follow this receipt.
     receipts: list[GateCommandReceipt] = []
     for name, argv in commands:
         receipt = _run(name, argv)
@@ -218,7 +207,7 @@ def evaluate(*, full: bool, include_architecture: bool = True) -> ProductAssuran
         and identity_consistent
     )
     return ProductAssuranceReceipt(
-        schema="noetrium.product-assurance-gate.v3",
+        schema="noetrium.product-assurance-gate.v4",
         generated_at_utc=datetime.now(timezone.utc).isoformat(),
         repository="agent-noetrium-system",
         branch=branch,

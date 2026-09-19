@@ -1,0 +1,106 @@
+name: research-workspace
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "research/**"
+      - "benchmarks/**"
+      - "tests/test_scientific_*.py"
+      - "tests/test_research_*.py"
+      - "tests/test_reproduction_*.py"
+      - "tests/test_publication_*.py"
+      - "tests/test_lineage_*.py"
+      - "scripts/sync_benchmark_manifests.py"
+      - "scripts/sync_reproductions.py"
+      - "scripts/sync_publication_priority.py"
+      - "scripts/sync_research_pressure.py"
+      - "scripts/sync_research_program.py"
+      - "scripts/sync_lineage_status.py"
+      - ".github/workflows/research_workspace.yml"
+  push:
+    branches: [main]
+    paths:
+      - "research/**"
+      - "benchmarks/**"
+      - "tests/test_scientific_*.py"
+      - "tests/test_research_*.py"
+      - "tests/test_reproduction_*.py"
+      - "tests/test_publication_*.py"
+      - "tests/test_lineage_*.py"
+      - "scripts/sync_benchmark_manifests.py"
+      - "scripts/sync_reproductions.py"
+      - "scripts/sync_publication_priority.py"
+      - "scripts/sync_research_pressure.py"
+      - "scripts/sync_research_program.py"
+      - "scripts/sync_lineage_status.py"
+      - ".github/workflows/research_workspace.yml"
+
+concurrency:
+  group: research-workspace-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  assurance:
+    name: research workspace assurance
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package and test tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+
+      - name: Reject source-project design traces from platform implementation
+        run: python scripts/project_design_trace_gate.py
+
+      - name: Verify research workspace projections
+        run: |
+          python scripts/sync_benchmark_manifests.py --check
+          python scripts/sync_reproductions.py --check
+          python scripts/sync_publication_priority.py --check --enforce
+          python scripts/sync_research_pressure.py --check --enforce
+          python scripts/sync_research_program.py --check
+          python scripts/sync_lineage_status.py --check
+
+      - name: Run research workspace tests
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          prefixes = (
+              "test_scientific_",
+              "test_research_",
+              "test_reproduction_",
+              "test_publication_",
+              "test_lineage_",
+          )
+          tests = sorted(
+              str(path)
+              for path in Path("tests").glob("test_*.py")
+              if path.name.startswith(prefixes)
+          )
+          if not tests:
+              raise SystemExit("research workspace test selection is empty")
+          raise SystemExit(
+              subprocess.run(
+                  [sys.executable, "-m", "pytest", "-q", *tests],
+                  check=False,
+              ).returncode
+          )
+          PY

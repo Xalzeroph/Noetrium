@@ -162,6 +162,7 @@ def _observe(request, surface: object, frame: TrialProgramFrame) -> ProgramNodeR
         },
         state_update={
             "observation_digest": observation_digest,
+            "observation": observation_payload(observation),
             "environment_generation": observation.generation,
             "observe_operation_id": operation.operation_id,
             "participant_generations": frame.context.participant_generations,
@@ -177,6 +178,8 @@ def _observe(request, surface: object, frame: TrialProgramFrame) -> ProgramNodeR
 def _ingest(request, surface: object, frame: TrialProgramFrame) -> ProgramNodeResult:
     operations = _surface(surface)
     observation_value = request.data.get("observation")
+    if observation_value is None and isinstance(request.previous_value, dict):
+        observation_value = request.previous_value.get("observation")
     if observation_value is None:
         raise RuntimeError("context-action ingest requires prior observation")
     observation = observation_from_payload(observation_value)
@@ -207,6 +210,7 @@ def _recall(request, surface: object, frame: TrialProgramFrame) -> ProgramNodeRe
         },
         state_update={
             "context_digest": context_digest,
+            "context_text": recall.context_text,
             "method_generation": recall.method_generation,
             "recall_operation_id": operation.operation_id,
             "participant_generations": frame.context.participant_generations,
