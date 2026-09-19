@@ -584,6 +584,17 @@
       "priority_class": "P1_FLAGSHIP",
       "reproduction_method_id": "drvideo",
       "evidence_url": "https://openaccess.thecvf.com/content/CVPR2025/html/Ma_DrVideo_Document_Retrieval_Based_Long_Video_Understanding_CVPR_2025_paper.html"
+    },
+    {
+      "id": "optimus1",
+      "kind": "method",
+      "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
+      "year": 2024,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "optimus1-minecraft",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html"
     }
   ],
   "explicitly_ineligible_current_items": [
