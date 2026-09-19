@@ -88,6 +88,7 @@ class EgoSchemaTaskRecord:
 
 def build_egoschema_source(
     *,
+    split_id: str,
     questions_content_sha256: str,
     public_answers_content_sha256: str,
 ) -> BenchmarkSourceSpec:
@@ -99,6 +100,8 @@ def build_egoschema_source(
         public_answers_content_sha256,
         "EgoSchema public answers content digest",
     )
+    if split_id not in {EGOSCHEMA_PUBLIC_SPLIT, EGOSCHEMA_FULL_SPLIT}:
+        raise ValueError("unsupported EgoSchema resolved split")
     content_digest = canonical_digest({
         "repository": EGOSCHEMA_SOURCE_REPOSITORY,
         "commit": EGOSCHEMA_SOURCE_COMMIT,
@@ -108,7 +111,10 @@ def build_egoschema_source(
     return BenchmarkSourceSpec(
         source_id=EGOSCHEMA_BENCHMARK_ID,
         kind=BenchmarkSourceKind.GIT,
-        revision_id=EGOSCHEMA_SOURCE_COMMIT,
+        revision_id=(
+            f"{EGOSCHEMA_SOURCE_COMMIT}:{split_id}:"
+            f"{content_digest}"
+        ),
         locator=EGOSCHEMA_SOURCE_REPOSITORY,
         content_digest=content_digest,
         metadata={
@@ -117,6 +123,7 @@ def build_egoschema_source(
             "answer_choices_per_question": "5",
             "evaluation": "zero-shot-multiple-choice",
             "full_evaluation": "official-server-or-kaggle",
+            "resolved_split": split_id,
         },
     )
 
@@ -150,13 +157,11 @@ def _build_cut(
         raise ValueError("EgoSchema q_uid values must be unique")
 
     source = build_egoschema_source(
+        split_id=split_id,
         questions_content_sha256=questions_content_sha256,
         public_answers_content_sha256=public_answers_content_sha256,
     )
-    revision = (
-        f"{EGOSCHEMA_SOURCE_COMMIT}:{split_id}:"
-        f"{source.content_digest}"
-    )
+    revision = source.revision_id
     tasks: list[TaskDefinition] = []
     for row in ordered:
         task_digest = canonical_digest({
