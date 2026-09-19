@@ -150,6 +150,9 @@ def build_deps_minecraft_70_cut() -> BenchmarkTaskSet:
         raise RuntimeError("DEPS official task ids must be unique")
 
     source = build_deps_minecraft_source()
+    canonical_identities = tuple(
+        sorted(DEPS_TASK_IDENTITIES, key=lambda row: row[0])
+    )
     tasks = tuple(
         TaskDefinition(
             task_id=f"deps-minecraft:{task_id}",
@@ -196,7 +199,7 @@ def build_deps_minecraft_70_cut() -> BenchmarkTaskSet:
             alias,
             episode,
             target_object,
-        ) in DEPS_TASK_IDENTITIES
+        ) in canonical_identities
     )
     all_ids = tuple(row.task_id for row in tasks)
     groups = tuple(sorted({row[2] for row in DEPS_TASK_IDENTITIES}))
@@ -205,7 +208,7 @@ def build_deps_minecraft_70_cut() -> BenchmarkTaskSet:
             f"group-{group.lower()}",
             tuple(
                 task.task_id
-                for task, identity in zip(tasks, DEPS_TASK_IDENTITIES)
+                for task, identity in zip(tasks, canonical_identities)
                 if identity[2] == group
             ),
         )
