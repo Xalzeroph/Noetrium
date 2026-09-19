@@ -50,7 +50,7 @@ def build_toolformer_eval_task_set(
     if any(type(row) is not ToolformerEvalRecord for row in records):
         raise TypeError("Toolformer evaluation records must be typed")
     require_sha256(dataset_content_sha256, "Toolformer dataset_content_sha256")
-    ordered = tuple(sorted(records, key=lambda row: (row.dataset, row.task_id)))
+    ordered = tuple(sorted(records, key=lambda row: row.task_id))
     ids = tuple(row.task_id for row in ordered)
     if len(ids) != len(set(ids)):
         raise ValueError("Toolformer task ids must be unique")
@@ -82,18 +82,21 @@ def build_toolformer_eval_task_set(
         source_digest=dataset_content_sha256,
         task_schema_id="toolformer.zero-shot-task.v1",
         tasks=tasks,
-        splits=(
-            TaskSetSplit("all", ids),
-            TaskSetSplit(TOOLFORMER_SPLIT_ID, ids),
-            *tuple(
-                TaskSetSplit(
-                    f"dataset:{dataset}",
-                    tuple(row.task_id for row in ordered if row.dataset == dataset),
-                )
-                for dataset in TOOLFORMER_DATASETS
-                if any(row.dataset == dataset for row in ordered)
+        splits=tuple(sorted(
+            (
+                TaskSetSplit("all", ids),
+                TaskSetSplit(TOOLFORMER_SPLIT_ID, ids),
+                *tuple(
+                    TaskSetSplit(
+                        f"dataset:{dataset}",
+                        tuple(row.task_id for row in ordered if row.dataset == dataset),
+                    )
+                    for dataset in TOOLFORMER_DATASETS
+                    if any(row.dataset == dataset for row in ordered)
+                ),
             ),
-        ),
+            key=lambda split: split.split_id,
+        )),
         selection_policy_digest=canonical_digest({
             "datasets": TOOLFORMER_DATASETS,
             "dataset_content_sha256": dataset_content_sha256,
