@@ -779,7 +779,9 @@
         }
       ],
       "priority": 1,
-      "benchmark_ids": [],
+      "benchmark_ids": [
+        "egoschema"
+      ],
       "platform_pressure": [
         "benchmark/video",
         "data/semantic-similarity",
