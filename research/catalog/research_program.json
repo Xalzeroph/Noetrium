@@ -2925,6 +2925,49 @@
       "evidence_refs": []
     },
     {
+      "method_id": "vca-video",
+      "title": "VCA: Video Curious Agent for Long Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "active_video_exploration",
+        "curiosity_driven_search",
+        "long_video_understanding",
+        "multimodal_memory"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "vca_video",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "benchmark/video",
+        "execution/machines/memory",
+        "execution/machines/method",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "VLM self-generated intrinsic reward",
+        "fixed-size selected-frame memory",
+        "non-greedy temperature-controlled segment choice",
+        "reward-history-conditioned exploration",
+        "tree-structured video-segment exploration"
+      ],
+      "platform_owned": [
+        "MethodMachine and MemoryMachine journal authority",
+        "artifact/evidence lineage",
+        "benchmark cut identity",
+        "multimodal model transport",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
       "method_id": "videoagent-memory",
       "title": "VideoAgent: A Memory-augmented Multimodal Agent for Video Understanding",
       "paper_uri": "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/3241_ECCV_2024_paper.php",
