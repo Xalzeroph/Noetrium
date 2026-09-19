@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vca_video",
-  "package_digest": "465aa38aeaba66735449d4fbc496e64376b1ddb23303e0e5fb8d617e2c9c3109",
-  "definition_digest": "041184e3275836b5227b99a0857ec3e2df6473aa5419e333057125a2592e8063",
+  "package_digest": "e840762bd5cf0f71b9a025adabc38df881de834aca5f1ef061f03d3edab1f402",
+  "definition_digest": "102d50a6a8f0ec9a24af11f9c2658cf9a071fe0c30de03bad4e57eb57dcc3574",
   "source_registry_digest": "993b22ccf2d2e42518ffca18ac76bb9e7465b2b1dfd22cf2c63ca2867c6a8a4b",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -29,7 +29,9 @@
       "multimodal_memory"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "egoschema"
+    ],
     "platform_pressure": [
       "benchmark/video",
       "execution/machines/memory",
@@ -55,7 +57,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html"
     ],
-    "catalog_digest": "0dce1fb6af6284239d9d403bacd9c92375869ec5e896fa9f844c6f403b07dd42"
+    "catalog_digest": "526f9052291f6a8e1f853bf1a1b55c4e9aa88c382ea8990e65f128b15db14800"
   },
   "source_lanes": [
     {
@@ -76,16 +78,33 @@
       "path": "research/reproductions/vca_video/fidelity.py",
       "declaration_digest": "562acdd886619cd0fd092ad0421b525f9e5d5b89be4a06ac42ae29623686ff6e",
       "content_sha256": "8c734ee1b02bfbfd601f4139768648717a1570fcaa6fd6c3de81cec0a0418c25"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/vca_video/program.py",
+      "declaration_digest": "05be28204185be60f25035c661840b08e3dd19ea5c30320bc4ce702018aac607",
+      "content_sha256": "acb53333ed10348ded2e0a639289412340061dcae54baaaa0f548a8fc05e7de7"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/vca_video/study.py",
+      "declaration_digest": "ecea08a091320896f8014d8b2bd449f1ff27b918171a2669b251677417c6800f",
+      "content_sha256": "5437cb217e7537ab4b64a000a616693d9275ded3d6035ea48427252f130726f6"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/vca_video/source.py",
+      "declaration_digest": "7cd9537bbaf1396e71030a6d40fb4582ff292702e9a31b9cd99f99e502332126",
+      "content_sha256": "acdf7ef5c3a907cf2cb35a60d0153b4f37dcf2d0592899ce151fb00814f2161e"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/vca_video/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [],
   "blockers": [
-    "The paper-native tree-search MethodProgram and fixed-size memory program are not yet bound.",
-    "EgoSchema, LVBench, MMBench-Video and Video-MME benchmark cuts are not yet content-addressed in this package.",
-    "The ICCV evaluation Study and executable model/provider bindings remain to be implemented."
+    "LVBench, MMBench-Video and Video-MME benchmark cuts remain to be content-addressed alongside the bound EgoSchema public cut.",
+    "Matched-result execution still requires the released multimodal model/provider binding and exact video assets."
   ],
   "evidence_refs": [],
   "scientific_tests": [
