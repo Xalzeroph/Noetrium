@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from research.reproductions.drvideo.fidelity import DRVIDEO_REFERENCE_FIDELITY
+from research.reproductions.drvideo.program import DRVIDEO_METHOD_PROGRAM
 
 
 def test_drvideo_cvpr2025_fidelity_freezes_document_agent_pipeline() -> None:
@@ -29,3 +30,29 @@ def test_drvideo_cvpr2025_fidelity_freezes_document_agent_pipeline() -> None:
     assert fidelity.moviechat_breakpoint_reported_accuracy == 0.564
     assert fidelity.videomme_long_without_subtitles_accuracy == 0.517
     assert fidelity.videomme_long_with_subtitles_accuracy == 0.717
+
+
+def test_drvideo_method_program_compiles_explicit_document_agent_loop() -> None:
+    program = DRVIDEO_METHOD_PROGRAM
+
+    assert program.program_identity.method.method_id == "drvideo"
+    assert program.required_capabilities == ("data.semantic-similarity",)
+    assert tuple(node.node_id for node in program.graph.nodes) == (
+        "prepare_retrieval",
+        "retrieve",
+        "record_retrieval",
+        "initial_augment",
+        "record_initial_augment",
+        "planning",
+        "route_planning",
+        "interaction",
+        "record_interaction",
+        "augment",
+        "record_augment",
+        "answer",
+        "record_answer",
+        "return",
+    )
+    assert program.graph.node("planning").max_visits == 2
+    assert program.graph.node("interaction").max_visits == 2
+    assert program.graph.node("augment").max_visits == 2
