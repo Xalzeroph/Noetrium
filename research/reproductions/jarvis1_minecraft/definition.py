@@ -81,6 +81,10 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/jarvis1_minecraft/study.py",
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind.METHOD_PROGRAM,
+            path="research/reproductions/jarvis1_minecraft/program.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind.RESEARCH_PROGRAM,
             path="research/reproductions/jarvis1_minecraft/memory.py",
         ),
@@ -89,7 +93,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/jarvis1_minecraft/source.py",
         ),
     ),
-    primary_executable="research/reproductions/jarvis1_minecraft/memory.py",
+    primary_executable="research/reproductions/jarvis1_minecraft/program.py",
     reported_results=(),
     reference_baselines=(),
     deltas=(
@@ -135,6 +139,7 @@ REPRODUCTION = ReproductionDefinition(
     evidence_refs=(),
     scientific_tests=(
         "tests/test_scientific_jarvis1_memory_v1.py",
+        "tests/test_scientific_jarvis1_method_program_v1.py",
         "tests/test_scientific_jarvis1_benchmark_study_v1.py",
     ),
 )
