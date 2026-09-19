@@ -59,11 +59,11 @@ def test_storm_freshwiki_study_binds_paper_metrics() -> None:
     assert tuple(
         row.measurement_id for row in study.measurement_protocol.definitions
     ) == (
-        "heading_soft_recall",
-        "heading_entity_recall",
-        "rouge",
         "entity_recall",
-        "rubric_score",
+        "heading_entity_recall",
+        "heading_soft_recall",
         "model_call_count",
+        "rouge",
+        "rubric_score",
         "search_call_count",
     )
