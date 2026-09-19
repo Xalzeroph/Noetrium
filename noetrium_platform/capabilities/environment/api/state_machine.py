@@ -157,7 +157,8 @@ class StateTransition:
         )
 
 
-@runtime_checkable\nclass StateMachineDynamicsPort(Protocol):
+@runtime_checkable
+class StateMachineDynamicsPort(Protocol):
     """Domain semantics injected behind the generic closed-world runtime."""
 
     @property
