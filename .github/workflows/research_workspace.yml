@@ -67,12 +67,19 @@ jobs:
       - name: Reject source-project design traces from platform implementation
         run: python scripts/project_design_trace_gate.py
 
-      - name: Verify research workspace projections
+      - name: Verify research workspace projections converge
         run: |
+          python scripts/sync_benchmark_manifests.py
+          python scripts/sync_reproductions.py
+          python scripts/sync_research_pressure.py
+          python scripts/sync_publication_priority.py
+          python scripts/sync_research_program.py
+          python scripts/sync_lineage_status.py
+
           python scripts/sync_benchmark_manifests.py --check
           python scripts/sync_reproductions.py --check
-          python scripts/sync_publication_priority.py --check --enforce
           python scripts/sync_research_pressure.py --check --enforce
+          python scripts/sync_publication_priority.py --check --enforce
           python scripts/sync_research_program.py --check
           python scripts/sync_lineage_status.py --check
 
