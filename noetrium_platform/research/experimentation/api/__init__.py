@@ -20,6 +20,11 @@ from .research_compiler import (
     diff_research_plans, resolve_research_requirements,
 )
 from .method_host import ResearchMethodHost, ResearchMethodHostPort
+from .sharding import (
+    CompiledExperimentShardPlan,
+    ExperimentShard,
+    compile_experiment_shard_plan,
+)
 from noetrium_platform.research.experimentation.study.runtime.trial import (
     CompiledTrialExperimentProgram,
     TrialExperimentProgramBinding,
@@ -119,6 +124,9 @@ __all__ = [
     "CompiledResearchPlan",
     "ResearchMethodHost",
     "ResearchMethodHostPort",
+    "CompiledExperimentShardPlan",
+    "ExperimentShard",
+    "compile_experiment_shard_plan",
     "CompiledTrialExperimentProgram",
     "TrialExperimentProgramBinding",
     "compile_trial_experiment_program",
