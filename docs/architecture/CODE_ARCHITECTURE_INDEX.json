@@ -11752,6 +11752,56 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ExecutableProgramIdentity",
+      "target": "noetrium_platform.research.execution.api.program_execution.PublishedExecutableProgramSource"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ExecutableProgramSourcePublicationPort",
+      "target": "noetrium_platform.research.execution.api.program_execution.PublishedExecutableProgramSource"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionPort",
+      "target": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReceipt"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionPort",
+      "target": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReceipt",
+      "target": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionStatus"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReconciliationResult",
+      "target": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReceipt"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReconciliationResult",
+      "target": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReconciliationDisposition"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionRecoveryPort",
+      "target": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReconciliationResult"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionRecoveryPort",
+      "target": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionRequest",
+      "target": "noetrium_platform.research.execution.api.program_execution.ExecutableProgramIdentity"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.execution.capability.api.invocation.CapabilityInvocationPipelineFactoryPort",
       "target": "noetrium_platform.research.execution.capability.api.invocation.CapabilityInvocationPipelinePort"
     },
@@ -11964,6 +12014,131 @@
       "kind": "references",
       "source": "noetrium_platform.research.execution.machines.child_machine.RegisteredChildResearchMachineExecutor",
       "target": "noetrium_platform.research.execution.machines.child_machine.ChildResearchMachineRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.BatchCapableRegisteredChildResearchMachineExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine.ChildResearchMachineExecution"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.BatchCapableRegisteredChildResearchMachineExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine.ChildResearchMachineRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.BatchCapableRegisteredChildResearchMachineExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine.RegisteredChildResearchMachineExecutor"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.BatchCapableRegisteredChildResearchMachineExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecution"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.BatchCapableRegisteredChildResearchMachineExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.BatchCapableRegisteredChildResearchMachineExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecution",
+      "target": "noetrium_platform.research.execution.machines.child_machine.ChildResearchMachineExecution"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecution",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildBatchExecutionMode"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecution"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchItem",
+      "target": "noetrium_platform.research.execution.machines.child_machine.ChildResearchMachineRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsPort",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsPort",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult",
+      "target": "noetrium_platform.research.execution.machines.child_machine.ChildResearchMachineExecution"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildBatchExecutionMode"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchPort",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchItem"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.RegisteredSerialChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine.RegisteredChildResearchMachineExecutor"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.RegisteredSerialChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.RegisteredSerialChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ThreadPoolChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine.RegisteredChildResearchMachineExecutor"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ThreadPoolChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchItem"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ThreadPoolChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ThreadPoolChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest"
     },
     {
       "kind": "references",
@@ -13047,6 +13222,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.execution.workflow.implementations.context_action.action_preparation.ActionPreparationCoordinator",
+      "target": "noetrium_platform.research.execution.workflow.implementations.context_action.action_slot_guard.ActionSlotInspection"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.execution.workflow.implementations.context_action.action_reconciliation.ActionReconciliationPolicy",
       "target": "noetrium_platform.research.execution.workflow.implementations.context_action.effect_safety.EffectSafetyPolicy"
     },
@@ -13459,6 +13639,21 @@
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.api.research_compiler.CompiledResearchPlan",
       "target": "noetrium_platform.research.experimentation.study.api.plan.ExperimentPlan"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.api.sharding.CompiledExperimentShardPlan",
+      "target": "noetrium_platform.research.experimentation.api.program.CompiledExperimentProgram"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.api.sharding.CompiledExperimentShardPlan",
+      "target": "noetrium_platform.research.experimentation.api.sharding.ExperimentBatchPlacement"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.api.sharding.CompiledExperimentShardPlan",
+      "target": "noetrium_platform.research.experimentation.api.sharding.ExperimentShard"
     },
     {
       "kind": "references",
@@ -14604,6 +14799,11 @@
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.study.api.authoring.Study",
       "target": "noetrium_platform.research.experimentation.study.api.benchmark.TrialBudget"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.Study",
+      "target": "noetrium_platform.research.experimentation.study.api.contracts.StudyConcurrencyPolicy"
     },
     {
       "kind": "references",
@@ -16859,10 +17059,12 @@
       "bases": [
         "Protocol"
       ],
-      "decorators": [],
+      "decorators": [
+        "runtime_checkable"
+      ],
       "fields": [],
       "kind": "protocol",
-      "line": 160,
+      "line": 161,
       "methods": [
         "identity",
         "transition"
@@ -21648,7 +21850,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 546,
+      "line": 576,
       "methods": [
         "__init__",
         "open_session"
@@ -22004,12 +22206,14 @@
       ],
       "decorators": [],
       "fields": [
+        "BACK",
         "CLICK",
         "NAVIGATE",
         "SCROLL",
         "SELECT",
         "SUBMIT",
-        "TYPE"
+        "TYPE",
+        "WAIT"
       ],
       "kind": "enum",
       "line": 9,
@@ -22037,7 +22241,7 @@
         "supports_dom"
       ],
       "kind": "dataclass",
-      "line": 19,
+      "line": 21,
       "methods": [
         "__post_init__",
         "spec_digest"
@@ -73473,6 +73677,256 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "entrypoint",
+        "interface_schema_id",
+        "language",
+        "parent_program_digests",
+        "program_digest",
+        "program_id",
+        "source"
+      ],
+      "kind": "dataclass",
+      "line": 91,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "ExecutableProgramIdentity",
+      "nesting": [
+        "ExecutableProgramIdentity"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.ExecutableProgramIdentity",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 237,
+      "methods": [
+        "publish_source"
+      ],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "ExecutableProgramSourcePublicationPort",
+      "nesting": [
+        "ExecutableProgramSourcePublicationPort"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.ExecutableProgramSourcePublicationPort",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 432,
+      "methods": [
+        "execute"
+      ],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "ProgramExecutionPort",
+      "nesting": [
+        "ProgramExecutionPort"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionPort",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "effect_certainty",
+        "effect_receipt_digests",
+        "evidence_digests",
+        "failure_code",
+        "isolation_evidence_digests",
+        "output_artifacts",
+        "receipt_digest",
+        "request_digest",
+        "result",
+        "status"
+      ],
+      "kind": "dataclass",
+      "line": 256,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "ProgramExecutionReceipt",
+      "nesting": [
+        "ProgramExecutionReceipt"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReceipt",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "APPLIED",
+        "NOT_APPLIED",
+        "REJECTED",
+        "UNKNOWN"
+      ],
+      "kind": "enum",
+      "line": 353,
+      "methods": [],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "ProgramExecutionReconciliationDisposition",
+      "nesting": [
+        "ProgramExecutionReconciliationDisposition"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReconciliationDisposition",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "disposition",
+        "evidence_digests",
+        "receipt",
+        "request_digest"
+      ],
+      "kind": "dataclass",
+      "line": 361,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "ProgramExecutionReconciliationResult",
+      "nesting": [
+        "ProgramExecutionReconciliationResult"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionReconciliationResult",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 419,
+      "methods": [
+        "effect_recovery_durability",
+        "reconcile"
+      ],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "ProgramExecutionRecoveryPort",
+      "nesting": [
+        "ProgramExecutionRecoveryPort"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionRecoveryPort",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "capability_ids",
+        "capability_surface_digest",
+        "capability_surface_id",
+        "execution_target_digest",
+        "input_artifacts",
+        "invocation",
+        "isolation_requirement_id",
+        "program",
+        "request_digest",
+        "resource_requirement_digest"
+      ],
+      "kind": "dataclass",
+      "line": 150,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "ProgramExecutionRequest",
+      "nesting": [
+        "ProgramExecutionRequest"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionRequest",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "FAILED",
+        "REJECTED",
+        "SUCCEEDED"
+      ],
+      "kind": "enum",
+      "line": 249,
+      "methods": [],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "ProgramExecutionStatus",
+      "nesting": [
+        "ProgramExecutionStatus"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.ProgramExecutionStatus",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "content",
+        "identity"
+      ],
+      "kind": "dataclass",
+      "line": 69,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "name": "PublishedExecutableProgramSource",
+      "nesting": [
+        "PublishedExecutableProgramSource"
+      ],
+      "qualname": "noetrium_platform.research.execution.api.program_execution.PublishedExecutableProgramSource",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "deployment_id",
         "qualification_digest",
         "stack_digest"
@@ -74070,6 +74524,56 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "artifacts",
+        "content",
+        "producer_component_id",
+        "retention",
+        "scope"
+      ],
+      "kind": "dataclass",
+      "line": 26,
+      "methods": [
+        "__post_init__",
+        "publish_source"
+      ],
+      "module": "noetrium_platform.research.execution.composition.program_source",
+      "name": "ArtifactExecutableProgramSourcePublisher",
+      "nesting": [
+        "ArtifactExecutableProgramSourcePublisher"
+      ],
+      "qualname": "noetrium_platform.research.execution.composition.program_source.ArtifactExecutableProgramSourcePublisher",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 18,
+      "methods": [
+        "__init__",
+        "effect_recovery_durability",
+        "_qualify",
+        "_bind_qualification",
+        "execute",
+        "reconcile"
+      ],
+      "module": "noetrium_platform.research.execution.composition.qualified_program_execution",
+      "name": "QualifiedProgramExecutionBinding",
+      "nesting": [
+        "QualifiedProgramExecutionBinding"
+      ],
+      "qualname": "noetrium_platform.research.execution.composition.qualified_program_execution.QualifiedProgramExecutionBinding",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "decision_cycle_id",
         "run_id",
         "session_id",
@@ -74452,6 +74956,8 @@
       "methods": [
         "__init__",
         "register",
+        "register_static",
+        "executor",
         "resolve",
         "host_ids",
         "identity_digest"
@@ -74498,7 +75004,7 @@
         "link"
       ],
       "kind": "dataclass",
-      "line": 289,
+      "line": 343,
       "methods": [
         "__post_init__",
         "status",
@@ -74518,7 +75024,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 314,
+      "line": 368,
       "methods": [
         "__init__",
         "_project_execution",
@@ -74596,7 +75102,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 222,
+      "line": 276,
       "methods": [
         "__init__",
         "identity_digest",
@@ -74609,6 +75115,266 @@
         "RegisteredChildResearchMachineExecutor"
       ],
       "qualname": "noetrium_platform.research.execution.machines.child_machine.RegisteredChildResearchMachineExecutor",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 367,
+      "methods": [
+        "__init__",
+        "identity_digest",
+        "execute",
+        "step_once",
+        "execute_batch"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "BatchCapableRegisteredChildResearchMachineExecutor",
+      "nesting": [
+        "BatchCapableRegisteredChildResearchMachineExecutor"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.BatchCapableRegisteredChildResearchMachineExecutor",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "CONCURRENT",
+        "SERIAL"
+      ],
+      "kind": "enum",
+      "line": 50,
+      "methods": [],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "ChildBatchExecutionMode",
+      "nesting": [
+        "ChildBatchExecutionMode"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ChildBatchExecutionMode",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "evidence_digests",
+        "execution_digest",
+        "executions",
+        "mechanics_identity_digest",
+        "mode",
+        "receipt",
+        "request_digest"
+      ],
+      "kind": "dataclass",
+      "line": 204,
+      "methods": [
+        "__post_init__",
+        "links",
+        "results"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "ChildResearchMachineBatchExecution",
+      "nesting": [
+        "ChildResearchMachineBatchExecution"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecution",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 283,
+      "methods": [
+        "__init__",
+        "identity_digest",
+        "execute"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "ChildResearchMachineBatchExecutor",
+      "nesting": [
+        "ChildResearchMachineBatchExecutor"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecutor",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "item_digest",
+        "participant_id",
+        "request"
+      ],
+      "kind": "dataclass",
+      "line": 56,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "ChildResearchMachineBatchItem",
+      "nesting": [
+        "ChildResearchMachineBatchItem"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchItem",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 191,
+      "methods": [
+        "identity_digest",
+        "execute_batch"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "ChildResearchMachineBatchMechanicsPort",
+      "nesting": [
+        "ChildResearchMachineBatchMechanicsPort"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsPort",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "evidence_digests",
+        "executions",
+        "mode",
+        "receipt",
+        "request_digest"
+      ],
+      "kind": "dataclass",
+      "line": 135,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "ChildResearchMachineBatchMechanicsResult",
+      "nesting": [
+        "ChildResearchMachineBatchMechanicsResult"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 178,
+      "methods": [
+        "identity_digest",
+        "execute_batch"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "ChildResearchMachineBatchPort",
+      "nesting": [
+        "ChildResearchMachineBatchPort"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchPort",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "batch_id",
+        "items",
+        "parent_machine_id",
+        "request_digest",
+        "require_concurrent",
+        "selection_digest"
+      ],
+      "kind": "dataclass",
+      "line": 80,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "ChildResearchMachineBatchRequest",
+      "nesting": [
+        "ChildResearchMachineBatchRequest"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "ChildResearchMachineBatchMechanicsPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 551,
+      "methods": [
+        "__init__",
+        "identity_digest",
+        "execute_batch"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "RegisteredSerialChildResearchBatchMechanics",
+      "nesting": [
+        "RegisteredSerialChildResearchBatchMechanics"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.RegisteredSerialChildResearchBatchMechanics",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "ChildResearchMachineBatchMechanicsPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 413,
+      "methods": [
+        "__init__",
+        "identity_digest",
+        "execute_batch"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "name": "ThreadPoolChildResearchBatchMechanics",
+      "nesting": [
+        "ThreadPoolChildResearchBatchMechanics"
+      ],
+      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ThreadPoolChildResearchBatchMechanics",
       "system_key": "execution/research_program",
       "top_system": "execution"
     },
@@ -78002,6 +78768,37 @@
       "top_system": "execution"
     },
     {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 278,
+      "methods": [
+        "__init__",
+        "capabilities",
+        "effect_recovery_durability",
+        "describe",
+        "invoke",
+        "_program_request",
+        "prepare_capability_effect",
+        "execute_prepared_capability",
+        "reconcile_prepared_capability",
+        "_decode_handle",
+        "_require_handle_identity",
+        "_require_handle",
+        "_require_receipt",
+        "_capability_result"
+      ],
+      "module": "noetrium_platform.research.execution.runtime.program_execution_capability",
+      "name": "ProgramExecutionCapabilityBinding",
+      "nesting": [
+        "ProgramExecutionCapabilityBinding"
+      ],
+      "qualname": "noetrium_platform.research.execution.runtime.program_execution_capability.ProgramExecutionCapabilityBinding",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
       "bases": [
         "StrEnum"
       ],
@@ -81092,8 +81889,8 @@
       ],
       "decorators": [],
       "fields": [
-        "REPETITION_UNITS",
-        "VARIANT_ASSIGNMENTS"
+        "PARALLEL_ASSIGNMENTS",
+        "REPETITION_UNITS"
       ],
       "kind": "enum",
       "line": 52,
@@ -81198,6 +81995,91 @@
         "ResearchPlanDiff"
       ],
       "qualname": "noetrium_platform.research.experimentation.api.research_compiler.ResearchPlanDiff",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "batch_placements",
+        "batch_plan_digest",
+        "cost_model_digest",
+        "experiment_plan_digest",
+        "shard_count",
+        "shard_plan_digest",
+        "shards"
+      ],
+      "kind": "dataclass",
+      "line": 126,
+      "methods": [
+        "__post_init__",
+        "assignment_digests",
+        "shard",
+        "placement_for_batch",
+        "worker_scope_for_assignment",
+        "assert_complete_for"
+      ],
+      "module": "noetrium_platform.research.experimentation.api.sharding",
+      "name": "CompiledExperimentShardPlan",
+      "nesting": [
+        "CompiledExperimentShardPlan"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.api.sharding.CompiledExperimentShardPlan",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "batch_digest",
+        "batch_id",
+        "placement_digest",
+        "shard_assignments"
+      ],
+      "kind": "dataclass",
+      "line": 73,
+      "methods": [
+        "__post_init__",
+        "assignment_digests"
+      ],
+      "module": "noetrium_platform.research.experimentation.api.sharding",
+      "name": "ExperimentBatchPlacement",
+      "nesting": [
+        "ExperimentBatchPlacement"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.api.sharding.ExperimentBatchPlacement",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "assignment_digests",
+        "estimated_cost_units",
+        "shard_digest",
+        "shard_index",
+        "worker_scope_id"
+      ],
+      "kind": "dataclass",
+      "line": 34,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.experimentation.api.sharding",
+      "name": "ExperimentShard",
+      "nesting": [
+        "ExperimentShard"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.api.sharding.ExperimentShard",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -86279,7 +87161,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 129,
+      "line": 130,
       "methods": [
         "__init__",
         "definition",
@@ -86307,7 +87189,7 @@
         "usage"
       ],
       "kind": "dataclass",
-      "line": 96,
+      "line": 97,
       "methods": [
         "__post_init__",
         "requirement_for"
@@ -86336,7 +87218,7 @@
         "treatment"
       ],
       "kind": "dataclass",
-      "line": 49,
+      "line": 50,
       "methods": [
         "__post_init__",
         "requirement"
@@ -86748,7 +87630,7 @@
         "variant_id"
       ],
       "kind": "dataclass",
-      "line": 227,
+      "line": 258,
       "methods": [
         "__post_init__"
       ],
@@ -86770,10 +87652,10 @@
         "cpu_isolation",
         "environment_isolation",
         "gpu_isolation",
+        "max_parallel_assignments",
         "max_parallel_repetitions",
-        "max_parallel_variants",
         "model_admission_policy",
-        "parallel_variants",
+        "parallel_assignments",
         "repetition_timeout_seconds",
         "scheduler_policy"
       ],
@@ -86781,6 +87663,7 @@
       "line": 93,
       "methods": [
         "serial_shared_v1",
+        "isolated_parallel_v1",
         "__post_init__"
       ],
       "module": "noetrium_platform.research.experimentation.study.api.contracts",
@@ -86804,7 +87687,7 @@
         "unit_digest"
       ],
       "kind": "dataclass",
-      "line": 275,
+      "line": 306,
       "methods": [
         "__post_init__"
       ],
@@ -86830,7 +87713,7 @@
         "protocol_digest"
       ],
       "kind": "dataclass",
-      "line": 307,
+      "line": 338,
       "methods": [
         "__post_init__"
       ],
@@ -86858,7 +87741,7 @@
         "variant_id"
       ],
       "kind": "dataclass",
-      "line": 354,
+      "line": 385,
       "methods": [
         "__post_init__"
       ],
@@ -86881,7 +87764,7 @@
         "metrics"
       ],
       "kind": "dataclass",
-      "line": 343,
+      "line": 374,
       "methods": [
         "__post_init__"
       ],
@@ -86912,7 +87795,7 @@
         "workload_id"
       ],
       "kind": "dataclass",
-      "line": 183,
+      "line": 214,
       "methods": [
         "__post_init__"
       ],
@@ -94100,6 +94983,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.research.execution.machines.child_machine.ChildResearchHostRegistry",
+      "target": "noetrium_platform.research.execution.machines.child_machine.RegisteredChildResearchMachineExecutor"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.research.execution.machines.child_machine.ChildResearchMachineExecutor",
       "target": "noetrium_platform.research.execution.machines.child_machine.ChildResearchMachineExecution"
     },
@@ -94112,6 +95000,26 @@
       "kind": "constructs",
       "source": "noetrium_platform.research.execution.machines.child_machine.RegisteredChildResearchMachineExecutor",
       "target": "noetrium_platform.research.execution.machines.child_machine.ChildResearchMachineExecutor"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.BatchCapableRegisteredChildResearchMachineExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecutor"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecutor",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchExecution"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.RegisteredSerialChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ThreadPoolChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult"
     },
     {
       "kind": "constructs",
@@ -94911,6 +95819,11 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.study.api.authoring.Study",
+      "target": "noetrium_platform.research.experimentation.study.api.design.StudyExecutionPolicy"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.Study",
       "target": "noetrium_platform.research.experimentation.study.api.measurement.MeasurementProtocol"
     },
     {
@@ -95050,13 +95963,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3146,
-    "classes": 3120,
-    "constructor_edges": 850,
-    "inheritance_edges": 136,
-    "module_import_edges": 5435,
+    "association_edges": 3186,
+    "classes": 3147,
+    "constructor_edges": 856,
+    "inheritance_edges": 138,
+    "module_import_edges": 5463,
     "parse_errors": 0,
-    "python_modules": 2520,
+    "python_modules": 2526,
     "registry_authorities": 20,
     "registry_nodes": 172,
     "top_level_systems": 16
@@ -95581,6 +96494,16 @@
       "kind": "inherits",
       "source": "noetrium_platform.research.execution.machines.child_machine.ChildResearchHostRegistry",
       "target": "noetrium_platform.research.execution.machines.child_machine.ChildResearchHostRegistryPort"
+    },
+    {
+      "kind": "inherits",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.RegisteredSerialChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsPort"
+    },
+    {
+      "kind": "inherits",
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch.ThreadPoolChildResearchBatchMechanics",
+      "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsPort"
     },
     {
       "kind": "inherits",
@@ -113026,6 +113949,10 @@
     },
     {
       "source": "noetrium_platform.research.execution.api",
+      "target": "noetrium_platform.research.execution.program_execution"
+    },
+    {
+      "source": "noetrium_platform.research.execution.api",
       "target": "noetrium_platform.research.execution.status"
     },
     {
@@ -113035,6 +113962,18 @@
     {
       "source": "noetrium_platform.research.execution.api.intent",
       "target": "noetrium_platform.research.execution.operation.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.api.program_execution",
+      "target": "noetrium_platform.evidence.artifact.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.api.program_execution",
+      "target": "noetrium_platform.evidence.artifact.content.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.api.program_execution",
+      "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.research.execution.capability.api",
@@ -113149,6 +114088,42 @@
       "target": "noetrium_platform.research.execution.command.api.boundary"
     },
     {
+      "source": "noetrium_platform.research.execution.composition",
+      "target": "noetrium_platform.research.execution.program_source"
+    },
+    {
+      "source": "noetrium_platform.research.execution.composition",
+      "target": "noetrium_platform.research.execution.qualified_program_execution"
+    },
+    {
+      "source": "noetrium_platform.research.execution.composition.program_source",
+      "target": "noetrium_platform.evidence.artifact.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.composition.program_source",
+      "target": "noetrium_platform.evidence.artifact.catalog.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.composition.program_source",
+      "target": "noetrium_platform.evidence.artifact.content.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.composition.program_source",
+      "target": "noetrium_platform.foundation.scope.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.composition.program_source",
+      "target": "noetrium_platform.research.execution.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.composition.qualified_program_execution",
+      "target": "noetrium_platform.foundation.governance.architecture.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.composition.qualified_program_execution",
+      "target": "noetrium_platform.research.execution.api"
+    },
+    {
       "source": "noetrium_platform.research.execution.decision",
       "target": "noetrium_platform.research.execution.cycle_identity"
     },
@@ -113175,6 +114150,10 @@
     {
       "source": "noetrium_platform.research.execution.machines",
       "target": "noetrium_platform.research.execution.child_machine"
+    },
+    {
+      "source": "noetrium_platform.research.execution.machines",
+      "target": "noetrium_platform.research.execution.child_machine_batch"
     },
     {
       "source": "noetrium_platform.research.execution.machines",
@@ -113267,6 +114246,10 @@
     {
       "source": "noetrium_platform.research.execution.machines.api",
       "target": "noetrium_platform.research.execution.child_machine"
+    },
+    {
+      "source": "noetrium_platform.research.execution.machines.api",
+      "target": "noetrium_platform.research.execution.child_machine_batch"
     },
     {
       "source": "noetrium_platform.research.execution.machines.api",
@@ -113363,6 +114346,14 @@
     {
       "source": "noetrium_platform.research.execution.machines.child_machine",
       "target": "noetrium_platform.research.execution.machines.program_host"
+    },
+    {
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "target": "noetrium_platform.research.execution.machines.child_machine"
     },
     {
       "source": "noetrium_platform.research.execution.machines.communication_program",
@@ -113841,6 +114832,10 @@
       "target": "noetrium_platform.research.execution.intent_coordinator"
     },
     {
+      "source": "noetrium_platform.research.execution.runtime",
+      "target": "noetrium_platform.research.execution.program_execution_capability"
+    },
+    {
       "source": "noetrium_platform.research.execution.runtime.intent_coordinator",
       "target": "noetrium_platform.research.execution.api.intent"
     },
@@ -113851,6 +114846,30 @@
     {
       "source": "noetrium_platform.research.execution.runtime.intent_coordinator",
       "target": "noetrium_platform.research.execution.operation.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.runtime.program_execution_capability",
+      "target": "noetrium_platform.capabilities.participant.capability.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.runtime.program_execution_capability",
+      "target": "noetrium_platform.evidence.artifact.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.runtime.program_execution_capability",
+      "target": "noetrium_platform.evidence.artifact.content.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.runtime.program_execution_capability",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.research.execution.runtime.program_execution_capability",
+      "target": "noetrium_platform.infrastructure.reliability.effect.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.runtime.program_execution_capability",
+      "target": "noetrium_platform.research.execution.api"
     },
     {
       "source": "noetrium_platform.research.execution.scheduling.api",
@@ -115134,6 +116153,10 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.api",
+      "target": "noetrium_platform.research.experimentation.sharding"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.api",
       "target": "noetrium_platform.research.experimentation.study.api"
     },
     {
@@ -115259,6 +116282,14 @@
     {
       "source": "noetrium_platform.research.experimentation.api.research_compiler",
       "target": "noetrium_platform.research.experimentation.study.api.plan"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.api.sharding",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.api.sharding",
+      "target": "noetrium_platform.research.experimentation.api.program"
     },
     {
       "source": "noetrium_platform.research.experimentation.binding",
@@ -116931,6 +117962,10 @@
     {
       "source": "noetrium_platform.research.experimentation.study.api.authoring",
       "target": "noetrium_platform.research.experimentation.study.api.benchmark"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.study.api.authoring",
+      "target": "noetrium_platform.research.experimentation.study.api.contracts"
     },
     {
       "source": "noetrium_platform.research.experimentation.study.api.authoring",
@@ -138448,6 +139483,7 @@
     {
       "imports": [
         "noetrium_platform.research.execution.intent",
+        "noetrium_platform.research.execution.program_execution",
         "noetrium_platform.research.execution.status"
       ],
       "module": "noetrium_platform.research.execution.api",
@@ -138469,6 +139505,17 @@
       ],
       "module": "noetrium_platform.research.execution.api.intent",
       "path": "noetrium_platform/research/execution/api/intent.py",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "imports": [
+        "noetrium_platform.evidence.artifact.api",
+        "noetrium_platform.evidence.artifact.content.api",
+        "noetrium_platform.foundation.kernel.kernel"
+      ],
+      "module": "noetrium_platform.research.execution.api.program_execution",
+      "path": "noetrium_platform/research/execution/api/program_execution.py",
       "system_key": "execution",
       "top_system": "execution"
     },
@@ -138685,9 +139732,35 @@
       "top_system": "execution"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.research.execution.program_source",
+        "noetrium_platform.research.execution.qualified_program_execution"
+      ],
       "module": "noetrium_platform.research.execution.composition",
       "path": "noetrium_platform/research/execution/composition/__init__.py",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "imports": [
+        "noetrium_platform.evidence.artifact.api",
+        "noetrium_platform.evidence.artifact.catalog.api",
+        "noetrium_platform.evidence.artifact.content.api",
+        "noetrium_platform.foundation.scope.api",
+        "noetrium_platform.research.execution.api"
+      ],
+      "module": "noetrium_platform.research.execution.composition.program_source",
+      "path": "noetrium_platform/research/execution/composition/program_source.py",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.governance.architecture.api",
+        "noetrium_platform.research.execution.api"
+      ],
+      "module": "noetrium_platform.research.execution.composition.qualified_program_execution",
+      "path": "noetrium_platform/research/execution/composition/qualified_program_execution.py",
       "system_key": "execution",
       "top_system": "execution"
     },
@@ -138723,6 +139796,7 @@
         "noetrium_platform.research.execution.agent_turn",
         "noetrium_platform.research.execution.capability_program",
         "noetrium_platform.research.execution.child_machine",
+        "noetrium_platform.research.execution.child_machine_batch",
         "noetrium_platform.research.execution.communication_program",
         "noetrium_platform.research.execution.context_program",
         "noetrium_platform.research.execution.domains",
@@ -138762,6 +139836,7 @@
         "noetrium_platform.research.execution.agent_turn",
         "noetrium_platform.research.execution.capability_program",
         "noetrium_platform.research.execution.child_machine",
+        "noetrium_platform.research.execution.child_machine_batch",
         "noetrium_platform.research.execution.communication_program",
         "noetrium_platform.research.execution.context_program",
         "noetrium_platform.research.execution.domains",
@@ -138805,6 +139880,16 @@
       ],
       "module": "noetrium_platform.research.execution.machines.child_machine",
       "path": "noetrium_platform/research/execution/machines/child_machine.py",
+      "system_key": "execution/research_program",
+      "top_system": "execution"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.research.execution.machines.child_machine"
+      ],
+      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
+      "path": "noetrium_platform/research/execution/machines/child_machine_batch.py",
       "system_key": "execution/research_program",
       "top_system": "execution"
     },
@@ -139222,7 +140307,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.research.execution.intent_coordinator"
+        "noetrium_platform.research.execution.intent_coordinator",
+        "noetrium_platform.research.execution.program_execution_capability"
       ],
       "module": "noetrium_platform.research.execution.runtime",
       "path": "noetrium_platform/research/execution/runtime/__init__.py",
@@ -139237,6 +140323,20 @@
       ],
       "module": "noetrium_platform.research.execution.runtime.intent_coordinator",
       "path": "noetrium_platform/research/execution/runtime/intent_coordinator.py",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "imports": [
+        "noetrium_platform.capabilities.participant.capability.api",
+        "noetrium_platform.evidence.artifact.api",
+        "noetrium_platform.evidence.artifact.content.api",
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.infrastructure.reliability.effect.api",
+        "noetrium_platform.research.execution.api"
+      ],
+      "module": "noetrium_platform.research.execution.runtime.program_execution_capability",
+      "path": "noetrium_platform/research/execution/runtime/program_execution_capability.py",
       "system_key": "execution",
       "top_system": "execution"
     },
@@ -140203,6 +141303,7 @@
         "noetrium_platform.research.experimentation.program",
         "noetrium_platform.research.experimentation.research_compiler",
         "noetrium_platform.research.experimentation.run.control.api",
+        "noetrium_platform.research.experimentation.sharding",
         "noetrium_platform.research.experimentation.study.api",
         "noetrium_platform.research.experimentation.study.runtime.trial"
       ],
@@ -140285,6 +141386,16 @@
       ],
       "module": "noetrium_platform.research.experimentation.api.research_compiler",
       "path": "noetrium_platform/research/experimentation/api/research_compiler.py",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.research.experimentation.api.program"
+      ],
+      "module": "noetrium_platform.research.experimentation.api.sharding",
+      "path": "noetrium_platform/research/experimentation/api/sharding.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -141876,6 +142987,7 @@
         "noetrium_platform.research.experimentation.experiment.api",
         "noetrium_platform.research.experimentation.identity",
         "noetrium_platform.research.experimentation.study.api.benchmark",
+        "noetrium_platform.research.experimentation.study.api.contracts",
         "noetrium_platform.research.experimentation.study.api.design",
         "noetrium_platform.research.experimentation.study.api.measurement"
       ],
@@ -142467,7 +143579,7 @@
   "parse_errors": [],
   "registry_sha256": "e4ea173ff1460ed18af96b3de44996a6bb9c859342697cc3084344ee60a52574",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "c9a05c625cced523f8d05fd101acc897e9adadf2",
+  "source_git_sha": "ccd6a0220e478eb2e1a32f9cc5276935341e765c",
   "system_import_edges": [
     {
       "count": 108,
@@ -142565,7 +143677,7 @@
       "target": "scope"
     },
     {
-      "count": 1,
+      "count": 8,
       "source": "execution",
       "target": "artifact"
     },
@@ -142575,9 +143687,14 @@
       "target": "environment"
     },
     {
-      "count": 334,
+      "count": 344,
       "source": "execution",
       "target": "execution"
+    },
+    {
+      "count": 1,
+      "source": "execution",
+      "target": "governance"
     },
     {
       "count": 1,
@@ -142585,19 +143702,24 @@
       "target": "model"
     },
     {
-      "count": 50,
+      "count": 51,
       "source": "execution",
       "target": "participant"
     },
     {
-      "count": 105,
+      "count": 108,
       "source": "execution",
       "target": "platform"
     },
     {
-      "count": 27,
+      "count": 28,
       "source": "execution",
       "target": "reliability"
+    },
+    {
+      "count": 1,
+      "source": "execution",
+      "target": "scope"
     },
     {
       "count": 11,
@@ -142615,7 +143737,7 @@
       "target": "execution"
     },
     {
-      "count": 379,
+      "count": 382,
       "source": "experimentation",
       "target": "experimentation"
     },
@@ -142635,7 +143757,7 @@
       "target": "participant"
     },
     {
-      "count": 101,
+      "count": 102,
       "source": "experimentation",
       "target": "platform"
     },
