@@ -6,6 +6,8 @@ on:
     paths:
       - "research/**"
       - "benchmarks/**"
+      - "tests/test_scientific_*.py"
+      - "tests/test_research_*.py"
       - "tests/test_reproduction_*.py"
       - "tests/test_publication_*.py"
       - "tests/test_lineage_*.py"
@@ -21,6 +23,8 @@ on:
     paths:
       - "research/**"
       - "benchmarks/**"
+      - "tests/test_scientific_*.py"
+      - "tests/test_research_*.py"
       - "tests/test_reproduction_*.py"
       - "tests/test_publication_*.py"
       - "tests/test_lineage_*.py"
