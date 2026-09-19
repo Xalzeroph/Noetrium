@@ -66,7 +66,7 @@ def test_rap_method_program_preserves_prior_mcts_tree_across_ten_rollouts(tmp_pa
         state_root=tmp_path / "machine",
     )
 
-    assert result.status is MethodRunStatus.SUCCEEDED
+    assert result.status is MethodRunStatus.SUCCEEDED, result.failure
     assert result.value["rollouts"] == RAP_FIDELITY.rollouts == 10
     assert result.value["plan_actions"] == ("stack red on blue",)
     assert result.value["best_score"] == 5.0
