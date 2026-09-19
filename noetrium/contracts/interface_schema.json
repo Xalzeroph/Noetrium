@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "80cad6c2dcca1c322e135d5557f9ae8d0d06d6dce3b90ce724084b84f23e783f",
+  "interface_digest": "71d6f7900aeb3f9ebaeaa3a0e1be00ba1ffacbf0c393cc0ee2a618ec6db19fa7",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -10982,7 +10982,9 @@
               "bases": [
                 "Protocol"
               ],
-              "decorators": [],
+              "decorators": [
+                "runtime_checkable"
+              ],
               "doc": "Domain semantics injected behind the generic closed-world runtime.",
               "fields": [],
               "kind": "class",
@@ -14225,13 +14227,113 @@
               "origin_name": "ExecutionOperationIntent",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExecutableProgramIdentity",
+              "origin_module": ".program_execution",
+              "origin_name": "ExecutableProgramIdentity",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExecutableProgramSourcePublicationPort",
+              "origin_module": ".program_execution",
+              "origin_name": "ExecutableProgramSourcePublicationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "PublishedExecutableProgramSource",
+              "origin_module": ".program_execution",
+              "origin_name": "PublishedExecutableProgramSource",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramExecutionPort",
+              "origin_module": ".program_execution",
+              "origin_name": "ProgramExecutionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramExecutionRecoveryPort",
+              "origin_module": ".program_execution",
+              "origin_name": "ProgramExecutionRecoveryPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramExecutionReconciliationDisposition",
+              "origin_module": ".program_execution",
+              "origin_name": "ProgramExecutionReconciliationDisposition",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramExecutionReconciliationResult",
+              "origin_module": ".program_execution",
+              "origin_name": "ProgramExecutionReconciliationResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramExecutionReceipt",
+              "origin_module": ".program_execution",
+              "origin_name": "ProgramExecutionReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramExecutionRequest",
+              "origin_module": ".program_execution",
+              "origin_name": "ProgramExecutionRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramExecutionStatus",
+              "origin_module": ".program_execution",
+              "origin_name": "ProgramExecutionStatus",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
             "DeploymentStatusIdentity",
             "ExecutionIntentPort",
             "ExecutionIntentReceipt",
-            "ExecutionOperationIntent"
+            "ExecutionOperationIntent",
+            "ExecutableProgramIdentity",
+            "ExecutableProgramSourcePublicationPort",
+            "PublishedExecutableProgramSource",
+            "ProgramExecutionPort",
+            "ProgramExecutionRecoveryPort",
+            "ProgramExecutionReconciliationDisposition",
+            "ProgramExecutionReconciliationResult",
+            "ProgramExecutionReceipt",
+            "ProgramExecutionRequest",
+            "ProgramExecutionStatus"
           ]
         },
         {
@@ -14392,6 +14494,579 @@
             "ExecutionIntentPort",
             "ExecutionIntentReceipt",
             "ExecutionOperationIntent"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.api.program_execution",
+          "source": "noetrium_platform/research/execution/api/program_execution.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Immutable identity of executable source plus its public calling interface.\n\nSource bytes remain Artifact-owned. This identity does not own sandbox,\nenvironment, evaluation, search, mutation, or promotion semantics.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "program_id"
+                },
+                {
+                  "annotation": "PublishedExecutableProgramSource",
+                  "default": null,
+                  "name": "source"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "language"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "entrypoint"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "interface_schema_id"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "parent_program_digests"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "program_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "ExecutableProgramIdentity",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": "Publish exact generated source bytes into immutable Artifact authority.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "publish_source",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "program_id",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "language",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "source_text",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "PublishedExecutableProgramSource",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def publish_source(self, *, program_id: str, language: str, source_text: str) -> PublishedExecutableProgramSource:"
+                }
+              ],
+              "name": "ExecutableProgramSourcePublicationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Artifact-owned logical identity plus content-addressed executable bytes.",
+              "fields": [
+                {
+                  "annotation": "ArtifactContentIdentity",
+                  "default": null,
+                  "name": "identity"
+                },
+                {
+                  "annotation": "ArtifactBlobRef",
+                  "default": null,
+                  "name": "content"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "PublishedExecutableProgramSource",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": "Provider seam for qualified execution of one immutable program request.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "execute",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ProgramExecutionRequest",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "request",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "ProgramExecutionReceipt",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def execute(self, request: ProgramExecutionRequest) -> ProgramExecutionReceipt:"
+                }
+              ],
+              "name": "ProgramExecutionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": "Crash-durable recovery seam for an effectful program executor.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "effect_recovery_durability",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "str",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "reconcile",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ProgramExecutionRequest",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "request",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "ProgramExecutionReconciliationResult",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def reconcile(self, request: ProgramExecutionRequest) -> ProgramExecutionReconciliationResult:"
+                }
+              ],
+              "name": "ProgramExecutionRecoveryPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "StrEnum"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [
+                "APPLIED",
+                "REJECTED",
+                "NOT_APPLIED",
+                "UNKNOWN"
+              ],
+              "methods": [],
+              "name": "ProgramExecutionReconciliationDisposition",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "request_digest"
+                },
+                {
+                  "annotation": "ProgramExecutionReconciliationDisposition",
+                  "default": null,
+                  "name": "disposition"
+                },
+                {
+                  "annotation": "ProgramExecutionReceipt | None",
+                  "default": "None",
+                  "name": "receipt"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "evidence_digests"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "ProgramExecutionReconciliationResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Evidence references for one exact program-execution request.\n\nEnvironment/effect truth remains owned by the existing effect authorities.\nThis receipt links to those receipts and to Artifact/Evidence identities\nrather than copying mutable world state into Execution authority.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "request_digest"
+                },
+                {
+                  "annotation": "ProgramExecutionStatus",
+                  "default": null,
+                  "name": "status"
+                },
+                {
+                  "annotation": "EffectCertainty",
+                  "default": null,
+                  "name": "effect_certainty"
+                },
+                {
+                  "annotation": "JsonValue",
+                  "default": "None",
+                  "name": "result"
+                },
+                {
+                  "annotation": "tuple[ArtifactContentIdentity, ...]",
+                  "default": "()",
+                  "name": "output_artifacts"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "effect_receipt_digests"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "evidence_digests"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "isolation_evidence_digests"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "failure_code"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "receipt_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "ProgramExecutionReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "One exact executable program invocation at a qualified execution seam.\n\nThe request freezes the allowed capability surface separately from the\ntarget binding. A provider may implement the mechanics with a process,\ncontainer, VM, WASI runtime, remote worker, or another qualified mechanism;\nnone of those choices become program semantics.",
+              "fields": [
+                {
+                  "annotation": "ExecutableProgramIdentity",
+                  "default": null,
+                  "name": "program"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "capability_surface_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "capability_surface_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "execution_target_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "isolation_requirement_id"
+                },
+                {
+                  "annotation": "JsonObject",
+                  "default": null,
+                  "name": "invocation"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "capability_ids"
+                },
+                {
+                  "annotation": "tuple[ArtifactContentIdentity, ...]",
+                  "default": "()",
+                  "name": "input_artifacts"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "resource_requirement_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "request_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "ProgramExecutionRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "StrEnum"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [
+                "SUCCEEDED",
+                "FAILED",
+                "REJECTED"
+              ],
+              "methods": [],
+              "name": "ProgramExecutionStatus",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "ExecutableProgramIdentity",
+            "ExecutableProgramSourcePublicationPort",
+            "PublishedExecutableProgramSource",
+            "ProgramExecutionPort",
+            "ProgramExecutionRecoveryPort",
+            "ProgramExecutionReconciliationDisposition",
+            "ProgramExecutionReconciliationResult",
+            "ProgramExecutionReceipt",
+            "ProgramExecutionRequest",
+            "ProgramExecutionStatus"
           ]
         },
         {
@@ -18586,6 +19261,105 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "BatchCapableRegisteredChildResearchMachineExecutor",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "BatchCapableRegisteredChildResearchMachineExecutor",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildBatchExecutionMode",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "ChildBatchExecutionMode",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchExecution",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "ChildResearchMachineBatchExecution",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchExecutor",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "ChildResearchMachineBatchExecutor",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchItem",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "ChildResearchMachineBatchItem",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchPort",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "ChildResearchMachineBatchPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchMechanicsPort",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "ChildResearchMachineBatchMechanicsPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchMechanicsResult",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "ChildResearchMachineBatchMechanicsResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchRequest",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "ChildResearchMachineBatchRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RegisteredSerialChildResearchBatchMechanics",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "RegisteredSerialChildResearchBatchMechanics",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ThreadPoolChildResearchBatchMechanics",
+              "origin_module": "..child_machine_batch",
+              "origin_name": "ThreadPoolChildResearchBatchMechanics",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "ChildFailurePolicy",
               "origin_module": "..child_machine",
               "origin_name": "ChildFailurePolicy",
@@ -20117,6 +20891,17 @@
             "CapabilityProgram",
             "CapabilityRuleProgram",
             "CapabilityRuntimeBinding",
+            "BatchCapableRegisteredChildResearchMachineExecutor",
+            "ChildBatchExecutionMode",
+            "ChildResearchMachineBatchExecution",
+            "ChildResearchMachineBatchExecutor",
+            "ChildResearchMachineBatchItem",
+            "ChildResearchMachineBatchPort",
+            "ChildResearchMachineBatchMechanicsPort",
+            "ChildResearchMachineBatchMechanicsResult",
+            "ChildResearchMachineBatchRequest",
+            "RegisteredSerialChildResearchBatchMechanics",
+            "ThreadPoolChildResearchBatchMechanics",
             "ChildFailurePolicy",
             "ChildResearchBindingFactory",
             "ChildResearchHostRegistry",
@@ -25759,6 +26544,42 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "CompiledExperimentShardPlan",
+              "origin_module": ".sharding",
+              "origin_name": "CompiledExperimentShardPlan",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExperimentBatchPlacement",
+              "origin_module": ".sharding",
+              "origin_name": "ExperimentBatchPlacement",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExperimentShard",
+              "origin_module": ".sharding",
+              "origin_name": "ExperimentShard",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "compile_experiment_shard_plan",
+              "origin_module": ".sharding",
+              "origin_name": "compile_experiment_shard_plan",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "CompiledTrialExperimentProgram",
               "origin_module": "noetrium_platform.research.experimentation.study.runtime.trial",
               "origin_name": "CompiledTrialExperimentProgram",
@@ -26242,6 +27063,10 @@
             "CompiledResearchPlan",
             "ResearchMethodHost",
             "ResearchMethodHostPort",
+            "CompiledExperimentShardPlan",
+            "ExperimentBatchPlacement",
+            "ExperimentShard",
+            "compile_experiment_shard_plan",
             "CompiledTrialExperimentProgram",
             "TrialExperimentProgramBinding",
             "compile_trial_experiment_program",
@@ -27396,7 +28221,7 @@
               "kind": "class",
               "members": [
                 "REPETITION_UNITS",
-                "VARIANT_ASSIGNMENTS"
+                "PARALLEL_ASSIGNMENTS"
               ],
               "methods": [],
               "name": "ExperimentBatchKind",
@@ -28049,6 +28874,398 @@
             "compile_research_plan",
             "resolve_research_requirements",
             "diff_research_plans"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.api.sharding",
+          "source": "noetrium_platform/research/experimentation/api/sharding.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Worker placement bound to one exact compiled batch plan.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "experiment_plan_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "batch_plan_digest"
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "name": "shard_count"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "cost_model_digest"
+                },
+                {
+                  "annotation": "tuple[ExperimentShard, ...]",
+                  "default": null,
+                  "name": "shards"
+                },
+                {
+                  "annotation": "tuple[ExperimentBatchPlacement, ...]",
+                  "default": null,
+                  "name": "batch_placements"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "shard_plan_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "assignment_digests",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "tuple[str, ...]",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "shard",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "int",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "shard_index",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "ExperimentShard",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def shard(self, shard_index: int) -> ExperimentShard:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "placement_for_batch",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "int",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "batch_index",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "ExperimentBatchPlacement",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def placement_for_batch(self, batch_index: int) -> ExperimentBatchPlacement:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "worker_scope_for_assignment",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "assignment_digest",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "str",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def worker_scope_for_assignment(self, assignment_digest: str) -> str:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "assert_complete_for",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "CompiledExperimentProgram",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "compiled",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def assert_complete_for(self, compiled: CompiledExperimentProgram) -> None:"
+                }
+              ],
+              "name": "CompiledExperimentShardPlan",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "One authoritative ExperimentBatch projected onto worker shards.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "batch_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "batch_digest"
+                },
+                {
+                  "annotation": "tuple[tuple[int, tuple[str, ...]], ...]",
+                  "default": null,
+                  "name": "shard_assignments"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "placement_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "assignment_digests",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "tuple[str, ...]",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                }
+              ],
+              "name": "ExperimentBatchPlacement",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Stable worker placement for a disjoint assignment subset.",
+              "fields": [
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "name": "shard_index"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "worker_scope_id"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": null,
+                  "name": "assignment_digests"
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "name": "estimated_cost_units"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "shard_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "ExperimentShard",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "decorators": [],
+              "doc": "Compile deterministic worker placement without changing batch semantics.\n\nAssignments are globally placed with deterministic LPT balancing. Every\nauthoritative ExperimentBatch is then projected through that fixed mapping.\nA server coordinator must dispatch batch_placements in the existing batch\norder; shards are routing destinations, not independent schedulers.\n\nCost hints are deployment metadata only. A supplied mapping must exactly\ncover all authoritative assignments so workers cannot silently disagree.",
+              "kind": "function",
+              "name": "compile_experiment_shard_plan",
+              "parameters": [
+                {
+                  "annotation": "CompiledExperimentProgram",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "compiled",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "shard_count",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "Mapping[str, int] | None",
+                  "default": "None",
+                  "kind": "keyword_only",
+                  "name": "assignment_cost_units",
+                  "receiver": false,
+                  "required": false
+                }
+              ],
+              "return_annotation": "CompiledExperimentShardPlan",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1",
+              "signature": "def compile_experiment_shard_plan(compiled: CompiledExperimentProgram, *, shard_count: int, assignment_cost_units: Mapping[str, int] | None=None) -> CompiledExperimentShardPlan:"
+            }
+          ],
+          "symbols": [
+            "CompiledExperimentShardPlan",
+            "ExperimentBatchPlacement",
+            "ExperimentShard",
+            "compile_experiment_shard_plan"
           ]
         }
       ],
@@ -39880,6 +41097,14 @@
                       "required": false
                     },
                     {
+                      "annotation": "StudyConcurrencyPolicy | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "concurrency_policy",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
                       "annotation": "tuple[StudyFactorSpec, ...]",
                       "default": "()",
                       "kind": "keyword_only",
@@ -39907,7 +41132,7 @@
                   "return_annotation": "None",
                   "schema_id": "noetrium.interface-schema",
                   "schema_version": "1",
-                  "signature": "def __init__(self, *, project_id: str, study_id: str, benchmark: BenchmarkTaskSet, method: StudyParticipant, models: Mapping[str, str | StudyModel], measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...], trial: ExperimentTrialProtocolIdentity, repetitions: int, seeds: tuple[str, ...], limits: TrialBudget, benchmark_split_id: str | None=None, benchmark_assignment_mode: BenchmarkAssignmentMode=BenchmarkAssignmentMode.TASK, experiment_id: str | None=None, workload_id: str='method-program', trial_provider_requirement_id: str='trial.method-program', replay_level: ReplayLevel=ReplayLevel.OBSERVATIONAL, repetition_timeout_seconds: float=3600.0, factors: tuple[StudyFactorSpec, ...]=(), participants: tuple[StudyParticipant, ...]=(), revision: ResearchRevision | None=None) -> None:"
+                  "signature": "def __init__(self, *, project_id: str, study_id: str, benchmark: BenchmarkTaskSet, method: StudyParticipant, models: Mapping[str, str | StudyModel], measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...], trial: ExperimentTrialProtocolIdentity, repetitions: int, seeds: tuple[str, ...], limits: TrialBudget, benchmark_split_id: str | None=None, benchmark_assignment_mode: BenchmarkAssignmentMode=BenchmarkAssignmentMode.TASK, experiment_id: str | None=None, workload_id: str='method-program', trial_provider_requirement_id: str='trial.method-program', replay_level: ReplayLevel=ReplayLevel.OBSERVATIONAL, repetition_timeout_seconds: float=3600.0, concurrency_policy: StudyConcurrencyPolicy | None=None, factors: tuple[StudyFactorSpec, ...]=(), participants: tuple[StudyParticipant, ...]=(), revision: ResearchRevision | None=None) -> None:"
                 },
                 {
                   "decorators": [
@@ -41169,7 +42394,7 @@
                 {
                   "annotation": "bool",
                   "default": null,
-                  "name": "parallel_variants"
+                  "name": "parallel_assignments"
                 },
                 {
                   "annotation": "str",
@@ -41204,7 +42429,7 @@
                 {
                   "annotation": "int",
                   "default": null,
-                  "name": "max_parallel_variants"
+                  "name": "max_parallel_assignments"
                 }
               ],
               "kind": "class",
@@ -41233,6 +42458,92 @@
                       "name": "repetition_timeout_seconds",
                       "receiver": false,
                       "required": true
+                    }
+                  ],
+                  "return_annotation": "Self",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@classmethod"
+                },
+                {
+                  "decorators": [
+                    "classmethod"
+                  ],
+                  "doc": "Canonical high-throughput policy for independently isolated assignments.\n\nThe scientific protocol freezes *allowed* concurrency and isolation\nsemantics. Runtime resource admission may execute fewer assignments when\nhardware/model capacity is lower, but it may never exceed these bounds.",
+                  "kind": "method",
+                  "name": "isolated_parallel_v1",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "cls",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "int",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "max_parallel_repetitions",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "int",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "max_parallel_assignments",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "float",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "repetition_timeout_seconds",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'worker'",
+                      "kind": "keyword_only",
+                      "name": "cpu_isolation",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'provider-admission'",
+                      "kind": "keyword_only",
+                      "name": "gpu_isolation",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'per-assignment'",
+                      "kind": "keyword_only",
+                      "name": "environment_isolation",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'runtime-hierarchical-v1'",
+                      "kind": "keyword_only",
+                      "name": "model_admission_policy",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'deterministic-priority-fair-v1'",
+                      "kind": "keyword_only",
+                      "name": "scheduler_policy",
+                      "receiver": false,
+                      "required": false
                     }
                   ],
                   "return_annotation": "Self",

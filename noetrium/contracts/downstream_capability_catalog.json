@@ -1,5 +1,5 @@
 {
-  "catalog_digest": "5f23f6d493f03c8bccfa9306b1c4209675d2e4779d966c4a6cabb76ef6090914",
+  "catalog_digest": "449a364ee53a49ba301b37f47ae205b8844600024ca402bd707b509385e3e0eb",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v2",
   "systems": [
@@ -1498,7 +1498,17 @@
             "DeploymentStatusIdentity",
             "ExecutionIntentPort",
             "ExecutionIntentReceipt",
-            "ExecutionOperationIntent"
+            "ExecutionOperationIntent",
+            "ExecutableProgramIdentity",
+            "ExecutableProgramSourcePublicationPort",
+            "PublishedExecutableProgramSource",
+            "ProgramExecutionPort",
+            "ProgramExecutionRecoveryPort",
+            "ProgramExecutionReconciliationDisposition",
+            "ProgramExecutionReconciliationResult",
+            "ProgramExecutionReceipt",
+            "ProgramExecutionRequest",
+            "ProgramExecutionStatus"
           ]
         },
         {
@@ -1508,6 +1518,22 @@
             "ExecutionIntentPort",
             "ExecutionIntentReceipt",
             "ExecutionOperationIntent"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.api.program_execution",
+          "source": "noetrium_platform/research/execution/api/program_execution.py",
+          "symbols": [
+            "ExecutableProgramIdentity",
+            "ExecutableProgramSourcePublicationPort",
+            "PublishedExecutableProgramSource",
+            "ProgramExecutionPort",
+            "ProgramExecutionRecoveryPort",
+            "ProgramExecutionReconciliationDisposition",
+            "ProgramExecutionReconciliationResult",
+            "ProgramExecutionReceipt",
+            "ProgramExecutionRequest",
+            "ProgramExecutionStatus"
           ]
         },
         {
@@ -1522,7 +1548,7 @@
       "canonical_authority": "execution",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution",
-      "interface_digest": "2e45e1829b1a40e3940d02d36c18c09a0d40bc2571611e2fa9d7b24e1e2eceb3",
+      "interface_digest": "ddc02ad048121c99ecaf274b8986385b3da20b2b3cb9c69c9e78f0ed4282e332",
       "must_not_own": "provider storage and domain truth",
       "node_kind": "authority",
       "owns": "workflow and operation orchestration contracts",
@@ -1847,6 +1873,17 @@
             "CapabilityProgram",
             "CapabilityRuleProgram",
             "CapabilityRuntimeBinding",
+            "BatchCapableRegisteredChildResearchMachineExecutor",
+            "ChildBatchExecutionMode",
+            "ChildResearchMachineBatchExecution",
+            "ChildResearchMachineBatchExecutor",
+            "ChildResearchMachineBatchItem",
+            "ChildResearchMachineBatchPort",
+            "ChildResearchMachineBatchMechanicsPort",
+            "ChildResearchMachineBatchMechanicsResult",
+            "ChildResearchMachineBatchRequest",
+            "RegisteredSerialChildResearchBatchMechanics",
+            "ThreadPoolChildResearchBatchMechanics",
             "ChildFailurePolicy",
             "ChildResearchBindingFactory",
             "ChildResearchHostRegistry",
@@ -2023,7 +2060,7 @@
       "canonical_authority": "execution",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__research_program",
-      "interface_digest": "64d3debcfa0db34f64547de1d7d018aa19f297b4a30ecb0b3539aac9c6ac7ef6",
+      "interface_digest": "4e86d22e4cb4d812f8549045d42f4e176aebc069c161a15b4a2b10799ee5aee2",
       "must_not_own": "Machine Journal transition truth, MethodProgram semantics, provider effects or physical resource scheduling",
       "node_kind": "facet",
       "owns": "paper-programmable ResearchProgram, RuntimeModule, rule and host authoring contracts for non-Method research Machines",
@@ -2310,6 +2347,10 @@
             "CompiledResearchPlan",
             "ResearchMethodHost",
             "ResearchMethodHostPort",
+            "CompiledExperimentShardPlan",
+            "ExperimentBatchPlacement",
+            "ExperimentShard",
+            "compile_experiment_shard_plan",
             "CompiledTrialExperimentProgram",
             "TrialExperimentProgramBinding",
             "compile_trial_experiment_program",
@@ -2416,13 +2457,23 @@
             "resolve_research_requirements",
             "diff_research_plans"
           ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.api.sharding",
+          "source": "noetrium_platform/research/experimentation/api/sharding.py",
+          "symbols": [
+            "CompiledExperimentShardPlan",
+            "ExperimentBatchPlacement",
+            "ExperimentShard",
+            "compile_experiment_shard_plan"
+          ]
         }
       ],
       "authority": "experimentation_state",
       "canonical_authority": "experimentation",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation",
-      "interface_digest": "e32f981931ac029128f0215b71266649eef66d4ddbdfec5bd05cf62a750e0aa5",
+      "interface_digest": "63f4e91358e8283671f4ae7e935abb36b31c2910a0c720da02e1fd32dbb82393",
       "must_not_own": "server/process control and model serving",
       "node_kind": "authority",
       "owns": "study, experiment, run, branch and checkpoint semantics",
