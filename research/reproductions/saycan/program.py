@@ -362,7 +362,7 @@ def _prepare_skill(request: MethodNodeRequest) -> MethodNodeResult:
         },
     )
     return MethodNodeResult(
-        value={"skill": skill, "execution_index": index},
+        value=envelope,
         state_update={
             **envelope,
             "pending_skill": skill,
