@@ -76,6 +76,7 @@ class AgentSquareBenchmarkProfile:
     benchmark_id: str
     revision_id: str
     evaluation_split_id: str
+    expected_evaluation_task_count: int
     primary_measurement_id: str
     primary_semantic_kind: str
     primary_unit: str
@@ -92,7 +93,7 @@ AGENTSQUARE_BENCHMARK_PROFILES = (
         key="webshop",
         benchmark_id=WEBSHOP_BENCHMARK_ID,
         revision_id=AGENTSQUARE_WEBSHOP_REVISION,
-        evaluation_split_id=AGENTSQUARE_WEBSHOP_SPLIT,
+        evaluation_split_id=AGENTSQUARE_WEBSHOP_SPLIT,\n        expected_evaluation_task_count=500,
         primary_measurement_id="reward",
         primary_semantic_kind="task_reward",
         primary_unit="score",
@@ -107,7 +108,7 @@ AGENTSQUARE_BENCHMARK_PROFILES = (
         key="alfworld",
         benchmark_id=ALFWORLD_BENCHMARK_ID,
         revision_id=ALFWORLD_PAPER_EVAL_REVISION,
-        evaluation_split_id=ALFWORLD_PAPER_EVAL_SPLIT,
+        evaluation_split_id=ALFWORLD_PAPER_EVAL_SPLIT,\n        expected_evaluation_task_count=134,
         primary_measurement_id="episode_success",
         primary_semantic_kind="task_success",
         primary_unit="ratio",
@@ -122,7 +123,7 @@ AGENTSQUARE_BENCHMARK_PROFILES = (
         key="scienceworld",
         benchmark_id=SCIENCEWORLD_BENCHMARK_ID,
         revision_id=AGENTSQUARE_SCIENCEWORLD_REVISION,
-        evaluation_split_id=AGENTSQUARE_SCIENCEWORLD_SPLIT,
+        evaluation_split_id=AGENTSQUARE_SCIENCEWORLD_SPLIT,\n        expected_evaluation_task_count=90,
         primary_measurement_id="progress_rate",
         primary_semantic_kind="task_progress",
         primary_unit="ratio",
@@ -137,7 +138,7 @@ AGENTSQUARE_BENCHMARK_PROFILES = (
         key="m3tool",
         benchmark_id=M3TOOLEVAL_BENCHMARK_ID,
         revision_id=AGENTSQUARE_M3TOOL_REVISION,
-        evaluation_split_id=AGENTSQUARE_M3TOOL_SPLIT,
+        evaluation_split_id=AGENTSQUARE_M3TOOL_SPLIT,\n        expected_evaluation_task_count=82,
         primary_measurement_id="success_rate",
         primary_semantic_kind="task_success",
         primary_unit="ratio",
@@ -152,7 +153,7 @@ AGENTSQUARE_BENCHMARK_PROFILES = (
         key="travelplanner",
         benchmark_id=TRAVELPLANNER_BENCHMARK_ID,
         revision_id=AGENTSQUARE_TRAVELPLANNER_REVISION,
-        evaluation_split_id=AGENTSQUARE_TRAVELPLANNER_VALIDATION_SPLIT,
+        evaluation_split_id=AGENTSQUARE_TRAVELPLANNER_VALIDATION_SPLIT,\n        expected_evaluation_task_count=180,
         primary_measurement_id="commonsense_constraint_micro_pass_rate",
         primary_semantic_kind="constraint_satisfaction",
         primary_unit="ratio",
@@ -167,7 +168,7 @@ AGENTSQUARE_BENCHMARK_PROFILES = (
         key="pddl",
         benchmark_id=AGENTBOARD_PDDL_BENCHMARK_ID,
         revision_id=AGENTSQUARE_PDDL_REVISION,
-        evaluation_split_id=AGENTSQUARE_PDDL_SPLIT,
+        evaluation_split_id=AGENTSQUARE_PDDL_SPLIT,\n        expected_evaluation_task_count=60,
         primary_measurement_id="progress_rate",
         primary_semantic_kind="task_progress",
         primary_unit="ratio",
