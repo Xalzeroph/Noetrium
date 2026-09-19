@@ -115,7 +115,7 @@ def test_agentsquare_builds_each_paper_ablation_study(
     )
     measurements = {
         row.measurement_id
-        for row in study.measurement_protocol.measurements
+        for row in study.measurement_protocol.definitions
     }
     assert profile.primary_measurement_id in measurements
     assert {
