@@ -55,7 +55,7 @@ def _module_is_workspace_owned(module: str) -> bool:
 
 
 def is_workspace_test(path: Path) -> bool:
-    source = path.read_text(encoding="utf-8")
+    source = path.read_text(encoding="utf-8-sig")
     try:
         tree = ast.parse(source, filename=str(path))
     except SyntaxError as exc:
