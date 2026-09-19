@@ -9,13 +9,18 @@ from noetrium_platform.foundation.kernel.kernel import (
 from research.reproductions.agentsquare import (
     AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM,
     AGENTSQUARE_FIDELITY,
+    AGENTSQUARE_OPTIMIZATION_PROGRAM,
     AgentSquareEvaluation,
     AgentSquareEvolutionProposal,
     AgentSquareModuleEvaluation,
     AgentSquareOptimizationBinding,
+    AgentSquareSearchProfile,
     agentsquare_alfworld_host,
     agentsquare_alfworld_initial_data,
     agentsquare_alfworld_instance_identity,
+    agentsquare_host,
+    agentsquare_initial_data,
+    agentsquare_instance_identity,
 )
 
 
@@ -85,9 +90,10 @@ class _SearchModel:
 
 
 class _Evaluator:
-    def __init__(self) -> None:
+    def __init__(self, *, expected_episodes: int = 50) -> None:
         self.module_calls = 0
         self.agent_calls = 0
+        self.expected_episodes = expected_episodes
 
     @property
     def identity_digest(self) -> str:
@@ -95,7 +101,7 @@ class _Evaluator:
 
     def evaluate_module(self, *, module_type, module, episodes):
         self.module_calls += 1
-        assert episodes == 50
+        assert episodes == self.expected_episodes
         return AgentSquareModuleEvaluation(
             module_type=module_type,
             module_name=module["name"],
@@ -110,7 +116,7 @@ class _Evaluator:
 
     def evaluate_agent(self, *, agent, episodes):
         self.agent_calls += 1
-        assert episodes == 50
+        assert episodes == self.expected_episodes
         return AgentSquareEvaluation(
             agent=agent,
             performance=0.56 + self.agent_calls / 1000.0,
@@ -135,7 +141,8 @@ def _archives():
 def test_agentsquare_runs_full_ten_iteration_modular_search() -> None:
     program = AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM
     assert program.kind is MachineKind.OPTIMIZATION
-    assert program.program_id == "agentsquare.alfworld.later-official"
+    assert program.program_id == "agentsquare.modular-search"
+    assert program.program_digest == AGENTSQUARE_OPTIMIZATION_PROGRAM.program_digest
 
     model = _SearchModel()
     evaluator = _Evaluator()
@@ -169,4 +176,60 @@ def test_agentsquare_runs_full_ten_iteration_modular_search() -> None:
     assert len(execution.data["best_history"]) == 11
     assert execution.previous_value["best_performance"] > (
         AGENTSQUARE_FIDELITY.released_initial_performance
+    )
+
+
+
+def test_agentsquare_generic_profile_changes_budget_and_module_semantics() -> None:
+    profile = AgentSquareSearchProfile(
+        profile_id="agentsquare.synthetic-tool-benchmark",
+        benchmark_id="synthetic-tool-benchmark",
+        search_iterations=2,
+        candidate_evaluation_episodes=7,
+        initial_agent={
+            "planning": "None",
+            "reasoning": "IO",
+            "tooluse": "None",
+            "memory": "None",
+        },
+        initial_performance=0.10,
+        validated_module_types=(
+            "planning",
+            "reasoning",
+            "tooluse",
+            "memory",
+        ),
+    )
+    model = _SearchModel()
+    evaluator = _Evaluator(expected_episodes=7)
+    binding = AgentSquareOptimizationBinding(
+        search_model=model,
+        evaluator=evaluator,
+        profile=profile,
+    )
+    initial = agentsquare_initial_data(
+        optimization_id="agentsquare:test:generic",
+        module_archives=_archives(),
+        profile=profile,
+    )
+    journal = InMemoryMachineJournal()
+    execution = agentsquare_host(journal, profile=profile).execute(
+        machine_id="optimization:agentsquare:generic:test",
+        instance_identity=agentsquare_instance_identity(
+            binding=binding,
+            initial_data=initial,
+        ),
+        binding=binding,
+        initial_data=initial,
+    )
+
+    assert execution.status is MachineStatus.COMPLETED
+    assert execution.previous_value["iterations"] == 2
+    assert model.evolve_calls == 2
+    assert evaluator.module_calls == 8
+    assert evaluator.agent_calls == 10
+    assert execution.data["benchmark_id"] == "synthetic-tool-benchmark"
+    assert (
+        execution.data["search_profile_digest"]
+        == profile.profile_digest
     )

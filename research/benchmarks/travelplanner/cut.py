@@ -98,8 +98,8 @@ def build_agentsquare_travelplanner_task_set(
         task_schema_id=TRAVELPLANNER_TASK_SCHEMA_ID,
         tasks=tasks,
         splits=(
-            TaskSetSplit(AGENTSQUARE_TRAVELPLANNER_VALIDATION_SPLIT, all_ids),
             TaskSetSplit(AGENTSQUARE_TRAVELPLANNER_SEARCH_SPLIT, search_ids),
+            TaskSetSplit(AGENTSQUARE_TRAVELPLANNER_VALIDATION_SPLIT, all_ids),
         ),
         selection_policy_digest=AGENTSQUARE_TRAVELPLANNER_SELECTION_POLICY_DIGEST,
     )
