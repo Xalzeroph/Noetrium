@@ -82,10 +82,19 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/optimus1_minecraft/fidelity.py",
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("research_program"),
+            path="research/reproductions/optimus1_minecraft/memory.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/optimus1_minecraft/program.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
             path="research/reproductions/optimus1_minecraft/source.py",
         ),
     ),
+    primary_executable="research/reproductions/optimus1_minecraft/program.py",
     reported_results=(),
     reference_baselines=(),
     deltas=(
@@ -105,6 +114,17 @@ REPRODUCTION = ReproductionDefinition(
                 "2024-10 official planning implementation invokes gpt-4o. Model "
                 "identity is therefore kept source-lane-specific until the exact "
                 "main-result service cut is bound."
+            ),
+        ),
+        ReproductionDelta(
+            kind=ReproductionDeltaKind("unresolved"),
+            description=(
+                "The paper/framework description says Experience-Driven Reflector "
+                "feedback can trigger replanning, but the paper-era released "
+                "main.py parses replan_type and stores reflection memory without "
+                "branching on the replan label. The executable MethodProgram "
+                "preserves that released control-flow fact; craft/smelt/equip "
+                "failure remains the explicit source-level replan path."
             ),
         ),
     ),
