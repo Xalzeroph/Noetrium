@@ -495,18 +495,14 @@ def _validate_modules(
     rejected: set[str] = set()
     evidence: list[str] = []
     module_receipts: list[JsonValue] = []
-    for module_type in AGENTSQUARE_FIDELITY.module_types:
-        # The released ALFWorld search explicitly skips standalone tool-use
-        # module validation; preserve that executable semantics.
-        if module_type == "tooluse":
-            continue
+    for module_type in bound.profile.validated_module_types:
         raw = proposals.get(module_type)
         if not isinstance(raw, Mapping):
             raise ValueError(f"AgentSquare missing {module_type} proposal")
         result = bound.evaluator.evaluate_module(
             module_type=module_type,
             module=freeze_json(raw),
-            episodes=AGENTSQUARE_FIDELITY.released_candidate_eval_episodes,
+            episodes=bound.profile.candidate_evaluation_episodes,
         )
         if not isinstance(result, AgentSquareModuleEvaluation):
             raise TypeError("AgentSquare evaluator returned invalid module result")
@@ -530,7 +526,7 @@ def _validate_modules(
         row
         for row in _agents(data.get("pending_evolution_agents", ()))
         if not any(value in rejected for value in row.values())
-        and row.get("tooluse") == "None"
+        and bound.profile.accepts_agent(row)
     )
     if not candidates:
         candidates = (_agent(data.get("current_agent")),)
@@ -555,11 +551,13 @@ def _validate_modules(
 def _evaluate_many(
     evaluator: AgentSquareEvaluatorPort,
     candidates: tuple[JsonObject, ...],
+    *,
+    episodes: int,
 ) -> tuple[AgentSquareEvaluation, ...]:
     return tuple(
         evaluator.evaluate_agent(
             agent=row,
-            episodes=AGENTSQUARE_FIDELITY.released_candidate_eval_episodes,
+            episodes=episodes,
         )
         for row in candidates
     )
@@ -597,7 +595,11 @@ def _evaluate_evolution(
     bound = _require_binding(binding)
     data = _state(request, bound)
     candidates = _agents(data.get("pending_evolution_agents", ()))
-    results = _evaluate_many(bound.evaluator, candidates)
+    results = _evaluate_many(
+        bound.evaluator,
+        candidates,
+        episodes=bound.profile.candidate_evaluation_episodes,
+    )
     if any(not isinstance(row, AgentSquareEvaluation) for row in results):
         raise TypeError("AgentSquare evaluator returned invalid agent result")
     current, performance, tested, count = _apply_evaluations(data, results)
@@ -638,10 +640,14 @@ def _recombine(request: ProgramNodeRequest, binding: object) -> ProgramNodeResul
         tested_cases=tuple(data.get("tested_cases", ())),
     )
     candidates = tuple(
-        row for row in _agents(candidates) if row.get("tooluse") == "None"
+        row
+        for row in _agents(candidates)
+        if bound.profile.accepts_agent(row)
     )
     if not candidates:
-        raise ValueError("AgentSquare recombination returned no ALFWorld candidates")
+        raise ValueError(
+            "AgentSquare recombination returned no profile-compatible candidates"
+        )
     return ProgramNodeResult(
         value={"candidate_count": len(candidates)},
         state_update={"pending_recombination_agents": candidates},
@@ -727,7 +733,7 @@ def _record_iteration(
     request: ProgramNodeRequest,
     binding: object,
 ) -> ProgramNodeResult:
-    _require_binding(binding)
+    bound = _require_binding(binding)
     data = _state(request, bound)
     iteration = data.get("iteration", 0)
     if type(iteration) is not int or iteration < 0:
@@ -741,7 +747,7 @@ def _record_iteration(
             "current_performance",
         ),
     },)
-    finished = iteration >= AGENTSQUARE_FIDELITY.released_alfworld_search_iterations
+    finished = iteration >= bound.profile.search_iterations
     return ProgramNodeResult(
         value={"iteration": iteration, "finished": finished},
         state_update={
@@ -767,6 +773,8 @@ def _finalize(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult
     result_digest = canonical_digest({
         "optimization_id": data.get("optimization_id"),
         "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
+        "search_profile_digest": bound.profile.profile_digest,
+        "benchmark_id": bound.profile.benchmark_id,
         "binding_digest": bound.binding_digest,
         "iteration": data.get("iteration"),
         "current_agent": thaw_json(_agent(data.get("current_agent"))),
