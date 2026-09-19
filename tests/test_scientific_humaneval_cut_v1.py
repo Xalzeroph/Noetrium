@@ -38,8 +38,12 @@ def test_humaneval_cut_freezes_all_164_tasks_and_separate_verifier() -> None:
     assert HUMANEVAL_PAPER_ERA_COMMIT in task_set.revision_id
     selected = task_set.selected_tasks(HUMANEVAL_SPLIT_ID)
     assert len(selected) == 164
-    assert selected[0].task_id == "HumanEval/0"
-    assert selected[-1].task_id == "HumanEval/163"
+    assert tuple(task.task_id for task in selected) == tuple(
+        sorted(f"HumanEval/{index}" for index in range(164))
+    )
+    by_id = {task.task_id: task for task in selected}
+    assert "source-index:0" in by_id["HumanEval/0"].lineage_refs
+    assert "source-index:163" in by_id["HumanEval/163"].lineage_refs
     assert all(
         task.package.verifier_requirement_id
         == "benchmark.humaneval.functional-correctness.verifier"
