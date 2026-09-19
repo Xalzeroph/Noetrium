@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 import math
 
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodProgramIdentity
@@ -40,11 +40,15 @@ def _number(value: object, field: str) -> float:
 
 def _nodes(state: Mapping[str, JsonValue]) -> tuple[Mapping[str, JsonValue], ...]:
     value = state.get("nodes")
-    if not isinstance(value, tuple) or not value:
-        raise TypeError("RAP state requires a non-empty node tuple")
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or not value
+    ):
+        raise TypeError("RAP state requires a non-empty node sequence")
     if any(not isinstance(row, Mapping) for row in value):
         raise TypeError("RAP tree nodes must be mappings")
-    return value
+    return tuple(value)
 
 
 def _node(nodes: tuple[Mapping[str, JsonValue], ...], node_id: str) -> Mapping[str, JsonValue]:
@@ -78,9 +82,14 @@ def _current_id(state: Mapping[str, JsonValue]) -> str:
 
 def _path(state: Mapping[str, JsonValue]) -> tuple[str, ...]:
     value = state.get("path")
-    if not isinstance(value, tuple) or not value or any(not isinstance(row, str) or not row for row in value):
-        raise TypeError("RAP state path must be a non-empty tuple of node ids")
-    return value
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or not value
+        or any(not isinstance(row, str) or not row for row in value)
+    ):
+        raise TypeError("RAP state path must be a non-empty sequence of node ids")
+    return tuple(value)
 
 
 def _reward(r0: float, r1: float) -> float:
@@ -212,8 +221,11 @@ def _route_expansion(request: MethodNodeRequest) -> MethodNodeResult:
         next_node = "generate"
     else:
         children = current.get("children")
-        if not isinstance(children, tuple):
-            raise TypeError("RAP node children must be a tuple")
+        if (
+            not isinstance(children, Sequence)
+            or isinstance(children, (str, bytes, bytearray))
+        ):
+            raise TypeError("RAP node children must be a sequence")
         next_node = "select" if children else "backpropagate"
     return MethodNodeResult(
         value={"node_id": current["node_id"], "expanded": current.get("expanded") is True},
@@ -222,8 +234,11 @@ def _route_expansion(request: MethodNodeRequest) -> MethodNodeResult:
 
 
 def _action_candidates(value: JsonValue) -> tuple[tuple[str, float], ...]:
-    if not isinstance(value, tuple):
-        raise TypeError("RAP reasoner result must be a tuple")
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+    ):
+        raise TypeError("RAP reasoner result must be a sequence")
     rows: list[tuple[str, float]] = []
     seen: set[str] = set()
     for index, item in enumerate(value):
@@ -298,7 +313,11 @@ def _select_child(request: MethodNodeRequest) -> MethodNodeResult:
     current_id = _current_id(request.state)
     parent = _node(nodes, current_id)
     children = parent.get("children")
-    if not isinstance(children, tuple) or not children:
+    if (
+        not isinstance(children, Sequence)
+        or isinstance(children, (str, bytes, bytearray))
+        or not children
+    ):
         raise ValueError("RAP selection requires expanded children")
     parent_visits = _integer(parent.get("visits"), "parent visits")
 
