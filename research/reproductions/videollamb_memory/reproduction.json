@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videollamb_memory",
-  "package_digest": "cda6561fffb7f4cbc973496c80c037c187790175d5c6ece268c35daeb09cdfc2",
-  "definition_digest": "b53523da33be97942cc8e73ef2da865face6f50b72ecaf96a2ca225896eda77c",
+  "package_digest": "d1684448e06991e6b9073ac20e4f6eecf423cf2dde5fd06372b03f938d6c790c",
+  "definition_digest": "3b6c3937af31c94f0080615b31be101bbbe164b99850f342dc6d57d856bddafb",
   "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -98,26 +98,31 @@
       "content_sha256": "e3c5e82236b695b63506d030bc9d81ec4b58f026c35d25b50ded24840a5cab00"
     },
     {
+      "kind": "research_program",
+      "path": "research/reproductions/videollamb_memory/memory.py",
+      "declaration_digest": "493715a6f1755df086e9d01a1dfe1056fdb67f1a8672ba3eefc708cad58a776a",
+      "content_sha256": "ae2463a0114fda9fc49e4d07066bca4b753118481837484cd15c34779b2f4deb"
+    },
+    {
       "kind": "support",
       "path": "research/reproductions/videollamb_memory/source.py",
       "declaration_digest": "c2bf227cf6b080cd5e3ddbc71de639747d53b09b8ec52776a3f127b5493f454b",
       "content_sha256": "b764595ec1c1a9ccb65c03f209ef5cba482ff7c7356d521cbdb5c08107d5e8fa"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/videollamb_memory/memory.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [],
   "blockers": [
-    "The recurrent MemoryProgram has not yet been bound to the official bridge/cache implementation semantics.",
     "EgoSchema, NExT-QA, EgoPlan, MVBench and NIAVH benchmark cuts are not yet content-addressed in this package.",
-    "The ICCV Study, released checkpoints and matched result evidence are not yet bound."
+    "The ICCV Study, released checkpoints and matched-result evidence are not yet bound."
   ],
   "evidence_refs": [],
   "scientific_tests": [
     {
       "path": "tests/test_scientific_videollamb_memory_v1.py",
-      "content_sha256": "15daf13d2a057d465f34e7bec33ac6b5e9567a868e396e6a14331b3ae2ceab28"
+      "content_sha256": "93cc55461fb313bbe24eb6b17fd2f1cd671a25613363ea6e7dea2ba4372bb0ea"
     }
   ]
 }
