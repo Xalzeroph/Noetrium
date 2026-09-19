@@ -64,7 +64,7 @@ def test_memgpt_memoryarena_study_binds_method_benchmark_models_and_metrics() ->
     assert definition.benchmark.benchmark_id == MEMORYARENA_BENCHMARK_ID
     assert definition.benchmark_split_id == "test"
     assert MEMGPT_CLASSIC_METHOD_PROGRAM.program_digest
-    assert MEMGPT_MEMORYARENA_TRIAL_PROTOCOL.protocol_digest
+    assert MEMGPT_MEMORYARENA_TRIAL_PROTOCOL.digest()
 
     participant = definition.binding_requirements.participants[0]
     assert participant.method_id == "memgpt-classic"
