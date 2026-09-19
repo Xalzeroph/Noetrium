@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimus1_minecraft",
-  "package_digest": "238c77343a16a10b6228ec4c30837bda0c2aea16192e6fa1e149d15491679476",
-  "definition_digest": "7ea95d7da0d9ab222402f4f4c1d493b682f0a225099a288ad4bf5626ff747e37",
+  "package_digest": "579ba5c473b73fc710e84574d88a4fb56766d42e0fed4fca4c19970e789beaa8",
+  "definition_digest": "fbfa26bf6d0fa41b390c85c7445905b9701edfd39bce7bc6130a54d739c1bcf3",
   "source_registry_digest": "a3acfe40764ad2d81394436f3bd10ed392d9c039e7f7dd83810b26b7bffbf7fe",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -104,13 +104,25 @@
       "content_sha256": "f42869ac3ce9aee11eaa6cb982b3d901a881855a358c58d105c99b9ae178010e"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/optimus1_minecraft/program.py",
+      "declaration_digest": "933f6ee7d053cc455e0dc540c61ecbdebc5af0b2e05b708aea49c4c9a44ecfef",
+      "content_sha256": "b36b5f3de2c3916b911d67118f9268408e2e20e8d74b68e91cdf351c7ce1eaae"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/optimus1_minecraft/memory.py",
+      "declaration_digest": "95cf8bca4d80c759237c2e81b7ddf3e57b04150e15d6056d7c7132feb0532c87",
+      "content_sha256": "b43332f8c18abc5be621b551f1459e423ce830e1c0fe5b8b1268da7471f453a6"
+    },
+    {
       "kind": "support",
       "path": "research/reproductions/optimus1_minecraft/source.py",
       "declaration_digest": "84b3c6eaa6048411698f60c9ddb8b17c646d1c45788e178ee1f7a9405f642002",
       "content_sha256": "0dbbac2a03b9f7240e7a8ad79fb793b8f147c6520e18f63ccffae6904c889ea6"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/optimus1_minecraft/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [
@@ -123,6 +135,11 @@
       "kind": "unresolved",
       "description": "The paper analyzes GPT-4V and multiple MLLM backbones, while the 2024-10 official planning implementation invokes gpt-4o. Model identity is therefore kept source-lane-specific until the exact main-result service cut is bound.",
       "delta_digest": "1c0c1a9592fea679ac5fb40895943f5533e1915446cf4171ebdb2b3fb321d47c"
+    },
+    {
+      "kind": "unresolved",
+      "description": "The paper/framework description says Experience-Driven Reflector feedback can trigger replanning, but the paper-era released main.py parses replan_type and stores reflection memory without branching on the replan label. The executable MethodProgram preserves that released control-flow fact; craft/smelt/equip failure remains the explicit source-level replan path.",
+      "delta_digest": "e0e36b0ee79d124eaf1590ba0204bffafab2aae99d1589fa81380a71abd094ef"
     }
   ],
   "blockers": [
