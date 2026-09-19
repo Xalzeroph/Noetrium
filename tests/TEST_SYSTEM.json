@@ -176,7 +176,7 @@
     },
     {
       "id": "contracts",
-      "pattern": "^test_(?:agent_(?:capability_abi|multimodal_projection|observation_evidence_payload)|embodied_sensor_open_modality|interface_schema_generation|multimodal_contract|noe_downstream_preflight_v1|public_agent_research_runtime|public_model_composition|memory_graph_v1|public_examples_boundary_v1|public_project_minecraft_binding_v1|public_project_model_binding_v1|public_project_method_binding_v1|registered_system_surface_audit_v1|downstream_contracts|memory_graph_public_metadata|embodied_environment|checksummed_document_failure_codes|document_integrity|exact_|experiment_run_spec|failure_taxonomy_binding|leaf_failure_contract|machine_(?:end_state_contracts|executor|kernel_abi|kernel_v2_completion|snapshot|research_closure)|programmable_research_machine|prompt_contract|public_api_imports|qualification_evidence_codec|project_system|python_environment|research_record|role04_algorithm_contracts|run_(?:launch_manifest_authority|manifest_codec)|runtime_verification_ports|scientific_identity_freeze|section42_identity_facets|segment_verifier|server_connection_environment|software_environment_v1|source_.*|system_leaf_contracts|trial_(?:identity_freeze|protocol_identity)|typed_.*|universal_method_machine|workflow_surface_reuse_scope_v1)",
+      "pattern": "^test_(?:agent_(?:capability_abi|multimodal_projection|observation_evidence_payload)|embodied_sensor_open_modality|interface_schema_generation|multimodal_contract|noe_downstream_preflight_v1|public_agent_research_runtime|public_model_composition|memory_graph_v1|public_examples_boundary_v1|public_project_minecraft_binding_v1|public_project_model_binding_v1|public_project_method_binding_v1|registered_system_surface_audit_v1|downstream_contracts|memory_graph_public_metadata|embodied_environment|checksummed_document_failure_codes|document_integrity|exact_|experiment_run_spec|failure_taxonomy_binding|leaf_failure_contract|machine_(?:end_state_contracts|executor|kernel_abi|kernel_v2_completion|snapshot|research_closure)|programmable_research_machine|program_execution_contract_v1|prompt_contract|public_api_imports|qualification_evidence_codec|project_system|python_environment|research_record|role04_algorithm_contracts|run_(?:launch_manifest_authority|manifest_codec)|runtime_verification_ports|scientific_identity_freeze|section42_identity_facets|segment_verifier|server_connection_environment|software_environment_v1|source_.*|system_leaf_contracts|trial_(?:identity_freeze|protocol_identity)|typed_.*|universal_method_machine|workflow_surface_reuse_scope_v1)",
       "family": "typed-contracts"
     },
     {
@@ -196,7 +196,7 @@
     },
     {
       "id": "concurrency",
-      "pattern": "^test_(?:child_research_machine_batch_v1|capacity|compute_(?:host_runtime_pressure|lease_lifecycle|placement_efficiency|runtime_sharing)|platform_concurrency_runtime|qualification_index_worker_concurrency|io_performance|parallel|.*isolation|recovery_lease|research_(?:campaign|execution_pool)|resource_(?:endpoint_(?:allocation|atomicity|heartbeat)|shared_carrier_fencing)|segmented_event_hot_path|sem_hot_path)",
+      "pattern": "^test_(?:child_research_machine_batch_v1|thread_pool_child_research_machine_batch_v1|capacity|compute_(?:host_runtime_pressure|lease_lifecycle|placement_efficiency|runtime_sharing)|platform_concurrency_runtime|qualification_index_worker_concurrency|io_performance|parallel|.*isolation|recovery_lease|research_(?:campaign|execution_pool)|resource_(?:endpoint_(?:allocation|atomicity|heartbeat)|shared_carrier_fencing)|segmented_event_hot_path|sem_hot_path)",
       "family": "concurrency-capacity"
     },
     {
@@ -211,7 +211,7 @@
     },
     {
       "id": "composition",
-      "pattern": "^test_(?:agent_cognition_(?:action_phase|planning_phase)|context_runtime_module_v1|controller|deployment_(?!qualification)|experiment_(?!run_spec)|generic_|host_|java_runtime|joined_runtime_status|local_service|logical_scheduling_|management|model_|multi_agent_|operator_(?!unclosed)|participant_(?!checkpoint_envelope)|platform_meta_systems|prepared_process|process_|qualification_(?:fact_probes|index_snapshot)|resource_resolution|runtime_(?!failure|history|observer|platform|recovery|service|state|small|verification)|server_(?!connection)|service_(?!crash_)|workload_)",
+      "pattern": "^test_(?:agent_cognition_(?:action_phase|planning_phase)|context_runtime_module_v1|controller|deployment_(?!qualification)|experiment_(?!run_spec)|generic_|host_|java_runtime|joined_runtime_status|local_service|logical_scheduling_|management|model_|multi_agent_|operator_(?!unclosed)|participant_(?!checkpoint_envelope)|platform_meta_systems|prepared_process|program_execution_capability_binding_v1|process_|qualification_(?:fact_probes|index_snapshot)|resource_resolution|runtime_(?!failure|history|observer|platform|recovery|service|state|small|verification)|server_(?!connection)|service_(?!crash_)|workload_)",
       "family": "composition-integration"
     },
     {
