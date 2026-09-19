@@ -1,0 +1,127 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "drvideo",
+  "package_digest": "4f6c4bb07b6bcca251814cf2978117525d93d0a965dd910bf128b87c5fe92449",
+  "definition_digest": "1ab91109bf58d624fad8e714410b247711195f9515bdd97c687c07d0a04df19f",
+  "source_registry_digest": "7fefca6637ec616d0b9bca8e3d69771815436472b8f69bb31f15efe37cd0d68c",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "drvideo",
+    "title": "DrVideo: Document Retrieval Based Long Video Understanding",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Ma_DrVideo_Document_Retrieval_Based_Long_Video_Understanding_CVPR_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "CVPR 2025 camera-ready",
+    "identity_digest": "cc1ffbf0eb6392f2a5fb637dc9d8b58c21dd852fde31325a2127aee38bfa3850"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "multimodal",
+      "retrieval",
+      "video"
+    ],
+    "families": [
+      "document_retrieval",
+      "iterative_video_agent",
+      "long_video_understanding",
+      "question_conditioned_augmentation"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "benchmark/video",
+      "data/semantic-similarity",
+      "execution/machines/method",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "final chain-of-thought answer generation",
+      "interaction-agent adaptive frame/type selection",
+      "planning-agent sufficiency judgement",
+      "question-conditioned key-frame augmentation",
+      "question-to-document semantic frame retrieval",
+      "two-round document augmentation loop",
+      "video-to-text long-document construction"
+    ],
+    "platform_owned": [
+      "MethodMachine journal authority",
+      "artifact/evidence lineage",
+      "benchmark cut identity",
+      "multimodal model transport",
+      "semantic-similarity capability execution",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [
+      "https://github.com/Upper9527/DrVideo"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2025/html/Ma_DrVideo_Document_Retrieval_Based_Long_Video_Understanding_CVPR_2025_paper.html"
+    ],
+    "catalog_digest": "850b4da0c22340e8d1cb9e1233ab5c73134cdcddb2309868add737ffcc658789"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2025_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2025,
+      "publication_id": "drvideo-cvpr-2025",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Ma_DrVideo_Document_Retrieval_Based_Long_Video_Understanding_CVPR_2025_paper.html",
+      "revision": "CVPR 2025 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "cbba02c12bc045f25fcf4376772871a8c696b7f56bc61285ec63a8aa6502cdd7"
+    },
+    {
+      "lane_id": "official_release_2025_08_11",
+      "kind": "official_executable",
+      "repository": "https://github.com/Upper9527/DrVideo",
+      "commit": "986d232133e9717a547905d32198f552ce202b5e",
+      "artifacts": [
+        "dataset.py",
+        "eval.py",
+        "main.py",
+        "model.py",
+        "models/blip2_model.py",
+        "prompts.py"
+      ],
+      "lane_digest": "7210db51bdfc7f7499d308260693b1934ff4966d3f6e8a9778a11f84b520dd4b"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/drvideo/fidelity.py",
+      "declaration_digest": "9fe6f44c6753c4180b501ce0e1d0697e7c6cf51a9e8595e027565a5fff69e35b",
+      "content_sha256": "1f2a551ecd49f816b2da68fc67773cee31fb75ff4b6790636aa699dc22725615"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/drvideo/source.py",
+      "declaration_digest": "28a5fbfc20731878c981db36ac5677c62647d489809bd1cbaee61bda5f4b4fe1",
+      "content_sha256": "60c265f34d2e7e3520ff507f7a3e6a0a0b747c408bf795edddb9e44dd3571428"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The CVPR paper reports Top-K=5 as the best/default retrieval setting, while the later official repository release hard-codes k=20 in get_relevant_frames. Both identities are retained and must not be silently conflated.",
+      "delta_digest": "a8016b5feb5611e19bd785a3fc1ca86ec4b637d731da55c143bf3a939aade324"
+    }
+  ],
+  "blockers": [
+    "Executable MethodProgram is being bound from the paper semantics.",
+    "Exact EgoSchema, MovieChat-1K and Video-MME benchmark cuts and caption/model providers remain to be content-addressed."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_drvideo_v1.py",
+      "content_sha256": "dbea0a0d4b1c1503aee4c817a8dee6e3dc15c120b091471b8a5529cb57a54f06"
+    }
+  ]
+}
