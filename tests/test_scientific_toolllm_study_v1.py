@@ -44,7 +44,7 @@ def test_toolllm_toolbench_oracle_study_freezes_program_and_tooleval_metrics() -
     assert study.benchmark.benchmark_id == "toolbench"
     assert study.trial_protocol_identity.protocol_id == "toolllm.toolbench.oracle.v1"
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     ) == (
         "give_up_count",
         "query_count",
