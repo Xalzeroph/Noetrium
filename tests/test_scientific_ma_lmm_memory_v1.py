@@ -271,7 +271,7 @@ def test_ma_lmm_memory_machine_streams_refs_compresses_and_clears(
     assert tuple(final.data["banks"]) == ()
 
     # The Machine state carries immutable content refs, not raw embeddings.
-    assert "frames" not in str(final.data)
+    assert "frames" not in final.data
     assert len(journal.commits(machine_id)) == final.revision
 
 
