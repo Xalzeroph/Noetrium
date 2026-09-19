@@ -731,7 +731,9 @@
         }
       ],
       "priority": 1,
-      "benchmark_ids": [],
+      "benchmark_ids": [
+        "deps-minecraft-70"
+      ],
       "platform_pressure": [
         "environment/minecraft",
         "evaluation",
@@ -1674,6 +1676,58 @@
         "model invocation",
         "participant topology",
         "round evidence"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "optimus1-minecraft",
+      "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
+      "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+      "year": 2024,
+      "families": [
+        "episodic_multimodal_memory",
+        "hybrid_memory",
+        "knowledge_graph_memory",
+        "minecraft",
+        "multimodal_memory",
+        "planning_reflection"
+      ],
+      "reference_repositories": [
+        "https://github.com/iLearn-Lab/NeurIPS24-Optimus-1"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "optimus1_minecraft",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "artifact/multimodal",
+        "environment/minecraft",
+        "execution/machines/memory",
+        "execution/machines/method",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "Abstracted Multimodal Experience Pool semantics",
+        "Experience-Driven Reflector semantics",
+        "Hierarchical Directed Knowledge Graph construction and retrieval",
+        "Knowledge-Guided Planner semantics",
+        "error-conditioned replan experience retrieval",
+        "multimodal reflection experience categories",
+        "periodic planner-reflector-controller interaction",
+        "successful-plan experience storage and fuzzy retrieval"
+      ],
+      "platform_owned": [
+        "MemoryMachine and MethodMachine journal authority",
+        "Minecraft environment lifecycle and effects",
+        "Study/Experiment orchestration",
+        "artifact/evidence lineage",
+        "model invocation and participant identity",
+        "multimodal content identity and transport"
       ],
       "evidence_refs": []
     },

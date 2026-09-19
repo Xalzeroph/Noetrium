@@ -2,7 +2,7 @@
   "schema": "noetrium.publication-priority-queue.v1",
   "authority": "generated_from_publication_policy_registry_reproduction_and_pressure_projections",
   "updated_at": "2026-09-19",
-  "method_count": 46,
+  "method_count": 47,
   "benchmark_count": 7,
   "formal_pressure_violation_count": 0,
   "method_queue": [
@@ -190,6 +190,23 @@
       "method_id": "cogagent",
       "packages": [
         "cogagent"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [],
+      "implementation_state": "reproduction_exists_not_active_pressure"
+    },
+    {
+      "publication_id": "optimus1",
+      "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
+      "year": 2024,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "optimus1-minecraft",
+      "packages": [
+        "optimus1_minecraft"
       ],
       "lifecycles": [
         "protocol_bound"

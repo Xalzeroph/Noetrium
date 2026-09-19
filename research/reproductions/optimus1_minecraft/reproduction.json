@@ -1,0 +1,140 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "optimus1_minecraft",
+  "package_digest": "238c77343a16a10b6228ec4c30837bda0c2aea16192e6fa1e149d15491679476",
+  "definition_digest": "7ea95d7da0d9ab222402f4f4c1d493b682f0a225099a288ad4bf5626ff747e37",
+  "source_registry_digest": "a3acfe40764ad2d81394436f3bd10ed392d9c039e7f7dd83810b26b7bffbf7fe",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "optimus1-minecraft",
+    "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+    "year": 2024,
+    "paper_revision": "NeurIPS 2024 / official code release e789c58f53a4f831d67c4d6aaa008dbfd198a229",
+    "identity_digest": "2254046b2a4e071fad3acde018c30154e5ee8c32284f10fe8cc78cdf521c4c08"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "long-horizon-planning",
+      "memory",
+      "minecraft",
+      "multimodal"
+    ],
+    "families": [
+      "episodic_multimodal_memory",
+      "hybrid_memory",
+      "knowledge_graph_memory",
+      "minecraft",
+      "multimodal_memory",
+      "planning_reflection"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/multimodal",
+      "environment/minecraft",
+      "execution/machines/memory",
+      "execution/machines/method",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "Abstracted Multimodal Experience Pool semantics",
+      "Experience-Driven Reflector semantics",
+      "Hierarchical Directed Knowledge Graph construction and retrieval",
+      "Knowledge-Guided Planner semantics",
+      "error-conditioned replan experience retrieval",
+      "multimodal reflection experience categories",
+      "periodic planner-reflector-controller interaction",
+      "successful-plan experience storage and fuzzy retrieval"
+    ],
+    "platform_owned": [
+      "MemoryMachine and MethodMachine journal authority",
+      "Minecraft environment lifecycle and effects",
+      "Study/Experiment orchestration",
+      "artifact/evidence lineage",
+      "model invocation and participant identity",
+      "multimodal content identity and transport"
+    ],
+    "reference_repositories": [
+      "https://github.com/iLearn-Lab/NeurIPS24-Optimus-1"
+    ],
+    "reference_publications": [
+      "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html"
+    ],
+    "catalog_digest": "29ed69650bf2db59ce0fe207699b304c1573653b2e369838a75892c04ff09016"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "neurips_2024_main",
+      "kind": "paper_provenance",
+      "venue": "NeurIPS",
+      "year": 2024,
+      "publication_id": "optimus1-neurips-2024",
+      "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+      "revision": "NeurIPS 2024 main conference paper",
+      "content_sha256": null,
+      "lane_digest": "d2c2e69b7600cfdf30b615d4358941ef647186e7accb9e7e06811ae94c2636a9"
+    },
+    {
+      "lane_id": "official_code_release_2024_10_21",
+      "kind": "official_executable",
+      "repository": "https://github.com/iLearn-Lab/NeurIPS24-Optimus-1",
+      "commit": "e789c58f53a4f831d67c4d6aaa008dbfd198a229",
+      "artifacts": [
+        "scripts/diamond.sh",
+        "src/optimus1/conf/benchmark",
+        "src/optimus1/conf/evaluate.yaml",
+        "src/optimus1/main.py",
+        "src/optimus1/memories/graph.py",
+        "src/optimus1/memories/memory.py",
+        "src/optimus1/models/gpt4_planning.py",
+        "src/optimus1/models/steve_action_model.py"
+      ],
+      "lane_digest": "73a6e6d1c03db16d07ea1fe3a1aef280e729c40d0aa6a4f8563853a4e2031526"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/optimus1_minecraft/fidelity.py",
+      "declaration_digest": "c1cd532fea031b27a6fd8cb36a4e4f80f67a1d3e6e8939d31fbc2783b981e6fe",
+      "content_sha256": "f42869ac3ce9aee11eaa6cb982b3d901a881855a358c58d105c99b9ae178010e"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/optimus1_minecraft/source.py",
+      "declaration_digest": "84b3c6eaa6048411698f60c9ddb8b17c646d1c45788e178ee1f7a9405f642002",
+      "content_sha256": "0dbbac2a03b9f7240e7a8ad79fb793b8f147c6520e18f63ccffae6904c889ea6"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The NeurIPS paper describes a 67-task long-horizon benchmark, while the paper-era official release contains 73 task rows across seven benchmark YAML files. The reproduction does not silently treat the release configuration union as the paper result cut.",
+      "delta_digest": "c856076f0f8a9ec9db4a9000a67370d451a2f9271e13a4487c19a9da89f67db7"
+    },
+    {
+      "kind": "unresolved",
+      "description": "The paper analyzes GPT-4V and multiple MLLM backbones, while the 2024-10 official planning implementation invokes gpt-4o. Model identity is therefore kept source-lane-specific until the exact main-result service cut is bound.",
+      "delta_digest": "1c0c1a9592fea679ac5fb40895943f5533e1915446cf4171ebdb2b3fb321d47c"
+    }
+  ],
+  "blockers": [
+    "The exact 67-task NeurIPS main-result cut must be recovered from the paper appendix rather than inferred from the 73 released YAML rows.",
+    "Matched execution requires the paper-era MCP-Reborn Minecraft runtime and STEVE-1 controller checkpoint under content-addressed authority.",
+    "The later 2025 full-memory release must not be substituted for the NeurIPS 2024 paper-era memory state without explicit provenance."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_optimus1_minecraft_v1.py",
+      "content_sha256": "5284c925e87a1c18997dc1f00a83146af1a23e80eaff3b91616c0ae4392040aa"
+    }
+  ]
+}
