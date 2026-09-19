@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -101,8 +103,46 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/voyager_minecraft/program.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="voyager_unique_items_multiplier",
+            metric_id="unique_items_multiplier",
+            value=3.3,
+            qualifiers={
+                "comparison": "prior-state-of-the-art",
+                "source": "TMLR paper",
+            },
+        ),
+        ReportedResult(
+            claim_id="voyager_tech_tree_speed_multiplier",
+            metric_id="tech_tree_unlock_speed_multiplier",
+            value=15.3,
+            qualifiers={
+                "bound": "up-to",
+                "comparison": "prior-state-of-the-art",
+                "source": "TMLR paper",
+            },
+        ),
+        ReportedResult(
+            claim_id="voyager_traversal_distance_multiplier",
+            metric_id="traversal_distance_multiplier",
+            value=2.3,
+            qualifiers={
+                "comparison": "prior-state-of-the-art",
+                "source": "TMLR paper",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="voyager_prior_minecraft_agents",
+            description=(
+                "Prior Minecraft embodied agents used for the lifelong-learning "
+                "comparison in the Voyager paper."
+            ),
+            qualifiers={"source": "TMLR paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("substitution"),
