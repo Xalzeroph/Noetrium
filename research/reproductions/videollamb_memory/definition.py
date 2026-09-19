@@ -69,19 +69,22 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/videollamb_memory/fidelity.py",
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("research_program"),
+            path="research/reproductions/videollamb_memory/memory.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
             path="research/reproductions/videollamb_memory/source.py",
         ),
     ),
+    primary_executable="research/reproductions/videollamb_memory/memory.py",
     reported_results=(),
     reference_baselines=(),
     deltas=(),
     blockers=(
-        "The recurrent MemoryProgram has not yet been bound to the official "
-        "bridge/cache implementation semantics.",
         "EgoSchema, NExT-QA, EgoPlan, MVBench and NIAVH benchmark cuts are not "
         "yet content-addressed in this package.",
-        "The ICCV Study, released checkpoints and matched result evidence are "
+        "The ICCV Study, released checkpoints and matched-result evidence are "
         "not yet bound.",
     ),
     evidence_refs=(),
