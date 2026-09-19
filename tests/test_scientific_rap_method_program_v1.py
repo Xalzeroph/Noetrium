@@ -33,8 +33,8 @@ class _DeterministicRAPAgent:
     def run(self, request):
         self.calls.append(request.agent_id)
         if request.agent_id == "rap.reasoner":
-            current_id = request.state["current_node_id"]
-            assert current_id == "n0"
+            current = request.view["current_node"]
+            assert current["node_id"] == "n0"
             return MethodAgentResult(
                 value=(
                     {
