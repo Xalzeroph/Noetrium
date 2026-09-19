@@ -1,11 +1,11 @@
 {
   "schema": "noetrium.research-pressure-status.v2",
   "authority": "generated_from_pressure_suite_reproduction_and_benchmark_projections",
-  "suite_updated_at": "2026-09-19",
-  "lane_count": 33,
-  "ready_count": 33,
-  "enforced_count": 24,
-  "enforced_ready_count": 24,
+  "suite_updated_at": "2026-09-20",
+  "lane_count": 37,
+  "ready_count": 37,
+  "enforced_count": 28,
+  "enforced_ready_count": 28,
   "claim_ready_count": 0,
   "enforced_claim_ready_count": 0,
   "lanes": [
@@ -1317,6 +1317,167 @@
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
       "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "flash_vstream_memory",
+      "lineage": "multimodal_dual_flash_streaming_memory",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/flash_vstream_memory/memory.py"
+      },
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_packages": [
+        "egoschema"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "providellm_memory",
+      "lineage": "multimodal_interleaved_streaming_memory",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/providellm_memory/memory.py"
+      },
+      "benchmark_ids": [
+        "ego4d-goalstep"
+      ],
+      "benchmark_packages": [
+        "ego4d_goalstep"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 6,
+      "reference_baseline_count": 2,
+      "evidence_ref_count": 0,
+      "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "videollamb_memory",
+      "lineage": "multimodal_recurrent_memory_bridge",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/videollamb_memory/memory.py"
+      },
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_packages": [
+        "egoschema"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "deps_minecraft",
+      "lineage": "minecraft_open_world_multitask_planning",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/deps_minecraft/program.py"
+      },
+      "benchmark_ids": [
+        "deps-minecraft-70"
+      ],
+      "benchmark_packages": [
+        "deps_minecraft"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
+      "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",

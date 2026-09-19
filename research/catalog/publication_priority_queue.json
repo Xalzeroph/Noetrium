@@ -58,23 +58,6 @@
       "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
-      "publication_id": "flash-vstream",
-      "title": "Flash-VStream: Efficient Real-Time Understanding for Long Video Streams",
-      "year": 2025,
-      "venue": "ICCV",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "flash-vstream",
-      "packages": [
-        "flash_vstream_memory"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
       "publication_id": "flow-modularized-agentic-workflow",
       "title": "Flow: Modularized Agentic Workflow Automation",
       "year": 2025,
@@ -109,23 +92,6 @@
       "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
-      "publication_id": "providellm",
-      "title": "Streaming VideoLLMs for Real-Time Procedural Video Understanding",
-      "year": 2025,
-      "venue": "ICCV",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "providellm",
-      "packages": [
-        "providellm_memory"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
       "publication_id": "vca-video",
       "title": "VCA: Video Curious Agent for Long Video Understanding",
       "year": 2025,
@@ -135,23 +101,6 @@
       "method_id": "vca-video",
       "packages": [
         "vca_video"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "videollamb",
-      "title": "VideoLLaMB: Long Streaming Video Understanding with Recurrent Memory Bridges",
-      "year": 2025,
-      "venue": "ICCV",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "videollamb",
-      "packages": [
-        "videollamb_memory"
       ],
       "lifecycles": [
         "protocol_bound"
@@ -220,23 +169,6 @@
       "method_id": "code-as-policies",
       "packages": [
         "code_as_policies"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "deps-minecraft",
-      "title": "Describe, Explain, Plan and Select: Interactive Planning with LLMs Enables Open-World Multi-Task Agents",
-      "year": 2023,
-      "venue": "NeurIPS",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "deps-minecraft",
-      "packages": [
-        "deps_minecraft"
       ],
       "lifecycles": [
         "protocol_bound"
@@ -338,6 +270,25 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "flash-vstream",
+      "title": "Flash-VStream: Efficient Real-Time Understanding for Long Video Streams",
+      "year": 2025,
+      "venue": "ICCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "flash-vstream",
+      "packages": [
+        "flash_vstream_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "flash_vstream_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "jarvis1",
       "title": "JARVIS-1: Open-World Multi-Task Agents With Memory-Augmented Multimodal Language Models",
       "year": 2025,
@@ -353,6 +304,25 @@
       ],
       "pressure_packages": [
         "jarvis1_minecraft"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "providellm",
+      "title": "Streaming VideoLLMs for Real-Time Procedural Video Understanding",
+      "year": 2025,
+      "venue": "ICCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "providellm",
+      "packages": [
+        "providellm_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "providellm_memory"
       ],
       "implementation_state": "pressure_ready"
     },
@@ -391,6 +361,25 @@
       ],
       "pressure_packages": [
         "rewind_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "videollamb",
+      "title": "VideoLLaMB: Long Streaming Video Understanding with Recurrent Memory Bridges",
+      "year": 2025,
+      "venue": "ICCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "videollamb",
+      "packages": [
+        "videollamb_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "videollamb_memory"
       ],
       "implementation_state": "pressure_ready"
     },
@@ -619,6 +608,25 @@
       ],
       "pressure_packages": [
         "camel_role_playing"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "deps-minecraft",
+      "title": "Describe, Explain, Plan and Select: Interactive Planning with LLMs Enables Open-World Multi-Task Agents",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "deps-minecraft",
+      "packages": [
+        "deps_minecraft"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "deps_minecraft"
       ],
       "implementation_state": "pressure_ready"
     },
