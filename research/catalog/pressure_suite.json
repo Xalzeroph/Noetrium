@@ -1,6 +1,6 @@
 {
   "schema": "noetrium.research-pressure-suite.v2",
-  "updated_at": "2026-09-19",
+  "updated_at": "2026-09-20",
   "closure_contract": {
     "required_asset_kinds": [
       "fidelity",
@@ -179,6 +179,26 @@
     {
       "package": "worldmm_memory",
       "lineage": "multimodal_dynamic_heterogeneous_memory",
+      "enforced": true
+    },
+    {
+      "package": "flash_vstream_memory",
+      "lineage": "multimodal_dual_flash_streaming_memory",
+      "enforced": true
+    },
+    {
+      "package": "providellm_memory",
+      "lineage": "multimodal_interleaved_streaming_memory",
+      "enforced": true
+    },
+    {
+      "package": "videollamb_memory",
+      "lineage": "multimodal_recurrent_memory_bridge",
+      "enforced": true
+    },
+    {
+      "package": "deps_minecraft",
+      "lineage": "minecraft_open_world_multitask_planning",
       "enforced": true
     }
   ],
