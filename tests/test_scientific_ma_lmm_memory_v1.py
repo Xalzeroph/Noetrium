@@ -215,7 +215,7 @@ def test_ma_lmm_memory_machine_streams_refs_compresses_and_clears(
         command_id_prefix="ma-lmm:test",
     )
     assert third.previous_value["active_length"] == 2
-    assert third.previous_value["compression_receipt"]["merge_indices"] == (
+    assert tuple(third.previous_value["compression_receipt"]["merge_indices"]) == (
         0,
         1,
     )
