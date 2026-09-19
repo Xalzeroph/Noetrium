@@ -17,10 +17,25 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRunStatus,
 )
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
+from research.benchmarks.egoschema import (
+    EGOSCHEMA_PUBLIC_COUNT,
+    EGOSCHEMA_PUBLIC_SPLIT,
+    EgoSchemaTaskRecord,
+)
+from research.reproductions.drvideo.benchmark import (
+    build_drvideo_egoschema_public_cut,
+)
 from research.reproductions.drvideo.fidelity import DRVIDEO_REFERENCE_FIDELITY
 from research.reproductions.drvideo.program import (
     DRVIDEO_METHOD_PROGRAM,
     drvideo_initial_state,
+)
+from research.reproductions.drvideo.study import (
+    DRVIDEO_EGOSCHEMA_AGENT_MODEL,
+    DRVIDEO_EGOSCHEMA_CAPTIONER,
+    DRVIDEO_EGOSCHEMA_SAMPLING_FPS,
+    build_drvideo_egoschema_public_study,
+    drvideo_egoschema_trial_protocol,
 )
 
 
@@ -252,3 +267,69 @@ def test_drvideo_method_program_executes_retrieval_feedback_and_answer_loop() ->
         "drvideo.planning-agent",
         "drvideo.answering-agent",
     ]
+
+
+
+def _drv_egoschema_record(index: int) -> EgoSchemaTaskRecord:
+    return EgoSchemaTaskRecord(
+        q_uid=f"drvideo-video-{index:04d}",
+        question=f"What happened in DrVideo fixture {index}?",
+        options=(
+            f"option-a-{index}",
+            f"option-b-{index}",
+            f"option-c-{index}",
+            f"option-d-{index}",
+            f"option-e-{index}",
+        ),
+        video_content_sha256=canonical_digest({"drvideo-video": index}),
+        answer_index=index % 5,
+    )
+
+
+def test_drvideo_egoschema_study_binds_cvpr2025_protocol() -> None:
+    benchmark = build_drvideo_egoschema_public_cut(
+        tuple(
+            _drv_egoschema_record(index)
+            for index in range(EGOSCHEMA_PUBLIC_COUNT)
+        ),
+        questions_content_sha256=canonical_digest(
+            {"drvideo-egoschema": "questions"}
+        ),
+        public_answers_content_sha256=canonical_digest(
+            {"drvideo-egoschema": "answers"}
+        ),
+    )
+    protocol = drvideo_egoschema_trial_protocol(benchmark)
+    study = build_drvideo_egoschema_public_study(benchmark)
+
+    assert len(benchmark.selected_tasks(EGOSCHEMA_PUBLIC_SPLIT)) == 500
+    assert protocol.protocol_id == (
+        "drvideo.cvpr2025.egoschema-public.paper-authoritative.v1"
+    )
+    assert study.trial_protocol_identity == protocol
+
+    method = next(
+        row
+        for row in study.binding_requirements.participants
+        if row.role == "document_retrieval_video_agent"
+    )
+    assert method.method_id == "drvideo"
+    assert method.treatment_id == "cvpr-2025-paper-authoritative"
+    assert "data.semantic-similarity" in method.capability_requirement_ids
+
+    assert DRVIDEO_EGOSCHEMA_SAMPLING_FPS == 0.5
+    assert DRVIDEO_EGOSCHEMA_CAPTIONER == "lavila"
+    assert DRVIDEO_EGOSCHEMA_AGENT_MODEL == "gpt-4-1106-preview"
+    assert {
+        row.role for row in study.binding_requirements.model_roles
+    } == {"agent", "captioner"}
+    assert {
+        row.measurement_id
+        for row in study.measurement_protocol.definitions
+    } == {
+        "augmented_frame_count",
+        "interaction_rounds",
+        "multiple_choice_accuracy",
+        "retrieved_frame_count",
+    }
+    assert study.execution_policy.trial_budget.max_model_calls == 8
