@@ -1265,6 +1265,54 @@
       "evidence_refs": []
     },
     {
+      "method_id": "drvideo",
+      "title": "DrVideo: Document Retrieval Based Long Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Ma_DrVideo_Document_Retrieval_Based_Long_Video_Understanding_CVPR_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "document_retrieval",
+        "iterative_video_agent",
+        "long_video_understanding",
+        "question_conditioned_augmentation"
+      ],
+      "reference_repositories": [
+        "https://github.com/Upper9527/DrVideo"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "drvideo",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "benchmark/video",
+        "data/semantic-similarity",
+        "execution/machines/method",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "final chain-of-thought answer generation",
+        "interaction-agent adaptive frame/type selection",
+        "planning-agent sufficiency judgement",
+        "question-conditioned key-frame augmentation",
+        "question-to-document semantic frame retrieval",
+        "two-round document augmentation loop",
+        "video-to-text long-document construction"
+      ],
+      "platform_owned": [
+        "MethodMachine journal authority",
+        "artifact/evidence lineage",
+        "benchmark cut identity",
+        "multimodal model transport",
+        "semantic-similarity capability execution",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
       "method_id": "exact",
       "title": "ExACT: Teaching AI Agents to Explore with Reflective-MCTS and Exploratory Learning",
       "paper_uri": "https://arxiv.org/abs/2410.02052",
