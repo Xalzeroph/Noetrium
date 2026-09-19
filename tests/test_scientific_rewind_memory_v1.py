@@ -326,13 +326,18 @@ def test_rewind_moviechat_study_binds_memory_and_selection_protocol() -> None:
     study = build_rewind_cvpr2025_study(benchmark)
 
     assert protocol.protocol_id == "rewind.cvpr2025.moviechat-1k.v1"
-    assert study.method.implementation == "rewind"
+    method = next(
+        row
+        for row in study.binding_requirements.participants
+        if row.role == "instructed_multimodal_memory_model"
+    )
+    assert method.method_id == "rewind"
     assert (
         study.trial_protocol_identity.configuration_digest
         == protocol.configuration_digest
     )
     names = {
-        row.name for row in study.measurement_protocol.definitions
+        row.measurement_id for row in study.measurement_protocol.definitions
     }
     assert {
         "global_accuracy",
