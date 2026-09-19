@@ -33,6 +33,6 @@ def test_generative_agents_smallville_cut_and_study_are_protocol_bound() -> None
     assert study.benchmark.benchmark_id == GENERATIVE_AGENTS_BENCHMARK_ID
     assert tuple(row.measurement_id for row in study.measurement_protocol.definitions) == (
         "believability_score",
-        "reflection_count",
         "model_call_count",
+        "reflection_count",
     )
