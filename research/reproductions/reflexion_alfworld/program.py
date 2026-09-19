@@ -376,7 +376,7 @@ def _record_reflection(request: MethodNodeRequest) -> MethodNodeResult:
     return MethodNodeResult(
         value={"reflection_count": len(reflected.reflections)},
         state_update={"reflections": reflected.reflections},
-        next_node="reset",
+        next_node="prepare_reset",
     )
 
 
