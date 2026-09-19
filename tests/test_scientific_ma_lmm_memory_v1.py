@@ -268,7 +268,7 @@ def test_ma_lmm_memory_machine_streams_refs_compresses_and_clears(
     released_sizes = store.get(released_sizes_ref)
     assert len(released) == 3
     assert len(released_sizes) == 3
-    assert final.data["banks"] == ()
+    assert tuple(final.data["banks"]) == ()
 
     # The Machine state carries immutable content refs, not raw embeddings.
     assert "frames" not in str(final.data)
