@@ -82,6 +82,10 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/chatdev_v1/program.py",
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/chatdev_v1/study.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
             path="research/reproductions/chatdev_v1/source.py",
         ),
@@ -111,8 +115,8 @@ REPRODUCTION = ReproductionDefinition(
         "promotion into the shared durable effect authority.",
         "Exact historical hosted model serving used by the released ChatDev "
         "configuration is not an immutable public model artifact.",
-        "The frozen SRDD benchmark cut is bound, but formal runnable studies "
-        "still need the paper-metric evaluator and Study protocol.",
+        "The frozen SRDD benchmark cut and Study protocol are bound, but "
+        "claim-ready runs still need the paper-metric evaluator.",
     ),
     evidence_refs=(),
     scientific_tests=(
