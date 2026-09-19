@@ -11,7 +11,7 @@ SUITE_PATH = ROOT / "research/catalog/pressure_suite.json"
 STATUS_PATH = ROOT / "research/catalog/pressure_status.json"
 
 SUITE_SCHEMA = "noetrium.research-pressure-suite.v2"
-STATUS_SCHEMA = "noetrium.research-pressure-status.v1"
+STATUS_SCHEMA = "noetrium.research-pressure-status.v2"
 
 _LIFECYCLE_RANK = {
     "catalogued": 0,
@@ -249,8 +249,42 @@ def _lane_status(
         tests = []
     detail["scientific_test_count"] = len(tests)
 
-    detail["reported_result_count"] = len(projection.get("reported_results", []))
-    detail["blocker_count"] = len(projection.get("blockers", []))
+    reported_results = projection.get("reported_results", [])
+    reference_baselines = projection.get("reference_baselines", [])
+    evidence_refs = projection.get("evidence_refs", [])
+    blockers = projection.get("blockers", [])
+    deltas = projection.get("deltas", [])
+    for name, value in (
+        ("reported_results", reported_results),
+        ("reference_baselines", reference_baselines),
+        ("evidence_refs", evidence_refs),
+        ("blockers", blockers),
+        ("deltas", deltas),
+    ):
+        if not isinstance(value, list):
+            raise TypeError(f"{package}: reproduction projection {name} must be a list")
+
+    claim_gaps: list[str] = []
+    if lifecycle != "matched_reproduction":
+        claim_gaps.append("lifecycle_not_matched_reproduction")
+    if not reported_results:
+        claim_gaps.append("missing_reported_results")
+    if not evidence_refs:
+        claim_gaps.append("missing_execution_evidence")
+    if blockers:
+        claim_gaps.append("unresolved_blockers")
+    if any(
+        isinstance(delta, Mapping) and delta.get("kind") == "unresolved"
+        for delta in deltas
+    ):
+        claim_gaps.append("unresolved_fidelity_delta")
+
+    detail["reported_result_count"] = len(reported_results)
+    detail["reference_baseline_count"] = len(reference_baselines)
+    detail["evidence_ref_count"] = len(evidence_refs)
+    detail["blocker_count"] = len(blockers)
+    detail["claim_ready"] = not claim_gaps
+    detail["claim_gaps"] = sorted(set(claim_gaps))
     detail["ready"] = not gaps
     detail["gaps"] = sorted(set(gaps))
     return detail
@@ -324,6 +358,12 @@ def project() -> dict[str, Any]:
         "ready_count": sum(bool(row["ready"]) for row in statuses),
         "enforced_count": len(enforced),
         "enforced_ready_count": sum(bool(row["ready"]) for row in enforced),
+        "claim_ready_count": sum(
+            bool(row.get("claim_ready")) for row in statuses
+        ),
+        "enforced_claim_ready_count": sum(
+            bool(row.get("claim_ready")) for row in enforced
+        ),
         "lanes": statuses,
     }
 
@@ -360,6 +400,10 @@ def main(argv: list[str] | None = None) -> int:
                 "ready_count": status["ready_count"],
                 "enforced_count": status["enforced_count"],
                 "enforced_ready_count": status["enforced_ready_count"],
+                "claim_ready_count": status["claim_ready_count"],
+                "enforced_claim_ready_count": (
+                    status["enforced_claim_ready_count"]
+                ),
                 "projection_drift": drift,
                 "enforced_failures": [
                     {"package": row["package"], "gaps": row["gaps"]}
