@@ -3,7 +3,7 @@
   "authority": "generated_from_pressure_suite_reproduction_and_benchmark_projections",
   "suite_updated_at": "2026-09-19",
   "lane_count": 33,
-  "ready_count": 31,
+  "ready_count": 33,
   "enforced_count": 24,
   "enforced_ready_count": 24,
   "lanes": [
@@ -43,7 +43,8 @@
       "lifecycle": "protocol_bound",
       "asset_kinds": [
         "fidelity",
-        "research_program"
+        "research_program",
+        "study"
       ],
       "executable_asset_kinds": [
         "research_program"
@@ -61,10 +62,8 @@
       "scientific_test_count": 2,
       "reported_result_count": 0,
       "blocker_count": 5,
-      "ready": false,
-      "gaps": [
-        "missing_asset:study"
-      ]
+      "ready": true,
+      "gaps": []
     },
     {
       "package": "autogen_agentchat",
@@ -162,6 +161,7 @@
         "fidelity",
         "method_program",
         "research_program",
+        "study",
         "support"
       ],
       "executable_asset_kinds": [
@@ -181,10 +181,8 @@
       "scientific_test_count": 4,
       "reported_result_count": 0,
       "blocker_count": 3,
-      "ready": false,
-      "gaps": [
-        "missing_asset:study"
-      ]
+      "ready": true,
+      "gaps": []
     },
     {
       "package": "generative_agents_memory",

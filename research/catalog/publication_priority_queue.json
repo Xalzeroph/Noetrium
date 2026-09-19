@@ -7,44 +7,6 @@
   "formal_pressure_violation_count": 0,
   "method_queue": [
     {
-      "publication_id": "aflow",
-      "title": "AFlow: Automating Agentic Workflow Generation",
-      "year": 2025,
-      "venue": "ICLR",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "aflow",
-      "packages": [
-        "aflow"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [
-        "aflow"
-      ],
-      "implementation_state": "active_pressure_gap"
-    },
-    {
-      "publication_id": "chatdev",
-      "title": "ChatDev: Communicative Agents for Software Development",
-      "year": 2024,
-      "venue": "ACL",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "chatdev",
-      "packages": [
-        "chatdev_v1"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [
-        "chatdev_v1"
-      ],
-      "implementation_state": "active_pressure_gap"
-    },
-    {
       "publication_id": "agentless",
       "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
       "year": 2025,
@@ -340,6 +302,25 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "aflow",
+      "title": "AFlow: Automating Agentic Workflow Generation",
+      "year": 2025,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "aflow",
+      "packages": [
+        "aflow"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "aflow"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "jarvis1",
       "title": "JARVIS-1: Open-World Multi-Task Agents With Memory-Augmented Multimodal Language Models",
       "year": 2025,
@@ -393,6 +374,25 @@
       ],
       "pressure_packages": [
         "rewind_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "chatdev",
+      "title": "ChatDev: Communicative Agents for Software Development",
+      "year": 2024,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "chatdev",
+      "packages": [
+        "chatdev_v1"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "chatdev_v1"
       ],
       "implementation_state": "pressure_ready"
     },

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chatdev_v1",
-  "package_digest": "6baa879e08eb7b3b8473c120bfda500c12e1334e20dd4d964bfe19742f304556",
-  "definition_digest": "77f97f5031e401163f5811e48aedd0c7ec085cc84bdc7c1c5d6b503d2ac65f1e",
+  "package_digest": "e6d9aa5e95e65ae2fabe57942ea731f8fea6c42e71451f38d4e08d8d1cf91baf",
+  "definition_digest": "dc8c73c41472cca6782492175e4c021eb185498a0b316ff0cd820a281161b143",
   "source_registry_digest": "ef8ddd9ce1f6e9a889a6c727ad6145b62925d7559d7022c815721004d1c57702",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -117,6 +117,12 @@
       "content_sha256": "e41a1919e7130a32445f44320ffcb2f2840d625e8ebe4bdeb075003ae30d5b3c"
     },
     {
+      "kind": "study",
+      "path": "research/reproductions/chatdev_v1/study.py",
+      "declaration_digest": "37320fc0759d79f291c09466826f67cb178053bd988fd206ee61719771a71d2e",
+      "content_sha256": "61bca01623d8e6aa682a6659ee39de5a459501a98b4a34f18a0f45eedd8d9b7f"
+    },
+    {
       "kind": "support",
       "path": "research/reproductions/chatdev_v1/chain.py",
       "declaration_digest": "dd4eff6ffe9ca6910735ba81eb63a06398477470ff9787e97f3191d1deb9094a",
@@ -148,7 +154,7 @@
   "blockers": [
     "Software workspace effect receipts are preserved inside the nested EnvironmentMachine result, but formal claim-ready runs still need promotion into the shared durable effect authority.",
     "Exact historical hosted model serving used by the released ChatDev configuration is not an immutable public model artifact.",
-    "The frozen SRDD benchmark cut is bound, but formal runnable studies still need the paper-metric evaluator and Study protocol."
+    "The frozen SRDD benchmark cut and Study protocol are bound, but claim-ready runs still need the paper-metric evaluator."
   ],
   "evidence_refs": [],
   "scientific_tests": [

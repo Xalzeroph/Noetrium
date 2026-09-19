@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "aflow",
-  "package_digest": "22f5b7e1366c356fd35d2b869bb3a0acfcf724780351f055ca955577708b12a3",
-  "definition_digest": "05902572a652840cc3ed94dc7f14c179c2b92301cca948621a9eb0651d3c4374",
+  "package_digest": "b78477e05f9a5148117312b428569e16876df5884489f242cfbcbe47b4656bce",
+  "definition_digest": "5aec64ce9322118fdf5f2181f182cb738c481bead3574f1cb4e67ff79d4d2e43",
   "source_registry_digest": "21252fdb46d581a1b68a681b0c99494769cc12a9e32a963ecd017bb06a0133b7",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -133,6 +133,12 @@
       "path": "research/reproductions/aflow/program.py",
       "declaration_digest": "ea704281ad3bc71ee7d8b78eb2611781f0c3c9d1c8338306eba3df129e9911c9",
       "content_sha256": "4d0f9f05af68160d7ffaa924f0605291d1500450a5985743e91ac4eca36d5a48"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/aflow/study.py",
+      "declaration_digest": "61e7467b44960b0cef7ff6dc3fa2df1e12ccf3e5611e850ff155526d1ec3f379",
+      "content_sha256": "5de8faa8290c6174542f1e3189fcac4c3018344ca9ce7cbe59681f1c44be2f97"
     }
   ],
   "primary_executable": "research/reproductions/aflow/program.py",

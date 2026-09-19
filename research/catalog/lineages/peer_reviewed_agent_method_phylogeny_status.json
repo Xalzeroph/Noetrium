@@ -1253,7 +1253,7 @@
       "reproductions": [
         {
           "package": "chatdev_v1",
-          "package_digest": "6baa879e08eb7b3b8473c120bfda500c12e1334e20dd4d964bfe19742f304556",
+          "package_digest": "e6d9aa5e95e65ae2fabe57942ea731f8fea6c42e71451f38d4e08d8d1cf91baf",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "srdd"
@@ -1298,6 +1298,11 @@
               "content_sha256": "e41a1919e7130a32445f44320ffcb2f2840d625e8ebe4bdeb075003ae30d5b3c"
             },
             {
+              "kind": "study",
+              "path": "research/reproductions/chatdev_v1/study.py",
+              "content_sha256": "61bca01623d8e6aa682a6659ee39de5a459501a98b4a34f18a0f45eedd8d9b7f"
+            },
+            {
               "kind": "support",
               "path": "research/reproductions/chatdev_v1/chain.py",
               "content_sha256": "5bc98506e18272f6c155f131e4704424dcca1301ae5eee38be946bf6b316e3c6"
@@ -1316,7 +1321,7 @@
           "blockers": [
             "Software workspace effect receipts are preserved inside the nested EnvironmentMachine result, but formal claim-ready runs still need promotion into the shared durable effect authority.",
             "Exact historical hosted model serving used by the released ChatDev configuration is not an immutable public model artifact.",
-            "The frozen SRDD benchmark cut is bound, but formal runnable studies still need the paper-metric evaluator and Study protocol."
+            "The frozen SRDD benchmark cut and Study protocol are bound, but claim-ready runs still need the paper-metric evaluator."
           ],
           "evidence_refs": [],
           "reported_claim_count": 0,
@@ -2312,7 +2317,7 @@
       "reproductions": [
         {
           "package": "aflow",
-          "package_digest": "22f5b7e1366c356fd35d2b869bb3a0acfcf724780351f055ca955577708b12a3",
+          "package_digest": "b78477e05f9a5148117312b428569e16876df5884489f242cfbcbe47b4656bce",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -2357,6 +2362,11 @@
               "kind": "research_program",
               "path": "research/reproductions/aflow/program.py",
               "content_sha256": "4d0f9f05af68160d7ffaa924f0605291d1500450a5985743e91ac4eca36d5a48"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/aflow/study.py",
+              "content_sha256": "5de8faa8290c6174542f1e3189fcac4c3018344ca9ce7cbe59681f1c44be2f97"
             }
           ],
           "blockers": [
@@ -2978,5 +2988,5 @@
       ]
     }
   ],
-  "projection_digest": "ab39ed12cc258118a1eadae5a7e36145000a5fcdc9df8ec99f3d0303a9695214"
+  "projection_digest": "45f6b33e9185eb5301a3af8844fe276811a10981ea71622866afeb127b7d00ad"
 }
