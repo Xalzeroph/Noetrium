@@ -237,10 +237,10 @@ def test_rewind_memory_enforces_stage_order_and_paper_token_geometry(
         payload=_event("rewind.memory.select", {}),
         command_id_prefix="rewind:test",
     )
-    assert tuple(selected.previous_value["instruction_selected_indices"]) == tuple(
+    assert selected.previous_value["instruction_selected_indices"] == tuple(
         range(10)
     )
-    assert tuple(selected.previous_value["selected_indices"]) == tuple(range(8))
+    assert selected.previous_value["selected_indices"] == tuple(range(8))
     assert len(selected.previous_value["selected_frame_refs"]) == 8
     assert selector.requests[0].selected_frame_tokens == 32
 
