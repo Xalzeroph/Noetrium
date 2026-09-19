@@ -33,7 +33,7 @@ REPRODUCTION = ReproductionDefinition(
             "multimodal_memory",
         ),
         priority=1,
-        benchmark_ids=(),
+        benchmark_ids=("egoschema",),
         platform_pressure=(
             "execution/machines/method",
             "execution/machines/memory",
@@ -61,17 +61,28 @@ REPRODUCTION = ReproductionDefinition(
             kind=ReproductionAssetKind("fidelity"),
             path="research/reproductions/vca_video/fidelity.py",
         ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/vca_video/program.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/vca_video/study.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("support"),
+            path="research/reproductions/vca_video/source.py",
+        ),
     ),
+    primary_executable="research/reproductions/vca_video/program.py",
     reported_results=(),
     reference_baselines=(),
     deltas=(),
     blockers=(
-        "The paper-native tree-search MethodProgram and fixed-size memory "
-        "program are not yet bound.",
-        "EgoSchema, LVBench, MMBench-Video and Video-MME benchmark cuts are "
-        "not yet content-addressed in this package.",
-        "The ICCV evaluation Study and executable model/provider bindings "
-        "remain to be implemented.",
+        "LVBench, MMBench-Video and Video-MME benchmark cuts remain to be "
+        "content-addressed alongside the bound EgoSchema public cut.",
+        "Matched-result execution still requires the released multimodal "
+        "model/provider binding and exact video assets.",
     ),
     evidence_refs=(),
     scientific_tests=("tests/test_scientific_vca_video_v1.py",),
