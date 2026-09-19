@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "drvideo",
-  "package_digest": "d6dcef284aa6297db8444b51eb5670e519c45872ad1ebafa18f9b5e0dfb67266",
-  "definition_digest": "90118ed0be413fc4302d66041c157f28bb87c15431e943d728e050b035daada3",
+  "package_digest": "3a6d551bfc6e75c06e94940ffd36a01eb754f1bd005cd6cbe3cbd1ee74334330",
+  "definition_digest": "690965f7ae1acb76bf89d7ff0eb44688b9048353e8a7956d76ac962d57dc0bf4",
   "source_registry_digest": "7fefca6637ec616d0b9bca8e3d69771815436472b8f69bb31f15efe37cd0d68c",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -28,7 +28,9 @@
       "question_conditioned_augmentation"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "egoschema"
+    ],
     "platform_pressure": [
       "benchmark/video",
       "data/semantic-similarity",
@@ -59,7 +61,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/CVPR2025/html/Ma_DrVideo_Document_Retrieval_Based_Long_Video_Understanding_CVPR_2025_paper.html"
     ],
-    "catalog_digest": "850b4da0c22340e8d1cb9e1233ab5c73134cdcddb2309868add737ffcc658789"
+    "catalog_digest": "31040dc617e1c2c1ac35ddf6f0d97c10f7c460d53e302df0c270cdda1e020d37"
   },
   "source_lanes": [
     {
@@ -91,6 +93,12 @@
   ],
   "assets": [
     {
+      "kind": "benchmark",
+      "path": "research/reproductions/drvideo/benchmark.py",
+      "declaration_digest": "0777d687777b35c882d6f0545a67fc4a7ce60c2c491a75e82235c586d34efe4a",
+      "content_sha256": "6243fdf6b7483fe3c25d5d46893a4484d2d01a08934161a815a94be89c7e79fe"
+    },
+    {
       "kind": "fidelity",
       "path": "research/reproductions/drvideo/fidelity.py",
       "declaration_digest": "9fe6f44c6753c4180b501ce0e1d0697e7c6cf51a9e8595e027565a5fff69e35b",
@@ -101,6 +109,12 @@
       "path": "research/reproductions/drvideo/program.py",
       "declaration_digest": "88f3fbe6f2d7ee1de5f0efad693a6aa9e5868f6290459749e2d1af2e15141901",
       "content_sha256": "c61a5ae01914f8ba4464a550f44a25592db33e3d06d0f1eac4f9de5e94d9c144"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/drvideo/study.py",
+      "declaration_digest": "cd0decac8df47526002be04df2c8565568544a5066eacd3e449a770f6a94fffb",
+      "content_sha256": "0aa016e8ce76ec11e60118fbd8fdad438ca8d8336f7a1da705fa34ceec4e89a0"
     },
     {
       "kind": "support",
@@ -120,14 +134,14 @@
     }
   ],
   "blockers": [
-    "Exact EgoSchema, MovieChat-1K and Video-MME benchmark cuts and caption/model providers remain to be content-addressed.",
+    "MovieChat-1K and Video-MME paper cuts remain to be bound.",
     "Matched-result reproduction requires the paper-era model/API dependencies and benchmark media under artifact authority."
   ],
   "evidence_refs": [],
   "scientific_tests": [
     {
       "path": "tests/test_scientific_drvideo_v1.py",
-      "content_sha256": "993f2777f9d6dbc8a2bc9c1551ef9ba8d362d9aaa8e553ff84a0024e960fe57c"
+      "content_sha256": "c02c0414e878c534790e527d3da46783117f97294229d72b5fd0a80d23ee5b8e"
     }
   ]
 }
