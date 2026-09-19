@@ -196,7 +196,7 @@
     },
     {
       "id": "concurrency",
-      "pattern": "^test_(?:capacity|compute_(?:host_runtime_pressure|lease_lifecycle|placement_efficiency|runtime_sharing)|platform_concurrency_runtime|qualification_index_worker_concurrency|io_performance|parallel|.*isolation|recovery_lease|research_(?:campaign|execution_pool)|resource_(?:endpoint_(?:allocation|atomicity|heartbeat)|shared_carrier_fencing)|segmented_event_hot_path|sem_hot_path)",
+      "pattern": "^test_(?:child_research_machine_batch_v1|capacity|compute_(?:host_runtime_pressure|lease_lifecycle|placement_efficiency|runtime_sharing)|platform_concurrency_runtime|qualification_index_worker_concurrency|io_performance|parallel|.*isolation|recovery_lease|research_(?:campaign|execution_pool)|resource_(?:endpoint_(?:allocation|atomicity|heartbeat)|shared_carrier_fencing)|segmented_event_hot_path|sem_hot_path)",
       "family": "concurrency-capacity"
     },
     {
