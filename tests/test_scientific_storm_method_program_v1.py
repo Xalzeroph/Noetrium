@@ -57,7 +57,7 @@ def test_storm_freshwiki_study_binds_paper_metrics() -> None:
         "storm.naacl2024.freshwiki.v1"
     )
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     ) == (
         "heading_soft_recall",
         "heading_entity_recall",
