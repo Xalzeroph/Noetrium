@@ -334,10 +334,13 @@ def build_jarvis1_offline_cut() -> BenchmarkTaskSet:
         source_digest=source.content_digest,
         task_schema_id=JARVIS1_TASK_SCHEMA_ID,
         tasks=tasks,
-        splits=(
-            TaskSetSplit(JARVIS1_ALL_SPLIT, all_ids),
-            *group_splits,
-        ),
+        splits=tuple(sorted(
+            (
+                TaskSetSplit(JARVIS1_ALL_SPLIT, all_ids),
+                *group_splits,
+            ),
+            key=lambda split: split.split_id,
+        )),
         selection_policy_digest=canonical_digest({
             "source_digest": source.content_digest,
             "source_rows": JARVIS1_TASK_IDENTITIES,
