@@ -112,6 +112,16 @@ def main(argv: list[str] | None = None) -> int:
                 "platform-owned tests leaked into research workspace selection: "
                 + ", ".join(overlap)
             )
+        required = {
+            "tests/test_scientific_react_alfworld_method_program_v1.py",
+            "tests/test_research_pressure_program_assets_v2.py",
+        }
+        missing = sorted(required.difference(relative))
+        if missing:
+            raise RuntimeError(
+                "research-owned tests missing from workspace selection: "
+                + ", ".join(missing)
+            )
         print(f"RESEARCH_WORKSPACE_TEST_SELECTION_PASS files={len(relative)}")
         return 0
 
