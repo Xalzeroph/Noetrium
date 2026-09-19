@@ -1,0 +1,141 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "optimus2_minecraft",
+  "package_digest": "aac8f775112eb29abc5b5b5991e26d3b62ad4f787cd392d26a35452ec193622c",
+  "definition_digest": "56a9eaddda3834230e267d385aeee80b3ae49ea2249cd0d05c5d913531ee693b",
+  "source_registry_digest": "fc349c4a36d38cb8541352f436038b853fa4237fa54f9f5e475cf987b8603ed0",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "optimus2-minecraft",
+    "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "CVPR 2025 camera-ready / official paper repository 8651b3177ac5c7fa73a36b74e4b350a35a679338",
+    "identity_digest": "85eb511be5d4d5a359278ae5edff7ccc386c52fae939bfc1142cff39aa0ebe8f"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "minecraft",
+      "multimodal",
+      "vision-language-action"
+    ],
+    "families": [
+      "behavior_modeling",
+      "goal_conditioned_policy",
+      "minecraft",
+      "multimodal_policy",
+      "planner_controller"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/trajectory",
+      "environment/minecraft",
+      "execution/machines/method",
+      "experimentation/study",
+      "model/multimodal",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "Goal-Observation-Action Conditioned Policy semantics",
+      "MLLM high-level task planning",
+      "action-guided behavior encoding",
+      "fixed-length behavior-token consolidation",
+      "language-conditioned autoregressive action prediction",
+      "observation-action causal modeling"
+    ],
+    "platform_owned": [
+      "MethodMachine journal authority",
+      "Minecraft environment lifecycle and effects",
+      "Study/Experiment orchestration",
+      "multimodal model transport",
+      "trajectory/evidence identity"
+    ],
+    "reference_repositories": [
+      "https://github.com/iLearn-Lab/CVPR25-Optimus-2"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html"
+    ],
+    "catalog_digest": "f28bedaf370a4b437298751fc4debd2dc9e177b5ee2177b24c4d3b2615afd46a"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2025_main",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2025,
+      "publication_id": "Li_2025_CVPR_Optimus2",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html",
+      "revision": "CVPR 2025 camera-ready",
+      "content_sha256": null,
+      "lane_digest": "4ba78268cb16b52c8cd62dba11346ccbbb1abd3537218fb49c07b9a9cb131bbf"
+    },
+    {
+      "lane_id": "official_paper_repository_2025_02_28",
+      "kind": "paper_provenance",
+      "repository": "https://github.com/iLearn-Lab/CVPR25-Optimus-2",
+      "commit": "8651b3177ac5c7fa73a36b74e4b350a35a679338",
+      "artifacts": [
+        "README.md",
+        "assets/fig2.pdf",
+        "assets/fig2.png",
+        "assets/optimus2.png",
+        "assets/table1.png",
+        "assets/table2.png",
+        "assets/table3.png"
+      ],
+      "lane_digest": "dc5c3414405e5da47b82c7cfcd9984a5e2625af3e9706d5c28b6ac79977110a7"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/optimus2_minecraft/fidelity.py",
+      "declaration_digest": "4caff9dc1e915ea6caa4e1182b82d519e3e6ee82a9e06bb9fe50f4dee348643d",
+      "content_sha256": "c26a7b2dee702fd56b737a0fb6e15d6021980eaa2f6746da70c8a3ad7e4f6734"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/optimus2_minecraft/program.py",
+      "declaration_digest": "95e564d47da581562b5a492ecf021dd5258a887f0f74c1bec838c7a173126d5f",
+      "content_sha256": "108bd7e7ba9e555bfd64084568c7317a7bd3a8c3d564309093f104c802b8e3f5"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/optimus2_minecraft/source.py",
+      "declaration_digest": "c7b674922fb0347647f3092f5d940bfba3c290678e287d969852c2d5a820da87",
+      "content_sha256": "7c708057d4a793aa551a8540572507c2e908094ca0980d3c57763f21e81eda7a"
+    }
+  ],
+  "primary_executable": "research/reproductions/optimus2_minecraft/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "The official CVPR 2025 paper repository contains README, figures and tables but no executable GOAP/planner source at the paper-era cut or the later 2025-06 repository head. The Noetrium MethodProgram is therefore an explicitly independent reconstruction of paper-level control semantics, not an official-code reproduction.",
+      "delta_digest": "0915d944e0daef8279b4dabbac45427caf99d542c2756799c53f33c70c828aa3"
+    },
+    {
+      "kind": "unresolved",
+      "description": "GOAP network internals, trained weights, MGOA dataset bytes and exact evaluation runtime are not bound to immutable public executable artifacts in this reproduction.",
+      "delta_digest": "5090e45b53416c8bf5521f7074228477c15a314ce13c03132a290e3ee732d576"
+    }
+  ],
+  "blockers": [
+    "The official repository does not publish executable paper-era code.",
+    "MGOA training data and model/checkpoint identities are not yet content-addressed under reproduction authority.",
+    "Atomic, long-horizon and open-ended evaluation cuts are not yet bound as exact BenchmarkTaskSet artifacts.",
+    "Matched paper-result execution is therefore not claim-ready."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_optimus2_minecraft_v1.py",
+      "content_sha256": "ebee783eb5007e391a649b2380a5cc46d469ed108b0ea83e3e428b43852086f2"
+    }
+  ]
+}

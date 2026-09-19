@@ -79,6 +79,16 @@
       ]
     },
     {
+      "benchmark_id": "ego4d-goalstep",
+      "title": "Ego4D Goal-Step",
+      "source_uri": "https://github.com/facebookresearch/ego4d-goalstep",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
       "benchmark_id": "egolifeqa",
       "title": "EgoLifeQA",
       "source_uri": "https://huggingface.co/datasets/lmms-lab/EgoLife",
@@ -1397,7 +1407,9 @@
         }
       ],
       "priority": 1,
-      "benchmark_ids": [],
+      "benchmark_ids": [
+        "egoschema"
+      ],
       "platform_pressure": [
         "artifact/tensor",
         "benchmark/video",
@@ -2252,6 +2264,54 @@
       "evidence_refs": []
     },
     {
+      "method_id": "optimus2-minecraft",
+      "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "behavior_modeling",
+        "goal_conditioned_policy",
+        "minecraft",
+        "multimodal_policy",
+        "planner_controller"
+      ],
+      "reference_repositories": [
+        "https://github.com/iLearn-Lab/CVPR25-Optimus-2"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "optimus2_minecraft",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "artifact/trajectory",
+        "environment/minecraft",
+        "execution/machines/method",
+        "experimentation/study",
+        "model/multimodal",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "Goal-Observation-Action Conditioned Policy semantics",
+        "MLLM high-level task planning",
+        "action-guided behavior encoding",
+        "fixed-length behavior-token consolidation",
+        "language-conditioned autoregressive action prediction",
+        "observation-action causal modeling"
+      ],
+      "platform_owned": [
+        "MethodMachine journal authority",
+        "Minecraft environment lifecycle and effects",
+        "Study/Experiment orchestration",
+        "multimodal model transport",
+        "trajectory/evidence identity"
+      ],
+      "evidence_refs": []
+    },
+    {
       "method_id": "pi0.5",
       "title": "π0.5: a Vision-Language-Action Model with Open-World Generalization",
       "paper_uri": "https://arxiv.org/abs/2504.16054",
@@ -2313,9 +2373,12 @@
         }
       ],
       "priority": 1,
-      "benchmark_ids": [],
+      "benchmark_ids": [
+        "ego4d-goalstep"
+      ],
       "platform_pressure": [
         "artifact/video",
+        "benchmark/video",
         "execution/machines/memory",
         "experimentation/study",
         "model/multimodal"
