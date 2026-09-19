@@ -76,7 +76,7 @@ jobs:
       - name: Verify generated public capability surface and README
         run: python scripts/update_generated_docs.py --check
       - name: Verify source-derived architecture generators
-        run: python scripts/sync_architecture_maps.py --verify-build
+        run: python scripts/sync_platform_architecture_map.py --verify-build
       - name: Verify README localization
         run: python scripts/check_readme_i18n.py
       - name: Run no-degradation audit
