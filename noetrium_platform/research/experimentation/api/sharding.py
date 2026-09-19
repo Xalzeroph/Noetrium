@@ -223,7 +223,7 @@ class CompiledExperimentShardPlan:
             raise TypeError(
                 "experiment shard validation requires CompiledExperimentProgram"
             )
-        compiled.plan.assert_consistent()
+        _assert_compiled_batch_authority(compiled)
         if compiled.plan.plan_digest != self.experiment_plan_digest:
             raise ValueError(
                 "experiment shard plan belongs to another ExperimentPlan"
@@ -267,6 +267,32 @@ class CompiledExperimentShardPlan:
                 raise ValueError(
                     "experiment batch placement references unknown shard"
                 )
+
+
+def _assert_compiled_batch_authority(
+    compiled: CompiledExperimentProgram,
+) -> None:
+    _assert_compiled_batch_authority(compiled)
+    expected_batch_plan_digest = canonical_digest(
+        tuple(batch.batch_digest for batch in compiled.batches)
+    )
+    if compiled.batch_plan_digest != expected_batch_plan_digest:
+        raise ValueError("compiled ExperimentProgram batch plan digest drifted")
+    expected_assignments = {
+        row.assignment_digest for row in compiled.plan.assignments
+    }
+    scheduled = tuple(
+        digest
+        for batch in compiled.batches
+        for digest in batch.assignment_digests
+    )
+    if (
+        len(scheduled) != len(set(scheduled))
+        or set(scheduled) != expected_assignments
+    ):
+        raise ValueError(
+            "compiled ExperimentProgram batches do not exactly cover assignments"
+        )
 
 
 def _batch_placement(
