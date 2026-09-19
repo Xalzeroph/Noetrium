@@ -26,9 +26,17 @@ def _load(path: Path):
 def test_curated_lineage_owns_relationships_not_reproduction_state() -> None:
     lineage = _load(LINEAGE)
     assert lineage["schema"] == "noetrium-research-lineage.v1"
-    assert lineage["execution_mode"]["mode"] == "parallel_core_lanes"
+    assert lineage["execution_mode"]["mode"] == "parallel_peer_reviewed_core_lanes"
     assert "first_execution_order" not in lineage
-    assert len(lineage["core_nodes"]) == 13
+    assert [node["id"] for node in lineage["core_nodes"]] == [
+        "react",
+        "self-refine",
+        "reflexion",
+        "tree-of-thoughts",
+        "rap",
+        "lats",
+        "qlass",
+    ]
     for node in lineage["core_nodes"]:
         assert not FORBIDDEN_NODE_FIELDS.intersection(node)
 
@@ -86,4 +94,5 @@ def test_lineage_status_reuses_typed_reproduction_projection_truth() -> None:
                 for row in reproduction["assets"]
             ]
             assert projected["scientific_tests"] == reproduction["scientific_tests"]
-    assert mapped >= 12
+    assert mapped == len(status["nodes"])
+    assert all(len(node["reproductions"]) == 1 for node in status["nodes"])
