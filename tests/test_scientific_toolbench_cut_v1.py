@@ -38,7 +38,9 @@ def test_toolbench_cut_binds_six_official_subsets_and_tooleval_identity() -> Non
         api_binding_mode="oracle",
     )
     assert task_set.benchmark_id == "toolbench"
-    assert tuple(split.split_id for split in task_set.splits) == TOOLBENCH_SUBSETS
+    assert tuple(split.split_id for split in task_set.splits) == tuple(
+        sorted(TOOLBENCH_SUBSETS)
+    )
     assert all(len(split.task_ids) == 1 for split in task_set.splits)
     assert TOOLBENCH_PAPER_CODE_COMMIT in task_set.revision_id
     assert TOOLBENCH_TOOLEVAL_COMMIT in task_set.revision_id
