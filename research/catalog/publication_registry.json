@@ -542,6 +542,17 @@
       "evidence_url": "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html"
     },
     {
+      "id": "videollamb",
+      "kind": "method",
+      "title": "VideoLLaMB: Long Streaming Video Understanding with Recurrent Memory Bridges",
+      "year": 2025,
+      "venue": "ICCV",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "videollamb",
+      "evidence_url": "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html"
+    },
+    {
       "id": "worldmm",
       "kind": "method",
       "title": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
