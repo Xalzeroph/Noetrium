@@ -67,10 +67,15 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/drvideo/fidelity.py",
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/drvideo/program.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
             path="research/reproductions/drvideo/source.py",
         ),
     ),
+    primary_executable="research/reproductions/drvideo/program.py",
     reported_results=(),
     reference_baselines=(),
     deltas=(
@@ -85,9 +90,10 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     blockers=(
-        "Executable MethodProgram is being bound from the paper semantics.",
         "Exact EgoSchema, MovieChat-1K and Video-MME benchmark cuts and "
         "caption/model providers remain to be content-addressed.",
+        "Matched-result reproduction requires the paper-era model/API "
+        "dependencies and benchmark media under artifact authority.",
     ),
     evidence_refs=(),
     scientific_tests=("tests/test_scientific_drvideo_v1.py",),
