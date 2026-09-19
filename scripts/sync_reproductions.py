@@ -381,17 +381,15 @@ def sync(*, check: bool) -> int:
         # formal publication record. Requiring both would create two manual
         # sources of truth for every new reproduction.
         if formal is not None:
-            # Publication evidence proves peer-reviewed status; it is not
-            # necessarily the same artifact URI used by a paper-era
-            # reproduction (for example, an arXiv paper cut can later acquire
-            # an IEEE/ACM/OpenReview proceedings record). The explicit
-            # reproduction_method_id binding is authoritative for method
-            # identity, while title and publication year guard against an
-            # accidental registry cross-link.
-            formal_matches = (
-                formal.get("title") == definition.identity.title
-                and formal.get("year") == definition.identity.year
-            )
+            # Publication evidence proves peer-reviewed status; it is not the
+            # reproduction artifact identity. The explicit
+            # reproduction_method_id -> method_id relation is the authority:
+            # paper URLs and display titles may legitimately differ between a
+            # formal venue record and a paper-era/scope-specific reproduction.
+            # Publication year remains a compact fail-closed guard against an
+            # accidental cross-link without creating another manual title/URL
+            # source of truth.
+            formal_matches = formal.get("year") == definition.identity.year
             if not formal_matches:
                 raise ValueError(
                     "typed reproduction identity conflicts with formal "
