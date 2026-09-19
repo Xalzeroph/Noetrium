@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -98,8 +100,28 @@ REPRODUCTION = ReproductionDefinition(
     primary_executable=(
         "research/reproductions/worldmm_memory/program.py"
     ),
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="worldmm_average_long_video_gain",
+            metric_id="average_improvement_percent",
+            value=8.4,
+            qualifiers={
+                "scope": "five-long-video-qa-benchmarks",
+                "comparison": "previous-state-of-the-art",
+                "source": "CVPR-2026 abstract",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="worldmm_previous_sota",
+            description=(
+                "Previous state-of-the-art long-video reasoning methods used "
+                "for the five-benchmark comparison reported by WorldMM."
+            ),
+            qualifiers={"source": "CVPR-2026 paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("unresolved"),
