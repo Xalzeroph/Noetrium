@@ -2,10 +2,10 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "storm_wiki",
-  "package_digest": "19fce5d8547f88331769590827e479e337374f0471f1209e2fa4df55312c1dbb",
-  "definition_digest": "6584b700e5288eb51cc9a1ae331e21271768bf71c63a585f7668083da9bccf8f",
-  "source_registry_digest": "3d39255a959f93020f6b36cf8d62f2f0d1423e14fa7f4bd888fc58ba52125295",
-  "lifecycle": "catalogued",
+  "package_digest": "0d778fa9dc9f3b6c8155453f3a826ce21e864b9e7edeaefe93542296d016437a",
+  "definition_digest": "19d6638daec2f13adaa1423e5e8da7efa465c26f86f8df7047fb48e5c73bb264",
+  "source_registry_digest": "a81615aa99cc6d96340bca8447ebe87504c9bdb0bcc0f961f51286299458a9b0",
+  "lifecycle": "protocol_bound",
   "identity": {
     "method_id": "storm",
     "title": "Assisting in Writing Wikipedia-like Articles From Scratch with Large Language Models",
@@ -26,7 +26,9 @@
       "retrieval"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "freshwiki"
+    ],
     "platform_pressure": [
       "artifact/lineage",
       "data/query",
@@ -50,17 +52,37 @@
     "reference_repositories": [
       "https://github.com/stanford-oval/storm"
     ],
-    "reference_publications": [],
-    "catalog_digest": "05ac41ba7a1d52cc343073ef468061d7022ac3aee8c47db563efdb1938d3f956"
+    "reference_publications": [
+      "https://aclanthology.org/2024.naacl-long.347/"
+    ],
+    "catalog_digest": "e0ca51390f6a191fb63a9e6d78826e47dd532d5abb555e9906bc0906b23f1ddf"
   },
   "source_lanes": [
     {
-      "lane_id": "candidate_unclassified_01",
-      "kind": "candidate",
+      "lane_id": "naacl_2024_final",
+      "kind": "paper_provenance",
+      "venue": "NAACL",
+      "year": 2024,
+      "publication_id": "2024.naacl-long.347",
+      "publication_uri": "https://aclanthology.org/2024.naacl-long.347/",
+      "revision": "NAACL 2024 final",
+      "content_sha256": null,
+      "lane_digest": "05f6d6b546b001c685a66eb7ec216cfcdb445beee034b0fc8b4bb2da0d9fb333"
+    },
+    {
+      "lane_id": "official_storm_wiki",
+      "kind": "official_executable",
       "repository": "https://github.com/stanford-oval/storm",
       "commit": "1f8ac2ddb4dd5f8cfcc250fdd3611c693098134b",
-      "artifacts": [],
-      "lane_digest": "5e20c90f993ea1c8433410fe2785d0ab5828818a352725931b7e50bbc76f1791"
+      "artifacts": [
+        "src/storm_wiki/engine.py",
+        "src/storm_wiki/modules/article_generation.py",
+        "src/storm_wiki/modules/article_polish.py",
+        "src/storm_wiki/modules/knowledge_curation.py",
+        "src/storm_wiki/modules/outline_generation.py",
+        "src/storm_wiki/modules/persona_generator.py"
+      ],
+      "lane_digest": "32ea7907b71a6e455d46fa107bf9613281e0d33d66a125b985b46e8326d7c636"
     }
   ],
   "assets": [
@@ -71,19 +93,72 @@
       "content_sha256": "db591261d70b4f8d908d2e09ee1c01e73166a99e035c20ff217e5bd1660da76b"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/storm_wiki/program.py",
+      "declaration_digest": "4379726c42ff8db6190cb47dd44230d7b3e17aaca7c16787e5b10bcf47bd3acd",
+      "content_sha256": "b7012796766d1d618c0999e08a6234b032e7313e7b57b5fa698939781fa85a71"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/storm_wiki/study.py",
+      "declaration_digest": "4141ae8f24e3a995b5d418446f42488eb924974525e0bc8eb81a66ebe477e9f1",
+      "content_sha256": "97758ed6274a732b6b6963c827fbf4bb2610533acc3a827686a72eb27f6d8bf7"
+    },
+    {
       "kind": "support",
       "path": "research/reproductions/storm_wiki/pipeline.py",
       "declaration_digest": "f40fb7c1b9f90211b6f540a520c1f188d25dc986573732374cc9f7c1c69eba08",
       "content_sha256": "3d23e1054031546d150982f5b8062ade8fb76d7e885c88ce16b0bc5d82916646"
     }
   ],
-  "primary_executable": null,
-  "reported_results": [],
-  "reference_baselines": [],
-  "deltas": [],
-  "blockers": [],
+  "primary_executable": "research/reproductions/storm_wiki/program.py",
+  "reported_results": [
+    {
+      "claim_id": "storm_editor_organized_gain",
+      "metric_id": "organized_absolute_gain_percentage_points",
+      "value": 25.0,
+      "qualifiers": {
+        "comparison": "outline-driven retrieval-augmented baseline"
+      },
+      "claim_digest": "77ac65e7790640a752c625f95c0a9aad51da5e45664349c413ed56df1facf78e"
+    },
+    {
+      "claim_id": "storm_editor_breadth_gain",
+      "metric_id": "broad_coverage_absolute_gain_percentage_points",
+      "value": 10.0,
+      "qualifiers": {
+        "comparison": "outline-driven retrieval-augmented baseline"
+      },
+      "claim_digest": "7b48f169ad77dfab16e37872bc12a1f742e316a70bdb906f368be09292e1eb67"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "outline-driven-rag",
+      "description": "outline-driven retrieval-augmented article generation baseline used by the NAACL paper editor study",
+      "qualifiers": {},
+      "baseline_digest": "03aeb769f94160c47c57d15bc2f29665fd13c52ca8f4ad1c361f181b22a4d35e"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The official runner can schedule independent perspective research threads concurrently. The MethodProgram preserves the same bounded perspective/turn dependency graph but commits them serially until generic ready-set parallel authoring is available.",
+      "delta_digest": "cae1b99835234c3407aa841cfc8a795f871b31b792a0833ea3a33713b61f1165"
+    }
+  ],
+  "blockers": [
+    "the exact FreshWiki 100-topic article bytes must be materialized under immutable dataset authority",
+    "matched search results require a frozen paper-era retrieval provider/index cut",
+    "matched rubric grading requires the exact paper evaluator/model assignment",
+    "no matched NAACL execution evidence has yet been produced"
+  ],
   "evidence_refs": [],
   "scientific_tests": [
+    {
+      "path": "tests/test_scientific_storm_method_program_v1.py",
+      "content_sha256": "07fe4d3e60f72d1f3ddc33b943fd8cb34a7c976fae9784f0b6a78bf65a105455"
+    },
     {
       "path": "tests/test_scientific_storm_wiki_v1.py",
       "content_sha256": "1f3205677e20c3a12ea58a1ca38f15ac216b78dd0786d4c3d1e0b5f596f72163"

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "metagpt_software_company",
-  "package_digest": "d191879650273a27e4e4bcc4c2ec279fedbad50178c50c3d20eef44cd0641393",
+  "package_digest": "4ebd7d3c6cb8e5bea32fdbe9735d379396fc84072bedd7ade628b03a66da67f6",
   "definition_digest": "a125237281949c46c13a0e35c5bcc4cd6698a0e032d271dfe49cb10cc5f54da2",
   "source_registry_digest": "1ce38ee388bf0eb998ce4109eafce04c083c168dbd6b10ee369a739c76c06ae8",
   "lifecycle": "protocol_bound",
@@ -95,7 +95,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_humaneval_cut_v1.py",
-      "content_sha256": "cd957babbff9d28fdfda4458474e87f9cd2e6bda81005b40873838e6f779fd27"
+      "content_sha256": "9cd07ddfcee4152c92960ed3efce5fa91b6faa38690845e28e229f9e69da8f00"
     },
     {
       "path": "tests/test_scientific_metagpt_fidelity_v1.py",
@@ -103,7 +103,7 @@
     },
     {
       "path": "tests/test_scientific_metagpt_humaneval_study_v1.py",
-      "content_sha256": "ce7dcf07b208f69d8e1c403f1419b69569059c22067fa2a20b3d4e475421c5f9"
+      "content_sha256": "53063034fc883cf5f42ba632e8d3c10374e683661f1c39ad5be6cadbc58bd681"
     },
     {
       "path": "tests/test_scientific_metagpt_method_program_v1.py",

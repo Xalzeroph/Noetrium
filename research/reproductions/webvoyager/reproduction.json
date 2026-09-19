@@ -2,10 +2,10 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "webvoyager",
-  "package_digest": "bc0fee9cf5309f7fe48e5e7ef5f9cfe8967642fa2f643216837c7a3ee752f17f",
-  "definition_digest": "fbb8f0b1cdfa8c9320975b1dd621d7c1df6a5285461e4e685e58a4d1c402f0db",
+  "package_digest": "e0252b97f16e36308f021538cd480878e546f898ca2119c2780e0ce776c663ce",
+  "definition_digest": "bdffae7702cee8192c735e48b4dc73acdcdd68c0fba5f46552da3511b123746d",
   "source_registry_digest": "78d2607d22aec417ef867017d647e9acd612808ace7a6def9e43e987308f4b5f",
-  "lifecycle": "catalogued",
+  "lifecycle": "protocol_bound",
   "identity": {
     "method_id": "webvoyager",
     "title": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
@@ -27,7 +27,9 @@
       "web_agent"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "webvoyager"
+    ],
     "platform_pressure": [
       "environment/gui",
       "environment/web",
@@ -53,7 +55,7 @@
     "reference_publications": [
       "https://aclanthology.org/2024.acl-long.371/"
     ],
-    "catalog_digest": "7e93a5edc6e84489349586d3030e97f252cec9d7f42c28ced5d7df8eb52c0467"
+    "catalog_digest": "9ede44999c0f828229c7567aa540dfbc252a86dae8def58c165c79baad279feb"
   },
   "source_lanes": [
     {
@@ -88,18 +90,38 @@
       "path": "research/reproductions/webvoyager/fidelity.py",
       "declaration_digest": "def0b8f26b679ff696e11cb2afa3f1383965835ff1e1e17fa50600095aaee236",
       "content_sha256": "57ac173637e02fbe55012e41490d943ff5e5d9d26345ea3638069eaa31fe8cbc"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/webvoyager/program.py",
+      "declaration_digest": "e0454e2b45fc87fb7419b7f09e84c4933a2c7775764cbf6303f2d45c0d66236c",
+      "content_sha256": "b0e1580e270a9fbc3fc84a83570a09a0923bf85dc0dc84c75b0c391ed36fd6f9"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/webvoyager/study.py",
+      "declaration_digest": "89d53534ab3a0067ace6278a338f408e6af2b9c74d26618d6bcaf1642d4e6412",
+      "content_sha256": "b9bdf7c55082d74daada9b0e3c9e5d8e9769acf631a6279d8416de578633853d"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/webvoyager/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [],
-  "blockers": [],
+  "blockers": [
+    "matched ACL results require the exact historical multimodal model service revision used by the paper",
+    "live-web reproduction requires a frozen browser/site-state cut or equivalent environment evidence for every task",
+    "the official 643-task source bytes and verifier outputs must be materialized under immutable evidence authority before matched claims"
+  ],
   "evidence_refs": [],
   "scientific_tests": [
     {
       "path": "tests/test_scientific_web_embodied_fidelity_v1.py",
       "content_sha256": "daac277c2e414516ca7dce22ccb66819e1a1caffff88968c9fe32f6375ef59ad"
+    },
+    {
+      "path": "tests/test_scientific_webvoyager_method_program_v1.py",
+      "content_sha256": "9e0481e1e8b3f9c5789ad2a8e5d84bfe40c0a807d6304c4577df4124e4d4eeb8"
     }
   ]
 }

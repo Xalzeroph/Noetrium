@@ -1,0 +1,136 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "seeclick",
+  "package_digest": "da2b3f9563221a642a3ccfea34a9296a61778df95f5b5228650ae2f43300337d",
+  "definition_digest": "e4753beafefe5d9980ac1b0611dcab278b791c996b8342329aee611579e50e75",
+  "source_registry_digest": "703701aa516e21be3cdc470ed08bd842843e88a39dbdeba1a063fc280cf96439",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "seeclick",
+    "title": "SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents",
+    "paper_uri": "https://aclanthology.org/2024.acl-long.505/",
+    "year": 2024,
+    "paper_revision": "ACL 2024 final",
+    "identity_digest": "96404ad1897c9a57a7659a928b55a56fea58c98c7e71456163536664f3002bcd"
+  },
+  "catalog": {
+    "domains": [
+      "gui-agent",
+      "multimodal"
+    ],
+    "families": [
+      "gui_agent",
+      "multimodal",
+      "visual_grounding"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "screenspot"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/gui",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "GUI grounding continual pre-training curriculum",
+      "normalized [0,1] GUI coordinate representation",
+      "screenshot-only downstream GUI agent policy",
+      "text-to-point and text-to-bbox grounding semantics"
+    ],
+    "platform_owned": [
+      "benchmark task and verifier identity",
+      "measurement and evidence lineage",
+      "model/checkpoint identity",
+      "multimodal image references"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2024.acl-long.505/"
+    ],
+    "catalog_digest": "9154d01945f11820ea2da3fc1123137b4c57c7d7823f41e514740296d86dbc9e"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "acl_2024_final",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2024,
+      "publication_id": "2024.acl-long.505",
+      "publication_uri": "https://aclanthology.org/2024.acl-long.505/",
+      "revision": "ACL 2024 final",
+      "content_sha256": null,
+      "lane_digest": "346afed49afdeb4363aa100b9af9c89841d07a5a472d41abdc7123d3aec7e9db"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/seeclick/fidelity.py",
+      "declaration_digest": "b754485af5793e0cb735a3f6c87bd339498cfaa635588a6e596586d9bfdd94c5",
+      "content_sha256": "4f8b57d796b0303f3343b52d5a85b705db4addef09cf1c673ff006fb5f9d85a1"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/seeclick/program.py",
+      "declaration_digest": "70939e3416964f0823eaa3ee9c206307172b7b412a7ed314830bebcb2f5cf6d4",
+      "content_sha256": "603e93e508485279e750a7dbf0e01e532f2aaa43c504d464591b95677221664d"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/seeclick/study.py",
+      "declaration_digest": "4a21caff6742071f79aca25cce006633d5c8e7a50f4aac5fc77f8079cd604dac",
+      "content_sha256": "32d024aed2b3bfebe7c9b027af0db7bc5c3e49776fbfdbacc3e6114def40b72b"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/seeclick/grounding.py",
+      "declaration_digest": "ae93cecb76e5242a7e840eb1ecae5b23713afbface15fd2be1da89c001338d2e",
+      "content_sha256": "65d2673276eb145a2754d9ab56963ccfe722f83ef6d30be9acabd4af2520df2e"
+    }
+  ],
+  "primary_executable": "research/reproductions/seeclick/program.py",
+  "reported_results": [
+    {
+      "claim_id": "seeclick_screenspot_average",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 53.4,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "model": "SeeClick"
+      },
+      "claim_digest": "3af3b0d5812c7f90b08d45e6b421b129dc5b9a08578f3f035656454b0a42734f"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "cogagent-screenspot",
+      "description": "CogAgent-18B on ScreenSpot as reported by the SeeClick release",
+      "qualifiers": {
+        "average_grounding_accuracy_percent": 47.4
+      },
+      "baseline_digest": "47e2c32ea005e4ffad502a3ce3ae26b782eac512ed4612576fd51cdb73a461b7"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The executable package reproduces the text-to-point grounding projection and ScreenSpot protocol. Exact continual pre-training of Qwen-VL-Chat remains a separately qualified model-training workload rather than MethodProgram runtime semantics.",
+      "delta_digest": "fdc20a0447acac0bb71f1adf0d401be72fb310628abff287bd60976758790dbe"
+    }
+  ],
+  "blockers": [
+    "the exact ACL paper SeeClick checkpoint and LoRA/model closure must be materialized under immutable model identity",
+    "the exact released ScreenSpot image/annotation cut must be frozen under Artifact authority",
+    "matched downstream Mind2Web/AITW/MiniWob agent evaluation has not yet been bound"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_seeclick_v1.py",
+      "content_sha256": "477f50a4671a8a20b7def5121c5095510989fbf35aa178ae2e0f70e1f89edcc3"
+    }
+  ]
+}

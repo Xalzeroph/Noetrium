@@ -1,0 +1,109 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "cogagent",
+  "package_digest": "648d46d59b922eda6ea3214d9d0858ac29dd21f84c1fd658d906d773b00f8326",
+  "definition_digest": "ce088bfc2e2fbe5d546f10e311f3193f20767c3caceca66ddeb50254311f879e",
+  "source_registry_digest": "98cd238a80201177669fbbf1b36bc4033d8d0220869f0f27a93b8ff6efb05cb3",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "cogagent",
+    "title": "CogAgent: A Visual Language Model for GUI Agents",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024_paper.html",
+    "year": 2024,
+    "paper_revision": "CVPR 2024 final",
+    "identity_digest": "22856fe0e7607763e1e674233cb3ed8d929f852a9da1c63e22bcc381137ac914"
+  },
+  "catalog": {
+    "domains": [
+      "gui-agent",
+      "multimodal"
+    ],
+    "families": [
+      "gui_agent",
+      "multimodal",
+      "visual_grounding"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "mind2web"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/gui",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "candidate-element target selection and operation prediction",
+      "dual-resolution GUI visual representation",
+      "screenshot-only GUI policy"
+    ],
+    "platform_owned": [
+      "Mind2Web task cut and verifier",
+      "measurement and evidence lineage",
+      "model binding and immutable checkpoint identity",
+      "multimodal content references"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2024/html/Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024_paper.html"
+    ],
+    "catalog_digest": "cefeecc36df45f898f2efc88932a35029bf1d1ac9b4fcce46983d786f51bdaa1"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2024_final",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2024,
+      "publication_id": "Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024_paper.html",
+      "revision": "CVPR 2024 final",
+      "content_sha256": null,
+      "lane_digest": "9b39c0f9f7501ab76ecd02633ff0e94467d1c0269d1b942ad8b289c80e42eda3"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/cogagent/fidelity.py",
+      "declaration_digest": "597b381e2f449738377e6a188fbe638596bc78abe97d1f20c066b2f665fc74d9",
+      "content_sha256": "8d5795a4e15efdfcbb189710c3d2315360175c7b9aafcb707b24ef84664de749"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/cogagent/program.py",
+      "declaration_digest": "bfbe83628d54bad8b28b0e557cbde7885969ed8b7cbf78aeb2e19ccbfe15e9f9",
+      "content_sha256": "b1030c7adf84ef9f4e344f39016c1b4f3896990bf0ce5ba2694e450c7b2004bf"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/cogagent/study.py",
+      "declaration_digest": "1a29e55934234270552cb80f38086aa4060b2c714948bcbe287a3e368afa997e",
+      "content_sha256": "3c4b72783c14a4bd2d9f2354e6c26d0b428d07ffe7a167de614857bc20d66e2a"
+    }
+  ],
+  "primary_executable": "research/reproductions/cogagent/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The MethodProgram reproduces paper-era screenshot-only GUI policy semantics while the dual-resolution CogAgent network is treated as a separately bound model artifact/provider rather than reimplemented inside the method package.",
+      "delta_digest": "586c17b191047fb9c386ee3fb09a639d9a0b3773c030ba228c948dec17a4a61f"
+    }
+  ],
+  "blockers": [
+    "the exact CVPR paper-era CogAgent-18B checkpoint must be materialized with immutable model identity",
+    "matched AITW execution awaits an AITW benchmark cut with exact paper evaluator identity",
+    "no matched CVPR execution evidence has yet been produced"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_cogagent_v1.py",
+      "content_sha256": "8f2385b239f1ef56ef5633aa54e5917ed4e63ee228aa33ae524ce655d7a443c4"
+    }
+  ]
+}

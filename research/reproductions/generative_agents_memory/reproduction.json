@@ -2,10 +2,10 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "generative_agents_memory",
-  "package_digest": "0935ed3dcb48ad9bf5879cd78d576fd5ff392d65cc5ee2f805c8c47b0fcbc7b2",
-  "definition_digest": "09b4f72a84dd4f590114695cc0975cfabea41388c4fc0a59ab2b3b42c1924326",
+  "package_digest": "cc17edcc5cdde26151ced60f08332366f0f206e293460c4b10c5cc36b185fc5a",
+  "definition_digest": "381fed5fb574e180877f26d1d33fb5bd018be78c5ce91e5f5eb3183c90682944",
   "source_registry_digest": "4eee9b9597e3af590b88c8a406bb7366ac2bc8cea07e32f8ca278990086caf7e",
-  "lifecycle": "catalogued",
+  "lifecycle": "protocol_bound",
   "identity": {
     "method_id": "generative-agents",
     "title": "Generative Agents: Interactive Simulacra of Human Behavior",
@@ -27,7 +27,9 @@
       "reflection"
     ],
     "priority": 2,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "generative-agents-smallville"
+    ],
     "platform_pressure": [
       "data/projection",
       "data/query",
@@ -53,7 +55,7 @@
       "https://github.com/joonspk-research/generative_agents"
     ],
     "reference_publications": [],
-    "catalog_digest": "853610c67e7a9b00cd4f1097a2be2a3c262b3fe72901292689eb86925ad06c8b"
+    "catalog_digest": "28b1193acded39fefeec282a06c33baba6c93977c79650286135b72977bc2ee2"
   },
   "source_lanes": [
     {
@@ -73,19 +75,37 @@
       "content_sha256": "eadabe053f576e9bb2ae9652df3929352fb1f90f1023e6dbfc01c124c8996826"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/generative_agents_memory/program.py",
+      "declaration_digest": "b5823c30ad49453aed1e99dd3ad412fea69fd97e55e32e2cebebb64cf6a3dbfa",
+      "content_sha256": "473c0f62c10c6e6a486cf66cd8992fad7c4bf9e54ce3e57a28d6e5c74ea58534"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/generative_agents_memory/study.py",
+      "declaration_digest": "948566e4d79fb43fa2458349f2bc69fb4541917885d8674741321e6f830f2724",
+      "content_sha256": "1301126cf635824030a48c7916f5b51cfa689fdcdd834c58b4640b499e4d76c6"
+    },
+    {
       "kind": "support",
       "path": "research/reproductions/generative_agents_memory/retrieval.py",
       "declaration_digest": "0a8b9cf6b6076c1fa98d5a82597bc9406577e432c7eb48658c21b13bd8fff1d2",
       "content_sha256": "db6a57ae069b3a807f76de2a177f6e7bcacc9b1c8039f38d4cdc9059ab7f835e"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/generative_agents_memory/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [],
-  "blockers": [],
+  "blockers": [
+    "Matched UIST social-behavior results still require the exact paper-era Smallville persona/world snapshot, historical hosted model revision, and human believability rater assignment."
+  ],
   "evidence_refs": [],
   "scientific_tests": [
+    {
+      "path": "tests/test_scientific_generative_agents_method_program_v1.py",
+      "content_sha256": "9fc0deafaabc659be2d49ba9250369f1747c2d6f57d2a46e4a13201a257c14c7"
+    },
     {
       "path": "tests/test_scientific_generative_agents_retrieval_v1.py",
       "content_sha256": "5ac32d32a9c79a7773ff3c27f55ebafee663d331e6b8811f7cb2ca44316b22b6"

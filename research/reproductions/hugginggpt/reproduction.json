@@ -2,10 +2,10 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "hugginggpt",
-  "package_digest": "06b44c27b7d6d978be62971b244c74026a74298e937f0d3c6893e6b0d166042a",
-  "definition_digest": "a61290a171846e2e9fa4a079ca03566f339025a8dd0eb8c2ab68545f19bf5d9c",
+  "package_digest": "6044d7dd0baa76cdaf738366bf7705c4bde8b8050d3e369be292f9e4205edc48",
+  "definition_digest": "a21ba2036ff72cb34e9771b71d7a41c36ed1fa9acd3d192352d1f51188b2f43d",
   "source_registry_digest": "694e1acf36f5bdc067e93ab86f80e49a41f98113ac5297bc5380a4dc00ad4428",
-  "lifecycle": "catalogued",
+  "lifecycle": "protocol_bound",
   "identity": {
     "method_id": "hugginggpt",
     "title": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
@@ -28,7 +28,9 @@
       "tool_use"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "hugginggpt-paper-tasks"
+    ],
     "platform_pressure": [
       "artifact/lineage",
       "execution",
@@ -53,7 +55,7 @@
       "https://github.com/microsoft/JARVIS"
     ],
     "reference_publications": [],
-    "catalog_digest": "f180ac1e4a00643cce2f67d6c0d058cdc3d0faac131e3433269456c30aea0666"
+    "catalog_digest": "1131de60887999a419d4bb1d16a7dcc0cf7128087f9fbb31789d096768da8517"
   },
   "source_lanes": [
     {
@@ -73,19 +75,45 @@
       "content_sha256": "40843c3f353fc63573162cf2e8fef4effa350ffe7ae407c918ec0ab3a024b0b4"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/hugginggpt/program.py",
+      "declaration_digest": "fd8bdd512084088eb4035a3e0188a2e02d0e839b5db732cd115c07c282a5a0b6",
+      "content_sha256": "99cf5426bb6a189be74d375dafd1eebd6ba544eed314c3a9e84e10ca675612f5"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/hugginggpt/study.py",
+      "declaration_digest": "ecd6a486a16df6a678ae3b81a5e038253805d211354b3a5c0e29bfd349a9d496",
+      "content_sha256": "df85395a5af1ff7b3c03e5e5e366d30c7a5dd6bb4c494ee4c3840e52d1d2807a"
+    },
+    {
       "kind": "support",
       "path": "research/reproductions/hugginggpt/task_graph.py",
       "declaration_digest": "4740d9561712189494d505739ff3337f466bbefa3b309af6c95134c4abd5e339",
       "content_sha256": "492fdd363803fd5230f42407382af38143bc261113131f24b2764295969b2ecf"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/hugginggpt/program.py",
   "reported_results": [],
   "reference_baselines": [],
-  "deltas": [],
-  "blockers": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The paper implementation may execute multiple dependency-ready subtasks concurrently. The current MethodProgram preserves the same dependency-ready set and deterministic task identities but dispatches ready subtasks one at a time until the generic Method execution surface gains batch-ready-set authoring.",
+      "delta_digest": "2e2ef1f41241055e5fa23de0672ce6116ec1c00a8a2e307c6d524680e1182a87"
+    }
+  ],
+  "blockers": [
+    "matched NeurIPS results require the exact paper-era ChatGPT service revision and expert-model inventory/availability cut",
+    "the released qualitative task examples must be materialized as an immutable task dataset before claim-ready execution",
+    "physical concurrent dispatch of one dependency-ready set is not yet expressed by MethodProgram"
+  ],
   "evidence_refs": [],
   "scientific_tests": [
+    {
+      "path": "tests/test_scientific_hugginggpt_method_program_v1.py",
+      "content_sha256": "3ff00881e7e4cbab775dd0591e0339cb340ab3774471c22fa9dc1273d09e4f73"
+    },
     {
       "path": "tests/test_scientific_hugginggpt_v1.py",
       "content_sha256": "691ba0972a070cf0f00e03ca50ea1fe078fd2bb21c4e5a8625dda5da1beef070"

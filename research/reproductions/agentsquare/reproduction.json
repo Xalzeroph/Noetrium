@@ -1,0 +1,231 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "agentsquare",
+  "package_digest": "9d2c078177a96d701fced07fd90e51aedded74b2603bbeea671f017da3b5049c",
+  "definition_digest": "7a28adc381ac559387f01015d08ae15ad26c548ef93de9662c7a88c33fad1e95",
+  "source_registry_digest": "7b145319e1ac2f8a0a7f4f82a53ec059ffbca8e90126ab15ca7742977508805d",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "agentsquare",
+    "title": "AgentSquare: Automatic LLM Agent Search in Modular Design Space",
+    "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/0ae94013da7cd459402fd77874e09ee3-Abstract-Conference.html",
+    "year": 2025,
+    "paper_revision": "ICLR 2025 final paper",
+    "identity_digest": "74e5f645b888d72587832b32b332c939e610294f50568e445ff3c59a3110639b"
+  },
+  "catalog": {
+    "domains": [
+      "agent-design",
+      "planning-search",
+      "self-improvement"
+    ],
+    "families": [
+      "automated_agent_design",
+      "modular_agent_search",
+      "module_evolution",
+      "module_recombination"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "agentboard-pddl",
+      "alfworld",
+      "m3tooleval",
+      "scienceworld",
+      "travelplanner",
+      "webshop"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "capability",
+      "execution/research_program",
+      "experimentation/workbench",
+      "memory",
+      "participant/method"
+    ],
+    "method_owned": [
+      "best-candidate benchmark evaluation loop",
+      "four-module planning/reasoning/tool-use/memory design space",
+      "in-context performance predictor",
+      "module evolution",
+      "module recombination"
+    ],
+    "platform_owned": [
+      "OptimizationMachine journal authority",
+      "ResearchProgram hosting",
+      "candidate execution/evaluation binding",
+      "checkpoint and replay",
+      "evidence and artifact lineage"
+    ],
+    "reference_repositories": [
+      "https://github.com/tsinghua-fib-lab/AgentSquare"
+    ],
+    "reference_publications": [
+      "https://proceedings.iclr.cc/paper_files/paper/2025/hash/0ae94013da7cd459402fd77874e09ee3-Abstract-Conference.html"
+    ],
+    "catalog_digest": "bed5e610c7058e6d50b3f725bcc931a3e1b3f736144d568c255b3b1bf4508bf3"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iclr_2025_final",
+      "kind": "paper_provenance",
+      "venue": "ICLR",
+      "year": 2025,
+      "publication_id": "0ae94013da7cd459402fd77874e09ee3",
+      "publication_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/0ae94013da7cd459402fd77874e09ee3-Abstract-Conference.html",
+      "revision": "ICLR 2025 final paper",
+      "content_sha256": null,
+      "lane_digest": "25d4024058e09a64c01f6c4ccb9d880549e0e52f877eee67f92d64a5e46ccdda"
+    },
+    {
+      "lane_id": "later_official_search_implementation",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/tsinghua-fib-lab/AgentSquare",
+      "commit": "8f5b3fe5d8a32f9b59d20370823bef2a2c86928c",
+      "artifacts": [
+        "search/agent_search.py",
+        "search/module_evolution.py",
+        "search/module_predictor.py",
+        "search/recombination.py",
+        "tasks/alfworld/agent.py",
+        "tasks/alfworld/module_map.py"
+      ],
+      "lane_digest": "942f5eb2ec5b4f119e632fa7dbb93f6495e729262bf3434042722db73a83cac9"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/agentsquare/fidelity.py",
+      "declaration_digest": "4b5efe06eb4dbd9002c199e9b8d57ca0dcab84e3f4fd174d42232c51885c538e",
+      "content_sha256": "a7aa51f3fabaa68ce71205fad4ba245b564c3ad9369874316acecaf4448769ef"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/agentsquare/program.py",
+      "declaration_digest": "3f4b6adfff57bab0f4bf5198b251e7c6bb2cb6e6979219302f527fd471436fa7",
+      "content_sha256": "8ab2d6ce04639fccfc0716bc6d42aca8362ed6672c48df56d7a64c5bd28d9560"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/agentsquare/study.py",
+      "declaration_digest": "2b561627a5beec587556ec385b02d5d0e19720549040513ef468a6894701cb01",
+      "content_sha256": "6c32f51a9ebbec40190380884aeaf7f6ccc68f93ac123613fb477c94139c5577"
+    }
+  ],
+  "primary_executable": "research/reproductions/agentsquare/program.py",
+  "reported_results": [
+    {
+      "claim_id": "agentsquare_average_gain",
+      "metric_id": "average_performance_gain_over_best_known_human_designs",
+      "value": 17.2,
+      "qualifiers": {
+        "unit": "percent",
+        "benchmarks": "six"
+      },
+      "claim_digest": "aac971d12c1da1cd68dc6b3872bc65052ebef4ca3ac7b075af094211df8ca97f"
+    },
+    {
+      "claim_id": "agentsquare_gpt4o_webshop",
+      "metric_id": "webshop_reward",
+      "value": 0.607,
+      "qualifiers": {
+        "model": "GPT-4o",
+        "table": "1"
+      },
+      "claim_digest": "59674fe1336e8e09fd2223f0779cbb2e5faa534fb9d0b0a95f7f6d1c45b52314"
+    },
+    {
+      "claim_id": "agentsquare_gpt4o_alfworld",
+      "metric_id": "alfworld_success_rate",
+      "value": 0.695,
+      "qualifiers": {
+        "model": "GPT-4o",
+        "table": "1"
+      },
+      "claim_digest": "44112c8516079aa5a16a32fdb97e4761c2f70162d953e1df858740abd46aacbc"
+    },
+    {
+      "claim_id": "agentsquare_gpt4o_sciworld",
+      "metric_id": "scienceworld_progress_rate",
+      "value": 0.781,
+      "qualifiers": {
+        "model": "GPT-4o",
+        "table": "1"
+      },
+      "claim_digest": "c7b042dad6a781af97cd9f2bd1201178233cd408f515fe798de20c65582ac8b2"
+    },
+    {
+      "claim_id": "agentsquare_gpt4o_m3tool",
+      "metric_id": "m3tool_success_rate",
+      "value": 0.524,
+      "qualifiers": {
+        "model": "GPT-4o",
+        "table": "1"
+      },
+      "claim_digest": "b2ec3af995f3501dd7d07e4b1b270bb8be9567907f5b5862d83c36ef533a1a8f"
+    },
+    {
+      "claim_id": "agentsquare_gpt4o_travelplanner",
+      "metric_id": "travelplanner_constraint_pass_rate",
+      "value": 0.583,
+      "qualifiers": {
+        "model": "GPT-4o",
+        "table": "1"
+      },
+      "claim_digest": "aa2c5fb7ec784b5258a1afd16dcb330867bc0d0270160c9a0d1c1cca68877a27"
+    },
+    {
+      "claim_id": "agentsquare_gpt4o_pddl",
+      "metric_id": "pddl_progress_rate",
+      "value": 0.669,
+      "qualifiers": {
+        "model": "GPT-4o",
+        "table": "1"
+      },
+      "claim_digest": "3c80bb327699420a96043d73c8ccf96bc0e5ae865a38386a4f1f31044525b221"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "best-known-human-designs",
+      "description": "best known hand-crafted agent designs reported per benchmark",
+      "qualifiers": {},
+      "baseline_digest": "ad40576c0886258d2a21337095a12dd262dac209fa0aac578c203fb2e00c38b6"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "The full search implementation available in the official repository is later than the ICLR paper cut. Paper semantics are authoritative; the later official implementation is used only to freeze executable ALFWorld loop details such as the 10-iteration and 50-episode budget.",
+      "delta_digest": "0b2096d7aa19c9bcebebb5c30e2fccd1b52977a34a1acca280ba02a83b1483a3"
+    },
+    {
+      "kind": "substitution",
+      "description": "The released code mutates Python module files in-place and uses ambient process execution. The reproduction preserves module/archive and evaluation semantics while routing execution through explicit OptimizationMachine bindings and journaled evidence.",
+      "delta_digest": "697bd04a259d2142c350a53115cf2e0fb2872410f05e9ef92e4262f8b041d179"
+    }
+  ],
+  "blockers": [
+    "the paper does not publish every benchmark-specific search sampling scope or random seed schedule",
+    "the exact paper-era initial module archives are not all content-addressed in Noetrium",
+    "matched results require the historical GPT-4o/GPT-3.5 service behavior used by the paper",
+    "the later official ALFWorld search implementation post-dates the final paper and is executable-reference evidence rather than paper-era authority",
+    "no matched six-benchmark AgentSquare execution evidence has yet been produced"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_agentsquare_optimization_program_v1.py",
+      "content_sha256": "22a8325dc65dfe36491b1c59ba25f8aed5389e6ff24835e1699e83fdaf344f89"
+    },
+    {
+      "path": "tests/test_scientific_agentsquare_six_benchmark_studies_v1.py",
+      "content_sha256": "2a0018b67e2c51c7280f7eca2e54293a5bc469a83a42fe2048780cdff96368d8"
+    },
+    {
+      "path": "tests/test_scientific_agentsquare_webshop_cut_v1.py",
+      "content_sha256": "afb88951bf85b66ff194ab8c674d518a6cf26b78f022f94243af9bc8ffcda6ed"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "jarvis1_minecraft",
-  "package_digest": "2421fbb971f6f0a5edf4ebaf8d4f84dfbe47683cd56d77239d164218158cf528",
+  "package_digest": "770ccc8829e7dd01494de82996e84633d8be6e9514d6f319e6635c1b4f47a893",
   "definition_digest": "a02c78f862777e746751ed00ee2d9079739a7054d661fe414f555d0d562a611f",
   "source_registry_digest": "d0a3d3ba7b0bbee5cf156be04b204f1c10085da1b8847a3a18f524b83ae1280b",
   "lifecycle": "protocol_bound",
@@ -158,7 +158,7 @@
     },
     {
       "path": "tests/test_scientific_jarvis1_memory_v1.py",
-      "content_sha256": "4a1b7079c6457479fd612a18546df5d6de4b3be59f55e672958e73758c945491"
+      "content_sha256": "0ea5396c39ff99a00eb45a232e88d20cdbc675848ab793b57cc6f360dce3e5af"
     }
   ]
 }
