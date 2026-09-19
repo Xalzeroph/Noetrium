@@ -153,6 +153,7 @@ def build_steve1_paper_prompt_cut() -> BenchmarkTaskSet:
 
     if len(tasks) != STEVE1_RELEASED_CELL_COUNT:
         raise RuntimeError("STEVE-1 released prompt cell count drifted")
+    tasks = sorted(tasks, key=lambda row: row.task_id)
     all_ids = tuple(row.task_id for row in tasks)
     return BenchmarkTaskSet(
         benchmark_id=STEVE1_PAPER_PROMPTS_BENCHMARK_ID,
