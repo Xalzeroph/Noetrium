@@ -33,14 +33,14 @@ class _DeterministicToTAgent:
     def run(self, request):
         self.calls.append(request.agent_id)
         if request.agent_id == "tot.generate":
-            frontier = request.state["frontier"]
+            frontier = request.view["frontier"]
             assert isinstance(frontier, tuple)
             prefix = frontier[0]
             assert isinstance(prefix, str)
             rows = tuple(f"{prefix}{index}" for index in range(5))
             return MethodAgentResult(value=(*rows, rows[0]))
         if request.agent_id == "tot.evaluate":
-            candidates = request.state["candidate_texts"]
+            candidates = request.view["candidate_texts"]
             assert isinstance(candidates, tuple)
             assert len(candidates) == 6
             # The final repeated candidate deliberately receives the same raw
