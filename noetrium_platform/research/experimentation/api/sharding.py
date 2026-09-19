@@ -1,10 +1,10 @@
-"""Deterministic cross-worker sharding for compiled experiment plans.
+"""Deterministic worker placement for compiled ExperimentProgram batches.
 
-This module partitions immutable StudyAssignment identities for server-scale
-execution. It owns no scientific semantics and does not execute work. A shard
-plan is a deployment projection over an authoritative ExperimentPlan: changing
-worker count or cost estimates changes only placement, never trial identity,
-benchmark membership, treatment, seed, repetition, or measurements.
+Cross-worker sharding is deliberately a deployment projection, never a second
+scientific scheduler. The authoritative CompiledExperimentProgram freezes batch
+order and allowed concurrency. This module only assigns immutable assignment
+identities to worker scopes, then projects each authoritative batch through that
+placement.
 """
 
 from __future__ import annotations
@@ -16,7 +16,10 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
     require_sha256,
 )
-from noetrium_platform.research.experimentation.study.api.plan import ExperimentPlan
+from noetrium_platform.research.experimentation.api.program import (
+    CompiledExperimentProgram,
+    ExperimentBatch,
+)
 
 
 def _positive_int(value: object, field_name: str) -> int:
@@ -29,6 +32,8 @@ def _positive_int(value: object, field_name: str) -> int:
 
 @dataclass(frozen=True, slots=True)
 class ExperimentShard:
+    """Stable worker placement for a disjoint assignment subset."""
+
     shard_index: int
     worker_scope_id: str
     assignment_digests: tuple[str, ...]
@@ -65,17 +70,78 @@ class ExperimentShard:
 
 
 @dataclass(frozen=True, slots=True)
+class ExperimentBatchPlacement:
+    """One authoritative ExperimentBatch projected onto worker shards."""
+
+    batch_id: str
+    batch_digest: str
+    shard_assignments: tuple[tuple[int, tuple[str, ...]], ...]
+    placement_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.batch_id) is not str or not self.batch_id.strip():
+            raise ValueError("experiment batch placement batch_id must be non-empty")
+        require_sha256(
+            self.batch_digest,
+            "experiment batch placement batch_digest",
+        )
+        if type(self.shard_assignments) is not tuple:
+            raise TypeError("batch shard_assignments must be a tuple")
+        indices = tuple(row[0] for row in self.shard_assignments)
+        if indices != tuple(sorted(indices)) or len(indices) != len(set(indices)):
+            raise ValueError("batch shard assignments must be canonically ordered")
+        flattened: list[str] = []
+        for shard_index, assignments in self.shard_assignments:
+            if type(shard_index) is not int or shard_index < 0:
+                raise ValueError("batch shard index must be non-negative")
+            if type(assignments) is not tuple or not assignments:
+                raise ValueError("batch shard placement requires assignments")
+            for digest in assignments:
+                require_sha256(digest, "batch shard assignment digest")
+            flattened.extend(assignments)
+        if len(flattened) != len(set(flattened)):
+            raise ValueError("batch shard placement assignments must be disjoint")
+        object.__setattr__(
+            self,
+            "placement_digest",
+            canonical_digest(
+                {
+                    "batch_id": self.batch_id,
+                    "batch_digest": self.batch_digest,
+                    "shard_assignments": self.shard_assignments,
+                }
+            ),
+        )
+
+    @property
+    def assignment_digests(self) -> tuple[str, ...]:
+        return tuple(
+            digest
+            for _, assignments in self.shard_assignments
+            for digest in assignments
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class CompiledExperimentShardPlan:
+    """Worker placement bound to one exact compiled batch plan."""
+
     experiment_plan_digest: str
+    batch_plan_digest: str
     shard_count: int
     cost_model_digest: str
     shards: tuple[ExperimentShard, ...]
+    batch_placements: tuple[ExperimentBatchPlacement, ...]
     shard_plan_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         require_sha256(
             self.experiment_plan_digest,
             "experiment shard plan experiment_plan_digest",
+        )
+        require_sha256(
+            self.batch_plan_digest,
+            "experiment shard plan batch_plan_digest",
         )
         _positive_int(self.shard_count, "experiment shard plan shard_count")
         require_sha256(
@@ -97,15 +163,21 @@ class CompiledExperimentShardPlan:
         )
         if len(digests) != len(set(digests)):
             raise ValueError("experiment shard plan assignments must be disjoint")
+        if type(self.batch_placements) is not tuple or not self.batch_placements:
+            raise ValueError("experiment shard plan requires batch placements")
         object.__setattr__(
             self,
             "shard_plan_digest",
             canonical_digest(
                 {
                     "experiment_plan_digest": self.experiment_plan_digest,
+                    "batch_plan_digest": self.batch_plan_digest,
                     "shard_count": self.shard_count,
                     "cost_model_digest": self.cost_model_digest,
                     "shards": tuple(row.shard_digest for row in self.shards),
+                    "batch_placements": tuple(
+                        row.placement_digest for row in self.batch_placements
+                    ),
                 }
             ),
         )
@@ -125,46 +197,157 @@ class CompiledExperimentShardPlan:
             raise IndexError("experiment shard index is outside the compiled plan")
         return self.shards[shard_index]
 
-    def assert_complete_for(self, plan: ExperimentPlan) -> None:
-        if type(plan) is not ExperimentPlan:
-            raise TypeError("experiment shard validation requires ExperimentPlan")
-        plan.assert_consistent()
-        if plan.plan_digest != self.experiment_plan_digest:
-            raise ValueError("experiment shard plan belongs to another ExperimentPlan")
-        expected = {row.assignment_digest for row in plan.assignments}
+    def placement_for_batch(self, batch_index: int) -> ExperimentBatchPlacement:
+        if type(batch_index) is not int:
+            raise TypeError("experiment batch index must be an integer")
+        if batch_index < 0 or batch_index >= len(self.batch_placements):
+            raise IndexError("experiment batch index is outside the compiled plan")
+        return self.batch_placements[batch_index]
+
+    def worker_scope_for_assignment(self, assignment_digest: str) -> str:
+        require_sha256(
+            assignment_digest,
+            "experiment shard lookup assignment_digest",
+        )
+        matches = tuple(
+            shard.worker_scope_id
+            for shard in self.shards
+            if assignment_digest in shard.assignment_digests
+        )
+        if len(matches) != 1:
+            raise KeyError("assignment has no unique experiment worker placement")
+        return matches[0]
+
+    def assert_complete_for(self, compiled: CompiledExperimentProgram) -> None:
+        if type(compiled) is not CompiledExperimentProgram:
+            raise TypeError(
+                "experiment shard validation requires CompiledExperimentProgram"
+            )
+        _assert_compiled_batch_authority(compiled)
+        if compiled.plan.plan_digest != self.experiment_plan_digest:
+            raise ValueError(
+                "experiment shard plan belongs to another ExperimentPlan"
+            )
+        if compiled.batch_plan_digest != self.batch_plan_digest:
+            raise ValueError(
+                "experiment shard plan belongs to another batch plan"
+            )
+
+        expected = {row.assignment_digest for row in compiled.plan.assignments}
         actual = set(self.assignment_digests)
         if actual != expected or len(self.assignment_digests) != len(expected):
             raise ValueError(
                 "experiment shard plan does not exactly cover plan assignments"
             )
+        if len(self.batch_placements) != len(compiled.batches):
+            raise ValueError(
+                "experiment shard plan does not preserve authoritative batch count"
+            )
+        for placement, batch in zip(
+            self.batch_placements,
+            compiled.batches,
+            strict=True,
+        ):
+            if placement.batch_id != batch.batch_id:
+                raise ValueError("experiment batch placement id drifted")
+            if placement.batch_digest != batch.batch_digest:
+                raise ValueError("experiment batch placement digest drifted")
+            if (
+                set(placement.assignment_digests) != set(batch.assignment_digests)
+                or len(placement.assignment_digests)
+                != len(batch.assignment_digests)
+            ):
+                raise ValueError(
+                    "experiment batch placement does not exactly preserve batch"
+                )
+            if any(
+                shard_index >= self.shard_count
+                for shard_index, _ in placement.shard_assignments
+            ):
+                raise ValueError(
+                    "experiment batch placement references unknown shard"
+                )
+
+
+def _assert_compiled_batch_authority(
+    compiled: CompiledExperimentProgram,
+) -> None:
+    _assert_compiled_batch_authority(compiled)
+    expected_batch_plan_digest = canonical_digest(
+        tuple(batch.batch_digest for batch in compiled.batches)
+    )
+    if compiled.batch_plan_digest != expected_batch_plan_digest:
+        raise ValueError("compiled ExperimentProgram batch plan digest drifted")
+    expected_assignments = {
+        row.assignment_digest for row in compiled.plan.assignments
+    }
+    scheduled = tuple(
+        digest
+        for batch in compiled.batches
+        for digest in batch.assignment_digests
+    )
+    if (
+        len(scheduled) != len(set(scheduled))
+        or set(scheduled) != expected_assignments
+    ):
+        raise ValueError(
+            "compiled ExperimentProgram batches do not exactly cover assignments"
+        )
+
+
+def _batch_placement(
+    batch: ExperimentBatch,
+    *,
+    assignment_to_shard: Mapping[str, int],
+    shard_count: int,
+) -> ExperimentBatchPlacement:
+    per_shard: list[list[str]] = [[] for _ in range(shard_count)]
+    for digest in batch.assignment_digests:
+        try:
+            shard_index = assignment_to_shard[digest]
+        except KeyError as exc:
+            raise ValueError(
+                "experiment batch references unplaced assignment"
+            ) from exc
+        per_shard[shard_index].append(digest)
+    return ExperimentBatchPlacement(
+        batch_id=batch.batch_id,
+        batch_digest=batch.batch_digest,
+        shard_assignments=tuple(
+            (index, tuple(rows))
+            for index, rows in enumerate(per_shard)
+            if rows
+        ),
+    )
 
 
 def compile_experiment_shard_plan(
-    plan: ExperimentPlan,
+    compiled: CompiledExperimentProgram,
     *,
     shard_count: int,
     assignment_cost_units: Mapping[str, int] | None = None,
 ) -> CompiledExperimentShardPlan:
-    """Compile a deterministic load-balanced cross-worker partition.
+    """Compile deterministic worker placement without changing batch semantics.
 
-    Assignments are sorted by descending estimated cost, then immutable
-    assignment digest. Each item is placed onto the currently least-loaded shard
-    with shard index as the deterministic tie-breaker (LPT scheduling).
+    Assignments are globally placed with deterministic LPT balancing. Every
+    authoritative ExperimentBatch is then projected through that fixed mapping.
+    A server coordinator must dispatch batch_placements in the existing batch
+    order; shards are routing destinations, not independent schedulers.
 
-    The optional assignment cost mapping is deployment metadata only. It must
-    cover either zero assignments (uniform cost=1) or exactly the authoritative
-    assignment set; partial cost models are rejected.
+    Cost hints are deployment metadata only. A supplied mapping must exactly
+    cover all authoritative assignments so workers cannot silently disagree.
     """
 
-    if type(plan) is not ExperimentPlan:
-        raise TypeError("experiment sharding requires ExperimentPlan")
-    plan.assert_consistent()
+    if type(compiled) is not CompiledExperimentProgram:
+        raise TypeError(
+            "experiment sharding requires CompiledExperimentProgram"
+        )
+    compiled.plan.assert_consistent()
     shard_count = _positive_int(shard_count, "experiment shard_count")
 
-    assignment_by_digest = {
-        row.assignment_digest: row for row in plan.assignments
+    expected = {
+        row.assignment_digest for row in compiled.plan.assignments
     }
-    expected = set(assignment_by_digest)
     if assignment_cost_units is None:
         costs = {digest: 1 for digest in expected}
         cost_model_kind = "uniform-v1"
@@ -197,11 +380,15 @@ def compile_experiment_shard_plan(
     )
 
     assignment_rows = sorted(
-        plan.assignments,
-        key=lambda row: (-costs[row.assignment_digest], row.assignment_digest),
+        compiled.plan.assignments,
+        key=lambda row: (
+            -costs[row.assignment_digest],
+            row.assignment_digest,
+        ),
     )
     shard_rows: list[list[str]] = [[] for _ in range(shard_count)]
     shard_costs = [0 for _ in range(shard_count)]
+    assignment_to_shard: dict[str, int] = {}
 
     for assignment in assignment_rows:
         target = min(
@@ -211,8 +398,11 @@ def compile_experiment_shard_plan(
         digest = assignment.assignment_digest
         shard_rows[target].append(digest)
         shard_costs[target] += costs[digest]
+        assignment_to_shard[digest] = target
 
-    scope_prefix = f"experiment-shard:{plan.plan_digest[:16]}"
+    scope_prefix = (
+        f"experiment-shard:{compiled.batch_plan_digest[:16]}"
+    )
     shards = tuple(
         ExperimentShard(
             shard_index=index,
@@ -222,18 +412,29 @@ def compile_experiment_shard_plan(
         )
         for index in range(shard_count)
     )
-    compiled = CompiledExperimentShardPlan(
-        experiment_plan_digest=plan.plan_digest,
+    batch_placements = tuple(
+        _batch_placement(
+            batch,
+            assignment_to_shard=assignment_to_shard,
+            shard_count=shard_count,
+        )
+        for batch in compiled.batches
+    )
+    result = CompiledExperimentShardPlan(
+        experiment_plan_digest=compiled.plan.plan_digest,
+        batch_plan_digest=compiled.batch_plan_digest,
         shard_count=shard_count,
         cost_model_digest=cost_model_digest,
         shards=shards,
+        batch_placements=batch_placements,
     )
-    compiled.assert_complete_for(plan)
-    return compiled
+    result.assert_complete_for(compiled)
+    return result
 
 
 __all__ = [
     "CompiledExperimentShardPlan",
+    "ExperimentBatchPlacement",
     "ExperimentShard",
     "compile_experiment_shard_plan",
 ]
