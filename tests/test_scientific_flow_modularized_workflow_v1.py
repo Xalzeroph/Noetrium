@@ -217,7 +217,8 @@ def test_flow_method_runs_concurrent_ready_set_child_machines_and_lazy_refinemen
     assert result.value["summary"] == "final synthesized output"
     assert agents.refinements == 0
     assert agents.calls.count("flow.workflow-initializer") == 5
-    assert agents.calls.count("flow.workflow-refiner") == 1
+    # Refinement is lazy: a fully successful ready-set execution never calls it.
+    assert agents.calls.count("flow.workflow-refiner") == 0
     assert agents.calls.count("flow.summary") == 1
     assert sorted(subtasks.execute_calls) == ["a", "b", "c", "d"]
     assert sorted(subtasks.validate_calls) == ["a", "b", "c", "d"]
