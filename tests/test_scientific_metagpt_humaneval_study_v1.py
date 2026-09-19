@@ -53,11 +53,9 @@ def test_metagpt_humaneval_study_binds_four_roles_artifact_capability_and_pass_a
         "metagpt.engineer",
     }.issubset(roles)
 
-    assert tuple(row.name for row in definition.measurements) == (
-        "task_success",
-        "artifact_count",
-        "model_call_count",
-    )
+    assert {
+        row.measurement_id for row in definition.measurement_protocol.definitions
+    } == {"task_success", "artifact_count", "model_call_count"}
 
 
 def test_metagpt_review_treatment_has_distinct_protocol_identity() -> None:
@@ -71,5 +69,6 @@ def test_metagpt_review_treatment_has_distinct_protocol_identity() -> None:
         benchmark,
         use_code_review=True,
     )
-    assert review_study.limits.max_model_calls == 5
-    assert review_study.limits.max_turns == 5
+    budget = review_study.execution_policy.trial_budget
+    assert budget.max_model_calls == 5
+    assert budget.max_turns == 5
