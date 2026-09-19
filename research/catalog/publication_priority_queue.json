@@ -2,7 +2,7 @@
   "schema": "noetrium.publication-priority-queue.v1",
   "authority": "generated_from_publication_policy_registry_reproduction_and_pressure_projections",
   "updated_at": "2026-09-19",
-  "method_count": 43,
+  "method_count": 44,
   "benchmark_count": 7,
   "formal_pressure_violation_count": 0,
   "method_queue": [
@@ -122,6 +122,23 @@
       "method_id": "vca-video",
       "packages": [
         "vca_video"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [],
+      "implementation_state": "reproduction_exists_not_active_pressure"
+    },
+    {
+      "publication_id": "videollamb",
+      "title": "VideoLLaMB: Long Streaming Video Understanding with Recurrent Memory Bridges",
+      "year": 2025,
+      "venue": "ICCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "videollamb",
+      "packages": [
+        "videollamb_memory"
       ],
       "lifecycles": [
         "protocol_bound"

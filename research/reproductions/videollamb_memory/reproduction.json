@@ -1,0 +1,123 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "videollamb_memory",
+  "package_digest": "cda6561fffb7f4cbc973496c80c037c187790175d5c6ece268c35daeb09cdfc2",
+  "definition_digest": "b53523da33be97942cc8e73ef2da865face6f50b72ecaf96a2ca225896eda77c",
+  "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "videollamb",
+    "title": "VideoLLaMB: Long Streaming Video Understanding with Recurrent Memory Bridges",
+    "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "ICCV 2025 camera-ready / official paper-era executable 962837c5b310559de18b375eaee20561123bb54c",
+    "identity_digest": "17198f0f92f496898407ce590e7e38c47101b2daa343979be2fc080f7cc7bfa4"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multimodal",
+      "streaming",
+      "video"
+    ],
+    "families": [
+      "long_video_understanding",
+      "multimodal_memory",
+      "recurrent_memory_bridge",
+      "streaming_video_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/tensor",
+      "benchmark/video",
+      "execution/machines/memory",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "SceneTiling semantic video segmentation",
+      "Transformer memory bridge update",
+      "memory-cache cross-attention retrieval",
+      "recurrent temporal memory tokens",
+      "streaming semantic-segment recurrence"
+    ],
+    "platform_owned": [
+      "MemoryMachine journal authority",
+      "artifact/evidence lineage",
+      "benchmark cut identity",
+      "immutable multimodal content identity",
+      "model execution and transport",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [
+      "https://github.com/bigai-nlco/VideoLLaMB"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html"
+    ],
+    "catalog_digest": "951e9a7f608aaf29a933284e2b3623f43215ce5cc0164a960fab0f096276f519"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iccv_2025_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "ICCV",
+      "year": 2025,
+      "publication_id": "videollamb-iccv-2025",
+      "publication_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html",
+      "revision": "ICCV 2025 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "bbd23f48118d6e4ce4591b061d9b6a079df23c3deb3b524520c206402a4a3709"
+    },
+    {
+      "lane_id": "official_paper_era_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/bigai-nlco/VideoLLaMB",
+      "commit": "962837c5b310559de18b375eaee20561123bb54c",
+      "artifacts": [
+        "llava/model/multimodal_encoder/languagebind/rmt_video/modeling_video.py",
+        "llava/model/multimodal_projector/rmt_r_transformer_projector.py",
+        "llava/model/multimodal_projector/self_retriever.py",
+        "llava/model/multimodal_projector/self_segment.py",
+        "llava/train/train_mem.py",
+        "scripts/eval/egoplan.sh",
+        "scripts/eval/egoschema.sh",
+        "scripts/eval/mvbench.sh",
+        "scripts/eval/nextqa.sh"
+      ],
+      "lane_digest": "577041c880ca173795dfeca323f3e7de274615563b2d5a602f12c90391a7e51a"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/videollamb_memory/fidelity.py",
+      "declaration_digest": "4b089da090946ea31c27175e9080317d279918526ec77ed325f3c009a6bad12f",
+      "content_sha256": "e3c5e82236b695b63506d030bc9d81ec4b58f026c35d25b50ded24840a5cab00"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/videollamb_memory/source.py",
+      "declaration_digest": "c2bf227cf6b080cd5e3ddbc71de639747d53b09b8ec52776a3f127b5493f454b",
+      "content_sha256": "b764595ec1c1a9ccb65c03f209ef5cba482ff7c7356d521cbdb5c08107d5e8fa"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [
+    "The recurrent MemoryProgram has not yet been bound to the official bridge/cache implementation semantics.",
+    "EgoSchema, NExT-QA, EgoPlan, MVBench and NIAVH benchmark cuts are not yet content-addressed in this package.",
+    "The ICCV Study, released checkpoints and matched result evidence are not yet bound."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_videollamb_memory_v1.py",
+      "content_sha256": "15daf13d2a057d465f34e7bec33ac6b5e9567a868e396e6a14331b3ae2ceab28"
+    }
+  ]
+}
