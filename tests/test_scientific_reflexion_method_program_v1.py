@@ -110,7 +110,7 @@ def test_reflexion_method_program_restarts_failed_trial_with_verbal_memory() -> 
         ),
     )
 
-    assert result.status is MethodRunStatus.SUCCEEDED
+    assert result.status is MethodRunStatus.SUCCEEDED, result.failure
     assert result.value["success"] is True
     assert result.value["completed_trials"] == 2
     assert result.value["first_success_trial"] == 2
