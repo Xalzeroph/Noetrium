@@ -131,18 +131,23 @@ def build_agentsquare_webshop_task_set(
 
     released_order = tuple(by_index[index] for index in expected_indices)
     tasks = tuple(
-        TaskDefinition(
-            task_id=row.task_id,
-            revision_id=AGENTSQUARE_WEBSHOP_REVISION,
-            family="webshop",
-            schema_id=WEBSHOP_TASK_SCHEMA_ID,
-            content_digest=row.content_digest,
-            lineage_refs=(
-                f"session:{row.session_id}",
-                f"source-index:{row.index}",
+        sorted(
+            (
+                TaskDefinition(
+                    task_id=row.task_id,
+                    revision_id=AGENTSQUARE_WEBSHOP_REVISION,
+                    family="webshop",
+                    schema_id=WEBSHOP_TASK_SCHEMA_ID,
+                    content_digest=row.content_digest,
+                    lineage_refs=(
+                        f"session:{row.session_id}",
+                        f"source-index:{row.index}",
+                    ),
+                )
+                for row in released_order
             ),
+            key=lambda row: row.task_id,
         )
-        for row in released_order
     )
     return BenchmarkTaskSet(
         benchmark_id=WEBSHOP_BENCHMARK_ID,
