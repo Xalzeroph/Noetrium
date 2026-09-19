@@ -1,7 +1,27 @@
 from __future__ import annotations
 
+from noetrium_platform.capabilities.participant.capability.api import (
+    CapabilityDescriptor,
+    CapabilityRequest,
+    CapabilityResult,
+)
+from noetrium_platform.foundation.kernel.kernel import (
+    EffectClass,
+    ExecutionContext,
+    canonical_digest,
+)
+from noetrium_platform.research.execution.workflow.api import (
+    MethodAgentRequest,
+    MethodAgentResult,
+    MethodRuntimeContext,
+    MethodRunStatus,
+)
+from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 from research.reproductions.drvideo.fidelity import DRVIDEO_REFERENCE_FIDELITY
-from research.reproductions.drvideo.program import DRVIDEO_METHOD_PROGRAM
+from research.reproductions.drvideo.program import (
+    DRVIDEO_METHOD_PROGRAM,
+    drvideo_initial_state,
+)
 
 
 def test_drvideo_cvpr2025_fidelity_freezes_document_agent_pipeline() -> None:
@@ -56,3 +76,179 @@ def test_drvideo_method_program_compiles_explicit_document_agent_loop() -> None:
     assert program.graph.node("planning").max_visits == 2
     assert program.graph.node("interaction").max_visits == 2
     assert program.graph.node("augment").max_visits == 2
+
+
+
+class _DrVideoSemanticCapability:
+    def __init__(self, document: tuple[dict, ...]) -> None:
+        self.document = {row["frame_id"]: row for row in document}
+        self.requests: list[CapabilityRequest] = []
+
+    def describe(self, capability_id: str) -> CapabilityDescriptor:
+        assert capability_id == "data.semantic-similarity"
+        return CapabilityDescriptor(
+            capability_id,
+            "1",
+            "json",
+            "json",
+            EffectClass.PURE,
+            True,
+        )
+
+    def invoke(self, request: CapabilityRequest) -> CapabilityResult:
+        assert request.capability_id == "data.semantic-similarity"
+        self.requests.append(request)
+        assert request.payload["limit"] == 2
+        matches = tuple(
+            {
+                "source_id": "drvideo-document",
+                "record_id": frame_id,
+                "content_digest": self.document[frame_id]["content_digest"],
+                "score": score,
+                "rank": rank,
+            }
+            for rank, (frame_id, score) in enumerate(
+                (("frame-0", 0.99), ("frame-1", 0.91)),
+                start=1,
+            )
+        )
+        return CapabilityResult(
+            request.capability_id,
+            {
+                "projection_digest": request.payload["projection_digest"],
+                "source_cut_digest": request.payload["source_cut_digest"],
+                "embedding_model_digest": request.payload["embedding_model_digest"],
+                "metric": "cosine_similarity",
+                "candidate_count": len(self.document),
+                "matches": matches,
+            },
+        )
+
+
+class _DrVideoAgents:
+    def __init__(self) -> None:
+        self.planning_calls = 0
+        self.views: list[tuple[str, dict]] = []
+
+    def run(self, request: MethodAgentRequest) -> MethodAgentResult:
+        view = dict(request.view)
+        self.views.append((request.agent_id, view))
+
+        if request.agent_id == "drvideo.visual-augmenter":
+            updates = tuple(
+                {
+                    "frame_id": row["frame_id"],
+                    "type": row["type"],
+                    "text": (
+                        f"question-specific evidence for {row['frame_id']}"
+                        if row["type"] == "vqa"
+                        else f"dense caption for {row['frame_id']}"
+                    ),
+                }
+                for row in view["requests"]
+            )
+            return MethodAgentResult(value={"updates": updates})
+
+        if request.agent_id == "drvideo.planning-agent":
+            self.planning_calls += 1
+            if self.planning_calls == 1:
+                return MethodAgentResult(
+                    value={
+                        "confidence": "0",
+                        "explanation": "Need a detailed caption for frame-3.",
+                    }
+                )
+            return MethodAgentResult(
+                value={
+                    "confidence": "1",
+                    "explanation": "The augmented document is sufficient.",
+                }
+            )
+
+        if request.agent_id == "drvideo.interaction-agent":
+            assert view["maximum_new_frames"] == 3
+            assert "frame-3" not in view["caption_augmented_frame_ids"]
+            return MethodAgentResult(
+                value={
+                    "frames": (
+                        {"frame_id": "frame-3", "type": "caption"},
+                    )
+                }
+            )
+
+        if request.agent_id == "drvideo.answering-agent":
+            assert view["chain_of_thought"] is True
+            return MethodAgentResult(
+                value={
+                    "answer": "B",
+                    "reasoning": "Retrieved and augmented evidence supports B.",
+                }
+            )
+
+        raise AssertionError(f"unexpected DrVideo agent: {request.agent_id}")
+
+
+def test_drvideo_method_program_executes_retrieval_feedback_and_answer_loop() -> None:
+    document = tuple(
+        {
+            "frame_id": f"frame-{index}",
+            "text": f"coarse document sentence {index}",
+            "content_digest": canonical_digest({"frame": index}),
+        }
+        for index in range(5)
+    )
+    projection_digest = canonical_digest({"projection": "drvideo-test"})
+    source_cut_digest = canonical_digest({"source-cut": "drvideo-test"})
+    embedding_model_digest = canonical_digest({"embedding": "drvideo-test"})
+    capabilities = _DrVideoSemanticCapability(document)
+    agents = _DrVideoAgents()
+
+    result = UniversalMethodMachine(max_steps=80).run(
+        DRVIDEO_METHOD_PROGRAM,
+        runtime=MethodRuntimeContext(
+            ExecutionContext(
+                "drvideo-test",
+                "trace",
+                "span",
+                task_id="egoschema:test",
+            ),
+            capabilities=capabilities,
+            agent_loop=agents,
+        ),
+        initial_state=drvideo_initial_state(
+            question="What did the person do after entering the room?",
+            options=("A", "B", "C", "D", "E"),
+            document=document,
+            projection_digest=projection_digest,
+            source_cut_digest=source_cut_digest,
+            embedding_model_digest=embedding_model_digest,
+            retrieval_query_vector=(1.0, 0.0, 0.5),
+            top_k=2,
+            max_rounds=2,
+        ),
+    )
+
+    assert result.status is MethodRunStatus.SUCCEEDED, (
+        result.failure_code,
+        result.failure_phase,
+        result.failure,
+        result.diagnostics,
+    )
+    assert result.value["answer"] == "B"
+    assert result.value["interaction_rounds"] == 1
+    assert tuple(result.value["retrieved_frame_ids"]) == ("frame-0", "frame-1")
+    assert tuple(result.value["vqa_augmented_frame_ids"]) == (
+        "frame-0",
+        "frame-1",
+    )
+    assert tuple(result.value["caption_augmented_frame_ids"]) == ("frame-3",)
+    assert len(capabilities.requests) == 1
+    assert agents.planning_calls == 2
+    assert [agent_id for agent_id, _ in agents.views] == [
+        "drvideo.visual-augmenter",
+        "drvideo.planning-agent",
+        "drvideo.interaction-agent",
+        "drvideo.visual-augmenter",
+        "drvideo.planning-agent",
+        "drvideo.answering-agent",
+    ]
