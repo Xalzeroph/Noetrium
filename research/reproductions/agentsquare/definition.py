@@ -35,7 +35,14 @@ REPRODUCTION = ReproductionDefinition(
             "module_recombination",
         ),
         priority=1,
-        benchmark_ids=(\n            "webshop",\n            "alfworld",\n            "scienceworld",\n            "m3tooleval",\n            "travelplanner",\n            "agentboard-pddl",\n        ),
+        benchmark_ids=(
+            "webshop",
+            "alfworld",
+            "scienceworld",
+            "m3tooleval",
+            "travelplanner",
+            "agentboard-pddl",
+        ),
         platform_pressure=(
             "execution/research_program",
             "experimentation/workbench",
