@@ -562,6 +562,17 @@
       "priority_class": "P1_FLAGSHIP",
       "reproduction_method_id": "worldmm",
       "evidence_url": "https://openaccess.thecvf.com/content/CVPR2026/html/Yeo_WorldMM_Dynamic_Multimodal_Memory_Agent_for_Long_Video_Reasoning_CVPR_2026_paper.html"
+    },
+    {
+      "id": "providellm",
+      "kind": "method",
+      "title": "Streaming VideoLLMs for Real-Time Procedural Video Understanding",
+      "year": 2025,
+      "venue": "ICCV",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "providellm",
+      "evidence_url": "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html"
     }
   ],
   "explicitly_ineligible_current_items": [
