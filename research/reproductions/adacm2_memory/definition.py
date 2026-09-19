@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -86,8 +88,37 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/adacm2_memory/memory.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="adacm2_lvu_average_improvement",
+            metric_id="reported_average_improvement_percent",
+            value=4.5,
+            qualifiers={
+                "benchmark": "lvu",
+                "scope": "multiple-lvu-tasks",
+                "source": "CVPR-2025 abstract",
+            },
+        ),
+        ReportedResult(
+            claim_id="adacm2_gpu_memory_reduction",
+            metric_id="gpu_memory_reduction_percent",
+            value=65.0,
+            qualifiers={
+                "scope": "up-to",
+                "source": "CVPR-2025 abstract",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="adacm2_paper_long_video_baselines",
+            description=(
+                "Long-video understanding baselines used by the CVPR 2025 "
+                "paper to establish the reported LVU and memory-efficiency gains."
+            ),
+            qualifiers={"source": "CVPR-2025 paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("unresolved"),
