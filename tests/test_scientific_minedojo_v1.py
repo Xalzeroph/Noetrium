@@ -420,8 +420,15 @@ def test_minedojo_full_cut_binds_formal_mineagent_study() -> None:
     assert protocol.protocol_id == "minedojo.neurips2022.mineagent.v1"
     assert study.benchmark.benchmark_id == "minedojo"
     assert len(study.benchmark.selected_tasks("all")) == 3142
-    assert study.method.implementation == "mineagent"
-    assert {row.name for row in study.measurements} == {
+    method = next(
+        row
+        for row in study.binding_requirements.participants
+        if row.role == "language_conditioned_minecraft_policy"
+    )
+    assert method.method_id == "mineagent"
+    assert {
+        row.measurement_id for row in study.measurement_protocol.definitions
+    } == {
         "episode_success",
         "episode_steps",
         "cumulative_reward",

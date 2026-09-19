@@ -70,9 +70,7 @@ def test_self_consistency_study_freezes_paper_sampling_repetitions() -> None:
     study = build_self_consistency_gsm8k_study(benchmark)
 
     assert study.repetitions == 10
-    assert study.limits.max_model_calls == 40
-    assert tuple(row.measurement_id for row in study.measurements) == (
-        "model_call_count",
-        "selected_vote_count",
-        "task_success",
-    )
+    assert study.execution_policy.trial_budget.max_model_calls == 40
+    assert {
+        row.measurement_id for row in study.measurement_protocol.definitions
+    } == {"model_call_count", "selected_vote_count", "task_success"}

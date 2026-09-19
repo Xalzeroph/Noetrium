@@ -57,7 +57,7 @@ def test_toolllm_toolbench_oracle_study_freezes_program_and_tooleval_metrics() -
         for row in study.binding_requirements.participants
         if row.role == "toolllm"
     )
-    assert method.capabilities == capabilities
+    assert method.capability_requirement_ids == capabilities
 
 
 def test_toolllm_retrieval_study_adds_semantic_capability_and_changes_protocol() -> None:
@@ -83,7 +83,7 @@ def test_toolllm_retrieval_study_adds_semantic_capability_and_changes_protocol()
         for row in study.binding_requirements.participants
         if row.role == "toolllm"
     )
-    assert method.capabilities == (
+    assert method.capability_requirement_ids == (
         "data.semantic-similarity",
         "weather_for_alpha",
         "news_for_beta",
