@@ -83,31 +83,15 @@ jobs:
           python scripts/sync_research_program.py --check
           python scripts/sync_lineage_status.py --check
 
-      - name: Run research workspace tests
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import subprocess
-          import sys
+      - name: Verify research workspace test ownership
+        run: python research/tools/test_selection.py check
 
-          prefixes = (
-              "test_scientific_",
-              "test_research_",
-              "test_reproduction_",
-              "test_publication_",
-              "test_lineage_",
-          )
-          tests = sorted(
-              str(path)
-              for path in Path("tests").glob("test_*.py")
-              if path.name.startswith(prefixes)
-          )
-          if not tests:
-              raise SystemExit("research workspace test selection is empty")
-          raise SystemExit(
-              subprocess.run(
-                  [sys.executable, "-m", "pytest", "-q", *tests],
-                  check=False,
-              ).returncode
-          )
-          PY
+      - name: Run full research workspace tests
+        if: github.event_name != 'pull_request' || github.base_ref == 'main'
+        run: python research/tools/test_selection.py run
+
+      - name: Run affected research workspace tests
+        if: github.event_name == 'pull_request' && github.base_ref != 'main'
+        env:
+          RESEARCH_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python research/tools/test_selection.py run-affected "$RESEARCH_BASE_SHA"
