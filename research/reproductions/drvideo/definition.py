@@ -35,7 +35,7 @@ REPRODUCTION = ReproductionDefinition(
             "question_conditioned_augmentation",
         ),
         priority=1,
-        benchmark_ids=(),
+        benchmark_ids=("egoschema",),
         platform_pressure=(
             "execution/machines/method",
             "data/semantic-similarity",
@@ -67,8 +67,16 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/drvideo/fidelity.py",
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("benchmark"),
+            path="research/reproductions/drvideo/benchmark.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("method_program"),
             path="research/reproductions/drvideo/program.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/drvideo/study.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
@@ -90,8 +98,7 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     blockers=(
-        "Exact EgoSchema, MovieChat-1K and Video-MME benchmark cuts and "
-        "caption/model providers remain to be content-addressed.",
+        "MovieChat-1K and Video-MME paper cuts remain to be bound.",
         "Matched-result reproduction requires the paper-era model/API "
         "dependencies and benchmark media under artifact authority.",
     ),
