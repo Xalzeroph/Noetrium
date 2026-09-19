@@ -42,7 +42,7 @@ def test_qlass_released_lane_freezes_dev_cut_and_q_guided_search() -> None:
     study = build_qlass_alfworld_later_released_study(benchmark)
     assert benchmark.revision_id == ALFWORLD_QLASS_DEV_REVISION
     assert len(benchmark.selected_tasks(ALFWORLD_QLASS_DEV_SPLIT)) == 140
-    assert study.execution_policy.trial_budget.max_steps == 120
+    assert study.execution_policy.trial_budget.max_turns == 120
     roles = {row.role: row.requirement_id for row in study.binding_requirements.model_roles}
     assert roles == {"policy": "model.qlass.sft-policy", "q_value": "model.qlass.q-net"}
 
