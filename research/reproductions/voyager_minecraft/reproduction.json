@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "voyager_minecraft",
-  "package_digest": "27e7d7adf20ed731623f81105d74dfeb6a5f478c4f37ee518bd61efba3d656fe",
-  "definition_digest": "82d9dd49643eba263e7c410004175662f3f10b4641930a85ad8e775770abfe22",
+  "package_digest": "217a6aa92ef678bb187503cbfdee3b7eb3386c21509bdd6fef53e995a296e074",
+  "definition_digest": "eab60b402b1b344a21057545661fe6f79af8a0c11b8b996cbc554be142093c95",
   "source_registry_digest": "f1ab1828eec1ae53b63ea726f5a6a82721010fa6108cb609089c7bb1b4d5420b",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -163,8 +163,49 @@
     }
   ],
   "primary_executable": "research/reproductions/voyager_minecraft/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "voyager_unique_items_multiplier",
+      "metric_id": "unique_items_multiplier",
+      "value": 3.3,
+      "qualifiers": {
+        "comparison": "prior-state-of-the-art",
+        "source": "TMLR paper"
+      },
+      "claim_digest": "5f586c3aaf2d6d2d2e4ff31ad2f1b224465b4920d064afa0b1401af8e8a0fc6c"
+    },
+    {
+      "claim_id": "voyager_tech_tree_speed_multiplier",
+      "metric_id": "tech_tree_unlock_speed_multiplier",
+      "value": 15.3,
+      "qualifiers": {
+        "bound": "up-to",
+        "comparison": "prior-state-of-the-art",
+        "source": "TMLR paper"
+      },
+      "claim_digest": "8ff8c12fe99c79d45e4833afaed528c9bf1f402628545be27876903f0a3507f8"
+    },
+    {
+      "claim_id": "voyager_traversal_distance_multiplier",
+      "metric_id": "traversal_distance_multiplier",
+      "value": 2.3,
+      "qualifiers": {
+        "comparison": "prior-state-of-the-art",
+        "source": "TMLR paper"
+      },
+      "claim_digest": "f92673e199a93c1b6d0bb40a22f9c1c8b57adc0408528bc197b9d993304d3679"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "voyager_prior_minecraft_agents",
+      "description": "Prior Minecraft embodied agents used for the lifelong-learning comparison in the Voyager paper.",
+      "qualifiers": {
+        "source": "TMLR paper evaluation"
+      },
+      "baseline_digest": "55997df076ca4a19fa659fb464825c1dc43045a9d59fa211492e8906fc762ce7"
+    }
+  ],
   "deltas": [
     {
       "kind": "substitution",

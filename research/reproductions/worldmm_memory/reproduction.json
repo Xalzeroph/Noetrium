@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "worldmm_memory",
-  "package_digest": "a5defa081c7af7e4803042b147555a5834664799af17f4a6fc5f5d7ed73f58f7",
-  "definition_digest": "8f6edee17eefa4d45b18a068e89049aa25f83a4aa129378c563161cb00848ba3",
+  "package_digest": "f20262724274fb07a99607f209939977e0913da5beb4bfa4f8e1c768c18ce3e9",
+  "definition_digest": "bd806ccfa9d1f50a6d52b9a79be8e37fc5388b3316e23eb8b0756af748cce682",
   "source_registry_digest": "59fad67df15f1fffd4579cda87465a6feb1607352e4bdf24806f77c92a06dc6e",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -146,8 +146,29 @@
     }
   ],
   "primary_executable": "research/reproductions/worldmm_memory/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "worldmm_average_long_video_gain",
+      "metric_id": "average_improvement_percent",
+      "value": 8.4,
+      "qualifiers": {
+        "scope": "five-long-video-qa-benchmarks",
+        "comparison": "previous-state-of-the-art",
+        "source": "CVPR-2026 abstract"
+      },
+      "claim_digest": "563e42f0a666e0e04a69e89caac5ae284b04dfd43bf5fbd3e4975a5958cf1c4b"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "worldmm_previous_sota",
+      "description": "Previous state-of-the-art long-video reasoning methods used for the five-benchmark comparison reported by WorldMM.",
+      "qualifiers": {
+        "source": "CVPR-2026 paper evaluation"
+      },
+      "baseline_digest": "f5c187aa414149017258c6fb6da342bd1965b050c135448585d21626d6e97346"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "deps_minecraft",
-  "package_digest": "b1fe71b6e4fd1d5cca2f8fb8c7f580ee39bd3871164d80ff522275828bcdd87a",
-  "definition_digest": "7c5edb57f6ae3abac568fe1a62daa83ae658489163d4d80ae191587197945bb7",
+  "package_digest": "15e3a428ef2bb10b719270ae55eb517cbb76b06d7c7a07700b995fd54a70357c",
+  "definition_digest": "f75cf70e70c1e43a3b5fbda7b5ea294718b1a7a429c7440cd2e4d8833591ad09",
   "source_registry_digest": "b34ac82a645a66821c20029f19473c146715222483bfaf316120b963fd884a90",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -140,8 +140,30 @@
     }
   ],
   "primary_executable": "research/reproductions/deps_minecraft/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "deps_robust_minecraft_task_count",
+      "metric_id": "robustly_accomplished_task_count",
+      "value": 70,
+      "qualifiers": {
+        "bound": "greater-than",
+        "wording": "70+",
+        "setting": "zero-shot-multi-task",
+        "source": "NeurIPS-2023 abstract"
+      },
+      "claim_digest": "776626a98d6ade90b6b586d2961c23c0895384b38ce14e5e5e056458e612d5bb"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "deps_vanilla_planning_counterparts",
+      "description": "Planning counterparts used by the NeurIPS 2023 paper to establish the reported open-world multi-task gains.",
+      "qualifiers": {
+        "source": "NeurIPS-2023 paper evaluation"
+      },
+      "baseline_digest": "57d155a1874c603d8956373a2c73a69b9e92f318d5de7ef674543a4e868dea25"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

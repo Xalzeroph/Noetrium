@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "steve1_minecraft",
-  "package_digest": "48d7905675ef436c7719619bc177d1a2c0ec70909fc1902fa9bad103a674da7c",
-  "definition_digest": "2421a72aba7e7f60ead896f48880b3607b0b030a083f30221518201322bef6a8",
+  "package_digest": "042c6618503cae8f3dbff2e83cc2deb29cfecb9010365e98b1739738040bf5aa",
+  "definition_digest": "f0f19b97ed5412ff9ecac1901064f9121a004c739b5064e602032181b165c192",
   "source_registry_digest": "365b9a6eac2c92f89fc90b3802a0fdbdcf92ad106758f8a518a664be076f0881",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -122,8 +122,39 @@
     }
   ],
   "primary_executable": "research/reproductions/steve1_minecraft/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "steve1_early_game_completed_tasks",
+      "metric_id": "robustly_completed_task_count",
+      "value": 12,
+      "qualifiers": {
+        "evaluation_task_count": 13,
+        "scope": "early-game-evaluation-suite",
+        "source": "NeurIPS-2023 FMDM workshop paper"
+      },
+      "claim_digest": "a9001853189c451870b767bc4c7f0d626f04eaa9797b832620f75d907c8af2a4"
+    },
+    {
+      "claim_id": "steve1_training_cost",
+      "metric_id": "reported_training_cost_usd",
+      "value": 60,
+      "qualifiers": {
+        "wording": "just-$60-to-train",
+        "source": "NeurIPS-2023 FMDM workshop paper"
+      },
+      "claim_digest": "01c4fa5623c6c64a7d1a08c526709ab26a7a722a1e9b9b112678077712f3d04d"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "steve1_previous_minecraft_instruction_baselines",
+      "description": "Previous open-ended Minecraft instruction-following baselines compared in the STEVE-1 paper.",
+      "qualifiers": {
+        "source": "NeurIPS-2023 FMDM workshop paper"
+      },
+      "baseline_digest": "4523eab9cba45bc5dac4658353620c4e0ec705df0e0866ee6cd90708f0efd386"
+    }
+  ],
   "deltas": [],
   "blockers": [
     "Formal numerical claims require immutable VPT, MineCLIP, STEVE-1 policy and prior weight artifacts plus the paper-era MineRL runtime.",
