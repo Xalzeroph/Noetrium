@@ -287,7 +287,6 @@ def build_webvoyager_method_program() -> MethodProgram:
         _record_environment,
         ("policy", "return"),
         max_visits=fidelity.max_iterations,
-        evidence_obligations=("webvoyager.observation",),
     )
     builder.return_node("return", "webvoyager.result", _return_result)
     return builder.build(
