@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from pathlib import Path
 
+from noetrium.platform import run_method_program
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
@@ -23,7 +25,6 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRuntimeContext,
     MethodRunStatus,
 )
-from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 from noetrium_platform.research.reproduction import ReproductionAssetKind
 from research.reproductions.optimus1_minecraft.definition import REPRODUCTION
 from research.reproductions.optimus1_minecraft.fidelity import (
@@ -264,12 +265,14 @@ def test_optimus1_method_program_exposes_source_faithful_control_graph() -> None
     assert program.graph.node("execute_controller").max_visits == 32768
 
 
-def test_optimus1_released_lane_records_periodic_replan_reflection_without_branching() -> None:
+def test_optimus1_released_lane_records_periodic_replan_reflection_without_branching(
+    tmp_path: Path,
+) -> None:
     journal = InMemoryMachineJournal()
     agents = _OptimusAgents()
     environment = _OptimusMinecraft()
 
-    result = UniversalMethodMachine(max_steps=200).run(
+    result = run_method_program(
         OPTIMUS1_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(
             _optimus_context(),
@@ -283,6 +286,7 @@ def test_optimus1_released_lane_records_periodic_replan_reflection_without_branc
             initial_observation={"frame": 0},
             max_environment_steps=5000,
         ),
+        state_root=tmp_path / "optimus1-method",
     )
 
     assert result.status is MethodRunStatus.SUCCEEDED, (
