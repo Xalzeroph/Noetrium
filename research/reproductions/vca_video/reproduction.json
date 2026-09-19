@@ -1,0 +1,97 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "vca_video",
+  "package_digest": "465aa38aeaba66735449d4fbc496e64376b1ddb23303e0e5fb8d617e2c9c3109",
+  "definition_digest": "041184e3275836b5227b99a0857ec3e2df6473aa5419e333057125a2592e8063",
+  "source_registry_digest": "993b22ccf2d2e42518ffca18ac76bb9e7465b2b1dfd22cf2c63ca2867c6a8a4b",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "vca-video",
+    "title": "VCA: Video Curious Agent for Long Video Understanding",
+    "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "ICCV 2025 camera-ready",
+    "identity_digest": "b6e6162324e059db6e51e2b802b0d44a8ce7a580006fdfb67f61cee11ffc493b"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "memory",
+      "multimodal",
+      "search",
+      "video"
+    ],
+    "families": [
+      "active_video_exploration",
+      "curiosity_driven_search",
+      "long_video_understanding",
+      "multimodal_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "benchmark/video",
+      "execution/machines/memory",
+      "execution/machines/method",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "VLM self-generated intrinsic reward",
+      "fixed-size selected-frame memory",
+      "non-greedy temperature-controlled segment choice",
+      "reward-history-conditioned exploration",
+      "tree-structured video-segment exploration"
+    ],
+    "platform_owned": [
+      "MethodMachine and MemoryMachine journal authority",
+      "artifact/evidence lineage",
+      "benchmark cut identity",
+      "multimodal model transport",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html"
+    ],
+    "catalog_digest": "0dce1fb6af6284239d9d403bacd9c92375869ec5e896fa9f844c6f403b07dd42"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iccv_2025_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "ICCV",
+      "year": 2025,
+      "publication_id": "vca-video-iccv-2025",
+      "publication_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html",
+      "revision": "ICCV 2025 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "dbc58b6bf96cf2495e765e117e73938a52967c4482360e95753f512d5f4a8fd9"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/vca_video/fidelity.py",
+      "declaration_digest": "562acdd886619cd0fd092ad0421b525f9e5d5b89be4a06ac42ae29623686ff6e",
+      "content_sha256": "8c734ee1b02bfbfd601f4139768648717a1570fcaa6fd6c3de81cec0a0418c25"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [
+    "The paper-native tree-search MethodProgram and fixed-size memory program are not yet bound.",
+    "EgoSchema, LVBench, MMBench-Video and Video-MME benchmark cuts are not yet content-addressed in this package.",
+    "The ICCV evaluation Study and executable model/provider bindings remain to be implemented."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_vca_video_v1.py",
+      "content_sha256": "75ebe70579608f9fdeb1f03e7a1a6942a7da2ae8c762ce09d8df91b4ed5f8a30"
+    }
+  ]
+}
