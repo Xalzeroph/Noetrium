@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 import math
 from types import MappingProxyType
-from typing import Protocol, TypeAlias
+from typing import Protocol, TypeAlias, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_digest
 
@@ -157,7 +157,7 @@ class StateTransition:
         )
 
 
-class StateMachineDynamicsPort(Protocol):
+@runtime_checkable\nclass StateMachineDynamicsPort(Protocol):
     """Domain semantics injected behind the generic closed-world runtime."""
 
     @property
