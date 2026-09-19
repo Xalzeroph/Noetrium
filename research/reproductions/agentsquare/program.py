@@ -167,6 +167,134 @@ class AgentSquareModuleEvaluation:
         object.__setattr__(self, "receipt", freeze_json(self.receipt))
 
 
+@dataclass(frozen=True, slots=True)
+class AgentSquareSearchProfile:
+    """Benchmark-specific paper semantics for the generic modular search."""
+
+    profile_id: str
+    benchmark_id: str
+    search_iterations: int
+    candidate_evaluation_episodes: int
+    initial_agent: JsonObject
+    initial_performance: float
+    validated_module_types: tuple[str, ...]
+    module_constraints: tuple[tuple[str, tuple[str, ...]], ...] = ()
+    profile_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        profile_id = _text(self.profile_id, "search profile_id")
+        benchmark_id = _text(self.benchmark_id, "search benchmark_id")
+        if type(self.search_iterations) is not int or self.search_iterations <= 0:
+            raise ValueError("AgentSquare search_iterations must be positive")
+        if (
+            type(self.candidate_evaluation_episodes) is not int
+            or self.candidate_evaluation_episodes <= 0
+        ):
+            raise ValueError(
+                "AgentSquare candidate_evaluation_episodes must be positive"
+            )
+        initial_agent = _agent(self.initial_agent)
+        initial_performance = _score(
+            self.initial_performance,
+            "initial_performance",
+        )
+        if type(self.validated_module_types) is not tuple:
+            raise TypeError("AgentSquare validated_module_types must be a tuple")
+        if (
+            not self.validated_module_types
+            or len(self.validated_module_types)
+            != len(set(self.validated_module_types))
+            or any(
+                row not in AGENTSQUARE_FIDELITY.module_types
+                for row in self.validated_module_types
+            )
+        ):
+            raise ValueError(
+                "AgentSquare validated_module_types must be a unique non-empty "
+                "subset of the four module types"
+            )
+        if type(self.module_constraints) is not tuple:
+            raise TypeError("AgentSquare module_constraints must be a tuple")
+        constraint_keys = tuple(row[0] for row in self.module_constraints)
+        if (
+            constraint_keys != tuple(sorted(constraint_keys))
+            or len(constraint_keys) != len(set(constraint_keys))
+        ):
+            raise ValueError(
+                "AgentSquare module constraints must be unique and canonical"
+            )
+        normalized_constraints: list[tuple[str, tuple[str, ...]]] = []
+        for module_type, allowed in self.module_constraints:
+            if module_type not in AGENTSQUARE_FIDELITY.module_types:
+                raise ValueError("AgentSquare constraint module type drifted")
+            if (
+                type(allowed) is not tuple
+                or not allowed
+                or any(type(value) is not str or not value.strip() for value in allowed)
+                or len(allowed) != len(set(allowed))
+            ):
+                raise ValueError(
+                    "AgentSquare allowed module values must be unique text"
+                )
+            normalized_constraints.append((module_type, allowed))
+        object.__setattr__(self, "profile_id", profile_id)
+        object.__setattr__(self, "benchmark_id", benchmark_id)
+        object.__setattr__(self, "initial_agent", initial_agent)
+        object.__setattr__(self, "initial_performance", initial_performance)
+        object.__setattr__(
+            self,
+            "module_constraints",
+            tuple(normalized_constraints),
+        )
+        object.__setattr__(
+            self,
+            "profile_digest",
+            canonical_digest(
+                {
+                    "profile_id": profile_id,
+                    "benchmark_id": benchmark_id,
+                    "search_iterations": self.search_iterations,
+                    "candidate_evaluation_episodes": (
+                        self.candidate_evaluation_episodes
+                    ),
+                    "initial_agent": thaw_json(initial_agent),
+                    "initial_performance": initial_performance,
+                    "validated_module_types": self.validated_module_types,
+                    "module_constraints": self.module_constraints,
+                }
+            ),
+        )
+
+    def accepts_agent(self, agent: JsonObject) -> bool:
+        normalized = _agent(agent)
+        return all(
+            normalized.get(module_type) in allowed
+            for module_type, allowed in self.module_constraints
+        )
+
+
+AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE = AgentSquareSearchProfile(
+    profile_id="agentsquare.alfworld.later-official",
+    benchmark_id="alfworld",
+    search_iterations=AGENTSQUARE_FIDELITY.released_alfworld_search_iterations,
+    candidate_evaluation_episodes=(
+        AGENTSQUARE_FIDELITY.released_candidate_eval_episodes
+    ),
+    initial_agent=freeze_json(
+        dict(
+            zip(
+                AGENTSQUARE_FIDELITY.module_types,
+                AGENTSQUARE_FIDELITY.released_initial_agent,
+                strict=True,
+            )
+        )
+    ),
+    initial_performance=AGENTSQUARE_FIDELITY.released_initial_performance,
+    validated_module_types=("planning", "reasoning", "memory"),
+    module_constraints=(("tooluse", ("None",)),),
+)
+
+
 @runtime_checkable
 class AgentSquareSearchModelPort(Protocol):
     @property
@@ -221,6 +349,9 @@ class AgentSquareEvaluatorPort(Protocol):
 class AgentSquareOptimizationBinding:
     search_model: AgentSquareSearchModelPort
     evaluator: AgentSquareEvaluatorPort
+    profile: AgentSquareSearchProfile = (
+        AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE
+    )
     binding_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -228,6 +359,8 @@ class AgentSquareOptimizationBinding:
             raise TypeError("AgentSquare binding requires search model port")
         if not isinstance(self.evaluator, AgentSquareEvaluatorPort):
             raise TypeError("AgentSquare binding requires evaluator port")
+        if not isinstance(self.profile, AgentSquareSearchProfile):
+            raise TypeError("AgentSquare binding requires search profile")
         model_digest = require_sha256(
             self.search_model.identity_digest,
             "AgentSquare search model identity_digest",
@@ -241,10 +374,53 @@ class AgentSquareOptimizationBinding:
             "binding_digest",
             canonical_digest({
                 "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
+                "search_profile_digest": self.profile.profile_digest,
                 "search_model": model_digest,
                 "evaluator": evaluator_digest,
             }),
         )
+
+
+def agentsquare_initial_data(
+    *,
+    optimization_id: str,
+    module_archives: JsonObject,
+    profile: AgentSquareSearchProfile,
+) -> JsonObject:
+    if not isinstance(profile, AgentSquareSearchProfile):
+        raise TypeError("AgentSquare initial data requires search profile")
+    archives = _archives(module_archives)
+    initial = profile.initial_agent
+    initial_case = freeze_json(
+        {
+            **thaw_json(initial),
+            "performance": profile.initial_performance,
+        }
+    )
+    return {
+        "optimization_id": _text(optimization_id, "optimization_id"),
+        "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
+        "search_profile_digest": profile.profile_digest,
+        "benchmark_id": profile.benchmark_id,
+        "iteration": 0,
+        "module_archives": freeze_json(archives),
+        "current_agent": initial,
+        "current_performance": profile.initial_performance,
+        "tested_cases": (initial_case,),
+        "pending_modules": {},
+        "pending_evolution_agents": (),
+        "pending_recombination_agents": (),
+        "pending_predictions": (),
+        "best_history": (
+            {
+                "iteration": 0,
+                "agent": initial,
+                "performance": profile.initial_performance,
+            },
+        ),
+        "evaluation_count": 0,
+        "model_receipts": (),
+    }
 
 
 def agentsquare_alfworld_initial_data(
@@ -252,36 +428,11 @@ def agentsquare_alfworld_initial_data(
     optimization_id: str,
     module_archives: JsonObject,
 ) -> JsonObject:
-    archives = _archives(module_archives)
-    initial = freeze_json(dict(zip(
-        AGENTSQUARE_FIDELITY.module_types,
-        AGENTSQUARE_FIDELITY.released_initial_agent,
-        strict=True,
-    )))
-    initial_case = freeze_json({
-        **thaw_json(initial),
-        "performance": AGENTSQUARE_FIDELITY.released_initial_performance,
-    })
-    return {
-        "optimization_id": _text(optimization_id, "optimization_id"),
-        "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
-        "iteration": 0,
-        "module_archives": freeze_json(archives),
-        "current_agent": initial,
-        "current_performance": AGENTSQUARE_FIDELITY.released_initial_performance,
-        "tested_cases": (initial_case,),
-        "pending_modules": {},
-        "pending_evolution_agents": (),
-        "pending_recombination_agents": (),
-        "pending_predictions": (),
-        "best_history": ({
-            "iteration": 0,
-            "agent": initial,
-            "performance": AGENTSQUARE_FIDELITY.released_initial_performance,
-        },),
-        "evaluation_count": 0,
-        "model_receipts": (),
-    }
+    return agentsquare_initial_data(
+        optimization_id=optimization_id,
+        module_archives=module_archives,
+        profile=AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE,
+    )
 
 
 def _require_binding(binding: object) -> AgentSquareOptimizationBinding:
@@ -290,16 +441,23 @@ def _require_binding(binding: object) -> AgentSquareOptimizationBinding:
     return binding
 
 
-def _state(request: ProgramNodeRequest) -> dict[str, JsonValue]:
+def _state(
+    request: ProgramNodeRequest,
+    bound: AgentSquareOptimizationBinding,
+) -> dict[str, JsonValue]:
     data = _mapping(request.data, "state")
     if data.get("fidelity_digest") != AGENTSQUARE_FIDELITY.fidelity_digest:
         raise ValueError("AgentSquare fidelity identity drifted")
+    if data.get("search_profile_digest") != bound.profile.profile_digest:
+        raise ValueError("AgentSquare search profile identity drifted")
+    if data.get("benchmark_id") != bound.profile.benchmark_id:
+        raise ValueError("AgentSquare benchmark identity drifted")
     return data
 
 
 def _evolve(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
     bound = _require_binding(binding)
-    data = _state(request)
+    data = _state(request, bound)
     proposal = bound.search_model.evolve(
         current_agent=_agent(data.get("current_agent")),
         module_archives=freeze_json(_archives(data.get("module_archives"))),
@@ -331,24 +489,20 @@ def _validate_modules(
     binding: object,
 ) -> ProgramNodeResult:
     bound = _require_binding(binding)
-    data = _state(request)
+    data = _state(request, bound)
     proposals = _mapping(data.get("pending_modules", {}), "pending modules")
     archives = _archives(data.get("module_archives"))
     rejected: set[str] = set()
     evidence: list[str] = []
     module_receipts: list[JsonValue] = []
-    for module_type in AGENTSQUARE_FIDELITY.module_types:
-        # The released ALFWorld search explicitly skips standalone tool-use
-        # module validation; preserve that executable semantics.
-        if module_type == "tooluse":
-            continue
+    for module_type in bound.profile.validated_module_types:
         raw = proposals.get(module_type)
         if not isinstance(raw, Mapping):
             raise ValueError(f"AgentSquare missing {module_type} proposal")
         result = bound.evaluator.evaluate_module(
             module_type=module_type,
             module=freeze_json(raw),
-            episodes=AGENTSQUARE_FIDELITY.released_candidate_eval_episodes,
+            episodes=bound.profile.candidate_evaluation_episodes,
         )
         if not isinstance(result, AgentSquareModuleEvaluation):
             raise TypeError("AgentSquare evaluator returned invalid module result")
@@ -372,7 +526,7 @@ def _validate_modules(
         row
         for row in _agents(data.get("pending_evolution_agents", ()))
         if not any(value in rejected for value in row.values())
-        and row.get("tooluse") == "None"
+        and bound.profile.accepts_agent(row)
     )
     if not candidates:
         candidates = (_agent(data.get("current_agent")),)
@@ -397,11 +551,13 @@ def _validate_modules(
 def _evaluate_many(
     evaluator: AgentSquareEvaluatorPort,
     candidates: tuple[JsonObject, ...],
+    *,
+    episodes: int,
 ) -> tuple[AgentSquareEvaluation, ...]:
     return tuple(
         evaluator.evaluate_agent(
             agent=row,
-            episodes=AGENTSQUARE_FIDELITY.released_candidate_eval_episodes,
+            episodes=episodes,
         )
         for row in candidates
     )
@@ -437,9 +593,13 @@ def _evaluate_evolution(
     binding: object,
 ) -> ProgramNodeResult:
     bound = _require_binding(binding)
-    data = _state(request)
+    data = _state(request, bound)
     candidates = _agents(data.get("pending_evolution_agents", ()))
-    results = _evaluate_many(bound.evaluator, candidates)
+    results = _evaluate_many(
+        bound.evaluator,
+        candidates,
+        episodes=bound.profile.candidate_evaluation_episodes,
+    )
     if any(not isinstance(row, AgentSquareEvaluation) for row in results):
         raise TypeError("AgentSquare evaluator returned invalid agent result")
     current, performance, tested, count = _apply_evaluations(data, results)
@@ -473,17 +633,21 @@ def _evaluate_evolution(
 
 def _recombine(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
     bound = _require_binding(binding)
-    data = _state(request)
+    data = _state(request, bound)
     candidates = bound.search_model.recombine(
         current_agent=_agent(data.get("current_agent")),
         module_archives=freeze_json(_archives(data.get("module_archives"))),
         tested_cases=tuple(data.get("tested_cases", ())),
     )
     candidates = tuple(
-        row for row in _agents(candidates) if row.get("tooluse") == "None"
+        row
+        for row in _agents(candidates)
+        if bound.profile.accepts_agent(row)
     )
     if not candidates:
-        raise ValueError("AgentSquare recombination returned no ALFWorld candidates")
+        raise ValueError(
+            "AgentSquare recombination returned no profile-compatible candidates"
+        )
     return ProgramNodeResult(
         value={"candidate_count": len(candidates)},
         state_update={"pending_recombination_agents": candidates},
@@ -497,7 +661,7 @@ def _recombine(request: ProgramNodeRequest, binding: object) -> ProgramNodeResul
 
 def _predict(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
     bound = _require_binding(binding)
-    data = _state(request)
+    data = _state(request, bound)
     candidates = _agents(data.get("pending_recombination_agents", ()))
     predictions = tuple(
         _score(row, "prediction")
@@ -530,7 +694,7 @@ def _evaluate_recombined(
     binding: object,
 ) -> ProgramNodeResult:
     bound = _require_binding(binding)
-    data = _state(request)
+    data = _state(request, bound)
     candidates = _agents(data.get("pending_recombination_agents", ()))
     predictions = tuple(data.get("pending_predictions", ()))
     if len(predictions) != len(candidates):
@@ -538,7 +702,7 @@ def _evaluate_recombined(
     best_index = max(range(len(predictions)), key=lambda i: float(predictions[i]))
     result = bound.evaluator.evaluate_agent(
         agent=candidates[best_index],
-        episodes=AGENTSQUARE_FIDELITY.released_candidate_eval_episodes,
+        episodes=bound.profile.candidate_evaluation_episodes,
     )
     if not isinstance(result, AgentSquareEvaluation):
         raise TypeError("AgentSquare evaluator returned invalid recombined result")
@@ -569,8 +733,8 @@ def _record_iteration(
     request: ProgramNodeRequest,
     binding: object,
 ) -> ProgramNodeResult:
-    _require_binding(binding)
-    data = _state(request)
+    bound = _require_binding(binding)
+    data = _state(request, bound)
     iteration = data.get("iteration", 0)
     if type(iteration) is not int or iteration < 0:
         raise ValueError("AgentSquare iteration must be non-negative")
@@ -583,7 +747,7 @@ def _record_iteration(
             "current_performance",
         ),
     },)
-    finished = iteration >= AGENTSQUARE_FIDELITY.released_alfworld_search_iterations
+    finished = iteration >= bound.profile.search_iterations
     return ProgramNodeResult(
         value={"iteration": iteration, "finished": finished},
         state_update={
@@ -605,10 +769,12 @@ def _record_iteration(
 
 def _finalize(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
     bound = _require_binding(binding)
-    data = _state(request)
+    data = _state(request, bound)
     result_digest = canonical_digest({
         "optimization_id": data.get("optimization_id"),
         "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
+        "search_profile_digest": bound.profile.profile_digest,
+        "benchmark_id": bound.profile.benchmark_id,
         "binding_digest": bound.binding_digest,
         "iteration": data.get("iteration"),
         "current_agent": thaw_json(_agent(data.get("current_agent"))),
@@ -634,11 +800,13 @@ def _finalize(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult
     )
 
 
-def build_agentsquare_alfworld_optimization_program() -> ResearchProgram:
+def build_agentsquare_optimization_program() -> ResearchProgram:
+    """Build the benchmark-neutral AgentSquare modular-search program graph."""
+
     builder = OptimizationProgramBuilder.create(
-        program_id="agentsquare.alfworld.later-official",
+        program_id="agentsquare.modular-search",
         version="1",
-        state_schema="agentsquare.alfworld.optimization-state.v1",
+        state_schema="agentsquare.modular-search-state.v1",
         entrypoint="evolve",
     )
     builder.semantic(
@@ -691,9 +859,14 @@ def build_agentsquare_alfworld_optimization_program() -> ResearchProgram:
     return builder.build()
 
 
-AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM = (
-    build_agentsquare_alfworld_optimization_program()
-)
+def build_agentsquare_alfworld_optimization_program() -> ResearchProgram:
+    """Build the generic graph used by the ALFWorld executable profile."""
+
+    return build_agentsquare_optimization_program()
+
+
+AGENTSQUARE_OPTIMIZATION_PROGRAM = build_agentsquare_optimization_program()
+AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM = AGENTSQUARE_OPTIMIZATION_PROGRAM
 
 
 def _operation_digest(operation: str) -> str:
@@ -701,11 +874,11 @@ def _operation_digest(operation: str) -> str:
         "paper": "AgentSquare",
         "source_commit": AGENTSQUARE_FIDELITY.audited_commit,
         "operation": operation,
-        "implementation_revision": 1,
+        "implementation_revision": 2,
     })
 
 
-def agentsquare_alfworld_operations() -> tuple[ResearchHostOperation, ...]:
+def agentsquare_operations() -> tuple[ResearchHostOperation, ...]:
     rows = (
         ("agentsquare.module.evolve", _evolve),
         ("agentsquare.module.validate", _validate_modules),
@@ -722,20 +895,59 @@ def agentsquare_alfworld_operations() -> tuple[ResearchHostOperation, ...]:
     )
 
 
-def agentsquare_alfworld_host(journal: MachineJournalPort) -> ResearchProgramHost:
+def agentsquare_alfworld_operations() -> tuple[ResearchHostOperation, ...]:
+    return agentsquare_operations()
+
+
+def agentsquare_host(
+    journal: MachineJournalPort,
+    *,
+    profile: AgentSquareSearchProfile,
+) -> ResearchProgramHost:
+    if not isinstance(profile, AgentSquareSearchProfile):
+        raise TypeError("AgentSquare host requires search profile")
     return ResearchProgramHost(
-        host_id="agentsquare.alfworld.optimization",
-        program=AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM,
-        operations=agentsquare_alfworld_operations(),
+        host_id=f"agentsquare.{profile.benchmark_id}.optimization",
+        program=AGENTSQUARE_OPTIMIZATION_PROGRAM,
+        operations=agentsquare_operations(),
         journal=journal,
-        max_steps=256,
+        max_steps=profile.search_iterations * 8 + 16,
         dependency_identity={
             "paper": "AgentSquare",
             "source_commit": AGENTSQUARE_FIDELITY.audited_commit,
             "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
-            "benchmark": "ALFWorld",
+            "search_profile_digest": profile.profile_digest,
+            "benchmark": profile.benchmark_id,
         },
     )
+
+
+def agentsquare_alfworld_host(journal: MachineJournalPort) -> ResearchProgramHost:
+    return agentsquare_host(
+        journal,
+        profile=AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE,
+    )
+
+
+def agentsquare_instance_identity(
+    *,
+    binding: AgentSquareOptimizationBinding,
+    initial_data: JsonObject,
+) -> JsonObject:
+    if not isinstance(binding, AgentSquareOptimizationBinding):
+        raise TypeError("AgentSquare instance identity requires binding")
+    if initial_data.get("search_profile_digest") != binding.profile.profile_digest:
+        raise ValueError(
+            "AgentSquare initial data and binding search profiles differ"
+        )
+    return {
+        "program_digest": AGENTSQUARE_OPTIMIZATION_PROGRAM.program_digest,
+        "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
+        "search_profile_digest": binding.profile.profile_digest,
+        "benchmark_id": binding.profile.benchmark_id,
+        "binding_digest": binding.binding_digest,
+        "initial_data_digest": canonical_digest(initial_data),
+    }
 
 
 def agentsquare_alfworld_instance_identity(
@@ -743,27 +955,38 @@ def agentsquare_alfworld_instance_identity(
     binding: AgentSquareOptimizationBinding,
     initial_data: JsonObject,
 ) -> JsonObject:
-    if not isinstance(binding, AgentSquareOptimizationBinding):
-        raise TypeError("AgentSquare instance identity requires binding")
-    return {
-        "program_digest": AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM.program_digest,
-        "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
-        "binding_digest": binding.binding_digest,
-        "initial_data_digest": canonical_digest(initial_data),
-    }
+    if (
+        binding.profile.profile_digest
+        != AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE.profile_digest
+    ):
+        raise ValueError(
+            "ALFWorld instance identity requires ALFWorld search profile"
+        )
+    return agentsquare_instance_identity(
+        binding=binding,
+        initial_data=initial_data,
+    )
 
 
 __all__ = [
+    "AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE",
     "AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM",
+    "AGENTSQUARE_OPTIMIZATION_PROGRAM",
     "AgentSquareEvaluation",
     "AgentSquareEvaluatorPort",
     "AgentSquareEvolutionProposal",
     "AgentSquareModuleEvaluation",
     "AgentSquareOptimizationBinding",
     "AgentSquareSearchModelPort",
+    "AgentSquareSearchProfile",
     "agentsquare_alfworld_host",
     "agentsquare_alfworld_initial_data",
     "agentsquare_alfworld_instance_identity",
     "agentsquare_alfworld_operations",
+    "agentsquare_host",
+    "agentsquare_initial_data",
+    "agentsquare_instance_identity",
+    "agentsquare_operations",
     "build_agentsquare_alfworld_optimization_program",
+    "build_agentsquare_optimization_program",
 ]
