@@ -68,6 +68,10 @@ REPRODUCTION = ReproductionDefinition(
             kind=ReproductionAssetKind("research_program"),
             path="research/reproductions/aflow/program.py",
         ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/aflow/study.py",
+        ),
     ),
     reported_results=(),
     reference_baselines=(),
