@@ -259,14 +259,16 @@ def _select_plan_step(request: MethodNodeRequest) -> MethodNodeResult:
         llm_scores,
         affordances,
     )
-    planned = list(
-        _string_tuple(
-            request.state.get("planned_steps", ()),
-            "SayCan planned_steps",
-        )
-        if request.state.get("planned_steps")
-        else ()
-    )
+    planned_raw = request.state.get("planned_steps", ())
+    if isinstance(planned_raw, (str, bytes, bytearray)) or not isinstance(
+        planned_raw,
+        Sequence,
+    ):
+        raise TypeError("SayCan planned_steps must be a sequence")
+    planned = [
+        _text(step, "SayCan planned step")
+        for step in planned_raw
+    ]
     planned.append(selection.selected_skill)
 
     score_tables_raw = request.state.get("planning_score_tables", ())
@@ -362,7 +364,7 @@ def _prepare_skill(request: MethodNodeRequest) -> MethodNodeResult:
         },
     )
     return MethodNodeResult(
-        value={"skill": skill, "execution_index": index},
+        value=envelope,
         state_update={
             **envelope,
             "pending_skill": skill,
