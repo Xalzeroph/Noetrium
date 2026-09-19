@@ -112,7 +112,7 @@ def test_tot_rap_and_lats_compile_search_budget_into_typed_study_identity() -> N
 
     assert tot.execution_policy.trial_budget.max_steps == 4
     assert rap.execution_policy.trial_budget.max_steps == 10
-    assert lats.execution_policy.trial_budget.max_steps == 30
+    assert lats.execution_policy.trial_budget.max_turns == 30
     assert tuple(row.method_id for row in tot.binding_requirements.participants) == ("tree-of-thoughts",)
     assert tuple(row.method_id for row in rap.binding_requirements.participants) == ("rap",)
     assert tuple(row.method_id for row in lats.binding_requirements.participants) == ("lats",)
