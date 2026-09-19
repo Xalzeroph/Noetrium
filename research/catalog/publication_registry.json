@@ -531,6 +531,17 @@
       "evidence_url": "https://openaccess.thecvf.com/content/CVPR2025/html/Yang_EgoLife_Towards_Egocentric_Life_Assistant_CVPR_2025_paper.html"
     },
     {
+      "id": "vca-video",
+      "kind": "method",
+      "title": "VCA: Video Curious Agent for Long Video Understanding",
+      "year": 2025,
+      "venue": "ICCV",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "vca-video",
+      "evidence_url": "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html"
+    },
+    {
       "id": "worldmm",
       "kind": "method",
       "title": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
