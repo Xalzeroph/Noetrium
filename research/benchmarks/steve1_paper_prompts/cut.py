@@ -67,11 +67,18 @@ def steve1_paper_prompt_source_digest() -> str:
     })
 
 
+def steve1_paper_prompt_revision() -> str:
+    return (
+        f"steve1-prompts@{STEVE1_PAPER_PROMPTS_COMMIT}:"
+        f"{steve1_paper_prompt_source_digest()}"
+    )
+
+
 def build_steve1_paper_prompt_source() -> BenchmarkSourceSpec:
     return BenchmarkSourceSpec(
         source_id=STEVE1_PAPER_PROMPTS_BENCHMARK_ID,
         kind=BenchmarkSourceKind.GIT,
-        revision_id=STEVE1_PAPER_PROMPTS_COMMIT,
+        revision_id=steve1_paper_prompt_revision(),
         locator=STEVE1_PAPER_PROMPTS_REPOSITORY,
         content_digest=steve1_paper_prompt_source_digest(),
         metadata={
@@ -157,10 +164,7 @@ def build_steve1_paper_prompt_cut() -> BenchmarkTaskSet:
     all_ids = tuple(row.task_id for row in tasks)
     return BenchmarkTaskSet(
         benchmark_id=STEVE1_PAPER_PROMPTS_BENCHMARK_ID,
-        revision_id=(
-            f"steve1-prompts@{STEVE1_PAPER_PROMPTS_COMMIT}:"
-            f"{source.content_digest}"
-        ),
+        revision_id=source.revision_id,
         source_digest=source.content_digest,
         task_schema_id=STEVE1_PAPER_PROMPT_SCHEMA_ID,
         tasks=tuple(tasks),
@@ -204,5 +208,6 @@ __all__ = [
     "bind_steve1_paper_prompt_cut",
     "build_steve1_paper_prompt_cut",
     "build_steve1_paper_prompt_source",
+    "steve1_paper_prompt_revision",
     "steve1_paper_prompt_source_digest",
 ]
