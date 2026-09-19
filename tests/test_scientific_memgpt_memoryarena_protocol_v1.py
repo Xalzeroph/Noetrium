@@ -82,7 +82,7 @@ def test_memgpt_memoryarena_study_binds_method_benchmark_models_and_metrics() ->
 
     measurement_ids = {
         row.measurement_id
-        for row in definition.measurement_protocol.measurements
+        for row in definition.measurement_protocol.definitions
     }
     assert measurement_ids == {
         "task_success",
