@@ -257,10 +257,7 @@ def _prepare_environment(
         },
     )
     return MethodNodeResult(
-        value={
-            "action": thaw_json(action),
-            "step_index": request.state.get("step_index"),
-        },
+        value=envelope,
         state_update=envelope,
     )
 
