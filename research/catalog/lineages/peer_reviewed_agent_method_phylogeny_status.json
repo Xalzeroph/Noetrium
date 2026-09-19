@@ -1119,9 +1119,11 @@
       "reproductions": [
         {
           "package": "deps_minecraft",
-          "package_digest": "277a1cf7c9e6df91e0483bb9aea1b2c0a184acf9c01ce5bcf6a2892814a2a124",
+          "package_digest": "b1fe71b6e4fd1d5cca2f8fb8c7f580ee39bd3871164d80ff522275828bcdd87a",
           "lifecycle": "protocol_bound",
-          "benchmark_ids": [],
+          "benchmark_ids": [
+            "deps-minecraft-70"
+          ],
           "source_lanes": [
             {
               "lane_id": "neurips_2023_main",
@@ -1148,6 +1150,11 @@
           ],
           "assets": [
             {
+              "kind": "benchmark",
+              "path": "research/reproductions/deps_minecraft/benchmark.py",
+              "content_sha256": "4d6c0df4bf5f63002488bb0e55c113c5de925136acbab9575d16efc747c4fe45"
+            },
+            {
               "kind": "fidelity",
               "path": "research/reproductions/deps_minecraft/fidelity.py",
               "content_sha256": "1c7e5245fdcbc609de8f96cf1af0ef5ee9543858e2fc9ba166d624315bd82b66"
@@ -1158,6 +1165,11 @@
               "content_sha256": "eba7c21e78da9c4c7d9f3d02ae3fd8acaa9c0852a0aca778a716c1d2e52e2b66"
             },
             {
+              "kind": "study",
+              "path": "research/reproductions/deps_minecraft/study.py",
+              "content_sha256": "e1c8440a7f2f62c62c6554e3798abb47883951fef284d09e3aa05c8f1c108883"
+            },
+            {
               "kind": "support",
               "path": "research/reproductions/deps_minecraft/source.py",
               "content_sha256": "4c9c53262430da92beb5f464e991adf3c8ee4fa0b4a0272d4cd49703e5638763"
@@ -1166,7 +1178,7 @@
           "blockers": [
             "Matched execution requires the unreleased paper-era learned Selector implementation/checkpoint or an authoritatively identified equivalent.",
             "The released planner targets historical code-davinci-002/text-davinci-003 serving; exact hosted model snapshots are not immutable public artifacts.",
-            "Matched Minecraft results additionally require the paper-era goal-conditioned controller checkpoint, modified MineDojo simulator runtime, and evaluated task/environment cuts under Artifact authority."
+            "Matched Minecraft results additionally require the paper-era goal-conditioned controller checkpoint and modified MineDojo simulator runtime under Artifact authority."
           ],
           "evidence_refs": [],
           "reported_claim_count": 0,
@@ -1175,7 +1187,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_deps_minecraft_v1.py",
-              "content_sha256": "de6dc3d673f2fb6d5a67dc288dc9c52df1c76c476eb0012467008cd632efd04d"
+              "content_sha256": "00b298bdb225736f6198fde210a9d73de763836bf6a230800a2756a57abc3b46"
             }
           ]
         }
@@ -2966,5 +2978,5 @@
       ]
     }
   ],
-  "projection_digest": "46704dd6117845aa427f8154049d4046f95088806af3e213d575ba637383cd1d"
+  "projection_digest": "ab39ed12cc258118a1eadae5a7e36145000a5fcdc9df8ec99f3d0303a9695214"
 }

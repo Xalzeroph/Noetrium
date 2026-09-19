@@ -54,6 +54,20 @@
       ]
     },
     {
+      "benchmark_id": "deps-minecraft-70",
+      "title": "DEPS NeurIPS 2023 Official 70-Task Minecraft Cut",
+      "source_uri": "https://github.com/CraftJarvis/MC-Planner",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
       "benchmark_id": "egolifeqa",
       "title": "EgoLifeQA",
       "source_uri": "https://huggingface.co/datasets/lmms-lab/EgoLife",

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "deps_minecraft",
-  "package_digest": "277a1cf7c9e6df91e0483bb9aea1b2c0a184acf9c01ce5bcf6a2892814a2a124",
-  "definition_digest": "1cd91d010a2c8dbe04ed7cb19282250fdba0da44436c35bf0094d8aa107bfc85",
+  "package_digest": "b1fe71b6e4fd1d5cca2f8fb8c7f580ee39bd3871164d80ff522275828bcdd87a",
+  "definition_digest": "7c5edb57f6ae3abac568fe1a62daa83ae658489163d4d80ae191587197945bb7",
   "source_registry_digest": "b34ac82a645a66821c20029f19473c146715222483bfaf316120b963fd884a90",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -29,7 +29,9 @@
       "minecraft"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "deps-minecraft-70"
+    ],
     "platform_pressure": [
       "environment/minecraft",
       "evaluation",
@@ -60,7 +62,7 @@
     "reference_publications": [
       "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html"
     ],
-    "catalog_digest": "6f8dac7b2777c6540a4ae90b1db53f405e243c4d0e71137af8808038a999c284"
+    "catalog_digest": "726766bca235d30e5e29dac9959a68a65f285d8cb9a109cd28330f5b66413e3c"
   },
   "source_lanes": [
     {
@@ -107,6 +109,12 @@
   ],
   "assets": [
     {
+      "kind": "benchmark",
+      "path": "research/reproductions/deps_minecraft/benchmark.py",
+      "declaration_digest": "50c41334949114b4f09eddc53c933d0d7d24f31db4fc1691966af20e937034b7",
+      "content_sha256": "4d6c0df4bf5f63002488bb0e55c113c5de925136acbab9575d16efc747c4fe45"
+    },
+    {
       "kind": "fidelity",
       "path": "research/reproductions/deps_minecraft/fidelity.py",
       "declaration_digest": "e4b9c5396299372f95021ffd0321be03231dd0a645ce21c4cfb001863239c7a2",
@@ -117,6 +125,12 @@
       "path": "research/reproductions/deps_minecraft/program.py",
       "declaration_digest": "f77243075d34aa2e07dcdea11506713e2b771b821d7287e35e060a7eb855d0c9",
       "content_sha256": "eba7c21e78da9c4c7d9f3d02ae3fd8acaa9c0852a0aca778a716c1d2e52e2b66"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/deps_minecraft/study.py",
+      "declaration_digest": "735ad684b39590c1b3de0ced1bd5b24011cf47d49fc26061212c31e56d92f79b",
+      "content_sha256": "e1c8440a7f2f62c62c6554e3798abb47883951fef284d09e3aa05c8f1c108883"
     },
     {
       "kind": "support",
@@ -138,13 +152,13 @@
   "blockers": [
     "Matched execution requires the unreleased paper-era learned Selector implementation/checkpoint or an authoritatively identified equivalent.",
     "The released planner targets historical code-davinci-002/text-davinci-003 serving; exact hosted model snapshots are not immutable public artifacts.",
-    "Matched Minecraft results additionally require the paper-era goal-conditioned controller checkpoint, modified MineDojo simulator runtime, and evaluated task/environment cuts under Artifact authority."
+    "Matched Minecraft results additionally require the paper-era goal-conditioned controller checkpoint and modified MineDojo simulator runtime under Artifact authority."
   ],
   "evidence_refs": [],
   "scientific_tests": [
     {
       "path": "tests/test_scientific_deps_minecraft_v1.py",
-      "content_sha256": "de6dc3d673f2fb6d5a67dc288dc9c52df1c76c476eb0012467008cd632efd04d"
+      "content_sha256": "00b298bdb225736f6198fde210a9d73de763836bf6a230800a2756a57abc3b46"
     }
   ]
 }
