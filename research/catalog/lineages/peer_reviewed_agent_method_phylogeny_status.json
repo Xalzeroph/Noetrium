@@ -596,7 +596,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "bb22c8d59d97ae3b487083fb125bd7bc667daa423a0160f4c4c187e7dba9a1cd",
+          "package_digest": "105d03d89e4a2133352e117cdb397e51f5ac7a6a064773f319e680818f5957fc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -641,7 +641,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_rap_method_program_v1.py",
-              "content_sha256": "c4580ed74f49a6109a5bab7f86ba11aeb4120aaa2acc6a0dbd2f173ea69c5972"
+              "content_sha256": "cc8998e52cda1b5bc52dc172b385e14d58456fdbcdde1b70a06e0dc7dede4791"
             },
             {
               "path": "tests/test_scientific_rap_reproduction_v1.py",
@@ -728,7 +728,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "c914bc892051c0b3b0f12c18d54230335fb80770e9ebcca10bc5881a7ac9d6f0",
+          "package_digest": "bc272fab05387e645022d830cba1537951f536601f1575ff14a8f0f4cd60e615",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -750,7 +750,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/reflexion_alfworld/program.py",
-              "content_sha256": "3a8f67d0f387908854fbc1beeb13c6afe925d0b6849800fbe52862c8c186e258"
+              "content_sha256": "9e1ae01f7230e9146f64b62c2ef9f9d4e4e21b2e7e09e0b5ed8c79b53a9b5308"
             },
             {
               "kind": "semantics",
@@ -2957,5 +2957,5 @@
       ]
     }
   ],
-  "projection_digest": "57786223d2c61cd5d37792e4efd0fcf6c5bc3a9f37d939b7957331ba7bc01fad"
+  "projection_digest": "df74ecb1a533d8fddf392c81d0806b5cbc69ece4d3da2460db5c3f7b2374dc4a"
 }
