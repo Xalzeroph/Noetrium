@@ -24,8 +24,9 @@ from research.benchmarks.scienceworld import (
     SCIENCEWORLD_BENCHMARK_ID,
 )
 from research.benchmarks.travelplanner import (
+    AGENTSQUARE_TRAVELPLANNER_EVALUATION_COUNT,
+    AGENTSQUARE_TRAVELPLANNER_EVALUATION_SPLIT,
     AGENTSQUARE_TRAVELPLANNER_REVISION,
-    AGENTSQUARE_TRAVELPLANNER_VALIDATION_SPLIT,
     TRAVELPLANNER_BENCHMARK_ID,
 )
 from research.benchmarks.webshop import (
@@ -157,8 +158,8 @@ AGENTSQUARE_BENCHMARK_PROFILES = (
         key="travelplanner",
         benchmark_id=TRAVELPLANNER_BENCHMARK_ID,
         revision_id=AGENTSQUARE_TRAVELPLANNER_REVISION,
-        evaluation_split_id=AGENTSQUARE_TRAVELPLANNER_VALIDATION_SPLIT,
-        expected_evaluation_task_count=180,
+        evaluation_split_id=AGENTSQUARE_TRAVELPLANNER_EVALUATION_SPLIT,
+        expected_evaluation_task_count=AGENTSQUARE_TRAVELPLANNER_EVALUATION_COUNT,
         primary_measurement_id="commonsense_constraint_micro_pass_rate",
         primary_semantic_kind="constraint_satisfaction",
         primary_unit="ratio",
