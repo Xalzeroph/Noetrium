@@ -12,10 +12,11 @@ on:
       - "noetrium/**"
       - "components/**"
       - "orchestration/**"
-      - "scripts/**"
+      - "scripts/update_generated_docs.py"
+      - "scripts/generate_code_architecture_map.py"
+      - "scripts/sync_platform_architecture_map.py"
       - "sdk/**"
       - "examples/**"
-      - "tests/**"
       - "pyproject.toml"
       - ".github/workflows/canonical_projection_sync.yml"
 
@@ -60,10 +61,10 @@ jobs:
             python -m pip install -e .
 
             python scripts/update_generated_docs.py
-            python scripts/sync_architecture_maps.py
+            python scripts/sync_platform_architecture_map.py
 
             python scripts/update_generated_docs.py --check
-            python scripts/sync_architecture_maps.py --check
+            python scripts/sync_platform_architecture_map.py --check
 
             if git diff --quiet; then
               echo "Platform projections are current."
