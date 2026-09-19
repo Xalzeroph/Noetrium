@@ -573,6 +573,17 @@
       "priority_class": "P1_FLAGSHIP",
       "reproduction_method_id": "providellm",
       "evidence_url": "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html"
+    },
+    {
+      "id": "drvideo",
+      "kind": "method",
+      "title": "DrVideo: Document Retrieval Based Long Video Understanding",
+      "year": 2025,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "drvideo",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2025/html/Ma_DrVideo_Document_Retrieval_Based_Long_Video_Understanding_CVPR_2025_paper.html"
     }
   ],
   "explicitly_ineligible_current_items": [
