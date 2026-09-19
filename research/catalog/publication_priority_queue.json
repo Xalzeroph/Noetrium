@@ -2,7 +2,7 @@
   "schema": "noetrium.publication-priority-queue.v1",
   "authority": "generated_from_publication_policy_registry_reproduction_and_pressure_projections",
   "updated_at": "2026-09-19",
-  "method_count": 44,
+  "method_count": 45,
   "benchmark_count": 7,
   "formal_pressure_violation_count": 0,
   "method_queue": [
@@ -105,6 +105,23 @@
       "method_id": "flow-modularized-agentic-workflow",
       "packages": [
         "flow_modularized_agentic_workflow"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [],
+      "implementation_state": "reproduction_exists_not_active_pressure"
+    },
+    {
+      "publication_id": "providellm",
+      "title": "Streaming VideoLLMs for Real-Time Procedural Video Understanding",
+      "year": 2025,
+      "venue": "ICCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "providellm",
+      "packages": [
+        "providellm_memory"
       ],
       "lifecycles": [
         "protocol_bound"

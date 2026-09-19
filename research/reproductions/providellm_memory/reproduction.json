@@ -1,0 +1,129 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "providellm_memory",
+  "package_digest": "3121890d69c8b8e9b6e59d6dcf5748cadccfa0a97d5196d3c19bca5b82d79661",
+  "definition_digest": "6f121401b460af027483fe5d52f5f5bdb49f5bbd0c570511ec93a59af34c13e2",
+  "source_registry_digest": "9e2a5d1186f95a8f45699ceebf02fe6c91c0af32ce912a7e1d4f40d4192a3979",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "providellm",
+    "title": "Streaming VideoLLMs for Real-Time Procedural Video Understanding",
+    "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "ICCV 2025 camera-ready",
+    "identity_digest": "824a14478ece12fabbf482229f28666a0b41018f85cc389714b5b9cd2d702c04"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multimodal",
+      "streaming",
+      "video"
+    ],
+    "families": [
+      "interleaved_cache",
+      "multimodal_memory",
+      "procedural_video_understanding",
+      "streaming_video_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/video",
+      "execution/machines/memory",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "DETR-QFormer short-term visual memory",
+      "independent short-term and long-term exits",
+      "single-entry multimodal interleaved FIFO cache",
+      "tau-window duplicate suppression for verbalized observations",
+      "verbalized long-term text memory"
+    ],
+    "platform_owned": [
+      "MemoryMachine journal authority",
+      "artifact and evidence identity",
+      "benchmark cut identity",
+      "multimodal provider execution",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [
+      "https://github.com/dibschat/ProVideLLM"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html"
+    ],
+    "catalog_digest": "9ce2e98e4654847ed9ccacb8cdbe1383238a6b9040ca26f6c2448fdf190b4de7"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iccv_2025_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "ICCV",
+      "year": 2025,
+      "publication_id": "providellm-iccv-2025",
+      "publication_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html",
+      "revision": "ICCV 2025 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "4aaac8aae61553154533a54eb5df2c093edc255516698d6d251f96ccc6705ac6"
+    },
+    {
+      "lane_id": "initial_official_release",
+      "kind": "official_executable",
+      "repository": "https://github.com/dibschat/ProVideLLM",
+      "commit": "bd097cc0ee1c9a7eebe9ad767430c55456398a8d",
+      "artifacts": [
+        "README.md",
+        "models/arguments_live.py",
+        "models/live_llama/connector.py",
+        "models/live_llama/modeling_live_llama.py",
+        "models/modeling_live.py"
+      ],
+      "lane_digest": "2cac2f8b39fa8ad224eb1ce8c054491c711af1528f7354fad6481415d77173ca"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/providellm_memory/fidelity.py",
+      "declaration_digest": "a3da9169f9c6a3adcfad7a4105b72aa58577d61055ed67acf91173cbd96c4118",
+      "content_sha256": "6a774161525ca409e528019e9c4499693c40d0f7b696bdb0f055b9d74748a720"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/providellm_memory/memory.py",
+      "declaration_digest": "bd8af3b23a07f48e04cf30cfe795cb0d517d4323b46bfa688f336041f404d323",
+      "content_sha256": "45032bcf99fdd246a30cbf72f121499e1c18037898f226bede6569b0075ce0ab"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/providellm_memory/source.py",
+      "declaration_digest": "46aabe62d3175610a3d9c27fa10d08d42311d87e5a265494a0c519bdd40d61f2",
+      "content_sha256": "b6dc1c39114b56eaf11ffaaf3db880d302b026f01bce89a634f633cb8d4c135f"
+    }
+  ],
+  "primary_executable": "research/reproductions/providellm_memory/memory.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The initial official release exposes DETR-QFormer and model training/evaluation code but explicitly does not release the verbalize-and-interleave streaming per-frame implementation. The MemoryProgram therefore implements Algorithms 1-2 from the ICCV paper rather than claiming official-code identity.",
+      "delta_digest": "dd521765aadd5939e48f73663ebcebcc6771b8970aed981214d8a8a499a95aa6"
+    }
+  ],
+  "blockers": [
+    "Formal benchmark cuts and ICCV Study bindings remain to be added.",
+    "Matched-result reproduction requires released checkpoint and dataset bytes under content-addressed artifact authority.",
+    "Official streaming verbalize/interleave source remains unreleased in the audited initial repository release."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_providellm_memory_v1.py",
+      "content_sha256": "3843f6d570010751d7edfb96a693785c21de867078854d630b61f3bf35ed4f8c"
+    }
+  ]
+}
