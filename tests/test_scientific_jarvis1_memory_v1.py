@@ -156,7 +156,7 @@ def test_jarvis1_memory_machine_supports_official_exact_lookup() -> None:
     assert execution.result["mode"] == "official-fixed-memory"
     assert execution.result["found"] is True
     assert execution.result["record"]["task_id"] == "painting"
-    assert execution.result["record"]["state_artifact_refs"] == ()
+    assert tuple(execution.result["record"]["state_artifact_refs"]) == ()
     commits = journal.commits("memory:jarvis1:test")
     assert commits
     assert commits[-1].program_digest == JARVIS1_MEMORY_PROGRAM.program_digest
