@@ -70,7 +70,7 @@ def test_drvideo_cvpr2025_fidelity_freezes_document_agent_pipeline() -> None:
 def test_drvideo_method_program_compiles_explicit_document_agent_loop() -> None:
     program = DRVIDEO_METHOD_PROGRAM
 
-    assert program.program_identity.method.method_id == "drvideo"
+    assert program.program_identity.implementation.method_id == "drvideo"
     assert program.required_capabilities == ("data.semantic-similarity",)
     assert tuple(node.node_id for node in program.graph.nodes) == (
         "prepare_retrieval",
