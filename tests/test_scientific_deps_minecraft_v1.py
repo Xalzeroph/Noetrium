@@ -171,7 +171,7 @@ def test_deps_selector_loop_keeps_selector_as_explicit_method_seam() -> None:
 
 def test_deps_method_program_exposes_interactive_planning_chain() -> None:
     program = DEPS_MINECRAFT_METHOD_PROGRAM
-    node_ids = tuple(node.node_id for node in program.nodes)
+    node_ids = tuple(node.node_id for node in program.graph.nodes)
     for required in (
         "initial_plan",
         "select_goal",
