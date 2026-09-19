@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -14,7 +16,7 @@ from noetrium_platform.research.reproduction import (
 
 REPRODUCTION = ReproductionDefinition(
     package="flash_vstream_memory",
-    lifecycle=ReproductionLifecycle("protocol_bound"),
+    lifecycle=ReproductionLifecycle.PROTOCOL_BOUND,
     identity=ReproductionIdentity(
         method_id="flash-vstream",
         title=(
@@ -41,7 +43,7 @@ REPRODUCTION = ReproductionDefinition(
             "dual_flash_memory",
         ),
         priority=1,
-        benchmark_ids=(),
+        benchmark_ids=("egoschema",),
         platform_pressure=(
             "execution/machines/memory",
             "model/multimodal",
@@ -66,23 +68,82 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("fidelity"),
+            kind=ReproductionAssetKind.FIDELITY,
             path="research/reproductions/flash_vstream_memory/fidelity.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
+            kind=ReproductionAssetKind.RESEARCH_PROGRAM,
             path="research/reproductions/flash_vstream_memory/memory.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("support"),
+            kind=ReproductionAssetKind.BENCHMARK,
+            path="research/reproductions/flash_vstream_memory/benchmark.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind.STUDY,
+            path="research/reproductions/flash_vstream_memory/study.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind.SUPPORT,
             path="research/reproductions/flash_vstream_memory/source.py",
         ),
     ),
-    reported_results=(),
-    reference_baselines=(),
+    primary_executable="research/reproductions/flash_vstream_memory/memory.py",
+    reported_results=(
+        ReportedResult(
+            claim_id="flash_vstream_egoschema_main",
+            metric_id="multiple_choice_accuracy_percent",
+            value=68.2,
+            qualifiers={
+                "benchmark": "egoschema",
+                "configuration": "CSM+DAM",
+                "visual_tokens": 11520,
+                "source": "ICCV-2025 paper memory-component ablation",
+            },
+        ),
+        ReportedResult(
+            claim_id="flash_vstream_mvbench_main",
+            metric_id="multiple_choice_accuracy_percent",
+            value=65.4,
+            qualifiers={
+                "benchmark": "mvbench",
+                "configuration": "CSM+DAM",
+                "visual_tokens": 11520,
+                "source": "ICCV-2025 paper memory-component ablation",
+            },
+        ),
+        ReportedResult(
+            claim_id="flash_vstream_video_mme_without_subtitles_main",
+            metric_id="multiple_choice_accuracy_percent",
+            value=61.2,
+            qualifiers={
+                "benchmark": "video-mme",
+                "subtitles": False,
+                "configuration": "CSM+DAM",
+                "visual_tokens": 11520,
+                "source": "ICCV-2025 paper memory-component ablation",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="flash_vstream_csm_only",
+            description=(
+                "Flash-VStream ablation retaining context memory while "
+                "removing augmentation memory."
+            ),
+            qualifiers={
+                "egoschema_accuracy_percent": 66.8,
+                "mvbench_accuracy_percent": 64.0,
+                "video_mme_without_subtitles_accuracy_percent": 60.1,
+                "visual_tokens": 3840,
+                "source": "ICCV-2025 paper memory-component ablation",
+            },
+        ),
+    ),
     deltas=(
         ReproductionDelta(
-            kind=ReproductionDeltaKind("unresolved"),
+            kind=ReproductionDeltaKind.UNRESOLVED,
             description=(
                 "The official repository contains a 2024 LLaVA precursor and the "
                 "2025 Qwen implementation released with the ICCV version. "
@@ -92,11 +153,12 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     blockers=(
-        "The current package binds the dual Flash MemoryProgram but has not "
-        "yet bound the paper inference MethodProgram.",
-        "Matched result reproduction requires content-addressed benchmark "
-        "video/annotation cuts and the exact released model/checkpoint assets.",
-        "Benchmark and study protocols are not yet bound in this package.",
+        "Matched numerical execution requires content-addressed EgoSchema video "
+        "bytes plus exact released Qwen2-VL/Flash-VStream checkpoint assets.",
+        "The paper also reports MLVU, LVBench, MVBench and Video-MME; those "
+        "additional benchmark authorities remain to be bound.",
+        "A full end-to-end inference MethodProgram remains to be separated from "
+        "the already bound dual Flash MemoryProgram.",
     ),
     evidence_refs=(),
     scientific_tests=("tests/test_scientific_flash_vstream_memory_v1.py",),
