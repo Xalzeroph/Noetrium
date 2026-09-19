@@ -60,12 +60,14 @@ def test_flash_vstream_dual_flash_memory_program_freezes_iccv_semantics() -> Non
         "effective_packed_slots": 60,
         "method": "kmeans_ordered",
         "pool_size": 2,
+        "memory_concern": "consolidation",
     }
     assert augmentation == {
         "configured_length": 60,
         "effective_packed_slots": 30,
         "method": "klarge_retrieve",
         "distance_metric": "euclidean",
+        "memory_concern": "retrieval",
     }
     assert composition == {
         "composition_order": (
@@ -73,6 +75,7 @@ def test_flash_vstream_dual_flash_memory_program_freezes_iccv_semantics() -> Non
             "context_memory",
         ),
         "memory_aware_rope": True,
+        "memory_concern": "projection",
     }
 
 
