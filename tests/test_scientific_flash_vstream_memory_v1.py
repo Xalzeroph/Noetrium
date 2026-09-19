@@ -69,14 +69,12 @@ def test_flash_vstream_dual_flash_memory_program_freezes_iccv_semantics() -> Non
         "distance_metric": "euclidean",
         "memory_concern": "retrieval",
     }
-    assert composition == {
-        "composition_order": (
-            "augmentation_memory",
-            "context_memory",
-        ),
-        "memory_aware_rope": True,
-        "memory_concern": "projection",
-    }
+    assert tuple(composition["composition_order"]) == (
+        "augmentation_memory",
+        "context_memory",
+    )
+    assert composition["memory_aware_rope"] is True
+    assert composition["memory_concern"] == "projection"
 
 
 def test_flash_vstream_memory_program_has_exact_provider_operations() -> None:
