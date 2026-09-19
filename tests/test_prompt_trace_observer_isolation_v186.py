@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from research_platform.model.request.prompt.api import PromptTraceStage
-from research_platform.model.request.prompt.runtime import PromptRequestTrace
+from noetrium_platform.capabilities.model.request.prompt.api import PromptTraceStage
+from noetrium_platform.capabilities.model.request.prompt.runtime import PromptRequestTrace
 
 
 class ExplodingObserver:

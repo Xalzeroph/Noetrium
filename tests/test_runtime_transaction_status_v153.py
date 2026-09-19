@@ -7,15 +7,15 @@ from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.observability.status.runtime import PlatformStatusService
-from research_platform.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
-from research_platform.execution.runtime.manager import RuntimeControlStore, RuntimeTxnPhase
-from research_platform.execution.runtime.manager.recovery_lease_store import RecoveryLeaseStore
-from research_platform.execution.runtime.manager.status_readers import RuntimeControlStatusReader
-from research_platform.execution.runtime.manager.recovery_lease_status import RecoveryLeaseStatusProbe
-from research_platform.execution.runtime.manager.runtime_transaction_status import RuntimeTransactionStatusProbe
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.evidence.observability.status.runtime import PlatformStatusService
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
+from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeControlStore, RuntimeTxnPhase
+from tests_support import recovery_lease_state
+from noetrium_platform.infrastructure.reliability.recovery.composition import compose_recovery_lease_status_probe
+from noetrium_platform.infrastructure.lifecycle.launch_control.status_readers import RuntimeControlStatusReader
+from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_transaction_status import RuntimeTransactionStatusProbe
 
 
 class RuntimeTransactionStatusTests(unittest.TestCase):
@@ -23,7 +23,7 @@ class RuntimeTransactionStatusTests(unittest.TestCase):
         store=ForensicStore(root/'forensics')
         service=PlatformStatusService((
             RuntimeTransactionStatusProbe(RuntimeControlStatusReader(runtime.state_store, runtime.history)),
-            RecoveryLeaseStatusProbe(RecoveryLeaseStore(root/'lease')),
+            compose_recovery_lease_status_probe(recovery_lease_state(root/'lease')),
             ForensicStatusProbe(ForensicDiagnosticEvidence(store)),
         ))
         return service,store
@@ -48,8 +48,8 @@ class RuntimeTransactionStatusTests(unittest.TestCase):
             state=runtime.create('ctl','manifest')
             # Simulate crash window: authoritative file advanced, history did not.\n
             advanced=replace(state,phase=RuntimeTxnPhase.SUCCEEDED,completed_actions=('x',))
-            from research_platform.platform.kernel.durability.durable_file import atomic_replace_bytes
-            from research_platform.execution.runtime.manager.runtime_state_codec import RuntimeControlStateCodec
+            from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
+            from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_state_codec import RuntimeControlStateCodec
             state_path = root / 'runtime.json'
             history_path = root / 'runtime.json.history.jsonl'
             atomic_replace_bytes(state_path, RuntimeControlStateCodec().encode(advanced))

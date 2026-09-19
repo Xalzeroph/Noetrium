@@ -1,11 +1,11 @@
 from pathlib import Path
 import tempfile
 
-from research_platform.observability.api import EventEnvelope
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.api import MutationRecord
-from research_platform.reliability.failure.api import RecoveryAction, build_failure
-from research_platform.platform.kernel import ExecutionContext
+from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.infrastructure.reliability.forensics.composition import ForensicStore
+from noetrium_platform.infrastructure.reliability.forensics.api import MutationRecord
+from noetrium_platform.infrastructure.reliability.failure.api import RecoveryAction, build_failure
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 
 def main() -> None:

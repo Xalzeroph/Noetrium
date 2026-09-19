@@ -1,17 +1,17 @@
 from pathlib import Path
 import tempfile, unittest
 
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.model.request.prompt.runtime import (
+from tests._concurrency_support import telemetry_backend
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.capabilities.model.request.prompt.runtime import (
     PromptBlock, PromptBlockKind, PromptCompiler, PromptRegistry, PromptRequestTrace,
     default_block_policies, default_prompt_specs,
 )
-from research_platform.model.request.prompt.api import PromptTraceStage
-from research_platform.platform.composition.prompt_trace_observability import PromptTelemetryObserver
-from research_platform.observability.capture.composition import build_file_raw_observation_lake
-from research_platform.observability.telemetry.metric.composition import build_default_registry
-from research_platform.observability.telemetry.metric.providers import TelemetrySQLiteBackend
-from research_platform.observability.telemetry.metric.runtime import TelemetryStore
+from noetrium_platform.capabilities.model.request.prompt.api import PromptTraceStage
+from noetrium_platform.composition.prompt_trace_observability import PromptTelemetryObserver
+from tests._concurrency_support import raw_observation_lake
+from noetrium_platform.evidence.observability.telemetry.metric.composition import build_default_registry
+from noetrium_platform.evidence.observability.telemetry.metric.runtime import TelemetryStore
 
 class PromptTraceV33Tests(unittest.TestCase):
     def _ctx(self): return ExecutionContext(run_id='r',trace_id='tr',span_id='sp',task_id='task',decision_cycle_id='dc',operation_id='op',component_id='llm.runtime')
@@ -24,8 +24,8 @@ class PromptTraceV33Tests(unittest.TestCase):
         self.assertGreater(c.compiled_bytes,0)
     def test_request_trace_persists_every_stage_and_derives_latency(self):
         with tempfile.TemporaryDirectory() as td:
-            raw=build_file_raw_observation_lake(Path(td)/'raw')
-            metrics=TelemetryStore(build_default_registry(), TelemetrySQLiteBackend(Path(td)/'m.sqlite3'))
+            raw=raw_observation_lake(Path(td)/'raw')
+            metrics=TelemetryStore(build_default_registry(), telemetry_backend(self, Path(td)/'m.sqlite3'))
             t=PromptRequestTrace(request_id='rq',role='planner',model='m',request_digest='sha',observer=PromptTelemetryObserver(self._ctx(),raw_sink=raw,metric_sink=metrics))
             t.mark(PromptTraceStage.REQUEST_CREATED,timestamp=1)
             t.mark(PromptTraceStage.QUEUED,timestamp=2)

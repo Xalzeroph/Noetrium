@@ -3,13 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.reliability.forensics.composition.incident_adapter import ForensicIncidentProjection
-from research_platform.reliability.failure.api import build_failure
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.reliability.diagnostics.runtime import DebugSnapshotService, IncidentService
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.infrastructure.reliability.forensics.composition.incident_adapter import ForensicIncidentProjection
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import DebugSnapshotService, IncidentService
 
 
 def failure(run,msg):
@@ -32,6 +33,25 @@ class IncidentProjectionSyncV93Tests(unittest.TestCase):
                 self.assertEqual(report.recurrence_count,2)
                 self.assertTrue(report.recurring)
                 self.assertIn(f2.failure_id,report.similar_failure_ids)
+
+
+    def test_incident_sync_uses_bounded_streaming_api_not_materialized_suffix(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)/"forensics"; db=Path(td)/"incidents.sqlite3"
+            with ForensicStore(root) as store:
+                rows=[failure(f"r{i}",f"request {100000+i} timeout") for i in range(7)]
+                for row in rows:
+                    store.append_failure(row)
+            with ForensicStore(root,read_only=True) as store:
+                projection=ForensicIncidentProjection(store.failures, db)
+                with mock.patch.object(
+                    store.failures,
+                    "verified_payloads_after",
+                    side_effect=AssertionError("materialized suffix must not be used"),
+                ):
+                    sync=projection.synchronize()
+                self.assertEqual(sync.added_failures,7)
+                self.assertEqual(sync.source_rows,7)
 
     def test_incremental_sync_adds_only_new_failure_rows(self):
         with tempfile.TemporaryDirectory() as td:

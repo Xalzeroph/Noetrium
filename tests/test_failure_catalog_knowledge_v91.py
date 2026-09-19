@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from research_platform.reliability.failure.api import DEFAULT_FAILURE_CATALOG
-from research_platform.operator.query.runtime import FailureCatalogView
+from noetrium_platform.infrastructure.reliability.failure.api import DEFAULT_FAILURE_CATALOG
+from noetrium_platform.product.operator.query.runtime import FailureCatalogView
 
 
 class FailureCatalogKnowledgeV91Tests(unittest.TestCase):

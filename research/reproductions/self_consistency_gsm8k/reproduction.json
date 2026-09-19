@@ -1,0 +1,157 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "self_consistency_gsm8k",
+  "package_digest": "072c425e83060df5413d5857f2976b497609d96155567aa6ff7ba6acad675981",
+  "definition_digest": "dd971605ffea4fd0accfeb00e14ef57803ca4769be221a9092fe90a47c01162d",
+  "source_registry_digest": "72ea8a4a07d5b07a444cd7d422268751cc97e457ce8b1d3bf424098892c6205f",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "self-consistency",
+    "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+    "paper_uri": "https://openreview.net/forum?id=1PL1NIMMrw",
+    "year": 2023,
+    "paper_revision": "ICLR 2023 published conference paper",
+    "identity_digest": "516669710c2468518a6dd3679db3a0fcd4e64a5b034228a70ca60826a349b041"
+  },
+  "catalog": {
+    "domains": [
+      "reasoning"
+    ],
+    "families": [
+      "chain_of_thought",
+      "reasoning",
+      "sampling",
+      "self_consistency"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "gsm8k"
+    ],
+    "platform_pressure": [
+      "execution/workflow",
+      "experimentation/evaluation",
+      "experimentation/study",
+      "model/request",
+      "observability/telemetry",
+      "participant/method",
+      "research/provenance"
+    ],
+    "method_owned": [
+      "answer-frequency marginalization",
+      "diverse chain-of-thought path sampling",
+      "task-specific final-answer projection"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "independent model invocation accounting",
+      "isolated exact-answer evaluation",
+      "measurement evidence",
+      "publication provenance",
+      "repetition identity"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openreview.net/forum?id=1PL1NIMMrw"
+    ],
+    "catalog_digest": "0119bd2053c0560ef4110657df1b7ac34917ad7c950ce7b4d3fd95fa94dcb900"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iclr_2023_final",
+      "kind": "paper_provenance",
+      "venue": "ICLR",
+      "year": 2023,
+      "publication_id": "1PL1NIMMrw",
+      "publication_uri": "https://openreview.net/forum?id=1PL1NIMMrw",
+      "revision": "published conference paper",
+      "content_sha256": null,
+      "lane_digest": "5637d1376dbefe4dbbd2e956a34da69d3ba221a7790d393d85c1de68e085f614"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/self_consistency_gsm8k/fidelity.py",
+      "declaration_digest": "674bd82225efc8e57f8dbaef734cabd54b2ee2991129555e216f4c099d4353d4",
+      "content_sha256": "ca7f20533e91c85d6b521932fe092f04cae14978c68e7030ee0409004961f43e"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/self_consistency_gsm8k/program.py",
+      "declaration_digest": "8a0e0c3a859b215fb5d93cb3d5325d7145a18e1851f027e74f2c78c4db032ced",
+      "content_sha256": "9cd57a9db054609657e5b2a7315bd0906ec88705a8ffa17c6e11e16b556b29f4"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/self_consistency_gsm8k/study.py",
+      "declaration_digest": "d366ae76f9b5a81557b8b9ab0368a4f7fc77f4605eeeb7d7c31f7a57b46b474f",
+      "content_sha256": "437f6a5c285934af11efb10de82e94120021a653abd54bcdbadbcd37c75ae20b"
+    }
+  ],
+  "primary_executable": "research/reproductions/self_consistency_gsm8k/program.py",
+  "reported_results": [
+    {
+      "claim_id": "palm540b_self_consistency_gsm8k",
+      "metric_id": "task_success_percent",
+      "value": 74.4,
+      "qualifiers": {
+        "model": "PaLM-540B",
+        "benchmark": "GSM8K",
+        "reasoning_paths": 40,
+        "temperature": 0.7,
+        "top_k": 40
+      },
+      "claim_digest": "1a1b48f96ca9e02497155f9bd06df51ba68843b26259be8eff62ea68fab48d65"
+    },
+    {
+      "claim_id": "palm540b_greedy_cot_gsm8k",
+      "metric_id": "task_success_percent",
+      "value": 56.5,
+      "qualifiers": {
+        "model": "PaLM-540B",
+        "benchmark": "GSM8K",
+        "reasoning_paths": 1,
+        "decoding": "greedy"
+      },
+      "claim_digest": "40b00e5f6daa30fbd843ff0d30b6114119cd5689271844aaefc4042a3a5b31a0"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "greedy_single_path_cot",
+      "description": "same chain-of-thought prompt with one greedily decoded reasoning path",
+      "qualifiers": {
+        "model": "PaLM-540B",
+        "benchmark": "GSM8K"
+      },
+      "baseline_digest": "0ea0acb984525b700d42281a103954b9ac7b2a3592367c024c691a0d3fa7056c"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "the paper does not define a scientifically meaningful tie-break rule when multiple final answers have equal maximum frequency; native reproduction uses earliest sampled answer only for deterministic execution",
+      "delta_digest": "528f936f8bd3af0c4ce34978df0bb4503993a502a286bbf3608a8361292ae8b8"
+    },
+    {
+      "kind": "unresolved",
+      "description": "the historical PaLM-540B serving snapshot is not available as a public immutable model artifact",
+      "delta_digest": "7730a5f5672dd434f867c387ccff2e195bbbe6a739047331ac8a0cc338bed3f0"
+    }
+  ],
+  "blockers": [
+    "exact historical PaLM-540B provider artifact is unavailable for matched execution"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_gsm8k_cut_v1.py",
+      "content_sha256": "593a3793fc73eedab6662f15a35fae13f4752294c0ca61f1c0cdbaf08d68e177"
+    },
+    {
+      "path": "tests/test_scientific_self_consistency_gsm8k_v1.py",
+      "content_sha256": "83730765efc265307d9ffeed1d86c780a6907dec35146023b74b720a31614541"
+    }
+  ]
+}

@@ -1,24 +1,24 @@
 from tests_support import CompositeParticipantResolver, FakeParticipantResolver
-from tests_support import context_action_spec
+from tests_support import context_action_spec, model_role_for_test
 from pathlib import Path
 import hashlib
 import tempfile
 
 import pytest
 
-from research_platform.platform.composition.context_action import context_action_participant_adapters
-from research_platform.environment.runtime.api import EnvironmentIdentity
-from research_platform.platform.kernel import ExecutionContext, OperationExecutor
-from research_platform.participant.method.api import MethodIdentity, MethodSnapshot
-from research_platform.experimentation.checkpoint.runtime.coordination import RunCheckpointCoordinator, RunCheckpointIdentityMismatch
-from research_platform.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
-from research_platform.experimentation.experiment.runtime import ExperimentComponentBinder
-from research_platform.execution.participants import ParticipantCheckpointOperations, ParticipantResolutionOperations
-from research_platform.participant.core.runtime import ParticipantCheckpointRuntime
-from research_platform.participant.core.api.lifecycle import ParticipantLifecycleAdapterRegistry
-from research_platform.execution.decision.cycle_identity import DecisionCycleIdentity
-from research_platform.execution.workflow.runtime import WORKFLOW_RUNTIME_IDENTITY, KernelOperationDispatcher
-from research_platform.participant.core.api import ParticipantSessionBinding
+from noetrium_platform.composition.context_action import context_action_participant_adapters
+from noetrium_platform.capabilities.environment.runtime.api import EnvironmentIdentity
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, OperationExecutor
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot
+from noetrium_platform.research.experimentation.checkpoint.runtime.coordination import RunCheckpointCoordinator, RunCheckpointIdentityMismatch
+from noetrium_platform.research.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentComponentBinder
+from noetrium_platform.research.execution.participants import ParticipantCheckpointOperations, ParticipantResolutionOperations
+from noetrium_platform.capabilities.participant.session.runtime.checkpoint_runtime import ParticipantCheckpointRuntime
+from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantLifecycleAdapterRegistry
+from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.execution.workflow.runtime import WORKFLOW_RUNTIME_IDENTITY, KernelOperationDispatcher
+from noetrium_platform.capabilities.participant.core.api import ParticipantSessionBinding
 
 
 class MS:
@@ -88,7 +88,18 @@ def test_checkpoint_and_restore_are_operation_bounded_and_treatment_bound():
             "dc:run.checkpoint.load","dc:method.restore:method","dc:environment.restore:environment"
         ]
 
-        changed=context_action_spec("s","m","e",model_stack_digest="different-model")
+        ms3=MS(); es3=ES()
+        duplicate_sessions=bindings(b,ms3,es3)
+        with pytest.raises(RuntimeError, match="duplicate roles"):
+            coordinator.restore(
+                cp.manifest.checkpoint_id,spec=spec,bound=b,
+                participant_sessions=(duplicate_sessions[0], duplicate_sessions[0], duplicate_sessions[1]),
+                context=context,cycle_identity=ident,
+            )
+        assert ms3.restored is None
+        assert es3.restored is None
+
+        changed=context_action_spec("s","m","e",model_roles=(model_role_for_test(model_stack_seed="different-model"),))
         with pytest.raises(Exception) as exc:
             coordinator.restore(
                 cp.manifest.checkpoint_id,spec=changed,bound=b,

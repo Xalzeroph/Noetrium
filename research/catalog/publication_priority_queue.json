@@ -1,0 +1,809 @@
+{
+  "schema": "noetrium.publication-priority-queue.v1",
+  "authority": "generated_from_publication_policy_registry_reproduction_and_pressure_projections",
+  "updated_at": "2026-09-19",
+  "method_count": 39,
+  "benchmark_count": 6,
+  "formal_pressure_violation_count": 0,
+  "method_queue": [
+    {
+      "publication_id": "aflow",
+      "title": "AFlow: Automating Agentic Workflow Generation",
+      "year": 2025,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "aflow",
+      "packages": [
+        "aflow"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "aflow"
+      ],
+      "implementation_state": "active_pressure_gap"
+    },
+    {
+      "publication_id": "chatdev",
+      "title": "ChatDev: Communicative Agents for Software Development",
+      "year": 2024,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "chatdev",
+      "packages": [
+        "chatdev_v1"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "chatdev_v1"
+      ],
+      "implementation_state": "active_pressure_gap"
+    },
+    {
+      "publication_id": "storm",
+      "title": "Assisting in Writing Wikipedia-like Articles From Scratch with Large Language Models",
+      "year": 2024,
+      "venue": "NAACL",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": "storm",
+      "packages": [
+        "storm_wiki"
+      ],
+      "lifecycles": [
+        "catalogued"
+      ],
+      "pressure_packages": [
+        "storm_wiki"
+      ],
+      "implementation_state": "active_pressure_gap"
+    },
+    {
+      "publication_id": "videoagent-memory",
+      "title": "VideoAgent: A Memory-augmented Multimodal Agent for Video Understanding",
+      "year": 2024,
+      "venue": "ECCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "videoagent-memory",
+      "packages": [
+        "videoagent_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "videoagent_memory"
+      ],
+      "implementation_state": "active_pressure_gap"
+    },
+    {
+      "publication_id": "webvoyager",
+      "title": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
+      "year": 2024,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "webvoyager",
+      "packages": [
+        "webvoyager"
+      ],
+      "lifecycles": [
+        "catalogued"
+      ],
+      "pressure_packages": [
+        "webvoyager"
+      ],
+      "implementation_state": "active_pressure_gap"
+    },
+    {
+      "publication_id": "generative-agents",
+      "title": "Generative Agents: Interactive Simulacra of Human Behavior",
+      "year": 2023,
+      "venue": "UIST",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": "generative-agents",
+      "packages": [
+        "generative_agents_memory"
+      ],
+      "lifecycles": [
+        "catalogued"
+      ],
+      "pressure_packages": [
+        "generative_agents_memory"
+      ],
+      "implementation_state": "active_pressure_gap"
+    },
+    {
+      "publication_id": "hugginggpt",
+      "title": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "hugginggpt",
+      "packages": [
+        "hugginggpt"
+      ],
+      "lifecycles": [
+        "catalogued"
+      ],
+      "pressure_packages": [
+        "hugginggpt"
+      ],
+      "implementation_state": "active_pressure_gap"
+    },
+    {
+      "publication_id": "agentless",
+      "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+      "year": 2025,
+      "venue": "FSE",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": null,
+      "packages": [],
+      "lifecycles": [],
+      "pressure_packages": [],
+      "implementation_state": "missing_reproduction"
+    },
+    {
+      "publication_id": "agentsquare",
+      "title": "AgentSquare: Automatic LLM Agent Search in Modular Design Space",
+      "year": 2025,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": null,
+      "packages": [],
+      "lifecycles": [],
+      "pressure_packages": [],
+      "implementation_state": "missing_reproduction"
+    },
+    {
+      "publication_id": "flow-modularized-agentic-workflow",
+      "title": "Flow: Modularized Agentic Workflow Automation",
+      "year": 2025,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": null,
+      "packages": [],
+      "lifecycles": [],
+      "pressure_packages": [],
+      "implementation_state": "missing_reproduction"
+    },
+    {
+      "publication_id": "cogagent",
+      "title": "CogAgent: A Visual Language Model for GUI Agents",
+      "year": 2024,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": null,
+      "packages": [],
+      "lifecycles": [],
+      "pressure_packages": [],
+      "implementation_state": "missing_reproduction"
+    },
+    {
+      "publication_id": "seeclick",
+      "title": "SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents",
+      "year": 2024,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": null,
+      "packages": [],
+      "lifecycles": [],
+      "pressure_packages": [],
+      "implementation_state": "missing_reproduction"
+    },
+    {
+      "publication_id": "toolformer",
+      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": null,
+      "packages": [],
+      "lifecycles": [],
+      "pressure_packages": [],
+      "implementation_state": "missing_reproduction"
+    },
+    {
+      "publication_id": "deps-minecraft",
+      "title": "Describe, Explain, Plan and Select: Interactive Planning with LLMs Enables Open-World Multi-Task Agents",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "deps-minecraft",
+      "packages": [
+        "deps_minecraft"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [],
+      "implementation_state": "reproduction_exists_not_active_pressure"
+    },
+    {
+      "publication_id": "adacm2",
+      "title": "AdaCM2: On Understanding Extremely Long-Term Video with Adaptive Cross-Modality Memory",
+      "year": 2025,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "adacm2",
+      "packages": [
+        "adacm2_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "adacm2_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "adas-meta-agent-search",
+      "title": "Automated Design of Agentic Systems",
+      "year": 2025,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "adas-meta-agent-search",
+      "packages": [
+        "adas_meta_agent_search"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "adas_meta_agent_search"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "jarvis1",
+      "title": "JARVIS-1: Open-World Multi-Task Agents With Memory-Augmented Multimodal Language Models",
+      "year": 2025,
+      "venue": "IEEE TPAMI",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": "jarvis1",
+      "packages": [
+        "jarvis1_minecraft"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "jarvis1_minecraft"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "qlass",
+      "title": "QLASS: Boosting Language Agent Inference via Q-Guided Stepwise Search",
+      "year": 2025,
+      "venue": "ICML",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "qlass",
+      "packages": [
+        "qlass_alfworld"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "qlass_alfworld"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "rewind",
+      "title": "ReWind: Understanding Long Videos with Instructed Learnable Memory",
+      "year": 2025,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "rewind",
+      "packages": [
+        "rewind_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "rewind_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "lats",
+      "title": "Language Agent Tree Search Unifies Reasoning, Acting, and Planning in Language Models",
+      "year": 2024,
+      "venue": "ICML",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "lats",
+      "packages": [
+        "lats_webshop"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "lats_webshop"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "ma-lmm",
+      "title": "MA-LMM: Memory-Augmented Large Multimodal Model for Long-Term Video Understanding",
+      "year": 2024,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "ma-lmm",
+      "packages": [
+        "ma_lmm_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "ma_lmm_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "metagpt",
+      "title": "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework",
+      "year": 2024,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "metagpt",
+      "packages": [
+        "metagpt_software_company"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "metagpt_software_company"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "moviechat",
+      "title": "MovieChat: From Dense Token to Sparse Memory for Long Video Understanding",
+      "year": 2024,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "moviechat",
+      "packages": [
+        "moviechat_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "moviechat_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "swe-agent",
+      "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+      "year": 2024,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "swe-agent",
+      "packages": [
+        "swe_agent_swebench"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "swe_agent_swebench"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "toolllm",
+      "title": "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
+      "year": 2024,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "toolllm",
+      "packages": [
+        "toolllm_toolbench"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "toolllm_toolbench"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "voyager",
+      "title": "Voyager: An Open-Ended Embodied Agent with Large Language Models",
+      "year": 2024,
+      "venue": "TMLR",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": "voyager",
+      "packages": [
+        "voyager_minecraft"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "voyager_minecraft"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "camel",
+      "title": "CAMEL: Communicative Agents for Mind Exploration of Large Language Model Society",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "camel",
+      "packages": [
+        "camel_role_playing"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "camel_role_playing"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "rap",
+      "title": "Reasoning with Language Model is Planning with World Model",
+      "year": 2023,
+      "venue": "EMNLP",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "rap",
+      "packages": [
+        "rap_reasoning"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "rap_reasoning"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "react",
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "year": 2023,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "react",
+      "packages": [
+        "react_alfworld"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "react_alfworld"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "reflexion",
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "reflexion",
+      "packages": [
+        "reflexion_alfworld"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "reflexion_alfworld"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "self-consistency",
+      "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+      "year": 2023,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "self-consistency",
+      "packages": [
+        "self_consistency_gsm8k"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "self_consistency_gsm8k"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "self-refine",
+      "title": "Self-Refine: Iterative Refinement with Self-Feedback",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "self-refine",
+      "packages": [
+        "self_refine"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "self_refine"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "steve-1",
+      "title": "STEVE-1: A Generative Model for Text-to-Behavior in Minecraft",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "steve-1",
+      "packages": [
+        "steve1_minecraft"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "steve1_minecraft"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "tree-of-thoughts",
+      "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "tree-of-thoughts",
+      "packages": [
+        "tree_of_thoughts"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "tree_of_thoughts"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "vima",
+      "title": "VIMA: Robot Manipulation with Multimodal Prompts",
+      "year": 2023,
+      "venue": "ICML",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "vima",
+      "packages": [
+        "vima_embodied"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "vima_embodied"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "chain-of-thought",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "year": 2022,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "chain-of-thought",
+      "packages": [
+        "chain_of_thought_gsm8k"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "chain_of_thought_gsm8k"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "minedojo",
+      "title": "MineDojo: Building Open-Ended Embodied Agents with Internet-Scale Knowledge",
+      "year": 2022,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "minedojo",
+      "packages": [
+        "minedojo"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "minedojo"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "saycan",
+      "title": "Do As I Can, Not As I Say: Grounding Language in Robotic Affordances",
+      "year": 2022,
+      "venue": "CoRL",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": "saycan",
+      "packages": [
+        "saycan"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "saycan"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "autogen",
+      "title": "AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation",
+      "year": 2024,
+      "venue": "COLM",
+      "priority_class": "P2_HIGH_QUALITY",
+      "priority_order": 2,
+      "method_id": "autogen",
+      "packages": [
+        "autogen_agentchat"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "autogen_agentchat"
+      ],
+      "implementation_state": "pressure_ready"
+    }
+  ],
+  "benchmark_queue": [
+    {
+      "publication_id": "osworld",
+      "title": "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments",
+      "year": 2024,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "benchmark_id": "osworld",
+      "adapter_state": "manifest_present"
+    },
+    {
+      "publication_id": "swe-bench",
+      "title": "SWE-bench: Can Language Models Resolve Real-world Github Issues?",
+      "year": 2024,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "benchmark_id": "swe-bench",
+      "adapter_state": "manifest_present"
+    },
+    {
+      "publication_id": "toolbench",
+      "title": "ToolBench (introduced and evaluated in ToolLLM)",
+      "year": 2024,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "benchmark_id": "toolbench",
+      "adapter_state": "manifest_present"
+    },
+    {
+      "publication_id": "webarena",
+      "title": "WebArena: A Realistic Web Environment for Building Autonomous Agents",
+      "year": 2024,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "benchmark_id": "webarena",
+      "adapter_state": "manifest_present"
+    },
+    {
+      "publication_id": "mgsm",
+      "title": "Language Models are Multilingual Chain-of-Thought Reasoners",
+      "year": 2023,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "benchmark_id": "mgsm",
+      "adapter_state": "manifest_present"
+    },
+    {
+      "publication_id": "mind2web",
+      "title": "Mind2Web: Towards a Generalist Agent for the Web",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "benchmark_id": "mind2web",
+      "adapter_state": "manifest_present"
+    }
+  ],
+  "explicitly_ineligible_current_items": [
+    {
+      "method_id": "memgpt",
+      "reason": "preprint-only publication identity in the current reproduction"
+    },
+    {
+      "method_id": "ui-tars",
+      "reason": "current paper is arXiv/preprint-only"
+    },
+    {
+      "method_id": "ai-scientist",
+      "reason": "current v1 paper is arXiv/preprint-only"
+    },
+    {
+      "method_id": "ai-scientist-v2",
+      "reason": "not admitted until a qualifying peer-reviewed publication is verified"
+    },
+    {
+      "method_id": "agent-q",
+      "reason": "not admitted until a qualifying peer-reviewed publication is verified"
+    },
+    {
+      "method_id": "gats",
+      "reason": "current item is a 2026 arXiv preprint"
+    },
+    {
+      "method_id": "lits",
+      "reason": "current item is a 2026 arXiv preprint"
+    },
+    {
+      "method_id": "mars-automated-ai-research",
+      "reason": "current item is a 2026 arXiv preprint"
+    }
+  ]
+}

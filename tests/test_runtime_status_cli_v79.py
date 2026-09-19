@@ -8,15 +8,15 @@ import tempfile
 import time
 import unittest
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.operator.runtime.handlers import handle
-from research_platform.operator.runtime.parser import build_parser
-from research_platform.execution.runtime.manager.heartbeat_storage import FileServiceHeartbeatStore
-from research_platform.execution.runtime.manager import RuntimeControlStore, RuntimeTxnPhase
-from research_platform.execution.runtime.manager.heartbeat import ServiceHeartbeat
-from research_platform.runtime.service.runtime.state_storage import FileServiceStateStore
-from research_platform.runtime.service.runtime import ServicePhase
-from research_platform.runtime.service.runtime.service_state_contracts import ServiceSupervisorState
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.product.operator.query.runtime.route_runtime import route_runtime
+from noetrium_platform.product.operator.runtime.parser import build_parser
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat_storage import FileServiceHeartbeatStore
+from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeControlStore, RuntimeTxnPhase
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat import ServiceHeartbeat
+from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime import ServicePhase
+from noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_contracts import ServiceSupervisorState
 
 from test_server_runtime_control_v29 import deployment
 
@@ -38,7 +38,7 @@ class RuntimeStatusCLIV79Tests(unittest.TestCase):
             FileServiceStateStore(service_path).write(ServiceSupervisorState(
                 d.deployment_id,"contract",ServicePhase.RUNNING,1,None,
                 "ready://planner","capture://stdout","capture://stderr",
-                time.time(),None,None,time.time(),
+                time.time(),None,None,time.time(),time.time(),
             ))
             with ForensicStore(root/"forensics"):
                 pass
@@ -48,7 +48,7 @@ class RuntimeStatusCLIV79Tests(unittest.TestCase):
                 "runtime_state":str(root/"runtime.json"),
                 "runtime_history":str(root/"runtime.json.history.jsonl"),
                 "heartbeat_root":str(root/"heartbeats"),
-                "recovery_lease":str(root/"recovery_lease.json"),
+                "resource_authority":str(root/"resource-authority.sqlite"),
                 "forensic_root":str(root/"forensics"),
                 "heartbeat_max_age_seconds":30,
                 "deployments":[{
@@ -60,7 +60,7 @@ class RuntimeStatusCLIV79Tests(unittest.TestCase):
             }),encoding="utf-8")
 
             args=build_parser().parse_args(["runtime-status",str(layout)])
-            result=handle(args)
+            result=route_runtime(args)
             self.assertEqual(result["status"],"ready")
             names={x["subsystem"] for x in result["subsystems"]}
             self.assertIn("model:planner",names)
@@ -78,14 +78,14 @@ class RuntimeStatusCLIV79Tests(unittest.TestCase):
                 "runtime_state":str(root/"runtime.json"),
                 "runtime_history":str(root/"runtime.json.history.jsonl"),
                 "heartbeat_root":str(root/"heartbeats"),
-                "recovery_lease":str(root/"recovery_lease.json"),
+                "resource_authority":str(root/"resource-authority.sqlite"),
                 "forensic_root":str(root/"forensics"),
                 "deployments":[],
                 "services":[],
             }),encoding="utf-8")
             before=(root/"runtime.json").read_bytes()
             args=build_parser().parse_args(["runtime-recovery-plan",str(layout)])
-            result=handle(args)
+            result=route_runtime(args)
             self.assertEqual(result["schema_version"],"runtime-recovery-plan.v1")
             self.assertEqual(result["status"]["schema_version"],"platform-status.v2")
             actions=[row["action"] for row in result["recovery"]["recommendations"]]
@@ -98,11 +98,11 @@ class RuntimeStatusCLIV79Tests(unittest.TestCase):
             root=Path(td); layout=root/"layout.json"
             row={"deployment_id":"d","stack_digest":"s","qualification_digest":"q"}
             layout.write_text(json.dumps({
-                "runtime_state":"r","runtime_history":"rh","heartbeat_root":"h","recovery_lease":"l","forensic_root":"f",
+                "runtime_state":"r","runtime_history":"rh","heartbeat_root":"h","resource_authority":"l","forensic_root":"f",
                 "deployments":[row,row],"services":[],
             }),encoding="utf-8")
             args=build_parser().parse_args(["runtime-status",str(layout)])
-            with self.assertRaises(ValueError): handle(args)
+            with self.assertRaises(ValueError): route_runtime(args)
 
 
 if __name__=="__main__": unittest.main()

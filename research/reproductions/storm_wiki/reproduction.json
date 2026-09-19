@@ -1,0 +1,92 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "storm_wiki",
+  "package_digest": "19fce5d8547f88331769590827e479e337374f0471f1209e2fa4df55312c1dbb",
+  "definition_digest": "6584b700e5288eb51cc9a1ae331e21271768bf71c63a585f7668083da9bccf8f",
+  "source_registry_digest": "3d39255a959f93020f6b36cf8d62f2f0d1423e14fa7f4bd888fc58ba52125295",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "storm",
+    "title": "Assisting in Writing Wikipedia-like Articles From Scratch with Large Language Models",
+    "paper_uri": "https://aclanthology.org/2024.naacl-long.347/",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "066fcf624e698cc5a978b231e7e8e040ddcd5851a54f6da5b10471135252da54"
+  },
+  "catalog": {
+    "domains": [
+      "retrieval-knowledge",
+      "scientific-research"
+    ],
+    "families": [
+      "citation_grounding",
+      "question_asking",
+      "research_agent",
+      "retrieval"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/lineage",
+      "data/query",
+      "execution",
+      "experimentation/study",
+      "model/request",
+      "participant/method"
+    ],
+    "method_owned": [
+      "four-stage citation-grounded article pipeline",
+      "perspective-guided question asking",
+      "simulated expert conversation"
+    ],
+    "platform_owned": [
+      "artifact lineage",
+      "bounded stage execution",
+      "evidence and evaluation",
+      "model invocation",
+      "retrieval transport"
+    ],
+    "reference_repositories": [
+      "https://github.com/stanford-oval/storm"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "05ac41ba7a1d52cc343073ef468061d7022ac3aee8c47db563efdb1938d3f956"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/stanford-oval/storm",
+      "commit": "1f8ac2ddb4dd5f8cfcc250fdd3611c693098134b",
+      "artifacts": [],
+      "lane_digest": "5e20c90f993ea1c8433410fe2785d0ab5828818a352725931b7e50bbc76f1791"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/storm_wiki/fidelity.py",
+      "declaration_digest": "413d957754efbc52d7d8410824c81928c0f62803a769e4101c857de0d8aa3503",
+      "content_sha256": "db591261d70b4f8d908d2e09ee1c01e73166a99e035c20ff217e5bd1660da76b"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/storm_wiki/pipeline.py",
+      "declaration_digest": "f40fb7c1b9f90211b6f540a520c1f188d25dc986573732374cc9f7c1c69eba08",
+      "content_sha256": "3d23e1054031546d150982f5b8062ade8fb76d7e885c88ce16b0bc5d82916646"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_storm_wiki_v1.py",
+      "content_sha256": "1f3205677e20c3a12ea58a1ca38f15ac216b78dd0786d4c3d1e0b5f596f72163"
+    }
+  ]
+}

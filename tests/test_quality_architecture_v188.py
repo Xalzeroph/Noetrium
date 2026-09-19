@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from research_platform.governance.architecture.quality_invariants import audit_quality_invariants
+from noetrium_platform.foundation.governance.architecture.quality_invariants import audit_quality_invariants
 
 
 def test_no_degradation_scanners_have_single_responsibility() -> None:

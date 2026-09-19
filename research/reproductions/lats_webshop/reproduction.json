@@ -1,0 +1,138 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "lats_webshop",
+  "package_digest": "775aa928c645f9b37d7c3d3f92aa1953723c058b08354e2473d15c9b46ff84b9",
+  "definition_digest": "7a088f327c1c536071c3ac8b8117fe0ea744c85f0ac3cc802a48ff3dc4bf64f2",
+  "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "lats",
+    "title": "Language Agent Tree Search Unifies Reasoning, Acting, and Planning in Language Models",
+    "paper_uri": "https://proceedings.mlr.press/v235/zhou24r.html",
+    "year": 2024,
+    "paper_revision": "arXiv:2310.04406 / ICML 2024",
+    "identity_digest": "1fe25d6a866a1d954960cb0f43a434c60f4eb274ad4456b83e8aa05aaf1e74bd"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "reflection-self-correction",
+      "tool-use"
+    ],
+    "families": [
+      "reflection",
+      "tree_search",
+      "web_agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "webshop"
+    ],
+    "platform_pressure": [
+      "environment/runtime",
+      "environment/web",
+      "experimentation/study",
+      "model/assignment",
+      "model/request"
+    ],
+    "method_owned": [
+      "LM value estimation",
+      "UCT tree policy",
+      "branch search semantics",
+      "failed-trajectory reflection policy"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "branchable environment lifecycle",
+      "named model-role binding",
+      "study execution and evidence"
+    ],
+    "reference_repositories": [
+      "https://github.com/andyz245/LanguageAgentTreeSearch"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "7b52ebc47aaf2c7fe3d7c9a3ab368ebd965077e8ad427cdd2a4fecb846a100d5"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "later_released_lats_repo",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/andyz245/LanguageAgentTreeSearch",
+      "commit": "853d81614607dd27433faf17c7b0a7d660f95d22",
+      "artifacts": [
+        "webshop/lats.py",
+        "webshop/lats.sh"
+      ],
+      "lane_digest": "d48be6da4f83da076dd6e8acaa155e52b43132320331b0ed34132a199508cf14"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/lats_webshop/fidelity.py",
+      "declaration_digest": "34e493fef0075723e335bd841a1d0fd0f19146f3e7c9fd8948f0832b0d6abb19",
+      "content_sha256": "ad9fa1725d5ce170673961c6741b72460a6045ab7be1488321e694328dff39d5"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/lats_webshop/program.py",
+      "declaration_digest": "7f7cf9987b3fa32dee860d29b42d0701f1a77addba002fed90c9c9a9a7e78fd7",
+      "content_sha256": "80cd0e7ea29d8e56007b4abc84ca6fc4b70447fc1ff7fd0d35a1584b03c07354"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/lats_webshop/study.py",
+      "declaration_digest": "4af48b66163b64c9523672787dc94a839abc3020119df67c93e59877d1c08ec6",
+      "content_sha256": "c6e5306def741fffadeed191cb592ca505ec5b7b09f2673cfff5172c17b4ce19"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/lats_webshop/branch.py",
+      "declaration_digest": "f15dfa0d7b6d4712d4f1c7c2a5d594dec21d44fb4224fa7e9bd70bd435b18e4e",
+      "content_sha256": "9f2de272237ce5ad77ab3099c98c007128dd15c9f6d6b3373aee30cc6cfad66c"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/lats_webshop/reflection.py",
+      "declaration_digest": "4fc28673e364e49e66243c2028486779705f232fdfc3f78241dcc459e333360b",
+      "content_sha256": "7be40072393202d10ee66a7cc11d538595542d3164f81939523b858fa7b9f227"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/lats_webshop/tree.py",
+      "declaration_digest": "dc501a523e490d3ef6be196ef126bcda440074efffa0f5934a7a12340d342a29",
+      "content_sha256": "d4bf9b3b8fb3f6371f43c33939fdcb419249748baa46256c14f6c5f8fe74699e"
+    }
+  ],
+  "primary_executable": "research/reproductions/lats_webshop/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "exact paper-era executable source cut predating the later released repository cut has not been frozen",
+      "delta_digest": "c579f74fb513ccfec9214d61f199ae328b883a9592c423cc380935cba3738dd0"
+    }
+  ],
+  "blockers": [
+    "the audited executable cut post-dates the original paper",
+    "exact historical gpt-3.5-turbo serving snapshot is unresolved",
+    "branch-restorable WebShop environment binding is not yet matched"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_lats_method_program_v1.py",
+      "content_sha256": "fda65f91329b8ea7e1b0b3f76e90da6864ceaddd97b601d0d59a4a6d27b70857"
+    },
+    {
+      "path": "tests/test_scientific_lats_webshop_v1.py",
+      "content_sha256": "1b503f696c3c692981f2c54c59a8b7e03a5774e5ed5d30c50e0cb433476c013a"
+    },
+    {
+      "path": "tests/test_scientific_parallel_lineage_wave1_v1.py",
+      "content_sha256": "6df2c7837e6b47edc1df5cc38386bf5d5553585d3a1d28507f6bd7849d11a552"
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "schema": "noetrium.research-pressure-suite.v2",
+  "updated_at": "2026-09-19",
+  "closure_contract": {
+    "required_asset_kinds": [
+      "fidelity",
+      "study"
+    ],
+    "requires_benchmark_cut": true,
+    "requires_measurement_contract": true,
+    "requires_scientific_tests": true,
+    "minimum_lifecycle": "protocol_bound",
+    "executable_asset_kinds": [
+      "method_program",
+      "research_program"
+    ]
+  },
+  "lanes": [
+    {
+      "package": "adas_meta_agent_search",
+      "lineage": "automated_agent_design",
+      "enforced": true
+    },
+    {
+      "package": "aflow",
+      "lineage": "automated_workflow_design",
+      "enforced": false
+    },
+    {
+      "package": "autogen_agentchat",
+      "lineage": "multi_agent_conversation",
+      "enforced": true
+    },
+    {
+      "package": "camel_role_playing",
+      "lineage": "multi_agent_role_play",
+      "enforced": true
+    },
+    {
+      "package": "chain_of_thought_gsm8k",
+      "lineage": "reasoning_root",
+      "enforced": false
+    },
+    {
+      "package": "chatdev_v1",
+      "lineage": "multi_agent_software",
+      "enforced": false
+    },
+    {
+      "package": "generative_agents_memory",
+      "lineage": "agent_memory",
+      "enforced": false
+    },
+    {
+      "package": "hugginggpt",
+      "lineage": "tool_orchestration",
+      "enforced": false
+    },
+    {
+      "package": "lats_webshop",
+      "lineage": "agent_tree_search",
+      "enforced": true
+    },
+    {
+      "package": "ma_lmm_memory",
+      "lineage": "multimodal_long_video_memory",
+      "enforced": true
+    },
+    {
+      "package": "metagpt_software_company",
+      "lineage": "multi_agent_sop",
+      "enforced": true
+    },
+    {
+      "package": "minedojo",
+      "lineage": "minecraft_foundational_multimodal_reward",
+      "enforced": false
+    },
+    {
+      "package": "moviechat_memory",
+      "lineage": "multimodal_sparse_video_memory",
+      "enforced": true
+    },
+    {
+      "package": "qlass_alfworld",
+      "lineage": "process_reward_search",
+      "enforced": true
+    },
+    {
+      "package": "rap_reasoning",
+      "lineage": "world_model_planning",
+      "enforced": true
+    },
+    {
+      "package": "react_alfworld",
+      "lineage": "reasoning_acting",
+      "enforced": true
+    },
+    {
+      "package": "reflexion_alfworld",
+      "lineage": "reflection_learning",
+      "enforced": true
+    },
+    {
+      "package": "saycan",
+      "lineage": "embodied_grounding",
+      "enforced": true
+    },
+    {
+      "package": "self_consistency_gsm8k",
+      "lineage": "reasoning_path_aggregation",
+      "enforced": false
+    },
+    {
+      "package": "self_refine",
+      "lineage": "self_refinement",
+      "enforced": true
+    },
+    {
+      "package": "storm_wiki",
+      "lineage": "research_agent",
+      "enforced": false
+    },
+    {
+      "package": "swe_agent_swebench",
+      "lineage": "software_agent",
+      "enforced": true
+    },
+    {
+      "package": "toolllm_toolbench",
+      "lineage": "tool_use",
+      "enforced": true
+    },
+    {
+      "package": "tree_of_thoughts",
+      "lineage": "deliberative_reasoning",
+      "enforced": true
+    },
+    {
+      "package": "vima_embodied",
+      "lineage": "embodied_multimodal_robot_manipulation",
+      "enforced": true
+    },
+    {
+      "package": "voyager_minecraft",
+      "lineage": "embodied_lifelong_learning",
+      "enforced": true
+    },
+    {
+      "package": "webvoyager",
+      "lineage": "multimodal_web_agent",
+      "enforced": false
+    },
+    {
+      "package": "rewind_memory",
+      "lineage": "multimodal_instruction_conditioned_video_memory",
+      "enforced": true
+    },
+    {
+      "package": "jarvis1_minecraft",
+      "lineage": "minecraft_multimodal_memory",
+      "enforced": true
+    },
+    {
+      "package": "steve1_minecraft",
+      "lineage": "minecraft_vision_language_control",
+      "enforced": true
+    },
+    {
+      "package": "videoagent_memory",
+      "lineage": "multimodal_agentic_video_memory",
+      "enforced": true
+    },
+    {
+      "package": "adacm2_memory",
+      "lineage": "multimodal_adaptive_cross_modal_memory",
+      "enforced": true
+    },
+    {
+      "package": "worldmm_memory",
+      "lineage": "multimodal_dynamic_heterogeneous_memory",
+      "enforced": true
+    }
+  ],
+  "publication_gate": "peer_reviewed_high_quality_only"
+}

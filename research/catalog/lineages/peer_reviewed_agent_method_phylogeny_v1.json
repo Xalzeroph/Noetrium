@@ -1,0 +1,1051 @@
+{
+  "schema": "noetrium-research-lineage.v1",
+  "lineage_id": "peer-reviewed-agent-method-phylogeny",
+  "title": "Peer-Reviewed Agent Method Phylogeny",
+  "status": "active_discovery",
+  "as_of": "2026-09-19",
+  "purpose": "Maintain a continuously expanding, peer-reviewed, high-quality development tree of agent methods. Every promoted node must be reproduced natively downstream and used to pressure-test Noetrium from method semantics through benchmark, experiment, metrics and evidence.",
+  "scope_rule": {
+    "core": "Only peer-reviewed conference/journal publications admitted by research/catalog/publication_quality_policy.json may enter this formal phylogeny.",
+    "satellite": "Application descendants are included when they introduce a distinct transferable mechanism or a materially different experimental regime.",
+    "completeness": "Continuously audit top venue proceedings and citation neighborhoods; missing high-quality mechanism nodes are added rather than silently skipped.",
+    "reproduction_unit": "Publication version + exact source cut + benchmark/environment/data cut + MethodProgram + Study/Experiment + measurements + baselines + ablations/statistics needed for the paper claim + immutable evidence."
+  },
+  "platform_rule": {
+    "downstream_owns": [
+      "paper-specific method semantics",
+      "paper-specific prompts and model-visible projections",
+      "search/reflection/memory/team/curriculum policies",
+      "paper-specific reward/value semantics",
+      "paper-specific training or adaptation policy"
+    ],
+    "platform_owns": [
+      "Machine and Journal execution truth",
+      "participant/model/environment/capability contracts",
+      "effect certainty and recovery",
+      "benchmark cut and Study expansion",
+      "measurement and evidence identity",
+      "artifact lineage and reproducibility provenance"
+    ],
+    "promotion_gate": "A mechanism moves upstream only after multiple independent peer-reviewed reproductions demonstrate method-independent semantics."
+  },
+  "core_nodes": [
+    {
+      "id": "chain-of-thought",
+      "year": 2022,
+      "paper": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "paper_id": "NeurIPS 2022",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "reasoning root",
+      "parents": [],
+      "mechanism": [
+        "explicit intermediate reasoning traces"
+      ],
+      "benchmarks": [
+        "GSM8K",
+        "SVAMP",
+        "AQuA",
+        "StrategyQA"
+      ]
+    },
+    {
+      "id": "saycan",
+      "year": 2022,
+      "paper": "Do As I Can, Not As I Say: Grounding Language in Robotic Affordances",
+      "paper_id": "CoRL 2022",
+      "venue": "CoRL",
+      "publication_status": "peer_reviewed_conference",
+      "role": "embodied language-grounding root",
+      "parents": [],
+      "mechanism": [
+        "LLM semantic planning",
+        "affordance/value grounding",
+        "skill selection"
+      ],
+      "benchmarks": [
+        "real-robot long-horizon tasks"
+      ]
+    },
+    {
+      "id": "minedojo",
+      "year": 2022,
+      "paper": "MineDojo: Building Open-Ended Embodied Agents with Internet-Scale Knowledge",
+      "paper_id": "NeurIPS 2022 Datasets and Benchmarks",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "open-ended Minecraft embodied-learning root",
+      "parents": [],
+      "mechanism": [
+        "thousands of open-ended Minecraft tasks",
+        "internet-scale multimodal Minecraft knowledge",
+        "video-language-model learned reward",
+        "free-form language-conditioned embodied learning"
+      ],
+      "benchmarks": [
+        "MineDojo programmatic tasks",
+        "creative tasks",
+        "playthrough tasks"
+      ]
+    },
+    {
+      "id": "camel",
+      "year": 2023,
+      "paper": "CAMEL: Communicative Agents for Mind Exploration of Large Language Model Society",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "multi-agent role-playing root",
+      "parents": [],
+      "mechanism": [
+        "role-playing",
+        "inception prompting",
+        "autonomous agent-agent conversation"
+      ],
+      "benchmarks": [
+        "instruction-following cooperation"
+      ]
+    },
+    {
+      "id": "code-as-policies",
+      "year": 2023,
+      "paper": "Code as Policies: Language Model Programs for Embodied Control",
+      "paper_id": "ICRA 2023",
+      "venue": "ICRA",
+      "publication_status": "peer_reviewed_conference",
+      "role": "executable language-policy synthesis branch",
+      "parents": [
+        {
+          "id": "saycan",
+          "edge": "moves language-grounded embodied control from selecting fixed skills toward synthesizing executable policy programs over perception and control APIs"
+        }
+      ],
+      "mechanism": [
+        "language-model policy-code synthesis",
+        "recursive function generation",
+        "perception/control API composition",
+        "spatial-geometric program reasoning"
+      ],
+      "benchmarks": [
+        "robot manipulation",
+        "mobile manipulation",
+        "tabletop control"
+      ]
+    },
+    {
+      "id": "vima",
+      "year": 2023,
+      "paper": "VIMA: Robot Manipulation with Multimodal Prompts",
+      "paper_id": "ICML 2023",
+      "venue": "ICML",
+      "publication_status": "peer_reviewed_conference",
+      "role": "multimodal-prompt robot-policy branch",
+      "parents": [
+        {
+          "id": "saycan",
+          "edge": "extends language task specification toward interleaved text-visual prompts and a single prompt-conditioned motor policy"
+        }
+      ],
+      "mechanism": [
+        "interleaved visual-text multimodal prompts",
+        "prompt-conditioned transformer policy",
+        "autoregressive motor-action generation",
+        "four-level systematic generalization protocol"
+      ],
+      "benchmarks": [
+        "VIMA-Bench"
+      ]
+    },
+    {
+      "id": "generative-agents",
+      "year": 2023,
+      "paper": "Generative Agents: Interactive Simulacra of Human Behavior",
+      "paper_id": "UIST 2023",
+      "venue": "UIST",
+      "publication_status": "peer_reviewed_conference",
+      "role": "agent-memory and reflection root",
+      "parents": [],
+      "mechanism": [
+        "memory stream",
+        "recency/relevance/importance retrieval",
+        "reflection",
+        "planning"
+      ],
+      "benchmarks": [
+        "interactive generative-agent simulation"
+      ]
+    },
+    {
+      "id": "hugginggpt",
+      "year": 2023,
+      "paper": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "expert-model orchestration branch",
+      "parents": [],
+      "mechanism": [
+        "task decomposition",
+        "model selection",
+        "dependency-aware execution",
+        "result aggregation"
+      ],
+      "benchmarks": [
+        "multimodal AI task suites"
+      ]
+    },
+    {
+      "id": "rap",
+      "year": 2023,
+      "paper": "Reasoning with Language Model is Planning with World Model",
+      "paper_id": "EMNLP 2023",
+      "venue": "EMNLP",
+      "publication_status": "peer_reviewed_conference",
+      "role": "world-model planning branch",
+      "parents": [
+        {
+          "id": "chain-of-thought",
+          "edge": "recasts reasoning as MCTS planning with an LM world model"
+        }
+      ],
+      "mechanism": [
+        "LLM world model",
+        "MCTS",
+        "task reward",
+        "reasoning-state simulation"
+      ],
+      "benchmarks": [
+        "Blocksworld",
+        "GSM8K",
+        "ProntoQA"
+      ]
+    },
+    {
+      "id": "react",
+      "year": 2023,
+      "paper": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "paper_id": "ICLR 2023",
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "reasoning-acting root",
+      "parents": [
+        {
+          "id": "chain-of-thought",
+          "edge": "interleaves explicit reasoning with environment actions and observations"
+        }
+      ],
+      "mechanism": [
+        "thought/action/observation loop",
+        "environment-grounded reasoning"
+      ],
+      "benchmarks": [
+        "HotpotQA",
+        "FEVER",
+        "ALFWorld",
+        "WebShop"
+      ]
+    },
+    {
+      "id": "reflexion",
+      "year": 2023,
+      "paper": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "agent reflection branch",
+      "parents": [
+        {
+          "id": "react",
+          "edge": "adds trial-level verbal reflection and episodic reflection memory"
+        }
+      ],
+      "mechanism": [
+        "verbal reinforcement",
+        "reflection memory",
+        "retry across trials"
+      ],
+      "benchmarks": [
+        "ALFWorld",
+        "HotpotQA",
+        "HumanEval"
+      ]
+    },
+    {
+      "id": "self-consistency",
+      "year": 2023,
+      "paper": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+      "paper_id": "ICLR 2023",
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "reasoning-path aggregation branch",
+      "parents": [
+        {
+          "id": "chain-of-thought",
+          "edge": "samples multiple reasoning paths and marginalizes answers"
+        }
+      ],
+      "mechanism": [
+        "stochastic reasoning-path sampling",
+        "answer aggregation"
+      ],
+      "benchmarks": [
+        "GSM8K",
+        "SVAMP",
+        "AQuA",
+        "StrategyQA"
+      ]
+    },
+    {
+      "id": "self-refine",
+      "year": 2023,
+      "paper": "Self-Refine: Iterative Refinement with Self-Feedback",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "self-feedback branch",
+      "parents": [
+        {
+          "id": "chain-of-thought",
+          "edge": "adds iterative feedback and refinement around generated solutions"
+        }
+      ],
+      "mechanism": [
+        "self-feedback",
+        "iterative refinement"
+      ],
+      "benchmarks": [
+        "multiple generation and reasoning tasks"
+      ]
+    },
+    {
+      "id": "toolformer",
+      "year": 2023,
+      "paper": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "tool-use learning root",
+      "parents": [],
+      "mechanism": [
+        "self-supervised API-call insertion",
+        "tool-call selection",
+        "tool result integration"
+      ],
+      "benchmarks": [
+        "downstream language tasks with APIs"
+      ]
+    },
+    {
+      "id": "tree-of-thoughts",
+      "year": 2023,
+      "paper": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "deliberative reasoning search root",
+      "parents": [
+        {
+          "id": "chain-of-thought",
+          "edge": "lifts single-path reasoning into explicit thought-level search"
+        }
+      ],
+      "mechanism": [
+        "thought branching",
+        "state evaluation",
+        "BFS/DFS",
+        "backtracking"
+      ],
+      "benchmarks": [
+        "Game of 24",
+        "Creative Writing",
+        "Mini Crosswords"
+      ]
+    },
+    {
+      "id": "steve-1",
+      "year": 2023,
+      "paper": "STEVE-1: A Generative Model for Text-to-Behavior in Minecraft",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "Minecraft text/visual-goal conditioned control branch",
+      "parents": [
+        {
+          "id": "minedojo",
+          "edge": "builds on the Minecraft open-ended embodied/data line with learned multimodal goal representations and low-level control"
+        }
+      ],
+      "mechanism": [
+        "MineCLIP latent goal conditioning",
+        "text-to-latent prior",
+        "visual prompt conditioning",
+        "classifier-free-guided recurrent VPT controller"
+      ],
+      "benchmarks": [
+        "STEVE-1 paper prompt suite",
+        "Minecraft early-game tasks"
+      ]
+    },
+    {
+      "id": "deps-minecraft",
+      "year": 2023,
+      "paper": "Describe, Explain, Plan and Select: Interactive Planning with LLMs Enables Open-World Multi-Task Agents",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "open-world interactive planning branch",
+      "parents": [
+        {
+          "id": "saycan",
+          "edge": "extends language-level planning and skill selection with interactive error feedback and explicit subgoal proximity selection"
+        },
+        {
+          "id": "minedojo",
+          "edge": "specializes open-ended embodied-agent research to robust long-horizon Minecraft multi-task planning"
+        }
+      ],
+      "mechanism": [
+        "Describe-Explain-Plan interactive prompting",
+        "execution-feedback plan correction",
+        "learned goal selector",
+        "parallel-subgoal proximity ranking"
+      ],
+      "benchmarks": [
+        "Minecraft 70+ task suite",
+        "ALFWorld",
+        "tabletop manipulation"
+      ]
+    },
+    {
+      "id": "autogen",
+      "year": 2024,
+      "paper": "AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation",
+      "paper_id": "COLM 2024",
+      "venue": "COLM",
+      "publication_status": "peer_reviewed_conference",
+      "role": "general multi-agent conversation branch",
+      "parents": [
+        {
+          "id": "camel",
+          "edge": "generalizes multi-agent conversation to configurable agents, tools, code and human input"
+        }
+      ],
+      "mechanism": [
+        "conversable agents",
+        "speaker/conversation patterns",
+        "human-agent interaction",
+        "tool/code participation"
+      ],
+      "benchmarks": [
+        "multi-domain agent applications"
+      ]
+    },
+    {
+      "id": "chatdev",
+      "year": 2024,
+      "paper": "ChatDev: Communicative Agents for Software Development",
+      "paper_id": "ACL 2024",
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "role": "multi-agent software-development branch",
+      "parents": [
+        {
+          "id": "camel",
+          "edge": "specializes communicative role-playing into phase-structured software development"
+        }
+      ],
+      "mechanism": [
+        "chat chain",
+        "software-company roles",
+        "phase specialization",
+        "communicative dehallucination"
+      ],
+      "benchmarks": [
+        "software generation evaluation"
+      ]
+    },
+    {
+      "id": "cogagent",
+      "year": 2024,
+      "paper": "CogAgent: A Visual Language Model for GUI Agents",
+      "paper_id": "CVPR 2024",
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "visual GUI-agent root",
+      "parents": [],
+      "mechanism": [
+        "high-resolution GUI perception",
+        "visual grounding",
+        "screenshot-only navigation"
+      ],
+      "benchmarks": [
+        "Mind2Web",
+        "AITW",
+        "GUI grounding/VQA suites"
+      ]
+    },
+    {
+      "id": "lats",
+      "year": 2024,
+      "paper": "Language Agent Tree Search Unifies Reasoning, Acting, and Planning in Language Models",
+      "paper_id": "ICML 2024 / PMLR 235",
+      "venue": "ICML",
+      "publication_status": "peer_reviewed_conference",
+      "role": "search convergence",
+      "parents": [
+        {
+          "id": "react",
+          "edge": "inherits environment-grounded acting"
+        },
+        {
+          "id": "reflexion",
+          "edge": "uses self-reflection as search feedback"
+        },
+        {
+          "id": "tree-of-thoughts",
+          "edge": "inherits deliberate branching/search"
+        },
+        {
+          "id": "rap",
+          "edge": "inherits MCTS-style planning/value guidance"
+        }
+      ],
+      "mechanism": [
+        "MCTS",
+        "LM value",
+        "self-reflection",
+        "environment feedback"
+      ],
+      "benchmarks": [
+        "HumanEval",
+        "HotpotQA",
+        "WebShop",
+        "GSM8K"
+      ]
+    },
+    {
+      "id": "metagpt",
+      "year": 2024,
+      "paper": "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework",
+      "paper_id": "ICLR 2024",
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "multi-agent SOP branch",
+      "parents": [
+        {
+          "id": "camel",
+          "edge": "moves from free-form role-play toward role-specialized SOP-governed collaboration"
+        }
+      ],
+      "mechanism": [
+        "standard operating procedures",
+        "role specialization",
+        "structured artifact pipeline"
+      ],
+      "benchmarks": [
+        "collaborative software engineering"
+      ]
+    },
+    {
+      "id": "seeclick",
+      "year": 2024,
+      "paper": "SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents",
+      "paper_id": "ACL 2024",
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "role": "GUI-grounding branch",
+      "parents": [],
+      "mechanism": [
+        "GUI grounding pretraining",
+        "screenshot-only action grounding",
+        "ScreenSpot benchmark"
+      ],
+      "benchmarks": [
+        "ScreenSpot",
+        "Mind2Web",
+        "AITW",
+        "MiniWob"
+      ]
+    },
+    {
+      "id": "storm",
+      "year": 2024,
+      "paper": "Assisting in Writing Wikipedia-like Articles From Scratch with Large Language Models",
+      "paper_id": "NAACL 2024",
+      "venue": "NAACL",
+      "publication_status": "peer_reviewed_conference",
+      "role": "research-and-writing agent root",
+      "parents": [],
+      "mechanism": [
+        "perspective discovery",
+        "question asking",
+        "retrieval-grounded expert simulation",
+        "outline synthesis"
+      ],
+      "benchmarks": [
+        "FreshWiki"
+      ]
+    },
+    {
+      "id": "swe-agent",
+      "year": 2024,
+      "paper": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+      "paper_id": "NeurIPS 2024",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "interactive software-agent root",
+      "parents": [
+        {
+          "id": "react",
+          "edge": "specializes environment interaction into an agent-computer interface for software engineering"
+        }
+      ],
+      "mechanism": [
+        "agent-computer interface",
+        "repository navigation",
+        "command execution",
+        "observation history projection"
+      ],
+      "benchmarks": [
+        "SWE-bench",
+        "HumanEvalFix"
+      ]
+    },
+    {
+      "id": "toolllm",
+      "year": 2024,
+      "paper": "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
+      "paper_id": "ICLR 2024",
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "large-scale API agent branch",
+      "parents": [
+        {
+          "id": "toolformer",
+          "edge": "expands tool use toward large API retrieval, planning and evaluation"
+        }
+      ],
+      "mechanism": [
+        "API retrieval",
+        "tool-use instruction tuning",
+        "search over API solution paths"
+      ],
+      "benchmarks": [
+        "ToolBench"
+      ]
+    },
+    {
+      "id": "moviechat",
+      "year": 2024,
+      "paper": "MovieChat: From Dense Token to Sparse Memory for Long Video Understanding",
+      "paper_id": "CVPR 2024",
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "long-video sparse-memory root",
+      "parents": [],
+      "mechanism": [
+        "short-term token memory",
+        "consolidated long-term sparse memory",
+        "sliding-window online video ingestion",
+        "long-video memory compression"
+      ],
+      "benchmarks": [
+        "MovieChat-1K"
+      ]
+    },
+    {
+      "id": "ma-lmm",
+      "year": 2024,
+      "paper": "MA-LMM: Memory-Augmented Large Multimodal Model for Long-Term Video Understanding",
+      "paper_id": "CVPR 2024",
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "online multimodal memory-bank root",
+      "parents": [],
+      "mechanism": [
+        "online frame processing",
+        "bounded historical visual memory bank",
+        "off-the-shelf LMM memory augmentation",
+        "long-term video reasoning without context overflow"
+      ],
+      "benchmarks": [
+        "LVU",
+        "long-video QA",
+        "video captioning"
+      ]
+    },
+    {
+      "id": "videoagent-memory",
+      "year": 2024,
+      "paper": "VideoAgent: A Memory-augmented Multimodal Agent for Video Understanding",
+      "paper_id": "ECCV 2024",
+      "venue": "ECCV",
+      "publication_status": "peer_reviewed_conference",
+      "role": "agentic multimodal video-memory branch",
+      "parents": [
+        {
+          "id": "react",
+          "edge": "extends interactive reasoning/tool use to query-driven long-video understanding"
+        },
+        {
+          "id": "moviechat",
+          "edge": "moves long-video memory beyond passive compression toward structured temporal/object memories queried by an agent"
+        }
+      ],
+      "mechanism": [
+        "structured temporal-event memory",
+        "object-centric tracking/re-identification memory",
+        "segment localization and object-memory tools",
+        "nested multimodal ReAct policies"
+      ],
+      "benchmarks": [
+        "EgoSchema",
+        "NExT-QA"
+      ]
+    },
+    {
+      "id": "voyager",
+      "year": 2024,
+      "paper": "Voyager: An Open-Ended Embodied Agent with Large Language Models",
+      "paper_id": "TMLR 2024",
+      "venue": "TMLR",
+      "publication_status": "peer_reviewed_journal",
+      "role": "open-ended embodied lifelong-learning branch",
+      "parents": [
+        {
+          "id": "deps-minecraft",
+          "edge": "extends open-world Minecraft planning into autonomous curriculum-driven lifelong exploration"
+        },
+        {
+          "id": "code-as-policies",
+          "edge": "turns executable policy generation into a persistent reusable Minecraft skill library"
+        }
+      ],
+      "mechanism": [
+        "automatic curriculum",
+        "executable skill library",
+        "iterative prompting with execution feedback"
+      ],
+      "benchmarks": [
+        "Minecraft open-ended exploration"
+      ]
+    },
+    {
+      "id": "webvoyager",
+      "year": 2024,
+      "paper": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
+      "paper_id": "ACL 2024",
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "role": "multimodal real-web agent branch",
+      "parents": [
+        {
+          "id": "react",
+          "edge": "extends iterative reasoning/action interaction to multimodal real websites"
+        }
+      ],
+      "mechanism": [
+        "multimodal web observation",
+        "end-to-end browser interaction",
+        "automatic multimodal evaluation"
+      ],
+      "benchmarks": [
+        "WebVoyager real-world website tasks"
+      ]
+    },
+    {
+      "id": "adas-meta-agent-search",
+      "year": 2025,
+      "paper": "Automated Design of Agentic Systems",
+      "paper_id": "ICLR 2025",
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "automated agent-design root",
+      "parents": [],
+      "mechanism": [
+        "meta-agent programming",
+        "archive of agent designs",
+        "iterative agent-system search"
+      ],
+      "benchmarks": [
+        "coding",
+        "science",
+        "math"
+      ]
+    },
+    {
+      "id": "aflow",
+      "year": 2025,
+      "paper": "AFlow: Automating Agentic Workflow Generation",
+      "paper_id": "ICLR 2025",
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "code-workflow search branch",
+      "parents": [
+        {
+          "id": "adas-meta-agent-search",
+          "edge": "shares code-represented agent/workflow search but specializes optimization to graph workflows and MCTS-style iterative refinement"
+        }
+      ],
+      "mechanism": [
+        "code-represented workflow search",
+        "Monte Carlo Tree Search",
+        "tree-structured experience",
+        "execution-feedback-guided code modification"
+      ],
+      "benchmarks": [
+        "six reasoning/task datasets reported by the paper"
+      ]
+    },
+    {
+      "id": "agentless",
+      "year": 2025,
+      "paper": "Agentless: Demystifying LLM-based Software Engineering Agents",
+      "paper_id": "FSE 2025",
+      "venue": "FSE",
+      "publication_status": "peer_reviewed_conference",
+      "role": "software-agent counterpoint",
+      "parents": [
+        {
+          "id": "swe-agent",
+          "edge": "tests whether explicit autonomous agent loops are necessary by replacing them with localization-repair-validation"
+        }
+      ],
+      "mechanism": [
+        "hierarchical localization",
+        "repair generation",
+        "patch validation",
+        "non-agentic decomposition"
+      ],
+      "benchmarks": [
+        "SWE-bench Lite"
+      ]
+    },
+    {
+      "id": "agentsquare",
+      "year": 2025,
+      "paper": "AgentSquare: Automatic LLM Agent Search in Modular Design Space",
+      "paper_id": "ICLR 2025",
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "modular automated agent-search branch",
+      "parents": [
+        {
+          "id": "adas-meta-agent-search",
+          "edge": "specializes automated agent design into modular planning/reasoning/tool/memory evolution and recombination"
+        }
+      ],
+      "mechanism": [
+        "modular agent design space",
+        "module evolution",
+        "recombination",
+        "performance predictor"
+      ],
+      "benchmarks": [
+        "web",
+        "embodied",
+        "tool-use",
+        "game benchmarks"
+      ]
+    },
+    {
+      "id": "flow-modularized-agentic-workflow",
+      "year": 2025,
+      "paper": "Flow: Modularized Agentic Workflow Automation",
+      "paper_id": "ICLR 2025",
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "dynamic modular workflow adaptation branch",
+      "parents": [
+        {
+          "id": "metagpt",
+          "edge": "moves role/workflow collaboration toward dynamically refined modular AOV workflow execution"
+        }
+      ],
+      "mechanism": [
+        "activity-on-vertex workflow graph",
+        "dynamic subtask allocation",
+        "history-conditioned workflow refinement",
+        "parallelism/dependency-aware modularization"
+      ],
+      "benchmarks": [
+        "practical multi-agent workflow tasks"
+      ]
+    },
+    {
+      "id": "qlass",
+      "year": 2025,
+      "paper": "QLASS: Boosting Language Agent Inference via Q-Guided Stepwise Search",
+      "paper_id": "ICML 2025 / PMLR 267",
+      "venue": "ICML",
+      "publication_status": "peer_reviewed_conference",
+      "role": "process-reward search branch",
+      "parents": [
+        {
+          "id": "lats",
+          "edge": "adds learned stepwise Q/process-reward guidance to interactive search"
+        }
+      ],
+      "mechanism": [
+        "Q-value estimation",
+        "process reward",
+        "Q-guided generation",
+        "reasoning tree"
+      ],
+      "benchmarks": [
+        "WebShop",
+        "ALFWorld",
+        "SciWorld"
+      ]
+    },
+    {
+      "id": "rewind",
+      "year": 2025,
+      "paper": "ReWind: Understanding Long Videos with Instructed Learnable Memory",
+      "paper_id": "CVPR 2025",
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "instruction-conditioned learnable-memory branch",
+      "parents": [
+        {
+          "id": "moviechat",
+          "edge": "replaces hand-designed sparse long-video memory with instruction-relevant learnable read/write memory"
+        },
+        {
+          "id": "ma-lmm",
+          "edge": "extends online long-video memory with query-conditioned learnable updates and detailed frame recovery"
+        }
+      ],
+      "mechanism": [
+        "read-perceive-write learnable memory",
+        "instruction-conditioned memory updates",
+        "dynamic frame selection",
+        "two-stage long-video reasoning"
+      ],
+      "benchmarks": [
+        "MovieChat-1K",
+        "long-video QA suites"
+      ]
+    },
+    {
+      "id": "adacm2",
+      "year": 2025,
+      "paper": "AdaCM2: On Understanding Extremely Long-Term Video with Adaptive Cross-Modality Memory Reduction",
+      "paper_id": "CVPR 2025",
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "adaptive cross-modal memory-compression branch",
+      "parents": [
+        {
+          "id": "ma-lmm",
+          "edge": "replaces purely visual memory compression with query-aware cross-modal adaptive reduction"
+        }
+      ],
+      "mechanism": [
+        "dual-modality attention",
+        "query-conditioned memory reduction",
+        "autoregressive video-stream compression",
+        "adaptive visual-text token retention"
+      ],
+      "benchmarks": [
+        "LVU",
+        "video QA",
+        "video captioning",
+        "video classification"
+      ]
+    },
+    {
+      "id": "jarvis1",
+      "year": 2025,
+      "paper": "JARVIS-1: Open-World Multi-Task Agents With Memory-Augmented Multimodal Language Models",
+      "paper_id": "IEEE TPAMI 2025",
+      "venue": "IEEE TPAMI",
+      "publication_status": "peer_reviewed_journal",
+      "role": "memory-augmented multimodal Minecraft convergence",
+      "parents": [
+        {
+          "id": "deps-minecraft",
+          "edge": "inherits open-world long-horizon planning and subgoal-selection pressure"
+        },
+        {
+          "id": "steve-1",
+          "edge": "combines high-level multimodal planning with goal-conditioned low-level Minecraft controllers"
+        },
+        {
+          "id": "voyager",
+          "edge": "extends lifelong open-world autonomy with multimodal experience memory and self-improvement"
+        }
+      ],
+      "mechanism": [
+        "multimodal experience memory",
+        "memory-conditioned high-level planning",
+        "goal-conditioned controller dispatch",
+        "lifelong experience accumulation"
+      ],
+      "benchmarks": [
+        "JARVIS-1 offline 185-task evaluation",
+        "Minecraft 200+ task suite"
+      ]
+    },
+    {
+      "id": "worldmm",
+      "year": 2026,
+      "paper": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
+      "paper_id": "CVPR 2026",
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "dynamic multimodal-memory convergence",
+      "parents": [
+        {
+          "id": "videoagent-memory",
+          "edge": "inherits agentic query-driven interaction with structured long-video memory"
+        },
+        {
+          "id": "rewind",
+          "edge": "extends query/instruction-conditioned memory selection toward multiple complementary memory systems and temporal granularities"
+        },
+        {
+          "id": "adacm2",
+          "edge": "extends cross-modal query-aware memory adaptation from compression to iterative multimodal retrieval"
+        }
+      ],
+      "mechanism": [
+        "multi-scale episodic memory",
+        "continually updated semantic memory",
+        "detail-preserving visual memory",
+        "adaptive iterative memory-source and temporal-granularity retrieval"
+      ],
+      "benchmarks": [
+        "EgoLifeQA",
+        "five long-video QA benchmarks"
+      ]
+    }
+  ],
+  "satellite_candidates": [],
+  "execution_protocol": [
+    "Verify peer-reviewed venue identity before promotion into the formal graph.",
+    "Freeze the exact publication version and paper-era source cut before implementation.",
+    "Implement method semantics natively under research/reproductions without importing project runtimes into platform architecture.",
+    "Bind every method to at least one immutable benchmark/environment/data cut before protocol-bound status.",
+    "Implement Study/Experiment, measurements, paper baselines, ablations and statistics required for the published claim.",
+    "Run structural fidelity tests, deterministic/source-cut smokes, pilot experiments and matched experiments.",
+    "Bind results to immutable model/prompt/environment/config/evaluator/evidence identities.",
+    "Record platform friction and only promote abstractions after repeated independent pressure."
+  ],
+  "immediate_platform_pressure_hypotheses": [
+    "model-visible view projection across memory, GUI, web, software and multi-agent methods",
+    "branch/search/checkpoint identity under reasoning and environment search",
+    "participant topology and explicit multi-agent message authority",
+    "effect certainty for software, browser, GUI and embodied actions",
+    "artifact handoff and isolated verifier contracts",
+    "budget-normalized experiment comparison across search-heavy and non-search baselines",
+    "candidate-program lineage for automated agent design",
+    "multimodal memory objects with modality, temporal granularity and semantic-structure identities kept orthogonal",
+    "concurrent child-machine ready sets with evidence-backed physical execution rather than logical-only concurrency",
+    "embodied world-state/action/effect identity across long-horizon Minecraft and robot-control lineages"
+  ],
+  "execution_mode": {
+    "mode": "parallel_peer_reviewed_lineages",
+    "rule": "Advance independent peer-reviewed lanes in parallel; prioritize P1 venues and uncovered mechanism classes before near-duplicate descendants."
+  }
+}

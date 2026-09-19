@@ -1,11 +1,11 @@
 from pathlib import Path
 import tempfile,unittest
 from unittest import mock
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.reliability.failure.api import build_failure
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.reliability.diagnostics.runtime import DebugSnapshotService
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import DebugSnapshotService
 
 class ForensicReadSessionV38Tests(unittest.TestCase):
     def test_debug_snapshot_uses_one_forensic_read_connection(self):

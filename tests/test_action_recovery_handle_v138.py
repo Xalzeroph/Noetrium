@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from tests_support import environment_effect_intent
 
-from research_platform.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
 
 from pathlib import Path
 import tempfile
 
-from research_platform.reliability.effect.api import EffectIntent
+from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent
 
-from research_platform.reliability.effect.runtime import SQLiteEffectIntentJournal
-from research_platform.environment.runtime.api import ActionRequest, action_request_digest
-from research_platform.platform.kernel import ComponentIdentity, ExecutionContext, canonical_bytes
+from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal
+from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, action_request_digest
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, ExecutionContext, canonical_bytes
 
 
 def test_sqlite_journal_round_trips_opaque_recovery_handle_without_platform_interpretation():

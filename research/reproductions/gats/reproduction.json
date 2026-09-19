@@ -1,0 +1,159 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "gats",
+  "package_digest": "08f2a8eed7c884605d0d4fdf7cb18c0a61471b85fd9fd643d436e03280a13fe2",
+  "definition_digest": "128e9f6423d7c25a605583d14e086d9a00847d2cfc8b06973b44ab40d6755052",
+  "source_registry_digest": "bd01696f94f58340e853c4ec16a61206335c13e3ef45730b14418c4646b37a67",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "gats",
+    "title": "GATS: Graph-Augmented Tree Search with Layered World Models for Efficient Agent Planning",
+    "paper_uri": "https://arxiv.org/abs/2607.08894",
+    "year": 2026,
+    "paper_revision": "arXiv:2607.08894v1",
+    "identity_digest": "2e72fc71f24adc561c583451611467dc1a84adfc4bc07b61b8af5b22867b7c45"
+  },
+  "catalog": {
+    "domains": [
+      "evaluation-benchmarks",
+      "planning-search",
+      "world-models"
+    ],
+    "families": [
+      "synthetic_planning",
+      "tree_search",
+      "world_model"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "gats-synthetic"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "experimentation/study"
+    ],
+    "method_owned": [
+      "UCB1 planning semantics",
+      "layered world-model semantics",
+      "stress-test direct-transition search implementation"
+    ],
+    "platform_owned": [
+      "benchmark task freezing",
+      "execution evidence",
+      "seed schedule identity",
+      "source-lane provenance",
+      "study expansion"
+    ],
+    "reference_repositories": [
+      "https://github.com/MMWilliams/gats"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "fa286bd669be7687163532dcc06a1800ce0e77a994e40cb1310ba021d57707dd"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "pre_arxiv_reproducibility_cut",
+      "kind": "official_executable",
+      "repository": "https://github.com/MMWilliams/gats",
+      "commit": "c8cb71cc23bc622e1711ec4bec274071a87940bc",
+      "artifacts": [
+        "README.md",
+        "experiments/run_gats_eval.py",
+        "experiments/run_stress_test.py",
+        "paper/main.tex",
+        "reproduce.py",
+        "tests/test_reproducibility.py"
+      ],
+      "lane_digest": "de91bebf14022dd596b352b389c0865d11e78249e3703f4ac2d5ddffadd755dc"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/gats/fidelity.py",
+      "declaration_digest": "6848468073f0fb3e9764df85558328571e9215af15f8c542104be976db37e0a4",
+      "content_sha256": "95809b7c82f9045494f406f5f29b87225b044ac677d96647e5276ff3ce71fb6f"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/gats/study.py",
+      "declaration_digest": "f5b4a6f1d00fe4e967bb6ef4920c13f8b98b0832f0a844fb21085684571ff553",
+      "content_sha256": "571eadce7bbcc04eaebf19de355977a42cd3967d4cbb02c0e1a3d30dfdef7725"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [
+    {
+      "claim_id": "paper_stress_gats_b20_success",
+      "metric_id": "success_rate",
+      "value": 100,
+      "qualifiers": {
+        "model_lane_id": null
+      },
+      "claim_digest": "35f3fa4924223af1b21f47039b0e213d56fa9be0fcf1ec8b88c998ba24714e76"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "greedy",
+      "description": "greedy",
+      "qualifiers": {},
+      "baseline_digest": "821b98fe345c5e841545c43360888ab81764d3b8bb2fbed53a9615e72bece755"
+    },
+    {
+      "baseline_id": "react",
+      "description": "react",
+      "qualifiers": {},
+      "baseline_digest": "58fb67e5e57f76bfdfee3a8ccd53abe37c89a1bf0c85f8e87953a4f5aa528f2e"
+    },
+    {
+      "baseline_id": "lats_b10",
+      "description": "lats_b10",
+      "qualifiers": {},
+      "baseline_digest": "fca08275985160ce09bdd4e5f8e545efc4a65c338d4779022a998cfda1b41484"
+    },
+    {
+      "baseline_id": "lats_b20",
+      "description": "lats_b20",
+      "qualifiers": {},
+      "baseline_digest": "4a561f243b47c64bd1ec4c36e27c0d154f23cd27d938c6e5ce5da0ac43547c3b"
+    },
+    {
+      "baseline_id": "gats_b10",
+      "description": "gats_b10",
+      "qualifiers": {},
+      "baseline_digest": "cdaa2e3bcf73255e795dea25f785a139308f80e534190cd8391359667d658fda"
+    },
+    {
+      "baseline_id": "gats_b50",
+      "description": "gats_b50",
+      "qualifiers": {},
+      "baseline_digest": "bf521728d901dac1333027526c87cb4ebb728513ba460f406cdc294695762c99"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "main 100-task benchmark content must be materialized and frozen before source-matched execution",
+      "delta_digest": "73b7abd1733b24084eb14317545a6f7909e4fac2f497e5c775871d73e314ab83"
+    },
+    {
+      "kind": "unresolved",
+      "description": "layered-world-model claims require the main evaluation lane rather than stress-script evidence",
+      "delta_digest": "7755ef6fc49e007e31d66a3bf4ee0b31037540e01f9a95efca4d297aa91c2802"
+    }
+  ],
+  "blockers": [
+    "main 100-task task generation is not seeded before random choice and shuffle in this source cut",
+    "stress-test GATSPlanner bypasses the paper layered world-model implementation and therefore cannot validate layered-world-model claims",
+    "no Noetrium execution evidence has yet been produced for the frozen stress Study"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_gats_stress_v1.py",
+      "content_sha256": "35a14a142b5bb113bc05e222955896da034125fe5425d5d0fdb4fd30dd4614a0"
+    }
+  ]
+}

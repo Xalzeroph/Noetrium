@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import unittest
 
-from research_platform.participant.capability.api import CapabilityDescriptor, CapabilityRequest, CapabilityResult
-from research_platform.platform.kernel import ComponentIdentity, EffectClass, ExecutionContext, OperationExecutor
-from research_platform.execution.workflow.implementations.agent_turn.capability_operations import CapabilityOperationAdapter
-from research_platform.execution.workflow.implementations.agent_turn.capability_routing import CapabilitySessionBinding, StudyCapabilityRouter
-from research_platform.execution.capability.runtime import (
-    CapabilityInvocationPipeline,
+from noetrium_platform.capabilities.participant.capability.api import CapabilityDescriptor, CapabilityRequest, CapabilityResult
+from noetrium_platform.foundation.kernel.kernel import InMemoryMachineJournal, ComponentIdentity, EffectClass, ExecutionContext, OperationExecutor
+from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_operations import CapabilityOperationAdapter
+from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_routing import CapabilitySessionBinding, StudyCapabilityRouter
+from noetrium_platform.research.execution.capability.runtime import (
+    CapabilityInvocationPipelineFactory,
     ScopedRegistrationRuntime,
 )
-from research_platform.execution.workflow.runtime import KernelOperationDispatcher
+from noetrium_platform.research.execution.workflow.runtime import KernelOperationDispatcher
 
 
 class Session:
@@ -34,7 +34,7 @@ class CapabilityOperationBoundaryV162Tests(unittest.TestCase):
         router=StudyCapabilityRouter(
             adapter,
             (binding,),
-            pipeline=CapabilityInvocationPipeline(),
+            pipeline=CapabilityInvocationPipelineFactory(InMemoryMachineJournal()).create(),
             scope=ScopedRegistrationRuntime("test-capability-router"),
         )
         context=ExecutionContext(run_id='r',trace_id='t',span_id='s',platform_generation='p',decision_cycle_id='dc')

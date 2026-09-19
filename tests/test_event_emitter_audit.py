@@ -1,6 +1,6 @@
 import unittest
-from research_platform.observability.telemetry.event.api import EventDefinition, RuntimeStage
-from research_platform.observability.telemetry.event.runtime import EventRegistry, RuntimeStageAudit
+from noetrium_platform.evidence.observability.telemetry.event.api import EventDefinition, RuntimeStage
+from noetrium_platform.evidence.observability.telemetry.event.runtime import EventRegistry, RuntimeStageAudit
 
 class EventEmitterAuditTests(unittest.TestCase):
     def test_declared_event_without_emitter_fails(self):

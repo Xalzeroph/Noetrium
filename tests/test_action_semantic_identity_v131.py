@@ -7,9 +7,9 @@ from tests_support import context_action_spec
 
 import pytest
 
-from research_platform.reliability.effect.api import PreparedEffectHandle
-from research_platform.reliability.effect.runtime import InMemoryEffectIntentJournal
-from research_platform.environment.runtime.api import (
+from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal
+from noetrium_platform.capabilities.environment.runtime.api import (
     ActionIdentityViolation,
     ActionReconciliationDisposition,
     ActionReconciliationResult,
@@ -19,11 +19,11 @@ from research_platform.environment.runtime.api import (
     Observation,
     action_request_digest,
 )
-from research_platform.platform.kernel import EffectCertainty, EffectClass, EffectReceipt, ExecutionContext, OperationFailure
-from research_platform.participant.method.api import MethodIdentity, RecallResult
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentSpec
-from research_platform.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, ExecutionContext, OperationFailure
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
 
 
 def receipt(digest: str, certainty: EffectCertainty = EffectCertainty.EFFECT_CONFIRMED) -> EffectReceipt:
@@ -85,7 +85,7 @@ class E2:
 
 
 def spec() -> ExperimentSpec:
-    return context_action_spec(study_id="s", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1)
+    return context_action_spec(study_id="s", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1)
 
 
 def runtime(env, *, journal=None) -> ExperimentRuntime:

@@ -5,9 +5,9 @@ import tempfile
 import unittest
 import zipfile
 
-from research_platform.operator.maintenance.api import ControlAction, exact_server_startup_plan
-from research_platform.governance.release.runtime.packager import ReleasePackager
-from research_platform.governance.release.runtime.manifest import build_release_manifest, verify_release_manifest
+from noetrium_platform.product.operator.maintenance.api import ControlAction, exact_server_startup_plan
+from noetrium_platform.foundation.governance.release.runtime.packager import ReleasePackager
+from noetrium_platform.foundation.governance.release.runtime.manifest import build_release_manifest, verify_release_manifest
 from tests_support import run_launch_manifest
 
 

@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "toolbench",
+  "benchmark": {
+    "benchmark_id": "toolbench",
+    "title": "ToolBench",
+    "source_uri": "https://github.com/OpenBMB/ToolBench",
+    "environment_kinds": [
+      "web"
+    ],
+    "modalities": [
+      "text",
+      "structured"
+    ]
+  }
+}

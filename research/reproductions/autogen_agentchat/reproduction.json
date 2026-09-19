@@ -1,0 +1,107 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "autogen_agentchat",
+  "package_digest": "ed8921ac23e6260e5d210432eb0b9a100553c0cb79b7d31d507b2eec2fd7874a",
+  "definition_digest": "9258ee91e88cac0da05db1b725cd3e4b0045ed4d0da44722ce81bd1b67b87e35",
+  "source_registry_digest": "8668e81cb1f973ed2b3d05971c15f5e4455cd2ee8b8e2932f40c208aa8875912",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "autogen",
+    "title": "AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation",
+    "paper_uri": "https://www.microsoft.com/en-us/research/publication/autogen-enabling-next-gen-llm-applications-via-multi-agent-conversation-framework/",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "fe5078ac2f211b7c14c6014cf2970a454f7458cc8c0f913e52a9607c4c65aeb9"
+  },
+  "catalog": {
+    "domains": [
+      "multi-agent",
+      "runtime-systems"
+    ],
+    "families": [
+      "code_execution",
+      "human_agent_interaction",
+      "multi_agent",
+      "tool_use"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "multiagentbench"
+    ],
+    "platform_pressure": [
+      "environment/software",
+      "execution",
+      "execution/workflow",
+      "observability/telemetry",
+      "participant/agent",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "conversable-agent reply policy",
+      "group-chat and user-proxy conversation semantics",
+      "speaker selection policy"
+    ],
+    "platform_owned": [
+      "controlled code execution",
+      "effect evidence",
+      "human interruption",
+      "message routing",
+      "participant lifecycle",
+      "recovery"
+    ],
+    "reference_repositories": [
+      "https://github.com/microsoft/autogen"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "077f1421f75dd7a789538cc24bf619dfb4203de02824d44c982f68bdeee87e31"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/microsoft/autogen",
+      "commit": "904b293aa47c0e87e27e127254ce4f17a391048c",
+      "artifacts": [],
+      "lane_digest": "8a8811d76a2dd98c3ad1e094d5f10b559ee0ca5af886f24f0f8d64948ad86398"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/autogen_agentchat/fidelity.py",
+      "declaration_digest": "95866e839adb5152d1ea406caca9020695726f38d77e9d95cd3ee9268c17c01e",
+      "content_sha256": "0c976ed958c0ee81da6bc4b0adc3976da37c0b8580b94711d9159985fef296eb"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/autogen_agentchat/program.py",
+      "declaration_digest": "6c8b245d6b438f4dff0c064781a7b0a27489323b57dbf57ed8253893d1540c6e",
+      "content_sha256": "cbfb42ce4ca50b5771f1e68b8fac310b8d03cf9ef88c0bfd306a076364d884d0"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/autogen_agentchat/study.py",
+      "declaration_digest": "7d9162ef66f519761e34d82bfe41d290a261cda8ac0624b3c31d6256afcc9916",
+      "content_sha256": "7adfe499e2b997cb3b9ed2c0b5c8fec6183f4b7c2a92b3cbe46eaf2bbc24c5f8"
+    }
+  ],
+  "primary_executable": "research/reproductions/autogen_agentchat/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [
+    "matched execution requires an exact paper-era model/prompt binding and an immutable deployment-qualified MultiAgentBench task/environment cut"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_autogen_agentchat_fidelity_v1.py",
+      "content_sha256": "ba00f910a69fe72cbac6d94b833a37b839b4658dadac0059aa651ff356fc9f5c"
+    },
+    {
+      "path": "tests/test_scientific_autogen_groupchat_method_program_v1.py",
+      "content_sha256": "86b7113241b64d561bf4322cb509c9906beec4fa1a30473e0f86a8995efcbcf1"
+    }
+  ]
+}

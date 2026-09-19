@@ -1,6 +1,6 @@
 import unittest
-from research_platform.model.request.prompt.runtime import default_prompt_specs
-from research_platform.model.request.prompt.runtime.role_specs import planner_prompt_spec, semantic_prompt_spec, meta_prompt_spec, diagnostic_prompt_spec
+from noetrium_platform.capabilities.model.request.prompt.runtime import default_prompt_specs
+from noetrium_platform.capabilities.model.request.prompt.runtime.role_specs import planner_prompt_spec, semantic_prompt_spec, meta_prompt_spec, diagnostic_prompt_spec
 
 class PromptRoleSplitV30Tests(unittest.TestCase):
     def test_aggregator_is_exact_role_composition(self):

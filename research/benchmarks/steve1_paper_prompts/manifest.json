@@ -1,0 +1,18 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "steve1_paper_prompts",
+  "benchmark": {
+    "benchmark_id": "steve1-paper-prompts",
+    "title": "STEVE-1 Released Paper Prompt Evaluation Cells",
+    "source_uri": "https://github.com/Shalev-Lifshitz/STEVE-1",
+    "environment_kinds": [
+      "minecraft",
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "robot_state"
+    ]
+  }
+}

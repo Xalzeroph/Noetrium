@@ -3,9 +3,9 @@ import json
 import tempfile
 import unittest
 
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.observability.capture.composition import build_file_raw_observation_lake
-from research_platform.observability.telemetry.metric.composition import build_default_registry
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from tests._concurrency_support import raw_observation_lake
+from noetrium_platform.evidence.observability.telemetry.metric.composition import build_default_registry
 
 
 class RawTelemetryV30Tests(unittest.TestCase):
@@ -20,7 +20,7 @@ class RawTelemetryV30Tests(unittest.TestCase):
 
     def test_raw_lake_keeps_high_cardinality_context_and_payload(self):
         with tempfile.TemporaryDirectory() as td:
-            lake=build_file_raw_observation_lake(Path(td))
+            lake=raw_observation_lake(Path(td))
             receipt=lake.append(self._ctx(),"llm.request.raw",{
                 "role":"planner","model":"m","request_digest":"sha","status":"success",
                 "request_id":"rq-123","provider_request_id":"provider-987","token_ids":[1,2,3],
@@ -33,14 +33,14 @@ class RawTelemetryV30Tests(unittest.TestCase):
 
     def test_raw_lake_never_silently_accepts_unregistered_or_incomplete_family(self):
         with tempfile.TemporaryDirectory() as td:
-            lake=build_file_raw_observation_lake(Path(td))
+            lake=raw_observation_lake(Path(td))
             with self.assertRaises(KeyError): lake.append(self._ctx(),"unknown.raw",{"x":1})
             with self.assertRaises(ValueError): lake.append(self._ctx(),"llm.request.raw",{"role":"planner"})
 
     def test_raw_digest_detects_tamper(self):
         with tempfile.TemporaryDirectory() as td:
-            lake=build_file_raw_observation_lake(Path(td))
-            receipt=lake.append(self._ctx(),"study.raw",{"kind":"task","status":"running"})
+            lake=raw_observation_lake(Path(td))
+            receipt=lake.append_once(self._ctx(),"study.raw",{"kind":"task","status":"running"},idempotency_key="tamper")
             p=Path(receipt.segment_path); text=p.read_text(); p.write_text(text.replace('"running"','"done"'))
             self.assertTrue(any("digest mismatch" in e for e in lake.verify("r","study.raw")))
 

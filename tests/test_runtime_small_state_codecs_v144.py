@@ -7,41 +7,13 @@ from tempfile import TemporaryDirectory
 import time
 import unittest
 
-from research_platform.model.serving.api import ServiceHeartbeat
-from research_platform.platform.kernel.durability import ChecksummedDocumentFailureCode
-from research_platform.execution.runtime.manager.heartbeat_storage import FileServiceHeartbeatStore
-from research_platform.execution.runtime.manager import RecoveryLeaseStore
-from research_platform.execution.runtime.manager.heartbeat_codec import ServiceHeartbeatIntegrityError
-from research_platform.execution.runtime.manager.recovery_lease_codec import RecoveryLeaseIntegrityError
+from noetrium_platform.capabilities.model.serving.api import ServiceHeartbeat
+from noetrium_platform.foundation.kernel.kernel.durability import ChecksummedDocumentFailureCode
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat_storage import FileServiceHeartbeatStore
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat_codec import ServiceHeartbeatIntegrityError
 
 
 class RuntimeSmallStateCodecV144Tests(unittest.TestCase):
-    def test_recovery_lease_is_checksummed_and_rejects_unenveloped_state(self) -> None:
-        with TemporaryDirectory() as td:
-            path = Path(td) / "lease.json"
-            store = RecoveryLeaseStore(path)
-            lease = store.acquire("owner", "manifest", ttl_seconds=10, now=1)
-            document = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(document["schema"], "runtime-recovery-lease.v2")
-            self.assertEqual(store.read(), lease)
-
-            path.write_text(json.dumps(asdict(lease)), encoding="utf-8")
-            with self.assertRaises(RecoveryLeaseIntegrityError) as caught:
-                store.read()
-            self.assertIs(caught.exception.document_failure_code, ChecksummedDocumentFailureCode.SCHEMA_MISSING)
-
-    def test_recovery_lease_tamper_is_detected(self) -> None:
-        with TemporaryDirectory() as td:
-            path = Path(td) / "lease.json"
-            store = RecoveryLeaseStore(path)
-            store.acquire("owner", "manifest", ttl_seconds=10, now=1)
-            document = json.loads(path.read_text(encoding="utf-8"))
-            document["payload"]["owner_id"] = "attacker"
-            path.write_text(json.dumps(document), encoding="utf-8")
-            with self.assertRaises(RecoveryLeaseIntegrityError) as caught:
-                store.read()
-            self.assertIs(caught.exception.document_failure_code, ChecksummedDocumentFailureCode.CHECKSUM_MISMATCH)
-
     def test_heartbeat_is_checksummed_and_rejects_unenveloped_state(self) -> None:
         with TemporaryDirectory() as td:
             root = Path(td)

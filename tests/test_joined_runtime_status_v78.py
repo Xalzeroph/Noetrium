@@ -7,25 +7,25 @@ import tempfile
 import time
 import unittest
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.observability.status.runtime import PlatformStatusService
-from research_platform.execution.runtime.api import DeploymentStatusIdentity
-from research_platform.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
-from research_platform.execution.runtime.manager.heartbeat_storage import FileServiceHeartbeatStore
-from research_platform.execution.runtime.manager import RuntimeControlStore, RuntimeTxnPhase
-from research_platform.execution.runtime.manager.heartbeat import ServiceHeartbeat
-from research_platform.execution.runtime.manager.recovery_lease_store import RecoveryLeaseStore
-from research_platform.execution.runtime.manager.status_readers import RuntimeControlStatusReader, ServiceHeartbeatStatusReader
-from research_platform.execution.runtime.manager.model_deployment_status import ModelDeploymentStatusProbe
-from research_platform.execution.runtime.manager.recovery_lease_status import RecoveryLeaseStatusProbe
-from research_platform.execution.runtime.manager.runtime_transaction_status import RuntimeTransactionStatusProbe
-from research_platform.runtime.service.runtime.state_storage import FileServiceStateStore
-from research_platform.runtime.service.runtime import ServicePhase
-from research_platform.runtime.service.runtime.service_state_contracts import ServiceSupervisorState
-from research_platform.runtime.service.runtime.status_reader import ServiceOperationalStatusReader
-from research_platform.runtime.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
-from research_platform.runtime.service.runtime.status_projection import ServiceOperationalStatusProbe
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.evidence.observability.status.runtime import PlatformStatusService
+from noetrium_platform.research.execution.api import DeploymentStatusIdentity
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat_storage import FileServiceHeartbeatStore
+from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeControlStore, RuntimeTxnPhase
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat import ServiceHeartbeat
+from tests_support import recovery_lease_state
+from noetrium_platform.infrastructure.reliability.recovery.composition import compose_recovery_lease_status_probe
+from noetrium_platform.infrastructure.lifecycle.launch_control.status_readers import RuntimeControlStatusReader, ServiceHeartbeatStatusReader
+from noetrium_platform.infrastructure.lifecycle.launch_control.model_deployment_status import ModelDeploymentStatusProbe
+from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_transaction_status import RuntimeTransactionStatusProbe
+from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime import ServicePhase
+from noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_contracts import ServiceSupervisorState
+from noetrium_platform.infrastructure.lifecycle.service.runtime.status_reader import ServiceOperationalStatusReader
+from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime.status_projection import ServiceOperationalStatusProbe
 
 from test_server_runtime_control_v29 import deployment
 
@@ -63,13 +63,14 @@ class JoinedRuntimeStatusV78Tests(unittest.TestCase):
             None,
             None,
             time.time(),
+            time.time(),
         ))
-        lease=RecoveryLeaseStore(root/"recovery_lease.json")
+        lease=recovery_lease_state(root/"recovery_lease.json")
         forensics=ForensicStore(root/"forensics")
         heartbeat_reader=ServiceHeartbeatStatusReader(heartbeats)
         service=PlatformStatusService((
             RuntimeTransactionStatusProbe(RuntimeControlStatusReader(runtime.state_store, runtime.history)),
-            RecoveryLeaseStatusProbe(lease),
+            compose_recovery_lease_status_probe(lease),
             ModelDeploymentStatusProbe(
                 DeploymentStatusIdentity(d.deployment_id,d.stack.digest(),d.certificate.digest()),
                 heartbeat_reader,

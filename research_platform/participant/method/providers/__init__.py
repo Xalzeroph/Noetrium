@@ -1,1 +1,0 @@
-"""participant.method providers boundary."""

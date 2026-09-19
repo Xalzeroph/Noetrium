@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 import unittest
-from research_platform.governance.architecture.study_invariants import audit_study_invariants
+from noetrium_platform.foundation.governance.architecture.study_invariants import audit_study_invariants
 
 class StudyCompositionBoundaryV187Tests(unittest.TestCase):
     def test_study_domain_never_imports_runtime_implementations_or_composition(self):

@@ -7,14 +7,14 @@ import tempfile
 import unittest
 from unittest import mock
 
-from research_platform.model.request.prompt.runtime import (
+from noetrium_platform.capabilities.model.request.prompt.runtime import (
     DurablePromptRegistry,
     PromptPublicationError,
     default_block_policies,
     default_output_schemas,
     default_prompt_specs,
 )
-import research_platform.model.request.prompt.runtime.generation_staging as staging_module
+import noetrium_platform.capabilities.model.request.prompt.runtime.generation_staging as staging_module
 
 
 class PromptGenerationRecoveryV73Tests(unittest.TestCase):

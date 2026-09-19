@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from research_platform.platform.composition.experiment_runtime import build_experiment_runtime
-from tests_support import FakeParticipantResolver, runtime_identity_for_test
+from noetrium_platform.composition.experiment_runtime import build_experiment_runtime
+from tests_support import FakeParticipantResolver, runtime_identity_for_test, model_role_for_test
 
-from research_platform.platform.composition.participants.generic import generic_participant_adapter
-from research_platform.participant.core.api.contracts import ParticipantImplementationIdentity
-from research_platform.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
-from research_platform.execution.decision.cycle_identity import DecisionCycleIdentity
-from research_platform.experimentation.run.identity.api import RunIdentity
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.execution.workflow.api import ScientificCycleExecution
-from research_platform.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.composition.participants.generic import generic_participant_adapter
+from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantImplementationIdentity
+from noetrium_platform.research.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
+from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
+from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
 
 
 class ExternalRobotSession:
@@ -39,14 +39,14 @@ class ExternalRobot:
         return ExternalRobotSession(self.implementation_identity, session_id)
 
 
-class NoOpWorkflow:
-    workflow_id = "external-robot-noop.v1"
+class NoOpTrialProtocol:
+    protocol_id = "external-robot-noop.v1"
     surface_id = "empty.operations.v1"
-    configuration_digest = ""
+    configuration_digest = "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
 
     def run(self, operations, context, *, task, input_kind, input_payload):
         del operations, input_kind
-        return ScientificCycleExecution(str(task), input_payload, context, ())
+        return TrialCycleExecution(str(task), input_payload, context, ())
 
 
 def _spec():
@@ -54,9 +54,10 @@ def _spec():
         experiment_id="external-robot-study",
         study_id="default-study",
         project_id="default-project",
-        participants=(ExperimentParticipantSpec("physical_arm", ParticipantImplementationIdentity("robot", "arm-vendor-sdk", "7", "1", "3"), runtime_identity_for_test("robot"), "robot-cfg"),),
-        model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed",
-        repetitions=1, scientific_workflow_id="external-robot-noop.v1",
+        participants=(ExperimentParticipantSpec("physical_arm", ParticipantImplementationIdentity("robot", "arm-vendor-sdk", "7", "1", "3"), runtime_identity_for_test("robot"), "d" * 64),),
+        model_roles=(model_role_for_test(),), workload_digest="b" * 64, seed_digest="c" * 64,
+        repetitions=1, trial_protocol_id="external-robot-noop.v1",
+        trial_protocol_configuration_digest="44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
     )
 
 
@@ -66,7 +67,7 @@ def _runtime(store=None):
     from tests_support import EmptyWorkflowSurfaceFactory
     return build_experiment_runtime(
         participant_adapters=tuple(generic_participant_adapter(kind, participants) for kind in participants.kinds()),
-        scientific_workflow=NoOpWorkflow(),
+        trial_protocol=NoOpTrialProtocol(),
         checkpoint_store=store,
         workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),),
     )

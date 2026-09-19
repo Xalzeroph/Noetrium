@@ -1,0 +1,105 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "webvoyager",
+  "package_digest": "bc0fee9cf5309f7fe48e5e7ef5f9cfe8967642fa2f643216837c7a3ee752f17f",
+  "definition_digest": "fbb8f0b1cdfa8c9320975b1dd621d7c1df6a5285461e4e685e58a4d1c402f0db",
+  "source_registry_digest": "78d2607d22aec417ef867017d647e9acd612808ace7a6def9e43e987308f4b5f",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "webvoyager",
+    "title": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
+    "paper_uri": "https://aclanthology.org/2024.acl-long.371/",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "a83f96b4d567e801ad1c80a2582d6207ec0eec4e724946678cd0e287389d04f9"
+  },
+  "catalog": {
+    "domains": [
+      "gui-computer-use",
+      "multimodal",
+      "web-agents"
+    ],
+    "families": [
+      "agent_loop",
+      "gui",
+      "multimodal",
+      "web_agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "environment/gui",
+      "environment/web",
+      "experimentation/study",
+      "model/request",
+      "observability/telemetry",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "browser reasoning policy",
+      "numerically labeled browser observation policy",
+      "one-action browser grammar"
+    ],
+    "platform_owned": [
+      "evidence and metrics",
+      "model invocation",
+      "multimodal content transport",
+      "web and GUI environment execution"
+    ],
+    "reference_repositories": [
+      "https://github.com/MinorJerry/WebVoyager"
+    ],
+    "reference_publications": [
+      "https://aclanthology.org/2024.acl-long.371/"
+    ],
+    "catalog_digest": "7e93a5edc6e84489349586d3030e97f252cec9d7f42c28ced5d7df8eb52c0467"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "acl_2024_final",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2024,
+      "publication_id": "2024.acl-long.371",
+      "publication_uri": "https://aclanthology.org/2024.acl-long.371/",
+      "revision": "ACL 2024 long paper",
+      "content_sha256": null,
+      "lane_digest": "17413100b8164b2f92225c58f1e6e12755aaed2baa90c4ec77bdc441d26eeff2"
+    },
+    {
+      "lane_id": "official_webvoyager_v1",
+      "kind": "official_executable",
+      "repository": "https://github.com/MinorJerry/WebVoyager",
+      "commit": "091544539eba485dbd74ef3742011ddeede37336",
+      "artifacts": [
+        "data/WebVoyager_data.jsonl",
+        "prompts.py",
+        "run.py",
+        "run.sh",
+        "utils.py"
+      ],
+      "lane_digest": "d407491c593eaa754e900d36904ef3b62c35076dcec6e7bebacb4d4734f90ca7"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/webvoyager/fidelity.py",
+      "declaration_digest": "def0b8f26b679ff696e11cb2afa3f1383965835ff1e1e17fa50600095aaee236",
+      "content_sha256": "57ac173637e02fbe55012e41490d943ff5e5d9d26345ea3638069eaa31fe8cbc"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_web_embodied_fidelity_v1.py",
+      "content_sha256": "daac277c2e414516ca7dce22ccb66819e1a1caffff88968c9fe32f6375ef59ad"
+    }
+  ]
+}

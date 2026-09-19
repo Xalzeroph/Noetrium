@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 
-from research_platform.governance.architecture.concrete_dependency_invariants import (
+from noetrium_platform.foundation.governance.architecture.concrete_dependency_invariants import (
     audit_cross_subsystem_concrete_dependencies,
 )
 
@@ -19,8 +19,8 @@ def test_cross_subsystem_runtime_import_is_rejected() -> None:
         root = Path(td)
         _write(
             root,
-            "research_platform/execution/workflow/example.py",
-            "from research_platform.reliability.diagnostics.runtime import FailureDiagnosisService\n",
+            "noetrium_platform/research/execution/workflow/example.py",
+            "from noetrium_platform.infrastructure.reliability.diagnostics.runtime import FailureDiagnosisService\n",
         )
         rows = audit_cross_subsystem_concrete_dependencies(root)
         assert len(rows) == 1
@@ -32,8 +32,8 @@ def test_cross_subsystem_api_import_is_allowed() -> None:
         root = Path(td)
         _write(
             root,
-            "research_platform/execution/workflow/example.py",
-            "from research_platform.reliability.diagnostics.api import DiagnosticEvidencePort\n",
+            "noetrium_platform/research/execution/workflow/example.py",
+            "from noetrium_platform.infrastructure.reliability.diagnostics.api import DiagnosticEvidencePort\n",
         )
         assert audit_cross_subsystem_concrete_dependencies(root) == []
 
@@ -43,7 +43,7 @@ def test_composition_root_may_bind_concrete_runtime() -> None:
         root = Path(td)
         _write(
             root,
-            "research_platform/platform/composition/example.py",
-            "from research_platform.reliability.diagnostics.runtime import FailureDiagnosisService\n",
+            "noetrium_platform/composition/example.py",
+            "from noetrium_platform.infrastructure.reliability.diagnostics.runtime import FailureDiagnosisService\n",
         )
         assert audit_cross_subsystem_concrete_dependencies(root) == []

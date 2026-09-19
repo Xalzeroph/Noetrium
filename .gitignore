@@ -19,6 +19,14 @@ dist/
 venv/
 env/
 
+# Local server profiles and operator session state
+.env
+configs/server_profiles/*.local.env
+configs/server_profiles/*.local.*
+.server-state/
+runtime-state/
+.runtime-assets/
+
 # Tool caches
 .mypy_cache/
 .ruff_cache/
@@ -27,3 +35,6 @@ env/
 # OS / editor noise
 .DS_Store
 Thumbs.db
+
+# Local generated governance/test scratch
+.local/

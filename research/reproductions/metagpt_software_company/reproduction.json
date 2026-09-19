@@ -1,0 +1,113 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "metagpt_software_company",
+  "package_digest": "d191879650273a27e4e4bcc4c2ec279fedbad50178c50c3d20eef44cd0641393",
+  "definition_digest": "a125237281949c46c13a0e35c5bcc4cd6698a0e032d271dfe49cb10cc5f54da2",
+  "source_registry_digest": "1ce38ee388bf0eb998ce4109eafce04c083c168dbd6b10ee369a739c76c06ae8",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "metagpt",
+    "title": "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework",
+    "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/6507b115562bb0a305f1958ccc87355a-Abstract-Conference.html",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "5198cf5aaf53dea819193480afb8a023b40c25c672172051740025418b9351dd"
+  },
+  "catalog": {
+    "domains": [
+      "multi-agent",
+      "software-engineering"
+    ],
+    "families": [
+      "artifact_pipeline",
+      "multi_agent",
+      "software_agent",
+      "sop"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "humaneval"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/software",
+      "execution",
+      "execution/workflow",
+      "experimentation/study",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "SOP dependency graph",
+      "artifact-to-role workflow semantics",
+      "software-company role specialization"
+    ],
+    "platform_owned": [
+      "artifact lineage",
+      "bounded orchestration",
+      "evaluation",
+      "message transport",
+      "participant topology",
+      "software workspace execution"
+    ],
+    "reference_repositories": [
+      "https://github.com/FoundationAgents/MetaGPT"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "f8bc15abed0bb59def07a75ee1e826ac296a982579c69aa9ade7f5bfed5a22ea"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/FoundationAgents/MetaGPT",
+      "commit": "91595daa3b49f1a7bd0ed49e4bea80568455ba00",
+      "artifacts": [],
+      "lane_digest": "fb71f59914597de2cc6cbf0be3ad27df285ce1e912c84ab147ab9eb55b41536b"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/metagpt_software_company/fidelity.py",
+      "declaration_digest": "a06808fc5d079cad28f45d80412f7950da2708a280d1e7d823bcf4f95ce67d55",
+      "content_sha256": "e10ab41d32681cdb32c6dcbe71e0cd724561cc7e48f21b8f5ba283f47f7f6f8e"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/metagpt_software_company/program.py",
+      "declaration_digest": "f90688f8c40d8561519362bac5b59757870e4fde33d9a8c95c1ff10cdfb4eba1",
+      "content_sha256": "41e3df1cd15cbc27c140e88910a44d42d8441d671c48646058331bb7249d4c87"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/metagpt_software_company/study.py",
+      "declaration_digest": "3df4936cc049d6ede34826e493f24fd64edfaa865998ec6af4846bdd8a651e8f",
+      "content_sha256": "1186a575a89e01d53564acc3f833f6963830e916b0394419c24288ff1de8130b"
+    }
+  ],
+  "primary_executable": "research/reproductions/metagpt_software_company/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_humaneval_cut_v1.py",
+      "content_sha256": "cd957babbff9d28fdfda4458474e87f9cd2e6bda81005b40873838e6f779fd27"
+    },
+    {
+      "path": "tests/test_scientific_metagpt_fidelity_v1.py",
+      "content_sha256": "5e84c9513edd0fa625af6546d3fc9effc14b238f6a66ac063b90f6fb42e660a7"
+    },
+    {
+      "path": "tests/test_scientific_metagpt_humaneval_study_v1.py",
+      "content_sha256": "ce7dcf07b208f69d8e1c403f1419b69569059c22067fa2a20b3d4e475421c5f9"
+    },
+    {
+      "path": "tests/test_scientific_metagpt_method_program_v1.py",
+      "content_sha256": "2d766a3a65ebc694af8236fb762eb9597c6fd818c3273d77a3ddfee90beb7279"
+    }
+  ]
+}

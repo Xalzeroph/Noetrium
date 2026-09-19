@@ -1,33 +1,33 @@
 from __future__ import annotations
 
-from research_platform.runtime.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
 from runtime_manager_test_support import make_runtime_control_store
-from service_os_test_support import make_service_supervisor
+from service_os_test_support import make_service_supervisor, ready_evidence
 
 import hashlib
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.observability.status.runtime import PlatformStatusService
-from research_platform.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
-from research_platform.execution.runtime.manager import RuntimeControlStore
-from research_platform.execution.runtime.manager.recovery_lease_store import RecoveryLeaseStore
-from research_platform.execution.runtime.manager.status_readers import RuntimeControlStatusReader
-from research_platform.execution.runtime.manager.recovery_lease_status import RecoveryLeaseStatusProbe
-from research_platform.execution.runtime.manager.runtime_transaction_status import RuntimeTransactionStatusProbe
-from research_platform.runtime.service.runtime.state_storage import FileServiceStateStore
-from research_platform.runtime.service.runtime import (
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.evidence.observability.status.runtime import PlatformStatusService
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
+from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeControlStore
+from tests_support import recovery_lease_state
+from noetrium_platform.infrastructure.reliability.recovery.composition import compose_recovery_lease_status_probe
+from noetrium_platform.infrastructure.lifecycle.launch_control.status_readers import RuntimeControlStatusReader
+from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_transaction_status import RuntimeTransactionStatusProbe
+from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactServiceSupervisor,
     PreparedServiceStartReconcileResult,
     PreparedServiceStartStatus,
     ServiceStartRecoveryHandle,
 )
-from research_platform.runtime.service.runtime.status_reader import ServiceOperationalStatusReader
-from research_platform.runtime.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
-from research_platform.runtime.service.runtime.status_projection import ServiceOperationalStatusProbe
+from noetrium_platform.infrastructure.lifecycle.service.runtime.status_reader import ServiceOperationalStatusReader
+from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime.status_projection import ServiceOperationalStatusProbe
 
 
 def h(v): return hashlib.sha256(v.encode()).hexdigest()
@@ -41,7 +41,7 @@ class Durable:
     start_recovery_durability='crash_durable'
     def reconcile(self,state,launch): return (None,())
     def start(self,launch): raise AssertionError
-    def wait_ready(self,process,launch): return ('ready','out','err')
+    def wait_ready(self,process,launch): return ready_evidence(process,launch,"ready","out","err")
     def stop(self,process,launch): return ()
     def prepare_start_recovery(self,launch,*,intent_id,attempt):
         return ServiceStartRecoveryHandle.from_payload('provider.v1',b'secret-provider-token')
@@ -59,7 +59,7 @@ class ServiceStartIntentStatusTests(unittest.TestCase):
             try:
                 status=PlatformStatusService((
                     RuntimeTransactionStatusProbe(RuntimeControlStatusReader(runtime.state_store, runtime.history)),
-                    RecoveryLeaseStatusProbe(RecoveryLeaseStore(root/'lease.json')),
+                    compose_recovery_lease_status_probe(recovery_lease_state(root/'lease.json')),
                     ServiceOperationalStatusProbe('svc', ServiceOperationalStatusReader(service_store, DirectoryServiceStartIntentStore(Path(service_store.reference()).with_name(Path(service_store.reference()).name + ".start-intents")))),
                     ForensicStatusProbe(ForensicDiagnosticEvidence(forensics)),
                 )).snapshot().to_dict()
@@ -73,8 +73,8 @@ class ServiceStartIntentStatusTests(unittest.TestCase):
             finally: forensics.close()
 
     def test_exited_service_is_not_reported_ready(self):
-        from research_platform.runtime.service.runtime import ServicePhase
-        from research_platform.runtime.service.runtime.service_state_contracts import ServiceSupervisorState
+        from noetrium_platform.infrastructure.lifecycle.service.runtime import ServicePhase
+        from noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_contracts import ServiceSupervisorState
         import time
         with TemporaryDirectory() as td:
             root=Path(td); service_store=FileServiceStateStore(root/'svc.json')
@@ -82,7 +82,7 @@ class ServiceStartIntentStatusTests(unittest.TestCase):
             runtime=make_runtime_control_store(root/'runtime.json'); runtime.create('ctl','manifest')
             forensics=ForensicStore(root/'forensics')
             try:
-                data=PlatformStatusService((RuntimeTransactionStatusProbe(RuntimeControlStatusReader(runtime.state_store, runtime.history)),RecoveryLeaseStatusProbe(RecoveryLeaseStore(root/'l')),ServiceOperationalStatusProbe('svc',ServiceOperationalStatusReader(service_store, DirectoryServiceStartIntentStore(Path(service_store.reference()).with_name(Path(service_store.reference()).name + ".start-intents")))),ForensicStatusProbe(ForensicDiagnosticEvidence(forensics)))).snapshot().to_dict()
+                data=PlatformStatusService((RuntimeTransactionStatusProbe(RuntimeControlStatusReader(runtime.state_store, runtime.history)),compose_recovery_lease_status_probe(recovery_lease_state(root/'l')),ServiceOperationalStatusProbe('svc',ServiceOperationalStatusReader(service_store, DirectoryServiceStartIntentStore(Path(service_store.reference()).with_name(Path(service_store.reference()).name + ".start-intents")))),ForensicStatusProbe(ForensicDiagnosticEvidence(forensics)))).snapshot().to_dict()
                 self.assertEqual(next(x for x in data['subsystems'] if x['subsystem']=='service:svc')['state'],'failed')
             finally: forensics.close()
 

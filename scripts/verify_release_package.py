@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from research_platform.governance.release.runtime.package_verification import verify_release_package
+from noetrium_platform.foundation.governance.release.runtime.package_verification import verify_release_package
 
 
 def main(argv: list[str] | None = None) -> int:

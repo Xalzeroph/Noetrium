@@ -3,13 +3,12 @@ from runtime_manager_test_support import make_runtime_control_store, runtime_his
 from pathlib import Path
 import tempfile, time, unittest
 
-from research_platform.execution.runtime.manager.heartbeat_storage import FileServiceHeartbeatStore
-from research_platform.execution.runtime.manager.heartbeat import assert_exact_heartbeat
-from research_platform.execution.runtime.manager import (
-    RecoveryLeaseBusy, RecoveryLeaseStore, RuntimeControlStore,
-    ServiceHeartbeat,
-)
-from research_platform.reliability.primitives import CrashClass, CrashEvidence, classify_crash
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat_storage import FileServiceHeartbeatStore
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat import assert_exact_heartbeat
+from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeControlStore, ServiceHeartbeat
+from noetrium_platform.infrastructure.reliability.recovery.api.lease import RecoveryLeaseBusy
+from tests_support import recovery_lease_state
+from noetrium_platform.infrastructure.reliability.primitives import CrashClass, CrashEvidence, classify_crash
 
 class RuntimeOperabilityV31Tests(unittest.TestCase):
     def test_runtime_state_writes_always_append_hash_chained_history(self):
@@ -34,7 +33,7 @@ class RuntimeOperabilityV31Tests(unittest.TestCase):
 
     def test_recovery_lease_prevents_concurrent_operator_resume(self):
         with tempfile.TemporaryDirectory() as td:
-            s=RecoveryLeaseStore(Path(td)/"lease.json")
+            s=recovery_lease_state(Path(td)/"lease.json")
             s.acquire("op1","m",ttl_seconds=10,now=1)
             with self.assertRaises(RecoveryLeaseBusy): s.acquire("op2","m",ttl_seconds=10,now=2)
             s.release("op1","m")

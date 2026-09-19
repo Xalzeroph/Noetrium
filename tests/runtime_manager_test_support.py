@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from research_platform.execution.runtime.manager.history import RuntimeHistory
-from research_platform.execution.runtime.manager.runtime_history_storage import FileRuntimeHistoryStorage
-from research_platform.execution.runtime.manager.runtime_state_storage import FileRuntimeControlStateStore
-from research_platform.execution.runtime.manager.state import RuntimeControlStore
+from noetrium_platform.infrastructure.lifecycle.launch_control.history import RuntimeHistory
+from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_history_storage import FileRuntimeHistoryStorage
+from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_state_storage import FileRuntimeControlStateStore
+from noetrium_platform.infrastructure.lifecycle.launch_control.state import RuntimeControlStore
 
 
 def runtime_history_path(state_path: Path) -> Path:

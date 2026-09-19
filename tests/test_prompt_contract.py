@@ -1,6 +1,6 @@
 import unittest
-from research_platform.platform.kernel import ImmutableModelIdentity
-from research_platform.model.request.prompt.runtime import PromptRegistry, build_prompt_request_contract, default_prompt_specs, verify_prompt_request_contract
+from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
+from noetrium_platform.capabilities.model.request.prompt.runtime import PromptRegistry, build_prompt_request_contract, default_prompt_specs, verify_prompt_request_contract
 
 
 class PromptContractTests(unittest.TestCase):

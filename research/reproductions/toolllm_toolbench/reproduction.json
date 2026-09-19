@@ -1,0 +1,127 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "toolllm_toolbench",
+  "package_digest": "c72bdcad07f8595ecce0cc515082f90ff5c2aae1c026645836ddac21f6a85d62",
+  "definition_digest": "8449a7c44133655ac5d75dd4e55f7fcbe32db8216db6e8c5feb468eb14e39890",
+  "source_registry_digest": "87536d5be60f9ec27323a2924c41fbf0380a3f575e43cc044fc3f39779050898",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "toolllm",
+    "title": "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
+    "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/28e50ee5b72e90b50e7196fde8ea260e-Abstract-Conference.html",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "488ed76d89ffc9cf46869a31c3fd9900900c168e6278f04d7a5e2410a15048ab"
+  },
+  "catalog": {
+    "domains": [
+      "tool-use",
+      "training"
+    ],
+    "families": [
+      "api_agent",
+      "retrieval",
+      "search",
+      "tool_use"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "toolbench"
+    ],
+    "platform_pressure": [
+      "data/projection",
+      "data/query",
+      "execution",
+      "model/request",
+      "observability/telemetry",
+      "participant/capability"
+    ],
+    "method_owned": [
+      "API Retriever task-conditioned top-k policy",
+      "DFSDT tool-search policy",
+      "function-schema materialization and Finish injection semantics"
+    ],
+    "platform_owned": [
+      "capability descriptor authority",
+      "capability invocation and effect evidence",
+      "evaluation",
+      "semantic projection and query"
+    ],
+    "reference_repositories": [
+      "https://github.com/OpenBMB/ToolBench"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "25868b5c02ee14e85a2b440284415a11c1c71433a2a05d677f225abf11012fad"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/OpenBMB/ToolBench",
+      "commit": "b2384c2a7f9c3e444a5e579596968ad88cd3201a",
+      "artifacts": [],
+      "lane_digest": "809f42b3dac6bb6eea59e7db7536720febc8fbda34e1add860920e9048ec6997"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/toolllm_toolbench/fidelity.py",
+      "declaration_digest": "d0bd5851f585198a5c768e5f4fa0190f64eaa0fed499472b4efdae3bbda149c7",
+      "content_sha256": "37f0b258265d4860a9009e504d986f6f6abc56938c487abf600d6579433753ad"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/toolllm_toolbench/program.py",
+      "declaration_digest": "37e587bfd408792ccc099909c55511f3f7fbe9e99a39bfae597d84fbe35a24ee",
+      "content_sha256": "ec5f5bfd52a67c98bc368376538b5d06d0f28ece4e1facd973e689679e902ef4"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/toolllm_toolbench/study.py",
+      "declaration_digest": "40bee46f7346bc4a89b2e46685bb484bad8464acc0853b4c7c3ad198413dd197",
+      "content_sha256": "a82b8cb3370fa2ece1d124df5de6998d159186bc5d1c7f28d7b902533336eb38"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/toolllm_toolbench/search.py",
+      "declaration_digest": "22da07a7b7e73f6f4da05cb64b60eaf9c8c34a68de9efede95112b1eaa7f30d9",
+      "content_sha256": "a98204fcc18d89759c206e9dac237a3a4149e89592ad461d9cd5488a811934c7"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/toolllm_toolbench/selection.py",
+      "declaration_digest": "889769fa29c3e8b6a2c880bde89de159a2f9e4864a10bb36e37ea31818ea261f",
+      "content_sha256": "217963e130fe7f9fd0a8ef229a4c56c5f74e0fe29e8777fcc1817273b8f2cd9f"
+    }
+  ],
+  "primary_executable": "research/reproductions/toolllm_toolbench/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_toolbench_cut_v1.py",
+      "content_sha256": "c67877b153fb8e0df587f992f957dd523f836fe49313984fbe8d2d073b51d14b"
+    },
+    {
+      "path": "tests/test_scientific_toolllm_dfsdt_v1.py",
+      "content_sha256": "b52ad76fad333ebf26ba3d4ce20770c9e6c8d954a6a50044229ed86547b85a7f"
+    },
+    {
+      "path": "tests/test_scientific_toolllm_method_program_v1.py",
+      "content_sha256": "552cb9d33cf67e38fee5f89c63efa85d7c9309228eab4003026cde9ba60ef6fc"
+    },
+    {
+      "path": "tests/test_scientific_toolllm_study_v1.py",
+      "content_sha256": "055b537208b97c1ed961d906943b6f0977d94d0748faf6340800f6c540b3c376"
+    },
+    {
+      "path": "tests/test_scientific_toolllm_toolbench_v1.py",
+      "content_sha256": "28cbc0c336c8b9f1dc99163dffd077ee469f1591e8cc9580d84178cd50ec9eb2"
+    }
+  ]
+}

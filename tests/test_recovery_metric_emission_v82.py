@@ -4,14 +4,14 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.model.serving.api import RecoveryStep
-from research_platform.model.serving.runtime import DurableExactRecoveryRunner
-from research_platform.platform.composition.model_recovery_observability import MetricDurableRecoveryObserver
-from research_platform.model.serving.providers.recovery_storage import FileDurableRecoveryStore
-from research_platform.observability.telemetry.metric.composition import build_default_registry
-from research_platform.observability.telemetry.metric.providers import TelemetrySQLiteBackend
-from research_platform.observability.telemetry.metric.runtime import TelemetryStore
+from tests._concurrency_support import telemetry_backend
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.capabilities.model.serving.api import RecoveryStep
+from noetrium_platform.capabilities.model.serving.runtime import DurableExactRecoveryRunner
+from noetrium_platform.composition.model_recovery_observability import MetricDurableRecoveryObserver
+from noetrium_platform.capabilities.model.serving.providers.recovery_storage import FileDurableRecoveryStore
+from noetrium_platform.evidence.observability.telemetry.metric.composition import build_default_registry
+from noetrium_platform.evidence.observability.telemetry.metric.runtime import TelemetryStore
 
 from test_model_os_v11 import ModelOSV11Tests, _RecoveryExecutor
 
@@ -22,7 +22,7 @@ class RecoveryMetricEmissionV82Tests(unittest.TestCase):
             root=Path(td)
             plan=ModelOSV11Tests()._plan()
             store=FileDurableRecoveryStore(root/"recovery.json", guard_path=root/"recovery.guard.lock")
-            metrics=TelemetryStore(build_default_registry(), TelemetrySQLiteBackend(root/"metrics.sqlite3"))
+            metrics=TelemetryStore(build_default_registry(), telemetry_backend(self, root/"metrics.sqlite3"))
             ctx=ExecutionContext(run_id="run82",trace_id="tr82",span_id="sp82",component_id="model_recovery")
             executor=_RecoveryExecutor(RecoveryStep.RESTART_EXACT_MODEL)
             runner=DurableExactRecoveryRunner(store,executor,observer=MetricDurableRecoveryObserver(metrics,ctx))

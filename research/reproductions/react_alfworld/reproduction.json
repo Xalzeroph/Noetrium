@@ -1,0 +1,370 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "react_alfworld",
+  "package_digest": "86c389f7047a8c1ec8f96bf67b723d71abc0a7a080a8829d6946de8619d103da",
+  "definition_digest": "e5e50ba35607f445533ef9ed7b468ec8dd89a2180d2f353086aca4f22268e0d9",
+  "source_registry_digest": "b362f56e91e03c46aecc86932f05c8a6dd1eed18062a14b73ce3d15e8d5c5bde",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "react",
+    "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+    "paper_uri": "https://openreview.net/forum?id=WE_vluYUL-X",
+    "year": 2023,
+    "paper_revision": "arXiv:2210.03629v3 / ICLR 2023",
+    "identity_digest": "71a55d742dc0a876f57adc926646e8480a3294801076d819e607d3d7b3e130b2"
+  },
+  "catalog": {
+    "domains": [
+      "agent-loop",
+      "reasoning",
+      "tool-use"
+    ],
+    "families": [
+      "agent_loop",
+      "reasoning",
+      "tool_use"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "alfworld",
+      "webshop"
+    ],
+    "platform_pressure": [
+      "environment/text_world",
+      "experimentation/study",
+      "model/request",
+      "observability/telemetry",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "reasoning trace policy",
+      "thought-action interleaving policy"
+    ],
+    "platform_owned": [
+      "agent loop lifecycle",
+      "environment binding",
+      "evidence and metrics",
+      "model invocation"
+    ],
+    "reference_repositories": [
+      "https://github.com/ysymyth/ReAct"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "7d0ae717929acb7c1057759971ce391b78d131efbf407e68ff8688d60bf4f465"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "official_react_repo",
+      "kind": "official_executable",
+      "repository": "https://github.com/ysymyth/ReAct",
+      "commit": "19c6bae532250cf57bd7465d7f5a87edf2fda8f6",
+      "artifacts": [
+        "alfworld.ipynb",
+        "base_config.yaml",
+        "prompts/alfworld_3prompts.json"
+      ],
+      "lane_digest": "83d403343883fd8fd3d32f5218d866fb6c24ea743a7a3d8bc67f500e6573ba4f"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/react_alfworld/fidelity.py",
+      "declaration_digest": "6890cd804a69d2c5479d22134e0351225011d212038982631e5bfb61a1c70cb9",
+      "content_sha256": "1f45511384a13360af5cbd6e8ac35141360983a270e22a2a3f88e1db37b706ba"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/react_alfworld/program.py",
+      "declaration_digest": "0f03adf8741751737af9287a287a135bfb9e586bbb963d90ca40b6a8c89c8d94",
+      "content_sha256": "7e321f2d93a5ba71cfdf59099f48486665ba79b2da5bf8ece5d5fc087b644316"
+    },
+    {
+      "kind": "semantics",
+      "path": "research/reproductions/react_alfworld/semantics.py",
+      "declaration_digest": "351e2748fe21bc72362e5540fe51049bcc22bdabbcca06b9d556d324cd0a520e",
+      "content_sha256": "5428212dc8232298a3dfcba7248979297df085d0a6de02ecff40442087413997"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/react_alfworld/study.py",
+      "declaration_digest": "34ade6fba9f9251ed86552f370e3f2227cb82e69b5959af121b2818fb97d9769",
+      "content_sha256": "2a8d2c3b7d65c36fb06db059905fcf45fc55c82403f852c5b0ca267deb2260b4"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/react_alfworld/trajectory.py",
+      "declaration_digest": "283b69aeb84edb5a6a2f279704b6d9cc5f1343add727334125f37ed83e2af142",
+      "content_sha256": "e86983ce1123421bce511ed91770a6704486d850265e2f473d627ce84a769fff"
+    }
+  ],
+  "primary_executable": "research/reproductions/react_alfworld/program.py",
+  "reported_results": [
+    {
+      "claim_id": "react_palm_mean",
+      "metric_id": "success_rate",
+      "value": 57,
+      "qualifiers": {
+        "aggregation": "mean_of_6_trials",
+        "condition": "ReAct",
+        "model_lane_id": "paper",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper",
+          "roles": [
+            {
+              "availability": "historical_not_publicly_reproducible",
+              "decoding": {
+                "strategy": "greedy"
+              },
+              "model": "PaLM-540B",
+              "role": "action"
+            }
+          ]
+        }
+      },
+      "claim_digest": "f4e59c6eaec9efd8911785d4d8c635ef2202fbe6e4a05bf29f00efa7100679e9"
+    },
+    {
+      "claim_id": "react_palm_best",
+      "metric_id": "success_rate",
+      "value": 71,
+      "qualifiers": {
+        "aggregation": "best_of_6_trials",
+        "condition": "ReAct",
+        "model_lane_id": "paper",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper",
+          "roles": [
+            {
+              "availability": "historical_not_publicly_reproducible",
+              "decoding": {
+                "strategy": "greedy"
+              },
+              "model": "PaLM-540B",
+              "role": "action"
+            }
+          ]
+        }
+      },
+      "claim_digest": "4f3f4eb1822706b0fca73d6ff79fda045edae7df3b69173be9f5c0f9bf543305"
+    },
+    {
+      "claim_id": "act_palm_best",
+      "metric_id": "success_rate",
+      "value": 45,
+      "qualifiers": {
+        "aggregation": "best_of_6_trials",
+        "condition": "Act",
+        "model_lane_id": "paper",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper",
+          "roles": [
+            {
+              "availability": "historical_not_publicly_reproducible",
+              "decoding": {
+                "strategy": "greedy"
+              },
+              "model": "PaLM-540B",
+              "role": "action"
+            }
+          ]
+        }
+      },
+      "claim_digest": "69454f805ab7762f2fcaa3535f0cf51baf65b0a649050dc8b822619681a2b033"
+    },
+    {
+      "claim_id": "react_im_palm_mean",
+      "metric_id": "success_rate",
+      "value": 48,
+      "qualifiers": {
+        "aggregation": "mean_of_6_trials",
+        "condition": "ReAct-IM",
+        "model_lane_id": "paper",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper",
+          "roles": [
+            {
+              "availability": "historical_not_publicly_reproducible",
+              "decoding": {
+                "strategy": "greedy"
+              },
+              "model": "PaLM-540B",
+              "role": "action"
+            }
+          ]
+        }
+      },
+      "claim_digest": "ee7cbcf7b1ff476f65753c15e9f0320fd8c34e4a26983b73fa1a5fb15a5850b1"
+    },
+    {
+      "claim_id": "react_im_palm_best",
+      "metric_id": "success_rate",
+      "value": 53,
+      "qualifiers": {
+        "aggregation": "best_of_6_trials",
+        "condition": "ReAct-IM",
+        "model_lane_id": "paper",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper",
+          "roles": [
+            {
+              "availability": "historical_not_publicly_reproducible",
+              "decoding": {
+                "strategy": "greedy"
+              },
+              "model": "PaLM-540B",
+              "role": "action"
+            }
+          ]
+        }
+      },
+      "claim_digest": "eecd9d12ee784f199893a6239cbb1676477339347939726e3059a55889ea95f1"
+    },
+    {
+      "claim_id": "butler_best",
+      "metric_id": "success_rate",
+      "value": 37,
+      "qualifiers": {
+        "aggregation": "reported_best_of_8",
+        "condition": "BUTLER",
+        "model_lane_id": "paper",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper",
+          "roles": [
+            {
+              "availability": "historical_not_publicly_reproducible",
+              "decoding": {
+                "strategy": "greedy"
+              },
+              "model": "PaLM-540B",
+              "role": "action"
+            }
+          ]
+        }
+      },
+      "claim_digest": "f7a350e120aec5038c2a641357ae8c66bfb8e0559f6aabeb4de712576254ed82"
+    },
+    {
+      "claim_id": "butler_g_best",
+      "metric_id": "success_rate",
+      "value": 22,
+      "qualifiers": {
+        "aggregation": "reported_best_of_8",
+        "condition": "BUTLERg",
+        "model_lane_id": "paper",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper",
+          "roles": [
+            {
+              "availability": "historical_not_publicly_reproducible",
+              "decoding": {
+                "strategy": "greedy"
+              },
+              "model": "PaLM-540B",
+              "role": "action"
+            }
+          ]
+        }
+      },
+      "claim_digest": "cdd9e387767cb31400be8ac52e513b4d03921b1aeff66c9e92a4608afa7abfa4"
+    },
+    {
+      "claim_id": "released_code_davinci002",
+      "metric_id": "success_rate",
+      "value": 78.4,
+      "qualifiers": {
+        "aggregation": "single_released_code_sweep",
+        "condition": "ReAct",
+        "model_lane_id": "official_code",
+        "reported_model_lane": {
+          "kind": "released_code",
+          "lane_id": "official_code",
+          "roles": [
+            {
+              "availability": "historical_decommissioned",
+              "decoding": {
+                "frequency_penalty": 0,
+                "max_output_tokens": 100,
+                "presence_penalty": 0,
+                "stop_sequences": [
+                  "\\n"
+                ],
+                "temperature": 0,
+                "top_p": 1
+              },
+              "model": "text-davinci-002",
+              "role": "action"
+            }
+          ]
+        }
+      },
+      "claim_digest": "8c433e9fa96999a1d425f43d79d1b1e1f80e26ffddc94da33beb8483a403a842"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "act",
+      "description": "environment interaction without ReAct reasoning traces",
+      "qualifiers": {},
+      "baseline_digest": "cf3daefe976298185ca92ec21f4c9e16d0478a3046c6c219404debe773af84ec"
+    },
+    {
+      "baseline_id": "react-im",
+      "description": "dense external-feedback thought-pattern ablation reported by ReAct",
+      "qualifiers": {},
+      "baseline_digest": "ad692e1020cbd8851fcd5a6062a1979ff046a237f24866e73b26f87123c5d7c5"
+    },
+    {
+      "baseline_id": "butler",
+      "description": "ALFWorld imitation-learning baseline cited by the ReAct paper",
+      "qualifiers": {},
+      "baseline_digest": "5a1d13f5b21c13f6d74d35a3782ee9c62cc11dc03eb11f34344b134ae744c1af"
+    },
+    {
+      "baseline_id": "butler-g",
+      "description": "ALFWorld BUTLERg baseline cited by the ReAct paper",
+      "qualifiers": {},
+      "baseline_digest": "e832e9dd8a797d8260949823c5ba8ccb2c4b99fa67b18749c7c0e5e9f825eaf8"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "paper PaLM-540B model identity cannot currently be rebound exactly",
+      "delta_digest": "f97c0a2965b08d94338e5eb252649d0497db56f5b79a525b3a48f7c223b99456"
+    },
+    {
+      "kind": "unresolved",
+      "description": "paper table aggregates six PaLM trials while the released GPT-3 notebook encodes a distinct single-sweep lane",
+      "delta_digest": "5acbcc613ea7f8bea9503e86d87333dc71260b0d9dc2591ddd74b7812d7cfc64"
+    }
+  ],
+  "blockers": [
+    "the PaLM-540B paper lane is not publicly reproducible as an exact model cut",
+    "text-davinci-002 used by the released notebook is decommissioned",
+    "the exact ALFWorld json_2.1.1 dataset/environment must be deployment-bound before matched execution"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_react_alfworld_fidelity_v1.py",
+      "content_sha256": "ae4298d998b1fb6a15a34038c7501907d80df6e5ef6737ba24e1f2f6128b5462"
+    },
+    {
+      "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
+      "content_sha256": "15277c099e1d8b0aac8de0535a05266dba211cebfa37239d6bed0ac1beb2d0ef"
+    },
+    {
+      "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
+      "content_sha256": "841786650b37e1806f9353fdbf156dd09b22122f87df8bb6ae572cc75708df6a"
+    }
+  ]
+}

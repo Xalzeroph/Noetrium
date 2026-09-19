@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from research_platform.runtime.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
 from service_os_test_support import make_service_supervisor
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.runtime.service.runtime.state_storage import FileServiceStateStore
-from research_platform.runtime.service.runtime import (
+from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactServiceQuiescenceProbe,
     ExactServiceSupervisor,
     ServicePhase,
@@ -42,7 +42,7 @@ class ServiceQuiescenceProbeV167Tests(unittest.TestCase):
             store=FileServiceStateStore(Path(td)/'state.json')
             state=ServiceSupervisorState.initial('svc',c.digest())
             store.write(ServiceSupervisorState(
-                state.service_id,state.contract_digest,ServicePhase.RUNNING,1,process,'ready',None,None,None,None,None,state.updated_at
+                state.service_id,state.contract_digest,ServicePhase.RUNNING,1,process,'ready',None,None,None,None,None,state.updated_at,1234.5
             ))
             sup=make_service_supervisor(store,Adapter(process))
             observation=ExactServiceQuiescenceProbe(sup,c).observe()

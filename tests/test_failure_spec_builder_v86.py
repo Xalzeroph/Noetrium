@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 import unittest
 
-from research_platform.reliability.failure.api import DEFAULT_FAILURE_CATALOG
-from research_platform.reliability.forensics.runtime import FailureCatalogSourceAudit
-from research_platform.reliability.failure.api import build_failure_from_spec
-from research_platform.platform.kernel import ExecutionContext
+from noetrium_platform.infrastructure.reliability.failure.api import DEFAULT_FAILURE_CATALOG
+from noetrium_platform.infrastructure.reliability.forensics.runtime import FailureCatalogSourceAudit
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure_from_spec
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 
 class FailureSpecBuilderV86Tests(unittest.TestCase):
@@ -21,7 +21,7 @@ class FailureSpecBuilderV86Tests(unittest.TestCase):
         self.assertEqual(f.comparability_risk,spec.comparability_risk)
 
     def test_production_source_has_no_free_form_failure_builder_bypass(self):
-        root=Path(__file__).resolve().parents[1]/"research_platform"
+        root=Path(__file__).resolve().parents[1]/"noetrium_platform"
         report=FailureCatalogSourceAudit(root,DEFAULT_FAILURE_CATALOG).run()
         self.assertEqual(report.free_form_builder_calls,())
         self.assertEqual(report.errors,())

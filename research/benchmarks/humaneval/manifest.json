@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "humaneval",
+  "benchmark": {
+    "benchmark_id": "humaneval",
+    "title": "HumanEval",
+    "source_uri": "https://github.com/openai/human-eval",
+    "environment_kinds": [
+      "software"
+    ],
+    "modalities": [
+      "text",
+      "code"
+    ]
+  }
+}

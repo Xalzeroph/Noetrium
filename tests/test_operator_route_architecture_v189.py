@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from research_platform.governance.architecture.operator_route_invariants import audit_operator_route_invariants
+from noetrium_platform.foundation.governance.architecture.operator_route_invariants import audit_operator_route_invariants
 
 
 def test_operator_command_families_are_independent_routes() -> None:

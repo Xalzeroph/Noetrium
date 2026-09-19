@@ -7,19 +7,19 @@ from tests_support import context_action_spec
 
 import pytest
 
-from research_platform.reliability.effect.api import PreparedEffectHandle
-from research_platform.reliability.effect.runtime import InMemoryEffectIntentJournal
-from research_platform.environment.runtime.api import (
+from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal
+from noetrium_platform.capabilities.environment.runtime.api import (
     action_request_digest,
     ActionReconciliationDisposition, ActionReconciliationResult, ActionResult,
     EnvironmentIdentity, Observation,
 )
-from research_platform.platform.kernel import EffectCertainty, EffectClass, EffectReceipt, OperationFailure
-from research_platform.participant.method.api import MethodIdentity, RecallResult
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentSpec
-from research_platform.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
-from research_platform.execution.workflow.implementations.context_action.safe_action import ActionNotApplied
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, OperationFailure
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
+from noetrium_platform.research.execution.workflow.implementations.context_action.safe_action import ActionNotApplied
 
 
 class MS:
@@ -68,7 +68,7 @@ def rt(j):
     ident=DecisionCycleIdentity("run","dc","session","task","trace")
     return context_action_runtime(mr,er,cycle_identity_provider=FixedDecisionCycleIdentityProvider(ident),effect_journal=j)
 
-def spec(): return context_action_spec(study_id="s", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1)
+def spec(): return context_action_spec(study_id="s", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1)
 
 
 def test_authoritative_not_applied_never_becomes_method_task_completed():

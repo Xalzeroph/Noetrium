@@ -2,10 +2,10 @@ from pathlib import Path
 import json
 import tempfile
 import unittest
-from research_platform.platform.kernel import ImmutableModelIdentity
-from research_platform.model.serving.api import ModelPhase, ModelRunState
-from research_platform.model.serving.runtime import ModelSupervisor
-from research_platform.model.serving.providers.supervisor_storage import FileModelSupervisorStateStore
+from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
+from noetrium_platform.capabilities.model.serving.api import ModelPhase, ModelRunState
+from noetrium_platform.capabilities.model.serving.runtime import ModelSupervisor
+from noetrium_platform.capabilities.model.serving.providers.supervisor_storage import FileModelSupervisorStateStore
 
 class SupervisorStateTests(unittest.TestCase):
     def test_atomic_state_file_tracks_phase(self):

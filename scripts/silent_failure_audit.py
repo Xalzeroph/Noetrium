@@ -5,11 +5,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from research_platform.governance.quality import scan_silent_failures
+from noetrium_platform.foundation.governance.quality import scan_silent_failures
 
 
 def main() -> int:
-    findings = scan_silent_failures(ROOT / "research_platform") + scan_silent_failures(ROOT / "methods")
+    findings = scan_silent_failures(ROOT / "noetrium_platform") + scan_silent_failures(ROOT / "projects")
     for f in findings:
         print(f"{f.kind} {f.path}:{f.line}: {f.detail}")
     if findings:

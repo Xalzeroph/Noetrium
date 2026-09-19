@@ -4,15 +4,15 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.reliability.failure.api import DEFAULT_FAILURE_CATALOG
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.failure.api import DEFAULT_FAILURE_CATALOG
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.reliability.failure.api import build_failure_from_spec
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.reliability.diagnostics.runtime import TriagePlanService
-from research_platform.operator.runtime.parser import build_parser
-from research_platform.operator.query.runtime.route_diagnostics import route_diagnostics
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure_from_spec
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import TriagePlanService
+from noetrium_platform.product.operator.runtime.parser import build_parser
+from noetrium_platform.product.operator.query.runtime.route_diagnostics import route_diagnostics
 
 
 class TriagePlanV92Tests(unittest.TestCase):

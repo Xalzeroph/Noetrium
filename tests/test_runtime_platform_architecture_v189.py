@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from research_platform.governance.architecture.runtime_platform_invariants import audit_runtime_platform_invariants
+from noetrium_platform.foundation.governance.architecture.runtime_platform_invariants import audit_runtime_platform_invariants
 
 
 def test_runtime_platform_uses_data_only_authority_bundle() -> None:

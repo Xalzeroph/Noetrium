@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from research_platform.governance.architecture.telemetry_invariants import audit_telemetry_invariants
+from noetrium_platform.foundation.governance.architecture.telemetry_invariants import audit_telemetry_invariants
 
 
 def test_telemetry_domain_does_not_own_sqlite_or_private_object_graph() -> None:

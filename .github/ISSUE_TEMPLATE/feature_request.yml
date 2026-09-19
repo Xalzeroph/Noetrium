@@ -1,0 +1,50 @@
+name: Feature request
+description: Propose a scoped capability or platform improvement
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Noetrium keeps project-specific scientific meaning downstream. Describe the reusable platform need, not only one experiment's preferred implementation.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Research or engineering problem
+      description: What reusable problem is currently difficult or impossible to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed capability
+      description: Describe the smallest public capability or provider change that would solve the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Ownership and contract boundary
+      description: Which subsystem should own the capability, and which public contract would change or be added?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Explain why an existing provider, downstream implementation, or composition change is insufficient.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Acceptance evidence
+      description: What tests, measurements, or observable behavior would prove the feature works without semantic degradation?
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Scope checks
+      options:
+        - label: The request describes reusable platform infrastructure rather than paper-specific scientific policy.
+          required: true
+        - label: I searched existing issues and Discussions for related proposals.
+          required: true

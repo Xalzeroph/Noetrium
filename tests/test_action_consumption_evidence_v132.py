@@ -11,18 +11,18 @@ import tempfile
 
 import pytest
 
-from research_platform.reliability.effect.api import PreparedEffectHandle
-from research_platform.reliability.effect.api import (
+from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.infrastructure.reliability.effect.api import (
     EffectCompletionEvidence,
     EffectIntentConflict,
     EffectIntentPhase,
 )
-from research_platform.reliability.effect.runtime import (
+from noetrium_platform.infrastructure.reliability.effect.runtime import (
     EffectJournalDocumentCodec,
     InMemoryEffectIntentJournal,
     SQLiteEffectIntentJournal,
 )
-from research_platform.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.runtime.api import (
     ActionReconciliationDisposition,
     ActionReconciliationResult,
     ActionRequest,
@@ -31,10 +31,10 @@ from research_platform.environment.runtime.api import (
     Observation,
     action_request_digest,
 )
-from research_platform.platform.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
-from research_platform.participant.method.api import MethodIdentity, MethodTaskCompletionReceipt, RecallResult
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodTaskCompletionReceipt, RecallResult
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
 
 
 def effect(request: ActionRequest) -> EffectReceipt:

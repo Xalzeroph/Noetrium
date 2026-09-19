@@ -5,10 +5,10 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from runtime_manager_test_support import make_runtime_control_store
-from research_platform.execution.runtime.manager import ExactRuntimeController
-from research_platform.execution.runtime.manager.one_click import OneClickRuntimeManager
-from research_platform.execution.runtime.manager.recovery_execution import FileLockedRecoveryExecutionFactory
-from research_platform.execution.runtime.manager.recovery_lease_store import RecoveryLeaseStore
+from noetrium_platform.infrastructure.lifecycle.launch_control import ExactRuntimeController
+from noetrium_platform.infrastructure.lifecycle.launch_control.one_click import OneClickRuntimeManager
+from noetrium_platform.infrastructure.reliability.recovery.execution.runtime.file_lock import FileLockedRecoveryExecutionFactory
+from tests_support import recovery_lease_state
 from tests_support import frozen_runtime_manifest
 
 
@@ -90,7 +90,7 @@ class RuntimeObserverIsolationV183Tests(unittest.TestCase):
             manager = OneClickRuntimeManager(
                 Plane(controller),
                 FileLockedRecoveryExecutionFactory(
-                    RecoveryLeaseStore(root / "lease.json"),
+                    recovery_lease_state(root / "lease.json"),
                     lock_path=root / "recovery.execution.lock",
                 ),
                 runtime_store,

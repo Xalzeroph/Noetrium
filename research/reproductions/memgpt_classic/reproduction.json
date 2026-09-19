@@ -1,0 +1,124 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "memgpt_classic",
+  "package_digest": "d8869f0f175f72bdef183c75cb94cda39f95a6ea42d0ebd407886b4657baa13e",
+  "definition_digest": "78d4819b2b7b9ef14b6bf80e5d64cc2c88e60f2eed9cc82f5d4dcfed94b04a02",
+  "source_registry_digest": "a344ec7fde772c9140ac33832d9b9438b417ea0804035281115501feecff9998",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "memgpt",
+    "title": "MemGPT: Towards LLMs as Operating Systems",
+    "paper_uri": "https://arxiv.org/abs/2310.08560",
+    "year": 2023,
+    "paper_revision": null,
+    "identity_digest": "4d207ffe90512db6e96f4d671d1644dc6cd7f4f144107a198ab12b72ce54c6bb"
+  },
+  "catalog": {
+    "domains": [
+      "context-management",
+      "memory",
+      "runtime-systems"
+    ],
+    "families": [
+      "context_management",
+      "long_horizon",
+      "memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "memoryarena"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "data/projection",
+      "data/query",
+      "data/state",
+      "model/request",
+      "participant/agent",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "memory hierarchy semantics",
+      "memory movement policy"
+    ],
+    "platform_owned": [
+      "checkpoint and recovery",
+      "context admission",
+      "durable state",
+      "lineage",
+      "semantic projection and query"
+    ],
+    "reference_repositories": [
+      "https://github.com/letta-ai/letta"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "17f76bb7b954a7c2257f8ab5a5d3dda7052e8e601919c2e024739e95d50ed431"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/letta-ai/letta",
+      "commit": "15540c24ac328c995fb11f89d2e228cde508ab37",
+      "artifacts": [],
+      "lane_digest": "f2d5ddcaaa8c158eab58d1bf0539af9180910d7f20d0203931bd77508fb2d6ac"
+    },
+    {
+      "lane_id": "candidate_unclassified_02",
+      "kind": "candidate",
+      "repository": "https://github.com/letta-ai/letta",
+      "commit": "12ca6e98affc9d774b7ddc0e087217122ba2a74b",
+      "artifacts": [],
+      "lane_digest": "0a85447a508a3c97b26e3853418fce17016697d9be4397a6cddaaf64e8c94bce"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/memgpt_classic/fidelity.py",
+      "declaration_digest": "14f2f4d9a8b4ea5529065ca0aea020e35c0fbdcfc39cbda921bb08944a87500f",
+      "content_sha256": "dead4bebcb55e41a4c611154463d84ef75066020058a5871435385a98db14c0b"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/memgpt_classic/program.py",
+      "declaration_digest": "01a026e9cee38216e995446ff2d96cf65a47ec4b272247506ee0e1f797566a1d",
+      "content_sha256": "fc2be76ad5a00cf585edf888fa42328d95e5fd61cbcd61921b5cf81f60873bc2"
+    },
+    {
+      "kind": "semantics",
+      "path": "research/reproductions/memgpt_classic/semantics.py",
+      "declaration_digest": "dce3d0a41bb5a5e246353fe4049c1f795fdc17f6e923dda0b6208f8729c38d32",
+      "content_sha256": "41855d21ac7b144690deb87dc87ff8e63fd6ed7aab64efaa4dc0bd862cc56c36"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/memgpt_classic/study.py",
+      "declaration_digest": "742d43ba37c0df09b4ab52bc481fa43ccfad8dc9ec980c5cf0b0ba5b62656159",
+      "content_sha256": "d9468c5cb62e00b7df98750d19b5f8fe2bfec68241ec914c04d668d31db510b7"
+    }
+  ],
+  "primary_executable": "research/reproductions/memgpt_classic/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [
+    "matched execution still requires an exact immutable MemoryArena dataset revision and deployment-bound benchmark environments"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_memgpt_classic_fidelity_v1.py",
+      "content_sha256": "999a439b545cea7050ec48fa76591959a7f885c8c61a1e5a0e071335717c254b"
+    },
+    {
+      "path": "tests/test_scientific_memgpt_classic_method_program_v1.py",
+      "content_sha256": "c8c7c906ccf900c4e65152a95ae4b1e6f4cb7983187d9ff9b0c16ece5fbe5eb9"
+    },
+    {
+      "path": "tests/test_scientific_memgpt_memoryarena_protocol_v1.py",
+      "content_sha256": "afeede8bc19efd48c5b1b602b23f4c465f482b057994c3702039c2f9b3eaaf42"
+    }
+  ]
+}

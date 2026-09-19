@@ -5,12 +5,12 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.reliability.failure.api import DEFAULT_FAILURE_CATALOG
+from noetrium_platform.infrastructure.reliability.failure.api import DEFAULT_FAILURE_CATALOG
 
-from research_platform.reliability.failure.api import fingerprint_failure
-from research_platform.reliability.failure.api import build_failure_from_spec
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.reliability.forensics.composition.incident_index import IncidentPatternIndex
+from noetrium_platform.infrastructure.reliability.failure.api import fingerprint_failure
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure_from_spec
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.infrastructure.reliability.forensics.composition.incident_index import IncidentPatternIndex
 
 
 class FailureFingerprintVersioningV88Tests(unittest.TestCase):
@@ -24,7 +24,7 @@ class FailureFingerprintVersioningV88Tests(unittest.TestCase):
         a=self.base()
         b=replace(a,taxonomy_spec_sha256="f"*64)
         # Rebuild through primitive identity semantics for the ID check.
-        from research_platform.reliability.failure.api import build_failure
+        from noetrium_platform.infrastructure.reliability.failure.api import build_failure
         b2=build_failure(
             component_id=a.component_id,failure_domain=a.failure_domain,failure_code=a.failure_code,stage=a.stage,
             context=a.context,exc=RuntimeError("CUDA OOM 12345"),taxonomy_spec_sha256="f"*64,

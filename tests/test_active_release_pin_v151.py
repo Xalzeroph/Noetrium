@@ -5,8 +5,8 @@ from tempfile import TemporaryDirectory
 import multiprocessing as mp
 import unittest
 
-from research_platform.governance.release.runtime.active_pin_store import ActiveReleasePinStore
-from research_platform.governance.release.api import ActiveReleasePinned
+from noetrium_platform.foundation.governance.release.runtime.active_pin_store import ActiveReleasePinStore
+from noetrium_platform.foundation.governance.release.api import ActiveReleasePinned
 
 
 def acquire_pin(root: str, q) -> None:

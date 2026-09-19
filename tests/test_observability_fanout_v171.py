@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.observability.api import (
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.evidence.observability.api import (
     EventDeliveryError,
     EventEnvelope,
     FanoutEventSink,

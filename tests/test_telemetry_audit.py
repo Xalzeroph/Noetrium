@@ -1,7 +1,7 @@
 import unittest
-from research_platform.observability.telemetry.metric.api import MetricDefinition, MetricKind
-from research_platform.observability.telemetry.metric.composition import build_default_registry
-from research_platform.observability.telemetry.metric.runtime import MetricRegistry, TelemetryAudit
+from noetrium_platform.evidence.observability.telemetry.metric.api import MetricDefinition, MetricKind
+from noetrium_platform.evidence.observability.telemetry.metric.composition import build_default_registry
+from noetrium_platform.evidence.observability.telemetry.metric.runtime import MetricRegistry, TelemetryAudit
 
 class TelemetryAuditTests(unittest.TestCase):
     def test_default_catalog_clean(self):

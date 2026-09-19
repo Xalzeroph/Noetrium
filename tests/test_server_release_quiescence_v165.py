@@ -4,14 +4,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.platform.composition.runtime_control.release_quiescence_adapters import (
+from noetrium_platform.composition.release_quiescence import (
     PersistentSessionReleaseConsumerProbe,
     RecoveryLeaseReleaseConsumerProbe,
 )
-from research_platform.platform.composition.runtime_control.release_retirement import ServerReleaseQuiescenceVerifier
-from research_platform.governance.release.api import ActiveReleasePin, ReleaseConsumerQuiescence
-from research_platform.execution.runtime.manager.recovery_lease_store import RecoveryLeaseStore
-from research_platform.runtime.session.runtime.status import PersistentSessionObservation, PersistentSessionObservationState
+from noetrium_platform.foundation.governance.release.composition.retirement import ReleaseQuiescenceVerifier
+from noetrium_platform.foundation.governance.release.api import ActiveReleasePin, ReleaseConsumerQuiescence
+from tests_support import recovery_lease_state
+from noetrium_platform.infrastructure.lifecycle.session.runtime.status import PersistentSessionObservation, PersistentSessionObservationState
 
 
 class SessionProbe:
@@ -39,8 +39,8 @@ class ServerReleaseQuiescenceV165Tests(unittest.TestCase):
     def pin(self): return ActiveReleasePin('ctl', 'a'*64, 'b'*64, 1.0)
 
     def verifier(self, root, *, session=PersistentSessionObservationState.MISSING, service=True):
-        lease = RecoveryLeaseStore(Path(root)/'lease.json')
-        verifier = ServerReleaseQuiescenceVerifier((
+        lease = recovery_lease_state(Path(root)/'lease.json')
+        verifier = ReleaseQuiescenceVerifier((
             PersistentSessionReleaseConsumerProbe(SessionProbe(session)),
             RecoveryLeaseReleaseConsumerProbe(lease),
             ServiceConsumerProbe(service),

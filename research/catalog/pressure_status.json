@@ -1,0 +1,958 @@
+{
+  "schema": "noetrium.research-pressure-status.v1",
+  "authority": "generated_from_pressure_suite_reproduction_and_benchmark_projections",
+  "suite_updated_at": "2026-09-19",
+  "lane_count": 32,
+  "ready_count": 25,
+  "enforced_count": 23,
+  "enforced_ready_count": 22,
+  "lanes": [
+    {
+      "package": "adas_meta_agent_search",
+      "lineage": "automated_agent_design",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/adas_meta_agent_search/program.py"
+      },
+      "benchmark_ids": [
+        "mgsm"
+      ],
+      "benchmark_packages": [
+        "mgsm"
+      ],
+      "scientific_test_count": 3,
+      "reported_result_count": 0,
+      "blocker_count": 1,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "aflow",
+      "lineage": "automated_workflow_design",
+      "enforced": false,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "research_program"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/aflow/program.py"
+      },
+      "benchmark_ids": [
+        "humaneval"
+      ],
+      "benchmark_packages": [
+        "humaneval"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 5,
+      "ready": false,
+      "gaps": [
+        "missing_asset:study"
+      ]
+    },
+    {
+      "package": "autogen_agentchat",
+      "lineage": "multi_agent_conversation",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/autogen_agentchat/program.py"
+      },
+      "benchmark_ids": [
+        "multiagentbench"
+      ],
+      "benchmark_packages": [
+        "multiagentbench"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 1,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "camel_role_playing",
+      "lineage": "multi_agent_role_play",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/camel_role_playing/program.py"
+      },
+      "benchmark_ids": [
+        "camel-ai-society"
+      ],
+      "benchmark_packages": [
+        "camel_ai_society"
+      ],
+      "scientific_test_count": 3,
+      "reported_result_count": 4,
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "chain_of_thought_gsm8k",
+      "lineage": "reasoning_root",
+      "enforced": false,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/chain_of_thought_gsm8k/program.py"
+      },
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "benchmark_packages": [
+        "gsm8k"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 2,
+      "blocker_count": 1,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "chatdev_v1",
+      "lineage": "multi_agent_software",
+      "enforced": false,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "research_program",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program",
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/chatdev_v1/program.py"
+      },
+      "benchmark_ids": [
+        "srdd"
+      ],
+      "benchmark_packages": [
+        "srdd"
+      ],
+      "scientific_test_count": 4,
+      "reported_result_count": 0,
+      "blocker_count": 3,
+      "ready": false,
+      "gaps": [
+        "missing_asset:study"
+      ]
+    },
+    {
+      "package": "generative_agents_memory",
+      "lineage": "agent_memory",
+      "enforced": false,
+      "lifecycle": "catalogued",
+      "asset_kinds": [
+        "fidelity",
+        "support"
+      ],
+      "executable_asset_kinds": [],
+      "benchmark_ids": [],
+      "benchmark_packages": [],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "blocker_count": 0,
+      "ready": false,
+      "gaps": [
+        "benchmark_binding_missing",
+        "lifecycle_below_protocol_bound",
+        "missing_asset:study",
+        "missing_executable_program"
+      ]
+    },
+    {
+      "package": "hugginggpt",
+      "lineage": "tool_orchestration",
+      "enforced": false,
+      "lifecycle": "catalogued",
+      "asset_kinds": [
+        "fidelity",
+        "support"
+      ],
+      "executable_asset_kinds": [],
+      "benchmark_ids": [],
+      "benchmark_packages": [],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "blocker_count": 0,
+      "ready": false,
+      "gaps": [
+        "benchmark_binding_missing",
+        "lifecycle_below_protocol_bound",
+        "missing_asset:study",
+        "missing_executable_program"
+      ]
+    },
+    {
+      "package": "lats_webshop",
+      "lineage": "agent_tree_search",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/lats_webshop/program.py"
+      },
+      "benchmark_ids": [
+        "webshop"
+      ],
+      "benchmark_packages": [
+        "webshop"
+      ],
+      "scientific_test_count": 3,
+      "reported_result_count": 0,
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "ma_lmm_memory",
+      "lineage": "multimodal_long_video_memory",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/ma_lmm_memory/memory.py"
+      },
+      "benchmark_ids": [
+        "lvu"
+      ],
+      "benchmark_packages": [
+        "lvu"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "blocker_count": 2,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "metagpt_software_company",
+      "lineage": "multi_agent_sop",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/metagpt_software_company/program.py"
+      },
+      "benchmark_ids": [
+        "humaneval"
+      ],
+      "benchmark_packages": [
+        "humaneval"
+      ],
+      "scientific_test_count": 4,
+      "reported_result_count": 0,
+      "blocker_count": 0,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "minedojo",
+      "lineage": "minecraft_foundational_multimodal_reward",
+      "enforced": false,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "semantics",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/minedojo/program.py"
+      },
+      "benchmark_ids": [
+        "minedojo"
+      ],
+      "benchmark_packages": [
+        "minedojo"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "moviechat_memory",
+      "lineage": "multimodal_sparse_video_memory",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/moviechat_memory/memory.py"
+      },
+      "benchmark_ids": [
+        "moviechat-1k"
+      ],
+      "benchmark_packages": [
+        "moviechat_1k"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "blocker_count": 2,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "qlass_alfworld",
+      "lineage": "process_reward_search",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/qlass_alfworld/program.py"
+      },
+      "benchmark_ids": [
+        "alfworld",
+        "webshop"
+      ],
+      "benchmark_packages": [
+        "alfworld",
+        "webshop"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 5,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "rap_reasoning",
+      "lineage": "world_model_planning",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/rap_reasoning/program.py"
+      },
+      "benchmark_ids": [
+        "blocksworld"
+      ],
+      "benchmark_packages": [
+        "rap_blocksworld"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 1,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "react_alfworld",
+      "lineage": "reasoning_acting",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "semantics",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/react_alfworld/program.py"
+      },
+      "benchmark_ids": [
+        "alfworld",
+        "webshop"
+      ],
+      "benchmark_packages": [
+        "alfworld",
+        "webshop"
+      ],
+      "scientific_test_count": 3,
+      "reported_result_count": 8,
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "reflexion_alfworld",
+      "lineage": "reflection_learning",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "semantics",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/reflexion_alfworld/program.py"
+      },
+      "benchmark_ids": [
+        "alfworld"
+      ],
+      "benchmark_packages": [
+        "alfworld"
+      ],
+      "scientific_test_count": 3,
+      "reported_result_count": 0,
+      "blocker_count": 2,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "saycan",
+      "lineage": "embodied_grounding",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/saycan/program.py"
+      },
+      "benchmark_ids": [
+        "saycan-101"
+      ],
+      "benchmark_packages": [
+        "saycan_101"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "self_consistency_gsm8k",
+      "lineage": "reasoning_path_aggregation",
+      "enforced": false,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/self_consistency_gsm8k/program.py"
+      },
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "benchmark_packages": [
+        "gsm8k"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 2,
+      "blocker_count": 1,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "self_refine",
+      "lineage": "self_refinement",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/self_refine/program.py"
+      },
+      "benchmark_ids": [
+        "commongen"
+      ],
+      "benchmark_packages": [
+        "commongen"
+      ],
+      "scientific_test_count": 4,
+      "reported_result_count": 0,
+      "blocker_count": 2,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "storm_wiki",
+      "lineage": "research_agent",
+      "enforced": false,
+      "lifecycle": "catalogued",
+      "asset_kinds": [
+        "fidelity",
+        "support"
+      ],
+      "executable_asset_kinds": [],
+      "benchmark_ids": [],
+      "benchmark_packages": [],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "blocker_count": 0,
+      "ready": false,
+      "gaps": [
+        "benchmark_binding_missing",
+        "lifecycle_below_protocol_bound",
+        "missing_asset:study",
+        "missing_executable_program"
+      ]
+    },
+    {
+      "package": "swe_agent_swebench",
+      "lineage": "software_agent",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/swe_agent_swebench/program.py"
+      },
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "benchmark_packages": [
+        "swe_bench"
+      ],
+      "scientific_test_count": 3,
+      "reported_result_count": 0,
+      "blocker_count": 1,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "toolllm_toolbench",
+      "lineage": "tool_use",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/toolllm_toolbench/program.py"
+      },
+      "benchmark_ids": [
+        "toolbench"
+      ],
+      "benchmark_packages": [
+        "toolbench"
+      ],
+      "scientific_test_count": 5,
+      "reported_result_count": 0,
+      "blocker_count": 0,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "tree_of_thoughts",
+      "lineage": "deliberative_reasoning",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/tree_of_thoughts/program.py"
+      },
+      "benchmark_ids": [
+        "game24"
+      ],
+      "benchmark_packages": [
+        "game24"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 1,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "vima_embodied",
+      "lineage": "embodied_multimodal_robot_manipulation",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/vima_embodied/program.py"
+      },
+      "benchmark_ids": [
+        "vima-bench"
+      ],
+      "benchmark_packages": [
+        "vima_bench"
+      ],
+      "scientific_test_count": 3,
+      "reported_result_count": 0,
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "voyager_minecraft",
+      "lineage": "embodied_lifelong_learning",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program",
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/voyager_minecraft/program.py"
+      },
+      "benchmark_ids": [
+        "voyager-minecraft"
+      ],
+      "benchmark_packages": [
+        "voyager_minecraft"
+      ],
+      "scientific_test_count": 6,
+      "reported_result_count": 0,
+      "blocker_count": 4,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "webvoyager",
+      "lineage": "multimodal_web_agent",
+      "enforced": false,
+      "lifecycle": "catalogued",
+      "asset_kinds": [
+        "fidelity"
+      ],
+      "executable_asset_kinds": [],
+      "benchmark_ids": [],
+      "benchmark_packages": [],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "blocker_count": 0,
+      "ready": false,
+      "gaps": [
+        "benchmark_binding_missing",
+        "lifecycle_below_protocol_bound",
+        "missing_asset:study",
+        "missing_executable_program"
+      ]
+    },
+    {
+      "package": "rewind_memory",
+      "lineage": "multimodal_instruction_conditioned_video_memory",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/rewind_memory/memory.py"
+      },
+      "benchmark_ids": [
+        "moviechat-1k"
+      ],
+      "benchmark_packages": [
+        "moviechat_1k"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "jarvis1_minecraft",
+      "lineage": "minecraft_multimodal_memory",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/jarvis1_minecraft/memory.py"
+      },
+      "benchmark_ids": [
+        "jarvis1-offline-185"
+      ],
+      "benchmark_packages": [
+        "jarvis1_offline"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "steve1_minecraft",
+      "lineage": "minecraft_vision_language_control",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/steve1_minecraft/program.py"
+      },
+      "benchmark_ids": [
+        "steve1-paper-prompts"
+      ],
+      "benchmark_packages": [
+        "steve1_paper_prompts"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 2,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "videoagent_memory",
+      "lineage": "multimodal_agentic_video_memory",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program",
+        "research_program"
+      ],
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_packages": [
+        "egoschema"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 3,
+      "ready": false,
+      "gaps": [
+        "ambiguous_executable_program"
+      ]
+    },
+    {
+      "package": "adacm2_memory",
+      "lineage": "multimodal_adaptive_cross_modal_memory",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/adacm2_memory/memory.py"
+      },
+      "benchmark_ids": [
+        "lvu"
+      ],
+      "benchmark_packages": [
+        "lvu"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    }
+  ]
+}

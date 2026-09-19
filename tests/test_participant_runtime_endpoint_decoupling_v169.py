@@ -1,21 +1,24 @@
 from __future__ import annotations
 
-from research_platform.platform.composition.experiment_runtime import build_experiment_runtime
+from tests_support import model_role_for_test
+
+from noetrium_platform.composition.experiment_runtime import build_experiment_runtime
 from dataclasses import dataclass
+from typing import get_type_hints
 
 import pytest
 
-from research_platform.platform.composition.participants.generic import generic_participant_adapter
-from research_platform.participant.core.api.contracts import (
+from noetrium_platform.composition.participants.generic import generic_participant_adapter
+from noetrium_platform.capabilities.participant.core.api.contracts import (
     ParticipantImplementationIdentity,
     ParticipantRuntimeBinding,
     )
-from research_platform.participant.core.api.runtime import ParticipantRuntimeHandle
-from research_platform.governance.release.api import RunLaunchManifest
-from research_platform.execution.runtime.manager import FrozenRuntimeManifest
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.execution.workflow.api import ScientificCycleExecution
-from research_platform.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.capabilities.participant.binding.api.contracts import ParticipantBindingResolverPort
+from noetrium_platform.capabilities.participant.core.api.bound import BoundParticipant
+from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeEndpoint, ParticipantRuntimeHandle
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
+from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
 from tests_support import EmptyWorkflowSurfaceFactory, frozen_runtime_manifest, run_launch_manifest, runtime_identity_for_test
 
 
@@ -37,7 +40,7 @@ class RemoteSessionProxy:
 
 class RemoteRobotProxy:
     implementation_identity = ParticipantImplementationIdentity(
-        "robot", "remote-arm", "7", "robot-abi", "robot-schema", "remote-image-sha256"
+        "robot", "remote-arm", "7", "robot-abi", "robot-schema", "d" * 64
     )
     runtime_identity = runtime_identity_for_test("robot")
 
@@ -58,14 +61,24 @@ class RemoteResolver:
         return ParticipantRuntimeHandle(binding, self.endpoint)
 
 
-class NoOpWorkflow:
-    workflow_id = "remote-noop.v1"
+class NoOpTrialProtocol:
+    protocol_id = "remote-noop.v1"
     surface_id = "empty.operations.v1"
-    configuration_digest = ""
+    configuration_digest = "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
 
     def run(self, operations, context, *, task, input_kind, input_payload):
         del operations, input_kind
-        return ScientificCycleExecution(str(task), input_payload, context, ())
+        return TrialCycleExecution(str(task), input_payload, context, ())
+
+
+def test_runtime_resolver_and_bound_endpoint_use_typed_runtime_contracts():
+    handle_hints = get_type_hints(ParticipantRuntimeHandle)
+    resolver_hints = get_type_hints(ParticipantBindingResolverPort.resolve)
+    endpoint_hints = get_type_hints(BoundParticipant.endpoint.fget)
+
+    assert handle_hints["endpoint"] is ParticipantRuntimeEndpoint
+    assert resolver_hints["return"] is ParticipantRuntimeHandle
+    assert endpoint_hints["return"] is ParticipantRuntimeEndpoint
 
 
 def test_study_can_run_remote_endpoint_without_local_implementation_catalog():
@@ -75,17 +88,17 @@ def test_study_can_run_remote_endpoint_without_local_implementation_catalog():
         experiment_id="remote-experiment",
         study_id="remote-study",
         project_id="default-project",
-        participants=(ExperimentParticipantSpec("arm", implementation, runtime_identity_for_test("robot"), "remote-runtime-cfg"),),
-        model_stack_digest="models",
-        prompt_generation="prompts",
-        workload_digest="work",
-        seed_digest="seed",
+        participants=(ExperimentParticipantSpec("arm", implementation, runtime_identity_for_test("robot"), "a" * 64),),
+        model_roles=(model_role_for_test(),),
+        workload_digest="c" * 64,
+        seed_digest="d" * 64,
         repetitions=1,
-        scientific_workflow_id="remote-noop.v1",
+        trial_protocol_id="remote-noop.v1",
+        trial_protocol_configuration_digest="44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
     )
     runtime = build_experiment_runtime(
         participant_adapters=(generic_participant_adapter("robot", resolver),),
-        scientific_workflow=NoOpWorkflow(),
+        trial_protocol=NoOpTrialProtocol(),
         workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),),
     )
 
@@ -98,7 +111,7 @@ def test_study_can_run_remote_endpoint_without_local_implementation_catalog():
 
 
 def test_formal_launch_manifests_reject_unfrozen_implementation_artifacts():
-    implementation = ParticipantImplementationIdentity("robot", "arm", "1", "abi", "schema", "")
+    implementation = ParticipantImplementationIdentity("robot", "arm", "1", "abi", "schema", None)
     binding = ParticipantRuntimeBinding("arm", implementation, runtime_identity_for_test("robot"), "cfg")
 
     with pytest.raises(ValueError, match="artifact digests"):

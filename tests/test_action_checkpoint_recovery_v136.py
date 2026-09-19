@@ -7,7 +7,7 @@ from tests_support import participant_component
 
 from tests_support import environment_effect_intent
 
-from research_platform.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
 
 from tests_support import context_action_spec
 
@@ -19,10 +19,10 @@ import tempfile
 
 import pytest
 
-from research_platform.reliability.effect.api import EffectIntent, EffectIntentPhase
+from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent, EffectIntentPhase
 
-from research_platform.reliability.effect.runtime import SQLiteEffectIntentJournal
-from research_platform.environment.runtime.api import (
+from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal
+from noetrium_platform.capabilities.environment.runtime.api import (
     ActionReconciliationDisposition,
     ActionReconciliationResult,
     ActionRequest,
@@ -31,12 +31,12 @@ from research_platform.environment.runtime.api import (
     Observation,
     action_request_digest,
 )
-from research_platform.platform.kernel import EffectCertainty, EffectClass, EffectReceipt
-from research_platform.participant.method.api import MethodIdentity, MethodSnapshot, MethodTaskCompletionReceipt, RecallResult
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentSpec
-from research_platform.experimentation.run.identity.api import RunIdentity
-from research_platform.experimentation.checkpoint.providers import DirectoryRunCheckpointStore
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, MethodTaskCompletionReceipt, RecallResult
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.checkpoint.providers import DirectoryRunCheckpointStore
 
 
 class MethodSession:
@@ -181,7 +181,7 @@ class Environment:
 
 
 def spec() -> ExperimentSpec:
-    return context_action_spec(study_id="study", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1)
+    return context_action_spec(study_id="study", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1)
 
 
 def registries(world: ExternalWorld, sessions: list[MethodSession]):
@@ -225,7 +225,7 @@ def test_checkpoint_restore_plus_action_wal_recovers_applied_effect_without_seco
         # Construct the exact journal identity without relying on private runtime objects.
         # The action is authorized by the last verified joint checkpoint; environment
         # generation is deliberately not part of the stable action identity.
-        from research_platform.experimentation.run.runtime.decision_coordination import identity_context
+        from noetrium_platform.research.experimentation.run.runtime.decision_coordination import identity_context
         context = replace(identity_context(c2, spec()), checkpoint_id=checkpoint1)
         request = ActionRequest("action_dc2", "move", {"n": 2}, context)
         intent = environment_effect_intent(request, participant_component(next(row for row in spec().participants if row.role == "environment")), operation_id="dc2:environment.act")
@@ -242,8 +242,8 @@ def test_checkpoint_restore_plus_action_wal_recovers_applied_effect_without_seco
             spec(), run_identity=run_identity,
             restore_checkpoint_id=checkpoint1, restore_cycle_identity=c1,
         )
-        assert restored.state.last_context is not None
-        assert restored.state.last_context.checkpoint_id == checkpoint1
+        assert restored.last_context is not None
+        assert restored.last_context.checkpoint_id == checkpoint1
         assert sessions2[0].completed == 1
 
         replay = restored.execute(

@@ -8,22 +8,26 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 
-from research_platform.reliability.failure.api import RecoveryAction
-from research_platform.reliability.diagnostics.runtime import CausalGraphService
+from tests._concurrency_support import telemetry_backend
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.failure.api import RecoveryAction
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import (
+    CausalGraphService,
+    CausalGraphSnapshot,
+    CausalNodeSnapshot,
+)
 
-from research_platform.observability.api import EventEnvelope
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.api import MutationRecord
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.reliability.failure.api import build_failure
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.operator.composition.cli import main as operator_main
-from research_platform.platform.composition.release_verification import verify_source_tree_release
-from research_platform.observability.telemetry.metric.providers import SQLiteTelemetryReader
-from research_platform.governance.release.runtime.manifest import build_release_manifest
-from research_platform.observability.telemetry.metric.composition import build_default_registry
-from research_platform.observability.telemetry.metric.providers import TelemetrySQLiteBackend
-from research_platform.observability.telemetry.metric.runtime import TelemetryStore
+from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.infrastructure.reliability.forensics.api import MutationRecord
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.product.operator.composition.cli import main as operator_main
+from noetrium_platform.composition.release_verification import verify_source_tree_release
+from noetrium_platform.evidence.observability.telemetry.metric.providers import SQLiteTelemetryReader
+from noetrium_platform.foundation.governance.release.runtime.manifest import build_release_manifest
+from noetrium_platform.evidence.observability.telemetry.metric.composition import build_default_registry
+from noetrium_platform.evidence.observability.telemetry.metric.runtime import TelemetryStore
 
 
 class OperatorV17Tests(unittest.TestCase):
@@ -42,11 +46,26 @@ class OperatorV17Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             store,failure=self._fixture(Path(td))
             graph=CausalGraphService(ForensicDiagnosticEvidence(store)).build(failure.failure_id)
-            edges={(x["source"],x["relation"],x["target"]) for x in graph.edges}
+            edges={(x.source,x.relation,x.target) for x in graph.edges}
             self.assertIn((failure.failure_id,"caused_by","operation:op17"),edges)
             self.assertIn(("event17","references_request","request:rq17"),edges)
             self.assertIn(("mut17","writes_state","state:method.architecture_head"),edges)
             self.assertNotIn(("event17","caused_by",failure.failure_id),edges)
+            operation = next(node for node in graph.nodes if node.kind == "operation")
+            with self.assertRaises(TypeError):
+                operation.attrs["value"] = "changed"
+            attrs = operation.attrs
+            with self.assertRaises(TypeError):
+                attrs |= {"new": "changed"}
+            self.assertNotIn("new", operation.attrs)
+            self.assertIn('"nodes"', json.dumps(asdict(graph), sort_keys=True))
+
+    def test_causal_snapshot_rejects_non_scalar_attrs_and_missing_root(self):
+        with self.assertRaises(TypeError):
+            CausalNodeSnapshot("n", "node", {"nested": []})
+        node = CausalNodeSnapshot("n", "node", {"value": "ok"})
+        with self.assertRaises(ValueError):
+            CausalGraphSnapshot("missing", (node,), ())
 
     def test_operator_forensic_queries_are_zero_write(self):
         with tempfile.TemporaryDirectory() as td:
@@ -68,7 +87,7 @@ class OperatorV17Tests(unittest.TestCase):
 
     def test_telemetry_reader_is_read_only_and_summarizes(self):
         with tempfile.TemporaryDirectory() as td:
-            path=Path(td)/"metrics.sqlite3"; store=TelemetryStore(build_default_registry(), TelemetrySQLiteBackend(path)); ctx=self._ctx()
+            path=Path(td)/"metrics.sqlite3"; store=TelemetryStore(build_default_registry(), telemetry_backend(self, path)); ctx=self._ctx()
             for value in (1.0,2.0,3.0,4.0): store.observe(ctx,"operation.latency",value,component="c",operation="op",status="ok")
             before=(path.stat().st_size,path.stat().st_mtime_ns)
             reader=SQLiteTelemetryReader(path); rows=reader.query(run_id="run17",metric="operation.latency"); summary=reader.summarize(run_id="run17",metric="operation.latency")

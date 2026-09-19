@@ -4,17 +4,17 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.execution.runtime.manager.recovery_lease_contracts import RecoveryLease, RecoveryLeaseBusy
-from research_platform.execution.runtime.manager.recovery_lease_store import RecoveryLeaseStore
-from research_platform.execution.runtime.manager.recovery_execution import FileLockedRecoveryExecutionFactory
+from noetrium_platform.infrastructure.reliability.recovery.api.lease import RecoveryLease, RecoveryLeaseBusy
+from tests_support import recovery_lease_state
+from noetrium_platform.infrastructure.reliability.recovery.execution.runtime.file_lock import FileLockedRecoveryExecutionFactory
 
 
 class RecoveryExecutionLockV163Tests(unittest.TestCase):
     def test_long_held_execution_lock_blocks_second_writer_even_if_document_ttl_is_short(self):
         with TemporaryDirectory() as td:
             path=Path(td)/'lease.json'
-            first=RecoveryLeaseStore(path)
-            second=RecoveryLeaseStore(path)
+            first=recovery_lease_state(path)
+            second=recovery_lease_state(path)
             with FileLockedRecoveryExecutionFactory(first, lock_path=path.with_name('execution.lock')).execution('owner-a','manifest-a',ttl_seconds=0.01):
                 # The fencing lock is independent of the document TTL.  A second exact
                 # recovery command cannot enter even if the observable document expires.
@@ -25,7 +25,7 @@ class RecoveryExecutionLockV163Tests(unittest.TestCase):
     def test_execution_guard_releases_document_and_kernel_lock_together(self):
         with TemporaryDirectory() as td:
             path=Path(td)/'lease.json'
-            store=RecoveryLeaseStore(path)
+            store=recovery_lease_state(path)
             with FileLockedRecoveryExecutionFactory(store, lock_path=path.with_name('execution.lock')).execution('owner','manifest',ttl_seconds=10) as execution:
                 self.assertEqual(execution.assert_owned().manifest_digest,'manifest')
             self.assertIsNone(store.read())

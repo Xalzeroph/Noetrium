@@ -3,11 +3,11 @@ from __future__ import annotations
 import time
 import unittest
 
-from research_platform.model.serving import build_runtime_qualification_receipt
-from research_platform.execution.runtime.manager import RuntimeAction, exact_runtime_plan
-from research_platform.execution.runtime.manager.heartbeat import ServiceHeartbeat
-from research_platform.model.serving.runtime.recovery import RecoveryPlanner, RecoveryStep
-from research_platform.model.serving.api.state import ModelPhase, ModelRunState
+from noetrium_platform.capabilities.model.serving import build_runtime_qualification_receipt
+from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeAction, exact_runtime_plan
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat import ServiceHeartbeat
+from noetrium_platform.capabilities.model.serving.runtime.recovery import RecoveryPlanner, RecoveryStep
+from noetrium_platform.capabilities.model.serving.api.state import ModelPhase, ModelRunState
 
 from test_server_runtime_control_v29 import deployment
 
@@ -21,11 +21,13 @@ class RuntimeQualificationV77Tests(unittest.TestCase):
     def test_live_receipt_binds_stack_certificate_roles_and_fresh_heartbeat(self):
         d=deployment("planner","GPU-0")
         cert=d.certificate.digest()
-        hb=ServiceHeartbeat(d.deployment_id,d.stack.digest(),123,"start","argv",True,cert,100.0)
+        hb=ServiceHeartbeat(d.deployment_id,d.stack.digest(),123,"start","a"*64,True,cert,100.0)
+        heartbeat_ref=(f"heartbeat:{hb.deployment_id}:{hb.pid}:"
+                       f"{hb.process_start_marker}:{hb.timestamp}")
         receipt=build_runtime_qualification_receipt(
             d,hb,
             required_roles=("planner",),
-            evidence_refs=("canary://planner","perf://planner"),
+            evidence_refs=(heartbeat_ref,f"canary:sha256:{'c'*64}",f"performance:sha256:{'d'*64}"),
             max_heartbeat_age_seconds=5,
             now=102.0,
         )
@@ -34,10 +36,10 @@ class RuntimeQualificationV77Tests(unittest.TestCase):
 
     def test_live_receipt_rejects_stale_or_wrong_qualification_digest(self):
         d=deployment("planner","GPU-0")
-        stale=ServiceHeartbeat(d.deployment_id,d.stack.digest(),123,"start","argv",True,d.certificate.digest(),100.0)
+        stale=ServiceHeartbeat(d.deployment_id,d.stack.digest(),123,"start","a"*64,True,d.certificate.digest(),100.0)
         with self.assertRaises(ValueError):
             build_runtime_qualification_receipt(d,stale,required_roles=("planner",),evidence_refs=("x",),max_heartbeat_age_seconds=1,now=102.0)
-        wrong=ServiceHeartbeat(d.deployment_id,d.stack.digest(),123,"start","argv",True,"bad",102.0)
+        wrong=ServiceHeartbeat(d.deployment_id,d.stack.digest(),123,"start","a"*64,True,"bad",102.0)
         with self.assertRaises(ValueError):
             build_runtime_qualification_receipt(d,wrong,required_roles=("planner",),evidence_refs=("x",),max_heartbeat_age_seconds=5,now=102.0)
 

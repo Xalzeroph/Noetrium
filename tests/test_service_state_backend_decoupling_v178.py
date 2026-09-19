@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from research_platform.runtime.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import hashlib
 import unittest
 
-from research_platform.platform.composition.service_supervisor import build_service_supervisor
-from research_platform.runtime.service.runtime import ServicePhase
-from research_platform.runtime.service.runtime.service_state_contracts import ServiceSupervisorState
-from research_platform.runtime.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
+from noetrium_platform.infrastructure.lifecycle.service.composition import build_service_supervisor
+from service_os_test_support import ready_evidence
+from noetrium_platform.infrastructure.lifecycle.service.runtime import ServicePhase
+from noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_contracts import ServiceSupervisorState
+from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 
 
 class MemoryServiceStateStore:
@@ -41,7 +42,7 @@ class Adapter:
         return ServiceProcessIdentity(7, "pid:7:start:1", 7), ("start",)
 
     def wait_ready(self, process, contract):
-        return "ready", "stdout", "stderr"
+        return ready_evidence(process, contract)
 
     def stop(self, process, contract):
         return ("stop",)

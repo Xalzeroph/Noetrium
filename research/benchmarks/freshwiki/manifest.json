@@ -1,0 +1,11 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "freshwiki",
+  "benchmark": {
+    "benchmark_id": "freshwiki",
+    "title": "FreshWiki",
+    "source_uri": "https://github.com/stanford-oval/storm",
+    "environment_kinds": ["retrieval_knowledge"],
+    "modalities": ["text", "structured"]
+  }
+}

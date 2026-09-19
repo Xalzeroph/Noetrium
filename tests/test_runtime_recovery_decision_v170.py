@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import unittest
 
-from research_platform.reliability.diagnostics.runtime import RuntimeRecoveryDecisionService
-from research_platform.reliability.recovery.api import RecoveryActionCode, RecoveryAutomation
-from research_platform.observability.status.api import HealthState, PlatformStatus, SubsystemSnapshot
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import RuntimeRecoveryDecisionService
+from noetrium_platform.infrastructure.reliability.recovery.api import RecoveryActionCode, RecoveryAutomation
+from noetrium_platform.evidence.observability.status.api import HealthState, PlatformStatus, SubsystemSnapshot
 
 
 class RuntimeRecoveryDecisionV170Tests(unittest.TestCase):
@@ -88,6 +88,22 @@ class RuntimeRecoveryDecisionV170Tests(unittest.TestCase):
         self.assertEqual(payload["schema_version"], "recovery-decision.v1")
         self.assertFalse(payload["blocked"])
         self.assertEqual(payload["recommendations"][0]["action"], "rebuild_derived_state")
+
+
+    def test_assess_exposes_safe_conditional_and_unknown_closure(self):
+        service = RuntimeRecoveryDecisionService()
+        safe = service.assess(PlatformStatus((SubsystemSnapshot(
+            "forensics", HealthState.DEGRADED_EVIDENCE, "projection stale",
+            reason_codes=("forensic_projection_stale",),
+        ),)))
+        self.assertTrue(safe.can_run_automatically)
+        self.assertEqual(safe.safe_actions, (RecoveryActionCode.REBUILD_DERIVED_STATE,))
+        unknown = service.assess(PlatformStatus((SubsystemSnapshot(
+            "future_component", HealthState.FAILED, "future reason",
+            reason_codes=("future_reason",),
+        ),)))
+        self.assertFalse(unknown.can_run_automatically)
+        self.assertEqual(unknown.unknown_reason_codes, ("future_reason",))
 
 
 if __name__ == "__main__":

@@ -7,9 +7,9 @@ import time
 import unittest
 from unittest.mock import patch
 
-from research_platform.platform.kernel.durability.durable_file import atomic_replace_bytes
-from research_platform.runtime.service.runtime.start_intent_contracts import ServiceStartIntent, ServiceStartIntentPhase
-from research_platform.runtime.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
+from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
+from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_contracts import ServiceStartIntent, ServiceStartIntentPhase
+from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 
 
 def intent(*, phase: ServiceStartIntentPhase = ServiceStartIntentPhase.PREPARED) -> ServiceStartIntent:

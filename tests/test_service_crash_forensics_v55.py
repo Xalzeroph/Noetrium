@@ -1,26 +1,27 @@
 from __future__ import annotations
+from tests._concurrency_support import process_capture
 
-from research_platform.runtime.service.api import ServiceLaunchContract, ServiceProcessIdentity
-from service_os_test_support import make_service_supervisor
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from service_os_test_support import make_service_supervisor, ready_evidence
 
 from pathlib import Path
 import hashlib
 import tempfile
 import unittest
 
-from research_platform.reliability.failure.api import RecoveryAction
+from noetrium_platform.infrastructure.reliability.failure.api import RecoveryAction
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.reliability.forensics.composition.incident_adapter import ForensicIncidentProjection
-from research_platform.platform.composition.service_crash_failure import service_crash_failure
-from research_platform.platform.kernel.context import ExecutionContext
-from research_platform.runtime.process.capture import SegmentedByteCapture
-from research_platform.reliability.diagnostics.runtime import DebugSnapshotService
-from research_platform.reliability.diagnostics.runtime import DebugSnapshotService, IncidentService
-from research_platform.reliability.primitives import CrashEvidence
-from research_platform.runtime.service.runtime.state_storage import FileServiceStateStore
-from research_platform.runtime.service.runtime import (
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.infrastructure.reliability.forensics.composition.incident_adapter import ForensicIncidentProjection
+from noetrium_platform.composition.service_crash_failure import service_crash_failure
+from noetrium_platform.foundation.kernel.kernel.context import ExecutionContext
+from tests._concurrency_support import segmented_byte_capture
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import DebugSnapshotService
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import DebugSnapshotService, IncidentService
+from noetrium_platform.infrastructure.reliability.primitives import CrashEvidence
+from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactServiceSupervisor,
 )
 
@@ -40,14 +41,14 @@ def contract() -> ServiceLaunchContract:
 class ProcessAdapter:
     def reconcile(self,state,c): return None,("reconcile",)
     def start(self,c): return ServiceProcessIdentity(555,"pid:555:start:9",555),("start",)
-    def wait_ready(self,p,c): return "ready","stdout.active","stderr.active"
+    def wait_ready(self,p,c): return ready_evidence(p,c,"ready","stdout.active","stderr.active")
     def stop(self,p,c): return ("stopped",)
 
 
 class CrashAdapter:
     def __init__(self,root:Path):
-        self.stdout=SegmentedByteCapture(root/"out","stdout",tail_bytes=64)
-        self.stderr=SegmentedByteCapture(root/"err","stderr",tail_bytes=64)
+        self.stdout=segmented_byte_capture(root/"out","stdout",tail_bytes=64)
+        self.stderr=segmented_byte_capture(root/"err","stderr",tail_bytes=64)
         self.stdout.append(b"request rq_9 running\n")
         self.stderr.append(b"CUDA out of memory allocating KV cache\n")
     def inspect_crash(self,p,c): return CrashEvidence(exit_code=137,oom_killed=True)
@@ -78,8 +79,8 @@ class ServiceCrashForensicsV55Tests(unittest.TestCase):
                 store.append_failure(failure)
                 snap=DebugSnapshotService(ForensicDiagnosticEvidence(store)).build(failure.failure_id)
                 self.assertEqual(snap.object["failure_code"],"MODEL_SERVICE_OOM")
-                self.assertEqual(snap.diagnosis["recovery"],"restart_exact_model")
-                self.assertIn("model.planner",snap.diagnosis["exact_location"])
+                self.assertEqual(snap.diagnosis.recovery,"restart_exact_model")
+                self.assertIn("model.planner",snap.diagnosis.exact_location)
 
                 incident=IncidentService(ForensicDiagnosticEvidence(store), ForensicIncidentProjection(store.failures, root/"incidents.sqlite3"), DebugSnapshotService(ForensicDiagnosticEvidence(store))).capture(failure.failure_id)
                 self.assertEqual(incident.recovery,"restart_exact_model")

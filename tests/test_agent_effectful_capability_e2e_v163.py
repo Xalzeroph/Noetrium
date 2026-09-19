@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from tests_support import model_role_for_test
+
 from tests_support import FakeParticipantResolver, participant
 from tests_support import agent_turn_runtime
 
 import hashlib
 
-from research_platform.participant.agent.api import AgentIdentity, AgentSnapshot, AgentTurnResult
-from research_platform.participant.capability.api import (
+from noetrium_platform.capabilities.participant.agent.api import AgentIdentity, AgentSnapshot, AgentTurnResult
+from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityEffectReconciliationResult,
     CapabilityProviderIdentity,
@@ -15,13 +17,13 @@ from research_platform.participant.capability.api import (
     capability_effect_request_id,
     capability_request_digest,
 )
-from research_platform.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
-from research_platform.reliability.effect.runtime import InMemoryEffectIntentJournal
-from research_platform.platform.kernel import EffectCertainty, EffectClass, EffectReceipt, canonical_digest
-from research_platform.execution.workflow.implementations.agent_turn.agent_turn_workflow import AgentTurnStudyWorkflow
-from research_platform.execution.decision.cycle_identity import DecisionCycleIdentity
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.infrastructure.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
+from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, canonical_digest
+from noetrium_platform.research.execution.workflow.implementations.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
+from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
 
 
 class WriteToolSession:
@@ -78,7 +80,7 @@ class WriteToolSession:
 
 
 class WriteToolProvider:
-    identity = CapabilityProviderIdentity("write-tool", "1", "1", "1", "write-tool-cfg")
+    identity = CapabilityProviderIdentity("write-tool", "1", "1", "1", "e" * 64)
     def open_session(self, *, session_id: str, services: object):
         del session_id, services
         return WriteToolSession()
@@ -112,7 +114,7 @@ class ToolAgentSession:
 
 
 class ToolAgent:
-    identity = AgentIdentity("tool-agent", "1", "1", "1", "tool-agent-cfg")
+    identity = AgentIdentity("tool-agent", "1", "1", "1", "a" * 64)
     def open_session(self, *, session_id: str, services: object):
         del services
         return ToolAgentSession(session_id)
@@ -124,11 +126,12 @@ def _spec():
         study_id="default-study",
         project_id="default-project",
         participants=(
-            participant("capability_provider", "writer", "write-tool", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="write-tool-cfg"),
-            participant("agent", "agent", "tool-agent", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="tool-agent-cfg", depends_on_roles=("writer",)),
+            participant("capability_provider", "writer", "write-tool", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="e" * 64),
+            participant("agent", "agent", "tool-agent", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="a" * 64, depends_on_roles=("writer",)),
         ),
-        model_stack_digest="model", prompt_generation="prompt", workload_digest="work",
-        seed_digest="seed", repetitions=1, scientific_workflow_id="agent_turn.v1",
+        model_roles=(model_role_for_test(),), workload_digest="b" * 64,
+        seed_digest="c" * 64, repetitions=1, trial_protocol_id="agent_turn.v2",
+        trial_protocol_configuration_digest=AGENT_TURN_TRIAL_CONFIGURATION_DIGEST,
     )
 
 

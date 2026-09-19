@@ -4,19 +4,19 @@ from dataclasses import replace
 
 import pytest
 
-from research_platform.platform.kernel import ComponentIdentity
-from research_platform.participant.core.api.checkpoint import (
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity
+from noetrium_platform.capabilities.participant.core.api.checkpoint import (
     ParticipantCheckpoint,
     ParticipantCheckpointIdentityMismatch,
 )
-from research_platform.participant.core.runtime import ParticipantCheckpointRuntime
+from noetrium_platform.capabilities.participant.session.runtime.checkpoint_runtime import ParticipantCheckpointRuntime
 
 CHECKPOINT_RUNTIME = ParticipantCheckpointRuntime()
-from research_platform.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api.contracts import (
     ParticipantImplementationIdentity,
     ParticipantRuntimeBinding,
 )
-from research_platform.participant.core.api.runtime import ParticipantRuntimeHandle
+from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
 from tests_support import runtime_identity_for_test
 
 
@@ -54,7 +54,7 @@ class Adapter:
 def binding(*, role="method", config="cfg") -> ParticipantRuntimeBinding:
     return ParticipantRuntimeBinding(
         role,
-        ParticipantImplementationIdentity("test", "impl", "1", "1", "1", "artifact"),
+        ParticipantImplementationIdentity("test", "impl", "1", "1", "1", "a" * 64),
         runtime_identity_for_test("test"),
         config,
     )

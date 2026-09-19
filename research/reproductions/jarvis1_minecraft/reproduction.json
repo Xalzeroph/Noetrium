@@ -1,0 +1,164 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "jarvis1_minecraft",
+  "package_digest": "2421fbb971f6f0a5edf4ebaf8d4f84dfbe47683cd56d77239d164218158cf528",
+  "definition_digest": "a02c78f862777e746751ed00ee2d9079739a7054d661fe414f555d0d562a611f",
+  "source_registry_digest": "d0a3d3ba7b0bbee5cf156be04b204f1c10085da1b8847a3a18f524b83ae1280b",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "jarvis1",
+    "title": "JARVIS-1: Open-World Multi-Task Agents With Memory-Augmented Multimodal Language Models",
+    "paper_uri": "https://ieeexplore.ieee.org/document/10778628/",
+    "year": 2025,
+    "paper_revision": "IEEE TPAMI 47(3), March 2025 / partial official executable commit aa9bd97debee045cb35b37564c71dee4c465b9ad",
+    "identity_digest": "6cd60d446ab21e9d2e6fd1f585dfa36011ff5b7d051dad44483a6d6ef0cea634"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-agent",
+      "minecraft",
+      "multimodal-memory"
+    ],
+    "families": [
+      "hierarchical_control",
+      "lifelong_learning",
+      "minecraft_agent",
+      "multimodal_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "jarvis1-offline-185"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/embodied",
+      "environment/minecraft",
+      "execution/machines/memory",
+      "execution/workflow",
+      "model/multimodal",
+      "participant/capability"
+    ],
+    "method_owned": [
+      "goal-conditioned controller dispatch",
+      "lifelong experience accumulation semantics",
+      "memory-conditioned high-level planning",
+      "multimodal-experience retrieval for planning",
+      "skill selection from agent state"
+    ],
+    "platform_owned": [
+      "MemoryMachine journal authority",
+      "MethodProgram and child-machine composition",
+      "Minecraft/embodied environment execution",
+      "content-addressed multimodal artifacts",
+      "controller capability execution",
+      "model transport and implementation identity"
+    ],
+    "reference_repositories": [
+      "https://github.com/CraftJarvis/JARVIS-1"
+    ],
+    "reference_publications": [
+      "https://ieeexplore.ieee.org/document/10778628/"
+    ],
+    "catalog_digest": "77f218bf10c611a06c0177400a863bf07c0094c5b6b44fc866ede81d24e72ac8"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "partial_official_fixed_memory",
+      "kind": "official_executable",
+      "repository": "https://github.com/CraftJarvis/JARVIS-1",
+      "commit": "aa9bd97debee045cb35b37564c71dee4c465b9ad",
+      "artifacts": [
+        "README.md",
+        "jarvis/assembly/base.py",
+        "jarvis/assembly/core.py",
+        "jarvis/assets/memory.json",
+        "jarvis/assets/skill.json",
+        "jarvis/assets/tasks.json",
+        "jarvis/steveI/steveI_text.py",
+        "jarvis/steveI/steveI_visual.py",
+        "offline_evaluation.py"
+      ],
+      "lane_digest": "55200c3aaba595b8df5c297db1a7a97ce09efce683a1911444b25cc8f3069317"
+    },
+    {
+      "lane_id": "tpami_2025",
+      "kind": "paper_provenance",
+      "venue": "IEEE TPAMI",
+      "year": 2025,
+      "publication_id": "jarvis1-tpami-2025",
+      "publication_uri": "https://ieeexplore.ieee.org/document/10778628/",
+      "revision": "IEEE Transactions on Pattern Analysis and Machine Intelligence, 47(3):1894-1907",
+      "content_sha256": null,
+      "lane_digest": "06b636e7e61bef0cc4a713a34a76128626c0a9c1d41df1362681ab4f94e80d7a"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/jarvis1_minecraft/benchmark.py",
+      "declaration_digest": "9212ff9c3ac9d1fbd7929859a36b51226807cf8547f08ab8acc9c6290fde9b1b",
+      "content_sha256": "aa8ad7e8a3d4a5f3bc98175cc6820ca36f194986f031ec4b6281ee3cfb9cd5e5"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/jarvis1_minecraft/fidelity.py",
+      "declaration_digest": "7ef37f579c051b4d67096bb5bb8fb76be2636c68912b3f08e06895c828fe1e4f",
+      "content_sha256": "56db5dca6934beb809d854737059cfb9eb21fda8305edcb26e8b8af06987e84c"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/jarvis1_minecraft/memory.py",
+      "declaration_digest": "41dc8602926dbce8e5d8a46328c8fd83201c8b4c51d0f7eb75ff8fb86fad96ea",
+      "content_sha256": "c84d5e59ccae11e90cd626b661feb15964185fcfebcb6c1880f5fed430841fcd"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/jarvis1_minecraft/study.py",
+      "declaration_digest": "db65d2f5c48b9ed3ce5d26e4ad8ae96d922edcfff5ff16a129a4470612faae63",
+      "content_sha256": "a0311885a978912953af5840387c7599ed8abe5a07a9dbaecae2d9113c207c2a"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/jarvis1_minecraft/source.py",
+      "declaration_digest": "d05b6318ff62704debb6cbbd4b2d2000382bb69d992922919cd613589f608e36",
+      "content_sha256": "79bf8871222551f9638e0c599ba05260be6491d9c4ee897e0a9ec983f6ce1af7"
+    }
+  ],
+  "primary_executable": "research/reproductions/jarvis1_minecraft/memory.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The public JARVIS-1 repository explicitly removes the multimodal state/action sequences from memory.json and does not release the multimodal descriptor or retrieval implementation. The MemoryProgram therefore exposes paper-semantic multimodal retrieval only through an explicit identity-bound retriever port; it is not represented as matched official executable code.",
+      "delta_digest": "3aee253adec9ef022603737de75e39ea4d23f7a319d2d8ec0d6f167a69c07554"
+    },
+    {
+      "kind": "unresolved",
+      "description": "The public repository exposes offline evaluation with fixed memory only and does not release the online learning path needed for the paper's lifelong self-improvement claims.",
+      "delta_digest": "d2c00a74f825e187cbf816e14a1a5adcf339a1b06e8e6f29569aa7f428ca06f6"
+    },
+    {
+      "kind": "unresolved",
+      "description": "The public implementation removes the paper self-check module. The reproduction must not use the reduced public planner as evidence for matched self-check results.",
+      "delta_digest": "2b9a5cdf84441cd08072d10a84920ffb2367f11a71456ee04896c5a6a0308f01"
+    }
+  ],
+  "blockers": [
+    "Matched multimodal-memory retrieval requires the unreleased paper-era descriptor/retrieval implementation or an explicitly declared clean-room substitution.",
+    "Matched lifelong-learning claims require the unreleased online learning implementation and growing-memory protocol.",
+    "The canonical study binds the released 185-task public offline fixed-memory lane only; it does not turn the unreleased multimodal retrieval or online lifelong-learning path into matched evidence."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_jarvis1_benchmark_study_v1.py",
+      "content_sha256": "57326041f27bb2219ef3c91744cc0e6210770e2a4c5af52202dd564b470120a3"
+    },
+    {
+      "path": "tests/test_scientific_jarvis1_memory_v1.py",
+      "content_sha256": "4a1b7079c6457479fd612a18546df5d6de4b3be59f55e672958e73758c945491"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "gorilla_apibench",
+  "package_digest": "d1746ba2e618423159bcd19b3135edc06e0cff67944f93cd8dc0ec0f73176f8a",
+  "definition_digest": "9ad1421b3a94e7195e075c3ccd2da897b6c0985a06f5d1ea4791abffc6371361",
+  "source_registry_digest": "12af179a73f250303055fd7d92e165bdfd93683099413c34b186517a898113e4",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "gorilla",
+    "title": "Gorilla: Large Language Model Connected with Massive APIs",
+    "paper_uri": "https://arxiv.org/abs/2305.15334",
+    "year": 2023,
+    "paper_revision": null,
+    "identity_digest": "ec04ac3ec4ee2dac19a7a9a09eec584ef35b41e3c27f44a9500fdc067fc57f34"
+  },
+  "catalog": {
+    "domains": [
+      "retrieval-knowledge",
+      "tool-use"
+    ],
+    "families": [
+      "api_agent",
+      "retrieval",
+      "tool_use",
+      "training"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "data/query",
+      "execution",
+      "experimentation/study",
+      "model/request",
+      "observability/telemetry",
+      "participant/capability"
+    ],
+    "method_owned": [
+      "API invocation generation policy",
+      "retrieval-conditioned API selection",
+      "retriever-aware training semantics"
+    ],
+    "platform_owned": [
+      "bounded execution",
+      "capability descriptors",
+      "evidence and evaluation",
+      "model invocation",
+      "query transport"
+    ],
+    "reference_repositories": [
+      "https://github.com/ShishirPatil/gorilla"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "4e5b61150fac4132ff9131411cd73533d6094f8a37ff7c7bc4398a42a27e1538"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/ShishirPatil/gorilla",
+      "commit": "c849d11833ce0d401df4ab5a4d854167ad861684",
+      "artifacts": [],
+      "lane_digest": "3a512e229d106f0f59d896e952c4e3e974aae3308d0807b7544d554b6cc2172b"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/gorilla_apibench/fidelity.py",
+      "declaration_digest": "cecb2554355d8d4204fb6c60885750d5fb8fd76dcff0c4e95e7eb4f05211bf57",
+      "content_sha256": "d9ceedabcd001a3b96cee14b0dbdb97e9503f88df58147d69fe368adddae368d"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/gorilla_apibench/selection.py",
+      "declaration_digest": "e18b313aad69ebc03da027a51d897c60933fefa9237b2774ecc6207a5f6b05da",
+      "content_sha256": "3d27b2422e26b8d91859e47f57fadf8ad75145bcc1367a0d9184e55380280b3e"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_gorilla_apibench_v1.py",
+      "content_sha256": "c75425461b3b33bb2b15703efbc62b5bac9ae212d32e9a6e82a7d9ab91636e1e"
+    }
+  ]
+}

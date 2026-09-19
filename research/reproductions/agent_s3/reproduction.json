@@ -1,0 +1,96 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "agent_s3",
+  "package_digest": "29df510edfe07cdeed538f0a3e0961ff3cd979db73c29c6608cbff38d23623b8",
+  "definition_digest": "f5c9458f8bd02d51fea0499b5fff8c4c2deff002d7dad0ce8a2914f9ab5ca457",
+  "source_registry_digest": "c13f9d1d0cdabb811ceddbaa18dcef0668ca95280ab0012b6a463d39844c7a34",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "agent-s3",
+    "title": "The Unreasonable Effectiveness of Scaling Agents for Computer Use",
+    "paper_uri": "https://arxiv.org/abs/2510.02250",
+    "year": 2025,
+    "paper_revision": null,
+    "identity_digest": "eec9e68c9deb0e824f96a82309acfb1dda2776c1d58952ecf79ecad43661ea0a"
+  },
+  "catalog": {
+    "domains": [
+      "context-management",
+      "gui-computer-use",
+      "multimodal",
+      "runtime-systems"
+    ],
+    "families": [
+      "computer_use",
+      "gui",
+      "multimodal",
+      "reflection"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "osworld"
+    ],
+    "platform_pressure": [
+      "environment/gui",
+      "execution",
+      "model/request",
+      "observability/telemetry",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "optional bounded code-agent policy",
+      "single-action grounding policy",
+      "single-worker computer-use policy",
+      "trajectory reflection policy"
+    ],
+    "platform_owned": [
+      "GUI environment execution",
+      "controlled code execution",
+      "evidence and telemetry",
+      "model-view projection",
+      "multimodal transport"
+    ],
+    "reference_repositories": [
+      "https://github.com/simular-ai/Agent-S"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "6ce0fc02e34922987fac40aac4ba01a4828135a25bc37de254438b1079b9064a"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/simular-ai/Agent-S",
+      "commit": "2cb57fb5b5cc4798394fab85691d45b7a12391ba",
+      "artifacts": [],
+      "lane_digest": "ab95cc5d3a554eb20fed6139b12c26d1dd5cb309647d3dc64e9ac4d22ced1924"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/agent_s3/fidelity.py",
+      "declaration_digest": "017a691abe5c04c6f3229511ab9102caa8b48b70d041fa28896f56154579ba3e",
+      "content_sha256": "7cb3fa694c61d4c5dbfd03a02945a28d06417a64fd5f45ba17e7a28dc87a971e"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/agent_s3/context.py",
+      "declaration_digest": "d3824d6ead68ae369d09897f4e263ffdc5c54ab44803a5aba0768cf56ae681c0",
+      "content_sha256": "eba30886c792231bc51f6ed2e163a55116dfca360b14c5bec339bdfa09692025"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_agent_s3_v1.py",
+      "content_sha256": "4c658e85f066f7bd8542c26577eb1e200781900f9a0fd82d29f45fb26ff4f5ae"
+    }
+  ]
+}

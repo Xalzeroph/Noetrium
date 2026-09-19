@@ -1,0 +1,93 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ai_scientist_v2",
+  "package_digest": "26d47fd2e690dc5bdc0806e999a5cb66d144e3caba4e7bf54083cf5ac5e83e5b",
+  "definition_digest": "27d50f1107912f757c91faf25a3460bcbb25bc68c31c5756925dc53b6e8b8796",
+  "source_registry_digest": "0ba41ff21396466d2e103ece37338556348fc01042d19e30880251b518d9bea2",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "ai-scientist-v2",
+    "title": "The AI Scientist-v2: Workshop-Level Automated Scientific Discovery via Agentic Tree Search",
+    "paper_uri": "https://arxiv.org/abs/2504.08066",
+    "year": 2025,
+    "paper_revision": null,
+    "identity_digest": "05e97abb4ca135d0e907bc6806c6fb8bfecd6496caf239c11552cab9e542ac85"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "runtime-systems",
+      "scientific-research",
+      "self-improvement"
+    ],
+    "families": [
+      "code_execution",
+      "experimentation",
+      "paper_writing",
+      "review",
+      "scientific_agent",
+      "tree_search"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/software",
+      "experimentation/study",
+      "experimentation/workbench",
+      "model/request",
+      "reliability/recovery",
+      "resource"
+    ],
+    "method_owned": [
+      "citation and multimodal review policy",
+      "downstream method journal",
+      "experiment-manager guidance",
+      "progressive agentic tree-search policy"
+    ],
+    "platform_owned": [
+      "Kernel Journal facts",
+      "artifact lineage",
+      "experiment identity and metrics",
+      "isolated branch execution",
+      "recovery and evidence",
+      "resource scheduling"
+    ],
+    "reference_repositories": [
+      "https://github.com/SakanaAI/AI-Scientist-v2"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "5f86dc54fa5c5e6fc70ba1916503f7e4b336eb2960b5b51c4cc337c3399f7a36"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/SakanaAI/AI-Scientist-v2",
+      "commit": "940d59b9008f8d157f03a23e50e49fd81c0a4d11",
+      "artifacts": [],
+      "lane_digest": "c1fcb7c414bc59ba53ea256d156b745bc33c6940083f9ea1ae1a10a586bb2ef9"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/ai_scientist_v2/fidelity.py",
+      "declaration_digest": "3fa9dde2fef137b7d21f5be911032f5de16ef00e7c2b71dedd1d907669736bfc",
+      "content_sha256": "49e919592f00da446cf314c1d374ce9d8644c384b6d50793d1d70c4351e50b3e"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_ai_scientist_family_v1.py",
+      "content_sha256": "b1d58e81f16a1126e1b3d9c7a473b3f23b28837cb68ef4f83434e1241487bf88"
+    }
+  ]
+}

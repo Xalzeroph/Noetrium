@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import unittest
 
-from research_platform.reliability.failure.api import exception_correlation_refs
-from research_platform.platform.kernel.durability.checksummed_document import (
+from noetrium_platform.infrastructure.reliability.failure.api import exception_correlation_refs
+from noetrium_platform.foundation.kernel.kernel.durability.checksummed_document import (
     ChecksummedDocumentError,
     ChecksummedDocumentFailureCode,
     decode_checksummed_document,

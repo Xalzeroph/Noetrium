@@ -5,11 +5,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.execution.runtime.manager import ExactRuntimeController, RuntimeAction, RuntimeControlError, RuntimeControlStore
+from noetrium_platform.infrastructure.lifecycle.launch_control import ExactRuntimeController, RuntimeAction, RuntimeControlError, RuntimeControlStore
 from tests_support import frozen_runtime_manifest
-from research_platform.execution.runtime.manager.one_click import OneClickRuntimeManager
-from research_platform.execution.runtime.manager.recovery_lease_store import RecoveryLeaseStore
-from research_platform.execution.runtime.manager.recovery_execution import FileLockedRecoveryExecutionFactory
+from noetrium_platform.infrastructure.lifecycle.launch_control.one_click import OneClickRuntimeManager
+from tests_support import recovery_lease_state
+from noetrium_platform.infrastructure.reliability.recovery.execution.runtime.file_lock import FileLockedRecoveryExecutionFactory
 
 
 def manifest():
@@ -40,7 +40,7 @@ class OneClickRecoveryLoopTests(unittest.TestCase):
         controller=ExactRuntimeController(runtime_store,adapter)
         return OneClickRuntimeManager(
             Plane(controller),
-            FileLockedRecoveryExecutionFactory(RecoveryLeaseStore(root/'lease.json'), lock_path=root/'recovery.execution.lock'),
+            FileLockedRecoveryExecutionFactory(recovery_lease_state(root/'lease.json'), lock_path=root/'recovery.execution.lock'),
             runtime_store,
             max_recovery_rounds=rounds,
         )

@@ -1,24 +1,25 @@
 from pathlib import Path
+import hashlib
 import tempfile
 
 import pytest
 
-from research_platform.platform.kernel import ComponentIdentity
-from research_platform.participant.core.api.checkpoint import ParticipantCheckpoint
-from research_platform.participant.core.api.contracts import ParticipantImplementationIdentity, ParticipantRuntimeBinding
-from research_platform.experimentation.checkpoint.api.contracts import (
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity
+from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint
+from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantImplementationIdentity, ParticipantRuntimeBinding
+from noetrium_platform.research.experimentation.checkpoint.api.contracts import (
     RunCheckpointConflict,
     RunCheckpointManifest,
     RunParticipantPayload,
     RunParticipantSnapshotRef,
 )
-from research_platform.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
+from noetrium_platform.research.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
 from tests_support import runtime_identity_for_test
 
 
 def participant_payload(role: str, payload: bytes, *, generation: str) -> RunParticipantPayload:
     implementation = ParticipantImplementationIdentity(
-        "test", role, "1", "1", "1", f"{role}-artifact"
+        "test", role, "1", "1", "1", hashlib.sha256(f"{role}-artifact".encode()).hexdigest()
     )
     binding = ParticipantRuntimeBinding(role, implementation, runtime_identity_for_test("test"), f"{role}-config")
     component = ComponentIdentity(

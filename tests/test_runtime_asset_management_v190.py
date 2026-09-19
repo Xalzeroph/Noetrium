@@ -4,21 +4,20 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
-from subprocess import CompletedProcess
 
-from research_platform.scope.api import PLATFORM_SCOPE
-from research_platform.scope.runtime import InMemoryScopeRegistry
-from research_platform.resource.directory.api import DirectoryLayout, ManagedDirectoryKind
-from research_platform.resource.directory.runtime import build_local_directory_authorities
-from research_platform.model.asset.api import ModelAssetMode, ModelSourceSpec
-from research_platform.model.api import ModelAuthorities
-from research_platform.model.deployment.api import ModelDeploymentLogs, ModelDeploymentSelector, ModelDeploymentSpec, ModelDesiredState, ModelRuntimeState
-from research_platform.resource.compute.api import GpuDeviceStatus, GpuProcessStatus, GpuRuntimeSnapshot
-from research_platform.model.asset.providers import HuggingFaceCliModelSource
-from research_platform.model.asset.runtime import LocalModelAssetStorage, ModelAssetManager, ModelAssetRegistry
-from research_platform.model.composition import DeploymentModelAssetReferences
-from research_platform.model.assignment.runtime import ModelAssignmentManager
-from research_platform.model.deployment.runtime import (
+from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
+from noetrium_platform.foundation.scope.runtime import InMemoryScopeRegistry
+from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, ManagedDirectoryKind
+from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
+from noetrium_platform.capabilities.model.asset.api import ModelAssetMode, ModelSourceSpec
+from noetrium_platform.capabilities.model.api import ModelAuthorities
+from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentLogs, ModelDeploymentSelector, ModelDeploymentSpec, ModelDesiredState, ModelRuntimeState
+from noetrium_platform.infrastructure.resources.compute.api import GpuDeviceStatus, GpuProcessStatus, GpuRuntimeSnapshot
+from noetrium_platform.capabilities.model.asset.providers import HuggingFaceCliModelSource
+from noetrium_platform.capabilities.model.asset.runtime import LocalModelAssetStorage, ModelAssetManager, ModelAssetRegistry
+from noetrium_platform.capabilities.model.composition import DeploymentModelAssetReferences
+from noetrium_platform.capabilities.model.assignment.runtime import ModelAssignmentManager
+from noetrium_platform.capabilities.model.deployment.runtime import (
     AppliedModelDeploymentStore,
     FileModelControllerStateStore,
     ModelDesiredStateController,
@@ -32,10 +31,11 @@ from research_platform.model.deployment.runtime import (
     sglang_deployment,
     vllm_deployment,
 )
-from research_platform.resource.compute.providers import NvidiaSmiGpuRuntimeObserver
-from research_platform.environment.python.api import EnvironmentCommandResult, PythonEnvironmentOwnership, PythonEnvironmentSpec
-from research_platform.environment.python.runtime import CondaEnvironmentBackend, build_python_environment_authorities
-from research_platform.runtime.service.api import (
+from noetrium_platform.infrastructure.resources.compute.providers import NvidiaSmiGpuRuntimeObserver
+from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult, PythonEnvironmentOwnership, PythonEnvironmentSpec
+from noetrium_platform.infrastructure.lifecycle.python.runtime import CondaEnvironmentBackend, build_python_environment_authorities
+from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandResult
+from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceProcessIdentity,
     ServiceReconcileObservation,
     ServiceStartOutcome,
@@ -112,7 +112,7 @@ class FakeRuntime:
 
     def start_exact(self, contract):
         self.live = True
-        return ServiceStartOutcome(contract.digest(), ServiceProcessIdentity(1234, "start"), "ready:test")
+        return ServiceStartOutcome(contract.digest(), ServiceProcessIdentity(1234, "start"), "ready:test", 1234.5)
 
     def verify_ready_exact(self, contract):
         raise NotImplementedError
@@ -235,17 +235,17 @@ class ManagementTests(unittest.TestCase):
             model_dir = root / "external-model"
             model_dir.mkdir()
             (model_dir / "config.json").write_text(
-                '{"model_type":"qwen3","architectures":["Qwen3ForCausalLM"],"torch_dtype":"bfloat16","max_position_embeddings":32768,"quantization_config":{"quant_method":"awq","bits":4}}',
+                '{"model_type":"example_model","architectures":["ExampleForCausalLM"],"torch_dtype":"bfloat16","max_position_embeddings":32768,"quantization_config":{"quant_method":"awq","bits":4}}',
                 encoding="utf-8",
             )
             factory = FakeFactory()
             models = build_models(directories, environments, factory)
-            models.assets.register_model("qwen", PLATFORM_SCOPE, model_dir)
+            models.assets.register_model("example-model", PLATFORM_SCOPE, model_dir)
             spec = ModelDeploymentSpec(
-                deployment_id="qwen-dev",
+                deployment_id="example-deployment",
                 scope=PLATFORM_SCOPE,
-                service_id="model:qwen-dev",
-                model_id="qwen",
+                service_id="model:example-deployment",
+                model_id="example-model",
                 engine="custom",
                 executable="{python}",
                 argv=("{python}", "-m", "server", "--model", "{model_path}"),
@@ -254,19 +254,19 @@ class ManagementTests(unittest.TestCase):
                 gpu_devices=("0", "1"),
             )
             models.deployment_catalog.put_deployment(spec)
-            usage = models.assets.model_usage("qwen")
-            self.assertEqual(usage.deployment_ids, ("qwen-dev",))
-            self.assertEqual(models.assets.model_stats("qwen").directories, 1)
-            config = models.assets.model_config("qwen")
-            self.assertEqual(config.model_type, "qwen3")
+            usage = models.assets.model_usage("example-model")
+            self.assertEqual(usage.deployment_ids, ("example-deployment",))
+            self.assertEqual(models.assets.model_stats("example-model").directories, 1)
+            config = models.assets.model_config("example-model")
+            self.assertEqual(config.model_type, "example_model")
             self.assertEqual(config.quantization_bits, 4)
-            started = models.deployment_runtime.start("qwen-dev")
+            started = models.deployment_runtime.start("example-deployment")
             self.assertEqual(started.runtime_state, ModelRuntimeState.RUNNING)
-            self.assertEqual(models.deployment_catalog.deployment("qwen-dev").desired_state, ModelDesiredState.RUNNING)
+            self.assertEqual(models.deployment_catalog.deployment("example-deployment").desired_state, ModelDesiredState.RUNNING)
             self.assertIn(("CUDA_VISIBLE_DEVICES", "0,1"), factory.environments[-1])
             self.assertIn(str(model_dir), factory.contracts[-1].argv)
-            self.assertEqual(models.deployment_runtime.status("qwen-dev").pid, 1234)
-            stopped = models.deployment_runtime.stop("qwen-dev")
+            self.assertEqual(models.deployment_runtime.status("example-deployment").pid, 1234)
+            stopped = models.deployment_runtime.stop("example-deployment")
             self.assertEqual(stopped.runtime_state, ModelRuntimeState.STOPPED)
 
     def test_running_deployment_can_be_reconfigured_then_reconciled(self):
@@ -279,12 +279,12 @@ class ManagementTests(unittest.TestCase):
             model_dir.mkdir()
             factory = FakeFactory()
             models = build_models(directories, environments, factory)
-            models.assets.register_model("qwen", PLATFORM_SCOPE, model_dir)
+            models.assets.register_model("example-model", PLATFORM_SCOPE, model_dir)
             base = ModelDeploymentSpec(
-                deployment_id="qwen-dev",
+                deployment_id="example-deployment",
                 scope=PLATFORM_SCOPE,
-                service_id="model:qwen-dev",
-                model_id="qwen",
+                service_id="model:example-deployment",
+                model_id="example-model",
                 engine="custom",
                 executable="{python}",
                 argv=("{python}", "-m", "server", "--port", "8000"),
@@ -292,12 +292,12 @@ class ManagementTests(unittest.TestCase):
                 python_environment_id="serve",
             )
             models.deployment_catalog.put_deployment(base)
-            models.deployment_runtime.start("qwen-dev")
+            models.deployment_runtime.start("example-deployment")
             updated = ModelDeploymentSpec(
-                deployment_id="qwen-dev",
+                deployment_id="example-deployment",
                 scope=PLATFORM_SCOPE,
-                service_id="model:qwen-dev",
-                model_id="qwen",
+                service_id="model:example-deployment",
+                model_id="example-model",
                 engine="custom",
                 executable="{python}",
                 argv=("{python}", "-m", "server", "--port", "9000"),
@@ -306,7 +306,7 @@ class ManagementTests(unittest.TestCase):
                 desired_state=ModelDesiredState.RUNNING,
             )
             models.deployment_catalog.put_deployment(updated)
-            self.assertEqual(models.deployment_runtime.status("qwen-dev").runtime_state, ModelRuntimeState.UPDATE_PENDING)
+            self.assertEqual(models.deployment_runtime.status("example-deployment").runtime_state, ModelRuntimeState.UPDATE_PENDING)
             reconciled = models.fleet.reconcile()[0]
             self.assertEqual(reconciled.runtime_state, ModelRuntimeState.RUNNING)
             self.assertIn("9000", factory.contracts[-1].argv)
@@ -355,7 +355,12 @@ class ManagementTests(unittest.TestCase):
             move_asset = models.assets.register_model("move", PLATFORM_SCOPE, moved, mode="move")
             self.assertFalse(moved.exists())
             self.assertTrue((move_asset.path / "w").exists())
-            link_asset = models.assets.register_model("link", PLATFORM_SCOPE, linked, mode="symlink")
+            try:
+                link_asset = models.assets.register_model("link", PLATFORM_SCOPE, linked, mode="symlink")
+            except OSError as exc:
+                if getattr(exc, "winerror", None) == 1314:
+                    self.skipTest("Windows symlink privilege is unavailable")
+                raise
             self.assertTrue(link_asset.path.is_symlink())
             models.assets.unregister_model("link", delete_managed_files=True)
             self.assertTrue(linked.exists())
@@ -425,7 +430,23 @@ class ManagementTests(unittest.TestCase):
             directories = build_local_directory_authorities(layout(root))
             environments = build_environments(directories)
             storage = LocalModelAssetStorage(directories.layout)
-            source = HuggingFaceCliModelSource(storage)
+            seen = {}
+
+            class FakeCommandRunner:
+                def run(self, argv, **kwargs):
+                    seen["argv"] = tuple(argv)
+                    seen["env"] = kwargs.get("environment")
+                    destination = Path(argv[argv.index("--local-dir") + 1])
+                    destination.mkdir(parents=True)
+                    (destination / "config.json").write_text("{}", encoding="utf-8")
+                    return LocalCommandResult(tuple(argv), 0, "", "")
+
+            source = HuggingFaceCliModelSource(
+                storage,
+                cache_root=directories.layout.layout.cache / "huggingface",
+                environment={"HF_ENDPOINT": "https://hf-mirror.example"},
+                command_runner=FakeCommandRunner(),
+            )
             asset_registry = ModelAssetRegistry(directories.layout)
             deployment_registry = ModelDeploymentRegistry(directories.layout)
             applied_store = AppliedModelDeploymentStore(directories.layout)
@@ -443,31 +464,37 @@ class ManagementTests(unittest.TestCase):
             )
             assignments = ModelAssignmentManager(InMemoryScopeRegistry())
             models = ModelAuthorities(assets, assignments, catalog, runtime, fleet, logs, resources, controller)
-            def fake_run(argv, check=False):
-                destination = Path(argv[argv.index("--local-dir") + 1])
-                destination.mkdir(parents=True)
-                (destination / "config.json").write_text("{}", encoding="utf-8")
-                return CompletedProcess(argv, 0)
-            with patch("research_platform.model.asset.providers.huggingface_cli.shutil.which", return_value="/usr/bin/hf"), patch(
-                "research_platform.model.asset.providers.huggingface_cli.subprocess.run", side_effect=fake_run
-            ):
-                asset = models.assets.fetch_model("qwen", PLATFORM_SCOPE, ModelSourceSpec("huggingface", "Qwen/Qwen3", revision="main"))
+            with patch("noetrium_platform.capabilities.model.asset.providers.huggingface_cli.shutil.which", return_value="/usr/bin/hf"):
+                asset = models.assets.fetch_model(
+                    "example-model",
+                    PLATFORM_SCOPE,
+                    ModelSourceSpec("huggingface", "example-org/example-model", revision="main", max_workers=24),
+                )
             self.assertEqual(asset.mode, ModelAssetMode.FETCHED)
             self.assertEqual(asset.origin.backend, "huggingface")
             self.assertEqual(asset.origin.revision, "main")
+            self.assertNotIn("--cache-dir", seen["argv"])
+            self.assertEqual(seen["argv"][seen["argv"].index("--max-workers") + 1], "24")
+            self.assertEqual(seen["env"]["HF_HOME"], str(directories.layout.layout.cache / "huggingface"))
+            self.assertEqual(seen["env"]["HF_ENDPOINT"], "https://hf-mirror.example")
             self.assertTrue((asset.path / "config.json").exists())
-            models.assets.unregister_model("qwen", delete_managed_files=True)
+            models.assets.unregister_model("example-model", delete_managed_files=True)
             self.assertFalse(asset.path.exists())
 
     def test_gpu_runtime_observer_is_best_effort_and_parses_nvidia_smi(self):
-        observer = NvidiaSmiGpuRuntimeObserver()
-        with patch("research_platform.resource.compute.providers.nvidia_smi.shutil.which", return_value=None):
+        class FakeCommandRunner:
+            def __init__(self): self.outputs = [
+                "0, GPU-1, H100, 81920, 1024, 80896, 12\n",
+                "123, GPU-1, 512, python\n",
+            ]
+            def run(self, argv, **kwargs):
+                return LocalCommandResult(tuple(argv), 0, self.outputs.pop(0), "")
+
+        observer = NvidiaSmiGpuRuntimeObserver(FakeCommandRunner())
+        with patch("noetrium_platform.infrastructure.resources.compute.providers.nvidia_smi.shutil.which", return_value=None):
             self.assertFalse(observer.snapshot().available)
-        device = CompletedProcess((), 0, "0, GPU-1, H100, 81920, 1024, 80896, 12\n", "")
-        process = CompletedProcess((), 0, "123, GPU-1, 512, python\n", "")
-        with patch("research_platform.resource.compute.providers.nvidia_smi.shutil.which", return_value="/usr/bin/nvidia-smi"), patch(
-            "research_platform.resource.compute.providers.nvidia_smi.subprocess.run", side_effect=(device, process)
-        ):
+        observer = NvidiaSmiGpuRuntimeObserver(FakeCommandRunner())
+        with patch("noetrium_platform.infrastructure.resources.compute.providers.nvidia_smi.shutil.which", return_value="/usr/bin/nvidia-smi"):
             snapshot = observer.snapshot()
         self.assertTrue(snapshot.available)
         self.assertEqual(snapshot.devices[0].memory_free_mb, 80896)
@@ -585,10 +612,10 @@ class ManagementTests(unittest.TestCase):
             model_b = root / "model-b"; model_b.mkdir()
             factory = FakeFactory()
             models = build_models(directories, environments, factory)
-            models.assets.register_model("a", PLATFORM_SCOPE, model_a, family="qwen", tags=("large", "chat"))
-            models.assets.register_model("b", PLATFORM_SCOPE, model_b, family="qwen", tags=("small",))
+            models.assets.register_model("a", PLATFORM_SCOPE, model_a, family="example-family", tags=("large", "chat"))
+            models.assets.register_model("b", PLATFORM_SCOPE, model_b, family="example-family", tags=("small",))
             self.assertEqual(tuple(value.model_id for value in models.assets.models(tags=("large",))), ("a",))
-            self.assertEqual(len(models.assets.models(family="qwen")), 2)
+            self.assertEqual(len(models.assets.models(family="example-family")), 2)
 
             for deployment_id, env_id, tags in (
                 ("chat-a", "serve-a", ("online", "chat")),

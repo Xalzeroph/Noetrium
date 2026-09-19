@@ -1,0 +1,11 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "agentboard_pddl",
+  "benchmark": {
+    "benchmark_id": "agentboard-pddl",
+    "title": "AgentBoard PDDL evaluation",
+    "source_uri": "https://github.com/hkust-nlp/AgentBoard",
+    "environment_kinds": ["pddl"],
+    "modalities": ["text", "structured"]
+  }
+}

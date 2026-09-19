@@ -1,0 +1,172 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "chatdev_v1",
+  "package_digest": "847704ea212d745fe6f69df60a8fd453a4f229e846f00ba84804943bf8972272",
+  "definition_digest": "77f97f5031e401163f5811e48aedd0c7ec085cc84bdc7c1c5d6b503d2ac65f1e",
+  "source_registry_digest": "ef8ddd9ce1f6e9a889a6c727ad6145b62925d7559d7022c815721004d1c57702",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "chatdev",
+    "title": "ChatDev: Communicative Agents for Software Development",
+    "paper_uri": "https://aclanthology.org/2024.acl-long.810/",
+    "year": 2024,
+    "paper_revision": "ACL 2024 / official v1.0.0 commit acb93cf3d15cec5b9ee6eec0850ddd3932164329",
+    "identity_digest": "414232f06382023945558c47ca2deb6502bb521fb4a71df666dad60ed0992f89"
+  },
+  "catalog": {
+    "domains": [
+      "multi-agent",
+      "software-engineering"
+    ],
+    "families": [
+      "communication",
+      "multi_agent",
+      "role_playing",
+      "software_agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "srdd"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/software",
+      "execution/machines",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "bounded composed-phase loops",
+      "eight-stage phase-chain orchestration",
+      "reflection phase semantics",
+      "software-company role specialization",
+      "two-role phase conversation semantics"
+    ],
+    "platform_owned": [
+      "MethodProgram host and journal authority",
+      "RuntimeProgram host and journal authority",
+      "artifact lineage",
+      "evaluation",
+      "nested ResearchMachine execution and child links",
+      "participant/model binding",
+      "software workspace execution"
+    ],
+    "reference_repositories": [
+      "https://github.com/OpenBMB/ChatDev"
+    ],
+    "reference_publications": [
+      "https://aclanthology.org/2024.acl-long.810/"
+    ],
+    "catalog_digest": "68e57051703ea7e2faef6081a6d99e6130f3003fd8a4246e0d94399113b528d4"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "acl_2024_publication",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2024,
+      "publication_id": "2024.acl-long.810",
+      "publication_uri": "https://aclanthology.org/2024.acl-long.810/",
+      "revision": "ACL 2024 long paper",
+      "content_sha256": null,
+      "lane_digest": "21ff24c7fba72300f04e0ce15b9a643fc4e164f8b889e3d8a78fbef7cd9d268f"
+    },
+    {
+      "lane_id": "chatdev_v1_official_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/OpenBMB/ChatDev",
+      "commit": "acb93cf3d15cec5b9ee6eec0850ddd3932164329",
+      "artifacts": [
+        "CompanyConfig/Default/ChatChainConfig.json",
+        "CompanyConfig/Default/PhaseConfig.json",
+        "CompanyConfig/Default/RoleConfig.json",
+        "chatdev/chat_chain.py",
+        "chatdev/composed_phase.py",
+        "chatdev/phase.py",
+        "requirements.txt"
+      ],
+      "lane_digest": "15e946dcd8d4a7e2a7184ab0836d49d8296ad42d33c7c35c25a5ca0a20a68727"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/chatdev_v1/fidelity.py",
+      "declaration_digest": "4f95b78dad9b034891db3e5e452e9c14f2b48dfcdc0deb16271e82a83757b9ca",
+      "content_sha256": "99dc89d0adba8300c845234ddbb9af040fe344444ee811f495acdf61ec08d7ce"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/chatdev_v1/program.py",
+      "declaration_digest": "48f8fe7c09d9686c1e7b154acc7738b706846aba9ef263c81d1b5e286e396242",
+      "content_sha256": "3c4bb686e562164df6898e210b54d7e1d700d16e8c062f73448cdc5b4daac55f"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/chatdev_v1/environment.py",
+      "declaration_digest": "979fd03cda20203ba96dcafcf2acd8b142e065b9ab9a4d005ffbbd5cc2ad4fc0",
+      "content_sha256": "bb6fe4b838cfc232a34d02b8ffc01bdd050e975ffe007545ac24205fe5ce445e"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/chatdev_v1/runtime.py",
+      "declaration_digest": "a6680fb41432d2bfbf309ddd761e50d1a5e1936b237d49cd9fc5fe02459d2207",
+      "content_sha256": "e41a1919e7130a32445f44320ffcb2f2840d625e8ebe4bdeb075003ae30d5b3c"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/chatdev_v1/chain.py",
+      "declaration_digest": "dd4eff6ffe9ca6910735ba81eb63a06398477470ff9787e97f3191d1deb9094a",
+      "content_sha256": "5bc98506e18272f6c155f131e4704424dcca1301ae5eee38be946bf6b316e3c6"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/chatdev_v1/source.py",
+      "declaration_digest": "9b74f142c3e86ffd0d3493b0e1252a5373febd70008e52e29f32128558bca331",
+      "content_sha256": "ad7c58a28c08a9f02151da2d63e957307b91f83e1b1b94e8620a76028acf88f2"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/chatdev_v1/workspace.py",
+      "declaration_digest": "0fb1c120c0ff5aed5f21e8dff64efb60f85fca967b987a09590615066bffca5f",
+      "content_sha256": "a22f21a46f5ad3b8c846712c4840e45835a972e0560dbe2b50d3a5937539ceab"
+    }
+  ],
+  "primary_executable": "research/reproductions/chatdev_v1/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "Released ChatDev invokes filesystem/process mechanics through ambient os/subprocess shell calls. The reproduction preserves the phase semantics but binds them to the platform software.repository provider and exact-argv process authority, with content-addressed workspace state and effect receipts.",
+      "delta_digest": "60044b99aab859c7efd333acde3a869df8e3194e47004f276c78cd4a3f178a1b"
+    }
+  ],
+  "blockers": [
+    "Software workspace effect receipts are preserved inside the nested EnvironmentMachine result, but formal claim-ready runs still need promotion into the shared durable effect authority.",
+    "Exact historical hosted model serving used by the released ChatDev configuration is not an immutable public model artifact.",
+    "The frozen SRDD benchmark cut is bound, but formal runnable studies still need the paper-metric evaluator and Study protocol."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_chatdev_method_program_v1.py",
+      "content_sha256": "62feb66e964376658acc60f7ac00dfe7a9d24405545650da19ec6b965b6da674"
+    },
+    {
+      "path": "tests/test_scientific_chatdev_phase_runtime_v1.py",
+      "content_sha256": "009653c7b0a0a46940c27b23eaf5fc578baf57f1030647e6a483f7c6d8265e0b"
+    },
+    {
+      "path": "tests/test_scientific_chatdev_v1.py",
+      "content_sha256": "5398fdfaab5e6cd061feca923032a6305eb873b254a0bacb55a3664bca9abad7"
+    },
+    {
+      "path": "tests/test_scientific_chatdev_workspace_v1.py",
+      "content_sha256": "b74082d7a182d9b2ba687ddc7a070826fe6dccadc87bc0e1595911a6526891c8"
+    }
+  ]
+}

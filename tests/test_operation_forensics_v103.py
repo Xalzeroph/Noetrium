@@ -2,10 +2,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from research_platform.platform.composition.operation_forensics import OperationForensicFailureSink
-from research_platform.platform.composition.context_action import context_action_failure_classifier_chain
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.platform.kernel import (
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.composition.operation_forensics import OperationForensicFailureSink
+from noetrium_platform.composition.context_action import context_action_failure_classifier_chain
+from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
     ExecutionContext,
     OperationExecutor,
@@ -32,7 +32,7 @@ class OperationForensicsV103Tests(unittest.TestCase):
                 result=OperationExecutor(sink).execute(self._request("method.recall","method.sem"),fail)
                 self.assertTrue(result.failure_id)
                 self.assertEqual(store.failures.verify()[0],1)
-                rows=store.failures.verified_payloads_after(0)[3]
+                rows=store.failures.verified_payloads_after(0).payloads
                 failure=rows[0]
                 self.assertEqual(failure["failure_domain"],"METHOD")
                 self.assertEqual(failure["failure_code"],"SERVING_FAILURE")
@@ -46,7 +46,7 @@ class OperationForensicsV103Tests(unittest.TestCase):
                 sink=OperationForensicFailureSink(store, classifier=context_action_failure_classifier_chain())
                 def fail(request): raise TimeoutError("bridge timeout")
                 OperationExecutor(sink).execute(self._request("environment.act","environment.mc"),fail)
-                failure=store.failures.verified_payloads_after(0)[3][0]
+                failure=store.failures.verified_payloads_after(0).payloads[0]
                 self.assertEqual(failure["failure_code"],"EFFECT_UNKNOWN")
                 self.assertEqual(failure["effect_certainty"],"effect_unknown")
                 self.assertEqual(failure["recommended_recovery"],"reconcile_effect")

@@ -1,0 +1,119 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "adas_meta_agent_search",
+  "package_digest": "e5ffc347462a9affd49b7a5a213cc0f81785739d2ca6b6951a7f69049a162f3c",
+  "definition_digest": "274bddbfb4ada5f50a9b2984d4f609664140e6900c4a399ebd83bcb5fc556c89",
+  "source_registry_digest": "0c0b03477d5254347c34f420f4354bb8acbacc56f34dd4a40275e1d128b71eef",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "adas-meta-agent-search",
+    "title": "Automated Design of Agentic Systems",
+    "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/36b7acf6f6010652b3f2a433774a66fe-Abstract-Conference.html",
+    "year": 2025,
+    "paper_revision": "ICLR 2025 / source commit 2702bee8fefda42255efc5be9f60e3bd3db96ae4",
+    "identity_digest": "b4d867a329d00b3c5677a717fe9ff88ea7e2a291151645b4b10afae0a750f30d"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "runtime-systems",
+      "self-improvement"
+    ],
+    "families": [
+      "agent_design",
+      "meta_search",
+      "self_improvement"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "mgsm"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "execution",
+      "experimentation/study",
+      "experimentation/workbench",
+      "participant/method",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "archive-conditioned agent design search",
+      "candidate acceptance threshold",
+      "candidate debug/regeneration policy",
+      "two-pass meta reflection"
+    ],
+    "platform_owned": [
+      "benchmark/evaluator cut identity",
+      "immutable candidate source publication",
+      "isolated candidate execution",
+      "measurement/evidence lineage",
+      "method host",
+      "recovery",
+      "whole-cut study assignment"
+    ],
+    "reference_repositories": [
+      "https://github.com/ShengranHu/ADAS"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "46a125b3fed3e0e7c7dfedb15e0fdfcaec7c7873326777e0b481134f19edce15"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/ShengranHu/ADAS",
+      "commit": "2702bee8fefda42255efc5be9f60e3bd3db96ae4",
+      "artifacts": [],
+      "lane_digest": "0f1db2609318d4119952beffb5e864bcf0a92c09f59507709442750a18a9bb73"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/adas_meta_agent_search/fidelity.py",
+      "declaration_digest": "907ca61c6c9b4a2673aa2994eee0c86da022f2889220bdfb766c7ed207bdfc12",
+      "content_sha256": "11ad54c6e1d5f8a9016fbbb9f3583171a3bf6331ada78fbca8dcc2b1eb74f540"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/adas_meta_agent_search/program.py",
+      "declaration_digest": "ebeae2fe01ef278506a93a321f22cf9b51b3b5a0cf9d1812ed994150ca010bb4",
+      "content_sha256": "7acb2ccc02e53d57b448831f1fc30ee86ae7c963ac94afe41622f103a55493c7"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/adas_meta_agent_search/study.py",
+      "declaration_digest": "88045ec7767c8d4c6bb0dbc97645bc9eef81135024246b6049a9ba139ef8427e",
+      "content_sha256": "ecc40c6c4f33491b2dffa7c93e07d0dd89c6295d882050118328d1e760c24639"
+    }
+  ],
+  "primary_executable": "research/reproductions/adas_meta_agent_search/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "The released MGSM search can regenerate source after the final failed candidate evaluation and then attach the previous fitness to that unexecuted source. The reproduction preserves the debug call but refuses stale source/measurement binding: an unexecuted debug candidate is skipped rather than admitted to the archive.",
+      "delta_digest": "9c5c2be1ca704a07826538496a4f016b4a1bb2db92c9a2e753075fc83dfd2f49"
+    }
+  ],
+  "blockers": [
+    "Exact historical hosted GPT-4o-2024-05-13 and candidate GPT-3.5-Turbo serving snapshots are not immutable public model artifacts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_adas_method_program_v1.py",
+      "content_sha256": "31b8af80c646dd691b9df61c6d542a45f74d64a19b46db69809e45308d6906de"
+    },
+    {
+      "path": "tests/test_scientific_adas_mgsm_study_v1.py",
+      "content_sha256": "5de137a3337e4b165e758fbe7cf187688b4603c5456cd429bc8de91f2f1b8fa2"
+    },
+    {
+      "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
+      "content_sha256": "ab474c96fc6500a6773bc02f871e319935502532e44b07ebbe0d96cd20611940"
+    }
+  ]
+}

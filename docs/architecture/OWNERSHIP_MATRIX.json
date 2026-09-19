@@ -1,0 +1,3791 @@
+{
+  "matrix_digest": "54fc80f6805be88dfdd490ef7925619c89a495aa2c8dd0f16524fe2effb9adf8",
+  "rows": [
+    {
+      "audit_required": [],
+      "canonical_authority": "artifact",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "platform",
+        "scope"
+      ],
+      "row_digest": "0b62139e443a725db1c557696a9d20827438c9405efb1810c4b7eebf74ec1e29",
+      "state_authority": "artifact_identity",
+      "system_id": "artifact"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "artifact",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "artifact",
+      "plane": "evidence",
+      "provides": [
+        "artifact.registry"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "bd35ad64937b499148e66ebda692f47296a7ead1e4f47717bb6ef8123703e15b",
+      "state_authority": "artifact_identity",
+      "system_id": "artifact/catalog"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "artifact",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "artifact",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "dd62f619d318fa6e740afec4d53a05f1d9d0c4a27d1feb31b73f5c934dab854b",
+      "state_authority": "artifact_identity",
+      "system_id": "artifact/content"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "artifact",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "artifact",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "5507f12434a1a9ffa677b140e7c1ee97b5555bd8955b0b614501655dd4419eee",
+      "state_authority": "artifact_identity",
+      "system_id": "artifact/lineage"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "artifact",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "artifact/lineage",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "1f3c53e33dd844a794fce3d5807495bbd75b5e371c31026620c629eadbeb583b",
+      "state_authority": "artifact_identity",
+      "system_id": "artifact/lineage/relation"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "artifact",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "artifact",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "03cfb3d500bf2f869ca9b4d532c59a76386e2bd3e53f9d0b1135a49ea1fa3960",
+      "state_authority": "artifact_identity",
+      "system_id": "artifact/reference"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "artifact",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "artifact",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "9fad38e4dde7bb69df36fbd1be2fceb6662661c629dcf783eec41b50b0e1e712",
+      "state_authority": "artifact_identity",
+      "system_id": "artifact/retention"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "reference",
+      "parent": null,
+      "plane": "foundation",
+      "provides": [
+        "reference.agent.components",
+        "reference.agent.runtime.bridge"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "platform"
+      ],
+      "row_digest": "9ef33da7c8ecc8bcdb48d6403b7a44028daba754b088ccc9abb222615524b26e",
+      "state_authority": "none",
+      "system_id": "components"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "data",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "artifact",
+        "platform",
+        "scope"
+      ],
+      "row_digest": "e2c65e58a9696d447984622bf4cfcfa5e55d368f938c3a4dc731aba47aeefbff",
+      "state_authority": "data_authority",
+      "system_id": "data"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "data",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "data",
+      "plane": "evidence",
+      "provides": [
+        "dataset.registry"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "1fca495b0754e6fba0caf3809066b9cae73f5697d1c650e1ca6a3c5301e9d462",
+      "state_authority": "data_authority",
+      "system_id": "data/dataset"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "data/fact",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "data",
+      "plane": "evidence",
+      "provides": [
+        "durable.fact"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "f9911c40937f12bd6c708ce2a48c5e3a3bd4c0a82065a74704729369f76cf6f2",
+      "state_authority": "fact_authority",
+      "system_id": "data/fact"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "data",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "data",
+      "plane": "evidence",
+      "provides": [
+        "projection.runtime"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "bd880d966c32580829b88cce5de30ea905ddb22d5655c77c3e76fc2434a706c1",
+      "state_authority": "data_authority",
+      "system_id": "data/projection"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "data",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "projection",
+      "parent": "data",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "7386e7693c6fdc12da09aa838afafcbb4e5be6fd3bff3cc75765ce5cdae9b819",
+      "state_authority": "data_authority",
+      "system_id": "data/query"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "data",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "projection",
+      "parent": "data/query",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "b656b4f5eebde9cd004b0b12bf4fe22afc7d863c8ad99f22734a70a8712b9f36",
+      "state_authority": "data_authority",
+      "system_id": "data/query/cross"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "data",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "data",
+      "plane": "evidence",
+      "provides": [
+        "record.plane"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "2feb8fe0134b35d82ebec169c518ef653b24484dd19083aa8e0865a871a76c0e",
+      "state_authority": "data_authority",
+      "system_id": "data/record"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "data/state",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "data",
+      "plane": "evidence",
+      "provides": [
+        "state.atomic"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "platform"
+      ],
+      "row_digest": "9e7fa95421800e364fe3a849c4738f39926fe0b7956f1c256dfae371e4639671",
+      "state_authority": "state_authority",
+      "system_id": "data/state"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "platform",
+        "reliability",
+        "resource",
+        "scope"
+      ],
+      "row_digest": "71558edf9a940a9cd5aff0b0463ee62c0e372ec988a3b55b40334b1f72680875",
+      "state_authority": "environment_state",
+      "system_id": "environment"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "139a911d79f44d57453b84b2666001f79accf5e284e2b1bc71363db2751fc201",
+      "state_authority": "environment_state",
+      "system_id": "environment/binding"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [
+        "environment.catalog"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "9db1fc442c732f3dc54d550c591d72bc999544c9160428e264b0c3f6e9a8bbe8",
+      "state_authority": "environment_state",
+      "system_id": "environment/catalog"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [
+        "environment.category"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "governance/system_registry",
+        "platform"
+      ],
+      "row_digest": "c7db6cc086dfe1c98b16028ea164b26138606513831d13c5cd8dcea88a831595",
+      "state_authority": "environment_state",
+      "system_id": "environment/category"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [
+        "environment.embodied.contract"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment",
+        "reliability",
+        "resource"
+      ],
+      "row_digest": "93aedde89fbea5453c91a086105ad3944d8b4d0b181386e354544ac41931996c",
+      "state_authority": "environment_state",
+      "system_id": "environment/embodied"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [
+        "environment.gui.contract"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment",
+        "runtime"
+      ],
+      "row_digest": "2dc4a7e2f504a13da2825e461d8b57b01591fd0fb5d5afb54beef50751884dea",
+      "state_authority": "environment_state",
+      "system_id": "environment/gui"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "195137183bfecae4f80188d78509c501a32a3b346ee5934814e87cc741b9a80e",
+      "state_authority": "environment_state",
+      "system_id": "environment/instance"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment/instance",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "0f88b6eccdd8e787d62898f20fc6cabdd9eb20a291d24b5184374cf52e6188ef",
+      "state_authority": "environment_state",
+      "system_id": "environment/instance/identity"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment/instance",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "307e4b61a4cbfa525ba5257d0f65ee3e1a48c0b0b51b0d652333893f13a107b6",
+      "state_authority": "environment_state",
+      "system_id": "environment/instance/readiness"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [
+        "environment.minecraft.contract"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "artifact",
+        "environment",
+        "reliability",
+        "resource",
+        "runtime"
+      ],
+      "row_digest": "9c98e02f11aed0a86e150aea2ff9fefc1712ccec82bae88049ac36650578ba3e",
+      "state_authority": "environment_state",
+      "system_id": "environment/minecraft"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "adapter",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "118bd787637eddf9aee7df61150af9de143274c9b12682133c45bd229c02a1a7",
+      "state_authority": "environment_state",
+      "system_id": "environment/resolution"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "adapter",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [
+        "environment.contract"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "231f51fc48353c1e1cab848d398d1bb714d7de0364382225f436e552e4c7b298",
+      "state_authority": "environment_state",
+      "system_id": "environment/runtime"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [
+        "environment.software.contract"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment",
+        "runtime",
+        "resource"
+      ],
+      "row_digest": "579dd85cf8c1f9709b3cb355e53aab1dd15c61d8c98f8f82ad84e8676ca64689",
+      "state_authority": "environment_state",
+      "system_id": "environment/software"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "6a39db09af4d9ce1b6e9cb9738d6e7c9b19c206285f7c9647f1ed48519d12877",
+      "state_authority": "environment_state",
+      "system_id": "environment/specification"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment/specification",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "fecf4b2d592bfccc595025ab481381bb0abdc9098c1b6e6e89ec188ac7e3bed1",
+      "state_authority": "environment_state",
+      "system_id": "environment/specification/digest"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "environment/specification",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "3988a52bf304e1505dfca90dffd4c688d899df7a67b005aff4046d15a78d76ab",
+      "state_authority": "environment_state",
+      "system_id": "environment/specification/schema"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [
+        "environment.text_world.contract"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment"
+      ],
+      "row_digest": "5a990a6a548dd92b7324ff297a51ea1272194f5ca0228399ebc4f169978f11d9",
+      "state_authority": "environment_state",
+      "system_id": "environment/text_world"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "environment",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "environment",
+      "plane": "capabilities",
+      "provides": [
+        "environment.web.contract"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment",
+        "runtime"
+      ],
+      "row_digest": "9a674af0e2d095db2c261a542c70a62927e33b819fbe44dc3e41b0fe7f6d5832",
+      "state_authority": "environment_state",
+      "system_id": "environment/web"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "execution",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment",
+        "governance",
+        "model",
+        "observability",
+        "participant",
+        "platform",
+        "reliability",
+        "runtime",
+        "scope"
+      ],
+      "row_digest": "b594034c4c22ae8e3c9f735557d23c7772ef2808672919e37af0662fe23abfac",
+      "state_authority": "execution_operations",
+      "system_id": "execution"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "execution",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "policy",
+      "parent": "execution",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "0011c625d2f69bc7e5818e98fc92ab18efabeef9f6023883eb9d06999bf07e7b",
+      "state_authority": "execution_operations",
+      "system_id": "execution/admission"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "execution",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "execution",
+      "plane": "research",
+      "provides": [
+        "capability.invocation",
+        "capability.registration"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "bcb0c1638d219bbe0cad82060ab364c206b3e81ce9aed7eee960a61fc4306185",
+      "state_authority": "execution_operations",
+      "system_id": "execution/capability"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "execution/command",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "execution",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "4a52a0cc11ae9aeccd2afe352c94d1f283fbd85f851221b0b6bf06e87784e1e4",
+      "state_authority": "command_intent",
+      "system_id": "execution/command"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "execution/operation",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "execution",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "a60f078addbce8581fa8bffb1913dc2fcc9af8532be6e8ee9a483ff31195ef7b",
+      "state_authority": "operation_state",
+      "system_id": "execution/operation"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "execution",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "policy",
+      "parent": "execution",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "c0adc61c52e19b8034a50a26364527222bbf062f210c8edc7d38ed0a23dada42",
+      "state_authority": "execution_operations",
+      "system_id": "execution/scheduling"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "execution",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "execution",
+      "plane": "research",
+      "provides": [
+        "workflow.runtime",
+        "method.machine",
+        "method.abi",
+        "method.checkpoint"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "participant/capability",
+        "participant/method",
+        "platform"
+      ],
+      "row_digest": "45d1232199bc75ec19f3769e884571faf12f589e9b9a01708c70c07dcfab796b",
+      "state_authority": "execution_operations",
+      "system_id": "execution/workflow"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment",
+        "execution",
+        "participant",
+        "platform",
+        "portfolio",
+        "scope",
+        "governance",
+        "model"
+      ],
+      "row_digest": "5919929447dd4059e4c678b6910a52bb7c2ac43f6fe57188b263a504bced7f29",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "72a2a16fa74aea9bb2a15e53d981900d80edd656e6435c192725879253e253c3",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/branch"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [
+        "experiment.catalog"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "experimentation/experiment",
+        "experimentation/run/identity",
+        "experimentation/study",
+        "scope"
+      ],
+      "row_digest": "25abaf6b357a9ea85df55bb71bf8089aaa644c38983cbcadab39652db6bab964",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/catalog"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [
+        "run.checkpoint"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "33904d01b5bdee79278de30b606146cd6741914773316d23e2cfdafbdca2aefa",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/checkpoint"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "0a18178cdaa4ff838a952b40ec7473dba218359b8d50d18306d46d1306de5b51",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/evaluation"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [
+        "experiment.definition",
+        "experiment.runtime"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "b82bebb2428baa377c034e717bc33ebf0b362f8a328e3b145845b3a698b192fb",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/experiment"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [
+        "experiment.resource-policy"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "experimentation/experiment",
+        "resource/compute",
+        "scope"
+      ],
+      "row_digest": "0ec5a1d871513eb836006f88e2808b2faa3fceada06375a2e4d5ffc5f85b4bf1",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/resource"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [
+        "run.lifecycle",
+        "run.decision"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "beb581d098fa4c3bef6735d2eb291f525563d4860ec8801755ebdbb6ca0461b2",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/run"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation/run/control",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "experimentation/run",
+      "plane": "research",
+      "provides": [
+        "run.control"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "execution",
+        "execution/operation",
+        "experimentation/checkpoint",
+        "experimentation/run",
+        "experimentation/run/identity",
+        "experimentation/run/lifecycle",
+        "experimentation/run/manifest",
+        "platform"
+      ],
+      "row_digest": "a7bc10f034a38d602b4358b46fd3a5f2eb6bbb156a1a23d3f39c52e9fb2f18f9",
+      "state_authority": "run_control",
+      "system_id": "experimentation/run/control"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation/run",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "d5cbdbda76e28c926d99177672ea37ed08f1aeed1b1f08fac5ae03192375e859",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/run/identity"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation/run",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "12677eb62f01ee027de05dd65122aad628ebf01ab87b3ba289552d04e34706ee",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/run/lifecycle"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation/run",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "13ae9969ef92b52a741fa5545321333d91906782200de565f35758f7ea36dedb",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/run/manifest"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [
+        "study.definition"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "artifact"
+      ],
+      "row_digest": "04d86de8596b7bb1d15eb554eee69907b609069eb336ef2b86fca0b0d1a62b3a",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/study"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "a082afadb8c2048ccbb41247fbf903b0a75bd6117ee1ee7f6adc464d5dc649ca",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/variant"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [
+        "research.workbench"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "experimentation/study"
+      ],
+      "row_digest": "18223e4f56077844a182620dc6d6db4db7f5302018623f45d930956ac8d11ff2",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/workbench"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "experimentation",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "adapter",
+      "parent": "experimentation",
+      "plane": "research",
+      "provides": [
+        "experiment.workload"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment/runtime",
+        "experimentation/experiment",
+        "experimentation/run",
+        "participant/method",
+        "platform"
+      ],
+      "row_digest": "b2f6d6aaa6077319ce756bd95586cad3e09b6aa1315f3b6bef06e95f7e6c3eff",
+      "state_authority": "experimentation_state",
+      "system_id": "experimentation/workload"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": null,
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "platform"
+      ],
+      "row_digest": "4bb742f02482df30e391c5558e604fc3843a77d508983dc9100b5ec6d1987766",
+      "state_authority": "none",
+      "system_id": "governance"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "tool",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "79cf633e9ff86f89d5562c82491b77efdb3e891b92d258c152f02686a612b32e",
+      "state_authority": "none",
+      "system_id": "governance/algorithm"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "tool",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [
+        "architecture.audit"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "scope"
+      ],
+      "row_digest": "a45bbcbd64ba3c97e863fc4fcbd921204e58856aa73d62fd17c78414eaa6162b",
+      "state_authority": "none",
+      "system_id": "governance/architecture"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "tool",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "ca5d56d43390152eb60bdfadbab0b270862b58c12ec872a58b3d58fdf1a3cfd8",
+      "state_authority": "none",
+      "system_id": "governance/concurrency"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "policy",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [
+        "governance.evolution"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "governance/system_registry",
+        "observability"
+      ],
+      "row_digest": "c9404a8cba7a3f61bebc40063d168463c380294776eb3a924739641f78ff38c7",
+      "state_authority": "none",
+      "system_id": "governance/evolution"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "policy",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "6ec0f5bf0d43b992dfcfb9a0ff63722e702f0701088ecf1c621e21061eec027a",
+      "state_authority": "none",
+      "system_id": "governance/gate"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "tool",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "ba4e5675cffc69ef4e5fe94c0f230a948a7492177a213b9252a2afb7cff7e06d",
+      "state_authority": "none",
+      "system_id": "governance/performance"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "tool",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [
+        "quality.audit"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "0b8ced2e8b23fca06fcedead1c045c16aa3fe86651c5094fcc9f7db13e1dd95d",
+      "state_authority": "none",
+      "system_id": "governance/quality"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "governance/release",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [
+        "release.freeze"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "9a138adc573977fcb0dedd80bb644191b2c86aa19ad4b99c66931bb7229f55a1",
+      "state_authority": "release_authority",
+      "system_id": "governance/release"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "tool",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "a6db2fd0319ed4df4660888492793254794980f835aa44c31f88b75a8e0f9d64",
+      "state_authority": "none",
+      "system_id": "governance/repository_boundary"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "policy",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "bd47585b30edc888ada3dd46c0d2c277ef69045e9f2c3fdfa8aa6e5611a23047",
+      "state_authority": "none",
+      "system_id": "governance/schema"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "policy",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "f3aaa866e7fd99ab74040c7cf302c7e3cfc52dc3740c1900a8ba214d1bcbe903",
+      "state_authority": "none",
+      "system_id": "governance/security"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "governance/system_registry",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "governance",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "f81593a64824c213ea09c34c39ba54df7b891a2075aa8277d231b35d0f1ce3f6",
+      "state_authority": "system_topology",
+      "system_id": "governance/system_registry"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment",
+        "platform",
+        "resource",
+        "runtime",
+        "scope"
+      ],
+      "row_digest": "faf8eb6f7095822554c30c5861cf0a64fb834cbdd9a3a4ada69ac69381e65340",
+      "state_authority": "model_identity",
+      "system_id": "model"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model",
+      "plane": "capabilities",
+      "provides": [
+        "model.asset",
+        "model.asset-acquisition"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "88ba4ff46515c264855d5ef7205efe284c5f603cb3ec083a23355215660c1d76",
+      "state_authority": "model_identity",
+      "system_id": "model/asset"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model",
+      "plane": "capabilities",
+      "provides": [
+        "model.assignment"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "9b6fd7be6d5b9e9207aabab2389a8ace31c61b9445618bfb52937752c840374f",
+      "state_authority": "model_identity",
+      "system_id": "model/assignment"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "445b61416d0fa6dd5ae173cfc40804a6270d716800640d224c11ef7f277567d9",
+      "state_authority": "model_identity",
+      "system_id": "model/catalog"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model/catalog",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "4a3ba2cbc554da4b17281451426f72f23b2d11b998b56963b0a8254e69b0baef",
+      "state_authority": "model_identity",
+      "system_id": "model/catalog/family"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model/catalog",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "20f59f360f3689fecba76e96dfe0afc6f412119fe2ec25f5e98d707e1835e2c7",
+      "state_authority": "model_identity",
+      "system_id": "model/catalog/revision"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model",
+      "plane": "capabilities",
+      "provides": [
+        "model.deployment",
+        "model.deployment-control"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "4b9000b18b281f3416f9a7261999827ffa4d20eb671fe7f580eeb2e643e6d032",
+      "state_authority": "model_identity",
+      "system_id": "model/deployment"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model/deployment",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "09b625805cb086e163f2394d1294d6b6a8bb6052b5380ddeb86f7310e91936e4",
+      "state_authority": "model_identity",
+      "system_id": "model/deployment/closure"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "policy",
+      "parent": "model",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "b07c31d9b14844575bfac855443a899dafc9460d78029053576b29a06780e6e4",
+      "state_authority": "model_identity",
+      "system_id": "model/qualification"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model",
+      "plane": "capabilities",
+      "provides": [
+        "model.request"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "23a4f02463187f06ded789e0c5a331acf792684533ecc67da44601dcf9ddaf8b",
+      "state_authority": "model_identity",
+      "system_id": "model/request"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model/request",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "62cdbbc4d471a558b0a43b6f63fab4eda06b9fad602591a42e229e4747d805f1",
+      "state_authority": "model_identity",
+      "system_id": "model/request/input"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model/request",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "62e1b7133cc89cf9a858ac46e571dafc713b80cd96214bd7c0d2d7acc9b14aeb",
+      "state_authority": "model_identity",
+      "system_id": "model/request/output"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model/request",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "e8cec53c304dff40a68eea245347f783a45a816021b6fbbf9d4bc627eeb0b476",
+      "state_authority": "model_identity",
+      "system_id": "model/request/prompt"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "adapter",
+      "parent": "model",
+      "plane": "capabilities",
+      "provides": [
+        "model.serving",
+        "model.qualification"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "7f5287d9ab37753042ee1d1ac646f0751326c7aba1a00e64a8bbc87616b06fd4",
+      "state_authority": "model_identity",
+      "system_id": "model/serving"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "adapter",
+      "parent": "model/serving",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "2d23a7a34e308f45a5d55ebf1cdfdfe620e9b738d26511420587ca1ab66b4e2d",
+      "state_authority": "model_identity",
+      "system_id": "model/serving/endpoint"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "model",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "model",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "256f040a98abedb89e33e719b79d27256e28f37da8265ab9dda062313bf9bece",
+      "state_authority": "model_identity",
+      "system_id": "model/stack"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": null,
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "data",
+        "governance",
+        "platform",
+        "scope"
+      ],
+      "row_digest": "b75e32e230831db27aeceb49708175b7a33b4cbcda19d5d310c4b11beba2bf31",
+      "state_authority": "none",
+      "system_id": "observability"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "66cfd5b994ce58006cad3e9e28768d597b591535b1c80e39ad818e168f5937ec",
+      "state_authority": "none",
+      "system_id": "observability/capture"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "31eb594da2693283683d8ae47353659d4ac7c8fe3c78bdffc935fae909f8bc23",
+      "state_authority": "none",
+      "system_id": "observability/diagnostic"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/diagnostic",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "a49641d758bc671e1cea565d8866989e0ec7ed30b27f1baae9197dbbbd0e887c",
+      "state_authority": "none",
+      "system_id": "observability/diagnostic/correlation"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/diagnostic",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "c3482a359f7cf371a4dd0cb4bdcd9bade0323cf76367b4e7f54bf92ab01a319a",
+      "state_authority": "none",
+      "system_id": "observability/diagnostic/query"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/diagnostic",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "404283dbcaf909a293373cd83e8546c8470864a4151d642a8a35df9409640a15",
+      "state_authority": "none",
+      "system_id": "observability/diagnostic/snapshot"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability",
+      "plane": "evidence",
+      "provides": [
+        "logging.observation"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "a4c7c6e06950c7a5ae0d6e7d4dd1c128e019e00293a57879abefeecb8a9405ee",
+      "state_authority": "none",
+      "system_id": "observability/logging"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/logging",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "a6ad899cc20d04b7b01e1796907b543c17fcc07ed5f24aba26bc11fc2a538cfd",
+      "state_authority": "none",
+      "system_id": "observability/logging/capture"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/logging",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "994839137f7fc833af0c3286e50511b2ad347a172c2f83d29697be9833eec538",
+      "state_authority": "none",
+      "system_id": "observability/logging/context"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/logging",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "4f132a9ba3720518a52e649a975f0ef5d5355cf17dabcfb1d7e160b9d39ef8ef",
+      "state_authority": "none",
+      "system_id": "observability/logging/projection"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/logging",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "5365d3d8b82539915c8977798732be50c72750e66f51a7def034d7386fad6e41",
+      "state_authority": "none",
+      "system_id": "observability/logging/query"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/logging",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "1e57b6d740b49c6b97a9eb819a3288c9ca0914691f3ae42f77cd50be804e533a",
+      "state_authority": "none",
+      "system_id": "observability/logging/record"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/logging",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "5b516f7299179a1d54fc1d31c85e451491b6413c297678f0c86f81a48b15f4b5",
+      "state_authority": "none",
+      "system_id": "observability/logging/retention"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/logging",
+      "plane": "evidence",
+      "provides": [
+        "logging.routing"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "d521e9127df0fb56819db00b8d38f5217495b6f12c77eaaa598411217adcf82d",
+      "state_authority": "none",
+      "system_id": "observability/logging/routing"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "observability/logging",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "47586e1a8ba102a6e44ef9d51f9d92f0652d25dde0ca7f86628d06009ed64b61",
+      "state_authority": "none",
+      "system_id": "observability/logging/sink"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "observability/logging",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "667745c9d1988302d8f6c1bc86dce016a76e65f8c470d526954f5f6872bba40c",
+      "state_authority": "none",
+      "system_id": "observability/logging/storage"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "8313892ee5192533168255bfa971ac403eb4686256eebadc5a9ba89685e494dc",
+      "state_authority": "none",
+      "system_id": "observability/projection"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability",
+      "plane": "evidence",
+      "provides": [
+        "status.read-model"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "ab3fdf29d07fbb4d85004b838b35d48aa61f6f86038fadb6ea91cca065375e21",
+      "state_authority": "none",
+      "system_id": "observability/status"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/status",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "535202833ee066aede45b1c4b3fa2d454cfff519d07c8f1ef0440bc35434c5be",
+      "state_authority": "none",
+      "system_id": "observability/status/health"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/status",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "55291efcd1dc1bb155dcdacc7f4a1b6a6785ead6179817c142e8af48b9ad3c0b",
+      "state_authority": "none",
+      "system_id": "observability/status/lifecycle_view"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability",
+      "plane": "evidence",
+      "provides": [
+        "telemetry.metrics"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "1d7597cd223203b5b3ff77c9519282730d02fa97714f64e039775f0a8ee9df00",
+      "state_authority": "none",
+      "system_id": "observability/telemetry"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/telemetry",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "4035dd9b78719c78a1200847de1cfdee61f4f13e9d2c4dac292ac2cdc85fa066",
+      "state_authority": "none",
+      "system_id": "observability/telemetry/event"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/telemetry",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "8aa84831580b5a3c1a05254fe923c1709b612601e248a2cad3894c2b0adc0362",
+      "state_authority": "none",
+      "system_id": "observability/telemetry/metric"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "838ad1d9907cad831d7c425ae02929a8aa8ee1bb96c7628b6d9fb527b6158134",
+      "state_authority": "none",
+      "system_id": "observability/tracing"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/tracing",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "827f06d0a8f24d00e5bd97b8f7692912b9f563a350825145ec87c148c9370684",
+      "state_authority": "none",
+      "system_id": "observability/tracing/context"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "observability/tracing",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "b39d54b2603a088abe755f1b0d3da696954f9a4bf14ccd2b90e423a8784feeda",
+      "state_authority": "none",
+      "system_id": "observability/tracing/propagation"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "observability/tracing",
+      "plane": "evidence",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "c47f777f179fad8f7288bdd3ad381ab2d5ba2150e4da856eb33a76fc4e839927",
+      "state_authority": "none",
+      "system_id": "observability/tracing/storage"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "product_surface",
+      "parent": null,
+      "plane": "product",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "environment",
+        "execution",
+        "experimentation",
+        "governance",
+        "model",
+        "observability",
+        "platform",
+        "portfolio",
+        "reliability",
+        "resource",
+        "scope"
+      ],
+      "row_digest": "f2a69e1278823dc5dbc9c99a4f79c1551317faf347a5037354c7d7a7fe8de8e6",
+      "state_authority": "none",
+      "system_id": "operator"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "product_surface",
+      "parent": "operator",
+      "plane": "product",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "61aca57f1360c3c619cfb44f0a67a75dbd89e9f5e8081afc59de911b31cb6295",
+      "state_authority": "none",
+      "system_id": "operator/audit"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "product_surface",
+      "parent": "operator",
+      "plane": "product",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "b720136189bee3f4acc1206ebbb2a83e8a51b985fb92ab03a797af27ebee81b2",
+      "state_authority": "none",
+      "system_id": "operator/command"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "product_surface",
+      "parent": "operator/command",
+      "plane": "product",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "9a48aa02dad220fef7111b218548d2e56ee1f731a525b04f1863c4adda9687db",
+      "state_authority": "none",
+      "system_id": "operator/command/intent"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "product_surface",
+      "parent": "operator",
+      "plane": "product",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "01f1ce9703374a7e80dfcbe6d98559912ea1c73107f6e41e942c1b0daf2acd9d",
+      "state_authority": "none",
+      "system_id": "operator/incident"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "product_surface",
+      "parent": "operator",
+      "plane": "product",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "runtime"
+      ],
+      "row_digest": "1e521fc6bc6ac3e29fa3253c18228413872f3164d5a188b4c5d5f5682e742c01",
+      "state_authority": "none",
+      "system_id": "operator/maintenance"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "product_surface",
+      "parent": "operator",
+      "plane": "product",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "bb6a6e7e80215f5ea795d4b1b452d2b14ae0a052437f83f42da813cc57e8db9b",
+      "state_authority": "none",
+      "system_id": "operator/query"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "product_surface",
+      "parent": "operator/query",
+      "plane": "product",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "70c61d6c01eff0c8b57ef8c16c057fcffd6ef75be018959a21d9cce203ac84c2",
+      "state_authority": "none",
+      "system_id": "operator/query/search"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "reference",
+      "parent": null,
+      "plane": "foundation",
+      "provides": [
+        "multi_agent.orchestration"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "components",
+        "platform"
+      ],
+      "row_digest": "53ca0d82459ed8007b245b6d7c36887bba77e4cc77ef5bc0cb168e59e1667316",
+      "state_authority": "none",
+      "system_id": "orchestration"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "participant",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "data",
+        "platform",
+        "reliability"
+      ],
+      "row_digest": "576894285dca2fc07da42bfa3b913c51a4d8be62b7cdee5745ec76c97ee17059",
+      "state_authority": "participant_state",
+      "system_id": "participant"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "participant",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "participant",
+      "plane": "capabilities",
+      "provides": [
+        "agent.contract"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "model"
+      ],
+      "row_digest": "2720a691dbdbaab536151ed3a723fad718b22e183d89f5eb33352f6e68a07bb5",
+      "state_authority": "participant_state",
+      "system_id": "participant/agent"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "participant",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "participant",
+      "plane": "capabilities",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "ce29a98b97905e3783b7a514be19b515a46e133b8b26c738387484c755ac0480",
+      "state_authority": "participant_state",
+      "system_id": "participant/binding"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "participant",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "participant",
+      "plane": "capabilities",
+      "provides": [
+        "capability.contract"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "20138ce8560cdfed8e9866c118f47666b64a65350e506c1cf6ba810df0c51d9d",
+      "state_authority": "participant_state",
+      "system_id": "participant/capability"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "participant",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "participant",
+      "plane": "capabilities",
+      "provides": [
+        "participant.runtime.abi"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "platform"
+      ],
+      "row_digest": "574784080d007cd5ca7f29c7b3b6aaed3202db1977a28ef5d899ae81f2854f45",
+      "state_authority": "participant_state",
+      "system_id": "participant/core"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "participant",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "participant",
+      "plane": "capabilities",
+      "provides": [
+        "participant.definition"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "262012b51e886a088e4567943291eeaf34759c44c5337bf68cc547bfaf8e0d1d",
+      "state_authority": "participant_state",
+      "system_id": "participant/definition"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "participant",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "participant",
+      "plane": "capabilities",
+      "provides": [
+        "method.contract",
+        "method.runtime"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "governance"
+      ],
+      "row_digest": "4eeff0e56f80090d420dc2d2cfc46a0804ac0a6f966269e0bcba1f3f491192da",
+      "state_authority": "participant_state",
+      "system_id": "participant/method"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "participant",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "participant",
+      "plane": "capabilities",
+      "provides": [
+        "participant.session"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "934f50eec18e3977bbeca5304975d2d6e304a23d5f44a9b3f0a94f8daa87eeb0",
+      "state_authority": "participant_state",
+      "system_id": "participant/session"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "platform",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "0ba597f2bd5dd7b5a13095bd09eb050b875c9d800a81b8160f842e67f0b1d22b",
+      "state_authority": "platform_identity",
+      "system_id": "platform"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "platform",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "platform",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "982502f69b8e972ac951f6ffda9b0f91e2cd46b28223a0100a695faf040a9625",
+      "state_authority": "platform_identity",
+      "system_id": "platform/concurrency"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "platform",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "platform",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "31f5427e76cf659515256f1a03af758cead2deb5cefdacdc5910056abc0505fd",
+      "state_authority": "platform_identity",
+      "system_id": "platform/configuration"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "platform",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "platform",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "c59d8102c2663a9964d86fe7822472c9c7714c12e0253e8d2a1178b957e111e7",
+      "state_authority": "platform_identity",
+      "system_id": "platform/identity"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "platform",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "platform",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "bddc7a0ce466174103617704a5e73c3d01985a2e2fca560a1d95f54865b2baa8",
+      "state_authority": "platform_identity",
+      "system_id": "platform/lifecycle"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "portfolio",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "platform",
+        "scope"
+      ],
+      "row_digest": "a3bf0b1d9d80f9108ea54f6cf641ce400a8895a1351897db7181aa425d79b9a1",
+      "state_authority": "portfolio_metadata",
+      "system_id": "portfolio"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "portfolio",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "portfolio",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "40afbafa97030f0151e84d882f0d39a945e887108f025bd13d897df3bda4349b",
+      "state_authority": "portfolio_metadata",
+      "system_id": "portfolio/membership"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "portfolio",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "portfolio",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "e59c8e0911e0b00186af1a66c7e2e9f5edac79df073a36bd60d72475d0cb8980",
+      "state_authority": "portfolio_metadata",
+      "system_id": "portfolio/program"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "portfolio",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "portfolio",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "8f3a948d09cdba335584deee77de3ddaf3ad26cd03f76e39406486d01312aa70",
+      "state_authority": "portfolio_metadata",
+      "system_id": "portfolio/project"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "portfolio",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "portfolio",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "2d2239d2a259431828a0331a50ded44c5a4fa6b9de1c87837f61cb7a9411d269",
+      "state_authority": "portfolio_metadata",
+      "system_id": "portfolio/workspace"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": null,
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "data",
+        "governance",
+        "observability",
+        "platform",
+        "scope"
+      ],
+      "row_digest": "25f7caee948c48f1d864d9d67ab5aad3f4afb8113f93ec432f4a2c019b8e64dd",
+      "state_authority": "none",
+      "system_id": "reliability"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "reliability",
+      "plane": "foundation",
+      "provides": [
+        "diagnostics.causal"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "1864d7e6afd6899a9d7da995cb0cb599fa1f2650ac9745dc239acc535a555e24",
+      "state_authority": "none",
+      "system_id": "reliability/diagnostics"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "reliability/effect",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "reliability",
+      "plane": "foundation",
+      "provides": [
+        "effect.safety",
+        "effect.journal"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "bd636018d2ee1ba108b509e744410e33f068bc586da2bdec9392286fe74c5050",
+      "state_authority": "effect_authority",
+      "system_id": "reliability/effect"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "reliability/failure",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "reliability",
+      "plane": "foundation",
+      "provides": [
+        "failure.truth"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "f32cd454f3ab88c8af663e485bc3601d36cd64981fcf30c1bd812dd91b71677e",
+      "state_authority": "failure_authority",
+      "system_id": "reliability/failure"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "projection",
+      "parent": "reliability",
+      "plane": "foundation",
+      "provides": [
+        "forensics.ledger"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "05311a3f8010500adf6547fd71ed638a8c09027c70aafb2227fdab583f4c5f9f",
+      "state_authority": "none",
+      "system_id": "reliability/forensics"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "adapter",
+      "parent": "reliability",
+      "plane": "foundation",
+      "provides": [
+        "recovery.runtime"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "4719a0cf75257e768a29b5653a757437250ddd4b86d56a66801cdfaeed34085f",
+      "state_authority": "none",
+      "system_id": "reliability/recovery"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": null,
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "adapter",
+      "parent": "reliability/recovery",
+      "plane": "foundation",
+      "provides": [
+        "recovery.execution"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "0db319ed1d1cf8aa48fa3f3ac9c63c9542435c885603b412d1151055d639b67a",
+      "state_authority": "none",
+      "system_id": "reliability/recovery/execution"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "resource",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "platform",
+        "scope"
+      ],
+      "row_digest": "95c3a5c5af7e1f9c5bf2036652b3cd72a0b6fd83fd5a8dc14abdfc4c8d87fd76",
+      "state_authority": "resource_inventory",
+      "system_id": "resource"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "resource",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "resource",
+      "plane": "foundation",
+      "provides": [
+        "resource.endpoint-allocation"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "resource/lease"
+      ],
+      "row_digest": "e7ff9056768aa846559aaa8fd17a089e29a564bc951085d876c6d09557725fa4",
+      "state_authority": "resource_inventory",
+      "system_id": "resource/allocation"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "resource",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "resource",
+      "plane": "foundation",
+      "provides": [
+        "compute.inventory",
+        "compute.scheduler"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "runtime/process",
+        "resource/lease"
+      ],
+      "row_digest": "14fa7d04536d975faf2b953f727f8945643f081de2f3c1f42b88146df1515c83",
+      "state_authority": "resource_inventory",
+      "system_id": "resource/compute"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "resource",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "resource",
+      "plane": "foundation",
+      "provides": [
+        "directory.layout",
+        "workspace.storage"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "6b3ca1ed0ee21a5fca0b777f5ebcfa73f61ebd165d4b78957c604ffdc39b55ee",
+      "state_authority": "resource_inventory",
+      "system_id": "resource/directory"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "resource/lease",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": "resource",
+      "plane": "foundation",
+      "provides": [
+        "resource.lease"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "scope"
+      ],
+      "row_digest": "c94b796a78d66c264ceb7f3540d457bec25fb46392385060be82403fcd198f24",
+      "state_authority": "resource_lease",
+      "system_id": "resource/lease"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "resource",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "policy",
+      "parent": "resource",
+      "plane": "foundation",
+      "provides": [
+        "resource.hierarchical-resolution"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "2778d2ba997f72b8690d67f9cbec937ca26311d6d07365d0b6c617604afa73de",
+      "state_authority": "resource_inventory",
+      "system_id": "resource/resolution"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "governance",
+        "observability",
+        "platform",
+        "reliability",
+        "resource",
+        "scope"
+      ],
+      "row_digest": "97033463427c0efada8cedee4f420992e6c769be20ecc5bdca76258e97811f20",
+      "state_authority": "runtime_state",
+      "system_id": "runtime"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "runtime",
+      "plane": "foundation",
+      "provides": [
+        "host.runtime"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "c9faa7450ca36f2127154b778b38b6229c6ae4912ade5c14b82b784221daa423",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/host"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "runtime",
+      "plane": "foundation",
+      "provides": [
+        "process.execution",
+        "process.capture"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "1fa00dc9a84b6580b4116e5e5c4e4f3b7bffd21e64506d4c90f321cab0e85acb",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/process"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "adapter",
+      "parent": "runtime/process",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "1f49c0af4faf11caccde81359b7f1943b97e2f996649ec59fba4ae542d6ec384",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/process/supervision"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "runtime",
+      "plane": "foundation",
+      "provides": [
+        "python-environment.registry",
+        "python-environment.lifecycle",
+        "python-environment.execution",
+        "python-environment.packages"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "runtime",
+        "resource"
+      ],
+      "row_digest": "b35438c985612531ec9a976ad774c63a10ca53593ca9471c3297bd5ebda21e40",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/python"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "runtime",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "febd158309a763b4c5a3555c7a0422bfc59fa05b030ab574447fc3d529b4a5a7",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/server"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "runtime/server",
+      "plane": "foundation",
+      "provides": [
+        "server.bootstrap"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "governance/release",
+        "platform",
+        "runtime/session"
+      ],
+      "row_digest": "49bc9e8c581c22bb6f014ce2d5cf1c98959b92fabccaded884e0b6467590fac2",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/server/bootstrap"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "runtime/server",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "ad40ddf4ba4c1391f1f024ded5175640488e5f6b308918eabfa08946fda77409",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/server/health"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "runtime/server",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "44e9576b6ca4c88ee177dc696ccd7068f5ba4dd5882ad549ca24e0977045a80a",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/server/identity"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "runtime/server",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "runtime/server/bootstrap"
+      ],
+      "row_digest": "edb121796b44a2b9ba73824359525a6168af4317f667b1d695756bea32adecf2",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/server/lifecycle"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "runtime",
+      "plane": "foundation",
+      "provides": [
+        "service.runtime"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "23f2e5016baaf3947be8ea85244c62dde24f432dd228fd7a4959b8fabdf3ba2d",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/service"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "runtime",
+      "plane": "foundation",
+      "provides": [
+        "persistent-session.runtime"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "9cf029f31a56a9d9baccaf357dd25aa5846ac9d85e31c8a88bfeda9fb2200d37",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/session"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "runtime",
+      "direct_authority": false,
+      "downstream_surface": "metadata_only",
+      "node_kind": "provider",
+      "parent": "runtime",
+      "plane": "foundation",
+      "provides": [
+        "runtime.toolchain"
+      ],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "artifact"
+      ],
+      "row_digest": "c015460f146e660fde26be9231a0eb085c1257a7de0e21867a6c70dd078724e7",
+      "state_authority": "runtime_state",
+      "system_id": "runtime/toolchain"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "scope",
+      "direct_authority": true,
+      "downstream_surface": "public",
+      "node_kind": "authority",
+      "parent": null,
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [
+        "platform"
+      ],
+      "row_digest": "dfca042e293fa935ab7a0a21d2013036d9034e8cfa2d447ef7012b90e8bd23a9",
+      "state_authority": "scope_tree",
+      "system_id": "scope"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "scope",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "scope",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "d8a0fab5de2642a24e1f28e36f99564cce7996395f7ab006f829e18e8905b825",
+      "state_authority": "scope_tree",
+      "system_id": "scope/hierarchy"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "scope",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "scope",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "e77bf1a7e4511dae90074417bba82cacc16c43e13e37e6d9640f456ef3d3f65f",
+      "state_authority": "scope_tree",
+      "system_id": "scope/identity"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "scope",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "scope",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "05a56196607cc5746ff7acb65b53f2c9a3f3b05ff5a9ae2b733a68ae0746bb27",
+      "state_authority": "scope_tree",
+      "system_id": "scope/membership"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "scope",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "scope",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "4bd36ca225c7f6ddb5443071244ce6ae3eea96228649e44a03fbfac33e27ebc3",
+      "state_authority": "scope_tree",
+      "system_id": "scope/ownership"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "scope",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "scope",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "c72ce05fce6bfb81958bd927725ae56fda21474ae01294d9eea1d66ae2e49929",
+      "state_authority": "scope_tree",
+      "system_id": "scope/path"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "scope",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "scope",
+      "plane": "foundation",
+      "provides": [],
+      "public_abi": [
+        "api",
+        "runtime",
+        "providers",
+        "composition"
+      ],
+      "requires": [],
+      "row_digest": "bbc35d396bf87e663e79161c27863c05688858dfe056b2526ca796226b4efe45",
+      "state_authority": "scope_tree",
+      "system_id": "scope/resolution"
+    }
+  ],
+  "schema": "noetrium.ownership-matrix.v2",
+  "source_digest": "1f2d5375fc4018d1ffa7bad81c183d135000791fbf6dfa0c4fe0a45c50a29c95"
+}

@@ -1,0 +1,171 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "aflow",
+  "package_digest": "22f5b7e1366c356fd35d2b869bb3a0acfcf724780351f055ca955577708b12a3",
+  "definition_digest": "05902572a652840cc3ed94dc7f14c179c2b92301cca948621a9eb0651d3c4374",
+  "source_registry_digest": "21252fdb46d581a1b68a681b0c99494769cc12a9e32a963ecd017bb06a0133b7",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "aflow",
+    "title": "AFlow: Automating Agentic Workflow Generation",
+    "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/5492ecbce4439401798dcd2c90be94cd-Abstract-Conference.html",
+    "year": 2025,
+    "paper_revision": "ICLR 2025 / MetaGPT paper-era source commit 072839af7f75948d91d3784154128ab2456831f0",
+    "identity_digest": "cd57c8f1f0c95373372c683459d2323824277295a871b141dae191cce6346644"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "runtime-systems",
+      "self-improvement"
+    ],
+    "families": [
+      "agentic_workflow_generation",
+      "meta_optimization",
+      "workflow_search"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "humaneval"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "execution",
+      "execution/research_program",
+      "experimentation/workbench",
+      "model/request"
+    ],
+    "method_owned": [
+      "code-represented workflow search",
+      "experience-conditioned workflow mutation",
+      "mixed weighted parent selection",
+      "top-k convergence policy",
+      "validation-repeated workflow evaluation"
+    ],
+    "platform_owned": [
+      "OptimizationMachine journal authority",
+      "ResearchProgram hosting",
+      "immutable executable-source provenance",
+      "isolated generated-code execution",
+      "measurement and artifact lineage",
+      "random-decision evidence receipts"
+    ],
+    "reference_repositories": [
+      "https://github.com/FoundationAgents/AFlow",
+      "https://github.com/FoundationAgents/MetaGPT"
+    ],
+    "reference_publications": [
+      "https://proceedings.iclr.cc/paper_files/paper/2025/hash/5492ecbce4439401798dcd2c90be94cd-Abstract-Conference.html"
+    ],
+    "catalog_digest": "eafc83fd7d5756fdc1caed554f4afa764e88caed72bb59331cf8bdda99457612"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iclr_2025_final",
+      "kind": "paper_provenance",
+      "venue": "ICLR",
+      "year": 2025,
+      "publication_id": "5492ecbce4439401798dcd2c90be94cd",
+      "publication_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/5492ecbce4439401798dcd2c90be94cd-Abstract-Conference.html",
+      "revision": "ICLR 2025 final paper",
+      "content_sha256": null,
+      "lane_digest": "d36b4ea384a9748aafba21b12c9dec3618a15e7d49c2b1d197669545404760c0"
+    },
+    {
+      "lane_id": "paper_era_metagpt_final",
+      "kind": "official_executable",
+      "repository": "https://github.com/FoundationAgents/MetaGPT",
+      "commit": "072839af7f75948d91d3784154128ab2456831f0",
+      "artifacts": [
+        "examples/aflow/experiments/optimize_humaneval.py",
+        "metagpt/ext/aflow/benchmark/humaneval.py",
+        "metagpt/ext/aflow/scripts/evaluator.py",
+        "metagpt/ext/aflow/scripts/operator.py",
+        "metagpt/ext/aflow/scripts/optimizer.py",
+        "metagpt/ext/aflow/scripts/optimizer_utils/convergence_utils.py",
+        "metagpt/ext/aflow/scripts/optimizer_utils/data_utils.py",
+        "metagpt/ext/aflow/scripts/optimizer_utils/evaluation_utils.py",
+        "metagpt/ext/aflow/scripts/optimizer_utils/experience_utils.py",
+        "metagpt/ext/aflow/scripts/optimizer_utils/graph_utils.py",
+        "metagpt/ext/aflow/scripts/prompts/optimize_prompt.py",
+        "metagpt/ext/aflow/scripts/workflow.py"
+      ],
+      "lane_digest": "262f946374d9379acd18fc89579a71d867c318bb49fd0a8b4bb31d5a6cc44f75"
+    },
+    {
+      "lane_id": "review_revision_metagpt",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/FoundationAgents/MetaGPT",
+      "commit": "d01051abc612ba9c6c284e9827c0b7091cb83d87",
+      "artifacts": [
+        "examples/aflow/experiments/optimize_humaneval.py",
+        "metagpt/ext/aflow/scripts/optimizer.py",
+        "metagpt/ext/aflow/scripts/workflow.py"
+      ],
+      "lane_digest": "c179ee6c8c000828173ed293bf8d0bfc471e9dfce441f9940a893db9fe65ea28"
+    },
+    {
+      "lane_id": "standalone_repository_migration",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/FoundationAgents/AFlow",
+      "commit": "383b65af61c06b24c71815ab7447fb835ba2c73b",
+      "artifacts": [
+        "README.md",
+        "run.py",
+        "scripts/evaluator.py",
+        "scripts/operator.py",
+        "scripts/optimizer.py",
+        "scripts/workflow.py"
+      ],
+      "lane_digest": "7dd780cfe00106896060732b498c27baa7ed26efde03f134c760190e16ae7e7f"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/aflow/fidelity.py",
+      "declaration_digest": "194e079c7dd87f7fa610d97fde471fbed1ec8f9a7f5706d5afd5c55bc5a08add",
+      "content_sha256": "1a664388d42446867c4e97c57925e12bd246a23620152e144466ff00f568d842"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/aflow/program.py",
+      "declaration_digest": "ea704281ad3bc71ee7d8b78eb2611781f0c3c9d1c8338306eba3df129e9911c9",
+      "content_sha256": "4d0f9f05af68160d7ffaa924f0605291d1500450a5985743e91ac4eca36d5a48"
+    }
+  ],
+  "primary_executable": "research/reproductions/aflow/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "Paper-era AFlow uses ambient NumPy/Python RNG state for parent selection and log sampling. The reproduction preserves the exact sampling distribution but injects an explicit random-source port and journals each stochastic receipt so a Noetrium run can replay the realized trajectory.",
+      "delta_digest": "235a05b7e50528956bf84251cb923f3f25d0f420049213c124ae2696b09c3f29"
+    },
+    {
+      "kind": "unresolved",
+      "description": "The paper-era initial-round workflows and six validation/test dataset files are distributed as external download archives and are not yet content-addressed Noetrium benchmark/artifact cuts.",
+      "delta_digest": "fa26f1033216e07b7b5634e6f5fc4967155a5517e6610f4ced9568f29ac5662f"
+    }
+  ],
+  "blockers": [
+    "paper-era parent selection and failure-log sampling are not explicitly seeded in source",
+    "paper-era initial-round workflow archive is not yet content-addressed in Noetrium",
+    "paper-era HumanEval validation/test data archive is not yet content-addressed in Noetrium",
+    "exact historical Claude-3-5-Sonnet-20240620 and GPT-4o-mini serving snapshots are not immutable public model artifacts",
+    "no matched AFlow execution evidence has yet been produced"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_aflow_fidelity_v1.py",
+      "content_sha256": "f937e860c22e6a9e83f39ea38f9dbac398b3d7936afb86a528dd327b84dd12ba"
+    },
+    {
+      "path": "tests/test_scientific_aflow_optimization_program_v1.py",
+      "content_sha256": "be8255061ef140f0e6580567c164e043f80fdbbb7140bd3a018e14e979874dca"
+    }
+  ]
+}

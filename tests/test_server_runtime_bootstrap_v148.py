@@ -7,22 +7,23 @@ import hashlib
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.platform.composition.runtime_control.server_runtime import (
+from noetrium_platform.infrastructure.lifecycle.server.lifecycle.runtime import (
     ImmutableServerReleaseLayout,
     ServerReleaseLayoutError,
     ServerRuntimeBootstrap,
+    ServerRuntimeLaunchManifestMismatch,
     ServerSessionPolicyMismatch,
 )
-from research_platform.execution.runtime.manager.persistent_session_host import RuntimePersistentSessionHost
-from research_platform.governance.release.runtime.active_pin_store import ActiveReleasePinStore
-from research_platform.runtime.host.bootstrap.runtime import DirectoryServerBootstrapStateStore, ServerBootstrapTransaction
-from research_platform.governance.release.api import ActiveReleasePinned
-from research_platform.runtime.session.api import ServerSessionPolicy
-from research_platform.runtime.session.runtime import (
+from noetrium_platform.foundation.governance.release.runtime.active_pin_store import ActiveReleasePinStore
+from noetrium_platform.infrastructure.lifecycle.host.bootstrap.runtime import DirectoryServerBootstrapStateStore, ServerBootstrapTransaction
+from noetrium_platform.foundation.governance.release.api import ActiveReleasePinned
+from noetrium_platform.infrastructure.lifecycle.session.api import ServerSessionPolicy
+from noetrium_platform.infrastructure.lifecycle.session.runtime import (
     DirectoryPersistentSessionBindingStore,
     PersistentSessionManager,
     TmuxPersistentSessionControl,
     TmuxCommandResult,
+    RuntimePersistentSessionHost,
 )
 
 
@@ -31,10 +32,11 @@ class Runner:
         self.sessions = {}
         self.calls = []
 
-    def run(self, argv, *, environment):
+    def run(self, argv, *, environment, effect="unknown"):
+        del effect
         argv = tuple(argv); self.calls.append(argv); args = argv[5:]
         if args[0] == "display-message":
-            name = args[args.index("-t") + 1].lstrip("=")
+            name = args[args.index("-t") + 1].lstrip("=").split(":", 1)[0]
             if name not in self.sessions:
                 return TmuxCommandResult(1, "", "missing")
             command, cwd = self.sessions[name]
@@ -47,9 +49,14 @@ class Runner:
         raise AssertionError(args)
 
 
-def manifest(release_digest: str, policy_digest: str):
+def manifest(
+    release_digest: str,
+    policy_digest: str,
+    *,
+    command_argv: tuple[str, ...] = ("/usr/bin/python3", "-m", "server_runtime_entry"),
+):
     h = "b" * 64
-    return frozen_runtime_manifest(release_digest=release_digest, prompt_generation_digest=h, prompt_promotion_digest=h, role_model_manifest_digest=h, qualified_deployment_digests=(h,), target_host_identity_digest=h, experiment_spec_digest=h, config_digests=(("server_session", policy_digest),))
+    return frozen_runtime_manifest(release_digest=release_digest, prompt_generation_digest=h, prompt_promotion_digest=h, role_model_manifest_digest=h, qualified_deployment_digests=(h,), target_host_identity_digest=h, experiment_spec_digest=h, command_argv=command_argv, config_digests=(("server_session", policy_digest),))
 
 
 class ServerRuntimeBootstrapTests(unittest.TestCase):
@@ -86,12 +93,12 @@ class ServerRuntimeBootstrapTests(unittest.TestCase):
             report = bootstrap.ensure_controller(
                 manifest(release, policy.digest()),
                 control_id="paper-1-prod",
-                controller_argv=("/usr/bin/python3", "-m", "server_runtime_entry"),
             )
             self.assertEqual(report.release_dir, release_dir)
             self.assertEqual(report.server_session_policy_digest, policy.digest())
             create = next(call for call in runner.calls if "new-session" in call)
             self.assertEqual(create[create.index("-c") + 1], str(release_dir))
+            self.assertIn("/usr/bin/python3", create[-1])
 
     def test_missing_release_directory_fails_before_tmux_side_effect(self):
         with TemporaryDirectory() as td:
@@ -100,7 +107,6 @@ class ServerRuntimeBootstrapTests(unittest.TestCase):
                 bootstrap.ensure_controller(
                     manifest("c" * 64, policy.digest()),
                     control_id="prod",
-                    controller_argv=("/usr/bin/python3", "-m", "entry"),
                 )
             self.assertFalse(any("new-session" in call for call in runner.calls))
 
@@ -113,7 +119,19 @@ class ServerRuntimeBootstrapTests(unittest.TestCase):
                 bootstrap.ensure_controller(
                     manifest(release, "f" * 64),
                     control_id="prod",
-                    controller_argv=("/usr/bin/python3", "-m", "entry"),
+                )
+            self.assertFalse(any("new-session" in call for call in runner.calls))
+
+    def test_controller_environment_must_match_the_frozen_manifest_before_side_effect(self):
+        with TemporaryDirectory() as td:
+            base = Path(td); release = "e" * 64
+            (base / "releases" / release).mkdir(parents=True)
+            runner, policy, bootstrap, _ = self.fixture(base)
+            with self.assertRaises(ServerRuntimeLaunchManifestMismatch):
+                bootstrap.ensure_controller(
+                    manifest(release, policy.digest()),
+                    control_id="prod",
+                    controller_environment=(("CUDA_VISIBLE_DEVICES", "0"),),
                 )
             self.assertFalse(any("new-session" in call for call in runner.calls))
 
@@ -123,10 +141,10 @@ class ServerRuntimeBootstrapTests(unittest.TestCase):
             for digest in releases: (base / "releases" / digest).mkdir(parents=True)
             runner, policy, bootstrap, _ = self.fixture(base)
             first = bootstrap.ensure_controller(
-                manifest(releases[0], policy.digest()), control_id="prod", controller_argv=("/usr/bin/python3", "-m", "entry")
+                manifest(releases[0], policy.digest()), control_id="prod"
             )
             second = bootstrap.ensure_controller(
-                manifest(releases[1], policy.digest()), control_id="prod", controller_argv=("/usr/bin/python3", "-m", "entry")
+                manifest(releases[1], policy.digest()), control_id="prod"
             )
             self.assertNotEqual(first.session.snapshot.session_name, second.session.snapshot.session_name)
             self.assertEqual(len([c for c in runner.calls if "new-session" in c]), 2)
@@ -138,7 +156,7 @@ class ServerRuntimeBootstrapTests(unittest.TestCase):
             _, policy, bootstrap, pins = self.fixture(base)
             runtime_manifest = manifest(release, policy.digest())
             bootstrap.ensure_controller(
-                runtime_manifest, control_id="prod", controller_argv=("/usr/bin/python3", "-m", "entry")
+                runtime_manifest, control_id="prod"
             )
             active = pins.active_for_release(release)
             self.assertEqual(len(active), 1)
@@ -153,7 +171,7 @@ class ServerRuntimeBootstrapTests(unittest.TestCase):
             _, policy, bootstrap, pins = self.fixture(base)
             for release in releases:
                 bootstrap.ensure_controller(
-                    manifest(release, policy.digest()), control_id="prod", controller_argv=("/usr/bin/python3", "-m", "entry")
+                    manifest(release, policy.digest()), control_id="prod"
                 )
             self.assertEqual(len(pins.all()), 2)
             self.assertEqual({p.release_digest for p in pins.all()}, set(releases))

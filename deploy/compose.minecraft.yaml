@@ -1,0 +1,21 @@
+services:
+  platform-runtime:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.minecraft
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22.22.2}
+    image: ${PLATFORM_MINECRAFT_IMAGE:-noetrium-minecraft:local}
+    environment:
+      MC_DATA_DIR: /var/lib/minecraft
+      MC_BRIDGE_DIR: /opt/noetrium/noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge
+    volumes:
+      - type: bind
+        source: ${PLATFORM_HOST_DATA_ROOT:-./.runtime}/minecraft
+        target: /var/lib/minecraft
+    healthcheck:
+      test: ["CMD", "/opt/noetrium/deploy/container-entrypoint.sh", "minecraft-doctor"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 10s

@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import unittest
 
-from research_platform.model.request.prompt.runtime import (
+from noetrium_platform.capabilities.model.request.prompt.runtime import (
     PromptBlock,
     PromptBlockKind,
-    PromptBudgetExceeded,
     PromptCompilePipeline,
     PromptRegistry,
     default_block_policies,
@@ -15,8 +14,12 @@ from research_platform.model.request.prompt.runtime import (
 
 
 class PromptCompilePipelineV75Tests(unittest.TestCase):
+    def pipeline(self) -> PromptCompilePipeline:
+        return PromptCompilePipeline()
+
     def planner(self):
-        registry = PromptRegistry(); registry.publish("g75", default_prompt_specs())
+        registry = PromptRegistry()
+        registry.publish("g75", default_prompt_specs())
         K = PromptBlockKind
         blocks = (
             PromptBlock(K.TASK, "collect wood", "d1", 1),
@@ -25,48 +28,46 @@ class PromptCompilePipelineV75Tests(unittest.TestCase):
         )
         return registry.resolve("planner.v6"), blocks
 
-    def test_pipeline_binds_generation_budget_render_and_schema(self):
+    def test_pipeline_binds_generation_render_and_schema_without_model_budget_authority(self):
         resolution, blocks = self.planner()
-        receipt = PromptCompilePipeline().compile(
+        receipt = self.pipeline().compile(
             resolution=resolution,
             policy=default_block_policies()["planner"],
             blocks=blocks,
             schemas=default_output_schemas(),
-            context_length=262144,
         )
         self.assertEqual(receipt.generation_id, "g75")
         self.assertEqual(receipt.prompt_id, "planner.v6")
-        self.assertEqual(receipt.compiled.block_kinds, ("task","verified_state","tool_catalog"))
-        self.assertTrue(receipt.budget.fits)
+        self.assertEqual(receipt.compiled.block_kinds, ("task", "verified_state", "tool_catalog"))
         self.assertEqual(len(receipt.schema_digest), 64)
+        self.assertFalse(hasattr(receipt, "budget"))
 
-    def test_budget_overflow_fails_without_block_dropping_or_output_reduction(self):
+    def test_compile_preserves_required_blocks_without_silent_degradation(self):
         resolution, blocks = self.planner()
         original = tuple((b.kind, b.content, b.source_digest, b.sequence) for b in blocks)
-        with self.assertRaises(PromptBudgetExceeded):
-            PromptCompilePipeline().compile(
-                resolution=resolution,
-                policy=default_block_policies()["planner"],
-                blocks=blocks,
-                schemas=default_output_schemas(),
-                context_length=100,
-            )
+        receipt = self.pipeline().compile(
+            resolution=resolution,
+            policy=default_block_policies()["planner"],
+            blocks=blocks,
+            schemas=default_output_schemas(),
+        )
         self.assertEqual(
             tuple((b.kind, b.content, b.source_digest, b.sequence) for b in blocks),
             original,
         )
-        self.assertEqual(resolution.bundle.max_output_tokens, 8192)
+        self.assertEqual(receipt.compiled.block_kinds, ("task", "verified_state", "tool_catalog"))
 
     def test_forbidden_block_fails_in_validation_instead_of_being_ignored(self):
-        resolution, blocks = self.planner(); K = PromptBlockKind
+        resolution, blocks = self.planner()
+        K = PromptBlockKind
         with self.assertRaises(ValueError):
-            PromptCompilePipeline().compile(
+            self.pipeline().compile(
                 resolution=resolution,
                 policy=default_block_policies()["planner"],
-                blocks=blocks + (PromptBlock(K.FAILURE_EVIDENCE,"x","bad",4),),
+                blocks=blocks + (PromptBlock(K.FAILURE_EVIDENCE, "x", "bad", 4),),
                 schemas=default_output_schemas(),
-                context_length=262144,
             )
 
 
-if __name__ == "__main__": unittest.main()
+if __name__ == "__main__":
+    unittest.main()

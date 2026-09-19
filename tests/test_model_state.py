@@ -1,6 +1,6 @@
 import unittest
-from research_platform.platform.kernel import ImmutableModelIdentity
-from research_platform.model.serving import ModelPhase, ModelRunState
+from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
+from noetrium_platform.capabilities.model.serving import ModelPhase, ModelRunState
 
 
 class ModelStateTests(unittest.TestCase):

@@ -1,0 +1,3 @@
+# Runtime-only Node dependency materialization. package.json and package-lock.json
+# remain tracked authorities; the installed tree is server/environment state.
+node_modules/

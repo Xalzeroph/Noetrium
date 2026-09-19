@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "webshop",
+  "benchmark": {
+    "benchmark_id": "webshop",
+    "title": "WebShop",
+    "source_uri": "https://github.com/princeton-nlp/WebShop",
+    "environment_kinds": [
+      "web",
+      "text_world"
+    ],
+    "modalities": [
+      "text",
+      "structured"
+    ]
+  }
+}

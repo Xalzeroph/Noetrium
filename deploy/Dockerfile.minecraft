@@ -1,0 +1,49 @@
+# syntax=docker/dockerfile:1.7
+
+FROM ubuntu:24.04
+
+ARG NODE_VERSION=22.22.2
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PLATFORM_STATE_DIR=/var/lib/noetrium \
+    MC_DATA_DIR=/var/lib/minecraft \
+    MC_BRIDGE_DIR=/opt/noetrium/noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge \
+    PATH=/opt/venv/bin:/usr/local/bin:$PATH
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates curl git openjdk-21-jre-headless python3.12 python3.12-venv xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN cd /tmp \
+    && curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
+    && curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt" \
+    && grep " node-v${NODE_VERSION}-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum -c - \
+    && tar -xJf "node-v${NODE_VERSION}-linux-x64.tar.xz" --strip-components=1 -C /usr/local \
+    && rm -f "node-v${NODE_VERSION}-linux-x64.tar.xz" SHASUMS256.txt
+
+WORKDIR /opt/noetrium
+COPY pyproject.toml README.md ./
+COPY components ./components
+COPY orchestration ./orchestration
+COPY noetrium ./noetrium
+COPY noetrium_platform ./noetrium_platform
+COPY scripts ./scripts
+COPY deploy ./deploy
+
+RUN python3.12 -m venv "$VIRTUAL_ENV" \
+    && "$VIRTUAL_ENV/bin/pip" install --upgrade pip setuptools wheel \
+    && "$VIRTUAL_ENV/bin/pip" install . \
+    && npm --prefix "$MC_BRIDGE_DIR" ci --omit=dev --ignore-scripts \
+    && chmod 0755 /opt/noetrium/deploy/container-entrypoint.sh
+
+RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin platform \
+    && mkdir -p "$PLATFORM_STATE_DIR" "$MC_DATA_DIR" \
+    && chown -R platform:platform /opt/noetrium "$PLATFORM_STATE_DIR" "$MC_DATA_DIR"
+
+USER platform
+ENTRYPOINT ["/opt/noetrium/deploy/container-entrypoint.sh"]
+CMD ["minecraft-doctor"]

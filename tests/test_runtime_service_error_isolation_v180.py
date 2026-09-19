@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from research_platform.runtime.service.api import ServiceContractDrift, ServiceLaunchContract
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceContractDrift, ServiceLaunchContract
 import hashlib
 import unittest
 
-from research_platform.execution.runtime.manager import ExactRunProcessPort, RunLaunchIdentity, RunProcessBinding, RunProcessBindingError
+from noetrium_platform.infrastructure.lifecycle.launch_control import ExactRunProcessPort, RunLaunchIdentity, RunProcessBinding, RunProcessBindingError
 from tests_support import context_action_runtime_bindings, frozen_runtime_manifest
 
 

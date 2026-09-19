@@ -1,0 +1,198 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from enum import StrEnum
+
+
+STANDARD_SYSTEM_SHAPE: tuple[str, ...] = ("api", "runtime", "providers", "composition")
+
+
+class DownstreamSurfaceMode(StrEnum):
+    """Whether a registered topology node exposes a downstream typed ABI."""
+
+    PUBLIC = "public"
+    METADATA_ONLY = "metadata_only"
+
+
+class SystemNodeKind(StrEnum):
+    AUTHORITY = "authority"
+    FACET = "facet"
+    PROJECTION = "projection"
+    PROVIDER = "provider"
+    ADAPTER = "adapter"
+    POLICY = "policy"
+    TOOL = "tool"
+    PRODUCT_SURFACE = "product_surface"
+
+
+class SystemLayer(StrEnum):
+    """Open system-layer identity with compatibility constants for established layers.
+
+    Catalog roots are authoritative. Unknown well-formed catalog roots materialize
+    as pseudo-members so adding a registered root never requires a second enum edit.
+    """
+
+    PLATFORM = "platform"
+    KERNEL = "kernel"
+    SCOPE = "scope"
+    PORTFOLIO = "portfolio"
+    EXPERIMENTATION = "experimentation"
+    EXECUTION = "execution"
+    PARTICIPANT = "participant"
+    DATA = "data"
+    RUNTIME = "runtime"
+    ENVIRONMENT = "environment"
+    ARTIFACT = "artifact"
+    PROMPT = "prompt"
+    MODEL = "model"
+    RESOURCE = "resource"
+    INFRASTRUCTURE = "infrastructure"
+    RELIABILITY = "reliability"
+    OBSERVABILITY = "observability"
+    GOVERNANCE = "governance"
+    OPERATOR = "operator"
+    COMPOSITION = "composition"
+
+    @classmethod
+    def _missing_(cls, value: object):
+        if not isinstance(value, str) or not value.strip() or "/" in value:
+            return None
+        member = str.__new__(cls, value)
+        member._name_ = f"CATALOG_{value.upper().replace('-', '_')}"
+        member._value_ = value
+        return member
+
+
+@dataclass(frozen=True, slots=True, order=True)
+class SystemIdentity:
+    """Stable identity for a system node at any depth in the system tree."""
+
+    system_id: str
+    subsystem_path: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.system_id.strip():
+            raise ValueError("system_id must be non-empty")
+        if any(not segment.strip() or "/" in segment for segment in self.subsystem_path):
+            raise ValueError("subsystem path segments must be non-empty and cannot contain '/'")
+
+    @property
+    def key(self) -> str:
+        return "/".join((self.system_id, *self.subsystem_path))
+
+    @property
+    def is_system(self) -> bool:
+        return not self.subsystem_path
+
+    @property
+    def depth(self) -> int:
+        return len(self.subsystem_path)
+
+    @property
+    def parent_key(self) -> str | None:
+        if self.is_system:
+            return None
+        return "/".join((self.system_id, *self.subsystem_path[:-1]))
+
+
+@dataclass(frozen=True, slots=True)
+class AuthorityDescriptor:
+    authority_id: str
+    state_kinds: tuple[str, ...] = ()
+    effect_kinds: tuple[str, ...] = ()
+    artifact_kinds: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.authority_id.strip():
+            raise ValueError("authority_id must be non-empty")
+
+
+@dataclass(frozen=True, slots=True)
+class SystemDescriptor:
+    identity: SystemIdentity
+    layer: SystemLayer
+    package_prefix: str
+    node_kind: SystemNodeKind
+    provides: tuple[str, ...] = ()
+    requires: tuple[str, ...] = ()
+    authorities: tuple[AuthorityDescriptor, ...] = ()
+    components: tuple[str, ...] = ()
+    owns: str = ""
+    must_not_own: str = ""
+    shape: tuple[str, ...] = STANDARD_SYSTEM_SHAPE
+    downstream_surface: DownstreamSurfaceMode = DownstreamSurfaceMode.PUBLIC
+    canonical_authority_key: str | None = None
+
+    def __post_init__(self) -> None:
+        platform_prefix = (
+            self.package_prefix == "noetrium_platform"
+            or self.package_prefix.startswith("noetrium_platform.")
+        )
+        if not platform_prefix:
+            raise ValueError("runtime system package_prefix must be inside noetrium_platform")
+        if not isinstance(self.downstream_surface, DownstreamSurfaceMode):
+            raise TypeError("downstream_surface must use DownstreamSurfaceMode")
+        if not isinstance(self.node_kind, SystemNodeKind):
+            raise TypeError("node_kind must use SystemNodeKind")
+        if self.canonical_authority_key is not None and (
+            not isinstance(self.canonical_authority_key, str)
+            or not self.canonical_authority_key.strip()
+        ):
+            raise ValueError("canonical_authority_key must be non-empty text when provided")
+        if self.node_kind is SystemNodeKind.AUTHORITY:
+            if len(self.authorities) != 1:
+                raise ValueError("authority node must declare exactly one direct authority")
+            if self.canonical_authority_key != self.identity.key:
+                raise ValueError("authority node must canonically own itself")
+        else:
+            if self.authorities:
+                raise ValueError("non-authority topology node cannot declare a direct authority")
+            if self.canonical_authority_key == self.identity.key:
+                raise ValueError("non-authority topology node cannot canonically own itself")
+
+    @property
+    def parent_key(self) -> str | None:
+        return self.identity.parent_key
+
+    @property
+    def authority_id(self) -> str | None:
+        """Return the canonical authority id when this descriptor has one."""
+
+        if len(self.authorities) != 1:
+            return None
+        return self.authorities[0].authority_id
+
+
+@dataclass(frozen=True, slots=True)
+class SystemRegistryChange:
+    """Immutable topology mutation snapshot delivered to registry subscribers."""
+
+    registered: tuple[SystemDescriptor, ...]
+    generation: int
+    topology_digest: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.registered, tuple) or not self.registered:
+            raise ValueError("registered must be a non-empty tuple")
+        if not all(isinstance(item, SystemDescriptor) for item in self.registered):
+            raise TypeError("registered must contain SystemDescriptor values")
+        if type(self.generation) is not int or self.generation <= 0:
+            raise ValueError("generation must be a positive integer")
+        if (
+            not isinstance(self.topology_digest, str)
+            or len(self.topology_digest) != 64
+            or any(char not in "0123456789abcdef" for char in self.topology_digest)
+        ):
+            raise ValueError("topology_digest must be a lowercase SHA-256 digest")
+
+
+__all__ = [
+    "AuthorityDescriptor",
+    "DownstreamSurfaceMode",
+    "STANDARD_SYSTEM_SHAPE",
+    "SystemDescriptor",
+    "SystemIdentity",
+    "SystemNodeKind",
+    "SystemRegistryChange",
+    "SystemLayer",
+]

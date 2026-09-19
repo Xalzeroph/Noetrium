@@ -1,0 +1,375 @@
+{
+  "schema": "noetrium.benchmark-catalog.projection.v2",
+  "authority": "generated_from_benchmark_manifests",
+  "benchmarks": [
+    {
+      "benchmark_id": "alfworld",
+      "title": "ALFWorld",
+      "source_uri": "https://github.com/alfworld/alfworld",
+      "environment_kinds": [
+        "text_world",
+        "embodied"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "blocksworld",
+      "title": "Blocksworld",
+      "source_uri": "https://github.com/Ber666/RAP",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "camel-ai-society",
+      "title": "CAMEL AI Society Agent Evaluation",
+      "source_uri": "https://proceedings.neurips.cc/paper/2023/hash/a3621ee907def47c1b952ade25c67698-Abstract-Conference.html",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "commongen",
+      "title": "CommonGen",
+      "source_uri": "https://github.com/INK-USC/CommonGen",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "egoschema",
+      "title": "EgoSchema",
+      "source_uri": "https://github.com/egoschema/EgoSchema",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "evomembench",
+      "title": "EvoMemBench",
+      "source_uri": "https://github.com/DSAIL-Memory/EvoMemBench",
+      "environment_kinds": [
+        "text_world",
+        "software"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "game24",
+      "title": "Game24",
+      "source_uri": "https://github.com/princeton-nlp/tree-of-thought-llm",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "gats-synthetic",
+      "title": "GATS Synthetic Planning Stress Suite",
+      "source_uri": "https://github.com/MMWilliams/gats",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "gsm8k",
+      "title": "GSM8K",
+      "source_uri": "https://github.com/openai/grade-school-math",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "humaneval",
+      "title": "HumanEval",
+      "source_uri": "https://github.com/openai/human-eval",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "code"
+      ]
+    },
+    {
+      "benchmark_id": "jarvis1-offline-185",
+      "title": "JARVIS-1 Public Offline 185-Task Evaluation Cut",
+      "source_uri": "https://github.com/CraftJarvis/JARVIS-1",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "lvu",
+      "title": "Long-Form Video Understanding (LVU 1.0)",
+      "source_uri": "https://chaoyuan.org/lvu/lvu_1.0.tar.gz",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "math500",
+      "title": "MATH500",
+      "source_uri": "https://huggingface.co/datasets/xinzhel/math500-float",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "memoryarena",
+      "title": "MemoryArena",
+      "source_uri": "https://github.com/ZexueHe/MemoryArena",
+      "environment_kinds": [
+        "web",
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "mgsm",
+      "title": "MGSM: Multilingual Grade School Math",
+      "source_uri": "https://huggingface.co/datasets/juletxara/mgsm",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "mind2web",
+      "title": "Mind2Web: Towards a Generalist Agent for the Web",
+      "source_uri": "https://github.com/OSU-NLP-Group/Mind2Web",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "minedojo",
+      "title": "MineDojo",
+      "source_uri": "https://github.com/MineDojo/MineDojo",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "mle-bench",
+      "title": "MLE-Bench",
+      "source_uri": "https://github.com/openai/mle-bench",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "code",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "moviechat-1k",
+      "title": "MovieChat-1K",
+      "source_uri": "https://huggingface.co/datasets/Enxin/MovieChat-1K-test",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "multiagentbench",
+      "title": "MultiAgentBench",
+      "source_uri": "https://github.com/ulab-uiuc/MARBLE",
+      "environment_kinds": [
+        "text_world",
+        "software",
+        "minecraft"
+      ],
+      "modalities": [
+        "text",
+        "structured",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "osworld",
+      "title": "OSWorld",
+      "source_uri": "https://github.com/xlang-ai/OSWorld",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "saycan-101",
+      "title": "SayCan 101-Task Evaluation",
+      "source_uri": "https://github.com/say-can/say-can.github.io",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "srdd",
+      "title": "Software Requirement Description Dataset",
+      "source_uri": "https://github.com/OpenBMB/ChatDev",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "steve1-paper-prompts",
+      "title": "STEVE-1 Released Paper Prompt Evaluation Cells",
+      "source_uri": "https://github.com/Shalev-Lifshitz/STEVE-1",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "swe-bench",
+      "title": "SWE-bench",
+      "source_uri": "https://github.com/SWE-bench/SWE-bench",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "code"
+      ]
+    },
+    {
+      "benchmark_id": "toolbench",
+      "title": "ToolBench",
+      "source_uri": "https://github.com/OpenBMB/ToolBench",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "vima-bench",
+      "title": "VIMA-Bench",
+      "source_uri": "https://github.com/vimalabs/VIMABench",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "visualwebarena",
+      "title": "VisualWebArena",
+      "source_uri": "https://github.com/web-arena-x/visualwebarena",
+      "environment_kinds": [
+        "web",
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "voyager-minecraft",
+      "title": "Voyager Minecraft Open-World Lifelong Learning Protocol",
+      "source_uri": "https://github.com/MineDojo/Voyager",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "webarena",
+      "title": "WebArena",
+      "source_uri": "https://github.com/web-arena-x/webarena",
+      "environment_kinds": [
+        "web",
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "webshop",
+      "title": "WebShop",
+      "source_uri": "https://github.com/princeton-nlp/WebShop",
+      "environment_kinds": [
+        "web",
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "webvoyager",
+      "title": "WebVoyager",
+      "source_uri": "https://github.com/MinorJerry/WebVoyager",
+      "environment_kinds": [
+        "web",
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    }
+  ]
+}

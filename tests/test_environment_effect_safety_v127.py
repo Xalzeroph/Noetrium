@@ -7,11 +7,11 @@ from tests_support import context_action_spec
 
 import pytest
 
-from research_platform.environment.runtime.api import action_request_digest, ActionResult, EnvironmentIdentity, Observation
-from research_platform.platform.kernel import EffectCertainty, EffectClass, EffectReceipt, OperationFailure
-from research_platform.participant.method.api import MethodIdentity, RecallResult
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.capabilities.environment.runtime.api import action_request_digest, ActionResult, EnvironmentIdentity, Observation
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, OperationFailure
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 
 
 class MSession:
@@ -63,7 +63,7 @@ def runtime():
     return context_action_runtime(mr, er)
 
 
-def spec(): return context_action_spec(study_id="s", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1)
+def spec(): return context_action_spec(study_id="s", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1)
 
 
 def test_uncertain_effect_is_reconciled_before_method_completion_and_updates_environment_generation():

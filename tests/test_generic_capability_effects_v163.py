@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from research_platform.participant.capability.api import (
+from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityEffectReconciliationResult,
     CapabilityRequest,
@@ -13,37 +13,38 @@ from research_platform.participant.capability.api import (
     capability_effect_request_id,
     capability_request_digest,
 )
-from research_platform.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
-from research_platform.reliability.effect.api import (
+from noetrium_platform.infrastructure.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
+from noetrium_platform.infrastructure.reliability.effect.api import (
     EffectCompletionEvidence,
     EffectIntent,
     EffectIntentPhase,
 )
-from research_platform.reliability.effect.runtime import (
+from noetrium_platform.infrastructure.reliability.effect.runtime import (
     InMemoryEffectIntentJournal,
     SQLiteEffectIntentJournal,
 )
-from research_platform.platform.kernel import (
+from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
     EffectCertainty,
     EffectClass,
     EffectReceipt,
     ExecutionContext,
+    InMemoryMachineJournal,
     OperationExecutor,
 )
-from research_platform.execution.workflow.implementations.agent_turn.capability_effects import CapabilityEffectExecutor
-from research_platform.execution.workflow.implementations.agent_turn.capability_effect_contracts import UnsafeEffectfulCapability
-from research_platform.execution.workflow.implementations.agent_turn.capability_operations import CapabilityOperationAdapter
-from research_platform.execution.workflow.implementations.agent_turn.capability_routing import (
+from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_effects import CapabilityEffectExecutor
+from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_effect_contracts import UnsafeEffectfulCapability
+from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_operations import CapabilityOperationAdapter
+from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_routing import (
     CapabilitySessionBinding,
     StudyCapabilityRouter,
     UnsafeGenericCapability,
 )
-from research_platform.execution.capability.runtime import (
-    CapabilityInvocationPipeline,
+from noetrium_platform.research.execution.capability.runtime import (
+    CapabilityInvocationPipelineFactory,
     ScopedRegistrationRuntime,
 )
-from research_platform.execution.workflow.runtime import EffectIntentOperations, KernelOperationDispatcher
+from noetrium_platform.research.execution.workflow.runtime import EffectIntentOperations, KernelOperationDispatcher
 
 
 class EffectfulSession:
@@ -133,7 +134,7 @@ def _router(journal=None):
         (binding,),
         effect_executor=effect_executor,
         consumer_component=consumer,
-        pipeline=CapabilityInvocationPipeline(),
+        pipeline=CapabilityInvocationPipelineFactory(InMemoryMachineJournal()).create(),
         scope=ScopedRegistrationRuntime("test-capability-router"),
     ), session
 

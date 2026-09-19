@@ -1,18 +1,19 @@
 from __future__ import annotations
+from tests._concurrency_support import process_capture
 
-from research_platform.runtime.service.api import ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
-from service_os_test_support import make_service_supervisor
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
+from service_os_test_support import make_service_supervisor, ready_evidence
 
 from pathlib import Path
 import hashlib
 import tempfile
 import unittest
 
-from research_platform.runtime.process.capture import SegmentedByteCapture
-from research_platform.reliability.primitives import CrashClass, CrashEvidence
-from research_platform.runtime.service.runtime.state_storage import FileServiceStateStore
-from research_platform.runtime.service.runtime.service_state_contracts import ServiceSupervisorState
-from research_platform.runtime.service.runtime import (
+from tests._concurrency_support import segmented_byte_capture
+from noetrium_platform.infrastructure.reliability.primitives import CrashClass, CrashEvidence
+from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_contracts import ServiceSupervisorState
+from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactServiceSupervisor,
     ServiceExitClass,
     ServicePhase,
@@ -48,7 +49,7 @@ class ProcessAdapter:
         return ServiceProcessIdentity(123, "pid:123:start:7", 123), ("start",)
 
     def wait_ready(self, process, contract):
-        return "ready.json", "stdout.active", "stderr.active"
+        return ready_evidence(process, contract, "ready.json", "stdout.active", "stderr.active")
 
     def stop(self, process, contract):
         return ("stopped",)
@@ -59,8 +60,8 @@ class CrashAdapter:
         self.inspect_calls = 0
         self.capture_calls = 0
         self.evidence = evidence
-        self.stdout = SegmentedByteCapture(root / "stdout", "stdout", max_segment_bytes=64, fsync_every_bytes=64, tail_bytes=32)
-        self.stderr = SegmentedByteCapture(root / "stderr", "stderr", max_segment_bytes=64, fsync_every_bytes=64, tail_bytes=32)
+        self.stdout = segmented_byte_capture(root / "stdout", "stdout", max_segment_bytes=64, fsync_every_bytes=64, tail_bytes=32)
+        self.stderr = segmented_byte_capture(root / "stderr", "stderr", max_segment_bytes=64, fsync_every_bytes=64, tail_bytes=32)
         self.stdout.append(b"planner boot\nready\n")
         self.stderr.append(b"cuda allocator: out of memory\n")
 

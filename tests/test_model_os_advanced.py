@@ -1,12 +1,12 @@
 import unittest
 import hashlib
-from research_platform.platform.kernel import ImmutableModelIdentity
-from research_platform.model.serving.api import (
-    ModelArtifactClosure, RuntimeBuildIdentity, ModelRunState, ModelPhase, ModelStackSpec,
-    PerformanceSample, QualificationEvidence, QualificationPolicy, RoleCanaryResult,
-    evaluate_qualification,
+from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
+from noetrium_platform.capabilities.model.serving.api import (
+    ModelRunState, ModelPhase, PerformanceSample, QualificationEvidence,
+    QualificationPolicy, RoleCanaryResult, evaluate_qualification,
 )
-from research_platform.model.serving.runtime import (
+from noetrium_platform.capabilities.model.stack import ModelArtifactClosure, RuntimeBuildIdentity, ModelStackSpec
+from noetrium_platform.capabilities.model.serving.runtime import (
     ProcessIdentity, ProcessIdentityReconciler, RecoveryPlanner, RecoveryTransaction,
 )
 

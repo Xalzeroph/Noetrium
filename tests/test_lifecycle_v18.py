@@ -2,10 +2,20 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.execution.lifecycle import (
-    ComponentHealthRecord, ComponentHealthStore, HealthClassification, HealthMonitor,
-    LifecycleGraphError, LifecycleManager, LifecyclePhase, LifecycleSpec, LifecycleStartError, ResourceHealth,
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.infrastructure.lifecycle.api import (
+    LifecyclePhase,
+    LifecycleSpec,
+)
+from noetrium_platform.infrastructure.lifecycle.runtime import (
+    ComponentHealthRecord,
+    ComponentHealthStore,
+    HealthClassification,
+    HealthMonitor,
+    LifecycleExecutor,
+    LifecycleGraphError,
+    LifecycleStartError,
+    ResourceHealth,
 )
 
 
@@ -26,20 +36,20 @@ class LifecycleV18Tests(unittest.TestCase):
     def ctx(self): return ExecutionContext("r","t","s")
 
     def test_topological_order_drives_start_and_reverse_stop(self):
-        calls=[]; mgr=LifecycleManager((_C("study",("method","env"),calls),_C("env",("model",),calls),_C("model",(),calls),_C("method",("model",),calls)))
+        calls=[]; mgr=LifecycleExecutor((_C("study",("method","env"),calls),_C("env",("model",),calls),_C("model",(),calls),_C("method",("model",),calls)))
         report=mgr.start_all(self.ctx()); self.assertEqual(report.start_order,("model","env","method","study"))
         mgr.stop_all(self.ctx())
         self.assertEqual(calls,[('start','model'),('start','env'),('start','method'),('start','study'),('stop','study'),('stop','method'),('stop','env'),('stop','model')])
 
     def test_graph_errors_happen_before_any_side_effect(self):
         calls=[]
-        with self.assertRaises(LifecycleGraphError): LifecycleManager((_C("a",("missing",),calls),))
+        with self.assertRaises(LifecycleGraphError): LifecycleExecutor((_C("a",("missing",),calls),))
         self.assertEqual(calls,[])
-        with self.assertRaises(LifecycleGraphError): LifecycleManager((_C("a",("b",),calls),_C("b",("a",),calls)))
+        with self.assertRaises(LifecycleGraphError): LifecycleExecutor((_C("a",("b",),calls),_C("b",("a",),calls)))
         self.assertEqual(calls,[])
 
     def test_failed_start_rolls_back_started_components_and_preserves_rollback_failure(self):
-        calls=[]; mgr=LifecycleManager((_C("a",(),calls,fail_stop=True),_C("b",("a",),calls,fail_start=True)))
+        calls=[]; mgr=LifecycleExecutor((_C("a",(),calls,fail_stop=True),_C("b",("a",),calls,fail_start=True)))
         with self.assertRaises(LifecycleStartError) as cm: mgr.start_all(self.ctx())
         self.assertEqual(cm.exception.component_id,"b"); self.assertEqual(cm.exception.started,("a",)); self.assertEqual(cm.exception.rollback_failures[0].component_id,"a")
         self.assertEqual(calls,[('start','a'),('start','b'),('stop','a')])

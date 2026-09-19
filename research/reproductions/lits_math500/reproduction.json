@@ -1,0 +1,107 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "lits_math500",
+  "package_digest": "be68cecb8f104a39402816b9f477a69aef1d2a1f7b1bc043b3a63687094ef034",
+  "definition_digest": "1872d21311a5e175496735542625d6b2d3bd16877631dc6ee9b8bc1d323e908f",
+  "source_registry_digest": "a7690832f13476ee4b23d5467a46ea3041e9a9bc011a9268b12aee7a7ade8709",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "lits",
+    "title": "LiTS: A Modular Framework for LLM Tree Search",
+    "paper_uri": "https://arxiv.org/abs/2603.00631",
+    "year": 2026,
+    "paper_revision": "arXiv:2603.00631v1 / ACL 2026 Demo",
+    "identity_digest": "31e51150a8bfe2ef1ab1a060d2b07cebb041a94fa833abe9d8b9bd14dd138712"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "reasoning",
+      "runtime-systems"
+    ],
+    "families": [
+      "modular_search",
+      "reasoning",
+      "tool_use",
+      "tree_search"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "math500"
+    ],
+    "platform_pressure": [
+      "execution",
+      "experimentation/study",
+      "model/assignment",
+      "model/request",
+      "observability/telemetry"
+    ],
+    "method_owned": [
+      "MCTS/BFS search semantics",
+      "Policy/Transition/RewardModel decomposition",
+      "component registration and composition policy"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "bounded method execution",
+      "measurements and evidence",
+      "named model-role binding"
+    ],
+    "reference_repositories": [
+      "https://github.com/xinzhel/lits-llm"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "a613d8a7d9acec80abf9b2ec604eaabf63a5351a50e9248845178a597bdc01f1"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "paper_era_lits_release",
+      "kind": "official_executable",
+      "repository": "https://github.com/xinzhel/lits-llm",
+      "commit": "4f522bb7bf5d5bfd68c42649efe44c566dfa039c",
+      "artifacts": [
+        "demos/lits_benchmark/math_qa.py",
+        "lits/agents/tree/mcts.py",
+        "lits/components/policy/concat.py",
+        "lits/components/reward/generative.py",
+        "lits/components/transition/concat.py"
+      ],
+      "lane_digest": "11789e9a84700bada32e0ccaa014f57cf0d570c4c2c830c6127266e9930da6c5"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/lits_math500/fidelity.py",
+      "declaration_digest": "afa36a91cc566406ece6833409f36e539f7bf1fc6862491a0ab50be547b11223",
+      "content_sha256": "3ee56dc373b4084c2709100afc2dfa55664d3b7a52ccbd24be0496a2baccb8ff"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/lits_math500/study.py",
+      "declaration_digest": "d8ff589b2c868062190b411a48aee1cb05922ba1ab2484091dc81782bfe0934f",
+      "content_sha256": "305009e2820d9f496fab4521c7daffdae34b719491c140b4a54d033a509f5e64"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "concrete model identity is intentionally external to the released example and must be declared by an executable study lane",
+      "delta_digest": "bfe25f003531b634eaeb5a10855ce5060d9f7de91586d16b8005b8028c812a16"
+    }
+  ],
+  "blockers": [
+    "the released MATH500 example does not freeze one concrete model provider/revision, so matched paper-result execution requires an explicit model lane selection"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_lits_math500_v1.py",
+      "content_sha256": "05cf22e65dd2016d94a71d619941df5eddb82feaae492210fc1c7c46b5357044"
+    }
+  ]
+}

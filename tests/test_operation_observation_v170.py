@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 
-from research_platform.platform.composition.runtime_control import build_operation_executor
-from research_platform.platform.composition.operation_forensics import OperationForensicFailureSink
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.platform.kernel import (
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.composition.operation import build_operation_executor
+from noetrium_platform.composition.operation_forensics import OperationForensicFailureSink
+from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
     ExecutionContext,
     FailureRecordReceipt,
@@ -101,7 +101,7 @@ def test_forensic_lifecycle_has_distinct_operation_and_failure_materialization_e
         assert failure.status is OperationStatus.FAILED
         assert failure.failure_id
 
-        rows = store.events.verified_payloads_after(0)[3]
+        rows = store.events.verified_payloads_after(0).payloads
         by_type: dict[str, list[dict[str, object]]] = {}
         for row in rows:
             by_type.setdefault(str(row["event_type"]), []).append(row)
@@ -118,12 +118,12 @@ def test_forensic_lifecycle_has_distinct_operation_and_failure_materialization_e
         assert recorded_failure["payload"]["operation_invocation_id"] == "op@failure"
         assert recorded_failure["payload"]["failure_id"] == failure.failure_id
 
-        failure_row = store.failures.verified_payloads_after(0)[3][0]
+        failure_row = store.failures.verified_payloads_after(0).payloads[0]
         assert failure_row["operation_invocation_id"] == "op@failure"
 
 
 def test_completed_observer_failure_gets_its_own_durable_auxiliary_event():
-    from research_platform.observability.api import (
+    from noetrium_platform.evidence.observability.api import (
         OperationAuxiliaryFailureEventSink,
         OperationLifecycleObserver,
     )
@@ -147,7 +147,7 @@ def test_completed_observer_failure_gets_its_own_durable_auxiliary_event():
 
         assert result.status is OperationStatus.SUCCEEDED
         assert len(result.auxiliary_failures) == 1
-        rows = store.events.verified_payloads_after(0)[3]
+        rows = store.events.verified_payloads_after(0).payloads
         auxiliary = [row for row in rows if row["event_type"] == "OPERATION_AUXILIARY_FAILURE"]
         assert len(auxiliary) == 1
         payload = auxiliary[0]["payload"]
@@ -209,9 +209,9 @@ def test_authoritative_failure_id_survives_disposable_failure_projection_breakag
         assert result.status is OperationStatus.FAILED
         assert result.failure_id is not None
         assert any(row.stage == "failure_projection" for row in result.auxiliary_failures)
-        failure_rows = store.failures.verified_payloads_after(0)[3]
+        failure_rows = store.failures.verified_payloads_after(0).payloads
         assert any(row["failure_id"] == result.failure_id for row in failure_rows)
-        event_rows = store.events.verified_payloads_after(0)[3]
+        event_rows = store.events.verified_payloads_after(0).payloads
         auxiliary = [row for row in event_rows if row["event_type"] == "OPERATION_AUXILIARY_FAILURE"]
         assert auxiliary
         assert auxiliary[-1]["payload"]["stage"] == "failure_projection"

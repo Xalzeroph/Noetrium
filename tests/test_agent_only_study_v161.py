@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from tests_support import FakeParticipantResolver, participant
+from tests_support import FakeParticipantResolver, participant, model_role_for_test
 from tests_support import agent_turn_runtime
 
 import hashlib
 
-from research_platform.participant.agent.api import AgentIdentity, AgentSnapshot, AgentTurnResult
-from research_platform.participant.capability.api import (
+from noetrium_platform.capabilities.participant.agent.api import AgentIdentity, AgentSnapshot, AgentTurnResult
+from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityProviderIdentity,
     CapabilityRequest,
     CapabilityResult,
 )
-from research_platform.platform.kernel import EffectClass, canonical_digest
-from research_platform.execution.workflow.implementations.agent_turn.agent_turn_workflow import AgentTurnStudyWorkflow
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.foundation.kernel.kernel import EffectClass, canonical_digest
+from noetrium_platform.research.execution.workflow.implementations.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
 
 
 class EchoProviderSession:
@@ -36,7 +36,7 @@ class EchoProviderSession:
 
 
 class EchoProvider:
-    identity = CapabilityProviderIdentity("echo-provider", "1", "1", "1", "provider-cfg")
+    identity = CapabilityProviderIdentity("echo-provider", "1", "1", "1", "d" * 64)
     def open_session(self, *, session_id: str, services: object): return EchoProviderSession()
 
 
@@ -62,7 +62,7 @@ class GenericAgentSession:
 
 
 class GenericAgent:
-    identity = AgentIdentity("generic-agent", "1", "1", "1", "agent-cfg")
+    identity = AgentIdentity("generic-agent", "1", "1", "1", "a" * 64)
     def open_session(self, *, session_id: str, services: object): return GenericAgentSession(session_id)
 
 
@@ -72,11 +72,12 @@ def _spec():
         study_id="default-study",
         project_id="default-project",
         participants=(
-            participant("capability_provider", "echo", "echo-provider", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="provider-cfg"),
-            participant("agent", "agent", "generic-agent", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="agent-cfg", depends_on_roles=("echo",)),
+            participant("capability_provider", "echo", "echo-provider", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="d" * 64),
+            participant("agent", "agent", "generic-agent", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="a" * 64, depends_on_roles=("echo",)),
         ),
-        model_stack_digest="model", prompt_generation="prompt", workload_digest="work",
-        seed_digest="seed", repetitions=1, scientific_workflow_id="agent_turn.v1",
+        model_roles=(model_role_for_test(),), workload_digest="b" * 64,
+        seed_digest="c" * 64, repetitions=1, trial_protocol_id="agent_turn.v2",
+        trial_protocol_configuration_digest=AGENT_TURN_TRIAL_CONFIGURATION_DIGEST,
     )
 
 
@@ -109,7 +110,7 @@ def test_agent_only_long_run_keeps_agent_session_alive_across_cycles():
     run = runtime.open_run(_spec())
     try:
         # long-run cycle identity must belong to open run; create using its stable ids
-        from research_platform.execution.decision.cycle_identity import DecisionCycleIdentity
+        from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
         c1 = DecisionCycleIdentity(run.identity.run_id, "dc1", run.identity.session_id, "task1", run.identity.trace_id)
         c2 = DecisionCycleIdentity(run.identity.run_id, "dc2", run.identity.session_id, "task2", run.identity.trace_id)
         r1 = run.execute(task="one", input_kind="input", input_payload=1, cycle_identity=c1)
@@ -121,9 +122,9 @@ def test_agent_only_long_run_keeps_agent_session_alive_across_cycles():
 
 
 def test_agent_only_joint_checkpoint_restores_agent_and_provider_state(tmp_path):
-    from research_platform.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
-    from research_platform.execution.decision.cycle_identity import DecisionCycleIdentity
-    from research_platform.experimentation.run.identity.api import RunIdentity
+    from noetrium_platform.research.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
+    from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+    from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
 
     store = DirectoryRunCheckpointStore(tmp_path / "checkpoints")
     runtime = _runtime(store)

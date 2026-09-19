@@ -1,0 +1,19 @@
+from __future__ import annotations
+
+from typing import Protocol
+
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.study import StudySpec
+
+
+class ExperimentationCatalogPort(Protocol):
+    def register_study(self, spec: StudySpec) -> None: ...
+    def register_experiment(self, spec: ExperimentSpec) -> None: ...
+    def register_run(self, experiment_id: str, identity: RunIdentity) -> None: ...
+    def study(self, study_id: str) -> StudySpec: ...
+    def experiment(self, experiment_id: str) -> ExperimentSpec: ...
+    def experiments(self, *, study_id: str | None = None) -> tuple[ExperimentSpec, ...]: ...
+
+
+__all__ = ["ExperimentationCatalogPort"]

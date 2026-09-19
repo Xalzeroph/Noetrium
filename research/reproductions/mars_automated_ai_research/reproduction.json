@@ -1,0 +1,274 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "mars_automated_ai_research",
+  "package_digest": "7a977005655df938130b354ca7f739eb724eacc3f01a33664e718a98549eabdf",
+  "definition_digest": "33967cc3375ce09f68d574ddf74e53688a78db7063151dc856ce43878928e84f",
+  "source_registry_digest": "5c4a7eeaf260528c2d32423f029e4420611ba8a29b54a0794f2d546645010ccd",
+  "lifecycle": "artifact_only",
+  "identity": {
+    "method_id": "mars-automated-ai-research",
+    "title": "MARS: Modular Agent with Reflective Search for Automated AI Research",
+    "paper_uri": "https://arxiv.org/abs/2602.02660",
+    "year": 2026,
+    "paper_revision": "arXiv:2602.02660",
+    "identity_digest": "f5bc995067d427eb6b49846bd6bae775c99885d5765421243d18f044b4084fd0"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "planning-search",
+      "reflection-self-correction",
+      "scientific-research"
+    ],
+    "families": [
+      "cost_constrained_mcts",
+      "modular_research_agent",
+      "reflective_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "mle-bench"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "experimentation/evaluation",
+      "experimentation/study"
+    ],
+    "method_owned": [
+      "Design-Decompose-Implement modular construction",
+      "budget-aware cost-constrained MCTS",
+      "comparative reflective memory and cross-branch lesson transfer"
+    ],
+    "platform_owned": [
+      "artifact and grading-report lineage",
+      "benchmark cut identity",
+      "metric reconstruction and evidence ingestion",
+      "source-lane provenance"
+    ],
+    "reference_repositories": [
+      "https://github.com/jfc43/MARS"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "583f58b2a18dcc385bed81922c197663f779f81bd9feba934369873991840ad3"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "official_generated_code_and_trajectories",
+      "kind": "official_artifact",
+      "repository": "https://github.com/jfc43/MARS",
+      "commit": "04fcc3c78ff40ce0100caa9c4d64a1673a49c712",
+      "artifacts": [
+        "README.md",
+        "exp-logs/mars_gemini-3-pro-preview_run_1/grading_report.json",
+        "exp-logs/mars_gemini-3-pro-preview_run_2/grading_report.json",
+        "exp-logs/mars_gemini-3-pro-preview_run_3/grading_report.json"
+      ],
+      "lane_digest": "d792b86f46c652ff210f7955ee3720a769281067139da87201788bc1dbef7037"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/mars_automated_ai_research/fidelity.py",
+      "declaration_digest": "847c1e8fde3bc9bca898d292a031259c2d68a2cd73a532b74a717d0394c13156",
+      "content_sha256": "c7b755f9d9f6b931a02205bd09b2946a9535671f1454d807c9e653a04ddc5266"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [
+    {
+      "claim_id": "mars_low_mean",
+      "metric_id": "low_any_medal_mean_pct",
+      "value": 74.24242424242425,
+      "qualifiers": {
+        "model_lane_id": "paper_reported_mars",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper_reported_mars",
+          "roles": [
+            {
+              "availability": "paper/artifact reported model identity; exact provider revision and decoding are not released",
+              "decoding": {},
+              "model": "Gemini-3-Pro-Preview",
+              "role": "research_agent_backbone"
+            }
+          ]
+        }
+      },
+      "claim_digest": "4d884afb1065a88c71551230419804f47038f7c4772337344ce4be5073c7fafd"
+    },
+    {
+      "claim_id": "mars_low_sem",
+      "metric_id": "low_any_medal_sem_pct",
+      "value": 1.515151515151511,
+      "qualifiers": {
+        "model_lane_id": "paper_reported_mars",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper_reported_mars",
+          "roles": [
+            {
+              "availability": "paper/artifact reported model identity; exact provider revision and decoding are not released",
+              "decoding": {},
+              "model": "Gemini-3-Pro-Preview",
+              "role": "research_agent_backbone"
+            }
+          ]
+        }
+      },
+      "claim_digest": "cd032b0fbadbc13ef36ed1fd3a527c13db3dba1c69be00fbb8709e8fccb76756"
+    },
+    {
+      "claim_id": "mars_medium_mean",
+      "metric_id": "medium_any_medal_mean_pct",
+      "value": 52.63157894736842,
+      "qualifiers": {
+        "model_lane_id": "paper_reported_mars",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper_reported_mars",
+          "roles": [
+            {
+              "availability": "paper/artifact reported model identity; exact provider revision and decoding are not released",
+              "decoding": {},
+              "model": "Gemini-3-Pro-Preview",
+              "role": "research_agent_backbone"
+            }
+          ]
+        }
+      },
+      "claim_digest": "58d6b144322737ec5b45033616e60e8bea74960bf1566424244ccee2a044cc46"
+    },
+    {
+      "claim_id": "mars_medium_sem",
+      "metric_id": "medium_any_medal_sem_pct",
+      "value": 3.0386856273138223,
+      "qualifiers": {
+        "model_lane_id": "paper_reported_mars",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper_reported_mars",
+          "roles": [
+            {
+              "availability": "paper/artifact reported model identity; exact provider revision and decoding are not released",
+              "decoding": {},
+              "model": "Gemini-3-Pro-Preview",
+              "role": "research_agent_backbone"
+            }
+          ]
+        }
+      },
+      "claim_digest": "b98c33f5a984894ccffbd175603ad225b6efc058b8d904005fc9493a83b52a71"
+    },
+    {
+      "claim_id": "mars_high_mean",
+      "metric_id": "high_any_medal_mean_pct",
+      "value": 37.77777777777778,
+      "qualifiers": {
+        "model_lane_id": "paper_reported_mars",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper_reported_mars",
+          "roles": [
+            {
+              "availability": "paper/artifact reported model identity; exact provider revision and decoding are not released",
+              "decoding": {},
+              "model": "Gemini-3-Pro-Preview",
+              "role": "research_agent_backbone"
+            }
+          ]
+        }
+      },
+      "claim_digest": "d23fdda4dfcd86426b5349c54979d818ee8f878f50b2795ca5d9424514a75c60"
+    },
+    {
+      "claim_id": "mars_high_sem",
+      "metric_id": "high_any_medal_sem_pct",
+      "value": 2.2222222222222237,
+      "qualifiers": {
+        "model_lane_id": "paper_reported_mars",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper_reported_mars",
+          "roles": [
+            {
+              "availability": "paper/artifact reported model identity; exact provider revision and decoding are not released",
+              "decoding": {},
+              "model": "Gemini-3-Pro-Preview",
+              "role": "research_agent_backbone"
+            }
+          ]
+        }
+      },
+      "claim_digest": "3ca37b973c59fa692e9f6792c6d34fc6d4993d32cdc8f41032e78fedd766847b"
+    },
+    {
+      "claim_id": "mars_all_mean",
+      "metric_id": "all_any_medal_mean_pct",
+      "value": 56,
+      "qualifiers": {
+        "model_lane_id": "paper_reported_mars",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper_reported_mars",
+          "roles": [
+            {
+              "availability": "paper/artifact reported model identity; exact provider revision and decoding are not released",
+              "decoding": {},
+              "model": "Gemini-3-Pro-Preview",
+              "role": "research_agent_backbone"
+            }
+          ]
+        }
+      },
+      "claim_digest": "3c0299aaaa03d7d8ff438898f0517d1a1268c065985d84e4255995b0a197079d"
+    },
+    {
+      "claim_id": "mars_all_sem",
+      "metric_id": "all_any_medal_sem_pct",
+      "value": 1.5396007178390008,
+      "qualifiers": {
+        "model_lane_id": "paper_reported_mars",
+        "reported_model_lane": {
+          "kind": "paper_reported",
+          "lane_id": "paper_reported_mars",
+          "roles": [
+            {
+              "availability": "paper/artifact reported model identity; exact provider revision and decoding are not released",
+              "decoding": {},
+              "model": "Gemini-3-Pro-Preview",
+              "role": "research_agent_backbone"
+            }
+          ]
+        }
+      },
+      "claim_digest": "0888cb8dc1adf2b02abeb586259ee7db9df23865718d4600bdd80334c5dfd20e"
+    }
+  ],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "executable MARS implementation remains unavailable",
+      "delta_digest": "5005eeb1f418457de5e0ce0460becc0312710764023457a43b379a20181c6fb9"
+    },
+    {
+      "kind": "unresolved",
+      "description": "full method prompts, model revision and runtime orchestration remain unreleased",
+      "delta_digest": "cfec179f460c011c07228ecb6614287ed148fc9b10663430b9e3a47a346b4980"
+    }
+  ],
+  "blockers": [
+    "official repository does not contain executable MARS agent source",
+    "provider/model revision, prompts and decoding required to replay MARS execution are not released in the artifact repository",
+    "artifact results can be reconstructed but method execution cannot yet be source-matched"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_mars_artifact_v1.py",
+      "content_sha256": "f23af17336623318869169bc31bcd8bde1685d12d4bb5e2bf5d5f1517871c9b5"
+    }
+  ]
+}

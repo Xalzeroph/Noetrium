@@ -7,14 +7,14 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.participant.core.api.contracts import ParticipantImplementationIdentity
-from research_platform.participant.core.api.frozen_manifests import ParticipantImplementationInventory, ParticipantRuntimeBindingManifest, ParticipantRuntimeInventory
-from research_platform.model.request.prompt.runtime import DurablePromptRegistry, PromptPromotionEvidence
-from research_platform.model.request.prompt.runtime import default_block_policies, default_output_schemas, default_prompt_specs
-from research_platform.model.request.prompt.runtime.qualification import PromptQualification
-from research_platform.governance.release.runtime.manifest import build_release_manifest
-from research_platform.governance.release.runtime.verification import SourceTreeReleaseEvidenceReader
-from research_platform.execution.runtime.manager import (
+from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantImplementationIdentity
+from noetrium_platform.capabilities.participant.core.api.frozen_manifests import ParticipantImplementationInventory, ParticipantRuntimeBindingManifest, ParticipantRuntimeInventory
+from noetrium_platform.capabilities.model.request.prompt.runtime import DurablePromptRegistry, PromptPromotionEvidence
+from noetrium_platform.capabilities.model.request.prompt.runtime import default_block_policies, default_output_schemas, default_prompt_specs
+from noetrium_platform.capabilities.model.request.prompt.runtime.qualification import PromptQualification
+from noetrium_platform.foundation.governance.release.runtime.manifest import build_release_manifest
+from noetrium_platform.foundation.governance.release.runtime.verification import SourceTreeReleaseEvidenceReader
+from noetrium_platform.infrastructure.lifecycle.launch_control import (
     ActivePromptPromotionVerifier,
     FrozenParticipantBindingVerificationPort,
     FrozenParticipantImplementationVerificationPort,
@@ -76,7 +76,7 @@ class RuntimeVerificationPortsV114Tests(unittest.TestCase):
         self.assertGreaterEqual(len(runtime_port.verify(manifest)),2)
         self.assertEqual(len(binding_port.verify(manifest)),3)
 
-        changed_impl=ParticipantImplementationIdentity("method","sem","9","mabi","schema","artifact-drift")
+        changed_impl=ParticipantImplementationIdentity("method","sem","9","mabi","schema","e" * 64)
         changed_binding=replace(bindings[0], implementation=changed_impl)
         changed_inventory=ParticipantImplementationInventory.from_bindings((changed_binding, bindings[1]))
         with self.assertRaises(ValueError):

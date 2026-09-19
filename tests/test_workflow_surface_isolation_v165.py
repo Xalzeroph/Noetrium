@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from research_platform.experimentation.experiment.runtime import ExperimentWorkflowSurfaceRegistry
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentWorkflowSurfaceRegistry
 
 
 def test_unknown_workflow_surface_fails_without_constructing_scientific_operations():
@@ -12,9 +12,11 @@ def test_unknown_workflow_surface_fails_without_constructing_scientific_operatio
 
 
 def test_builtin_workflows_declare_distinct_narrow_surfaces():
-    from research_platform.execution.workflow.implementations.agent_turn.agent_turn_workflow import AgentTurnStudyWorkflow
-    from research_platform.execution.workflow.implementations.context_action.context_action_workflow import ContextActionStudyWorkflow
+    from noetrium_platform.research.execution.workflow.implementations.agent_turn import agent_turn_trial_protocol
+    from noetrium_platform.research.execution.workflow.implementations.context_action import context_action_trial_protocol
 
-    assert AgentTurnStudyWorkflow.surface_id == "agent_turn.operations.v1"
-    assert ContextActionStudyWorkflow.surface_id == "context_action.operations.v1"
-    assert AgentTurnStudyWorkflow.surface_id != ContextActionStudyWorkflow.surface_id
+    agent_turn = agent_turn_trial_protocol()
+    context_action = context_action_trial_protocol()
+    assert agent_turn.surface_id == "agent_turn.operations.v1"
+    assert context_action.surface_id == "context_action.operations.v1"
+    assert agent_turn.surface_id != context_action.surface_id

@@ -2,26 +2,26 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.reliability.failure.api import RecoveryAction
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.failure.api import RecoveryAction
 
-from research_platform.observability.api import EventEnvelope
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.reliability.forensics.api import MutationRecord
-from research_platform.reliability.failure.api import build_failure
-from research_platform.platform.kernel import ExecutionContext, ImmutableModelIdentity
-from research_platform.model.serving.api import ModelPhase, ModelRunState
-from research_platform.model.serving.runtime import RecoveryPlanner, ExactRecoveryCoordinator, RecoveryExecutionError
-from research_platform.reliability.diagnostics.runtime import EvidenceVerifier, FailureDiagnosisService
-from research_platform.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
-from research_platform.observability.status.runtime import PlatformStatusService
+from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.infrastructure.reliability.forensics.api import MutationRecord
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity
+from noetrium_platform.capabilities.model.serving.api import ModelPhase, ModelRunState
+from noetrium_platform.capabilities.model.serving.runtime import RecoveryPlanner, ExactRecoveryCoordinator, RecoveryExecutionError
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import EvidenceVerifier, FailureDiagnosisService
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
+from noetrium_platform.evidence.observability.status.runtime import PlatformStatusService
 
 
 class _Executor:
     def __init__(self, fail_at=None):
         self.fail_at = fail_at
         self.calls = []
-    def execute(self, step, plan):
+    def run_step(self, step, plan):
         self.calls.append(step)
         if step == self.fail_at:
             raise OSError("injected recovery defect")
@@ -57,7 +57,7 @@ class OperatorControlPlaneTests(unittest.TestCase):
             store.append_event(EventEnvelope("e1", "A", ctx, "c"))
             store.append_event(EventEnvelope("e2", "B", ctx, "c"))
             related=store.index.related_to("e1")
-            self.assertEqual({x["event_id"] for x in related},{"e1","e2"})
+            self.assertEqual({x.to_payload()["event_id"] for x in related},{"e1","e2"})
 
     def test_evidence_verifier_and_status_are_read_only_views(self):
         with tempfile.TemporaryDirectory() as td:

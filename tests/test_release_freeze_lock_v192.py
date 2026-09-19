@@ -7,7 +7,7 @@ import sys
 import tempfile
 import unittest
 
-from research_platform.governance.release.runtime.freeze_lock import ReleaseFreezeBusy, ReleaseFreezeLock
+from noetrium_platform.foundation.governance.release.runtime.freeze_lock import ReleaseFreezeBusy, ReleaseFreezeLock
 
 
 class ReleaseFreezeLockV192Tests(unittest.TestCase):
@@ -27,8 +27,9 @@ class ReleaseFreezeLockV192Tests(unittest.TestCase):
             env = os.environ.copy()
             env["PYTHONPATH"] = str(project_root)
             code = (
+                f"import sys; sys.path.insert(0, {str(project_root)!r}); "
                 "from pathlib import Path; "
-                "from research_platform.governance.release.runtime.freeze_lock import ReleaseFreezeBusy, ReleaseFreezeLock; "
+                "from noetrium_platform.foundation.governance.release.runtime.freeze_lock import ReleaseFreezeBusy, ReleaseFreezeLock; "
                 f"root=Path({str(root)!r}); "
                 "\ntry:\n"
                 "    with ReleaseFreezeLock(root):\n"

@@ -1,22 +1,22 @@
 from __future__ import annotations
 
-from research_platform.runtime.service.api import ServiceLaunchContract, ServiceProcessIdentity
-from service_os_test_support import make_service_supervisor
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from service_os_test_support import make_service_supervisor, ready_evidence
 
 import hashlib
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.runtime.service.runtime.state_storage import FileServiceStateStore
-from research_platform.runtime.service.runtime import (
+from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactServiceSupervisor,
     PreparedServiceStartReconcileResult,
     PreparedServiceStartStatus,
     ServicePhase,
     ServiceStartRecoveryHandle,
 )
-from research_platform.runtime.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 
 
 def h(value: str) -> str:
@@ -64,7 +64,7 @@ class DurableAdapter:
         raise AssertionError("crash-durable adapter must not use legacy start")
 
     def wait_ready(self, process, launch):
-        return "ready:provider", "stdout:provider", "stderr:provider"
+        return ready_evidence(process, launch, "ready:provider", "stdout:provider", "stderr:provider")
 
     def stop(self, process, launch):
         self.provider_state.pop("process", None)
@@ -118,7 +118,7 @@ class LegacyCrashAdapter:
         raise SimulatedCrashAfterStart("legacy start outcome unknown")
 
     def wait_ready(self, process, launch):
-        return "ready", "stdout", "stderr"
+        return ready_evidence(process, launch)
 
     def stop(self, process, launch):
         return ()
@@ -167,7 +167,7 @@ class ServicePreparedStartRecoveryV146Tests(unittest.TestCase):
             self.assertEqual(first.start_calls, 1)
 
             second = LegacyCrashAdapter()
-            from research_platform.runtime.service.runtime import ServiceStartRecoveryRequired
+            from noetrium_platform.infrastructure.lifecycle.service.runtime import ServiceStartRecoveryRequired
 
             with self.assertRaises(ServiceStartRecoveryRequired):
                 make_service_supervisor(state_store, second).start_exact(contract())

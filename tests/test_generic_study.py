@@ -2,11 +2,11 @@ from tests_support import FakeParticipantResolver
 from tests_support import context_action_runtime
 from tests_support import context_action_spec
 import hashlib, unittest
-from research_platform.participant.method.api import MethodIdentity, MethodSnapshot, RecallResult
-from research_platform.environment.runtime.api import action_request_digest, EnvironmentIdentity, Observation, ActionResult
-from research_platform.platform.kernel import EffectReceipt, EffectClass, EffectCertainty, OperationExecutor, OperationFailure
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, RecallResult
+from noetrium_platform.capabilities.environment.runtime.api import action_request_digest, EnvironmentIdentity, Observation, ActionResult
+from noetrium_platform.foundation.kernel.kernel import EffectReceipt, EffectClass, EffectCertainty, OperationExecutor, OperationFailure
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 
 class MSession:
     def ingest(self,e,c): self.e=e
@@ -33,7 +33,7 @@ class Env:
 class GenericStudyTests(unittest.TestCase):
     def test_method_environment_are_replaceable(self):
         mr=FakeParticipantResolver(); er=FakeParticipantResolver(); mr.register("method", "m",Method); er.register("environment", "e",Env)
-        s=context_action_spec(study_id="study", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompts", workload_digest="work", seed_digest="seed", repetitions=1)
+        s=context_action_spec(study_id="study", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1)
         r=context_action_runtime(mr,er).execute_cycle(s,task="task",input_kind="act",input_payload={})
         self.assertEqual(r.context_text,"generic-context")
         self.assertTrue(r.primary_result.accepted)

@@ -1,0 +1,11 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "travelplanner",
+  "benchmark": {
+    "benchmark_id": "travelplanner",
+    "title": "TravelPlanner validation benchmark",
+    "source_uri": "https://github.com/OSU-NLP-Group/TravelPlanner",
+    "environment_kinds": ["tool_sandbox"],
+    "modalities": ["text", "structured"]
+  }
+}

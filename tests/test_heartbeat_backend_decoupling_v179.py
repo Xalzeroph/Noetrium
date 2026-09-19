@@ -4,9 +4,9 @@ import hashlib
 import time
 import unittest
 
-from research_platform.model.serving.api import ServiceHeartbeat
-from research_platform.execution.runtime.manager.heartbeat import assert_exact_heartbeat
-from research_platform.execution.runtime.manager.status_readers import ServiceHeartbeatStatusReader
+from noetrium_platform.capabilities.model.serving.api import ServiceHeartbeat
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat import assert_exact_heartbeat
+from noetrium_platform.infrastructure.lifecycle.launch_control.status_readers import ServiceHeartbeatStatusReader
 
 
 class MemoryHeartbeatStore:

@@ -5,7 +5,7 @@ from dataclasses import asdict
 
 ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
-from research_platform.governance.architecture.report import build_architecture_report
+from noetrium_platform.foundation.governance.architecture.report import build_architecture_report
 
 
 def main()->int:

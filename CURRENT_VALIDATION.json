@@ -1,0 +1,62 @@
+{
+  "boundary": {
+    "bundled_environment_providers": [
+      "minecraft"
+    ],
+    "downstream_projects_included": false,
+    "machine_inventory_included": false,
+    "package_root": "noetrium_platform",
+    "project_specific_environment_providers_included": false
+  },
+  "checks": {
+    "algorithm_governance": {
+      "candidates": 348,
+      "status": "PASS",
+      "symbols": 5732
+    },
+    "architecture_gate": "PASS",
+    "concurrency_governance": {
+      "blocker_debt": 0,
+      "findings": 1,
+      "hotspots": 286,
+      "status": "PASS"
+    },
+    "downstream_identifier_scan": {
+      "project_specific_hits": 0,
+      "status": "PASS"
+    },
+    "full_pytest_regression": {
+      "collected": 1089,
+      "passed": 1083,
+      "skipped": 6,
+      "status": "PASS",
+      "subtests_passed": 4
+    },
+    "minecraft_provider_container": {
+      "bridge_tests": 14,
+      "java": "21.0.12",
+      "mineflayer": "4.37.1",
+      "node": "22.22.2",
+      "status": "PASS"
+    },
+    "minecraft_provider_python": {
+      "focused_tests": 100,
+      "status": "PASS"
+    },
+    "performance_governance": {
+      "blocker_debt": 0,
+      "findings": 88,
+      "hotspots": 76,
+      "status": "PASS"
+    },
+    "repository_boundary_source_gate": "PASS",
+    "test_system": {
+      "classified_files": 290,
+      "status": "PASS"
+    }
+  },
+  "platform_version": "0.43.1",
+  "repository_role": "reusable-upstream-platform",
+  "schema_version": "noetrium.current-validation.v1",
+  "status": "SOURCE_VALIDATED"
+}

@@ -1,0 +1,94 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "hugginggpt",
+  "package_digest": "06b44c27b7d6d978be62971b244c74026a74298e937f0d3c6893e6b0d166042a",
+  "definition_digest": "a61290a171846e2e9fa4a079ca03566f339025a8dd0eb8c2ab68545f19bf5d9c",
+  "source_registry_digest": "694e1acf36f5bdc067e93ab86f80e49a41f98113ac5297bc5380a4dc00ad4428",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "hugginggpt",
+    "title": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/77c33e6a367922d003ff102ffb92b658-Abstract-Conference.html",
+    "year": 2023,
+    "paper_revision": null,
+    "identity_digest": "bd4ce0175102f24bbbed0478caa2ec9851e6de41427db304c6eadc1cc846bf9d"
+  },
+  "catalog": {
+    "domains": [
+      "multimodal",
+      "planning-search",
+      "runtime-systems",
+      "tool-use"
+    ],
+    "families": [
+      "model_orchestration",
+      "multimodal",
+      "planning",
+      "tool_use"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/lineage",
+      "execution",
+      "model/request",
+      "participant/capability",
+      "participant/method"
+    ],
+    "method_owned": [
+      "dependency-aware execution policy",
+      "expert-model selection policy",
+      "response aggregation policy",
+      "task decomposition policy"
+    ],
+    "platform_owned": [
+      "artifact references",
+      "evidence and telemetry",
+      "method graph execution",
+      "model and capability invocation",
+      "parallel scheduling"
+    ],
+    "reference_repositories": [
+      "https://github.com/microsoft/JARVIS"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "f180ac1e4a00643cce2f67d6c0d058cdc3d0faac131e3433269456c30aea0666"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/microsoft/JARVIS",
+      "commit": "2c19142b56663a54b2c85f8622b38f98c5b2580f",
+      "artifacts": [],
+      "lane_digest": "97e64daeb8b599dced56a438b833360b082598b7f87a74a2647edef9570cd9e0"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/hugginggpt/fidelity.py",
+      "declaration_digest": "510358f80fcdd9439d9d9952d8eb82c7b9d61678aeb5f0b92119a890d26a6e1a",
+      "content_sha256": "40843c3f353fc63573162cf2e8fef4effa350ffe7ae407c918ec0ab3a024b0b4"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/hugginggpt/task_graph.py",
+      "declaration_digest": "4740d9561712189494d505739ff3337f466bbefa3b309af6c95134c4abd5e339",
+      "content_sha256": "492fdd363803fd5230f42407382af38143bc261113131f24b2764295969b2ecf"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_hugginggpt_v1.py",
+      "content_sha256": "691ba0972a070cf0f00e03ca50ea1fe078fd2bb21c4e5a8625dda5da1beef070"
+    }
+  ]
+}

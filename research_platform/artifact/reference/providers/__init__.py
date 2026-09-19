@@ -1,1 +1,0 @@
-"""artifact.reference providers boundary."""

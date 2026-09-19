@@ -1,0 +1,57 @@
+{
+  "schema": "noetrium.publication-quality-policy.v1",
+  "updated_at": "2026-09-19",
+  "purpose": "Prioritize peer-reviewed, high-quality agent research for full reproduction pressure. Preprints and workshop-only papers are discovery hints only and never enter the formal pressure suite.",
+  "eligible_publication_statuses": [
+    "peer_reviewed_conference",
+    "peer_reviewed_journal"
+  ],
+  "hard_exclusions": [
+    "preprint_only",
+    "workshop_only",
+    "technical_report_only",
+    "blog_or_project_only",
+    "unverified_venue"
+  ],
+  "priority_classes": {
+    "P1_FLAGSHIP": {
+      "order": 1,
+      "venues": [
+        "ICLR",
+        "ICML",
+        "NeurIPS",
+        "ACL",
+        "EMNLP",
+        "CVPR",
+        "AAAI",
+        "ECCV"
+      ]
+    },
+    "P1_FIELD_LEADING": {
+      "order": 1,
+      "venues": [
+        "TMLR",
+        "JMLR",
+        "UIST",
+        "FSE",
+        "CoRL",
+        "NAACL",
+        "IEEE TPAMI"
+      ]
+    },
+    "P2_HIGH_QUALITY": {
+      "order": 2,
+      "venues": [
+        "COLM"
+      ]
+    }
+  },
+  "rules": [
+    "Formal pressure lanes require a peer-reviewed publication in an eligible priority class.",
+    "A later peer-reviewed version supersedes an earlier preprint identity for reproduction planning.",
+    "Preprint-only work may remain in historical reproduction storage but is removed from the active formal pressure queue.",
+    "Benchmark adapters may target external benchmark projects, but benchmark identity must be frozen to exact source/data/evaluator cuts.",
+    "Within an eligible venue class, prioritize papers that introduce distinct transferable agent semantics and fill an uncovered lineage edge.",
+    "Do not reproduce near-duplicate papers merely to increase paper count; reproduce them when they add a new mechanism, benchmark regime, or experimental claim."
+  ]
+}

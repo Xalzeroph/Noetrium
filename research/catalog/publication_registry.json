@@ -1,0 +1,568 @@
+{
+  "schema": "noetrium.publication-registry.v1",
+  "updated_at": "2026-09-19",
+  "publications": [
+    {
+      "id": "code-as-policies",
+      "kind": "method",
+      "title": "Code as Policies: Language Model Programs for Embodied Control",
+      "year": 2023,
+      "venue": "ICRA",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FIELD_LEADING",
+      "reproduction_method_id": "code-as-policies",
+      "evidence_url": "https://ieeexplore.ieee.org/document/10160591/"
+    },
+    {
+      "id": "saycan",
+      "kind": "method",
+      "title": "Do As I Can, Not As I Say: Grounding Language in Robotic Affordances",
+      "year": 2022,
+      "venue": "CoRL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FIELD_LEADING",
+      "reproduction_method_id": "saycan",
+      "evidence_url": "https://proceedings.mlr.press/v205/ichter23a.html"
+    },
+    {
+      "id": "chain-of-thought",
+      "kind": "method",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "year": 2022,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "chain-of-thought",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html"
+    },
+    {
+      "id": "minedojo",
+      "kind": "method",
+      "title": "MineDojo: Building Open-Ended Embodied Agents with Internet-Scale Knowledge",
+      "year": 2022,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "minedojo",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/74a67268c5cc5910f64938cac4526a90-Abstract.html"
+    },
+    {
+      "id": "rap",
+      "kind": "method",
+      "title": "Reasoning with Language Model is Planning with World Model",
+      "year": 2023,
+      "venue": "EMNLP",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "rap",
+      "evidence_url": "https://aclanthology.org/2023.emnlp-main.507/"
+    },
+    {
+      "id": "mgsm",
+      "kind": "benchmark",
+      "title": "Language Models are Multilingual Chain-of-Thought Reasoners",
+      "year": 2023,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "benchmark_id": "mgsm",
+      "evidence_url": "https://openreview.net/forum?id=fR3wGCk-IXp"
+    },
+    {
+      "id": "react",
+      "kind": "method",
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "year": 2023,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "react",
+      "evidence_url": "https://openreview.net/forum?id=WE_vluYUL-X"
+    },
+    {
+      "id": "self-consistency",
+      "kind": "method",
+      "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+      "year": 2023,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "self-consistency",
+      "evidence_url": "https://openreview.net/forum?id=1PL1NIMMrw"
+    },
+    {
+      "id": "vima",
+      "kind": "method",
+      "title": "VIMA: Robot Manipulation with Multimodal Prompts",
+      "year": 2023,
+      "venue": "ICML",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "vima",
+      "evidence_url": "https://proceedings.mlr.press/v202/jiang23b.html"
+    },
+    {
+      "id": "camel",
+      "kind": "method",
+      "title": "CAMEL: Communicative Agents for Mind Exploration of Large Language Model Society",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "camel",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2023/file/a3621ee907def47c1b952ade25c67698-Paper-Conference.pdf"
+    },
+    {
+      "id": "deps-minecraft",
+      "kind": "method",
+      "title": "Describe, Explain, Plan and Select: Interactive Planning with LLMs Enables Open-World Multi-Task Agents",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "deps-minecraft",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html"
+    },
+    {
+      "id": "hugginggpt",
+      "kind": "method",
+      "title": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "hugginggpt",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/77c33e6a367922d003ff102ffb92b658-Abstract-Conference.html"
+    },
+    {
+      "id": "mind2web",
+      "kind": "benchmark",
+      "title": "Mind2Web: Towards a Generalist Agent for the Web",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "benchmark_id": "mind2web",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/5950bf290a1570ea401bf98882128160-Abstract-Datasets_and_Benchmarks.html"
+    },
+    {
+      "id": "reflexion",
+      "kind": "method",
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "reflexion",
+      "evidence_url": "https://papers.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html"
+    },
+    {
+      "id": "self-refine",
+      "kind": "method",
+      "title": "Self-Refine: Iterative Refinement with Self-Feedback",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "self-refine",
+      "evidence_url": "https://papers.neurips.cc/paper_files/paper/2023/hash/91edff07232fb1b55a505a9e9f6c0ff3-Abstract-Conference.html"
+    },
+    {
+      "id": "steve-1",
+      "kind": "method",
+      "title": "STEVE-1: A Generative Model for Text-to-Behavior in Minecraft",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "steve-1",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/dd03f856fc7f2efeec8b1c796284561d-Abstract-Conference.html"
+    },
+    {
+      "id": "toolformer",
+      "kind": "method",
+      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "toolformer",
+      "evidence_url": "https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html"
+    },
+    {
+      "id": "tree-of-thoughts",
+      "kind": "method",
+      "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "tree-of-thoughts",
+      "evidence_url": "https://proceedings.neurips.cc/paper/2023/hash/271db9922b8d1f4dd7aaef84ed5ac703-Abstract.html"
+    },
+    {
+      "id": "generative-agents",
+      "kind": "method",
+      "title": "Generative Agents: Interactive Simulacra of Human Behavior",
+      "year": 2023,
+      "venue": "UIST",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FIELD_LEADING",
+      "reproduction_method_id": "generative-agents",
+      "evidence_url": "https://uist.acm.org/2023/proceedings/"
+    },
+    {
+      "id": "chatdev",
+      "kind": "method",
+      "title": "ChatDev: Communicative Agents for Software Development",
+      "year": 2024,
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "chatdev",
+      "evidence_url": "https://aclanthology.org/2024.acl-long.810/"
+    },
+    {
+      "id": "seeclick",
+      "kind": "method",
+      "title": "SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents",
+      "year": 2024,
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "seeclick",
+      "evidence_url": "https://aclanthology.org/2024.acl-long.505/"
+    },
+    {
+      "id": "webvoyager",
+      "kind": "method",
+      "title": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
+      "year": 2024,
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "webvoyager",
+      "evidence_url": "https://aclanthology.org/2024.acl-long.371/"
+    },
+    {
+      "id": "autogen",
+      "kind": "method",
+      "title": "AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation",
+      "year": 2024,
+      "venue": "COLM",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P2_HIGH_QUALITY",
+      "reproduction_method_id": "autogen",
+      "evidence_url": "https://www.microsoft.com/en-us/research/publication/autogen-enabling-next-gen-llm-applications-via-multi-agent-conversation-framework/"
+    },
+    {
+      "id": "cogagent",
+      "kind": "method",
+      "title": "CogAgent: A Visual Language Model for GUI Agents",
+      "year": 2024,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "cogagent",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2024/html/Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024_paper.html"
+    },
+    {
+      "id": "ma-lmm",
+      "kind": "method",
+      "title": "MA-LMM: Memory-Augmented Large Multimodal Model for Long-Term Video Understanding",
+      "year": 2024,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "ma-lmm",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html"
+    },
+    {
+      "id": "moviechat",
+      "kind": "method",
+      "title": "MovieChat: From Dense Token to Sparse Memory for Long Video Understanding",
+      "year": 2024,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "moviechat",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2024/html/Song_MovieChat_From_Dense_Token_to_Sparse_Memory_for_Long_Video_CVPR_2024_paper.html"
+    },
+    {
+      "id": "videoagent-memory",
+      "kind": "method",
+      "title": "VideoAgent: A Memory-augmented Multimodal Agent for Video Understanding",
+      "year": 2024,
+      "venue": "ECCV",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "videoagent-memory",
+      "evidence_url": "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/3241_ECCV_2024_paper.php"
+    },
+    {
+      "id": "metagpt",
+      "kind": "method",
+      "title": "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework",
+      "year": 2024,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "metagpt",
+      "evidence_url": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/6507b115562bb0a305f1958ccc87355a-Abstract-Conference.html"
+    },
+    {
+      "id": "swe-bench",
+      "kind": "benchmark",
+      "title": "SWE-bench: Can Language Models Resolve Real-world Github Issues?",
+      "year": 2024,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "benchmark_id": "swe-bench",
+      "evidence_url": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/edac78c3e300629acfe6cbe9ca88fb84-Abstract-Conference.html"
+    },
+    {
+      "id": "toolbench",
+      "kind": "benchmark",
+      "title": "ToolBench (introduced and evaluated in ToolLLM)",
+      "year": 2024,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "benchmark_id": "toolbench",
+      "evidence_url": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/28e50ee5b72e90b50e7196fde8ea260e-Abstract-Conference.html"
+    },
+    {
+      "id": "toolllm",
+      "kind": "method",
+      "title": "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
+      "year": 2024,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "toolllm",
+      "evidence_url": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/28e50ee5b72e90b50e7196fde8ea260e-Abstract-Conference.html"
+    },
+    {
+      "id": "webarena",
+      "kind": "benchmark",
+      "title": "WebArena: A Realistic Web Environment for Building Autonomous Agents",
+      "year": 2024,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "benchmark_id": "webarena",
+      "evidence_url": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/4410c0711e9154a7a2d26f9b3816d1ef-Abstract-Conference.html"
+    },
+    {
+      "id": "lats",
+      "kind": "method",
+      "title": "Language Agent Tree Search Unifies Reasoning, Acting, and Planning in Language Models",
+      "year": 2024,
+      "venue": "ICML",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "lats",
+      "evidence_url": "https://proceedings.mlr.press/v235/zhou24r.html"
+    },
+    {
+      "id": "storm",
+      "kind": "method",
+      "title": "Assisting in Writing Wikipedia-like Articles From Scratch with Large Language Models",
+      "year": 2024,
+      "venue": "NAACL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FIELD_LEADING",
+      "reproduction_method_id": "storm",
+      "evidence_url": "https://aclanthology.org/2024.naacl-long.347/"
+    },
+    {
+      "id": "osworld",
+      "kind": "benchmark",
+      "title": "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments",
+      "year": 2024,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "benchmark_id": "osworld",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5d413e48f84dc61244b6be550f1cd8f5-Abstract-Datasets_and_Benchmarks_Track.html"
+    },
+    {
+      "id": "swe-agent",
+      "kind": "method",
+      "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+      "year": 2024,
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "swe-agent",
+      "evidence_url": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5a7c947568c1b1328ccc5230172e1e7c-Abstract-Conference.html"
+    },
+    {
+      "id": "voyager",
+      "kind": "method",
+      "title": "Voyager: An Open-Ended Embodied Agent with Large Language Models",
+      "year": 2024,
+      "venue": "TMLR",
+      "publication_status": "peer_reviewed_journal",
+      "priority_class": "P1_FIELD_LEADING",
+      "reproduction_method_id": "voyager",
+      "evidence_url": "https://mlanthology.org/tmlr/2024/wang2024tmlr-voyager/"
+    },
+    {
+      "id": "adacm2",
+      "kind": "method",
+      "title": "AdaCM2: On Understanding Extremely Long-Term Video with Adaptive Cross-Modality Memory",
+      "year": 2025,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "adacm2",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html"
+    },
+    {
+      "id": "agentless",
+      "kind": "method",
+      "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+      "year": 2025,
+      "venue": "FSE",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FIELD_LEADING",
+      "reproduction_method_id": "agentless",
+      "evidence_url": "https://conf.researchr.org/details/fse-2025/fse-2025-research-papers/85/Demystifying-LLM-based-Software-Engineering-Agents"
+    },
+    {
+      "id": "adas-meta-agent-search",
+      "kind": "method",
+      "title": "Automated Design of Agentic Systems",
+      "year": 2025,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "adas-meta-agent-search",
+      "evidence_url": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/36b7acf6f6010652b3f2a433774a66fe-Abstract-Conference.html"
+    },
+    {
+      "id": "aflow",
+      "kind": "method",
+      "title": "AFlow: Automating Agentic Workflow Generation",
+      "year": 2025,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "aflow",
+      "evidence_url": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/5492ecbce4439401798dcd2c90be94cd-Abstract-Conference.html"
+    },
+    {
+      "id": "agentsquare",
+      "kind": "method",
+      "title": "AgentSquare: Automatic LLM Agent Search in Modular Design Space",
+      "year": 2025,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "agentsquare",
+      "evidence_url": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/0ae94013da7cd459402fd77874e09ee3-Abstract-Conference.html"
+    },
+    {
+      "id": "flow-modularized-agentic-workflow",
+      "kind": "method",
+      "title": "Flow: Modularized Agentic Workflow Automation",
+      "year": 2025,
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "flow-modularized-agentic-workflow",
+      "evidence_url": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html"
+    },
+    {
+      "id": "qlass",
+      "kind": "method",
+      "title": "QLASS: Boosting Language Agent Inference via Q-Guided Stepwise Search",
+      "year": 2025,
+      "venue": "ICML",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "qlass",
+      "evidence_url": "https://proceedings.mlr.press/v267/lin25l.html"
+    },
+    {
+      "id": "jarvis1",
+      "kind": "method",
+      "title": "JARVIS-1: Open-World Multi-Task Agents With Memory-Augmented Multimodal Language Models",
+      "year": 2025,
+      "venue": "IEEE TPAMI",
+      "publication_status": "peer_reviewed_journal",
+      "priority_class": "P1_FIELD_LEADING",
+      "reproduction_method_id": "jarvis1",
+      "evidence_url": "https://ieeexplore.ieee.org/document/10778628/"
+    },
+    {
+      "id": "rewind",
+      "kind": "method",
+      "title": "ReWind: Understanding Long Videos with Instructed Learnable Memory",
+      "year": 2025,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "rewind",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2025/html/Diko_ReWind_Understanding_Long_Videos_with_Instructed_Learnable_Memory_CVPR_2025_paper.html"
+    },
+    {
+      "id": "egolifeqa",
+      "kind": "benchmark",
+      "title": "EgoLife: Towards Egocentric Life Assistant",
+      "year": 2025,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "benchmark_id": "egolifeqa",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2025/html/Yang_EgoLife_Towards_Egocentric_Life_Assistant_CVPR_2025_paper.html"
+    },
+    {
+      "id": "worldmm",
+      "kind": "method",
+      "title": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
+      "year": 2026,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "worldmm",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2026/html/Yeo_WorldMM_Dynamic_Multimodal_Memory_Agent_for_Long_Video_Reasoning_CVPR_2026_paper.html"
+    }
+  ],
+  "explicitly_ineligible_current_items": [
+    {
+      "method_id": "memgpt",
+      "reason": "preprint-only publication identity in the current reproduction"
+    },
+    {
+      "method_id": "ui-tars",
+      "reason": "current paper is arXiv/preprint-only"
+    },
+    {
+      "method_id": "ai-scientist",
+      "reason": "current v1 paper is arXiv/preprint-only"
+    },
+    {
+      "method_id": "ai-scientist-v2",
+      "reason": "not admitted until a qualifying peer-reviewed publication is verified"
+    },
+    {
+      "method_id": "agent-q",
+      "reason": "not admitted until a qualifying peer-reviewed publication is verified"
+    },
+    {
+      "method_id": "gats",
+      "reason": "current item is a 2026 arXiv preprint"
+    },
+    {
+      "method_id": "lits",
+      "reason": "current item is a 2026 arXiv preprint"
+    },
+    {
+      "method_id": "mars-automated-ai-research",
+      "reason": "current item is a 2026 arXiv preprint"
+    }
+  ]
+}

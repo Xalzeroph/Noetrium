@@ -1,0 +1,150 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "qlass_alfworld",
+  "package_digest": "bdc6b65c4c094ebbcddf8aefbb53f290256448bcf3fd5deb250baa842c2b628c",
+  "definition_digest": "642b47b129134e83545d813fd590138c3b6321442077a778d5ae66e6e471a728",
+  "source_registry_digest": "819fd0e885a29c9300eee6b6c1b86d1cea8854f8e10d988bf56fb3022f71ed29",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "qlass",
+    "title": "QLASS: Boosting Language Agent Inference via Q-Guided Stepwise Search",
+    "paper_uri": "https://proceedings.mlr.press/v267/lin25l.html",
+    "year": 2025,
+    "paper_revision": "arXiv:2502.02584 / ICML 2025",
+    "identity_digest": "777a7e6d464cfbbf38cb3f3ec32191b14d40ea67e77e15d3486eb1ba1ceeea06"
+  },
+  "catalog": {
+    "domains": [
+      "evaluation-benchmarks",
+      "planning-search",
+      "training"
+    ],
+    "families": [
+      "planning",
+      "process_reward",
+      "q_guided_inference",
+      "search"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "alfworld",
+      "webshop"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/text_world",
+      "experimentation/study",
+      "model/assignment",
+      "model/request"
+    ],
+    "method_owned": [
+      "Q-Net trajectory value estimation",
+      "Q-guided candidate selection",
+      "self-exploration and Q-training semantics",
+      "stepwise best-of-N action search"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "environment execution and replay evidence",
+      "named model-role binding",
+      "study expansion and measurements"
+    ],
+    "reference_repositories": [
+      "https://github.com/Rafa-zy/QLASS"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "28e2644639dc4db3c0d04a48ada0671f21a76b2ced013dad2f0e561cf4c53596"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "later_released_qlass_code",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/Rafa-zy/QLASS",
+      "commit": "df8e6a3b840d1ea994114f13fc2d5ccd63b7a8e9",
+      "artifacts": [
+        "data/q_guided_inference_wo_perturbation.py",
+        "eval_agent/tasks/alfworld.py",
+        "qlass/q_guided_inference.py",
+        "qlass/scripts/eval_q_wo_perturb_7b_alfworld.sh"
+      ],
+      "lane_digest": "cfaffc2285d65a37472bdca9736cefd4e5b09fe937d745edfb010df11ed51192"
+    },
+    {
+      "lane_id": "paper_era_repository_state",
+      "kind": "paper_provenance",
+      "repository": "https://github.com/Rafa-zy/QLASS",
+      "commit": "65a291d3964a7f14a34cc274a28ca31636405334",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "647ff0034c6def4c572ea1f348ea6584fbbefc98a796c1f4c5f28b9a000816ae"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/qlass_alfworld/fidelity.py",
+      "declaration_digest": "244eecde7ff1f8041f5b2b778b6d981f8bcf31b43c6ce4d97e78e9e0baa37232",
+      "content_sha256": "65dc26d90b5b8c2acca4d36381c418f4ab51562863a7d085ea42b4dc4a331fb3"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/qlass_alfworld/program.py",
+      "declaration_digest": "e4522932c78db1d96a6a71e417332c218b46e1b501328a14347dc56281c04680",
+      "content_sha256": "25c0f6124f00bd8501614f1938d9404b1ca9b2ad01bda2415229bd2436ce5999"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/qlass_alfworld/study.py",
+      "declaration_digest": "6db408004daff0eeefcbfdec27dd76481084f3594c37d35dec94880b018a4027",
+      "content_sha256": "5725de9de3324d2799d1b203feaefe7bb3199937f07f2b25bd73036769e78852"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/qlass_alfworld/branch.py",
+      "declaration_digest": "8237e2be878a95ecb8a917e4e02b8fc5b2f53b906e8a974e55794b3a76fa1559",
+      "content_sha256": "f8c837a11cb03e183282a2946e3ea42fb44f359a6776faaa4b65dc5f6822a14d"
+    }
+  ],
+  "primary_executable": "research/reproductions/qlass_alfworld/program.py",
+  "reported_results": [],
+  "reference_baselines": [
+    {
+      "baseline_id": "sft_policy",
+      "description": "SFT policy inference without Q-guided stepwise candidate selection",
+      "qualifiers": {},
+      "baseline_digest": "18e730069d5157cb4ba1da6ffbce0d4f818f1c24153c0a1f51a55d87e2a76ef7"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "exact model artifact revisions/checkpoint digests for the released SFT policy and Q-Net are not yet bound",
+      "delta_digest": "5eebae04a760d1b2c2f25e5399c661a05892617a83aa79682a38b06531225019"
+    },
+    {
+      "kind": "unresolved",
+      "description": "released launcher is not runnable as written under its documented four-GPU assumption without correcting model-name and evaluator GPU mapping",
+      "delta_digest": "ac9f051ab8e284bcbf4525d14e4c6e20b26d973c2ffc86b6fb70dfe054b70215"
+    }
+  ],
+  "blockers": [
+    "paper-era source cut contains no executable training/evaluation implementation",
+    "released policy and Q-Net model artifact revisions are not yet content-addressed in Noetrium",
+    "matched ALFWorld dev deployment remains to be bound",
+    "released launcher references undefined explore_model_name when passing --model_name",
+    "released four-slice evaluator maps CUDA devices to 1,2,3,4 while the documented four-GPU server allocation is 0,1,2,3"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_qlass_alfworld_v1.py",
+      "content_sha256": "79fece2b32a2ee45ea202094ba373e3e4cc7cb45bb6e902878625b4942567fab"
+    },
+    {
+      "path": "tests/test_scientific_qlass_method_program_v1.py",
+      "content_sha256": "272e4fa33cdaeea5193dbbd843816249c9d4dff215b32d4035d5fd6321cbf0fe"
+    }
+  ]
+}

@@ -5,12 +5,12 @@ from tests_support import context_action_runtime
 
 from tests_support import context_action_spec
 
-from research_platform.environment.runtime.api import action_request_digest, ActionResult, EnvironmentIdentity, Observation
-from research_platform.platform.kernel import EffectCertainty, EffectClass, EffectReceipt
-from research_platform.participant.method.api import MethodIdentity, RecallResult
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentSpec
-from research_platform.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
+from noetrium_platform.capabilities.environment.runtime.api import action_request_digest, ActionResult, EnvironmentIdentity, Observation
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
 
 
 class MethodSession:
@@ -21,7 +21,7 @@ class MethodSession:
 
 
 class Method:
-    identity=MethodIdentity("m", "1", "1", "1", "mcfg")
+    identity=MethodIdentity("m", "1", "1", "1", "c" * 64)
     def open_session(self, *, session_id, services): return MethodSession()
 
 
@@ -38,12 +38,12 @@ class EnvironmentSession:
 
 
 class Environment:
-    identity=EnvironmentIdentity("e", "1", "1", "1", "ecfg")
+    identity=EnvironmentIdentity("e", "1", "1", "1", "e" * 64)
     def open_session(self, *, session_id, services): return EnvironmentSession()
 
 
 def spec():
-    return context_action_spec(study_id="s", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1, method_artifact_digest="mcfg", environment_artifact_digest="ecfg")
+    return context_action_spec(study_id="s", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1, method_artifact_digest="c" * 64, environment_artifact_digest="e" * 64)
 
 
 def runtime(provider=None):

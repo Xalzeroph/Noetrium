@@ -1,0 +1,104 @@
+name: canonical-projection-sync
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      # Keep this trigger aligned with the source sets scanned by the canonical
+      # projection generators. A source that can change a derived architecture
+      # map must be able to trigger its regeneration.
+      - "noetrium_platform/**"
+      - "noetrium/**"
+      - "components/**"
+      - "orchestration/**"
+      - "research/**"
+      - "scripts/**"
+      - "sdk/**"
+      - "examples/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - ".github/workflows/canonical_projection_sync.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: canonical-projection-main
+  cancel-in-progress: true
+
+jobs:
+  project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Converge canonical projections
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for attempt in 1 2 3 4 5; do
+            echo "projection convergence attempt ${attempt}"
+            git fetch origin main
+            git reset --hard origin/main
+
+            # main may have advanced to a source cut with new optional generator
+            # dependencies. Reinstalling the editable package keeps the retry
+            # loop bound to the exact cut it is projecting.
+            python -m pip install -e .
+
+            python scripts/sync_benchmark_manifests.py
+            python scripts/sync_reproductions.py
+            python scripts/sync_research_pressure.py
+            python scripts/sync_publication_priority.py
+            python scripts/sync_research_program.py
+            python scripts/sync_lineage_status.py
+            python scripts/update_generated_docs.py
+            python scripts/sync_architecture_maps.py
+
+            python scripts/sync_benchmark_manifests.py --check
+            python scripts/sync_reproductions.py --check
+            python scripts/sync_research_pressure.py --check
+            python scripts/sync_publication_priority.py --check --enforce
+            python scripts/sync_research_program.py --check
+            python scripts/sync_lineage_status.py --check
+            python scripts/update_generated_docs.py --check
+            python scripts/sync_architecture_maps.py --check
+
+            if git diff --quiet; then
+              echo "Canonical projections are current."
+              exit 0
+            fi
+
+            source_sha="$(git rev-parse HEAD)"
+            git add -A
+            git commit -m "chore(projections): refresh canonical derived artifacts"
+
+            # The lease binds the projection commit to the exact source head it
+            # was generated from. If main advances between fetch and push, do
+            # not publish a stale projection; reset to the new head and rebuild.
+            if git push \
+              --force-with-lease="refs/heads/main:${source_sha}" \
+              origin HEAD:main; then
+              echo "Published projection for source cut ${source_sha}."
+              exit 0
+            fi
+
+            echo "main advanced during projection publication; retrying"
+          done
+
+          echo "Projection convergence did not stabilize after 5 attempts."
+          exit 1

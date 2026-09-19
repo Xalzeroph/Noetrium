@@ -1,5 +1,5 @@
 import unittest
-from research_platform.governance.architecture import DataflowAudit, DataflowEdge
+from noetrium_platform.foundation.governance.architecture import DataflowAudit, DataflowEdge
 class DataflowTests(unittest.TestCase):
     def test_private_eval_to_method_is_rejected(self):
         e=(DataflowEdge("eval","j_eval","method","method_memory","bad"),)

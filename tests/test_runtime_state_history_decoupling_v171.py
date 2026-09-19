@@ -5,12 +5,12 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.execution.runtime.manager.history import RuntimeHistory
-from research_platform.execution.runtime.manager.runtime_history_storage import FileRuntimeHistoryStorage
-from research_platform.execution.runtime.manager.runtime_state_contracts import RuntimeTxnPhase
-from research_platform.execution.runtime.manager.runtime_state_storage import FileRuntimeControlStateStore
-from research_platform.execution.runtime.manager.state import RuntimeControlStore
-from research_platform.execution.runtime.manager.status_readers import RuntimeControlStatusReader
+from noetrium_platform.infrastructure.lifecycle.launch_control.history import RuntimeHistory
+from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_history_storage import FileRuntimeHistoryStorage
+from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_state_contracts import RuntimeTxnPhase
+from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_state_storage import FileRuntimeControlStateStore
+from noetrium_platform.infrastructure.lifecycle.launch_control.state import RuntimeControlStore
+from noetrium_platform.infrastructure.lifecycle.launch_control.status_readers import RuntimeControlStatusReader
 
 
 class RuntimeStateHistoryDecouplingV171Tests(unittest.TestCase):

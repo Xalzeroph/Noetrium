@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.model.request.prompt.runtime import DurablePromptRegistry, PromptPromotionEvidence, PromptPublicationError, PromptQualification, default_block_policies, default_output_schemas, default_prompt_specs
+from noetrium_platform.capabilities.model.request.prompt.runtime import DurablePromptRegistry, PromptPromotionEvidence, PromptPublicationError, PromptQualification, default_block_policies, default_output_schemas, default_prompt_specs
 
 MODEL=("m","rev","sglang","1","bfloat16",None,262144,"tok")
 SUITE="c"*64

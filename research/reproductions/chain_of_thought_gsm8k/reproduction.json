@@ -1,0 +1,147 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "chain_of_thought_gsm8k",
+  "package_digest": "3f8d3940b539860289a8aa80e5be9cdb5dc8f9dfffa800d37bd454d7ccebd0ae",
+  "definition_digest": "4b050c215ba40a6e8ad4cee49eef3b248572a0a69b600979631a139b487ce82a",
+  "source_registry_digest": "fc74cb2f69f422446062876d3fb62441e1e3d08543aa287d805a02c23927870d",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "chain-of-thought",
+    "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html",
+    "year": 2022,
+    "paper_revision": "NeurIPS 2022 final",
+    "identity_digest": "ec41568d8422d65ef7b35200b9e70304d3390e379be78b6093dc082737e673ee"
+  },
+  "catalog": {
+    "domains": [
+      "reasoning"
+    ],
+    "families": [
+      "chain_of_thought",
+      "few_shot_prompting",
+      "reasoning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "gsm8k"
+    ],
+    "platform_pressure": [
+      "experimentation/evaluation",
+      "experimentation/study",
+      "model/request",
+      "participant/method",
+      "research/provenance"
+    ],
+    "method_owned": [
+      "eight-shot chain-of-thought exemplar prompt",
+      "single greedy reasoning-path generation"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "isolated exact-answer evaluation",
+      "measurement evidence",
+      "model invocation",
+      "publication provenance"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://proceedings.neurips.cc/paper_files/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html"
+    ],
+    "catalog_digest": "897581562aa74cd58784880bd9a0241372a006fe78890fbf8e1db704b3af70b4"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "neurips_2022_final",
+      "kind": "paper_provenance",
+      "venue": "NeurIPS",
+      "year": 2022,
+      "publication_id": "9d5609613524ecf4f15af0f7b31abca4",
+      "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html",
+      "revision": "final conference version",
+      "content_sha256": null,
+      "lane_digest": "1bdfa39c8e1bb2628c1cf980c7db0bf386ac2487222a12463ebef2a0aa389ecb"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/chain_of_thought_gsm8k/fidelity.py",
+      "declaration_digest": "6ecb01bb57797d404f8a9b26fded04403ba7538f1fe2c1241c908e9cbd3dfb51",
+      "content_sha256": "4c81e3972b8fe1fe39a0785b57b88aaecfd985f0ba075ba10818fa2dbbf00a4f"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/chain_of_thought_gsm8k/program.py",
+      "declaration_digest": "37dda7a88dd2dece6b315bf038ba39c308db2f60a7e9d7bbfbd14b1a8538a4bd",
+      "content_sha256": "fd638092b8aee198c6fb251e60dce73b419e71e9784fa5018528a795c05d7869"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/chain_of_thought_gsm8k/study.py",
+      "declaration_digest": "9e17358c95e861af881e6ec09d6f8c4c63fe7431f2e1a450718b52c498402d1e",
+      "content_sha256": "2eded181edd24dddb57dc12ccec28fc56845354220d8aca3830d16781079d52e"
+    }
+  ],
+  "primary_executable": "research/reproductions/chain_of_thought_gsm8k/program.py",
+  "reported_results": [
+    {
+      "claim_id": "palm540b_cot_gsm8k",
+      "metric_id": "task_success_percent",
+      "value": 56.9,
+      "qualifiers": {
+        "model": "PaLM-540B",
+        "benchmark": "GSM8K",
+        "prompt": "8-shot chain-of-thought",
+        "decoding": "greedy",
+        "calculator": false
+      },
+      "claim_digest": "c391690a550882cd2c3eac7861e29ddf7798b3e5841caada622008bf838b0137"
+    },
+    {
+      "claim_id": "palm540b_standard_gsm8k",
+      "metric_id": "task_success_percent",
+      "value": 17.9,
+      "qualifiers": {
+        "model": "PaLM-540B",
+        "benchmark": "GSM8K",
+        "prompt": "8-shot standard",
+        "decoding": "greedy"
+      },
+      "claim_digest": "12f02e25455e733e45d1a3baeb2d50d97c00fee03872641a229cd8993cc0ad83"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "standard_eight_shot_prompting",
+      "description": "same eight arithmetic exemplars without intermediate chain-of-thought reasoning",
+      "qualifiers": {
+        "model": "PaLM-540B",
+        "benchmark": "GSM8K"
+      },
+      "baseline_digest": "b4437c04db99f777f9776288cb2c08aa77952eb249ea2401d8c65ad5a427e493"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "the historical PaLM-540B serving snapshot is not available as a public immutable model artifact",
+      "delta_digest": "7730a5f5672dd434f867c387ccff2e195bbbe6a739047331ac8a0cc338bed3f0"
+    }
+  ],
+  "blockers": [
+    "exact historical PaLM-540B provider artifact is unavailable for matched execution"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_chain_of_thought_gsm8k_v1.py",
+      "content_sha256": "d456d90415f46fbbee32b252366956b3217107b1fe6f47917e54734b02de3780"
+    },
+    {
+      "path": "tests/test_scientific_gsm8k_cut_v1.py",
+      "content_sha256": "593a3793fc73eedab6662f15a35fae13f4752294c0ca61f1c0cdbaf08d68e177"
+    }
+  ]
+}

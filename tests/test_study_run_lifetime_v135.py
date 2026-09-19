@@ -12,15 +12,15 @@ import tempfile
 
 import pytest
 
-from research_platform.environment.runtime.api import ActionRequest, ActionResult, EnvironmentIdentity, Observation, action_request_digest
-from research_platform.platform.kernel import EffectCertainty, EffectClass, EffectReceipt
-from research_platform.participant.method.api import MethodIdentity, MethodSnapshot, MethodTaskCompletionReceipt, RecallResult
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentSpec
-from research_platform.experimentation.run.identity.api import RunIdentity
-from research_platform.experimentation.checkpoint.providers import DirectoryRunCheckpointStore
-from research_platform.execution.decision.cycle_identity import DecisionCycleIdentity
-from research_platform.experimentation.run.lifecycle.runtime.state import RunRecoveryRequired
+from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, ActionResult, EnvironmentIdentity, Observation, action_request_digest
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, MethodTaskCompletionReceipt, RecallResult
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.checkpoint.providers import DirectoryRunCheckpointStore
+from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.experimentation.run.lifecycle.api import RunRecoveryRequired
 
 
 class MethodSession:
@@ -84,7 +84,7 @@ def registries(mo,eo):
     return mr,er
 
 
-def spec(): return context_action_spec(study_id="study", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1)
+def spec(): return context_action_spec(study_id="study", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1)
 
 
 def test_long_lived_run_opens_once_checkpoints_each_cycle_and_restores_exact_cut():
@@ -108,7 +108,7 @@ def test_long_lived_run_opens_once_checkpoints_each_cycle_and_restores_exact_cut
         assert any(op.operation_id == "dc2:run.checkpoint.publish" for op in r2.operation_results)
         cp2=run.latest_checkpoint_id
         assert cp2 and cp2 != cp1
-        assert run.state.last_context is not None and run.state.last_context.checkpoint_id == cp2
+        assert run.last_context is not None and run.last_context.checkpoint_id == cp2
         run.close()
         assert mo.close_count == eo.close_count == 1
 
@@ -119,8 +119,8 @@ def test_long_lived_run_opens_once_checkpoints_each_cycle_and_restores_exact_cut
         )
         assert mo2.sessions[0].completed == 1
         assert eo2.sessions[0].actions == 1
-        assert restored.state.last_context is not None
-        assert restored.state.last_context.checkpoint_id == cp1
+        assert restored.last_context is not None
+        assert restored.last_context.checkpoint_id == cp1
         replay=restored.execute(task="two",input_kind="move",input_payload={},cycle_identity=c2)
         assert replay.context_text == "completed=1"
         assert mo2.sessions[0].completed == 2

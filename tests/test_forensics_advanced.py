@@ -3,15 +3,15 @@ import json
 import tempfile
 import unittest
 
-from research_platform.reliability.failure.api import DEFAULT_FAILURE_CATALOG, RecoveryAction
-from research_platform.observability.api import EventEnvelope
-from research_platform.reliability.forensics.runtime import CrashBundleBuilder, FailureRecorder
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.api import MutationRecord
-from research_platform.reliability.failure.api import build_failure
-from research_platform.platform.kernel.errors import describe_exception, redact_text, redact_value
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.governance.quality import scan_silent_failures
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.failure.api import DEFAULT_FAILURE_CATALOG, RecoveryAction
+from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.infrastructure.reliability.forensics.runtime import CrashBundleBuilder, FailureRecorder
+from noetrium_platform.infrastructure.reliability.forensics.api import MutationRecord
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure
+from noetrium_platform.foundation.kernel.kernel.errors import describe_exception, redact_text, redact_value
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.foundation.governance.quality import scan_silent_failures
 
 
 class ForensicsAdvancedTests(unittest.TestCase):
@@ -54,7 +54,7 @@ class ForensicsAdvancedTests(unittest.TestCase):
             failure=outcome.failure
             self.assertEqual(store.verify_all()["failures"][0],1)
             self.assertEqual(store.verify_all()["events"][0],1)
-            self.assertEqual(store.index.locate(failure.failure_id)["failure_code"],"OUTPUT_CONTRACT")
+            self.assertEqual(store.index.locate(failure.failure_id).to_payload()["failure_code"],"OUTPUT_CONTRACT")
 
     def test_crash_bundle_contains_verified_tails_and_writers(self):
         with tempfile.TemporaryDirectory() as td:
@@ -106,14 +106,14 @@ def test_failure_recorder_replay_is_one_authoritative_failure_and_one_materializ
         )
         assert first.failure.failure_id == second.failure.failure_id
         assert store.verify_all()["failures"][0] == 1
-        events = store.events.verified_payloads_after(0)[3]
+        events = store.events.verified_payloads_after(0).payloads
         materialized = [row for row in events if row["event_type"] == "FAILURE_RECORDED"]
         assert len(materialized) == 1
         store.close()
 
 
 def test_failure_identity_separates_component_and_operation_invocation():
-    from research_platform.reliability.failure.api import build_failure
+    from noetrium_platform.infrastructure.reliability.failure.api import build_failure
 
     ctx = ExecutionContext("run", "trace", "span")
     common = dict(

@@ -3,11 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 import unittest
 
-from research_platform.reliability.failure.api import DEFAULT_FAILURE_CATALOG, FailureCatalog, FailureSpec, RecoveryAction
+from noetrium_platform.infrastructure.reliability.failure.api import DEFAULT_FAILURE_CATALOG, FailureCatalog, FailureSpec, RecoveryAction
 
-from research_platform.reliability.forensics.runtime import FailureCatalogSourceAudit
-from research_platform.reliability.primitives import CrashClass
-from research_platform.platform.composition.service_crash_failure import SERVICE_CRASH_FAILURE_CODES
+from noetrium_platform.infrastructure.reliability.forensics.runtime import FailureCatalogSourceAudit
+from noetrium_platform.infrastructure.reliability.primitives import CrashClass
+from noetrium_platform.composition.service_crash_failure import SERVICE_CRASH_FAILURE_CODES
 
 
 class FailureCatalogV83Tests(unittest.TestCase):
@@ -22,7 +22,7 @@ class FailureCatalogV83Tests(unittest.TestCase):
             c.register(FailureSpec("X","CODE","stage_b",RecoveryAction.RETRY_OPERATION))
 
     def test_current_source_literal_taxonomy_is_registered(self):
-        root=Path(__file__).resolve().parents[1]/"research_platform"
+        root=Path(__file__).resolve().parents[1]/"noetrium_platform"
         report=FailureCatalogSourceAudit(root,DEFAULT_FAILURE_CATALOG).run()
         self.assertEqual(report.errors,())
         self.assertGreaterEqual(len(DEFAULT_FAILURE_CATALOG.all()), 1)

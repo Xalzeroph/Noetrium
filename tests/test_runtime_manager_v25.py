@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.execution.runtime.manager import ExactRuntimeController, RuntimeAction, RuntimeControlError, RuntimeControlStore, RuntimeTxnPhase, exact_runtime_plan
+from noetrium_platform.infrastructure.lifecycle.launch_control import ExactRuntimeController, RuntimeAction, RuntimeControlError, RuntimeControlStore, RuntimeTxnPhase, exact_runtime_plan
 from tests_support import frozen_runtime_manifest
 
 

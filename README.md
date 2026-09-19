@@ -1,205 +1,499 @@
-# Research Platform — Current Development Worktree
+# Noetrium Research OS: Evidence-Preserving Infrastructure for AI-Agent Research
 
-> **Current development truth:** see `docs/CURRENT_DEVELOPMENT_BASELINE.md`. The current worktree collects **709 tests** and the latest completed development regression is **709 passed + 4 subtests** with Architecture / Silent-Failure / No-Degradation gates all passing.
->
-> **Current release truth (last verified release):** `RELEASE_MANIFEST.json` + `RELEASE_EVIDENCE.json` remain the authority for the last frozen release (`f18faec8c497...`, 675/675 tests). Ordinary development snapshots do **not** rewrite release evidence.
->
-> **Official freeze workflow:** `python scripts/generate_release_evidence.py` → `python scripts/verify_release_evidence.py` → `python scripts/release_package.py` → `python scripts/verify_release_package.py <zip>`. An ad-hoc source ZIP is never a verified release.
 
-## Current focus
 
-The platform is now contract-driven and composition-root assembled. The current development cycle absorbed selected DeepSeek Harness runtime patterns without adopting Cordis or an "everything is a plugin" model:
+<!-- readme-nav:start -->
+<p align="center">
+  <strong>English</strong> ·
+  <a href="README.zh-CN.md">简体中文</a> ·
+  <a href="README.zh-TW.md">繁體中文</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.ko.md">한국어</a> ·
+  <a href="README.es.md">Español</a> ·
+  <a href="README.pt-BR.md">Português (Brasil)</a> ·
+  <a href="README.fr.md">Français</a> ·
+  <a href="README.de.md">Deutsch</a> ·
+  <a href="README.ru.md">Русский</a>
+</p>
+<!-- readme-nav:end -->
 
-- reconstructable model-visible requests (`model_request_api/runtime`);
-- scope-owned reversible registrations with quiescent disposal (`scope_api/runtime`);
-- monotonic-guard capability invocation policy around the existing effect-safe engine (`capability_runtime`);
-- watermark/version-bound incremental projections (`projection_api/runtime`);
-- generated capability / operation / event seam graphs in the architecture report;
-- explicit Durable-Fact / Live-Interception / Side-Plane-Observation record planes.
 
-See `docs/HARNESS_PATTERN_ADOPTION.md`, `docs/PLATFORM_ARCHITECTURE.md`, `docs/CURRENT_ARCHITECTURE_EVOLUTION_20260820.md`, and `docs/CURRENT_DEVELOPMENT_BASELINE.md` for the current design.
 
-## Historical refactor record
+<!-- readme-locale:en -->
 
-## Round 56 — Durable Service Crash Handoff
+<!-- readme-source-sha256:fabe8497c94bc9dc2dc59f1f677c18730d46a6b53dd6b9d270679420ccd3a57d -->
 
-- Added durable two-phase service crash coordination.
-- Crash evidence is frozen first; no recovery is executed inside crash capture.
-- Added idempotent forensic `append_failure_once()` against authoritative hash ledger.
-- Added replayable crash handoff journal with phases:
-  `PREPARED -> FAILURE_DURABLE -> STATE_COMMITTED -> COMPLETE`.
-- Added idempotent service-state commit carrying the exact forensic `failure_id`.
-- Fault-injection coverage includes:
-  - crash after forensic append but before journal advance;
-  - crash after service state commit but before journal advance;
-  - immutable contract drift before replay.
-- Full regression: **204 passed**.
-- Gates: Architecture / Silent-Failure / No-Degradation **PASS**.
+<p align="center">
+  <strong>Compose research systems. Run attributable executions. Verify evidence.</strong><br>
+  A Research Operating System for reproducible, recoverable, evidence-driven AI-agent research.
+</p>
 
+<p align="center">
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="examples/README.md">Example</a> ·
+  <a href="docs/architecture/PLATFORM_ARCHITECTURE.md">Architecture</a> ·
+  <a href="docs/INDEX.md">Docs</a> ·
+  <a href="#verification">Verification</a>
+</p>
 
-## Round 74
-Cumulative platform refactor snapshot. Full regression and architecture/silent-failure/no-degradation gates passed for this round.
+<p align="center">
+  <a href="https://www.python.org/"><img alt="Python >=3.11" src="https://img.shields.io/badge/Python-%3E%3D3.11-3776AB?logo=python&logoColor=white"></a>
+  <a href="pyproject.toml"><img alt="Version 0.44.0" src="https://img.shields.io/badge/version-0.44.0-blue"></a>
+  <a href="docs/architecture/PLATFORM_ARCHITECTURE.md"><img alt="Contract-driven architecture" src="https://img.shields.io/badge/architecture-contract--driven-6f42c1"></a>
+  <a href="LICENSE"><img alt="Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-green"></a>
+</p>
 
+<!-- readme-section:overview -->
 
-## Round 75
-Prompt compile pipeline split into validation, strict budgeting, rendering, and schema binding. Full regression/gates PASS.
+## Overview
 
+Noetrium is best understood as a Research Operating System, not as another agent workflow library. Its job is to make a long-running research execution attributable, recoverable, replayable, and bounded by explicit authority. A method, model, environment, tool, or orchestration framework can change behind typed ports; the identity of the run, the facts it commits, the effects it caused, and the evidence that supports a claim remain explicit.
 
-## Round 77
-Cumulative validated refactor. Full regression and Architecture / Silent-Failure / No-Degradation gates PASS.
+The platform is organized around one directional dependency:
 
+**research intent -> composition -> compiled identity -> kernel-controlled transitions -> durable evidence -> inspection, recovery, replay, and verification.**
 
-## Round 79
-Cumulative validated refactor. Full regression and Architecture / Silent-Failure / No-Degradation gates PASS.
+The implementation is deliberately layered. The Kernel owns the smallest irreducible execution semantics. Domain VMs own domain state machines. Typed capability services and replaceable providers supply external abilities. Composition roots assemble these pieces. Projections, reports, and operator surfaces observe the result without becoming a second source of truth.
 
+This gives Noetrium a larger scope than an agent SDK while keeping a narrower semantic boundary than a general-purpose application platform. It covers the reusable substrate around agent research: experiment and run identity, machine lifecycle, model and environment bindings, durable memory and artifacts, checkpointing and recovery, external-effect certainty, observability, governance, deployment, and release evidence. It does not decide what a downstream paper means, which scientific hypothesis is correct, or which trading or production action should be taken.
 
-## Round 80
-Metric emitter source coverage audit + real extended Prompt trace emission. Full regression/gates PASS.
+**Noetrium owns:**
 
+- canonical identities, version binding, composition, and executable plan compilation;
+- machine lifecycle, transition commit, journal and snapshot semantics, replay, inspection, leases, fencing, and recovery boundaries;
+- typed capability contracts, provider bindings, scope and resource constraints, readiness, and failure taxonomy;
+- artifacts, evidence, lineage, metrics, diagnostics, release manifests, and exact-revision verification;
+- reusable execution support for stateful environments, long-running processes, model requests, memory, orchestration, and containerized workloads.
 
-## Round 81
-Real runtime/one-click metric emission through low-level observability API. Full regression/gates PASS.
+**A downstream project owns:**
 
+- the research method, task and benchmark semantics, prompts, policies, and scientific protocol;
+- project-specific providers, credentials, deployment inventory, and external service choices;
+- the experiment matrix, statistical analysis, interpretation, and claims.
 
-## Round 82
-Durable exact recovery emits real attempt/duration/step metrics across failure and reconcile resume. Full regression/gates PASS.
+The boundary is intentionally one-way: downstream projects compose Noetrium; Noetrium does not import a downstream project to obtain scientific meaning.
 
+<!-- readme-section:why -->
 
-## Round 83 — Failure Catalog Authority
+## Why Noetrium?
 
-- FailureCatalog now rejects semantic drift for the same `(domain, code)` across stages.
-- Model-service crash taxonomy is registered centrally instead of carrying free-form recovery/risk semantics.
-- Added source audit for literal failure taxonomy usage.
-- Service crash projection resolves recovery/risk from the catalog.
-- Full regression: **242 passed**.
-- Architecture / Silent-Failure / No-Degradation: **PASS**.
+Most agent frameworks focus on how agents act or collaborate. Noetrium focuses on whether research executions remain attributable, recoverable, reproducible, and evidence-bound. It can sit underneath or alongside orchestration frameworks rather than replacing them.
 
+### Where Noetrium fits
 
-## Round 84 — Operator Failure Catalog
+| Project | Primary focus | Noetrium adds |
+| --- | --- | --- |
+| [LangGraph](https://github.com/langchain-ai/langgraph) | Long-running stateful agent orchestration | Research identity, evidence, recovery, and governance around execution |
+| [AutoGen](https://github.com/microsoft/autogen) | Multi-agent applications | Experiment protocol, reproducibility, and release evidence |
+| [CrewAI](https://github.com/crewAIInc/crewAI) | Agent teams and event flows | Scientific run identity, lineage, and fail-closed recovery |
+| [OpenHands](https://github.com/All-Hands-AI/OpenHands) | AI-driven software development | General research infrastructure across agents, models, and environments |
+| **Noetrium** | Reproducible AI-agent research infrastructure | The research-systems layer itself |
 
-- Added read-only `failure-catalog` operator command.
-- Stable failure specs are filterable by domain/code without opening runtime state.
-- Operator view exposes stage, recovery action and scientific/debugging risk semantics.
-- Full regression and architecture/silent-failure/no-degradation audits passed.
+Noetrium is deliberately broader than an agent workflow library: experiment design, model and environment identity, runtime effects, checkpoints, evidence, and release authority are treated as one research-systems problem. Existing orchestration frameworks can remain inside a downstream method or provider; Noetrium supplies the surrounding identity, lifecycle, and evidence boundary.
 
+<!-- readme-section:capabilities -->
 
-## Round 85 — Taxonomy-Enriched Failure Diagnosis
+## Core capabilities
 
-- `why` and debug snapshots now expose registered FailureCatalog semantics.
-- Diagnosis adds the exact catalog lookup command to next actions.
-- Unregistered failures remain explicit (`registered=false`) and are never silently reinterpreted.
-- Full regression and all safety/architecture audits passed.
+- Public authoring surface — `noetrium.contracts` and `noetrium.platform` expose stable identities, ports, specifications, and project-facing operations.
+- Study compilation — `ExperimentRunSpec`, `ResearchStudyDefinition`, and `CompiledResearchPlan` make experiment intent explicit before any run starts.
+- Run authority — `ExperimentRunApplication` owns lifecycle decisions; checkpoint, resume, reconcile, and evidence paths remain explicit and inspectable.
+- Reusable method layers — `components` provides reference single-agent building blocks, while `orchestration` provides higher-level multi-agent topology and delivery policy.
+- Provider seams — models, environments, resources, processes, servers, and toolchains bind through typed ports instead of hidden global discovery.
+- Durable artifacts — `RunArtifactStore` records manifests, sequence, digests, lineage, raw facts, retention, and replayable evidence.
+- Effect-safe recovery — external effects carry receipts and certainty; an unresolved effect stays `UNKNOWN` until reconciliation proves the outcome.
+- Observability and governance — structured events, diagnostics, projections, forensics, architecture, concurrency, performance, release, and no-degradation gates make the system auditable.
+- Long-running environments — world cut, branch, snapshot, checkpoint, and resume semantics support recoverable stateful providers, including the bundled Minecraft integration.
+
+<!-- noetrium-interface-catalog:start -->
+### Public interface catalog
+
+Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
+
+- 172 registered system surfaces; 349 public API modules; 2999 public symbols.
+- Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
+- Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
+- Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
+
+| Capability domain | Registered surfaces |
+| --- | ---: |
+| artifact | 7 |
+| data | 8 |
+| environment | 18 |
+| execution | 8 |
+| experimentation | 16 |
+| governance | 13 |
+| model | 16 |
+| observability | 27 |
+| operator | 8 |
+| participant | 8 |
+| platform | 5 |
+| portfolio | 5 |
+| reliability | 7 |
+| resource | 6 |
+| runtime | 13 |
+| scope | 7 |
+
+Discover a capability in the catalog, import its generated facade, and inject its typed ports in downstream composition:
+
+    from noetrium.contracts.systems.environment__minecraft import MinecraftBridgePort
+    from noetrium.contracts.systems.participant__agent import AgentMemoryPort
 
+After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
+<!-- noetrium-interface-catalog:end -->
 
-## Round 86 — Spec-Driven Failure Construction
+The catalog is an API map, not an authority registry that downstream code is expected to edit. A system surface declares what it owns, what it must not own, what it requires, what it provides, and which public facade exposes it. The generated facade is the downstream seam; internal implementation packages may be reorganized without turning implementation paths into accidental public contracts.
+
+The catalog also makes the platform composable at the level of responsibility. A capability is added to its owning system, bound through a narrow port, and then exposed through the generated surface. This prevents the same durable fact, provider authority, or effect lifecycle from being reimplemented in several layers merely because different callers need different views.
+
+<!-- readme-section:architecture -->
+
+## Architecture
+
+The shortest mental model is an evidence-preserving research pipeline:
+
+```mermaid
+flowchart LR
+    A["Research intent"] --> B["Define"]
+    B --> C["Bind"]
+    C --> D["Compile"]
+    D --> E["Run"]
+    E --> F["Recover"]
+    E --> G["Measure"]
+    F --> G
+    G --> H["Evidence"]
+    H --> I["Verify"]
+```
+
+Every transition is expected to preserve identity or produce evidence about why it changed. The platform is intentionally split into three authority planes:
+
+| Plane | Owns | Does not own |
+| --- | --- | --- |
+| Composition | study definitions, explicit bindings, provider selection, and port wiring | durable run truth or scientific conclusions |
+| Runtime | paper-programmable execution semantics plus typed lifecycle/effect mechanics at their owning boundaries | scientific identity, evidence conclusions, or hidden provider state |
+| Observation + evidence | events, diagnostics, artifact manifests, sequence/digest/lineage, forensics, and release proof | command authority or hidden state mutation |
+
+An `ExperimentRunSpec` is compiled into an immutable plan and applied through an `ExperimentRunApplication`; a `ExperimentProgramBinding` schedules units through explicit `StudyUnitExecutionPort` implementations. The MC and non-MC paths may bind different execution ports while preserving the same identity and evidence discipline.
 
-- Added `build_failure_from_spec()` as the production failure construction boundary.
-- FailureRecorder and model service crash projection no longer repeat taxonomy/recovery/risk strings.
-- Source audit rejects production free-form `build_failure(...)` calls outside the envelope primitive.
-- Full regression and all architecture/silent-failure/no-degradation audits passed.
+### The Research OS hierarchy
+
+Noetrium's scope is broad, but its ownership is intentionally hierarchical. The hierarchy groups related responsibilities without creating a monolithic registry or a universal VM.
+
+| Layer | Primary responsibility | Boundary |
+| --- | --- | --- |
+| Noetrium Kernel | identity, command dispatch, transition commit, journal, snapshot, scheduling, isolation, effect protocol, replay, and inspection | never owns scientific method semantics |
+| Experiment Machine | programmable adaptive scientific protocol, assignment, replication, aggregation and stopping semantics | executes frozen scientific identity; it does not rewrite the study definition |
+| Research Run Machine | one attributable execution, frozen bindings, lifecycle/control/checkpoint state and child-machine lineage | RunMachine Journal state is the sole run lifecycle authority |
+| Method Machine | executable research method, bounded control flow, capability calls, checkpoints, resume, and replay | MethodProgram/UMM owns method semantics but not durability authority |
+| Participant Machine | actor-local state and role/session behavior for agents, user simulators, judges, humans, teammates, and other research actors | Agent Turn is one reusable ParticipantProgram preset, not a fixed platform VM |
+| Memory Machine | programmable write/retrieval/trust/consolidation/retention semantics with journal-backed state | does not impose one universal memory algorithm or become implicit global context |
+| Environment Machine | programmable state/action/observation, branch, reset, reconciliation and recovery semantics | provider mechanics remain replaceable and do not become a second world-state authority |
+| Typed services and providers | model, tool, evidence, artifact, metrics, catalog, policy, resource, process, and deployment abilities | replaceable behind ports; no provider is a second Kernel |
+| Projections and operator surfaces | telemetry, diagnostics, forensics, reports, CLI, and release evidence | read and explain authority; never silently mutate it |
+
+All programmable Machine families share the Machine command/commit substrate while retaining independent Program/state schemas. Non-Method domains compile through ResearchProgram; Runtime may additionally compose concern-local RuntimeModules. Cross-machine communication uses immutable values, typed commands, and ArtifactRef, EvidenceRef, SnapshotRef, CapabilityResult, or EffectReceipt; it does not share mutable internal objects.
+
+### Authority map
+
+The platform has one owner for each kind of truth. This is the rule that lets a large system remain decoupled.
+
+| Truth or decision | Sole authority | Safe consumers |
+| --- | --- | --- |
+| machine state and commit | MachineExecutor / Kernel | machine implementations, recovery, inspection |
+| ordered machine facts | Journal | replay and rebuildable projections |
+| recovery acceleration | Snapshot | restore path, never independent truth |
+| executable identity | ProgramLock and compiled program digest | admission, replay, release verification |
+| ownership and topology | canonical system registry/catalog | generated facades and architecture gates |
+| external effect lifecycle | EffectIntentJournal and reconciliation | effect executor and evidence readers |
+| capability access | scoped typed binding and policy | method/run code through a declared port |
+| worker proposal | authenticated admission and candidate boundary | Kernel validation and commit path |
+| metrics and reports | derived evidence/projection layer | operators, analysis, publication tooling |
+
+In particular, a worker may propose a candidate but cannot write journal, snapshot, outbox, inbox, or effect-journal facts. An external effect that is not proven applied or proven to have had no effect remains UNKNOWN; timeout, restart, or operator impatience is not evidence of success or permission to blindly retry.
+
+### One execution lifecycle
+
+A downstream study follows a stable sequence:
 
+1. **Define** — express study, method, task, provider, resource, and evidence intent as typed specifications.
+2. **Compose** — bind capabilities and scopes explicitly at a composition root; reject missing, ambiguous, or out-of-scope providers.
+3. **Compile** — freeze program, dependency, schema, interpreter, data, and configuration identity into an executable digest.
+4. **Admit and run** — validate machine, program, revision, scope, proposal identity, and attestation before a step can execute.
+5. **Commit** — atomically record the transition, state, journal fact, effect receipts, artifacts, and evidence references under Kernel authority.
+6. **Recover and reconcile** — restore from a validated snapshot, replay the journal, and resolve external-effect uncertainty with provider evidence.
+7. **Inspect and replay** — expose procfs-like run and machine views while reconstructing state from authoritative facts.
+8. **Verify** — compare exact revisions, digests, evidence closure, release manifests, and no-degradation gates before treating an output as reproducible.
+
+The same lifecycle applies to deterministic local runs, long-running providers, containerized workloads, and downstream scientific experiments. Their providers and policies may differ; their authority and evidence boundaries do not.
 
-## Round 87 — Versioned Failure Taxonomy Binding
+### Decoupling rule
 
-- Spec-driven FailureEnvelopes now carry the exact `FailureSpec.digest()`.
-- Failure diagnosis compares historical envelope semantics with the current catalog.
-- `semantic_drift` is explicit instead of silently interpreting old failures using new taxonomy semantics.
-- Full regression and all audits passed.
+High aggregation means that one responsibility has one home, not that every feature is placed in one object. Public facades are generated from the canonical catalog, composition roots wire narrow ports, runtime modules own lifecycle semantics, and projections consume durable facts. A new capability therefore extends its owning system and its port; it does not add a shadow registry, hidden global context, duplicate facade, duplicate provider, or cross-layer write path.
 
+Long-running providers use world cut, branch, snapshot, checkpoint, and resume semantics where applicable. Durable state has one owner, and uncertain external effects remain `UNKNOWN` until reconciliation proves otherwise.
 
-## Round 88 — Version-Aware Incident Fingerprints
+`noetrium_platform/foundation/governance/system_registry/catalog.json`
 
-- Failure identity now incorporates the bound taxonomy spec digest.
-- Incident OS tracks exact fingerprint (taxonomy-version aware) and family fingerprint (cross-version root-cause family).
-- Exact and family recurrence counts/examples are kept separately.
-- Full regression and all audits passed.
+<!-- readme-section:downstream -->
 
+## Platform vs. downstream projects
 
-## Round 89 — Self-Describing Crash Bundles
+This repository is an independent upstream platform package. A downstream project should be able to replace its method, task suite, experiment matrix, providers, or deployment policy without editing platform internals.
 
-- Crash bundle schema v2 embeds taxonomy binding/drift and exact/family incident fingerprints.
-- Offline bundles no longer require the live forensic DB to understand failure semantics.
-- Crash bundle serialization is strict; no `default=str` coercion.
-- Full regression and all audits passed.
+```text
+noetrium
+        │
+        ├── install as a dependency, or
+        └── fork as a platform baseline
+                 │
+                 ▼
+       downstream research repository
+       ├── project-specific method
+       ├── experiment composition
+       ├── task/environment bindings
+       └── project evidence and results
+```
 
+| You are changing... | Implement downstream... | Reuse from Noetrium... |
+| --- | --- | --- |
+| Research method | policy, method host, tools, memory, and prompts | reference components and lifecycle contracts |
+| Task or benchmark | task suite, dataset adapter, metrics, and scientific protocol | study/run identity, execution ports, artifacts, and evidence |
+| Provider or integration | typed model, environment, resource, process, or server provider | port contracts, composition, readiness, and recovery semantics |
+| Multi-agent behavior | topology, node policy, message delivery, and coordination rules | orchestration primitives and run authority |
 
-## Round 90 — Offline Crash Bundle Verification
+Use `noetrium.contracts`, `noetrium.platform`, `components`, and `orchestration` as the supported project-facing surfaces. `noetrium_platform` is the internal semantic-plane implementation namespace, not a downstream extension API. The platform must not import a downstream project to decide scientific meaning or deployment policy.
 
-- Added `crash-bundle-verify` for DB-independent bundle verification.
-- Verifies transport digest, embedded failure identity, taxonomy snapshot digest, and exact/family fingerprints independently.
-- Semantic tampering remains detectable even if an attacker/tool recomputes the outer bundle digest.
-- Full regression and all audits passed.
+<!-- readme-section:quick-start -->
 
+<a id="quick-start"></a>
 
-## Round 91 — Failure Catalog as Debugging Knowledge Base
+## Quick start
 
-- Every default failure spec now carries owner, description, diagnostic focus and operator checks.
-- Added catalog knowledge completeness audit.
-- `why` and crash bundles surface the same operator knowledge.
-- Full regression and all audits passed.
+The first example is deterministic and requires no API key, model endpoint, or external service. It is a platform-compilation smoke test; the public component-reuse example is shown in `examples/quickstart_agent_components.py` and documented in `examples/README.md`.
 
+### 1. Clone and install
 
-## Round 92 — Deterministic Triage Plans
+```bash
+git clone https://github.com/Xalzeroph/noetrium.git
+cd noetrium
+python -m venv .venv
+source .venv/bin/activate
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e ".[test]"
+```
 
-- Added evidence-first `triage-plan` operator command.
-- Triage order is deterministic and catalog-driven; recovery is never auto-executed.
-- Missing external inputs are surfaced explicitly instead of inventing or skipping checks.
-- Full regression and all audits passed.
+### 2. Compile your first reproducible experiment plan
 
+```bash
+python examples/quickstart_experiment_plan.py
+```
 
-## Round 93 — Authoritative Incident Projection Sync
+This example freezes a scientific protocol, binds explicit provider identities, compiles an immutable plan, and verifies its digest. It demonstrates the compilation seam; a downstream method can keep its own policy and use the same run/study contracts.
 
-- Incident recurrence is now projected from every verified failure-ledger row, not only manually opened incidents.
-- Projection sync is incremental and checkpointed by source rows/tail hash.
-- Prefix mismatch triggers a full disposable-index rebuild instead of mixing recurrence histories.
-- Duplicate failure IDs are idempotently ignored in recurrence counts.
-- Full regression and all audits passed.
+```text
+study=noetrium-quickstart
+variants=control,treatment
+repetitions=3
+protocol_digest=<sha256>
+plan_digest=<sha256>
+plan_consistent=true
+```
 
+### 3. Verify the checkout
 
-## Round 94 — Incident Projection Physical Decomposition
+```bash
+noetrium-architecture-gate
+python scripts/check_readme_i18n.py
+```
 
-- Split incident contracts, SQLite storage, projection mutation, ledger synchronization and façade.
-- Preserved full-ledger recurrence accuracy and incremental freshness semantics.
-- Full regression and all audits passed.
+Downstream code imports stable contracts and reusable components from `noetrium`; do not treat `noetrium_platform` as a project extension API. For an author-first project scaffold, use `noetrium project create <project-id> <destination> --version <version>`, then run `noetrium project doctor --project <destination>` and `noetrium project test --project <destination>` before adding project-owned providers or methods.
 
+<!-- readme-section:containers -->
 
-## Round 95 — Full Model Deployment Closure
+## Container workflow
 
-- Model stack digest now binds model artifacts and executable runtime build identity, not only logical model metadata.
-- ModelRunState freezes the qualified deployment digest.
-- RecoveryPlanner rejects deployment stack/certificate/placement drift even when logical model identity is unchanged.
-- Durable recovery plan digest includes the frozen deployment digest.
-- Full regression and all audits passed.
+A reusable Linux image and Compose definition are maintained under `deploy/`.
 
+```bash
+cp deploy/.env.example deploy/.env
+docker compose -f deploy/compose.yaml config
+docker compose -f deploy/compose.yaml build
+docker compose -f deploy/compose.yaml run --rm platform-runtime doctor
+```
 
-## Round 96 — Stable Host Identity vs Live Capacity Snapshot
+The deployment layer separates immutable software from mutable runtime state; host-specific paths and secrets stay outside committed composition code.
 
-- Split stable host/runtime qualification identity from transient resource/occupancy snapshot.
-- Qualification certificates bind hardware/runtime compatibility identity.
-- Capacity planning revalidates live VRAM/RAM/ports/storage without invalidating qualification for unrelated transient drift.
-- Capacity failure still fails closed; no stack/prompt/context degradation exists.
-- Full regression and all audits passed.
+### Bundled Minecraft provider
 
+Minecraft is a first-party reusable environment provider. Task suites and scientific composition remain downstream.
 
-## Round 97 — Runtime Host Inventory Evidence
+```bash
+docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml build platform-runtime
+docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml run --rm platform-runtime minecraft-doctor
+```
 
-- Runtime VERIFY_HOST_INVENTORY now captures and validates a real TargetHostInventory.
-- Frozen host identity is checked by the platform, not delegated to an opaque external proof.
-- Full live inventory snapshot receipts are atomically persisted and referenced by runtime evidence.
-- Full regression and all audits passed.
+[Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
 
+<!-- readme-section:repository-layout -->
 
-## Round 98 — Historical Verified Runtime Baseline
+## Repository layout
 
-- Revalidated the Round 97 runtime-host-inventory architecture as the new clean baseline.
-- Full regression at the Round 98 freeze: **266 passed**. Current release verification is authoritative only through `RELEASE_EVIDENCE.json`.
-- Architecture / Silent-Failure / No-Degradation: **PASS**.
-- This round intentionally introduces no scientific/runtime behavior change.
+| Path | Responsibility |
+| --- | --- |
+| `noetrium/` | Public facade, contracts, reference single-agent components, and multi-agent orchestration |
+| `noetrium_platform/` | Internal semantic-plane implementation, providers, and governance tooling; not a downstream extension API |
+| `configs/` | Versioned configuration examples and non-secret templates |
+| `deploy/` | Container image, Compose runtime, and deployment bootstrap assets |
+| `docs/` | Architecture, infrastructure, governance, status, and history |
+| `scripts/` | Thin operator, audit, release, and maintenance entry points |
+| `tests/` | Hierarchical regression and contract tests |
+| `noetrium_platform/capabilities/environment/minecraft/` | Bundled reusable Minecraft environment provider |
+| `LICENSE` / `NOTICE` / `THIRD_PARTY_NOTICES.md` | Apache-2.0 and third-party license notices |
 
+Treat `noetrium/` as the supported downstream package boundary. Project-specific code stays downstream, and internal implementation details under `noetrium_platform/` may change behind the public contracts.
 
-## Runtime asset management
+<!-- readme-section:testing -->
 
-Day-to-day server resources are managed separately from scientific release qualification.
-Use `research-platform-manage` with an explicit directory-layout config to manage workspaces,
-Python environments (venv/conda/mamba), local model assets, and multi-model deployment desired state.
-See `docs/RUNTIME_ASSET_MANAGEMENT.md` and `configs/runtime_management.example.json`.
+<a id="verification"></a>
+
+## Testing and verification
+
+Run the repository regression suite and governance gates on the exact revision being evaluated.
+
+```bash
+python -m pytest -q
+python scripts/architecture_gate.py
+python scripts/public_contract_audit.py
+python scripts/no_degradation_audit.py
+python scripts/check_readme_i18n.py
+```
+
+For focused checks, the installed console scripts include `noetrium-repository-boundary`, `noetrium-concurrency`, and `noetrium-performance`; use `python scripts/verify_release_evidence.py` to validate the source, manifest, evidence, and authority bindings for a release.
+
+A historical green result does not prove the current tree. Re-run the gates that matter for the exact revision you intend to publish or deploy.
+
+The repository uses a hierarchical test taxonomy so every test belongs to an explicit contract level and release evidence can prove what was actually exercised. See `tests/TEST_SYSTEM.json`.
+
+<!-- readme-section:principles -->
+
+## Design principles
+
+1. One owner per durable state.
+2. Composition before execution.
+3. Narrow runtime ports.
+4. External effects are evidence-bearing.
+5. Recovery is identity-aware.
+6. No silent degradation.
+7. Observation is not authority.
+8. Performance changes preserve semantics.
+9. Documentation moves with implementation.
+10. Downstream projects own scientific meaning and deployment policy.
+
+11. Aggregation means one authority per responsibility, not one object for every responsibility.
+12. Typed boundaries carry values, commands, and references; mutable internals do not cross layers.
+13. Failures, cancellation, partial completion, and effect uncertainty are first-class outcomes.
+14. A projection, cache, log, UI, or convenience facade can never silently become truth.
+15. Every claim-grade output is tied to an exact source revision, program identity, and evidence closure.
+
+<!-- readme-section:extending -->
+
+## Extending the platform
+
+Add a capability at the smallest owning boundary. Prefer a new provider when the public contract already exists; add a new contract only when the capability itself is new.
+
+A practical extension sequence is: select or define the public contract, implement the provider or component in the owning project, bind it explicitly during composition, record the resulting identity and evidence, then exercise recovery and reconciliation paths. This keeps a replaceable downstream method from becoming coupled to platform internals.
+
+```text
+<system>/
+├── api/          public contracts and identities
+├── runtime/      lifecycle and execution semantics
+├── providers/    replaceable adapters owned by the system
+└── composition/  provider-to-port binding
+```
+
+Avoid generic wrappers that hide unrelated algorithms, provider discovery or external effects behind one interface.
+
+<!-- readme-section:documentation -->
+
+## Documentation
+
+Start with the documentation index.
+
+### Key references
+
+- [Documentation index](docs/INDEX.md)
+- [Examples](examples/README.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Support](SUPPORT.md)
+- [Citation metadata](CITATION.cff)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Platform architecture](docs/architecture/PLATFORM_ARCHITECTURE.md)
+- [Detailed system map](docs/architecture/VNEXT_DETAILED_SYSTEM_MAP.md)
+- [Architecture migration contract](docs/architecture/FINAL_ARCHITECTURE_MIGRATION_CONTRACT.md)
+- [Infrastructure documentation](docs/infrastructure/README.md)
+- [Governance documentation](docs/governance/README.md)
+- [Current status](docs/status/README.md)
+- [Engineering history](docs/history/README.md)
+
+Architecture documents define reusable ownership and contracts; status documents describe the current development tree; history preserves evidence for the state that existed when it was written. For implementation orientation, read `docs/architecture/COMPONENT_LAYERS.md` for the public component tiers and `docs/product/PUBLIC_FACADE_AND_CLI.md` for project authoring, doctor, and test flows.
+
+<!-- readme-section:security -->
+
+## Security and configuration
+
+- Never commit passwords, private keys, access tokens, runtime secrets or machine-local credentials.
+- Keep host-specific paths and secrets in ignored local profiles or environment-bound stores.
+- Prefer key/agent-based unattended authentication for remote automation.
+- Keep external-effect commands typed, bounded, journaled and attributable to an operation identity.
+- Treat logs and evidence as potentially sensitive operational data.
+
+<!-- readme-section:contributing -->
+
+## Contributing
+
+Changes should be reviewable by ownership boundary and include the tests and documentation needed to prove them.
+
+### Before opening a pull request
+
+```bash
+python -m pytest -q
+python scripts/architecture_gate.py
+python scripts/check_readme_i18n.py
+```
+
+- preserve system ownership and public-contract boundaries
+- add or update focused regression coverage
+- update owning documentation in the same change set
+- avoid unrelated refactors in the same commit
+- preserve fail-closed behavior for uncertain external effects
+- document intentional semantic or compatibility changes explicitly
+
+[Documentation Change Policy](docs/governance/DOCUMENTATION_CHANGE_POLICY.md)
+
+<!-- readme-section:license -->
+
+## License
+
+Noetrium is licensed under the Apache License, Version 2.0. The authoritative legal text is the root LICENSE file.
+
+Third-party components remain governed by their own licenses; see THIRD_PARTY_NOTICES.md. Independently distributed model weights, datasets or benchmark assets may state separate terms.
+
+[`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+
+<!-- readme-section:status -->
+
+## Development status
+
+Noetrium 0.44.0 is the current released platform baseline. The project is still under active architecture and runtime development, so downstream consumers should pin an exact revision and verify its evidence before relying on it.
+
+Noetrium is not a hosted agent product or a turnkey scientific benchmark. Downstream projects bind their own methods, providers, protocols, and claims; this repository supplies the reusable contracts, runtime authority, and evidence machinery around them.
+
+The architecture documented here is both a description of the implemented platform boundaries and the organizing target for the continuing VM materialization work. The kernel, contracts, authority boundaries, provider ports, evidence paths, and governance gates are concrete platform surfaces; the Research OS hierarchy also gives each future domain VM a precise owner and migration boundary. The README does not claim that every future VM is already an independently deployable process.
+
+For production, publication, or scientific claims, re-run the relevant gates and inspect release evidence bound to the exact source revision rather than relying on an old green result. Historical changes are intentionally kept out of this README; use `docs/history/` for immutable engineering records.
+
+The current development truth is `docs/status/CURRENT_DEVELOPMENT_BASELINE.md`; release and scientific claims must be bound to exact evidence for the revision being evaluated.
+
+`docs/status/` · `docs/history/`

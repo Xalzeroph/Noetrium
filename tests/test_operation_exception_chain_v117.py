@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from research_platform.platform.kernel import ComponentIdentity, ExecutionContext, OperationExecutor, OperationFailure, OperationRequest, canonical_digest
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, ExecutionContext, OperationExecutor, OperationFailure, OperationRequest, canonical_digest
 
 
 class OperationExceptionChainV117Tests(unittest.TestCase):

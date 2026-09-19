@@ -1,24 +1,23 @@
-from tests_support import build_self_evolving_memory_method
+from tests_support import repository_architecture_report
 import tempfile
 import unittest
 from pathlib import Path
 
-from research_platform.governance.architecture import audit_source_invariants, build_architecture_report
-from methods.self_evolving_memory.governance.architecture import audit_source_invariants as audit_sem_source_invariants
+from noetrium_platform.foundation.governance.architecture import audit_source_invariants
 
 
 class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
     def test_current_tree_has_no_source_invariant_violation(self):
         root=Path(__file__).resolve().parents[1]
         self.assertEqual(audit_source_invariants(root),())
-        self.assertEqual(build_architecture_report(root).source_invariant_violations,())
+        self.assertEqual(repository_architecture_report().source_invariant_violations,())
 
     def test_effect_journal_core_cannot_import_environment_or_capability_domains(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); journal=root/'research_platform/reliability/effect/runtime'; journal.mkdir(parents=True)
+            root=Path(td); journal=root/'noetrium_platform/infrastructure/reliability/effect/runtime'; journal.mkdir(parents=True)
             (journal/'contracts.py').write_text(
-                'from research_platform.environment.runtime.api import ActionRequest\n'
-                'from research_platform.participant.capability.api import CapabilityRequest\n',
+                'from noetrium_platform.capabilities.environment.runtime.api import ActionRequest\n'
+                'from noetrium_platform.capabilities.participant.capability.api import CapabilityRequest\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -27,34 +26,34 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_forensics_cannot_reintroduce_failure_contract_authority(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); forensic=root/'research_platform/reliability/forensics'; forensic.mkdir(parents=True)
+            root=Path(td); forensic=root/'noetrium_platform/infrastructure/reliability/forensics'; forensic.mkdir(parents=True)
             (forensic/'redaction.py').write_text('def redact_text(value): return value\n', encoding='utf-8')
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='failure_contract_authority' for x in rows))
 
     def test_domain_logic_cannot_import_forensic_implementation(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); workflow=root/'research_platform/execution/workflow/implementations/context_action'; workflow.mkdir(parents=True)
+            root=Path(td); workflow=root/'noetrium_platform/research/execution/workflow/implementations/context_action'; workflow.mkdir(parents=True)
             (workflow/'bad.py').write_text(
-                'from research_platform.reliability.forensics import ForensicStore\n', encoding='utf-8'
+                'from noetrium_platform.infrastructure.reliability.forensics import ForensicStore\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='failure_forensics_dependency_direction' for x in rows))
 
     def test_observability_api_cannot_import_concrete_backend(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); api=root/'research_platform/observability/api'; api.mkdir(parents=True)
+            root=Path(td); api=root/'noetrium_platform/evidence/observability/api'; api.mkdir(parents=True)
             (api/'bad.py').write_text(
-                'from research_platform.reliability.forensics import ForensicStore\n', encoding='utf-8'
+                'from noetrium_platform.infrastructure.reliability.forensics import ForensicStore\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='observability_api_backend_firewall' for x in rows))
 
     def test_domain_logic_cannot_import_effect_journal_implementation(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); workflow=root/'research_platform/execution/workflow/implementations/context_action'; workflow.mkdir(parents=True)
+            root=Path(td); workflow=root/'noetrium_platform/research/execution/workflow/implementations/context_action'; workflow.mkdir(parents=True)
             (workflow/'bad.py').write_text(
-                'from research_platform.reliability.effect.runtime import SQLiteEffectIntentJournal\n',
+                'from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -62,16 +61,16 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_effect_journal_has_no_environment_compatibility_exception(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); journal=root/'research_platform/reliability/effect/runtime'; journal.mkdir(parents=True)
+            root=Path(td); journal=root/'noetrium_platform/infrastructure/reliability/effect/runtime'; journal.mkdir(parents=True)
             (journal/'action_compat.py').write_text(
-                'from research_platform.environment.runtime.api import ActionRequest\n', encoding='utf-8'
+                'from noetrium_platform.capabilities.environment.runtime.api import ActionRequest\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='effect_journal_domain_firewall' for x in rows))
 
     def test_model_os_cannot_reintroduce_parallel_host_inventory(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); model_os=root/'research_platform/model/serving'; model_os.mkdir(parents=True)
+            root=Path(td); model_os=root/'noetrium_platform/capabilities/model/serving'; model_os.mkdir(parents=True)
             (model_os/'placement.py').write_text(
                 'class HostInventory:\n    pass\n\nclass TopologyPlanner:\n    pass\n',
                 encoding='utf-8',
@@ -80,11 +79,11 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
             violations=[x for x in rows if x.invariant=='model_os_inventory_authority']
             self.assertEqual(len(violations),2)
 
-    def test_fixed_participant_session_args_cannot_return_to_scientific_executor(self):
+    def test_fixed_participant_session_args_cannot_return_to_trial_executor(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); study=root/'research_platform/experimentation/experiment/runtime'; study.mkdir(parents=True)
-            (study/'scientific_cycle.py').write_text(
-                "class ExperimentScientificCycleExecutor:\n"
+            root=Path(td); study=root/'noetrium_platform/research/experimentation/experiment/runtime'; study.mkdir(parents=True)
+            (study/'trial_cycle.py').write_text(
+                "class ExperimentTrialCycleExecutor:\n"
                 "    def execute(self, participant_sessions, method_session=None):\n"
                 "        pass\n",
                 encoding='utf-8',
@@ -95,12 +94,12 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_composition_families_cannot_cross_import_specialized_domains(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); composition=root/'research_platform/platform/composition'; composition.mkdir(parents=True)
+            root=Path(td); composition=root/'noetrium_platform/composition'; composition.mkdir(parents=True)
             (composition/'context_action.py').write_text(
-                'from research_platform.participant.agent.api import AgentSession\n', encoding='utf-8'
+                'from noetrium_platform.capabilities.participant.agent.api import AgentSession\n', encoding='utf-8'
             )
             (composition/'agent_turn.py').write_text(
-                'from research_platform.participant.method.api import MethodSession\n', encoding='utf-8'
+                'from noetrium_platform.capabilities.participant.method.api import MethodSession\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             invariants={x.invariant for x in rows}
@@ -109,115 +108,41 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_participant_bridge_cannot_import_unrelated_specialized_abi(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); participants=root/'research_platform/platform/composition/participants'; participants.mkdir(parents=True)
+            root=Path(td); participants=root/'noetrium_platform/composition/participants'; participants.mkdir(parents=True)
             (participants/'method.py').write_text(
-                'from research_platform.participant.agent.api import AgentSession\n', encoding='utf-8'
+                'from noetrium_platform.capabilities.participant.agent.api import AgentSession\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='participant_method_bridge_firewall' for x in rows))
 
     def test_production_code_cannot_import_composition_root(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); package=root/'research_platform'; package.mkdir(parents=True)
-            (package/'bad.py').write_text('import research_platform.platform.composition\n', encoding='utf-8')
+            root=Path(td); package=root/'noetrium_platform'; package.mkdir(parents=True)
+            (package/'bad.py').write_text('import noetrium_platform.composition\n', encoding='utf-8')
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='composition_root_import_firewall' for x in rows))
 
-    def test_sem_materialization_facade_bypass_is_detected(self):
-        with tempfile.TemporaryDirectory() as td:
-            root=Path(td); sem=root/'methods/self_evolving_memory'; sem.mkdir(parents=True)
-            (sem/'materialization.py').write_text('from .evidence import InMemoryEvidenceSnapshotSource\n',encoding='utf-8')
-            rows=audit_sem_source_invariants(root)
-            self.assertTrue(any(x.invariant=='sem_evidence_physical_firewall' for x in rows))
 
-    def test_self_evolving_sem_cannot_default_or_disable_evolution(self):
-        with tempfile.TemporaryDirectory() as td:
-            root=Path(td); sem=root/'methods/self_evolving_memory'; sem.mkdir(parents=True)
-            (sem/'implementation.py').write_text(
-                'class SelfEvolvingMemoryImplementation:\n'
-                '    def __init__(self, *, evolution_factory=None, evolution_provider_id="disabled"):\n'
-                '        pass\n',
-                encoding='utf-8',
-            )
-            (sem/'composition.py').write_text(
-                'def build_self_evolving_memory_method(*, evolution_factory=None, evolution_provider_id="disabled"):\n'
-                '    return DisabledSessionEvolutionFactory()\n',
-                encoding='utf-8',
-            )
-            rows=audit_sem_source_invariants(root)
-            violations=[x for x in rows if x.invariant=='sem_evolution_explicit_composition']
-            self.assertGreaterEqual(len(violations),5)
 
-    def test_sem_evidence_storage_cannot_import_retrieval_algorithm(self):
-        with tempfile.TemporaryDirectory() as td:
-            root=Path(td); sem=root/'methods/self_evolving_memory'; sem.mkdir(parents=True)
-            (sem/'evidence_memory.py').write_text(
-                'from .retrieval_features import lexical_features\n', encoding='utf-8'
-            )
-            rows=audit_sem_source_invariants(root)
-            self.assertTrue(any(x.invariant=='sem_evidence_storage_retrieval_firewall' for x in rows))
 
-    def test_sem_runtime_cannot_import_checkpoint_codec_outside_persistence(self):
-        with tempfile.TemporaryDirectory() as td:
-            root=Path(td); sem=root/'methods/self_evolving_memory'; sem.mkdir(parents=True)
-            (sem/'session_serving.py').write_text(
-                'from .session_snapshot_codec import SEMSnapshotCodec\n', encoding='utf-8'
-            )
-            rows=audit_sem_source_invariants(root)
-            self.assertTrue(any(x.invariant=='sem_snapshot_codec_firewall' for x in rows))
 
-    def test_evolution_pipeline_cannot_import_or_default_concrete_stage_provider(self):
-        with tempfile.TemporaryDirectory() as td:
-            root=Path(td); evo=root/'methods/self_evolving_memory/evolution'; evo.mkdir(parents=True)
-            (evo/'pipeline.py').write_text(
-                'from .eligibility import AlwaysEligible\n'
-                'class EvolutionPipeline:\n'
-                '    def __init__(self, eligibility=None): pass\n', encoding='utf-8'
-            )
-            rows=audit_sem_source_invariants(root)
-            self.assertTrue(any(x.invariant=='sem_evolution_pipeline_provider_firewall' for x in rows))
-            self.assertTrue(any(x.invariant=='sem_evolution_pipeline_explicit_stages' for x in rows))
 
-    def test_sem_runtime_subsystems_cannot_construct_or_import_concrete_state_backend(self):
-        with tempfile.TemporaryDirectory() as td:
-            root=Path(td); sem=root/'methods/self_evolving_memory'; sem.mkdir(parents=True)
-            (sem/'session_serving.py').write_text(
-                'from .session_cell import SEMSessionStateCell\n', encoding='utf-8'
-            )
-            (sem/'session_cell.py').write_text(
-                'def bad(): return InMemoryEvidenceStore()\n', encoding='utf-8'
-            )
-            rows=audit_sem_source_invariants(root)
-            self.assertTrue(any(x.invariant=='sem_state_backend_boundary' for x in rows))
 
-    def test_sem_implementation_cannot_own_session_runtime(self):
-        with tempfile.TemporaryDirectory() as td:
-            root=Path(td); sem=root/'methods/self_evolving_memory'; sem.mkdir(parents=True)
-            (sem/'implementation.py').write_text(
-                'from .session_assembly import SEMSessionAssembly\n'
-                'class SelfEvolvingMemoryImplementation:\n'
-                '    def open_session(self):\n'
-                '        pass\n',
-                encoding='utf-8',
-            )
-            rows=audit_sem_source_invariants(root)
-            violations=[x for x in rows if x.invariant=='sem_implementation_runtime_firewall']
-            self.assertEqual(len(violations),2)
 
     def test_participant_api_cannot_import_study_orchestration(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); api=root/'research_platform/participant/core/api'; api.mkdir(parents=True)
+            root=Path(td); api=root/'noetrium_platform/capabilities/participant/core/api'; api.mkdir(parents=True)
             (api/'bad.py').write_text(
-                'from research_platform.experimentation.experiment.api import ExperimentSpec\n', encoding='utf-8'
+                'from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='participant_api_orchestration_firewall' for x in rows))
 
     def test_participant_api_cannot_import_concrete_implementation_package(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); api=root/'research_platform/participant/core/api'; api.mkdir(parents=True)
+            root=Path(td); api=root/'noetrium_platform/capabilities/participant/core/api'; api.mkdir(parents=True)
             (api/'bad.py').write_text(
-                'from research_platform.participant.core.implementation.catalog import ParticipantImplementationCatalog\n',
+                'from noetrium_platform.capabilities.participant.definition.runtime.catalog import ParticipantImplementationCatalog\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -225,16 +150,16 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_participant_implementation_cannot_import_runtime_orchestration(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); impl=root/'research_platform/participant/core/implementation'; impl.mkdir(parents=True)
+            root=Path(td); impl=root/'noetrium_platform/capabilities/participant/definition/runtime'; impl.mkdir(parents=True)
             (impl/'bad.py').write_text(
-                'from research_platform.execution.runtime.manager.control_plane import RuntimeControlPlane\n', encoding='utf-8'
+                'from noetrium_platform.infrastructure.lifecycle.launch_control.control_plane import RuntimeControlPlane\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='participant_implementation_orchestration_firewall' for x in rows))
 
     def test_combined_runtime_participant_abstraction_cannot_return(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); api=root/'research_platform/participant/core/api'; api.mkdir(parents=True)
+            root=Path(td); api=root/'noetrium_platform/capabilities/participant/core/api'; api.mkdir(parents=True)
             (api/'contracts.py').write_text(
                 'class RuntimeParticipant:\n    def open_session(self): pass\n', encoding='utf-8'
             )
@@ -243,7 +168,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_runtime_binding_must_freeze_implementation_and_runtime_separately(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); api=root/'research_platform/participant/core/api'; api.mkdir(parents=True)
+            root=Path(td); api=root/'noetrium_platform/capabilities/participant/core/api'; api.mkdir(parents=True)
             (api/'contracts.py').write_text(
                 'class ParticipantRuntimeBinding:\n'
                 '    role: str\n'
@@ -256,9 +181,9 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_study_coordinator_cannot_import_concrete_participant_runtime(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); study=root/'research_platform/experimentation/experiment'; study.mkdir(parents=True)
+            root=Path(td); study=root/'noetrium_platform/research/experimentation/experiment'; study.mkdir(parents=True)
             (study/'run_coordination.py').write_text(
-                'from research_platform.participant.core.runtime import ParticipantSessionRuntimeCatalog\n',
+                'from noetrium_platform.capabilities.participant.session.runtime import ParticipantSessionRuntimeCatalog\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -266,25 +191,25 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_workflow_cannot_import_study_orchestration(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); workflow=root/'research_platform/execution/workflow/implementations/context_action'; workflow.mkdir(parents=True)
+            root=Path(td); workflow=root/'noetrium_platform/research/execution/workflow/implementations/context_action'; workflow.mkdir(parents=True)
             (workflow/'bad.py').write_text(
-                'from research_platform.experimentation.experiment.runtime import ExperimentRuntime\n', encoding='utf-8'
+                'from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='workflow_contract_dependency_direction' for x in rows))
 
     def test_workflow_cannot_import_runtime_implementation(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); workflow=root/'research_platform/execution/workflow/implementations/agent_turn'; workflow.mkdir(parents=True)
+            root=Path(td); workflow=root/'noetrium_platform/research/execution/workflow/implementations/agent_turn'; workflow.mkdir(parents=True)
             (workflow/'bad.py').write_text(
-                'from research_platform.execution.workflow.runtime import KernelOperationDispatcher\n', encoding='utf-8'
+                'from noetrium_platform.research.execution.workflow.runtime import KernelOperationDispatcher\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='workflow_contract_dependency_direction' for x in rows))
 
     def test_implementation_catalog_cannot_own_session_lifecycle(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); impl=root/'research_platform/participant/core/implementation'; impl.mkdir(parents=True)
+            root=Path(td); impl=root/'noetrium_platform/capabilities/participant/definition/runtime'; impl.mkdir(parents=True)
             (impl/'catalog.py').write_text(
                 'class ParticipantImplementationCatalog:\n'
                 '    def open_session(self): pass\n',
@@ -296,8 +221,8 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_recovery_lease_store_cannot_own_execution_fencing(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); runtime=root/'research_platform/execution/runtime/manager'; runtime.mkdir(parents=True)
-            (runtime/'recovery_lease_store.py').write_text(
+            root=Path(td); runtime=root/'noetrium_platform/infrastructure/reliability/recovery/providers'; runtime.mkdir(parents=True)
+            (runtime/'lease_store.py').write_text(
                 'class RecoveryLeaseStore:\n    def execution(self): pass\n',
                 encoding='utf-8',
             )
@@ -306,9 +231,9 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_release_quiescence_verifier_cannot_import_runtime_backends(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); bootstrap=root/'research_platform/platform/composition/runtime_control'; bootstrap.mkdir(parents=True)
-            (bootstrap/'release_retirement.py').write_text(
-                'from research_platform.runtime.service.runtime.quiescence import ExactServiceQuiescenceProbe\n',
+            root=Path(td); bootstrap=root/'noetrium_platform/foundation/governance/release/composition'; bootstrap.mkdir(parents=True)
+            (bootstrap/'retirement.py').write_text(
+                'from noetrium_platform.infrastructure.lifecycle.service.runtime.quiescence import ExactServiceQuiescenceProbe\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -316,7 +241,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_prompt_publication_cannot_construct_or_infer_durable_stores(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); prompt=root/'research_platform/model/request/prompt/runtime'; prompt.mkdir(parents=True)
+            root=Path(td); prompt=root/'noetrium_platform/capabilities/model/request/prompt/runtime'; prompt.mkdir(parents=True)
             (prompt/'publication.py').write_text(
                 'def bad(root): return PromptGenerationStore(root / "generations")\n',
                 encoding='utf-8',
@@ -326,7 +251,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_runtime_control_state_cannot_infer_history_backend(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); runtime=root/'research_platform/execution/runtime/manager'; runtime.mkdir(parents=True)
+            root=Path(td); runtime=root/'noetrium_platform/research/execution/runtime/manager'; runtime.mkdir(parents=True)
             (runtime/'state.py').write_text(
                 'from .history import RuntimeHistory\n'
                 'def bad(path): return RuntimeHistory(path.with_name(path.name + ".history"))\n',
@@ -337,7 +262,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_runtime_semantics_cannot_import_concrete_state_or_history_backend(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); runtime=root/'research_platform/execution/runtime/manager'; runtime.mkdir(parents=True)
+            root=Path(td); runtime=root/'noetrium_platform/research/execution/runtime/manager'; runtime.mkdir(parents=True)
             (runtime/'status_readers.py').write_text(
                 'from .runtime_state_storage import FileRuntimeControlStateStore\n'
                 'def bad(store): return store.path\n',
@@ -348,7 +273,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_service_start_authority_cannot_derive_intent_storage_from_state_path(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); service=root/'research_platform/runtime/service/runtime'; service.mkdir(parents=True)
+            root=Path(td); service=root/'noetrium_platform/infrastructure/lifecycle/service/runtime'; service.mkdir(parents=True)
             (service/'start_coordination.py').write_text(
                 'from .start_intent_store import DirectoryServiceStartIntentStore\n'
                 'def bad(path): return path.with_name(path.name + ".start-intents")\n',
@@ -359,9 +284,9 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_one_click_runtime_cannot_import_concrete_recovery_backend(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); runtime=root/'research_platform/execution/runtime/manager'; runtime.mkdir(parents=True)
+            root=Path(td); runtime=root/'noetrium_platform/research/execution/runtime/manager'; runtime.mkdir(parents=True)
             (runtime/'one_click.py').write_text(
-                'from research_platform.execution.runtime.manager.recovery_execution import FileLockedRecoveryExecutionFactory\n',
+                'from noetrium_platform.infrastructure.reliability.recovery.execution.runtime.file_lock import FileLockedRecoveryExecutionFactory\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -370,10 +295,10 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_operator_cannot_import_forensic_or_telemetry_backend(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); operator=root/'research_platform/operator'; operator.mkdir(parents=True)
+            root=Path(td); operator=root/'noetrium_platform/product/operator'; operator.mkdir(parents=True)
             (operator/'routes.py').write_text(
-                'from research_platform.reliability.forensics import ForensicStore\n'
-                'from research_platform.observability.telemetry.metric.providers import SQLiteTelemetryReader\n',
+                'from noetrium_platform.infrastructure.reliability.forensics import ForensicStore\n'
+                'from noetrium_platform.evidence.observability.telemetry.metric.providers import SQLiteTelemetryReader\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -381,23 +306,23 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_diagnostics_service_cannot_import_forensic_backend(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); diagnostics=root/'research_platform/reliability/diagnostics/runtime'; diagnostics.mkdir(parents=True)
+            root=Path(td); diagnostics=root/'noetrium_platform/infrastructure/reliability/diagnostics/runtime'; diagnostics.mkdir(parents=True)
             (diagnostics/'bad.py').write_text(
-                'from research_platform.reliability.forensics import ForensicStore\n', encoding='utf-8'
+                'from noetrium_platform.infrastructure.reliability.forensics import ForensicStore\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='diagnostics_service_dependency_direction' for x in rows))
 
     def test_operator_cannot_reintroduce_diagnostic_algorithm_module(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); operator=root/'research_platform/operator'; operator.mkdir(parents=True)
+            root=Path(td); operator=root/'noetrium_platform/product/operator'; operator.mkdir(parents=True)
             (operator/'diagnosis.py').write_text('class FailureDiagnosisService: pass\n', encoding='utf-8')
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='diagnostics_authority_location' for x in rows))
 
     def test_forensics_cannot_reintroduce_failure_fingerprint_semantics(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); forensics=root/'research_platform/reliability/forensics'; forensics.mkdir(parents=True)
+            root=Path(td); forensics=root/'noetrium_platform/infrastructure/reliability/forensics'; forensics.mkdir(parents=True)
             (forensics/'fingerprint.py').write_text('def fingerprint_failure(x): return x\n', encoding='utf-8')
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='diagnostics_authority_location' for x in rows))
@@ -405,14 +330,14 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_error_api_cannot_depend_on_failure_or_forensic_layers(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); api=root/'research_platform/platform/kernel/errors'; api.mkdir(parents=True)
-            (api/'bad.py').write_text('from research_platform.reliability.failure.api import FailureEnvelope\n', encoding='utf-8')
+            root=Path(td); api=root/'noetrium_platform/foundation/kernel/kernel/errors'; api.mkdir(parents=True)
+            (api/'bad.py').write_text('from noetrium_platform.infrastructure.reliability.failure.api import FailureEnvelope\n', encoding='utf-8')
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='error_api_dependency_firewall' for x in rows))
 
     def test_operator_cannot_surface_raw_exception_text(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); operator=root/'research_platform/operator'; operator.mkdir(parents=True)
+            root=Path(td); operator=root/'noetrium_platform/product/operator'; operator.mkdir(parents=True)
             (operator/'bad.py').write_text('def x(exc):\n    return {"error":str(exc)}\n', encoding='utf-8')
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='error_semantic_authority' for x in rows))
@@ -421,7 +346,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_operator_cannot_surface_exception_via_fstring(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); operator=root/'research_platform/operator'; operator.mkdir(parents=True)
+            root=Path(td); operator=root/'noetrium_platform/product/operator'; operator.mkdir(parents=True)
             (operator/'bad.py').write_text(
                 'def x():\n    try: raise RuntimeError()\n    except Exception as exc:\n        return f"failed: {exc}"\n',
                 encoding='utf-8',
@@ -431,9 +356,9 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_status_api_cannot_depend_on_operator_or_runtime_implementation(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); api=root/'research_platform/observability/status/api'; api.mkdir(parents=True)
+            root=Path(td); api=root/'noetrium_platform/evidence/observability/status/api'; api.mkdir(parents=True)
             (api/'bad.py').write_text(
-                'from research_platform.operator.runtime_status import JoinedRuntimeStatusService\n',
+                'from noetrium_platform.product.operator.runtime_status import JoinedRuntimeStatusService\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -441,9 +366,9 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_runtime_recovery_planner_cannot_import_execution_authority(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); diagnostics=root/'research_platform/reliability/diagnostics/runtime'; diagnostics.mkdir(parents=True)
+            root=Path(td); diagnostics=root/'noetrium_platform/infrastructure/reliability/diagnostics/runtime'; diagnostics.mkdir(parents=True)
             (diagnostics/'runtime_recovery.py').write_text(
-                'from research_platform.execution.runtime.manager.one_click import OneClickRuntimeManager\n',
+                'from noetrium_platform.infrastructure.lifecycle.launch_control.one_click import OneClickRuntimeManager\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -451,7 +376,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_operator_status_contract_module_cannot_return(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); operator=root/'research_platform/operator'; operator.mkdir(parents=True)
+            root=Path(td); operator=root/'noetrium_platform/product/operator'; operator.mkdir(parents=True)
             (operator/'status.py').write_text('class PlatformStatus: pass\n', encoding='utf-8')
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='status_contract_authority' for x in rows))
@@ -459,9 +384,9 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_operator_status_join_cannot_import_runtime_state_machine(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); operator=root/'research_platform/operator'; operator.mkdir(parents=True)
+            root=Path(td); operator=root/'noetrium_platform/product/operator'; operator.mkdir(parents=True)
             (operator/'status_service.py').write_text(
-                'from research_platform.execution.runtime.manager.state import RuntimeControlStore\n',
+                'from noetrium_platform.infrastructure.lifecycle.launch_control.state import RuntimeControlStore\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -469,7 +394,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_operator_cannot_reintroduce_runtime_status_projector(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); operator=root/'research_platform/operator'; operator.mkdir(parents=True)
+            root=Path(td); operator=root/'noetrium_platform/product/operator'; operator.mkdir(parents=True)
             (operator/'runtime_status_runtime.py').write_text('def snapshot(): pass\n', encoding='utf-8')
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='status_projection_authority' for x in rows))

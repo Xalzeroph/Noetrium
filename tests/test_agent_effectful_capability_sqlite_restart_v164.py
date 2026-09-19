@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from tests_support import model_role_for_test
+
 from tests_support import FakeParticipantResolver, participant
 from tests_support import agent_turn_runtime
 
@@ -9,8 +11,8 @@ import os
 from pathlib import Path
 import tempfile
 
-from research_platform.participant.agent.api import AgentIdentity, AgentSnapshot, AgentTurnResult
-from research_platform.participant.capability.api import (
+from noetrium_platform.capabilities.participant.agent.api import AgentIdentity, AgentSnapshot, AgentTurnResult
+from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityEffectReconciliationResult,
     CapabilityProviderIdentity,
@@ -19,14 +21,14 @@ from research_platform.participant.capability.api import (
     capability_effect_request_id,
     capability_request_digest,
 )
-from research_platform.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
-from research_platform.reliability.effect.api import EffectIntentPhase
-from research_platform.reliability.effect.runtime import SQLiteEffectIntentJournal
-from research_platform.platform.kernel import EffectCertainty, EffectClass, EffectReceipt, canonical_digest
-from research_platform.execution.workflow.implementations.agent_turn.agent_turn_workflow import AgentTurnStudyWorkflow
-from research_platform.execution.decision.cycle_identity import DecisionCycleIdentity
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.infrastructure.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
+from noetrium_platform.infrastructure.reliability.effect.api import EffectIntentPhase
+from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, canonical_digest
+from noetrium_platform.research.execution.workflow.implementations.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
+from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
 
 
 class _CrashBeforeConsumeJournal:
@@ -125,7 +127,7 @@ class _ExternalWriteSession:
 
 
 class _ExternalWriteProvider:
-    identity = CapabilityProviderIdentity("external-write", "1", "1", "1", "external-write-cfg")
+    identity = CapabilityProviderIdentity("external-write", "1", "1", "1", "f" * 64)
 
     def __init__(self, external_effect_path: Path) -> None:
         self._external_effect_path = external_effect_path
@@ -169,7 +171,7 @@ class _RestartAgentSession:
 
 
 class _RestartAgent:
-    identity = AgentIdentity("restart-agent", "1", "1", "1", "restart-agent-cfg")
+    identity = AgentIdentity("restart-agent", "1", "1", "1", "a" * 64)
 
     def open_session(self, *, session_id: str, services: object):
         del services
@@ -182,11 +184,12 @@ def _spec() -> ExperimentSpec:
         study_id="default-study",
         project_id="default-project",
         participants=(
-            participant("capability_provider", "external-write", "external-write", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="external-write-cfg"),
-            participant("agent", "agent", "restart-agent", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="restart-agent-cfg", depends_on_roles=("external-write",)),
+            participant("capability_provider", "external-write", "external-write", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="f" * 64),
+            participant("agent", "agent", "restart-agent", implementation_version="1", abi_version="1", schema_version="1", artifact_digest="a" * 64, depends_on_roles=("external-write",)),
         ),
-        model_stack_digest="model", prompt_generation="prompt", workload_digest="work",
-        seed_digest="seed", repetitions=1, scientific_workflow_id="agent_turn.v1",
+        model_roles=(model_role_for_test(),), workload_digest="b" * 64,
+        seed_digest="c" * 64, repetitions=1, trial_protocol_id="agent_turn.v2",
+        trial_protocol_configuration_digest=AGENT_TURN_TRIAL_CONFIGURATION_DIGEST,
     )
 
 

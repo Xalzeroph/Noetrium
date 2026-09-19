@@ -1,0 +1,503 @@
+{
+  "schema_version": "architecture-complexity-budget.v3",
+  "baseline": {
+    "git_sha": "e7df9497859f0b02714b5fb3d24455e10b0fc3c6",
+    "source_digest": "e7f22278dd0cf7f797c16b583ef411a6fcee75cde18f19de7dd594166033f2ee",
+    "complexity": {
+      "top_level_systems": 18,
+      "subsystems": 148,
+      "contract_declarations": 174,
+      "authorities": 166,
+      "import_edges": 5042
+    }
+  },
+  "migrations": [
+    {
+      "migration_id": "role01-shared-source-index-v1",
+      "owner_role": "ROLE01",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 1,
+        "contract_declarations": 12,
+        "authorities": 1,
+        "import_edges": 31
+      },
+      "justification": "Canonical source completeness, immutable SourceIndex authority, canonical run-control catalog/operator dependency declarations, and NPE project-manifest/import-policy/public-composition contracts add explicit governance topology/contracts while preserving one source authority.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.foundation.kernel",
+          "noetrium_platform.foundation.governance",
+          "noetrium_platform.foundation.scope",
+          "noetrium_platform.foundation.portfolio"
+        ],
+        "import_projection_sha256": "f1f77c3e85117adc449c56dd807bdd46b3f3d1b4412f677bcb40b8b2548f0699"
+      }
+    },
+    {
+      "migration_id": "role01-governance-provenance-9ba9f6e",
+      "owner_role": "ROLE01",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 1,
+        "contract_declarations": 12,
+        "authorities": 1,
+        "import_edges": 56
+      },
+      "justification": "Current ROLE01 Governance/NPE/provenance convergence preserves the prior topology growth while adding exact Git-bound Algorithm, Concurrency and Performance governance dependencies, for a measured total import-edge delta of fifty-six.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.foundation.kernel",
+          "noetrium_platform.foundation.governance",
+          "noetrium_platform.foundation.scope",
+          "noetrium_platform.foundation.portfolio"
+        ],
+        "import_projection_sha256": "49e0ee63db04e96e738645ce5f00ff514bb9172c40e2d6e8f9d5312f0c52917e"
+      }
+    },
+    {
+      "migration_id": "role01-governance-public-seam-b96087e",
+      "owner_role": "ROLE01",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 1,
+        "contract_declarations": 13,
+        "authorities": 1,
+        "import_edges": 54
+      },
+      "justification": "Exact ROLE01 public governance baseline seam removes two sibling-concrete runtime dependencies from the prior provenance cut, preserves NPE topology and typed governance authority, and declares Operator\u2192Portfolio for the canonical ProjectManifest consumer; measured delta is one subsystem, thirteen contract declarations, one authority and fifty-four import edges.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.foundation.kernel",
+          "noetrium_platform.foundation.governance",
+          "noetrium_platform.foundation.scope",
+          "noetrium_platform.foundation.portfolio"
+        ],
+        "import_projection_sha256": "1e0c06fd1777a81e2c573891c1c39f62627c37ca138e2683d0566889dc64f714"
+      }
+    },
+    {
+      "migration_id": "role01-platform-semantic-convergence-v1",
+      "owner_role": "ROLE01",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 1,
+        "contract_declarations": 13,
+        "authorities": 1,
+        "import_edges": 59
+      },
+      "justification": "ROLE01 Platform Semantic Convergence adds machine-verifiable semantic-boundary evidence and consolidates canonical, strict, frozen JSON and SHA-256 primitives in Platform kernel while cutting Portfolio and generic leaf mechanics over to the shared authority; no new top-level system or domain durable authority is introduced.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.foundation.kernel",
+          "noetrium_platform.foundation.governance",
+          "noetrium_platform.foundation.scope",
+          "noetrium_platform.foundation.portfolio"
+        ],
+        "import_projection_sha256": "fd225e4d33b57a9f4b52495941b69d89f33cb333ddcc031ab87a983b8c1f6c98"
+      }
+    },
+    {
+      "migration_id": "role01-semantic-catalog-contraction-v1",
+      "owner_role": "ROLE01",
+      "delta": {
+        "top_level_systems": -1,
+        "subsystems": -31,
+        "contract_declarations": 14,
+        "authorities": -32,
+        "import_edges": 45
+      },
+      "justification": "Breaking-clean semantic convergence retires Scientific plus twenty-five scaffold-only catalog authorities, keeps truthful Study-to-Artifact, Data-to-Artifact, shared-kernel, and Runtime-to-Resource dependencies, and adds v4.0 capability-federation provider provenance/adapter-boundary governance without a registry or durable provider authority; the signed delta is full frozen-baseline-relative and grants zero headroom without independent ROLE00 approval.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.foundation.kernel",
+          "noetrium_platform.foundation.governance",
+          "noetrium_platform.foundation.scope",
+          "noetrium_platform.foundation.portfolio"
+        ],
+        "import_projection_sha256": "f5dbc1290ca0e043028813b3bbb06a3b33053795a9629f829fdafc4722b53420"
+      }
+    },
+    {
+      "migration_id": "role02-runtime-reliability-v1",
+      "owner_role": "ROLE02",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 8
+      },
+      "justification": "Current Runtime and Reliability proposal adds eight explicit typed resource, readiness, reconciliation and durable-operation authority dependencies on the exact reviewed ROLE02 family.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.infrastructure.lifecycle",
+          "noetrium_platform.infrastructure.resources",
+          "noetrium_platform.infrastructure.reliability"
+        ],
+        "import_projection_sha256": "e48da451b73527f4e5283fdbf3424c171e9c15d8f48eeaa47b6ec5dbf886e5c8"
+      }
+    },
+    {
+      "migration_id": "role03-run-control-693c4814d590",
+      "owner_role": "ROLE03",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 38
+      },
+      "justification": "Current Execution and Experimentation proposal adds thirty-eight typed run-control, effect-reconciliation, artifact, checkpoint and scientific-evidence dependencies on exact ROLE03 693c481.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.research.execution",
+          "noetrium_platform.research.experimentation",
+          "noetrium_platform.research.scientific"
+        ],
+        "import_projection_sha256": "aec91782b6e3cac009ea998614aa86594ed0fb2cfc917c8c49f7b81dedad8aa3"
+      }
+    },
+    {
+      "migration_id": "role03-npe-run-control-2722fe1",
+      "owner_role": "ROLE03",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 52
+      },
+      "justification": "Current ROLE03 NPE run-control proposal adds fifty-two measured typed execution, experimentation and scientific import edges on exact 2722fe1 while preserving the historical thirty-eight-edge migration record.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.research.execution",
+          "noetrium_platform.research.experimentation",
+          "noetrium_platform.research.scientific"
+        ],
+        "import_projection_sha256": "e69dbebfd7126e1c55c3c42c79073428f86ba547febc20630e0497a763aed87c"
+      }
+    },
+    {
+      "migration_id": "role03-section42-research-semantics-80eff508",
+      "owner_role": "ROLE03",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 50
+      },
+      "justification": "Exact ROLE03 80eff508 Section 38-42 successor adds fifty measured Execution/Experimentation research-semantics import edges versus the frozen baseline while merge-deleting Scientific scaffolding; it supersedes the current +52 proposal for exact applicability without rewriting historical evidence.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.research.execution",
+          "noetrium_platform.research.experimentation",
+          "noetrium_platform.research.scientific"
+        ],
+        "import_projection_sha256": "2db9d82255181f39e5a3ffc28e64d688380a5bdb9c739ddd84600b814d93f80f"
+      }
+    },
+    {
+      "migration_id": "role04-participant-model-v1",
+      "owner_role": "ROLE04",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 41
+      },
+      "justification": "Current Agent and Model proposal adds forty-one typed request, participant, qualification, prompt and immutable-value authority dependencies on the exact reviewed ROLE04 source family.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.participant",
+          "noetrium_platform.capabilities.model"
+        ],
+        "import_projection_sha256": "dcd7c1e5a32e7a57e466c8f0a1a1b866bde249f7f6cc57d1af1362fff38ae25e"
+      }
+    },
+    {
+      "migration_id": "role04-npe-participant-model-248d67c",
+      "owner_role": "ROLE04",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 60
+      },
+      "justification": "Exact pushed NPE Agent/Model successor adds sixty owner-scoped import edges versus the frozen baseline; this proposal preserves the historical +41 cut and grants zero headroom without independent ROLE00 approval.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.participant",
+          "noetrium_platform.capabilities.model"
+        ],
+        "import_projection_sha256": "258324fc514e5aa069f069d5d9282f0433c35a20bbbdd3da8782530cef40b643"
+      }
+    },
+    {
+      "migration_id": "role04-agent-model-convergence-866751f8",
+      "owner_role": "ROLE04",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 101
+      },
+      "justification": "Exact pushed ROLE04 Agent/Model successor 866751f8 closes shared canonical JSON/digest and PSC-03 producer convergence while increasing the frozen-baseline Participant/Model scope from 690 to 791 import edges (+101); historical +41/+60 proposals remain evidence and grant no stacked headroom.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.participant",
+          "noetrium_platform.capabilities.model"
+        ],
+        "import_projection_sha256": "4f47fd94552daff488eb31b112a5bbdff6a63ad2e1cf967c2af812aa2644df8a"
+      }
+    },
+    {
+      "migration_id": "role05-environment-evidence-v1",
+      "owner_role": "ROLE05",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 2
+      },
+      "justification": "Current Environment and Evidence proposal adds two typed environment, evidence and durable-observation authority dependencies without topology growth.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.environment",
+          "noetrium_platform.evidence.data",
+          "noetrium_platform.evidence.artifact",
+          "noetrium_platform.evidence.observability"
+        ],
+        "import_projection_sha256": "6f9fdf4f5d64703e1be10d2707b49109e365bb7343cd5118a05e73a6e3a5e62b"
+      }
+    },
+    {
+      "migration_id": "role05-final-quality-environment-evidence-2e20464",
+      "owner_role": "ROLE05",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 19
+      },
+      "justification": "Exact clean/pushed ROLE05 final-quality successor adds nineteen Environment/Data/Artifact/Observability owner-scoped import edges versus the frozen baseline; historical +2 evidence is retained and this proposal grants zero headroom without independent ROLE00 approval.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.environment",
+          "noetrium_platform.evidence.data",
+          "noetrium_platform.evidence.artifact",
+          "noetrium_platform.evidence.observability"
+        ],
+        "import_projection_sha256": "cee2b53c07b2465a13fc40599e27dd22fa950989fa55eb0fccad98881904d7c2"
+      }
+    },
+    {
+      "migration_id": "role05-research-data-semantic-convergence-0e573f98",
+      "owner_role": "ROLE05",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 61
+      },
+      "justification": "Exact clean/pushed ROLE05 0e573f98ce8a35d0c0e99ced9f45168ef05103e4 increases the frozen-baseline Environment/Data/Artifact/Observability scope from 872 to 933 import edges (+61); it supersedes older +2/+19 proposals for exact applicability and grants zero headroom absent independent ROLE00 approval.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.environment",
+          "noetrium_platform.evidence.data",
+          "noetrium_platform.evidence.artifact",
+          "noetrium_platform.evidence.observability"
+        ],
+        "import_projection_sha256": "a4d2cd2c05c69c572ae034d76b13cdc3bcf550963e69e06e76f3719939cca311"
+      }
+    },
+    {
+      "migration_id": "role05-research-data-semantic-convergence-7c401246",
+      "owner_role": "ROLE05",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 63
+      },
+      "justification": "Exact pushed ROLE05 research-data successor 7c401246 snapshots mutable Artifact references into portable content identity and increases the frozen-baseline Environment/Data/Artifact/Observability scope from 872 to 935 import edges (+63); prior +61 proposal remains historical and grants no stacked headroom.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.environment",
+          "noetrium_platform.evidence.data",
+          "noetrium_platform.evidence.artifact",
+          "noetrium_platform.evidence.observability"
+        ],
+        "import_projection_sha256": "db3db137f16df309dd5de20b3d01c25822cc6b2e03b6c601c5ed160479a39d80"
+      }
+    },
+    {
+      "migration_id": "role06-product-assurance-v1",
+      "owner_role": "ROLE06",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 55
+      },
+      "justification": "ROLE06 Product/Assurance exact successor at pushed source cd664e22c4c7a9864df9c78315ad26098c1677aa increases the frozen-baseline Operator/API scope from 107 to 162 import edges (+55) without other scoped complexity growth; this supersedes the stale +20 proposal and requires a new exact ROLE00 approval.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.product.operator",
+          "noetrium_platform.api"
+        ],
+        "import_projection_sha256": "3f367d5717fd4fbca273b3fb4d13af5c54d262afeb2a1e663898338adc713e77"
+      }
+    },
+    {
+      "migration_id": "role05-research-data-semantic-convergence-8d1a71aa",
+      "owner_role": "ROLE05",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 64
+      },
+      "justification": "Exact clean/pushed ROLE05 8d1a71aae96f11a630ccc68895a43f3da57ef795 increases the frozen-baseline Environment/Data/Artifact/Observability scope from 872 to 936 import edges (+64); it supersedes older research-data proposals for exact applicability and grants zero headroom absent independent ROLE00 approval.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.environment",
+          "noetrium_platform.evidence.data",
+          "noetrium_platform.evidence.artifact",
+          "noetrium_platform.evidence.observability"
+        ],
+        "import_projection_sha256": "29e446c8368a8441bd2fec8273f9555204623a4d28a6bc267f4e1d6a3bd91f79"
+      }
+    },
+    {
+      "migration_id": "role04-agent-model-convergence-v4-20260901",
+      "owner_role": "ROLE04",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 108
+      },
+      "justification": "Exact ROLE00 v4 integration candidate records the measured Participant/Model owner-scoped growth from the frozen baseline while preserving downstream method extensibility, typed runtime bindings, and one-way public platform dependencies.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.participant",
+          "noetrium_platform.capabilities.model"
+        ],
+        "import_projection_sha256": "e5e2bd98dedafcf17e6be42df261046b47a93e3172c30ce5811e0ae83286ee89"
+      }
+    },
+    {
+      "migration_id": "role05-research-data-convergence-v4-20260901",
+      "owner_role": "ROLE05",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 66
+      },
+      "justification": "Exact ROLE00 v4 integration candidate records the measured Environment/Data/Artifact/Observability owner-scoped growth from the frozen baseline while preserving portable evidence, content identity, and storage relocation semantics.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.environment",
+          "noetrium_platform.evidence.data",
+          "noetrium_platform.evidence.artifact",
+          "noetrium_platform.evidence.observability"
+        ],
+        "import_projection_sha256": "195efba0ac5738ce48885c287a19a37a58069c5dc04e23f4b70c04e8c9464415"
+      }
+    },
+    {
+      "migration_id": "role01-platform-v4-mainline-20260901",
+      "owner_role": "ROLE01",
+      "delta": {
+        "top_level_systems": -1,
+        "subsystems": -31,
+        "contract_declarations": 17,
+        "authorities": -32,
+        "import_edges": 39
+      },
+      "justification": "Exact ROLE00 v4 mainline integration records the measured Governance and Platform owner-scoped topology and contract projection after reconciling the current platform mainline with the reviewed union.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.foundation.kernel",
+          "noetrium_platform.foundation.governance",
+          "noetrium_platform.foundation.scope",
+          "noetrium_platform.foundation.portfolio"
+        ],
+        "import_projection_sha256": "66cc1abe3a0ea3a3ff7cc169f66901770c3c0277a38b059a27722bc23fb2d78f"
+      }
+    },
+    {
+      "migration_id": "role03-research-v4-mainline-20260901",
+      "owner_role": "ROLE03",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 25
+      },
+      "justification": "Exact ROLE00 v4 mainline integration records the measured Execution and Experimentation owner-scoped import projection after reconciling the current platform mainline with the reviewed union.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.research.execution",
+          "noetrium_platform.research.experimentation",
+          "noetrium_platform.research.scientific"
+        ],
+        "import_projection_sha256": "1d486a376d9627e40b457991720c00fd247a5ff8034a871c71550b3cce8b5bd2"
+      }
+    },
+    {
+      "migration_id": "role04-agent-model-mainline-20260901",
+      "owner_role": "ROLE04",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 99
+      },
+      "justification": "Exact ROLE00 v4 mainline integration records the measured Participant and Model owner-scoped import projection after reconciling the current platform mainline with the reviewed union.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.participant",
+          "noetrium_platform.capabilities.model"
+        ],
+        "import_projection_sha256": "a7450828a12253ac93cbe78be2db29b60f90dfdb32ca2d33c57c07d4f551d6ef"
+      }
+    },
+    {
+      "migration_id": "role05-research-data-mainline-20260901",
+      "owner_role": "ROLE05",
+      "delta": {
+        "top_level_systems": 0,
+        "subsystems": 0,
+        "contract_declarations": 0,
+        "authorities": 0,
+        "import_edges": 70
+      },
+      "justification": "Exact ROLE00 v4 mainline integration records the measured Environment Data Artifact and Observability owner-scoped import projection after reconciling the current platform mainline with the reviewed union.",
+      "applicability": {
+        "module_prefixes": [
+          "noetrium_platform.capabilities.environment",
+          "noetrium_platform.evidence.data",
+          "noetrium_platform.evidence.artifact",
+          "noetrium_platform.evidence.observability"
+        ],
+        "import_projection_sha256": "b0d25f807ff2c73a6605754e7d6320b4846a4f6d866b9ef67b4d9ad563f081fe"
+      }
+    }
+  ]
+}

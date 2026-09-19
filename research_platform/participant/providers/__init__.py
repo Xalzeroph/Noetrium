@@ -1,1 +1,0 @@
-"""participant system providers boundary."""

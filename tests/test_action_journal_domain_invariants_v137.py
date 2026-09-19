@@ -7,18 +7,18 @@ import tempfile
 
 import pytest
 
-from research_platform.reliability.effect.api import (
+from noetrium_platform.infrastructure.reliability.effect.api import (
     EffectCompletionEvidence,
     EffectIntent,
     EffectIntentConflict,
     EffectIntentPhase,
 )
-from research_platform.reliability.effect.runtime import (
+from noetrium_platform.infrastructure.reliability.effect.runtime import (
     InMemoryEffectIntentJournal,
     SQLiteEffectIntentJournal,
 )
-from research_platform.environment.runtime.api import ActionRequest
-from research_platform.platform.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
+from noetrium_platform.capabilities.environment.runtime.api import ActionRequest
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
 
 
 def _intent() -> EffectIntent:

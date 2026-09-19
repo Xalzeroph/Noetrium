@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.execution.runtime.manager import ExactRuntimeController, RuntimeAction, RuntimeControlStore, exact_runtime_plan
+from noetrium_platform.infrastructure.lifecycle.launch_control import ExactRuntimeController, RuntimeAction, RuntimeControlStore, exact_runtime_plan
 from tests_support import frozen_runtime_manifest
 
 

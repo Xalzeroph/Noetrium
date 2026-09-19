@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import unittest
 
-from research_platform.governance.architecture.runtime_observability_invariants import audit_runtime_observability_invariants
+from noetrium_platform.foundation.governance.architecture.runtime_observability_invariants import audit_runtime_observability_invariants
 
 
 class RuntimeObservabilityArchitectureV183Tests(unittest.TestCase):

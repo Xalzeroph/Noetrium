@@ -2,11 +2,11 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.observability.api import EventEnvelope
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.providers import HashChainError
-from research_platform.reliability.forensics.api import MutationRecord
-from research_platform.platform.kernel import ExecutionContext
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.infrastructure.reliability.forensics.providers import HashChainError
+from noetrium_platform.infrastructure.reliability.forensics.api import MutationRecord
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 
 class ForensicsOSTests(unittest.TestCase):
@@ -17,8 +17,8 @@ class ForensicsOSTests(unittest.TestCase):
             store.append_event(EventEnvelope("e1", "X", ctx, "c"))
             store.append_mutation(MutationRecord("m1", "state.x", "agg", None, 1, None, "abc", "owner", "op", ctx))
             self.assertEqual(store.verify_all()["events"][0], 1)
-            self.assertEqual(store.index.locate("e1")["event_id"], "e1")
-            self.assertEqual(store.index.last_writer("r", "state.x")["mutation_id"], "m1")
+            self.assertEqual(store.index.locate("e1").to_payload()["event_id"], "e1")
+            self.assertEqual(store.index.last_writer("r", "state.x").mutation_id, "m1")
 
     def test_tamper_is_detected(self):
         with tempfile.TemporaryDirectory() as td:

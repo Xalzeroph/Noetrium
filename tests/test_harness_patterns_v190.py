@@ -9,47 +9,72 @@ import tempfile
 import time
 import unittest
 
-from research_platform.participant.capability.api import (
+from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
-    CapabilityPolicyDenied,
-    CapabilityPostPolicyViolation,
     CapabilityPolicySet,
     CapabilityRequest,
     CapabilityResult,
     GuardDecision,
     GuardVerdict,
 )
-from research_platform.execution.capability.runtime import CapabilityInvocationPipeline
-from research_platform.data.fact.api import DurableFact, FactCriticality, UnknownRequiredFact
-from research_platform.observability.api import EventEnvelope
-from research_platform.data.record.api import ExecutionRecordPlane
-from research_platform.data.fact.runtime import FactDecoderRegistry
-from research_platform.platform.kernel import EffectClass, ExecutionContext, ImmutableModelIdentity, canonical_digest
-from research_platform.model.request.runtime import (
-    DirectoryContentAddressedStore,
+from noetrium_platform.research.execution.capability.runtime import CapabilityInvocationPipelineFactory
+from noetrium_platform.research.execution.machines import (
+    CapabilityMediationDenied,
+    capability_mediator_binding_digest,
+    capability_program_from_policy,
+)
+from noetrium_platform.evidence.data.fact.api import DurableFact, FactCriticality, UnknownRequiredFact
+from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.evidence.data.record.api import ExecutionRecordPlane
+from noetrium_platform.evidence.data.fact.runtime import FactDecoderRegistry
+from noetrium_platform.foundation.kernel.kernel import InMemoryMachineJournal, canonical_bytes, EffectClass, ExecutionContext, ImmutableModelIdentity, canonical_digest
+from noetrium_platform.evidence.artifact.content.providers import DirectoryArtifactBlobStore
+from noetrium_platform.capabilities.model.request.runtime import (
     DirectoryModelRequestLedger,
     ReconstructableModelRequestRecorder,
 )
-from research_platform.data.projection.api import ProjectionCursor, ProjectionTail
-from research_platform.data.projection.runtime import IncrementalProjectionRuntime, InMemoryProjectionCheckpointStore, ProjectionSourceDrift
-from research_platform.execution.capability.api import RegistrationKey, ScopeDisposed
-from research_platform.execution.capability.runtime import ScopedRegistrationRuntime
+from noetrium_platform.evidence.data.projection.api import ProjectionCursor, ProjectionTail
+from noetrium_platform.evidence.data.projection.runtime import IncrementalProjectionRuntime, InMemoryProjectionCheckpointStore, ProjectionSourceDrift
+from noetrium_platform.research.execution.capability.api import RegistrationKey, ScopeDisposed
+from noetrium_platform.research.execution.capability.runtime import ScopedRegistrationRuntime
 
 
 class _Deny:
     guard_id = "deny.secret"
+    implementation_digest = canonical_digest({
+        "guard": guard_id,
+        "implementation_revision": 1,
+    })
     def evaluate(self, descriptor, request):
         return GuardDecision(self.guard_id, GuardVerdict.DENY, "policy.blocked")
 
 
 class _Allow:
     guard_id = "allow.after"
+    implementation_digest = canonical_digest({
+        "guard": guard_id,
+        "implementation_revision": 1,
+    })
+    def evaluate(self, descriptor, request):
+        return GuardDecision(self.guard_id, GuardVerdict.ALLOW)
+
+
+class _AllowV2:
+    guard_id = "allow.after"
+    implementation_digest = canonical_digest({
+        "guard": guard_id,
+        "implementation_revision": 2,
+    })
     def evaluate(self, descriptor, request):
         return GuardDecision(self.guard_id, GuardVerdict.ALLOW)
 
 
 class _RejectPost:
     policy_id = "post.reject"
+    implementation_digest = canonical_digest({
+        "post_policy": policy_id,
+        "implementation_revision": 1,
+    })
     def validate(self, descriptor, request, result):
         raise RuntimeError("token=POST_POLICY_SECRET")
 
@@ -63,13 +88,35 @@ class _Reducer:
 
 
 class HarnessPatternsV190Tests(unittest.TestCase):
+    def test_capability_policy_binding_changes_with_implementation_identity(self):
+        first_program, first_mediators = capability_program_from_policy(
+            CapabilityPolicySet(guards=(_Allow(),))
+        )
+        second_program, second_mediators = capability_program_from_policy(
+            CapabilityPolicySet(guards=(_AllowV2(),))
+        )
+        self.assertEqual(first_program.program_digest, second_program.program_digest)
+        self.assertNotEqual(
+            capability_mediator_binding_digest(first_program, first_mediators),
+            capability_mediator_binding_digest(second_program, second_mediators),
+        )
+
+    def test_capability_policy_requires_explicit_implementation_identity(self):
+        class MissingIdentity:
+            guard_id = "missing.identity"
+            def evaluate(self, descriptor, request):
+                return GuardDecision(self.guard_id, GuardVerdict.ALLOW)
+
+        with self.assertRaises((TypeError, ValueError)):
+            CapabilityPolicySet(guards=(MissingIdentity(),))
+
     def context(self):
         return ExecutionContext(run_id="r190", trace_id="tr190", span_id="sp190", decision_cycle_id="dc190")
 
     def test_model_visible_request_is_reconstructable_and_drift_fails(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
-            content=DirectoryContentAddressedStore(root/"blobs")
+            content=DirectoryArtifactBlobStore(root/"blobs")
             ledger=DirectoryModelRequestLedger(root/"ledger")
             recorder=ReconstructableModelRequestRecorder(content,ledger)
             body={"messages":[{"role":"system","content":"hello"}],"tools":[{"name":"x"}]}
@@ -82,13 +129,40 @@ class HarnessPatternsV190Tests(unittest.TestCase):
             )
             self.assertEqual(env.model.model_id,"m")
             self.assertEqual(env.model.engine,"engine")
-            self.assertEqual(recorder.reconstruct_request_body(env),body)
-            self.assertEqual(ledger.get("rq190"),env)
+            reconstructed_full=recorder.reconstruct(env)
+            reconstructed=reconstructed_full.request_body
+            self.assertEqual(canonical_bytes(reconstructed),canonical_bytes(body))
+            with self.assertRaises(TypeError): reconstructed_full.tool_schema_bundle[0]["name"]="tampered"
+            self.assertFalse(isinstance(reconstructed, dict))
+            with self.assertRaises(TypeError): reconstructed["messages"]=[]
+            with self.assertRaises(TypeError): dict.__setitem__(reconstructed,"bypass",True)
+            with self.assertRaises(TypeError): reconstructed["messages"][0]["content"]="tampered"
             recorder.verify_visible_request(env,body)
+            body["messages"][0]["content"]="caller-mutated"
+            self.assertEqual(reconstructed["messages"][0]["content"],"hello")
+            self.assertEqual(ledger.get("rq190"),env)
+            with self.assertRaises(RuntimeError): recorder.verify_visible_request(env,body)
             with self.assertRaises(RuntimeError): recorder.verify_visible_request(env,{"messages":[]})
             other_ref=content.put(b'{"x":1}',media_type="application/json")
             with self.assertRaises(RuntimeError):
                 ledger.append(replace(env,request_body=other_ref,envelope_digest=""))
+
+    def test_model_request_recorder_rejects_non_json_visible_authority(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)
+            recorder=ReconstructableModelRequestRecorder(
+                DirectoryArtifactBlobStore(root/"blobs"),
+                DirectoryModelRequestLedger(root/"ledger"),
+            )
+            common=dict(
+                request_id="rq-bad-json", context=self.context(), role="planner",
+                model=ImmutableModelIdentity("planner","m","rev","engine","1","bf16",None,4096),
+                prompt_generation_id="g1", prompt_id="planner.v1", prompt_digest="a"*64,
+            )
+            with self.assertRaises(TypeError):
+                recorder.record(**common, request_body={"bad": object()})
+            with self.assertRaises(TypeError):
+                recorder.record(**common, request_body={"messages": []}, tool_schema_bundle={"bad": object()})
 
     def test_scope_disposal_waits_for_active_lease_and_then_rejects_new_use(self):
         scope=ScopedRegistrationRuntime("root")
@@ -109,10 +183,31 @@ class HarnessPatternsV190Tests(unittest.TestCase):
         descriptor=CapabilityDescriptor("capability.test","v1","req","res",EffectClass.PURE)
         request=CapabilityRequest("capability.test",{},self.context())
         called=[]
-        pipeline=CapabilityInvocationPipeline(CapabilityPolicySet(guards=(_Deny(),_Allow())))
-        with self.assertRaises(CapabilityPolicyDenied):
-            pipeline.invoke(descriptor=descriptor,request=request,execute=lambda:(called.append(1) or CapabilityResult("capability.test",{})))
+        journal=InMemoryMachineJournal()
+        pipeline=CapabilityInvocationPipelineFactory(journal).create(
+            CapabilityPolicySet(guards=(_Deny(),_Allow()))
+        )
+        with self.assertRaises(CapabilityMediationDenied) as caught:
+            pipeline.invoke(
+                invocation_id="dc190:capability.test:0",
+                descriptor=descriptor,
+                request=request,
+                execute=lambda mediated: (
+                    called.append(1)
+                    or CapabilityResult(mediated.capability_id,{})
+                ),
+            )
         self.assertEqual(called,[])
+        self.assertEqual(caught.exception.stage.value,"pre")
+        self.assertFalse(caught.exception.execution_completed)
+        commits=journal.commits("runtime-capability:r190:" + canonical_digest({
+            "invocation_id":"dc190:capability.test:0",
+            "run_id":"r190",
+            "capability_id":"capability.test",
+            "program_digest":pipeline._program.program_digest,
+        })[:24])
+        self.assertGreaterEqual(len(commits),2)
+        self.assertEqual(commits[-1].accepted_status.value,"failed")
 
     def test_projection_runtime_replays_only_tail_and_rejects_rewind(self):
         store=InMemoryProjectionCheckpointStore(); runtime=IncrementalProjectionRuntime(); reducer=_Reducer()
@@ -183,14 +278,21 @@ class HarnessPatternsV190Tests(unittest.TestCase):
         descriptor=CapabilityDescriptor("capability.test","v1","req","res",EffectClass.RECONCILABLE)
         request=CapabilityRequest("capability.test",{},self.context())
         result=CapabilityResult("capability.test",{"ok":True})
-        pipeline=CapabilityInvocationPipeline(CapabilityPolicySet(post_policies=(_RejectPost(),)))
-        with self.assertRaises(CapabilityPostPolicyViolation) as caught:
-            pipeline.invoke(descriptor=descriptor,request=request,execute=lambda:result)
+        pipeline=CapabilityInvocationPipelineFactory(
+            InMemoryMachineJournal()
+        ).create(CapabilityPolicySet(post_policies=(_RejectPost(),)))
+        with self.assertRaises(CapabilityMediationDenied) as caught:
+            pipeline.invoke(
+                invocation_id="dc190:capability.test:post",
+                descriptor=descriptor,
+                request=request,
+                execute=lambda mediated: result,
+            )
         exc=caught.exception
-        self.assertTrue(exc.execution_completed); self.assertFalse(exc.retry_safe)
-        self.assertIs(exc.result,result); self.assertEqual(exc.policy_id,"post.reject")
-        self.assertNotIn("POST_POLICY_SECRET",str(exc))
-        self.assertIn("POST_POLICY_SECRET",str(exc.__cause__))
+        self.assertTrue(exc.execution_completed)
+        self.assertFalse(exc.retry_safe)
+        self.assertEqual(exc.stage.value,"post")
+        self.assertEqual(exc.reason_code,"post_policy:post.reject")
 
     def test_projection_rejects_same_watermark_with_changed_source_digest(self):
         store=InMemoryProjectionCheckpointStore(); runtime=IncrementalProjectionRuntime(); reducer=_Reducer()

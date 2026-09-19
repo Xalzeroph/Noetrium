@@ -1,0 +1,11 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "scienceworld",
+  "benchmark": {
+    "benchmark_id": "scienceworld",
+    "title": "ScienceWorld / AgentBoard 90-task evaluation cut",
+    "source_uri": "https://github.com/hkust-nlp/AgentBoard",
+    "environment_kinds": ["embodied_text_world"],
+    "modalities": ["text", "structured"]
+  }
+}

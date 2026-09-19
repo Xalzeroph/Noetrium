@@ -1,1 +1,0 @@
-"""participant.session runtime boundary."""

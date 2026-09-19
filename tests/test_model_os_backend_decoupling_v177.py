@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
 from dataclasses import dataclass
 import unittest
 
-from research_platform.platform.kernel import ImmutableModelIdentity
-from research_platform.model.serving.api import ModelPhase, ModelRunState, RecoveryPlan, RecoveryStep
-from research_platform.model.serving.runtime import DurableExactRecoveryRunner, ModelSupervisor
-from research_platform.model.serving.api.recovery_state import DurableRecoveryAttempt
+from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
+from noetrium_platform.capabilities.model.serving.api import ModelPhase, ModelRunState, RecoveryPlan, RecoveryStep
+from noetrium_platform.capabilities.model.serving.runtime import DurableExactRecoveryRunner, ModelSupervisor
+from noetrium_platform.capabilities.model.serving.api.recovery_state import DurableRecoveryAttempt
 
 
 class MemoryRecoveryStore:
@@ -14,6 +15,9 @@ class MemoryRecoveryStore:
 
     def __init__(self) -> None:
         self.value: DurableRecoveryAttempt | None = None
+
+    def recovery_session(self):
+        return nullcontext()
 
     def exists(self) -> bool:
         return self.value is not None
@@ -38,7 +42,7 @@ class RecordingRecoveryExecutor:
     def __init__(self) -> None:
         self.calls: list[RecoveryStep] = []
 
-    def execute(self, step: RecoveryStep, plan: RecoveryPlan) -> tuple[str, ...]:
+    def run_step(self, step: RecoveryStep, plan: RecoveryPlan) -> tuple[str, ...]:
         self.calls.append(step)
         return (f"memory:{step.value}",)
 

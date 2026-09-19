@@ -1,0 +1,943 @@
+{
+  "schema": "noetrium.agent-reproduction-scope.v1",
+  "updated_at": "2026-09-19",
+  "authority": "discovery_scope_only",
+  "reproduction_authority": "research/catalog/research_program.json",
+  "scope": "all_agent_related_research",
+  "rules": {
+    "priority_is_not_exclusion": true,
+    "historical_to_current": true,
+    "continuous_frontier_intake": true,
+    "external_repositories_are_references_only": true,
+    "promotion_rule": "Every discovered item that materially changes agent perception, state, memory, context, reasoning, planning, action, learning, tool use, coordination, embodiment, human interaction, safety, evaluation, environment integration or runtime execution enters the reproduction backlog. Paper-specific semantics remain reproduction-owned; reusable cross-method mechanisms may be promoted upstream only with evidence from real reproductions."
+  },
+  "required_domains": [
+    {
+      "domain_id": "classical-agent-architectures",
+      "title": "Classical, reactive, deliberative, BDI, blackboard, behavior-tree and hybrid agent architectures"
+    },
+    {
+      "domain_id": "agent-loop",
+      "title": "Language-agent loops, cognition runtimes and planner-executor-verifier architectures"
+    },
+    {
+      "domain_id": "reasoning",
+      "title": "Reasoning, decomposition, verification and deliberation"
+    },
+    {
+      "domain_id": "planning-search",
+      "title": "Planning, tree/graph search, MCTS and test-time search"
+    },
+    {
+      "domain_id": "world-models",
+      "title": "World models, model-based planning and foresight"
+    },
+    {
+      "domain_id": "tool-use",
+      "title": "Function calling, API use, tool learning, routing and tool creation"
+    },
+    {
+      "domain_id": "retrieval-knowledge",
+      "title": "RAG, agentic retrieval, knowledge graphs and evidence-grounded retrieval"
+    },
+    {
+      "domain_id": "memory",
+      "title": "Working, episodic, semantic, procedural, vector, graph, hierarchical and learned memory"
+    },
+    {
+      "domain_id": "context-management",
+      "title": "Context projection, compression, admission, eviction and long-horizon context"
+    },
+    {
+      "domain_id": "reflection-self-correction",
+      "title": "Reflection, critique, verifier-guided correction and iterative refinement"
+    },
+    {
+      "domain_id": "self-improvement",
+      "title": "Self-evolution, scaffold evolution, skills, curriculum and lifelong adaptation"
+    },
+    {
+      "domain_id": "training",
+      "title": "Agent SFT, preference learning, RL, process/outcome rewards, online RL and self-play"
+    },
+    {
+      "domain_id": "web-agents",
+      "title": "Browser, web navigation, web research and transactional web agents"
+    },
+    {
+      "domain_id": "gui-computer-use",
+      "title": "Desktop, mobile and general GUI/computer-use agents"
+    },
+    {
+      "domain_id": "software-engineering",
+      "title": "Coding, debugging, repository, issue-resolution and DevOps agents"
+    },
+    {
+      "domain_id": "multimodal",
+      "title": "Vision, audio, video, document and arbitrary multimodal agents"
+    },
+    {
+      "domain_id": "embodied-robotics",
+      "title": "Embodied navigation, manipulation, VLA and robotics agents"
+    },
+    {
+      "domain_id": "game-worlds",
+      "title": "Minecraft, games, simulators, interactive fiction and open-world agents"
+    },
+    {
+      "domain_id": "multi-agent",
+      "title": "Coordination, communication, debate, delegation, role specialization and collective intelligence"
+    },
+    {
+      "domain_id": "protocols-interoperability",
+      "title": "MCP, A2A, schemas, discovery, delegation and cross-framework interoperability"
+    },
+    {
+      "domain_id": "scientific-research",
+      "title": "Scientific discovery, literature, experiments, theorem/proof and AI-scientist agents"
+    },
+    {
+      "domain_id": "enterprise-workflow",
+      "title": "Data, SQL, office, customer-service and enterprise workflow agents"
+    },
+    {
+      "domain_id": "human-agent-interaction",
+      "title": "Mixed initiative, delegation, clarification, oversight, preferences and interruption"
+    },
+    {
+      "domain_id": "social-economic",
+      "title": "Negotiation, markets, social simulation and mechanism-design agents"
+    },
+    {
+      "domain_id": "safety-security",
+      "title": "Permissions, prompt injection, memory poisoning, sandboxing, trust and defensive security evaluation"
+    },
+    {
+      "domain_id": "evaluation-benchmarks",
+      "title": "Agent benchmarks, judges, trajectory evaluation, reliability and efficiency"
+    },
+    {
+      "domain_id": "runtime-systems",
+      "title": "Scheduling, checkpoints, recovery, concurrency, budgets, caching and observability"
+    },
+    {
+      "domain_id": "environment-interfaces",
+      "title": "Text worlds, web, GUI, code, simulators, robotics and real-world environment adapters"
+    }
+  ],
+  "seed_lineages": [
+    {
+      "id": "a2a",
+      "year": 2025,
+      "source": "https://a2a-protocol.org/v1.0.0/",
+      "domains": [
+        "protocols-interoperability",
+        "multi-agent"
+      ]
+    },
+    {
+      "id": "adas-meta-agent-search",
+      "year": 2025,
+      "source": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/36b7acf6f6010652b3f2a433774a66fe-Abstract-Conference.html",
+      "domains": [
+        "planning-search",
+        "runtime-systems",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "aflow",
+      "year": 2025,
+      "source": "https://arxiv.org/abs/2410.10762",
+      "domains": [
+        "planning-search",
+        "runtime-systems",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "agent-q",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2408.07199",
+      "domains": [
+        "planning-search",
+        "reflection-self-correction",
+        "training",
+        "web-agents"
+      ]
+    },
+    {
+      "id": "agent-s3",
+      "year": 2025,
+      "source": "https://arxiv.org/abs/2510.02250",
+      "domains": [
+        "context-management",
+        "gui-computer-use",
+        "multimodal",
+        "runtime-systems"
+      ]
+    },
+    {
+      "id": "agent-zero-memory",
+      "year": 2026,
+      "source": "https://arxiv.org/abs/2608.29606",
+      "domains": [
+        "memory",
+        "retrieval-knowledge",
+        "safety-security"
+      ]
+    },
+    {
+      "id": "agentless",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2407.01489",
+      "domains": [
+        "software-engineering"
+      ]
+    },
+    {
+      "id": "agentverse",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2308.10848",
+      "domains": [
+        "multi-agent"
+      ]
+    },
+    {
+      "id": "ai-scientist",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2408.06292",
+      "domains": [
+        "scientific-research",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "ai-scientist-v2",
+      "year": 2025,
+      "source": "https://arxiv.org/abs/2504.08066",
+      "domains": [
+        "planning-search",
+        "runtime-systems",
+        "scientific-research",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "api-bank",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2304.08244",
+      "domains": [
+        "tool-use",
+        "evaluation-benchmarks"
+      ]
+    },
+    {
+      "id": "appagent",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2312.13771",
+      "domains": [
+        "gui-computer-use",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "art",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2303.09014",
+      "domains": [
+        "tool-use",
+        "reasoning"
+      ]
+    },
+    {
+      "id": "autocoderover",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2404.05427",
+      "domains": [
+        "software-engineering"
+      ]
+    },
+    {
+      "id": "autogen",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2308.08155",
+      "domains": [
+        "multi-agent",
+        "runtime-systems"
+      ]
+    },
+    {
+      "id": "camel",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2303.17760",
+      "domains": [
+        "multi-agent"
+      ]
+    },
+    {
+      "id": "chain-of-thought",
+      "year": 2022,
+      "source": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html",
+      "domains": [
+        "reasoning"
+      ]
+    },
+    {
+      "id": "chatdev",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2307.07924",
+      "domains": [
+        "multi-agent",
+        "software-engineering"
+      ]
+    },
+    {
+      "id": "chemcrow",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2304.05376",
+      "domains": [
+        "scientific-research",
+        "tool-use"
+      ]
+    },
+    {
+      "id": "code-as-policies",
+      "year": 2022,
+      "source": "https://arxiv.org/abs/2209.07753",
+      "domains": [
+        "embodied-robotics",
+        "software-engineering"
+      ]
+    },
+    {
+      "id": "crag",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2401.15884",
+      "domains": [
+        "retrieval-knowledge",
+        "reflection-self-correction"
+      ]
+    },
+    {
+      "id": "critic",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2305.11738",
+      "domains": [
+        "reflection-self-correction",
+        "tool-use"
+      ]
+    },
+    {
+      "id": "exact",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2410.02052",
+      "domains": [
+        "planning-search",
+        "reflection-self-correction",
+        "self-improvement",
+        "web-agents"
+      ]
+    },
+    {
+      "id": "gats",
+      "year": 2026,
+      "source": "https://arxiv.org/abs/2607.08894",
+      "domains": [
+        "evaluation-benchmarks",
+        "planning-search",
+        "world-models"
+      ]
+    },
+    {
+      "id": "generative-agents",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2304.03442",
+      "domains": [
+        "memory",
+        "multi-agent",
+        "social-economic"
+      ]
+    },
+    {
+      "id": "gorilla",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2305.15334",
+      "domains": [
+        "retrieval-knowledge",
+        "tool-use"
+      ]
+    },
+    {
+      "id": "graph-of-thoughts",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2308.09687",
+      "domains": [
+        "planning-search",
+        "reasoning"
+      ]
+    },
+    {
+      "id": "hugginggpt",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2303.17580",
+      "domains": [
+        "multimodal",
+        "planning-search",
+        "runtime-systems",
+        "tool-use"
+      ]
+    },
+    {
+      "id": "inner-monologue",
+      "year": 2022,
+      "source": "https://arxiv.org/abs/2207.05608",
+      "domains": [
+        "embodied-robotics",
+        "reasoning"
+      ]
+    },
+    {
+      "id": "lats",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2310.04406",
+      "domains": [
+        "planning-search",
+        "reflection-self-correction",
+        "tool-use"
+      ]
+    },
+    {
+      "id": "least-to-most",
+      "year": 2022,
+      "source": "https://arxiv.org/abs/2205.10625",
+      "domains": [
+        "reasoning",
+        "planning-search"
+      ]
+    },
+    {
+      "id": "lits",
+      "year": 2026,
+      "source": "https://arxiv.org/abs/2603.00631",
+      "domains": [
+        "planning-search",
+        "reasoning",
+        "runtime-systems"
+      ]
+    },
+    {
+      "id": "live-swe-agent",
+      "year": 2025,
+      "source": "https://arxiv.org/abs/2511.13646",
+      "domains": [
+        "self-improvement",
+        "software-engineering"
+      ]
+    },
+    {
+      "id": "ma-lmm",
+      "year": 2024,
+      "source": "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html",
+      "domains": [
+        "memory",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "mars-automated-ai-research",
+      "year": 2026,
+      "source": "https://arxiv.org/abs/2602.02660",
+      "domains": [
+        "memory",
+        "planning-search",
+        "reflection-self-correction",
+        "scientific-research"
+      ]
+    },
+    {
+      "id": "mcp",
+      "year": 2024,
+      "source": "https://modelcontextprotocol.io/specification/2026-07-28",
+      "domains": [
+        "protocols-interoperability",
+        "tool-use",
+        "runtime-systems"
+      ]
+    },
+    {
+      "id": "memevolve",
+      "year": 2025,
+      "source": "https://arxiv.org/abs/2512.18746",
+      "domains": [
+        "memory",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "memgpt",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2310.08560",
+      "domains": [
+        "context-management",
+        "memory",
+        "runtime-systems"
+      ]
+    },
+    {
+      "id": "memorybank",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2305.10250",
+      "domains": [
+        "memory",
+        "context-management"
+      ]
+    },
+    {
+      "id": "metagpt",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2308.00352",
+      "domains": [
+        "multi-agent",
+        "software-engineering"
+      ]
+    },
+    {
+      "id": "minedojo",
+      "year": 2022,
+      "source": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/74a67268c5cc5910f64938cac4526a90-Abstract.html",
+      "domains": [
+        "embodied-robotics",
+        "evaluation-benchmarks",
+        "game-worlds",
+        "multimodal",
+        "training"
+      ]
+    },
+    {
+      "id": "mobile-agent",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2401.16158",
+      "domains": [
+        "gui-computer-use",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "mosaic",
+      "year": 2026,
+      "source": "https://arxiv.org/abs/2607.09603",
+      "domains": [
+        "multi-agent",
+        "embodied-robotics",
+        "planning-search"
+      ]
+    },
+    {
+      "id": "moviechat",
+      "year": 2024,
+      "source": "https://openaccess.thecvf.com/content/CVPR2024/html/Song_MovieChat_From_Dense_Token_to_Sparse_Memory_for_Long_Video_CVPR_2024_paper.html",
+      "domains": [
+        "memory",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "mrkl",
+      "year": 2022,
+      "source": "https://arxiv.org/abs/2205.00445",
+      "domains": [
+        "tool-use",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "multiagent-debate",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2305.14325",
+      "domains": [
+        "multi-agent",
+        "reasoning"
+      ]
+    },
+    {
+      "id": "octo",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2405.12213",
+      "domains": [
+        "embodied-robotics",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "openvla",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2406.09246",
+      "domains": [
+        "embodied-robotics",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "osworld-agent",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2404.07972",
+      "domains": [
+        "gui-computer-use",
+        "multimodal",
+        "evaluation-benchmarks"
+      ]
+    },
+    {
+      "id": "pal",
+      "year": 2022,
+      "source": "https://arxiv.org/abs/2211.10435",
+      "domains": [
+        "reasoning",
+        "software-engineering",
+        "tool-use"
+      ]
+    },
+    {
+      "id": "palm-e",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2303.03378",
+      "domains": [
+        "embodied-robotics",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "pi0",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2410.24164",
+      "domains": [
+        "embodied-robotics",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "pi0.5",
+      "year": 2025,
+      "source": "https://arxiv.org/abs/2504.16054",
+      "domains": [
+        "embodied-robotics",
+        "multimodal",
+        "training"
+      ]
+    },
+    {
+      "id": "plan-and-solve",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2305.04091",
+      "domains": [
+        "planning-search",
+        "reasoning"
+      ]
+    },
+    {
+      "id": "qlass",
+      "year": 2025,
+      "source": "https://arxiv.org/abs/2502.02584",
+      "domains": [
+        "evaluation-benchmarks",
+        "planning-search",
+        "training"
+      ]
+    },
+    {
+      "id": "rap",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2305.14992",
+      "domains": [
+        "planning-search",
+        "reasoning",
+        "world-models"
+      ]
+    },
+    {
+      "id": "react",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2210.03629",
+      "domains": [
+        "agent-loop",
+        "reasoning",
+        "tool-use"
+      ]
+    },
+    {
+      "id": "reflexion",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2303.11366",
+      "domains": [
+        "memory",
+        "reflection-self-correction",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "rt-2",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2307.15818",
+      "domains": [
+        "embodied-robotics",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "saycan",
+      "year": 2022,
+      "source": "https://arxiv.org/abs/2204.01691",
+      "domains": [
+        "embodied-robotics",
+        "planning-search"
+      ]
+    },
+    {
+      "id": "scrubjay-mem",
+      "year": 2026,
+      "source": "https://arxiv.org/abs/2608.04746",
+      "domains": [
+        "memory",
+        "context-management"
+      ]
+    },
+    {
+      "id": "seeact",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2401.01614",
+      "domains": [
+        "web-agents",
+        "gui-computer-use",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "self-consistency",
+      "year": 2023,
+      "source": "https://openreview.net/forum?id=1PL1NIMMrw",
+      "domains": [
+        "reasoning",
+        "planning-search"
+      ]
+    },
+    {
+      "id": "self-rag",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2310.11511",
+      "domains": [
+        "retrieval-knowledge",
+        "reflection-self-correction"
+      ]
+    },
+    {
+      "id": "self-refine",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2303.17651",
+      "domains": [
+        "reflection-self-correction",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "storm",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2402.14207",
+      "domains": [
+        "retrieval-knowledge",
+        "scientific-research"
+      ]
+    },
+    {
+      "id": "swe-agent",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2405.15793",
+      "domains": [
+        "software-engineering",
+        "tool-use"
+      ]
+    },
+    {
+      "id": "syncplan",
+      "year": 2026,
+      "source": "https://arxiv.org/abs/2608.01652",
+      "domains": [
+        "multi-agent",
+        "planning-search",
+        "runtime-systems"
+      ]
+    },
+    {
+      "id": "toolformer",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2302.04761",
+      "domains": [
+        "tool-use",
+        "training"
+      ]
+    },
+    {
+      "id": "toolllm",
+      "year": 2024,
+      "source": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/28e50ee5b72e90b50e7196fde8ea260e-Abstract-Conference.html",
+      "domains": [
+        "tool-use",
+        "training"
+      ]
+    },
+    {
+      "id": "tree-of-thoughts",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2305.10601",
+      "domains": [
+        "planning-search",
+        "reasoning"
+      ]
+    },
+    {
+      "id": "tree-search-language-model-agents",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2407.01476",
+      "domains": [
+        "evaluation-benchmarks",
+        "planning-search",
+        "web-agents"
+      ]
+    },
+    {
+      "id": "ui-tars",
+      "year": 2025,
+      "source": "https://arxiv.org/abs/2501.12326",
+      "domains": [
+        "gui-computer-use",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "vima",
+      "year": 2023,
+      "source": "https://proceedings.mlr.press/v202/jiang23b.html",
+      "domains": [
+        "embodied-robotics",
+        "multimodal"
+      ]
+    },
+    {
+      "id": "voxposer",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2307.05973",
+      "domains": [
+        "embodied-robotics",
+        "planning-search"
+      ]
+    },
+    {
+      "id": "voyager",
+      "year": 2023,
+      "source": "https://arxiv.org/abs/2305.16291",
+      "domains": [
+        "embodied-robotics",
+        "game-worlds",
+        "memory",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "webgpt",
+      "year": 2021,
+      "source": "https://arxiv.org/abs/2112.09332",
+      "domains": [
+        "web-agents",
+        "tool-use",
+        "human-agent-interaction"
+      ]
+    },
+    {
+      "id": "webvoyager",
+      "year": 2024,
+      "source": "https://arxiv.org/abs/2401.13919",
+      "domains": [
+        "gui-computer-use",
+        "multimodal",
+        "web-agents"
+      ]
+    },
+    {
+      "id": "worldevolver",
+      "year": 2026,
+      "source": "https://arxiv.org/abs/2606.30639",
+      "domains": [
+        "world-models",
+        "memory",
+        "planning-search",
+        "self-improvement"
+      ]
+    }
+  ],
+  "benchmark_lineages": [
+    "ALFWorld",
+    "WebShop",
+    "ScienceWorld",
+    "AgentBench",
+    "GAIA",
+    "ToolBench",
+    "API-Bank",
+    "BFCL",
+    "tau-bench",
+    "WebArena",
+    "VisualWebArena",
+    "Mind2Web",
+    "OSWorld",
+    "AndroidWorld",
+    "SWE-bench",
+    "SWE-bench Verified",
+    "SWE-bench Pro",
+    "HumanEval",
+    "MineDojo",
+    "Habitat",
+    "BEHAVIOR",
+    "ManiSkill",
+    "MemoryArena",
+    "EvoMemBench",
+    "LongMemEval",
+    "LoCoMo",
+    "GroupMemBench",
+    "MultiAgentBench",
+    "MAFBench",
+    "Overcooked-AI"
+  ],
+  "frontier_discovery_sources": [
+    {
+      "title": "Memory for Autonomous LLM Agents: Mechanisms, Evaluation, and Emerging Frontiers",
+      "source": "https://arxiv.org/abs/2603.07670"
+    },
+    {
+      "title": "GroupMemBench",
+      "source": "https://arxiv.org/abs/2605.14498"
+    },
+    {
+      "title": "Understanding Multi-Agent LLM Frameworks: A Unified Benchmark and Experimental Analysis",
+      "source": "https://arxiv.org/abs/2602.03128"
+    },
+    {
+      "title": "Autonomous Research Agents: A Survey of AI Scientists and the Verification Gap",
+      "source": "https://arxiv.org/abs/2608.05179"
+    },
+    {
+      "title": "Efficient GUI Agents: A Systems Survey of Observation, Memory, Action, and Runtime Optimization",
+      "source": "https://arxiv.org/abs/2609.02309"
+    },
+    {
+      "title": "Self-Evolving Coding Agents",
+      "source": "https://arxiv.org/abs/2608.03392"
+    },
+    {
+      "title": "MCP 2026-07-28 specification",
+      "source": "https://modelcontextprotocol.io/specification/2026-07-28"
+    },
+    {
+      "title": "A2A 1.0.0 specification",
+      "source": "https://a2a-protocol.org/v1.0.0/"
+    }
+  ]
+}

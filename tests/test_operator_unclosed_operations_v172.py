@@ -3,11 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.observability.api import EventEnvelope
-from research_platform.operator.runtime.parser import build_parser
-from research_platform.operator.query.runtime.route_diagnostics import route_diagnostics
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.product.operator.runtime.parser import build_parser
+from noetrium_platform.product.operator.query.runtime.route_diagnostics import route_diagnostics
 
 
 def test_operator_exposes_unclosed_operation_query_without_mutating_forensics() -> None:

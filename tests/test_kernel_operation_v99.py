@@ -1,7 +1,7 @@
 import unittest
 from dataclasses import dataclass
 
-from research_platform.platform.kernel import (
+from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
     ExecutionContext,
     FailureRecordReceipt,

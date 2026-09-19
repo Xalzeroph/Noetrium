@@ -1,5 +1,5 @@
 import unittest
-from research_platform.model.request.prompt.runtime import (
+from noetrium_platform.capabilities.model.request.prompt.runtime import (
     CanaryObservation, CanarySuite, PromptBlock, PromptBlockKind, PromptCanary, PromptCompiler,
     PromptRegistry, default_block_policies, default_prompt_specs, evaluate_canaries,
     PromptOutcomeLink, summarize_outcomes,

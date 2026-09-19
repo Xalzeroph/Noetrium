@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "voyager_minecraft",
+  "benchmark": {
+    "benchmark_id": "voyager-minecraft",
+    "title": "Voyager Minecraft Open-World Lifelong Learning Protocol",
+    "source_uri": "https://github.com/MineDojo/Voyager",
+    "environment_kinds": [
+      "minecraft",
+      "embodied"
+    ],
+    "modalities": [
+      "text"
+    ]
+  }
+}

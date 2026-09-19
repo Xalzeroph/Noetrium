@@ -7,7 +7,8 @@ from tests_support import participant_component
 
 from tests_support import environment_effect_intent
 
-from research_platform.reliability.effect.api import PreparedEffectHandle
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
 
 from tests_support import context_action_spec
 
@@ -16,12 +17,11 @@ import tempfile
 
 import pytest
 
-from methods.self_evolving_memory.session import SEMSession
-from research_platform.platform.composition.operation_forensics import OperationForensicFailureSink
-from research_platform.platform.composition.context_action import context_action_failure_classifier_chain
-from research_platform.reliability.effect.api import EffectIntent, EffectIntentPhase
-from research_platform.reliability.effect.runtime import InMemoryEffectIntentJournal, SQLiteEffectIntentJournal
-from research_platform.environment.runtime.api import (
+from noetrium_platform.composition.operation_forensics import OperationForensicFailureSink
+from noetrium_platform.composition.context_action import context_action_failure_classifier_chain
+from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent, EffectIntentPhase
+from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal, SQLiteEffectIntentJournal
+from noetrium_platform.capabilities.environment.runtime.api import (
     ActionReconciliationDisposition,
     ActionReconciliationResult,
     ActionRequest,
@@ -30,12 +30,11 @@ from research_platform.environment.runtime.api import (
     Observation,
     action_request_digest,
 )
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.platform.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext, OperationExecutor, OperationFailure
-from research_platform.participant.method.api import MethodIdentity, MethodTaskCompletionReceipt, RecallResult, TaskCompletionSafetyCapabilityMissing
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentSpec
-from research_platform.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext, OperationExecutor, OperationFailure
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodTaskCompletionReceipt, RecallResult, TaskCompletionSafetyCapabilityMissing
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
 
 
 def _effect(request: ActionRequest) -> EffectReceipt:
@@ -86,8 +85,11 @@ class RecoverableEnvironmentSession:
         pass
 
 
+ENV_ARTIFACT = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+METHOD_ARTIFACT = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
 class RecoverableEnvironment:
-    identity = EnvironmentIdentity("e", "1", "1", "1")
+    identity = EnvironmentIdentity("e", "1", "1", "1", ENV_ARTIFACT)
     def open_session(self, *, session_id, services):
         return RecoverableEnvironmentSession()
 
@@ -100,16 +102,16 @@ class NonIdempotentMethodSession:
 
 
 class NonIdempotentMethod:
-    identity = MethodIdentity("m", "1", "1", "1")
+    identity = MethodIdentity("m", "1", "1", "1", METHOD_ARTIFACT)
     def open_session(self, *, session_id, services):
         return NonIdempotentMethodSession()
 
 
 def _spec() -> ExperimentSpec:
-    return context_action_spec(study_id="study", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1)
+    return context_action_spec(study_id="study", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1, method_artifact_digest=METHOD_ARTIFACT, environment_artifact_digest=ENV_ARTIFACT)
 
 
-def test_crash_durable_action_refuses_non_idempotent_method_before_scientific_workflow_or_act():
+def test_crash_durable_action_refuses_non_idempotent_method_before_trial_protocol_or_act():
     with tempfile.TemporaryDirectory() as td:
         mr = FakeParticipantResolver(); mr.register("method", "m", NonIdempotentMethod)
         er = FakeParticipantResolver(); er.register("environment", "e", RecoverableEnvironment)
@@ -127,20 +129,11 @@ def test_crash_durable_action_refuses_non_idempotent_method_before_scientific_wo
             assert isinstance(raised.value.__cause__, TaskCompletionSafetyCapabilityMissing)
             assert RecoverableEnvironmentSession.observe_calls == 0
             assert RecoverableEnvironmentSession.act_calls == 0
-            failure = store.failures.verified_payloads_after(0)[3][-1]
+            failure = store.failures.verified_payloads_after(0).payloads[-1]
             assert failure["failure_code"] == "TASK_COMPLETION_IDEMPOTENCY_MISSING"
             assert failure["recommended_recovery"] == "block_scientific_use"
 
 
-def test_sem_task_completion_key_ignores_trace_span_and_operation_wrapper_when_cycle_is_stable():
-    a = ExecutionContext(
-        "run", "trace-a", "span-a", decision_cycle_id="dc", task_id="task", operation_id="op-a"
-    )
-    b = ExecutionContext(
-        "run", "trace-b", "span-b", decision_cycle_id="dc", task_id="task", operation_id="op-b"
-    )
-    assert SEMSession.task_completion_key(a) == SEMSession.task_completion_key(b)
-    assert SEMSession.task_completion_key(a) == "decision_cycle:run:dc"
 
 
 class IdempotentMethodSession:
@@ -165,7 +158,7 @@ class IdempotentMethodSession:
 
 
 class IdempotentMethod:
-    identity = MethodIdentity("m", "1", "1", "1")
+    identity = MethodIdentity("m", "1", "1", "1", METHOD_ARTIFACT)
     def open_session(self, *, session_id, services):
         return IdempotentMethodSession()
 
@@ -252,7 +245,7 @@ def test_sqlite_unresolved_scope_excludes_terminal_rows_and_exact_recovery_inten
         journal.record_result(intent.intent_id, request_digest=intent.request_digest, effect=_effect(request))
         completion = MethodTaskCompletionReceipt("cycle:run:dc", "mg")
         # Convert the method receipt to the journal's cross-component proof.
-        from research_platform.reliability.effect.api import EffectCompletionEvidence
+        from noetrium_platform.infrastructure.reliability.effect.api import EffectCompletionEvidence
         journal.record_consumed(
             intent.intent_id,
             request_digest=intent.request_digest,
@@ -293,6 +286,6 @@ def test_crash_durable_exact_nonterminal_intent_requires_checkpoint_anchor_befor
                 assert RecoverableEnvironmentSession.observe_calls == 0
                 assert RecoverableEnvironmentSession.act_calls == 0
                 assert IdempotentMethodSession.ingest_calls == 0
-                failure = store.failures.verified_payloads_after(0)[3][-1]
+                failure = store.failures.verified_payloads_after(0).payloads[-1]
                 assert failure["failure_code"] == "EFFECT_RECOVERY_ANCHOR_MISSING"
                 assert failure["recommended_recovery"] == "restore_checkpoint"

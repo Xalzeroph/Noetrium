@@ -2,7 +2,7 @@ from pathlib import Path
 import sys
 ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
-from research_platform.governance.quality import scan_no_degradation
+from noetrium_platform.foundation.governance.quality import scan_no_degradation
 
 def main()->int:
     findings=scan_no_degradation(ROOT)

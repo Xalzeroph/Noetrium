@@ -1,0 +1,1722 @@
+[
+  {
+    "path": "artifact",
+    "current_authority": "artifact_identity",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "artifact",
+    "reason": "immutable content identity, references, retention and catalog",
+    "migration_target": "artifact",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "artifact/catalog",
+    "current_authority": "artifact_catalog",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "artifact",
+    "reason": "artifact metadata and logical identity catalog",
+    "migration_target": "artifact",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "artifact/content",
+    "current_authority": "artifact_content",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "artifact",
+    "reason": "immutable content storage and content digest identity",
+    "migration_target": "artifact",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "artifact/lineage",
+    "current_authority": "artifact_lineage",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "artifact",
+    "reason": "artifact lineage and provenance relations",
+    "migration_target": "artifact",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "artifact/lineage/relation",
+    "current_authority": "artifact_lineage_edge",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "artifact",
+    "reason": "immutable artifact lineage edge identity",
+    "migration_target": "artifact",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "artifact/reference",
+    "current_authority": "artifact_reference",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "artifact",
+    "reason": "references, aliases and cross-system artifact pointers",
+    "migration_target": "artifact",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "artifact/retention",
+    "current_authority": "artifact_retention",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "artifact",
+    "reason": "retention, pinning and garbage-collection policy",
+    "migration_target": "artifact",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "data",
+    "current_authority": "data_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "data",
+    "reason": "durable facts, records, datasets, canonical state and projections",
+    "migration_target": "data",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "data/dataset",
+    "current_authority": "dataset_authority",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "data",
+    "reason": "dataset identity, schema references and lifecycle",
+    "migration_target": "data",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "data/fact",
+    "current_authority": "fact_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "data/fact",
+    "reason": "durable fact envelopes and authoritative fact writes",
+    "migration_target": "data/fact",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "data/projection",
+    "current_authority": "projection_authority",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": "data",
+    "reason": "derived read models and projection lifecycle",
+    "migration_target": "data",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "data/query",
+    "current_authority": "query_contracts",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": "data",
+    "reason": "read query contracts spanning non-authoritative projections",
+    "migration_target": "data",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "data/query/cross",
+    "current_authority": "cross_query",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": "data",
+    "reason": "cross-authority read composition and query federation",
+    "migration_target": "data",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "data/record",
+    "current_authority": "record_authority",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "data",
+    "reason": "generic record envelopes and record identity",
+    "migration_target": "data",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "data/state",
+    "current_authority": "state_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "data/state",
+    "reason": "canonical mutable state and state-store contracts",
+    "migration_target": "data/state",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment",
+    "current_authority": "environment_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "environment",
+    "reason": "environment specs, bindings, resolution and instances",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/category",
+    "current_authority": "environment_category_catalog",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "environment category definitions, category/provider descriptors, compatibility and category fingerprint contracts",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/binding",
+    "current_authority": "environment_binding",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "binding environment specs to scopes/runs/participants",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/catalog",
+    "current_authority": "environment_catalog",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "environment catalog and versioned definitions",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/instance",
+    "current_authority": "environment_instance",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "environment instance identity, readiness and lifecycle",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/instance/identity",
+    "current_authority": "environment_instance_identity",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "environment instance identity and provenance",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/instance/readiness",
+    "current_authority": "environment_readiness",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "environment readiness observations/contract",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/minecraft",
+    "current_authority": "minecraft_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "Minecraft environment contracts, server-control/world-cut semantics, state projection, bridge providers and readiness adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/embodied",
+    "current_authority": "embodied_environment",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "embodied environment contracts, episode/trajectory interaction and provider-facing embodiment metadata",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/gui",
+    "current_authority": "gui_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "desktop and mobile GUI environment contracts and provider adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/web",
+    "current_authority": "web_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "stateful web and browser environment contracts and provider adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/software",
+    "current_authority": "software_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "repository and software-workspace environment contracts and provider adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/text_world",
+    "current_authority": "text_world_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "text-mediated stateful world contracts and provider adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/resolution",
+    "current_authority": "environment_resolution",
+    "node_kind": "adapter",
+    "disposition": "ADAPTER",
+    "canonical_authority": "environment",
+    "reason": "resolve logical environment requirements to concrete instance plan",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/runtime",
+    "current_authority": "environment_runtime_contract",
+    "node_kind": "adapter",
+    "disposition": "ADAPTER",
+    "canonical_authority": "environment",
+    "reason": "environment runtime adapter contracts",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/specification",
+    "current_authority": "environment_spec",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "environment definition and immutable spec identity",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/specification/digest",
+    "current_authority": "environment_digest",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "exact environment specification identity and digest",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "environment/specification/schema",
+    "current_authority": "environment_schema",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "environment",
+    "reason": "environment requirement schema and canonical forms",
+    "migration_target": "environment",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "execution",
+    "current_authority": "execution_operations",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "execution",
+    "reason": "workflow and operation orchestration contracts",
+    "migration_target": "execution",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "execution/admission",
+    "current_authority": "admission_decision",
+    "node_kind": "policy",
+    "disposition": "POLICY",
+    "canonical_authority": "execution",
+    "reason": "hierarchical execution quotas, identity-aware admission decisions and lease accounting",
+    "migration_target": "execution",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "execution/capability",
+    "current_authority": "capability_catalog",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "execution",
+    "reason": "capability declarations and invocation contracts",
+    "migration_target": "execution",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "execution/command",
+    "current_authority": "command_intent",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "execution",
+    "reason": "immutable typed command intent and routing contracts evaluated by Execution",
+    "migration_target": "execution",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "execution/operation",
+    "current_authority": "operation_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "execution/operation",
+    "reason": "operation identity, lifecycle and result envelopes",
+    "migration_target": "execution/operation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "execution/research_program",
+    "current_authority": "research_program_definition",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "execution",
+    "reason": "paper-programmable ResearchProgram, RuntimeModule, rule and host authoring contracts for non-Method research Machines",
+    "migration_target": "execution",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "execution/scheduling",
+    "current_authority": "schedule_intent",
+    "node_kind": "policy",
+    "disposition": "POLICY",
+    "canonical_authority": "execution",
+    "reason": "priority, aging, fairness and deterministic scheduling order",
+    "migration_target": "execution",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "execution/workflow",
+    "current_authority": "workflow_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "execution",
+    "reason": "workflow definitions, universal method-machine orchestration, and resumable control semantics",
+    "migration_target": "execution",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation",
+    "current_authority": "experimentation_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "experimentation",
+    "reason": "study, experiment, run, branch and checkpoint semantics",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/branch",
+    "current_authority": "branch_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "run branching and branch lineage",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/catalog",
+    "current_authority": "experiment_catalog_view",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": "experimentation",
+    "reason": "typed experiment catalog views, implementation candidates, slot health and catalog publication/query contracts",
+    "migration_target": "experimentation",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "experimentation/checkpoint",
+    "current_authority": "checkpoint_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "checkpoint identity, binding and lifecycle",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/evaluation",
+    "current_authority": "experiment_evaluation",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "evaluation contracts, execution-neutral evaluators and evaluation composition",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/experiment",
+    "current_authority": "experiment_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "experiment definitions, variants and experiment lifecycle",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/resource",
+    "current_authority": "experiment_resource_policy",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "typed experiment resource policy identity, placement requirements and allocation receipts",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/run",
+    "current_authority": "run_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "run identity, frozen run contract and run lifecycle",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/run/control",
+    "current_authority": "run_machine",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "external run lifecycle effect coordination and read-only RunMachine projections",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/run/identity",
+    "current_authority": "run_identity",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "run identity, immutable manifest and parent links",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/run/lifecycle",
+    "current_authority": "run_lifecycle",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "run lifecycle state and transitions",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/run/manifest",
+    "current_authority": "run_manifest",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "frozen run contract and exact dependencies",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/study",
+    "current_authority": "study_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "study definitions, hypotheses and study lifecycle",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/variant",
+    "current_authority": "variant_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "experiment variants, assignments and comparison semantics",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/workbench",
+    "current_authority": "research_analysis_publication",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "experimentation",
+    "reason": "typed research analysis tables, deterministic statistics/evaluation workflow and report/figure publication semantics",
+    "migration_target": "experimentation",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "experimentation/workload",
+    "current_authority": "experiment_workload_execution_contract",
+    "node_kind": "adapter",
+    "disposition": "ADAPTER",
+    "canonical_authority": "experimentation",
+    "reason": "generic experiment task-runner contracts, workload context, task handles/results and checkpointable workload execution semantics",
+    "migration_target": "experimentation",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance",
+    "current_authority": "governance_policy",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": null,
+    "reason": "architecture, quality, release and system topology rules",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "governance/algorithm",
+    "current_authority": "algorithm_governance",
+    "node_kind": "tool",
+    "disposition": "TOOL",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "repository-wide algorithm inventory, complexity baselines and regression gates",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance/architecture",
+    "current_authority": "architecture_policy",
+    "node_kind": "tool",
+    "disposition": "TOOL",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "architecture rules, dependencies and invariants",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance/concurrency",
+    "current_authority": "concurrency_governance",
+    "node_kind": "tool",
+    "disposition": "TOOL",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "repository-wide concurrency topology findings, reviewed debt baselines and concurrency regression gates",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance/gate",
+    "current_authority": "gate_policy",
+    "node_kind": "policy",
+    "disposition": "POLICY",
+    "canonical_authority": null,
+    "reason": "recursive gate contracts and composition semantics",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "governance/performance",
+    "current_authority": "performance_governance",
+    "node_kind": "tool",
+    "disposition": "TOOL",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "repository-wide performance hotspots, reviewed debt baselines and performance regression gates",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance/quality",
+    "current_authority": "quality_policy",
+    "node_kind": "tool",
+    "disposition": "TOOL",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "quality gates, audits and invariants as descriptive policy",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance/release",
+    "current_authority": "release_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "governance/release",
+    "reason": "release identities, manifests, verification and promotion semantics",
+    "migration_target": "governance/release",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "governance/repository_boundary",
+    "current_authority": "upstream_repository_boundary",
+    "node_kind": "tool",
+    "disposition": "TOOL",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "enforce reusable upstream repository/package/release boundary",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance/schema",
+    "current_authority": "schema_authority",
+    "node_kind": "policy",
+    "disposition": "POLICY",
+    "canonical_authority": null,
+    "reason": "schema/version declarations for contracts and records",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "governance/security",
+    "current_authority": "security_policy",
+    "node_kind": "policy",
+    "disposition": "POLICY",
+    "canonical_authority": null,
+    "reason": "security/redaction/classification policy",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "governance/system_registry",
+    "current_authority": "system_topology",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "governance/system_registry",
+    "reason": "recursive system topology and ownership declarations",
+    "migration_target": "governance/system_registry",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "governance/evolution",
+    "current_authority": "system_evolution",
+    "node_kind": "policy",
+    "disposition": "POLICY",
+    "canonical_authority": null,
+    "reason": "topology-driven discovery, drift detection and improvement proposals",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model",
+    "current_authority": "model_identity",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "model",
+    "reason": "model assets, stacks, assignments, deployments and serving identity",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/asset",
+    "current_authority": "model_asset",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "immutable model asset identity and provenance",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/assignment",
+    "current_authority": "model_assignment",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "assign models to scope/run/participant roles",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/catalog",
+    "current_authority": "model_catalog",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "model families/revisions catalog and metadata",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/catalog/family",
+    "current_authority": "model_family",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "model family identity and metadata",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/catalog/revision",
+    "current_authority": "model_revision",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "versioned model revision identity",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/deployment",
+    "current_authority": "model_deployment",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "deployment identity, exact closure and lifecycle contract",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/deployment/closure",
+    "current_authority": "deployment_closure",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "exact deployment closure across model, stack, runtime and artifact identities",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/qualification",
+    "current_authority": "model_qualification",
+    "node_kind": "policy",
+    "disposition": "POLICY",
+    "canonical_authority": "model",
+    "reason": "model/runtime/host qualification evidence and compatibility claims",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/request",
+    "current_authority": "model_request",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "model request identity, exact input contract and response envelope",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/request/input",
+    "current_authority": "request_input",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "exact request input identity and canonicalization",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/request/output",
+    "current_authority": "request_output",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "response envelope and response artifact references",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/request/prompt",
+    "current_authority": "model_prompt_compilation",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "model-request prompt blocks, deterministic compilation and prompt publication contracts",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "model/serving",
+    "current_authority": "model_serving",
+    "node_kind": "adapter",
+    "disposition": "ADAPTER",
+    "canonical_authority": "model",
+    "reason": "serving endpoint contract and request routing semantics",
+    "migration_target": "model",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "model/serving/endpoint",
+    "current_authority": "serving_endpoint",
+    "node_kind": "adapter",
+    "disposition": "ADAPTER",
+    "canonical_authority": "model",
+    "reason": "serving endpoint identity and exposure contract",
+    "migration_target": "model",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "model/stack",
+    "current_authority": "model_stack",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "model",
+    "reason": "model stack composition and runtime build identity",
+    "migration_target": "model",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "observability",
+    "current_authority": "observability",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "logs, telemetry, traces, status and observation projections",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/capture",
+    "current_authority": "capture_observation",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "raw byte/event/process capture contracts",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/diagnostic",
+    "current_authority": "diagnostic_view_contract",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "operator-facing diagnostic correlation contracts",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/diagnostic/correlation",
+    "current_authority": "diagnostic_correlation",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "cross-system correlation graph for diagnostic references",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/diagnostic/query",
+    "current_authority": "diagnostic_query",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "operator/debug query language over observation sources",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/diagnostic/snapshot",
+    "current_authority": "diagnostic_snapshot",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "portable diagnostic snapshots assembled from existing authorities",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging",
+    "current_authority": "log_observation",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "structured logs, context, sinks, stores, queries, retention and capture",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/capture",
+    "current_authority": "raw_capture",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "raw process/stream/event capture before semantic logging",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/context",
+    "current_authority": "log_context",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "diagnostic context construction and propagation metadata",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/projection",
+    "current_authority": "log_projection",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "derived log indexes and projections",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/query",
+    "current_authority": "log_query",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "log query contracts and filtering",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/record",
+    "current_authority": "log_record_schema",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "structured log schema, normalization and identity",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/retention",
+    "current_authority": "log_retention",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "retention, archival and deletion policy for logs",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/routing",
+    "current_authority": "log_routing",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "log routing rules and fan-out decisions",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/sink",
+    "current_authority": "log_sink_delivery",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "sink contracts and delivery lifecycle",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/storage",
+    "current_authority": "log_storage",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "durable or volatile log storage backends",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/projection",
+    "current_authority": "observation_projection",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "observation projections/indexes and read models",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/status",
+    "current_authority": "status_observation",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "health/status observations and status projections",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/status/health",
+    "current_authority": "health_observation",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "health observations and health snapshots",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/status/lifecycle_view",
+    "current_authority": "lifecycle_projection",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "read-only lifecycle status views",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/telemetry",
+    "current_authority": "telemetry_observation",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "metrics/events/counters and telemetry routing",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/telemetry/event",
+    "current_authority": "telemetry_event",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "structured telemetry event definitions and emission contracts",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/telemetry/metric",
+    "current_authority": "telemetry_metric",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "metric definitions, aggregation and metric identity",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/tracing",
+    "current_authority": "trace_observation",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "trace/span identity and propagation",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/tracing/context",
+    "current_authority": "trace_context",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "trace/span context creation and attachment",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/tracing/propagation",
+    "current_authority": "trace_propagation",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "cross-process trace propagation contracts",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/tracing/storage",
+    "current_authority": "trace_storage",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "trace/span storage backends",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "operator",
+    "current_authority": "operator_surface",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "human-facing query, command, maintenance and incident surfaces",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "operator/audit",
+    "current_authority": "operator_audit",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "audit/reporting views across system authorities",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "operator/command",
+    "current_authority": "operator_commands",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "operator command intent and command result contracts",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "operator/command/intent",
+    "current_authority": "operator_command_intent",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "human command intents and authorization context",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "operator/incident",
+    "current_authority": "operator_incident_view",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "incident triage and incident work surfaces",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "operator/maintenance",
+    "current_authority": "operator_maintenance",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "maintenance workflows and administrative actions",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "operator/query",
+    "current_authority": "operator_queries",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "operator read/query contracts",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "operator/query/search",
+    "current_authority": "operator_search",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "human-readable search and filtering over read-side projections",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "participant",
+    "current_authority": "participant_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "participant",
+    "reason": "participant definitions, bindings, sessions and participant capabilities",
+    "migration_target": "participant",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "participant/core",
+    "current_authority": "participant_runtime_abi",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "participant",
+    "reason": "foundational participant runtime identities, capability descriptors, runtime binding, delivery, lifecycle and checkpoint contracts",
+    "migration_target": "participant",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "participant/agent",
+    "current_authority": "agent_identity",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "participant",
+    "reason": "agent participant contracts, provider-independent agent identity and bounded cognition-loop orchestration",
+    "migration_target": "participant",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "participant/binding",
+    "current_authority": "participant_binding",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "participant",
+    "reason": "binding participants to scopes, methods, environments or models",
+    "migration_target": "participant",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "participant/capability",
+    "current_authority": "participant_capability",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "participant",
+    "reason": "participant capability declarations and exposure",
+    "migration_target": "participant",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "participant/definition",
+    "current_authority": "participant_definition",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "participant",
+    "reason": "participant identities and types",
+    "migration_target": "participant",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "participant/method",
+    "current_authority": "method_participant_binding",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "participant",
+    "reason": "method participant binding contracts",
+    "migration_target": "participant",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "participant/session",
+    "current_authority": "participant_session",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "participant",
+    "reason": "participant session identity and lifecycle contract",
+    "migration_target": "participant",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "platform",
+    "current_authority": "platform_identity",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "platform",
+    "reason": "platform lifecycle, global identity, composition boundaries",
+    "migration_target": "platform",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "platform/concurrency",
+    "current_authority": "platform_concurrency_runtime",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "platform",
+    "reason": "process-owned bounded executors, serial lanes, timers and structured concurrency lifecycle mechanisms",
+    "migration_target": "platform",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "platform/configuration",
+    "current_authority": "platform_configuration",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "platform",
+    "reason": "platform configuration sources and frozen configuration snapshots",
+    "migration_target": "platform",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "platform/identity",
+    "current_authority": "platform_identity",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "platform",
+    "reason": "platform identity and immutable platform metadata",
+    "migration_target": "platform",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "platform/lifecycle",
+    "current_authority": "platform_lifecycle",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "platform",
+    "reason": "platform startup/shutdown/readiness semantics",
+    "migration_target": "platform",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "portfolio",
+    "current_authority": "portfolio_metadata",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "portfolio",
+    "reason": "workspace/program/project metadata and portfolio organization",
+    "migration_target": "portfolio",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "portfolio/membership",
+    "current_authority": "portfolio_membership",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "portfolio",
+    "reason": "portfolio-level ownership and membership records",
+    "migration_target": "portfolio",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "portfolio/program",
+    "current_authority": "program_metadata",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "portfolio",
+    "reason": "research program metadata and project grouping",
+    "migration_target": "portfolio",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "portfolio/project",
+    "current_authority": "project_metadata",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "portfolio",
+    "reason": "project metadata, configuration references and lifecycle",
+    "migration_target": "portfolio",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "portfolio/workspace",
+    "current_authority": "workspace_metadata",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "portfolio",
+    "reason": "workspace metadata and lifecycle",
+    "migration_target": "portfolio",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "reliability",
+    "current_authority": "reliability_authority",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": null,
+    "reason": "effects, failures, incidents, forensics, diagnosis, reconciliation and recovery",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "reliability/diagnostics",
+    "current_authority": "diagnostic_queries",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "read-side cross-system correlation and root-cause views",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "reliability/effect",
+    "current_authority": "effect_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "reliability/effect",
+    "reason": "external effect intent, outcome certainty and reconciliation state",
+    "migration_target": "reliability/effect",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "reliability/failure",
+    "current_authority": "failure_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "reliability/failure",
+    "reason": "failure taxonomy, envelopes, fingerprints and semantic versions",
+    "migration_target": "reliability/failure",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "reliability/forensics",
+    "current_authority": "forensic_authority",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "durable evidence bundles, causal evidence and forensic indexes",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "reliability/recovery",
+    "current_authority": "recovery_authority",
+    "node_kind": "adapter",
+    "disposition": "ADAPTER",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "recovery plans, exact replay/reconcile and recovery lifecycle",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "reliability/recovery/execution",
+    "current_authority": "recovery_execution",
+    "node_kind": "adapter",
+    "disposition": "ADAPTER",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "recovery execution lifecycle and effect handoff",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "resource",
+    "current_authority": "resource_inventory",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "resource",
+    "reason": "resource inventory, compute, directories, leases and allocation/resolution",
+    "migration_target": "resource",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "resource/allocation",
+    "current_authority": "resource_allocation",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "resource",
+    "reason": "resource allocation intents and allocations",
+    "migration_target": "resource",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "resource/compute",
+    "current_authority": "compute_inventory",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "resource",
+    "reason": "compute resource identity, capacities and provider facts",
+    "migration_target": "resource",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "resource/directory",
+    "current_authority": "directory_inventory",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "resource",
+    "reason": "managed filesystem/directory identity and lifecycle",
+    "migration_target": "resource",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "resource/lease",
+    "current_authority": "resource_lease",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "resource/lease",
+    "reason": "lease identity, acquisition, renewal and release",
+    "migration_target": "resource/lease",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "resource/resolution",
+    "current_authority": "resource_resolution",
+    "node_kind": "policy",
+    "disposition": "POLICY",
+    "canonical_authority": "resource",
+    "reason": "resource resolution policies and resolved bindings",
+    "migration_target": "resource",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime",
+    "current_authority": "runtime_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "runtime",
+    "reason": "server, process, service and session orchestration",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/host",
+    "current_authority": "host_runtime_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "runtime",
+    "reason": "live host identity and runtime host attachment",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/process",
+    "current_authority": "process_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "runtime",
+    "reason": "process identity, launch contract and lifecycle",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/process/supervision",
+    "current_authority": "process_supervision",
+    "node_kind": "adapter",
+    "disposition": "ADAPTER",
+    "canonical_authority": "runtime",
+    "reason": "process health/reconcile loops",
+    "migration_target": "runtime",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "runtime/server",
+    "current_authority": "server_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "runtime",
+    "reason": "server identity, lifecycle and health contract",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/server/bootstrap",
+    "current_authority": "server_bootstrap_transaction",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "runtime",
+    "reason": "server bootstrap commands, phases, durable bootstrap state/facts and forward-repair transaction contracts",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/server/health",
+    "current_authority": "server_health_contract",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "runtime",
+    "reason": "runtime server health contracts",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/server/identity",
+    "current_authority": "server_identity",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "runtime",
+    "reason": "stable server identity and deployment attachment",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/server/lifecycle",
+    "current_authority": "server_lifecycle",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "runtime",
+    "reason": "server lifecycle state and transitions",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/service",
+    "current_authority": "service_state",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "runtime",
+    "reason": "managed service identity, registration and lifecycle",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/session",
+    "current_authority": "runtime_session",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "runtime",
+    "reason": "runtime session identity and host/process bindings",
+    "migration_target": "runtime",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "runtime/toolchain",
+    "current_authority": "runtime_toolchain",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "runtime",
+    "reason": "verified host toolchain acquisition, materialization, identity and receipts",
+    "migration_target": "runtime",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "runtime/python",
+    "current_authority": "python_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "runtime",
+    "reason": "Python interpreter environments, package lifecycle and execution bindings",
+    "migration_target": "runtime",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "scope",
+    "current_authority": "scope_tree",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "scope",
+    "reason": "generic hierarchical scope identity, ancestry and ownership paths",
+    "migration_target": "scope",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "scope/hierarchy",
+    "current_authority": "scope_hierarchy",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "scope",
+    "reason": "parent/child relationships, ancestry, descendants",
+    "migration_target": "scope",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "scope/identity",
+    "current_authority": "scope_identity",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "scope",
+    "reason": "stable scope identities and typed scope kinds",
+    "migration_target": "scope",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "scope/membership",
+    "current_authority": "scope_membership",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "scope",
+    "reason": "membership of entities in scopes",
+    "migration_target": "scope",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "scope/ownership",
+    "current_authority": "scope_ownership",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "scope",
+    "reason": "generic owner links and owner-path rules",
+    "migration_target": "scope",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "scope/path",
+    "current_authority": "scope_path",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "scope",
+    "reason": "canonical scope paths and resolution",
+    "migration_target": "scope",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "scope/resolution",
+    "current_authority": "scope_resolution",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": "scope",
+    "reason": "resolve a scope reference to canonical scope path",
+    "migration_target": "scope",
+    "downstream_surface": "public"
+  }
+]

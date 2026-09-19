@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 import unittest
 
-from research_platform.model.serving import build_host_inventory_receipt, compare_host_inventory_receipts
+from noetrium_platform.capabilities.model.serving import build_host_inventory_receipt, compare_host_inventory_receipts
 from test_server_runtime_control_v29 import runtime_host, HOST_ID
 
 

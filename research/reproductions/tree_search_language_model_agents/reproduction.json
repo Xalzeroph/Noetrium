@@ -1,0 +1,119 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "tree_search_language_model_agents",
+  "package_digest": "b9d1f8557e489000980443d93a4ca3e3ad59f86083932e21fb1a96c05965ce16",
+  "definition_digest": "ed062bf0492b6798aa01a282c9c84e49a1846d752980777aaa78af1930c6df40",
+  "source_registry_digest": "0c66afa3c244c45e64cde70188b1023106137f8be0ce30f1899186e1ff153f35",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "tree-search-language-model-agents",
+    "title": "Tree Search for Language Model Agents",
+    "paper_uri": "https://arxiv.org/abs/2407.01476",
+    "year": 2024,
+    "paper_revision": "arXiv:2407.01476",
+    "identity_digest": "0de5e19f4ff122cde281014f80ce1141e62bac58830720d571bd59813cdc747f"
+  },
+  "catalog": {
+    "domains": [
+      "evaluation-benchmarks",
+      "planning-search",
+      "web-agents"
+    ],
+    "families": [
+      "test_time_compute",
+      "tree_search",
+      "web_agent"
+    ],
+    "priority": 2,
+    "benchmark_ids": [
+      "visualwebarena",
+      "webarena"
+    ],
+    "platform_pressure": [
+      "environment/runtime",
+      "environment/web",
+      "experimentation/study",
+      "model/assignment",
+      "model/request"
+    ],
+    "method_owned": [
+      "partial trajectory reuse",
+      "tree search policy",
+      "value-function search budget"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "environment lifecycle",
+      "evidence and metrics",
+      "model role binding"
+    ],
+    "reference_repositories": [
+      "https://github.com/kohjingyu/search-agents"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "fd2de5ab06b9c94a3a1b6529223714664a761200e89bea569a2c78fd44b09fa0"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "official_search_agents_repo",
+      "kind": "official_executable",
+      "repository": "https://github.com/kohjingyu/search-agents",
+      "commit": "7c35ac9eb7fda663d821449efdfd44d360fd0e18",
+      "artifacts": [
+        "agent/prompts/jsons/p_som_cot_id_actree_3s.json",
+        "run.py",
+        "scripts/run_vwa_shopping_search.sh"
+      ],
+      "lane_digest": "6539a5952fa518784eff4059c26f2ab46c32bab7637a8452f81857f2cf1a05d7"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/tree_search_language_model_agents/fidelity.py",
+      "declaration_digest": "e6641850f4f7abd38f5ec521081b7e61d25ff9d8c01fc68d6482cb90ab2e5e94",
+      "content_sha256": "1850d84865fa928e6d9c7f22e4ea757c9c260bedbf3845545f4189766bf1be2f"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/tree_search_language_model_agents/study.py",
+      "declaration_digest": "ff91abe8f502af7c34bd43ab99e9c986b4d729144d1ef93f82fec65b9da5d243",
+      "content_sha256": "b6542bd3c85efce1446aaf2a9f399dde0eaa0c3c41e0c2dfaf737a080a831a97"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/tree_search_language_model_agents/branch.py",
+      "declaration_digest": "936839eed9dd5ff520e1cd94f4a71c1afec6713aa9a8c3e168169ad3be24d0c0",
+      "content_sha256": "824942a9825ceb8b0c189f4d384cf605566dd62bdd57a9f0ed7a1d8e70dd07e7"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [
+    {
+      "baseline_id": "prompt_agent",
+      "description": "same released VWA stack with prompt agent type and no tree search",
+      "qualifiers": {},
+      "baseline_digest": "f90275fcd71a6ca3a218307bcaa557be421b3ea7c42c897ce0046f67f646e7d8"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "exact hosted model deployment identity remains partially unresolved",
+      "delta_digest": "82923e6a997aad2b61a8081df0d4347eb4b8e65f30190fcf6d6c26d9f4987273"
+    }
+  ],
+  "blockers": [
+    "exact hosted GPT-4o deployment snapshots are not fully content-addressed",
+    "matched browser service/config deployment remains to be bound"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_tree_search_language_model_agents_v1.py",
+      "content_sha256": "853a93725b7a4f2f4fa79c060620e5e1fc7b1788629a11a846142edb3b16f84d"
+    }
+  ]
+}

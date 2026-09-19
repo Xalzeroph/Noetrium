@@ -1,0 +1,129 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "rewind_memory",
+  "package_digest": "98b78c475127472bc4b97c48c1701cc0407c81ad9e4975e01af6b5044d9f6575",
+  "definition_digest": "7640889ebe8f4ce45297dc3c77321820d08559fbaca36adc12db1e4c67c7dbc6",
+  "source_registry_digest": "fdb866db6a3c5cbcf051cd40e55caf5bb510d3af332ad4d5f61455c3af25568c",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "rewind",
+    "title": "ReWind: Understanding Long Videos with Instructed Learnable Memory",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Diko_ReWind_Understanding_Long_Videos_with_Instructed_Learnable_Memory_CVPR_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "CVPR 2025 camera-ready publication",
+    "identity_digest": "78a0ce045a5471bd531259efddf8d07ad8bc81f69965a02dab1035f5b195e377"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multimodal",
+      "video"
+    ],
+    "families": [
+      "dynamic_frame_selection",
+      "instruction_conditioned_memory",
+      "long_video_understanding",
+      "multimodal_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "moviechat-1k"
+    ],
+    "platform_pressure": [
+      "artifact/content",
+      "benchmark/video",
+      "execution/machines",
+      "experimentation/study",
+      "memory",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "DPC-KNN representative-frame selection",
+      "instruction-attention first-stage frame selection",
+      "instruction-conditioned memory interaction",
+      "learned read-perceive-write memory cycle",
+      "memory plus high-resolution frame LLM input ordering",
+      "two-token-per-frame temporal memory"
+    ],
+    "platform_owned": [
+      "MemoryMachine journal authority",
+      "benchmark materialization",
+      "learned operator/model binding identity",
+      "multimodal tensor content identity",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2025/html/Diko_ReWind_Understanding_Long_Videos_with_Instructed_Learnable_Memory_CVPR_2025_paper.html"
+    ],
+    "catalog_digest": "90c808ab4b982d7fe757e33b7ea485e71f3e79afcfd80640992f73910cc969dd"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2025_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2025,
+      "publication_id": "diko2025rewind",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Diko_ReWind_Understanding_Long_Videos_with_Instructed_Learnable_Memory_CVPR_2025_paper.html",
+      "revision": "CVPR 2025 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "ed740ced5bcc80937a3588a5d2b58ce55f2baead7c0a0da4630aee47b3fa358d"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/rewind_memory/benchmark.py",
+      "declaration_digest": "3c6b9afffd97aac83b82a48e3af3684655f024d3825e1db74088fb5ba01b1795",
+      "content_sha256": "05cc454fdf418783b5a69e5f7ebff66ed9c88eee1497e4b4cbf142a96a0ffd80"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/rewind_memory/fidelity.py",
+      "declaration_digest": "7948706da49fd734808403e6a4529fbb9e0ee2302ddb1e57573de4811b4aed5d",
+      "content_sha256": "7b9106862a5bb273baa3adefff2dc6620a0345f68d095f80219c9d5b93ee524d"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/rewind_memory/memory.py",
+      "declaration_digest": "f0ab32b07b3593c7abc1ed87d6807b23c9d04ba27f527b6967e6d025340ab9ac",
+      "content_sha256": "ad24d41712dd1a07e4493506de4bf21ae94c2b91e25aeb99dc00c3eed52dfb88"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/rewind_memory/study.py",
+      "declaration_digest": "ac80fc79a75ebeda18fda9188eac518d77f8ecdec92a2c8281608691862b533c",
+      "content_sha256": "87295f89a95c63ebc1e857e7ea9023247e591d74368972c9fbe5b780c46366d6"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/rewind_memory/source.py",
+      "declaration_digest": "a3660bc81331e5ffd146e9d18bb1a057767c60ee6b61d0d7673fa9457607b5c2",
+      "content_sha256": "383f1c917d1f1b2c6c965a053d3272ca319a508d06bbe6eacf7ae0df808deabd"
+    }
+  ],
+  "primary_executable": "research/reproductions/rewind_memory/memory.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "No author-maintained ReWind executable repository was found during the source audit. The executable reproduction is therefore derived from the CVPR 2025 camera-ready method contract, and learned read/write/DFS operators remain explicit identity-bound ports rather than fabricated implementations.",
+      "delta_digest": "d7c3bd95e503208064a568cd1b8e05d5016de98948696e3753d39af2d2b5e54c"
+    }
+  ],
+  "blockers": [
+    "Matched checkpoint-level reproduction requires official or otherwise authoritatively frozen ReWind weights and learned operator parameters.",
+    "Full result reproduction requires acquisition of MovieChat-1K video/QA bytes and the exact evaluation/model-serving artifacts under content identity.",
+    "Charades-STA temporal-grounding result reproduction requires a separate canonical Charades-STA benchmark cut and the paper fine-tuning assets."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_rewind_memory_v1.py",
+      "content_sha256": "e8b9ff1f2c44f0854f602402c5942245f37611afc09cf1f3169cc047e5cf1b9d"
+    }
+  ]
+}

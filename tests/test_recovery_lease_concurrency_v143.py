@@ -5,12 +5,12 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.execution.runtime.manager.recovery_lease_contracts import RecoveryLeaseBusy
-from research_platform.execution.runtime.manager.recovery_lease_store import RecoveryLeaseStore
+from noetrium_platform.infrastructure.reliability.recovery.api.lease import RecoveryLeaseBusy
+from tests_support import recovery_lease_state
 
 
 def _lease_worker(path: str, owner: str, start, results) -> None:
-    store = RecoveryLeaseStore(Path(path))
+    store = recovery_lease_state(Path(path))
     start.wait()
     try:
         store.acquire(owner, "manifest", ttl_seconds=100.0, now=1.0)
@@ -45,7 +45,7 @@ class RecoveryLeaseConcurrencyV143Tests(unittest.TestCase):
 
     def test_same_owner_cannot_rebind_live_lease_to_another_manifest(self) -> None:
         with TemporaryDirectory() as td:
-            store = RecoveryLeaseStore(Path(td) / "lease.json")
+            store = recovery_lease_state(Path(td) / "lease.json")
             store.acquire("operator", "manifest-a", ttl_seconds=100.0, now=1.0)
             with self.assertRaises(RecoveryLeaseBusy):
                 store.acquire("operator", "manifest-b", ttl_seconds=100.0, now=2.0)
@@ -53,7 +53,7 @@ class RecoveryLeaseConcurrencyV143Tests(unittest.TestCase):
 
     def test_same_owner_same_manifest_can_renew(self) -> None:
         with TemporaryDirectory() as td:
-            store = RecoveryLeaseStore(Path(td) / "lease.json")
+            store = recovery_lease_state(Path(td) / "lease.json")
             first = store.acquire("operator", "manifest-a", ttl_seconds=10.0, now=1.0)
             renewed = store.acquire("operator", "manifest-a", ttl_seconds=20.0, now=2.0)
             self.assertGreater(renewed.expires_at, first.expires_at)

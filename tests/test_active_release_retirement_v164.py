@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from research_platform.governance.release.api import ReleaseQuiescenceProof
+from noetrium_platform.foundation.governance.release.api import ReleaseQuiescenceProof
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.governance.release.runtime.active_pin_store import ActiveReleasePinStore
-from research_platform.governance.release.runtime.pin_retirement import ActiveReleasePinRetirer, ReleaseNotQuiescent
+from noetrium_platform.foundation.governance.release.runtime.active_pin_store import ActiveReleasePinStore
+from noetrium_platform.foundation.governance.release.runtime.pin_retirement import ActiveReleasePinRetirer, ReleaseNotQuiescent
 
 
 class Proofs:

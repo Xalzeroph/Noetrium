@@ -3,8 +3,8 @@ import json
 import tempfile
 import unittest
 
-from research_platform.model.request.prompt.runtime import PromptRegistry, default_prompt_specs
-from research_platform.governance.quality.no_degradation import scan_no_degradation
+from noetrium_platform.capabilities.model.request.prompt.runtime import PromptRegistry, default_prompt_specs
+from noetrium_platform.foundation.governance.quality.no_degradation import scan_no_degradation
 
 
 class PromptV6Tests(unittest.TestCase):

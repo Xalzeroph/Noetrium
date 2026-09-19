@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 
-from research_platform.platform.composition.operation_forensics import OperationForensicFailureSink
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.platform.kernel import ComponentIdentity, ExecutionContext, OperationExecutor, OperationStatus
-from research_platform.execution.workflow.runtime import KernelOperationDispatcher
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.composition.operation_forensics import OperationForensicFailureSink
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, ExecutionContext, OperationExecutor, OperationStatus
+from noetrium_platform.research.execution.workflow.runtime import KernelOperationDispatcher
 
 
 def _dispatch(executor: OperationExecutor, operation_type: str, *, idempotency_key: str | None, called: list[str]):
@@ -38,7 +38,7 @@ def test_policy_violation_is_forensically_classified_without_executing_side_effe
         result = _dispatch(executor, "environment.act", idempotency_key=None, called=called)
         assert result.status is OperationStatus.FAILED
         assert called == []
-        failure = store.failures.verified_payloads_after(0)[3][0]
+        failure = store.failures.verified_payloads_after(0).payloads[0]
         assert failure["failure_code"] == "OPERATION_SEMANTIC_POLICY_VIOLATION"
         assert failure["operation_payload_digest"]
         assert failure["operation_idempotency_key"] is None

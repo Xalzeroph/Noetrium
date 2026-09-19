@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from tests_support import environment_effect_intent
 
-from research_platform.reliability.effect.api import PreparedEffectHandle
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
 
 from pathlib import Path
 import tempfile
 
-from research_platform.platform.composition.runtime_control import build_operation_executor
-from research_platform.platform.composition.operation_forensics import OperationForensicFailureSink
-from research_platform.reliability.effect.api import EffectIntent
-from research_platform.environment.runtime.api import ActionRequest, action_request_digest
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.platform.kernel import ComponentIdentity, ExecutionContext, OperationRequest
-from research_platform.execution.workflow.implementations.context_action import StudyOperationFailureReferenceProjector
+from noetrium_platform.composition.operation import build_operation_executor
+from noetrium_platform.composition.operation_forensics import OperationForensicFailureSink
+from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent
+from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, action_request_digest
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, ExecutionContext, OperationRequest
+from noetrium_platform.research.execution.workflow.implementations.context_action import StudyOperationFailureReferenceProjector
 
 
 def test_bootstrap_accepts_explicit_workflow_causal_projection():
@@ -51,7 +51,7 @@ def test_bootstrap_accepts_explicit_workflow_causal_projection():
         )
         result = executor.execute(request, lambda _: (_ for _ in ()).throw(OSError("disk")))
         assert result.failure_id
-        failure = store.failures.verified_payloads_after(0)[3][0]
+        failure = store.failures.verified_payloads_after(0).payloads[0]
         assert f"action-intent:{intent.intent_id}" in failure["correlation_refs"]
         assert "provider-recovery-schema:provider.tx.v1" in failure["correlation_refs"]
         assert "private-token" not in str(failure)

@@ -3,12 +3,12 @@ from tests_support import context_action_runtime
 from tests_support import context_action_spec
 import unittest
 
-from research_platform.environment.runtime.api import EnvironmentIdentity
-from research_platform.platform.kernel import OperationFailure
-from research_platform.participant.method.api import MethodIdentity
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.experimentation.experiment.api import ExperimentSpec
-from research_platform.experimentation.run.lifecycle.api import RunCleanupFailure
+from noetrium_platform.capabilities.environment.runtime.api import EnvironmentIdentity
+from noetrium_platform.foundation.kernel.kernel import OperationFailure
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.run.lifecycle.api import RunCleanupFailure
 
 
 class MethodSession:
@@ -28,7 +28,7 @@ class StudyLifecycleV108Tests(unittest.TestCase):
     def test_partial_open_failure_closes_already_open_method_session(self):
         state=[]; mr=FakeParticipantResolver(); er=FakeParticipantResolver()
         mr.register("method", "m",lambda:Method(state)); er.register("environment", "e",lambda:EnvOpenFails(state))
-        spec=context_action_spec(study_id="s", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1)
+        spec=context_action_spec(study_id="s", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1)
         with self.assertRaises(OperationFailure):
             context_action_runtime(mr,er).execute_cycle(spec,task="x",input_kind="a",input_payload={})
         self.assertEqual(state,["method.open","env.open","method.close"])
@@ -40,10 +40,10 @@ class StudyLifecycleV108Tests(unittest.TestCase):
         class BadCloseEnv(GoodEnv):
             def open_session(self,*,session_id,services): return BadCloseESession()
         mr=FakeParticipantResolver(); er=FakeParticipantResolver(); mr.register("method", "m",GoodMethod); er.register("environment", "e",BadCloseEnv)
-        spec=context_action_spec(study_id="s", method_id="m", environment_id="e", model_stack_digest="model", prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1)
+        spec=context_action_spec(study_id="s", method_id="m", environment_id="e", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1)
         with self.assertRaises(RunCleanupFailure) as cm:
             context_action_runtime(mr,er).execute_cycle(spec,task="x",input_kind="a",input_payload={})
-        self.assertTrue(cm.exception.scientific_cycle_completed)
+        self.assertTrue(cm.exception.trial_completed)
         self.assertEqual(len(cm.exception.report.failures),1)
         self.assertTrue(cm.exception.report.failures[0].operation_id.endswith("environment.close:environment"))
 

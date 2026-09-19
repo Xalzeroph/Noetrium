@@ -1,0 +1,117 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "exact_vwa",
+  "package_digest": "1c768aaaff8b1fe59e57b2c12d63c0a888659e876bc7ba43850eee9dd3cff13b",
+  "definition_digest": "5b1fdac55a0685134cfce64391ba548e13096dcdcb3f3035b22efead2c8414c9",
+  "source_registry_digest": "b93999f0360494ac406ad8ced88c7229b3dcf0d13127db266739961ddbd1bfdd",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "exact",
+    "title": "ExACT: Teaching AI Agents to Explore with Reflective-MCTS and Exploratory Learning",
+    "paper_uri": "https://arxiv.org/abs/2410.02052",
+    "year": 2024,
+    "paper_revision": "arXiv:2410.02052",
+    "identity_digest": "7292912866fd2b9d9ce5905da636a5af4067824ebb70e1da7d7169a8da79cd82"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "reflection-self-correction",
+      "self-improvement",
+      "web-agents"
+    ],
+    "families": [
+      "learning",
+      "reflection",
+      "tree_search",
+      "web_agent"
+    ],
+    "priority": 2,
+    "benchmark_ids": [
+      "osworld",
+      "visualwebarena"
+    ],
+    "platform_pressure": [
+      "environment/runtime",
+      "environment/web",
+      "experimentation/study",
+      "model/assignment",
+      "model/request"
+    ],
+    "method_owned": [
+      "Reflective-MCTS",
+      "contrastive reflection",
+      "exploratory learning policy",
+      "multi-agent debate value function"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "environment lifecycle/reset",
+      "evidence and metrics",
+      "model role binding"
+    ],
+    "reference_repositories": [
+      "https://github.com/microsoft/ExACT"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "e2003f8e0b9d0255d4670b2e4537fb1a64adb589387772c651fa5591ab66b030"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "later_released_exact_vwa",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/microsoft/ExACT",
+      "commit": "d08ebebca1b82aa2b48ce2850e9edc279894295a",
+      "artifacts": [
+        "shells/classifieds/rmcts_mad_som.sh",
+        "src/agent/mcts_agent.py",
+        "src/agent/search_agent.py",
+        "src/prompts/vwa/jsons/p_som_cot_id_actree_3s_final.json"
+      ],
+      "lane_digest": "ad879ecffd358fb4c2ea68a5bab5fa55e4c8fcd8c2e843ed7482c386a5e66894"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/exact_vwa/fidelity.py",
+      "declaration_digest": "84e1e7d95ac1e9730e37c84f24a3ae46fb15b243401c2fde9c81c4a5e7b08e70",
+      "content_sha256": "4be0a455cfa678e2c401ed6a00fb33b0580112febb463b3f43318aba50c6c429"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/exact_vwa/study.py",
+      "declaration_digest": "edafb18475de48eef7e51e7daf752b404e9306bd69bb05d2107cefe5d3d7bbdd",
+      "content_sha256": "09bd15c27e28a3cb877f9ea7a25054147a26b0332e63d4680ed0a9854112ea48"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/exact_vwa/branch.py",
+      "declaration_digest": "01dfc1fbacc5f9aca4693921ab2815066685fbdd46a7014c31557dffa0ab0421",
+      "content_sha256": "04f3ec7979eea06842e8fa559a3ca413c6827da888a5e8513f05d3e6cc34a102"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "paper-era executable source cut preceding the later public VWA branch is unavailable",
+      "delta_digest": "f4cdabf2b6a845ec8198a16bc1c9eb5d405155045c01b05aeed191da0e17f7b5"
+    }
+  ],
+  "blockers": [
+    "public VWA executable history used here post-dates the paper",
+    "exact hosted GPT-4o and embedding deployment identities remain unresolved",
+    "matched browser/reset/replay infrastructure is not yet deployment-bound"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_exact_vwa_v1.py",
+      "content_sha256": "9fd02d324a7a52a31acee1856dfa807e5e56432b7fee541c9008a4708b8a30fc"
+    }
+  ]
+}

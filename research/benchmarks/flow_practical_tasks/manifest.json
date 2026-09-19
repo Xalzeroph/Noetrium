@@ -1,0 +1,11 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "flow_practical_tasks",
+  "benchmark": {
+    "benchmark_id": "flow-practical-tasks",
+    "title": "Flow ICLR 2025 Three Designed Tasks",
+    "source_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html",
+    "environment_kinds": ["software", "document"],
+    "modalities": ["text", "structured"]
+  }
+}

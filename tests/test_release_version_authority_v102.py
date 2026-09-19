@@ -4,9 +4,9 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from research_platform.governance.release.runtime.packager import ReleasePackager
-from research_platform.governance.release.runtime.manifest import build_release_manifest
-from research_platform.governance.release.runtime.project_metadata import load_project_metadata
+from noetrium_platform.foundation.governance.release.runtime.packager import ReleasePackager
+from noetrium_platform.foundation.governance.release.runtime.manifest import build_release_manifest
+from noetrium_platform.foundation.governance.release.runtime.project_metadata import load_project_metadata
 
 
 class ReleaseVersionAuthorityV102Tests(unittest.TestCase):

@@ -1,0 +1,177 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "camel_role_playing",
+  "package_digest": "06660118b79ea303a8ee47ba5ba9ce5cf24f3512bd17b28ac6069c88c15ee07f",
+  "definition_digest": "28a789717009bf7e103d23182eb761ca08471a14559d46dacec65f42399ac1d7",
+  "source_registry_digest": "75df2f5db5dfa002ca6fa39a6e7e1d816a138c100af3b04dd7f85c03a55f1a46",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "camel",
+    "title": "CAMEL: Communicative Agents for Mind Exploration of Large Language Model Society",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/file/a3621ee907def47c1b952ade25c67698-Paper-Conference.pdf",
+    "year": 2023,
+    "paper_revision": "NeurIPS 2023",
+    "identity_digest": "2725ac3effae1a4ea597a149ec14dd876a4b2ed14419b9523f8cf2c3ef3f65e9"
+  },
+  "catalog": {
+    "domains": [
+      "multi-agent"
+    ],
+    "families": [
+      "communication",
+      "inception_prompting",
+      "multi_agent",
+      "role_playing"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "camel-ai-society"
+    ],
+    "platform_pressure": [
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "observability/telemetry",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "alternating dialogue and termination protocol",
+      "assistant-user role semantics",
+      "inception prompting",
+      "independent role histories",
+      "task specification and task planning"
+    ],
+    "platform_owned": [
+      "evaluation isolation",
+      "model invocation",
+      "model-visible history projection",
+      "named model-role binding",
+      "participant lifecycle",
+      "transcript evidence"
+    ],
+    "reference_repositories": [
+      "https://github.com/camel-ai/camel"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "ca496210dfb6b36c6df7d85dd74343cf7d85c2b9ef8b48d6502767f7b996f91a"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/camel-ai/camel",
+      "commit": "6915c00a69447fecb796702dc30dec03681173ac",
+      "artifacts": [],
+      "lane_digest": "9228593feb6fcabffa3ba75734f43a88e0433480ec8a24ae2a4b118a50395bbe"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/camel_role_playing/fidelity.py",
+      "declaration_digest": "df1b097a4d2794a2040e65c59410ab196e3ae199aaa85af6a7d4208232a1bfe9",
+      "content_sha256": "eac320add4f7562162dffa349c74d52758e4a0373bb8547521041a57fc1bda6e"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/camel_role_playing/program.py",
+      "declaration_digest": "89aa6e12e1427378ee2ba370a02a63725f55c3b086cb456bf25300b4d9b946d8",
+      "content_sha256": "c13a2b70f7ee28f549e6901d47350fa18769314d58897de211ace1691b02432c"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/camel_role_playing/study.py",
+      "declaration_digest": "51d0cec4ca0a84eb8fa675e6c3cd03771aacab3f62f91b289db47307570eab09",
+      "content_sha256": "505249bb662cd29e1a8f5fcb09dd24f8bd81149d374d41dd9132f7fbabde08d5"
+    }
+  ],
+  "primary_executable": "research/reproductions/camel_role_playing/program.py",
+  "reported_results": [
+    {
+      "claim_id": "camel_ai_society_human_win",
+      "metric_id": "human_pairwise_win_rate",
+      "value": 76.3,
+      "qualifiers": {
+        "condition": "CAMEL",
+        "judge": "human",
+        "task_sample_size": 100,
+        "unit": "percent"
+      },
+      "claim_digest": "91f0933382bb5dcb7cc29aa915c36caadf6ed20bd76c07b8d1b8cf014444b4bb"
+    },
+    {
+      "claim_id": "single_shot_ai_society_human_win",
+      "metric_id": "human_pairwise_win_rate",
+      "value": 10.4,
+      "qualifiers": {
+        "condition": "single_shot_gpt3.5",
+        "judge": "human",
+        "task_sample_size": 100,
+        "unit": "percent"
+      },
+      "claim_digest": "de8d9fc68dfec69720c80691b094f279362846cdb23e9db848391ca1bc4f4f54"
+    },
+    {
+      "claim_id": "camel_ai_society_gpt4_win",
+      "metric_id": "gpt4_pairwise_win_rate",
+      "value": 73.0,
+      "qualifiers": {
+        "condition": "CAMEL",
+        "judge": "gpt-4",
+        "task_sample_size": 100,
+        "unit": "percent"
+      },
+      "claim_digest": "300078afbf282d8258b302cd7fedf82e177ee851e0b0e453fb92375a571ee361"
+    },
+    {
+      "claim_id": "single_shot_ai_society_gpt4_win",
+      "metric_id": "gpt4_pairwise_win_rate",
+      "value": 23.0,
+      "qualifiers": {
+        "condition": "single_shot_gpt3.5",
+        "judge": "gpt-4",
+        "task_sample_size": 100,
+        "unit": "percent"
+      },
+      "claim_digest": "4a3107b1295ed9b1672b542113e001b028368ee005c0cbfebd4bf65b8b906663"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "gpt3.5_single_shot",
+      "description": "paper single-shot GPT-3.5-Turbo response used for pairwise agent evaluation",
+      "qualifiers": {
+        "task_sample_size": 100
+      },
+      "baseline_digest": "797505b0d9337156a3de7e497d14eb5e8768a85855e90caffc42e0350824bbae"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "the exact identities of the paper-randomized 100 AI-Society evaluation tasks are not published in the paper/source cut and must be supplied as an immutable benchmark cut rather than guessed",
+      "delta_digest": "c98e231f72e43d024fc1d6d913b8a199e7dfaa4687f2cd4e9736debd61c32b7f"
+    }
+  ],
+  "blockers": [
+    "exact paper-randomized 100 AI-Society evaluation task ids are not publicly frozen",
+    "historical GPT-3.5-Turbo and GPT-4 service revisions are not content-addressable model artifacts",
+    "human pairwise rater assignment/order metadata is not fully reconstructable from the released source cut"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_camel_ai_society_benchmark_v1.py",
+      "content_sha256": "4d6fea76c62e2509c0bc3e3e1976f5100127256215baf017f698ca24ff0df853"
+    },
+    {
+      "path": "tests/test_scientific_camel_method_program_v1.py",
+      "content_sha256": "4313e67f2c7ba37c80f43077bad2e6a3cb0c1b141ae1850c312fc0237f0ab94e"
+    },
+    {
+      "path": "tests/test_scientific_camel_role_playing_fidelity_v1.py",
+      "content_sha256": "19a4949154af4c66e18576f66b3b6b5a52071d8f6627a6999d0438684c2f1b56"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "webarena",
+  "benchmark": {
+    "benchmark_id": "webarena",
+    "title": "WebArena",
+    "source_uri": "https://github.com/web-arena-x/webarena",
+    "environment_kinds": [
+      "web",
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "structured"
+    ]
+  }
+}

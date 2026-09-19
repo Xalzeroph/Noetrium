@@ -1,0 +1,11 @@
+# Project-level design sources audited by Noetrium.
+# These identities are allowed in research/audit/reproduction material only.
+# Production implementation must absorb semantics without preserving names.
+langgraph
+autogen
+crewai
+openhands
+tau-bench
+inspect_ai
+inspect ai
+harbor

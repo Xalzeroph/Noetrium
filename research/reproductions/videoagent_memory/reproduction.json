@@ -1,0 +1,187 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "videoagent_memory",
+  "package_digest": "efbefedd722c8cf4acacff36fbfe63b2f2d25638aaf33bcd5fa95159d34149f0",
+  "definition_digest": "8f82eee8d9953afbc4f45ce6d759cfe7bddb4a20a1eb222099870f08bd152b3b",
+  "source_registry_digest": "2c4ad0c7f51054bfd49d84df431ced1c43641a42cd98243c8343899ebc7ce56e",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "videoagent-memory",
+    "title": "VideoAgent: A Memory-augmented Multimodal Agent for Video Understanding",
+    "paper_uri": "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/3241_ECCV_2024_paper.php",
+    "year": 2024,
+    "paper_revision": "ECCV 2024 / official executable commit 02dbfd47732910a2e7348e47f695585d05178aba",
+    "identity_digest": "676a63866d2804784a40ab281b770aee44a849f1f5d8e366c18dc443d4b22578"
+  },
+  "catalog": {
+    "domains": [
+      "agentic-tool-use",
+      "multimodal-memory",
+      "video-understanding"
+    ],
+    "families": [
+      "memory_augmented_agent",
+      "multimodal_memory",
+      "react",
+      "video_agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "egoschema"
+    ],
+    "platform_pressure": [
+      "artifact/content",
+      "execution/machines/memory",
+      "execution/workflow",
+      "experimentation/study",
+      "model/embedding",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "18:11 visual/textual segment-localization fusion",
+      "nested object-memory two-tool ReAct policy",
+      "object-centric tracking/re-identification memory",
+      "paper-era caption-range and early-stop quirks",
+      "top-level four-tool ReAct policy",
+      "two-second temporal segment memory"
+    ],
+    "platform_owned": [
+      "MemoryMachine journal authority",
+      "MethodProgram host and child-machine links",
+      "benchmark cut authority",
+      "content-addressed video/memory artifacts",
+      "measurement and study execution",
+      "model and embedding provider transport"
+    ],
+    "reference_repositories": [
+      "https://github.com/YueFan1014/VideoAgent"
+    ],
+    "reference_publications": [
+      "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/3241_ECCV_2024_paper.php"
+    ],
+    "catalog_digest": "9ef42cddfd13a75892b71fac1721ec5dd0f2b7e0577ffb79ab70fff0ad64432a"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "eccv_2024_final",
+      "kind": "paper_provenance",
+      "venue": "ECCV",
+      "year": 2024,
+      "publication_id": "videoagent-memory-eccv-2024",
+      "publication_uri": "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/3241_ECCV_2024_paper.php",
+      "revision": "ECCV 2024 final paper",
+      "content_sha256": null,
+      "lane_digest": "b914b00169504cf057b0ab5922b34e1c238ea9f14af631e23728bcaab8e84c88"
+    },
+    {
+      "lane_id": "initial_public_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/YueFan1014/VideoAgent",
+      "commit": "43c0fa82880e36ae5e01474276040e5379443ec1",
+      "artifacts": [
+        "database.py",
+        "main.py",
+        "prompts/database_query_prompt.txt",
+        "prompts/prompt.txt",
+        "reid.py",
+        "segment_feature.py",
+        "tools.py",
+        "tracking.py"
+      ],
+      "lane_digest": "3f4bb33d858509095956cb069da7a602cf74bf7297a696d4ea8c3cb5078c2c31"
+    },
+    {
+      "lane_id": "paper_era_corrected_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/YueFan1014/VideoAgent",
+      "commit": "02dbfd47732910a2e7348e47f695585d05178aba",
+      "artifacts": [
+        "config/default.yaml",
+        "database.py",
+        "main.py",
+        "prompts/database_query_prompt.txt",
+        "prompts/prompt.txt",
+        "reid.py",
+        "segment_feature.py",
+        "tools.py",
+        "tracking.py"
+      ],
+      "lane_digest": "7484ccbf6ea5708daa9a06d2496644100377830c020d828d54372b6fb7ba6aee"
+    },
+    {
+      "lane_id": "post_paper_multiple_choice_example",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/YueFan1014/VideoAgent",
+      "commit": "21e4eb745b5ff4341f45170ddca02e0561ed088f",
+      "artifacts": [
+        "inference.py"
+      ],
+      "lane_digest": "12c73d6e5f5799030f730a25ff0bbb92130ca8cd23f9f2de9ba82043ee6b9462"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/videoagent_memory/benchmark.py",
+      "declaration_digest": "3532fc85c6b33131c7e3d9ec79a9f95a6c8393ff1d9e65d0f1721c0ffc834e16",
+      "content_sha256": "b797cde315ce0150544dc9bae0b5a0f75114a02e3963e6706b1b6a7f849cc353"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/videoagent_memory/fidelity.py",
+      "declaration_digest": "917463076d654dd9c2ade7271fd96c01e0dc263a127629cc5f51968fc6b04f15",
+      "content_sha256": "973765dce8a12ef3b0d5551ef88f577fb27294edcdb88e413ca57462cc2e75e2"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/videoagent_memory/program.py",
+      "declaration_digest": "7bbf279e6c62f1cea91e90c38ba30f7749a13cb185ab54fd015247a1524d3067",
+      "content_sha256": "2e8f8191b20295830ff90f30e9173447c3b96096f2200b98282cc49733508905"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/videoagent_memory/memory.py",
+      "declaration_digest": "2c2806369379898635c6a1bde4d8c1535d25f50c66678cfa326ab5565c577eed",
+      "content_sha256": "f1d3b74ab0ca563617cbb9ea1ce765493759d2ada09756f16bb37ba20a7286bf"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/videoagent_memory/study.py",
+      "declaration_digest": "07181cc47ffd0d86afee8c7b883d640f92b0805040c0103284f5296f747bf31b",
+      "content_sha256": "e5c1f3851724983917f36a22a56393004c302f1d431438974ee064d55111f495"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/videoagent_memory/source.py",
+      "declaration_digest": "ec142fbc046b5b265f1addf6b4cc1c7e5a1220121d63ff6e185c862c2e7dbf1c",
+      "content_sha256": "59778c8525a97aa734334d190ebf0650104e23f4eb99656b588094ba5f277a07"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The release uses a hosted GPT-4 service, but the exact paper-era model weights/service snapshot are not an immutable public artifact. Any current provider binding must therefore be recorded as a model substitution for numerical claims.",
+      "delta_digest": "0d8cf9f29d0713e105fa1abe27f48ed7ed8c8bbad71dd51aa3f325f2f82227c8"
+    }
+  ],
+  "blockers": [
+    "A runnable study requires content-addressed EgoSchema video bytes and the VideoAgent preprocessing/model artifacts (ViCLIP, tracking, CLIP, DINOv2, Video-LLaVA).",
+    "The exact paper-era hosted GPT-4 snapshot is not publicly immutable.",
+    "The full 5031-question EgoSchema claim requires an official evaluation-server/Kaggle receipt; the 500-answer public cut is a separate offline evaluation."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_videoagent_egoschema_v1.py",
+      "content_sha256": "d73b1e6164be16c307519b07a980c6862032f807d0d4ec5adf4365bb31473468"
+    },
+    {
+      "path": "tests/test_scientific_videoagent_memory_v1.py",
+      "content_sha256": "03efa26d8643df42230ae236b7e65890d5ec3a50938abc01d742b0edf28f7b6b"
+    }
+  ]
+}

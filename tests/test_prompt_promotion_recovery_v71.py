@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from research_platform.model.request.prompt.runtime import (
+from noetrium_platform.capabilities.model.request.prompt.runtime import (
     DurablePromptRegistry,
     PromptPublicationError,
     PromptPromotionEvidence,
@@ -15,7 +15,7 @@ from research_platform.model.request.prompt.runtime import (
     default_output_schemas,
     default_prompt_specs,
 )
-from research_platform.model.request.prompt.runtime.qualification import PromptQualification
+from noetrium_platform.capabilities.model.request.prompt.runtime.qualification import PromptQualification
 
 
 MODEL=("m","rev","sglang","1","bfloat16",None,262144,"tok")

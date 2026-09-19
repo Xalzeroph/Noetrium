@@ -2,13 +2,14 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.reliability.forensics.providers.index import ForensicIndex
-from research_platform.reliability.forensics.providers.index_reader import ForensicIndexReader
-from research_platform.reliability.forensics.providers.index_writer import ForensicIndexWriter
-from research_platform.model.request.prompt.runtime.active_pointer import ActivePromptPointer
-from research_platform.model.request.prompt.runtime.generation_store import PromptGenerationStore
-from research_platform.model.request.prompt.runtime.promotion_record_store import PromotionRecordStore
-from research_platform.model.request.prompt.runtime.promotion_store import PromptPromotionStore
+from noetrium_platform.infrastructure.reliability.forensics.providers.index import ForensicIndex
+from tests._concurrency_support import forensic_index
+from noetrium_platform.infrastructure.reliability.forensics.providers.index_reader import ForensicIndexReader
+from noetrium_platform.infrastructure.reliability.forensics.providers.index_writer import ForensicIndexWriter
+from noetrium_platform.capabilities.model.request.prompt.runtime.active_pointer import ActivePromptPointer
+from noetrium_platform.capabilities.model.request.prompt.runtime.generation_store import PromptGenerationStore
+from noetrium_platform.capabilities.model.request.prompt.runtime.promotion_record_store import PromotionRecordStore
+from noetrium_platform.capabilities.model.request.prompt.runtime.promotion_store import PromptPromotionStore
 
 
 class AuthorityDecompositionV27Tests(unittest.TestCase):
@@ -29,7 +30,7 @@ class AuthorityDecompositionV27Tests(unittest.TestCase):
     def test_read_only_index_has_no_writer(self):
         with tempfile.TemporaryDirectory() as td:
             path=Path(td)/'index.sqlite3'
-            ForensicIndex(path)
+            forensic_index(path).close()
             read=ForensicIndex(path,read_only=True)
             self.assertIsInstance(read.reader,ForensicIndexReader)
             self.assertIsNone(read.writer)
@@ -37,7 +38,7 @@ class AuthorityDecompositionV27Tests(unittest.TestCase):
 
     def test_writer_refuses_read_only_db(self):
         with tempfile.TemporaryDirectory() as td:
-            path=Path(td)/'index.sqlite3'; writable=ForensicIndex(path)
+            path=Path(td)/'index.sqlite3'; writable=forensic_index(path)
             ro=writable.db.__class__(path,read_only=True)
             with self.assertRaises(PermissionError): ForensicIndexWriter(ro)
 

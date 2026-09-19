@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "saycan_101",
+  "benchmark": {
+    "benchmark_id": "saycan-101",
+    "title": "SayCan 101-Task Evaluation",
+    "source_uri": "https://github.com/say-can/say-can.github.io",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "robot_state"
+    ]
+  }
+}

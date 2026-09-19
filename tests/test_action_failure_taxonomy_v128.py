@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 
-from research_platform.platform.composition.operation_forensics import OperationForensicFailureSink
-from research_platform.platform.composition.context_action import context_action_failure_classifier_chain
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.platform.kernel import ComponentIdentity, EffectCertainty, ExecutionContext, OperationExecutor, OperationRequest, canonical_digest
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.composition.operation_forensics import OperationForensicFailureSink
+from noetrium_platform.composition.context_action import context_action_failure_classifier_chain
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectCertainty, ExecutionContext, OperationExecutor, OperationRequest, canonical_digest
 
 
 def request(operation_type: str, component_id: str = "environment.e"):
@@ -21,7 +21,7 @@ def record(operation_type: str):
     store = ForensicStore(Path(td.name))
     sink = OperationForensicFailureSink(store, classifier=context_action_failure_classifier_chain())
     result = OperationExecutor(sink).execute(request(operation_type), lambda _: (_ for _ in ()).throw(RuntimeError("boom")))
-    row = store.failures.verified_payloads_after(0)[3][0]
+    row = store.failures.verified_payloads_after(0).payloads[0]
     store.close(); td.cleanup()
     return result, row
 
@@ -48,7 +48,7 @@ def test_post_effect_journal_failure_requires_effect_reconciliation():
 
 
 def test_action_not_applied_has_replan_recovery():
-    from research_platform.environment.runtime.api import ActionNotApplied
+    from noetrium_platform.capabilities.environment.runtime.api import ActionNotApplied
     with tempfile.TemporaryDirectory() as td:
         with ForensicStore(Path(td)) as store:
             sink = OperationForensicFailureSink(store, classifier=context_action_failure_classifier_chain())
@@ -56,7 +56,7 @@ def test_action_not_applied_has_replan_recovery():
                 request("environment.action_recovery_decision"),
                 lambda _: (_ for _ in ()).throw(ActionNotApplied("proved not applied")),
             )
-            row = store.failures.verified_payloads_after(0)[3][0]
+            row = store.failures.verified_payloads_after(0).payloads[0]
             assert result.failure_id
             assert row["failure_code"] == "ACTION_NOT_APPLIED"
             assert row["recommended_recovery"] == "replan_action"

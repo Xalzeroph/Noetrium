@@ -1,1 +1,0 @@
-"""resource.resolution api boundary."""

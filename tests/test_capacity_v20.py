@@ -1,10 +1,11 @@
 import hashlib
 import unittest
 
-from research_platform.platform.kernel import ImmutableModelIdentity
-from research_platform.model.serving import ModelArtifactClosure, RuntimeBuildIdentity, ModelStackSpec, QualificationCertificate, ResourceEnvelope
-from research_platform.model.serving.runtime.capacity import DeploymentRequirements, ExactCapacityPlanner, HostQualificationMismatch, PlacementCapacityError
-from research_platform.model.serving.api.inventory import CPUInventory, CPUNode, GPUFabricLink, GPUInventory, HostLimits, MemoryInventory, MountInventory, RuntimeInventory, HostInventory
+from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
+from noetrium_platform.capabilities.model.serving import QualificationCertificate, ResourceEnvelope
+from noetrium_platform.capabilities.model.stack import ModelArtifactClosure, RuntimeBuildIdentity, ModelStackSpec
+from noetrium_platform.capabilities.model.serving.runtime.capacity import DeploymentRequirements, ExactCapacityPlanner, HostQualificationMismatch, PlacementCapacityError
+from noetrium_platform.capabilities.model.serving.api.inventory import CPUInventory, CPUNode, GPUFabricLink, GPUInventory, HostLimits, MemoryInventory, MountInventory, RuntimeInventory, HostInventory
 
 
 def stack_parts():

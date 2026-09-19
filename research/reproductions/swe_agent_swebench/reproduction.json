@@ -1,0 +1,118 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "swe_agent_swebench",
+  "package_digest": "ed17c796f5846d34e9eb3ff38756a3665db18c05acb10c173fed3b2d72d4be96",
+  "definition_digest": "a82ac66411df4e2291726e6efe690d63d332894a94b2ac60e8e4225a6bb7d8f5",
+  "source_registry_digest": "00d44a186c1cdf9c7c0a7a546005f4f887b308f8096c14115aa63208447f17d3",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "swe-agent",
+    "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5a7c947568c1b1328ccc5230172e1e7c-Abstract-Conference.html",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "43b371d7287b54ed59eda1d600712c741d28f69c7a9caa2f1023dd6c29fdca0e"
+  },
+  "catalog": {
+    "domains": [
+      "software-engineering",
+      "tool-use"
+    ],
+    "families": [
+      "agent_computer_interface",
+      "software_agent",
+      "tool_use"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "swe-bench"
+    ],
+    "platform_pressure": [
+      "environment/software",
+      "execution",
+      "observability/telemetry",
+      "participant/agent",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "agent-computer interface design",
+      "software navigation policy"
+    ],
+    "platform_owned": [
+      "checkpoint and recovery",
+      "software environment",
+      "telemetry",
+      "tool execution"
+    ],
+    "reference_repositories": [
+      "https://github.com/SWE-agent/SWE-agent"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "9397237ea3732c34f34f83dd365261662709493eff9edd6ef501af81ff5774c4"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/SWE-agent/SWE-agent",
+      "commit": "3ea751c087f32b16e039a2233dd6eefecef325d5",
+      "artifacts": [],
+      "lane_digest": "a734ee85eab9dd4d1288485d30f8d05b06f0a2702ef01a22f470fa9b67a1ce8c"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/swe_agent_swebench/fidelity.py",
+      "declaration_digest": "1d0d86558f27a15e45c740c8cf3e7e15939b5828191a666a6f530a681ca773ea",
+      "content_sha256": "86606bf6f11380960b15d7a03d0d5c5817938dda7f89bd35f54140adb4cb542a"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/swe_agent_swebench/program.py",
+      "declaration_digest": "c1d5d1b489e68ab5cbce2fb68daf39ef4d5d5c1c6c3c9d8fb27d547cf80b9eca",
+      "content_sha256": "a9618e09c5a6ad28c5ba6d673024388473bf86d03de29d6d5cce60e30e6ec153"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/swe_agent_swebench/study.py",
+      "declaration_digest": "e4af5af79b89b46ce7ca389081d802b5ca6db16b5252122612ddc62b51ee8940",
+      "content_sha256": "9bf0af8592ca4f2728d3314ceb5704919e0051d9a55dd45189343812311d02f3"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/swe_agent_swebench/aci.py",
+      "declaration_digest": "36b1f3f4f57f2e7b9785de4c1df3450ad2f8657b342a4b62663db047cefc25f3",
+      "content_sha256": "2563e02ebed98cc09efc5e73b60c63a3d1694e26491219fed8a91ae705b98899"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/swe_agent_swebench/history.py",
+      "declaration_digest": "cb18aa7a2bae3b15be951c2930e8f7aab642429be5dc1e81f5d32db6c053278e",
+      "content_sha256": "1c089d90aeb1dfcbe67621935c92237b7f393747c78948c892ef4b2085a8e46b"
+    }
+  ],
+  "primary_executable": "research/reproductions/swe_agent_swebench/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [
+    "matched execution still requires exact paper-era model/prompt binding plus a deployment-qualified SWE-bench software environment cut"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_swe_agent_07_v1.py",
+      "content_sha256": "b24dcee0c051f5070dfacb6fca4f4a2441b37edd8ce7c9c827ba0693238ac985"
+    },
+    {
+      "path": "tests/test_scientific_swe_agent_method_program_v1.py",
+      "content_sha256": "0c4222a14d8db1629ac1e4ebacc04f960ac41f2ffc774f327129b737e90c079c"
+    },
+    {
+      "path": "tests/test_scientific_swe_agent_swebench_fidelity_v1.py",
+      "content_sha256": "00d66f42ac6c833a44215e8ed788945e0a9568df30c7720c78ea84d16e80a78a"
+    }
+  ]
+}

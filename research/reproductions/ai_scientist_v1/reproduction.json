@@ -1,0 +1,87 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ai_scientist_v1",
+  "package_digest": "a80012458f008adfe3145dd0f1167d023f6e2d0391b8579941412816d0672832",
+  "definition_digest": "7855c96eb866729d0464d1ca016a2806f60d9be9e925a7869cc08be3a7b77218",
+  "source_registry_digest": "4f04e304fdf0f7aedcfdf19d7636fa73700ef8e2d8c9b33dee86c3db415f697e",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "ai-scientist",
+    "title": "The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery",
+    "paper_uri": "https://arxiv.org/abs/2408.06292",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "6946845c25ff943bdfa449bef2fcdcd8cb65872288c18bb67af2a8660a25f0e4"
+  },
+  "catalog": {
+    "domains": [
+      "scientific-research",
+      "self-improvement"
+    ],
+    "families": [
+      "code_execution",
+      "experimentation",
+      "paper_writing",
+      "review",
+      "scientific_agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/software",
+      "experimentation/study",
+      "experimentation/workbench",
+      "model/request",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "idea generation and novelty policy",
+      "template-bound experiment editing loop",
+      "writeup and review policy"
+    ],
+    "platform_owned": [
+      "artifact lineage",
+      "experiment identity and metrics",
+      "isolated project execution",
+      "parallel resource scheduling",
+      "recovery and evidence"
+    ],
+    "reference_repositories": [
+      "https://github.com/SakanaAI/AI-Scientist"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "53a7ca9a2251b960cdf47df73c80815541894f7e1f002892aad9672c2ead9061"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/SakanaAI/AI-Scientist",
+      "commit": "0eccd134221c5ebec3fe0d2d6e8f67bfdbb69978",
+      "artifacts": [],
+      "lane_digest": "da888bc2a554eb4fdfff2054f115f7ac1421f58a3305a15b34bea25c740a9b7a"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/ai_scientist_v1/fidelity.py",
+      "declaration_digest": "656d5c4d2ca0c0b3e0a4ec85448ee86d74a51797e632d82e25f8bd38beda2ba0",
+      "content_sha256": "294b139e54513e8e6904a60d0c6e0a55f81fef4b7917aedef71bf57ed2608969"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_ai_scientist_family_v1.py",
+      "content_sha256": "b1d58e81f16a1126e1b3d9c7a473b3f23b28837cb68ef4f83434e1241487bf88"
+    }
+  ]
+}

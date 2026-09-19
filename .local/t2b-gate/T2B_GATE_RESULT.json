@@ -1,0 +1,90 @@
+{
+  "blockers": [
+    "SERVER_JAR_MISSING:/workspace/sem_repair_final/.local/minecraft/server.jar",
+    "java:JAVA_VERSION_TOO_OLD:openjdk version \"17.0.19\" 2026-04-21; required >= 21",
+    "mineflayer:PACKAGE_NOT_RESOLVABLE:node:internal/modules/cjs/loader:1520",
+    "mineflayer-pathfinder:PACKAGE_NOT_RESOLVABLE:node:internal/modules/cjs/loader:1520",
+    "mineflayer-pvp:PACKAGE_NOT_RESOLVABLE:node:internal/modules/cjs/loader:1520",
+    "vec3:PACKAGE_NOT_RESOLVABLE:node:internal/modules/cjs/loader:1520"
+  ],
+  "failure_class": "ENVIRONMENT",
+  "preflight": {
+    "probes": [
+      {
+        "cause_code": "JAVA_VERSION_TOO_OLD",
+        "command": [
+          "java",
+          "-version"
+        ],
+        "detail": "openjdk version \"17.0.19\" 2026-04-21; required >= 21",
+        "name": "java",
+        "ok": false,
+        "phase": "runtime"
+      },
+      {
+        "cause_code": "OK",
+        "command": [
+          "node",
+          "--version"
+        ],
+        "detail": "v24.19.0; required >= v22",
+        "name": "node",
+        "ok": true,
+        "phase": "runtime"
+      },
+      {
+        "cause_code": "PACKAGE_NOT_RESOLVABLE",
+        "command": [
+          "node",
+          "-e",
+          "const fs=require('fs'),path=require('path');const expected=\"mineflayer\";let current=path.dirname(require.resolve(expected)),found=null;while(true){const candidate=path.join(current,'package.json');if(fs.existsSync(candidate)){const value=JSON.parse(fs.readFileSync(candidate,'utf8'));if(value.name===expected){found=value;break;}}const parent=path.dirname(current);if(parent===current)break;current=parent;}if(!found)throw new Error('package metadata not found for '+expected);process.stdout.write(String(found.version||''));"
+        ],
+        "detail": "node:internal/modules/cjs/loader:1520",
+        "name": "mineflayer",
+        "ok": false,
+        "phase": "dependencies"
+      },
+      {
+        "cause_code": "PACKAGE_NOT_RESOLVABLE",
+        "command": [
+          "node",
+          "-e",
+          "const fs=require('fs'),path=require('path');const expected=\"mineflayer-pathfinder\";let current=path.dirname(require.resolve(expected)),found=null;while(true){const candidate=path.join(current,'package.json');if(fs.existsSync(candidate)){const value=JSON.parse(fs.readFileSync(candidate,'utf8'));if(value.name===expected){found=value;break;}}const parent=path.dirname(current);if(parent===current)break;current=parent;}if(!found)throw new Error('package metadata not found for '+expected);process.stdout.write(String(found.version||''));"
+        ],
+        "detail": "node:internal/modules/cjs/loader:1520",
+        "name": "mineflayer-pathfinder",
+        "ok": false,
+        "phase": "dependencies"
+      },
+      {
+        "cause_code": "PACKAGE_NOT_RESOLVABLE",
+        "command": [
+          "node",
+          "-e",
+          "const fs=require('fs'),path=require('path');const expected=\"mineflayer-pvp\";let current=path.dirname(require.resolve(expected)),found=null;while(true){const candidate=path.join(current,'package.json');if(fs.existsSync(candidate)){const value=JSON.parse(fs.readFileSync(candidate,'utf8'));if(value.name===expected){found=value;break;}}const parent=path.dirname(current);if(parent===current)break;current=parent;}if(!found)throw new Error('package metadata not found for '+expected);process.stdout.write(String(found.version||''));"
+        ],
+        "detail": "node:internal/modules/cjs/loader:1520",
+        "name": "mineflayer-pvp",
+        "ok": false,
+        "phase": "dependencies"
+      },
+      {
+        "cause_code": "PACKAGE_NOT_RESOLVABLE",
+        "command": [
+          "node",
+          "-e",
+          "const fs=require('fs'),path=require('path');const expected=\"vec3\";let current=path.dirname(require.resolve(expected)),found=null;while(true){const candidate=path.join(current,'package.json');if(fs.existsSync(candidate)){const value=JSON.parse(fs.readFileSync(candidate,'utf8'));if(value.name===expected){found=value;break;}}const parent=path.dirname(current);if(parent===current)break;current=parent;}if(!found)throw new Error('package metadata not found for '+expected);process.stdout.write(String(found.version||''));"
+        ],
+        "detail": "node:internal/modules/cjs/loader:1520",
+        "name": "vec3",
+        "ok": false,
+        "phase": "dependencies"
+      }
+    ],
+    "server_jar": "/workspace/sem_repair_final/.local/minecraft/server.jar",
+    "server_jar_sha256": null
+  },
+  "same_server_process_for_both_seeds": false,
+  "schema": "t2b-gate.v2",
+  "status": "T2B_GATE_BLOCKED"
+}

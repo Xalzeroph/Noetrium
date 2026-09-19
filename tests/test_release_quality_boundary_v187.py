@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 import unittest
-from research_platform.governance.architecture.release_invariants import audit_release_invariants
+from noetrium_platform.foundation.governance.architecture.release_invariants import audit_release_invariants
 
 class ReleaseQualityBoundaryV187Tests(unittest.TestCase):
     def test_release_consumes_quality_evidence_instead_of_running_quality_systems(self):

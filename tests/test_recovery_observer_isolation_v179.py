@@ -4,9 +4,9 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.model.serving.api import RecoveryStep
-from research_platform.model.serving.runtime import DurableExactRecoveryRunner
-from research_platform.model.serving.providers.recovery_storage import FileDurableRecoveryStore
+from noetrium_platform.capabilities.model.serving.api import RecoveryStep
+from noetrium_platform.capabilities.model.serving.runtime import DurableExactRecoveryRunner
+from noetrium_platform.capabilities.model.serving.providers.recovery_storage import FileDurableRecoveryStore
 
 from test_model_os_v11 import ModelOSV11Tests, _RecoveryExecutor
 

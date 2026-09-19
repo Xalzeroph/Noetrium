@@ -11,7 +11,7 @@
     "--port", "30000",
     "--tp-size", "4"
   ],
-  "cwd": "/srv/research-platform/workspaces/model-serving",
+  "cwd": "/srv/noetrium/workspaces/model-serving",
   "python_environment_id": "sglang-main",
   "gpu_devices": ["0", "1", "2", "3"],
   "environment": {

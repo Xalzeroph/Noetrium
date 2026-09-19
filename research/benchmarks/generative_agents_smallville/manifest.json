@@ -1,0 +1,11 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "generative_agents_smallville",
+  "benchmark": {
+    "benchmark_id": "generative-agents-smallville",
+    "title": "Generative Agents Smallville Paper Protocol",
+    "source_uri": "https://github.com/joonspk-research/generative_agents",
+    "environment_kinds": ["social_simulation"],
+    "modalities": ["text", "structured"]
+  }
+}

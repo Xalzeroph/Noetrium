@@ -5,17 +5,18 @@ import time
 import unittest
 import hashlib
 
-from research_platform.platform.kernel import ImmutableModelIdentity
-from research_platform.model.serving.api import (
-    DeploymentPlacement, ModelPhase, ModelRunState, ModelArtifactClosure, RuntimeBuildIdentity,
-    ModelStackSpec, QualificationCertificate, QualifiedDeploymentManifest, RecoveryStep,
+from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
+from noetrium_platform.capabilities.model.serving.api import (
+    DeploymentPlacement, ModelPhase, ModelRunState,
+    QualificationCertificate, QualifiedDeploymentManifest, RecoveryStep,
     ResourceEnvelope, RoleModelAssignment, RoleModelManifest,
 )
-from research_platform.model.serving.runtime import (
+from noetrium_platform.capabilities.model.stack import ModelArtifactClosure, ModelStackSpec, RuntimeBuildIdentity
+from noetrium_platform.capabilities.model.serving.runtime import (
     DurableExactRecoveryRunner, ModelAdmissionController, ModelAdmissionTimeout, RecoveryPlanner,
 )
 
-from research_platform.model.serving.providers.recovery_storage import FileDurableRecoveryStore
+from noetrium_platform.capabilities.model.serving.providers.recovery_storage import FileDurableRecoveryStore
 
 
 def stack_parts():
@@ -27,7 +28,7 @@ def stack_parts():
 
 class _RecoveryExecutor:
     def __init__(self, fail_once_at=None): self.fail_once_at=fail_once_at; self.failed=False; self.calls=[]
-    def execute(self,step,plan):
+    def run_step(self,step,plan):
         self.calls.append(step)
         if step==self.fail_once_at and not self.failed:
             self.failed=True; raise OSError("injected hard interruption")

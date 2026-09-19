@@ -1,11 +1,11 @@
 from pathlib import Path
 import tempfile, unittest
-from research_platform.governance.architecture import analyze_optimization_risks, build_optimization_report
+from noetrium_platform.foundation.governance.architecture import analyze_optimization_risks, build_optimization_report
 
 class OptimizationReportV34Tests(unittest.TestCase):
     def test_detects_io_lock_and_state_mutation_concentration(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); pkg=root/'research_platform'; pkg.mkdir(); (pkg/'__init__.py').write_text('')
+            root=Path(td); pkg=root/'noetrium_platform'; pkg.mkdir(); (pkg/'__init__.py').write_text('')
             (pkg/'x.py').write_text('''from threading import RLock\nclass X:\n def __init__(self): self._lock=RLock(); self.x=0\n def f(self,p):\n  with self._lock:\n   self.x=1\n   open(p).read()\n   open(p).read()\n   open(p).read()\n   open(p).read()\n   open(p).read()\n   open(p).read()\n''')
             row=analyze_optimization_risks(root)[0]
             self.assertIn('IO_CONCENTRATION',row.reason_codes)

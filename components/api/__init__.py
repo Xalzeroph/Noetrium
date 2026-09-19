@@ -1,0 +1,121 @@
+"""Stable downstream API for reusable reference components.
+
+``components`` is a repository extension/reference layer, not a registered
+runtime authority node.  Downstream projects import these generic substrates
+through ``components.api`` directly.  The canonical system registry and the
+generated ``noetrium.contracts.systems`` facades intentionally cover only the
+runtime topology; they must not synthesize a fake ``components`` authority.
+
+SEM and other research projects supply scientific/semantic policy.  This module
+supplies reusable reference implementations such as the versioned memory graph.
+"""
+
+from ..reference.single_agent.memory import (
+    MemoryEdgeRecord,
+    MemoryGraphConflict,
+    MemoryGraphIntegrityError,
+    MemoryGraphLedgerEntry,
+    MemoryGraphOperation,
+    MemoryGraphPort,
+    MemoryGraphSnapshot,
+    MemoryGraphTransaction,
+    MemoryNodeRecord,
+    VersionedMemoryGraph,
+)
+from ..reference.single_agent.agent import (
+    JsonlReferenceAgentProgress,
+    NullReferenceAgentProgress,
+    PlatformCapabilityToolPort,
+    ReferenceAgentAction,
+    ReferenceAgentActionKind,
+    ReferenceAgentActionToolPort,
+    ReferenceAgentDecision,
+    ReferenceAgentDecisionPort,
+    ReferenceAgentEvent,
+    ReferenceAgentMessage,
+    ReferenceAgentObservation,
+    ReferenceAgentPlannerPort,
+    ReferenceAgentProgressPort,
+    ReferenceAgentReflectionPort,
+    ReferenceAgentRunResult,
+    ReferenceAgentSolverPort,
+    ReferenceAgentState,
+    ReferenceAgentStatus,
+    ReferenceAgentToolPort,
+    ReferencePlanAndSolveMethod,
+    ReferenceReActMethod,
+    ReferenceReflexionMethod,
+    ReferenceToolRegistryPort,
+)
+from ..reference.single_agent.memory import (
+    EpisodicMemoryStore,
+    MemoryEmbedderPort,
+    MemoryItem,
+    MemoryPersistencePort,
+    SQLiteMemoryPersistence,
+    VectorMemoryStore,
+    WorkingMemory,
+)
+from ..reference.single_agent.tools import (
+    ToolArguments,
+    ToolAuditPort,
+    ToolAuthorization,
+    ToolAuthorizationPort,
+    ToolDefinition,
+    ToolHandler,
+    ToolRegistry,
+    ToolResult,
+    ToolRiskClass,
+)
+
+__all__ = (
+    "MemoryEdgeRecord",
+    "MemoryGraphConflict",
+    "MemoryGraphIntegrityError",
+    "MemoryGraphLedgerEntry",
+    "MemoryGraphOperation",
+    "MemoryGraphPort",
+    "MemoryGraphSnapshot",
+    "MemoryGraphTransaction",
+    "MemoryNodeRecord",
+    "VersionedMemoryGraph",
+    "JsonlReferenceAgentProgress",
+    "NullReferenceAgentProgress",
+    "PlatformCapabilityToolPort",
+    "ReferenceAgentAction",
+    "ReferenceAgentActionKind",
+    "ReferenceAgentActionToolPort",
+    "ReferenceAgentDecision",
+    "ReferenceAgentDecisionPort",
+    "ReferenceAgentEvent",
+    "ReferenceAgentMessage",
+    "ReferenceAgentObservation",
+    "ReferenceAgentPlannerPort",
+    "ReferenceAgentProgressPort",
+    "ReferenceAgentReflectionPort",
+    "ReferenceAgentRunResult",
+    "ReferenceAgentSolverPort",
+    "ReferenceAgentState",
+    "ReferenceAgentStatus",
+    "ReferenceAgentToolPort",
+    "ReferencePlanAndSolveMethod",
+    "ReferenceReActMethod",
+    "ReferenceReflexionMethod",
+    "ReferenceToolRegistryPort",
+    "EpisodicMemoryStore",
+    "MemoryEmbedderPort",
+    "MemoryItem",
+    "MemoryPersistencePort",
+    "SQLiteMemoryPersistence",
+    "VectorMemoryStore",
+    "WorkingMemory",
+    "ToolArguments",
+    "ToolAuditPort",
+    "ToolAuthorization",
+    "ToolAuthorizationPort",
+    "ToolDefinition",
+    "ToolHandler",
+    "ToolRegistry",
+    "ToolResult",
+    "ToolRiskClass",
+)

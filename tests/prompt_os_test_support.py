@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from research_platform.platform.composition.prompt_registry import build_durable_prompt_registry
+from noetrium_platform.composition.prompt_registry import build_durable_prompt_registry
 
 
 def make_prompt_registry(root: Path):

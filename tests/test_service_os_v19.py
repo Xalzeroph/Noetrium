@@ -1,12 +1,12 @@
-from research_platform.runtime.service.api import ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
-from service_os_test_support import make_service_supervisor
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
+from service_os_test_support import make_service_supervisor, ready_evidence
 from pathlib import Path
 import hashlib
 import tempfile
 import unittest
 
-from research_platform.runtime.service.runtime.state_storage import FileServiceStateStore
-from research_platform.runtime.service.runtime import (
+from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactRestartPolicy,
     ExactServiceSupervisor,
     RestartHistory,
@@ -31,7 +31,7 @@ class Adapter:
     def wait_ready(self,p,c):
         self.calls.append("ready")
         if self.fail_ready: raise TimeoutError("not ready")
-        return "ready.json","stdout.manifest","stderr.manifest"
+        return ready_evidence(p,c,"ready.json","stdout.manifest","stderr.manifest")
     def stop(self,p,c): self.calls.append("stop"); return ("stopped",)
 
 
@@ -60,7 +60,7 @@ class ServiceOSV19Tests(unittest.TestCase):
         d3=p.decide(ServiceExitClass.TEMPORARY,d2.history,now=102); self.assertFalse(d3.restart)
 
     def test_systemd_renderer_has_no_shell_or_fallback_path(self):
-        unit=SystemdRenderer().render(SystemdUnitSpec("rp-model.service","RP model",("/opt/rp/bin/python","-m","research_platform.runtime.service.runtime.entrypoint"),"/srv/rp","/etc/rp/model.env"))
+        unit=SystemdRenderer().render(SystemdUnitSpec("rp-model.service","RP model",("/opt/rp/bin/python","-m","noetrium_platform.infrastructure.lifecycle.service.runtime.entrypoint"),"/srv/rp","/etc/rp/model.env"))
         self.assertIn("Type=notify",unit); self.assertIn("RestartPreventExitStatus=70 74 78",unit); self.assertIn("KillMode=control-group",unit)
         self.assertNotIn("/bin/sh",unit); self.assertNotIn("fallback",unit.lower())
 

@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use Noetrium in research, please cite this software using these metadata."
+title: "Noetrium: Reproducible Research Infrastructure for AI Agents"
+type: software
+authors:
+  - name: "Noetrium contributors"
+abstract: >-
+  Noetrium is rigorous, evidence-driven infrastructure for reproducible
+  AI-agent research across experiments, agents, models, environments,
+  recovery, observability, artifacts, and verification.
+version: "0.44.0"
+license: Apache-2.0
+repository-code: "https://github.com/Xalzeroph/noetrium"
+url: "https://github.com/Xalzeroph/noetrium"
+keywords:
+  - AI agents
+  - agent research
+  - reproducible research
+  - research infrastructure
+  - experiment management
+  - evidence
+  - verification

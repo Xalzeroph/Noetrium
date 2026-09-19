@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from research_platform.participant.method.runtime import MethodObservationOutbox
+from noetrium_platform.capabilities.participant.method.runtime import MethodObservationOutbox
 
 import unittest
 
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.participant.method.api import (
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.capabilities.participant.method.api import (
     MethodObservation,
     MethodObservationDeliveryError,
 )

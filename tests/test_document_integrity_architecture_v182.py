@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from research_platform.governance.architecture.document_integrity_invariants import (
+from noetrium_platform.foundation.governance.architecture.document_integrity_invariants import (
     audit_document_integrity_invariants,
 )
 

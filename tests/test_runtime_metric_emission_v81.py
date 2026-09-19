@@ -5,23 +5,23 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.platform.composition.runtime_observability import MetricRuntimeObserver
-from research_platform.platform.composition.model_deployments import freeze_model_deployment_set
-from research_platform.model.serving.api.qualified_deployment import RoleModelAssignment, RoleModelManifest
-from research_platform.execution.runtime.manager import (
+from tests._concurrency_support import telemetry_backend
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.composition.runtime_observability import MetricRuntimeObserver
+from noetrium_platform.composition.model_deployments import freeze_model_deployment_set
+from noetrium_platform.capabilities.model.serving.api.qualified_deployment import RoleModelAssignment, RoleModelManifest
+from noetrium_platform.infrastructure.lifecycle.launch_control import (
     ExactRuntimeController,
     OneClickRuntimeManager,
-    RecoveryLeaseBusy,
-    RecoveryLeaseStore,
     RuntimeControlStore,
     ServerRuntimeAdapter,
     ServerRuntimeControlPlane,
 )
-from research_platform.execution.runtime.manager.recovery_execution import FileLockedRecoveryExecutionFactory
-from research_platform.observability.telemetry.metric.composition import build_default_registry
-from research_platform.observability.telemetry.metric.providers import TelemetrySQLiteBackend
-from research_platform.observability.telemetry.metric.runtime import TelemetryStore
+from noetrium_platform.infrastructure.reliability.recovery.api.lease import RecoveryLeaseBusy
+from tests_support import recovery_lease_state
+from noetrium_platform.infrastructure.reliability.recovery.execution.runtime.file_lock import FileLockedRecoveryExecutionFactory
+from noetrium_platform.evidence.observability.telemetry.metric.composition import build_default_registry
+from noetrium_platform.evidence.observability.telemetry.metric.runtime import TelemetryStore
 
 from test_server_runtime_control_v29 import CallRecorder, authorities, deployment, manifest, runtime_adapter
 
@@ -32,13 +32,13 @@ class RuntimeMetricEmissionV81Tests(unittest.TestCase):
         d2=deployment("d2","GPU-2")
         roles=RoleModelManifest((RoleModelAssignment("planner","d1"),RoleModelAssignment("meta","d2")))
         ds=freeze_model_deployment_set(roles,(d1,d2))
-        metrics=TelemetryStore(build_default_registry(), TelemetrySQLiteBackend(root/"metrics.sqlite3"))
+        metrics=TelemetryStore(build_default_registry(), telemetry_backend(self, root/"metrics.sqlite3"))
         recorder=CallRecorder()
         adapter,_provider=runtime_adapter(authorities(recorder),ds,root)
         runtime_store=make_runtime_control_store(root/"runtime.json")
         controller=ExactRuntimeController(runtime_store,adapter)
         plane=ServerRuntimeControlPlane(controller,adapter)
-        leases=RecoveryLeaseStore(root/"lease.json")
+        leases=recovery_lease_state(root/"lease.json")
         manager=OneClickRuntimeManager(
             plane,
             FileLockedRecoveryExecutionFactory(leases, lock_path=root/'recovery.execution.lock'),

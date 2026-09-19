@@ -7,25 +7,28 @@ import hashlib
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.platform.composition.runtime_control.server_runtime import ImmutableServerReleaseLayout, ServerRuntimeBootstrap, ServerSessionPolicyMismatch
-from research_platform.governance.release.runtime.active_pin_store import ActiveReleasePinStore
-from research_platform.runtime.host.bootstrap.runtime import DirectoryServerBootstrapStateStore, ServerBootstrapTransaction
-from research_platform.execution.runtime.manager.persistent_session_host import RuntimePersistentSessionHost
-from research_platform.runtime.session.api import PersistentSessionEffectUncertain, PersistentSessionSpec, ServerSessionPolicy
-from research_platform.runtime.session.runtime import (
+from noetrium_platform.infrastructure.lifecycle.server.lifecycle.runtime import ImmutableServerReleaseLayout, ServerRuntimeBootstrap, ServerSessionPolicyMismatch
+from noetrium_platform.foundation.governance.release.runtime.active_pin_store import ActiveReleasePinStore
+from noetrium_platform.infrastructure.lifecycle.host.bootstrap.runtime import DirectoryServerBootstrapStateStore, ServerBootstrapTransaction
+from noetrium_platform.infrastructure.lifecycle.session.api import PersistentSessionEffectUncertain, PersistentSessionSpec, ServerSessionPolicy
+from noetrium_platform.infrastructure.lifecycle.session.runtime import (
     BoundPersistentSessionStatusProbe, DirectoryPersistentSessionBindingStore,
     PersistentSessionManager, TmuxPersistentSessionControl, TmuxBinaryIdentityMismatch, TmuxCommandFailed, TmuxCommandResult,
+    RuntimePersistentSessionHost,
 )
-from research_platform.runtime.session.runtime.tmux_contracts import TmuxCommandTimeout
+from noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_contracts import TmuxCommandTimeout
+
+TEST_TMUX_EXECUTABLE = "/definitely/missing/tmux"
 
 
 class Runner:
     def __init__(self, fail=False): self.sessions={}; self.fail=fail
-    def run(self, argv, *, environment):
+    def run(self, argv, *, environment, effect="unknown"):
+        del effect
         if self.fail: raise TmuxCommandTimeout('simulated tmux socket timeout')
         args=tuple(argv)[5:]
         if args[0]=='display-message':
-            name=args[args.index('-t')+1].lstrip('=')
+            name=args[args.index('-t')+1].lstrip('=').split(':', 1)[0]
             if name not in self.sessions: return TmuxCommandResult(1,'','missing')
             command,cwd=self.sessions[name]; return TmuxCommandResult(0,f'{name}\t88\t0\t{command}\t{cwd}\n','')
         if args[0]=='new-session': self.sessions[args[args.index('-s')+1]]=(args[-1],args[args.index('-c')+1]); return TmuxCommandResult(0,'','')
@@ -63,13 +66,13 @@ class TmuxTransportIdentityTests(unittest.TestCase):
 
     def test_observation_timeout_policy_does_not_change_transport_identity(self):
         a = TmuxPersistentSessionControl(
-            tmux_executable="/usr/bin/tmux",
+            tmux_executable=TEST_TMUX_EXECUTABLE,
             binary_identity_digest="6" * 64,
             command_timeout_s=1.0,
             runner=Runner(),
         )
         b = TmuxPersistentSessionControl(
-            tmux_executable="/usr/bin/tmux",
+            tmux_executable=TEST_TMUX_EXECUTABLE,
             binary_identity_digest="6" * 64,
             command_timeout_s=30.0,
             runner=Runner(),
@@ -78,11 +81,11 @@ class TmuxTransportIdentityTests(unittest.TestCase):
 
     def test_tmux_command_disables_user_configuration(self):
         control = TmuxPersistentSessionControl(
-            tmux_executable="/usr/bin/tmux",
+            tmux_executable=TEST_TMUX_EXECUTABLE,
             binary_identity_digest="6" * 64,
             runner=Runner(),
         )
-        self.assertEqual(control.commands.argv("list-sessions")[:5], ("/usr/bin/tmux", "-f", "/dev/null", "-L", "research-platform"))
+        self.assertEqual(control.commands.argv("list-sessions")[:5], (TEST_TMUX_EXECUTABLE, "-f", "/dev/null", "-L", "noetrium"))
 
     def test_production_bootstrap_rejects_unverified_tmux_binary(self):
         with TemporaryDirectory() as td:
@@ -97,20 +100,34 @@ class TmuxTransportIdentityTests(unittest.TestCase):
 
     def test_non_missing_tmux_error_is_not_misclassified_as_absent(self):
         class PermissionRunner:
-            def run(self, argv, *, environment):
+            def run(self, argv, *, environment, effect="unknown"):
+                del effect
                 return TmuxCommandResult(2, "", "permission denied opening tmux socket")
 
         control = TmuxPersistentSessionControl(
-            tmux_executable="/usr/bin/tmux",
+            tmux_executable=TEST_TMUX_EXECUTABLE,
             binary_identity_digest="9" * 64,
             runner=PermissionRunner(),
         )
         with self.assertRaises(TmuxCommandFailed):
             control.inspect("rp-x")
 
+    def test_missing_tmux_server_socket_is_an_absent_session(self):
+        class MissingSocketRunner:
+            def run(self, argv, *, environment, effect="unknown"):
+                del effect
+                return TmuxCommandResult(1, "", "error connecting to /tmp/tmux-1000/noetrium (No such file or directory)")
+
+        control = TmuxPersistentSessionControl(
+            tmux_executable=TEST_TMUX_EXECUTABLE,
+            binary_identity_digest="a" * 64,
+            runner=MissingSocketRunner(),
+        )
+        self.assertFalse(control.inspect("rp-x").exists)
+
     def test_create_timeout_is_typed_as_uncertain_external_effect(self):
         control = TmuxPersistentSessionControl(
-            tmux_executable="/usr/bin/tmux",
+            tmux_executable=TEST_TMUX_EXECUTABLE,
             binary_identity_digest="8" * 64,
             runner=Runner(fail=True),
         )
@@ -122,11 +139,11 @@ class TmuxTransportIdentityTests(unittest.TestCase):
 
     def test_status_probe_turns_tmux_timeout_into_observational_unavailable(self):
         with TemporaryDirectory() as td:
-            root=Path(td); runner=Runner(); cli=TmuxPersistentSessionControl(tmux_executable='/usr/bin/tmux',binary_identity_digest='3'*64,runner=runner)
+            root=Path(td); runner=Runner(); cli=TmuxPersistentSessionControl(tmux_executable=TEST_TMUX_EXECUTABLE,binary_identity_digest='3'*64,runner=runner)
             bindings=DirectoryPersistentSessionBindingStore(root/'bindings')
             manager=PersistentSessionManager(cli,bindings)
             spec=PersistentSessionSpec('rp-x',('/bin/echo','x'),'/tmp','c','4'*64); manager.ensure(spec)
-            failing=TmuxPersistentSessionControl(tmux_executable='/usr/bin/tmux',binary_identity_digest='3'*64,runner=Runner(fail=True))
+            failing=TmuxPersistentSessionControl(tmux_executable=TEST_TMUX_EXECUTABLE,binary_identity_digest='3'*64,runner=Runner(fail=True))
             observation=BoundPersistentSessionStatusProbe(failing,bindings,spec.session_name).observe()
             self.assertEqual(observation.state.value,'unavailable')
             self.assertIn('TmuxCommandTimeout',observation.summary)

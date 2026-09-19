@@ -1,0 +1,139 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "adacm2_memory",
+  "package_digest": "43a307cd1292b4c12eb768f7dab517faa780c78781b4eb47d5d01f4514130c4d",
+  "definition_digest": "207a787f10f7a17b1d8d265521d35bc24026ea4048dafc97a96b106b729b5733",
+  "source_registry_digest": "d46d92fc46eb723b8905ef27d3104b049b7b560c6b2946d3ad5e25a04645996a",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "adacm2",
+    "title": "AdaCM2: On Understanding Extremely Long-Term Video with Adaptive Cross-Modality Memory Reduction",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "CVPR 2025 camera-ready publication",
+    "identity_digest": "ce52e776880f1709e0151d3acf5afd543d8dc7c07cea031010673fd0c5f49535"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multimodal",
+      "video"
+    ],
+    "families": [
+      "adaptive_kv_cache_reduction",
+      "cross_modal_memory",
+      "long_video_understanding",
+      "multimodal_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "lvu"
+    ],
+    "platform_pressure": [
+      "artifact/content",
+      "benchmark/video",
+      "execution/machines",
+      "experimentation/study",
+      "memory",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "alpha/beta cache partition and retention semantics",
+      "cross-modal attention token importance",
+      "layer-wise K/V cache reduction",
+      "previous-cache top-beta conservation",
+      "recent-cache preservation",
+      "regressive frame-by-frame Q-Former processing"
+    ],
+    "platform_owned": [
+      "LVU full-video benchmark projection",
+      "MemoryMachine journal authority",
+      "cross-modal scorer implementation identity",
+      "multimodal tensor content identity",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html"
+    ],
+    "catalog_digest": "692a0a25fab58258e3513aa9753f912756bdee555b40fee5e644d5ab5bb833bb"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2025_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2025,
+      "publication_id": "man2025adacm2",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html",
+      "revision": "CVPR 2025 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "fe3b89961e634ba1b33e3c25f1a68edc92c9fa8b946b7231791bd504fb88db6f"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/adacm2_memory/benchmark.py",
+      "declaration_digest": "2a08c327feae5cb347b83fb48c135a8f8661f8dd873f32c33b41236419ed3376",
+      "content_sha256": "0bf620fce3dc4ed24b5f6dff61eb98926f0be46d641b42687b40d23eec58ecd2"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/adacm2_memory/fidelity.py",
+      "declaration_digest": "4ec4d607a1e4ed5198b4ae1ea72edf6514cee461e61b833b9f53a9b83eafee1d",
+      "content_sha256": "e62e52b00b67c6233e2f9a5d955f00616aa479dabdffb538a0312a13dd27a793"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/adacm2_memory/memory.py",
+      "declaration_digest": "7a7851a5cf76d1973f349d89d9ce251ad1a651f81a7cf3fd410c3676ee0b4df3",
+      "content_sha256": "d0114e717ca2c460ca50121c98160ebb739086537e76562ee106af6aba6fce2b"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/adacm2_memory/study.py",
+      "declaration_digest": "7d376514ef86cf9df9dcdb22d893c74f5864e0b0019bf2a2efa88bf8eb0f4646",
+      "content_sha256": "4ff74a3f215293bd561b493f8eac83c6a7109283eaf43e7b5b6905346db157ef"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/adacm2_memory/source.py",
+      "declaration_digest": "465406f22c787e437493025eac968f04d1f96e541fd9c1ffddb99b450ed2d8cd",
+      "content_sha256": "67bcd34e5ca9a4dcb05a28d1e079ae129c474f970b41733291c3c74f32334d46"
+    }
+  ],
+  "primary_executable": "research/reproductions/adacm2_memory/memory.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The camera-ready paper's Eq.6 makes the previous cache an alpha fraction and the recent cache a (1-alpha) fraction, while Eq.8 states r=alpha+(1-alpha)*beta. Together with the text that retains all recent tokens and beta of previous tokens, these claims are algebraically inconsistent. Both eq6_literal and eq8_consistent treatments are exposed instead of silently choosing one interpretation.",
+      "delta_digest": "03d83fa26df4c72a11347356fe043dbc6910d24febe3c89fc89e78761c649316"
+    },
+    {
+      "kind": "unresolved",
+      "description": "No author-maintained AdaCM2 executable repository was found during the source audit. Cross-modal attention scoring remains an explicit identity-bound paper port, while cache reduction itself is executable from the publication contract.",
+      "delta_digest": "30d00913692ee22d90f908c08fcee2d3b6c2ed18c5586992967bd6558a8a244e"
+    },
+    {
+      "kind": "unresolved",
+      "description": "The publication does not specify integer rounding when alpha or beta ratios produce fractional token counts. The executable contract records floor-min-one partitioning and ceil-min-one reserve rounding in the reduction-spec identity.",
+      "delta_digest": "5c5bda1f7060c4f09bd5482f59e64370d6a269348f98bc22d2a80660558c8642"
+    }
+  ],
+  "blockers": [
+    "Matched result reproduction requires official or authoritatively frozen AdaCM2 Q-Former weights and exact trained cross-modal scorer.",
+    "Full LVU result reproduction requires the LVU 1.0 video/data bytes under content-addressed artifact authority.",
+    "Breakfast, COIN, MSRVTT-QA, MSVD-QA, MSRVTT, MSVD and YouCook2 paper results require their own canonical benchmark cuts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_adacm2_memory_v1.py",
+      "content_sha256": "f37b5532dad0b89421466f96013138d4d74c8fcfe0c049860a8c11a0957c2507"
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "live_swe_agent",
+  "package_digest": "a82a686f1a02c6b067468ede47a1f8d67b07aacaba995a52e9c3c15cca0f47d8",
+  "definition_digest": "eeb919736981b0796e23f2f1177c09f2da3b7efa26b613454c5d162739a99bff",
+  "source_registry_digest": "df603fd2b849ff9e4be7849fe10487911f2bb7dd449b0c8822be92c5e7b40e5c",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "live-swe-agent",
+    "title": "Live-SWE-agent: Can Software Engineering Agents Self-Evolve on the Fly?",
+    "paper_uri": "https://arxiv.org/abs/2511.13646",
+    "year": 2025,
+    "paper_revision": null,
+    "identity_digest": "2253b5965f7dfe66f0fa9dfe6f680d7d238c94e6907324e4ddafefa275809cfc"
+  },
+  "catalog": {
+    "domains": [
+      "self-improvement",
+      "software-engineering"
+    ],
+    "families": [
+      "runtime_adaptation",
+      "self_evolution",
+      "software_agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "swe-bench"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/software",
+      "execution",
+      "experimentation/workbench",
+      "participant/agent",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "online scaffold evolution policy",
+      "runtime self-modification semantics"
+    ],
+    "platform_owned": [
+      "evaluation",
+      "isolated execution",
+      "lineage",
+      "rollback and recovery",
+      "software environment"
+    ],
+    "reference_repositories": [
+      "https://github.com/OpenAutoCoder/live-swe-agent"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "537721defa6d42bbe11a5c8b1eb15467196b217165dd121017af26d37b65b822"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/OpenAutoCoder/live-swe-agent",
+      "commit": "f780bc5886b18eaa3b12e91c67740c3824d70b43",
+      "artifacts": [],
+      "lane_digest": "048974c7e031595b06f2992d0342b7897a1db315ad0c3e6940ffeb96a066e5c7"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/live_swe_agent/fidelity.py",
+      "declaration_digest": "91ec116d7d852e49613bc5951520f092cc1a52052e021882cb000f6d9659790e",
+      "content_sha256": "c8e90d4604c96a55c83295a43029651160a29ff78a75d51f9522c6ad357947ee"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
+      "content_sha256": "ab474c96fc6500a6773bc02f871e319935502532e44b07ebbe0d96cd20611940"
+    }
+  ]
+}

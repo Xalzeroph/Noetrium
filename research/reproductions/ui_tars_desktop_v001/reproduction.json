@@ -1,0 +1,112 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ui_tars_desktop_v001",
+  "package_digest": "9f9da9fde9000531ef7dde3ce343e4f195758022b6bfaf832ee0081481eb1610",
+  "definition_digest": "71550a2f4a2c42df1f56adbb848dc879cc1ebedc0fcac6cf9e93d3f2de24c0e6",
+  "source_registry_digest": "c7505a81ddcc5278a50aea896538f01d33110fb19d48872fa2f45a553c1a3768",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "ui-tars",
+    "title": "UI-TARS: Pioneering Automated GUI Interaction with Native Agents",
+    "paper_uri": "https://arxiv.org/abs/2501.12326",
+    "year": 2025,
+    "paper_revision": null,
+    "identity_digest": "a234e461c61b06dd3a3076c726baefe391b65232a3515c16723b26ec8e46b6e4"
+  },
+  "catalog": {
+    "domains": [
+      "gui-computer-use",
+      "multimodal"
+    ],
+    "families": [
+      "agent_loop",
+      "computer_use",
+      "gui_agent",
+      "multimodal"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "osworld"
+    ],
+    "platform_pressure": [
+      "environment/gui",
+      "execution",
+      "model/request",
+      "observability/telemetry",
+      "participant/agent",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "desktop action grammar",
+      "multimodal conversation and loop policy",
+      "visual grounding and normalized coordinate semantics"
+    ],
+    "platform_owned": [
+      "GUI action execution",
+      "bounded lifecycle",
+      "effect evidence",
+      "multimodal content transport",
+      "recovery and telemetry"
+    ],
+    "reference_repositories": [
+      "https://github.com/bytedance/UI-TARS-desktop"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "b253d8bf5eef1679f1649666d99fb1509e3e254f4073dbbcc2d81671eda3ca4b"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/bytedance/UI-TARS-desktop",
+      "commit": "f05568b147afb00ece8a16954f2e12c569699220",
+      "artifacts": [],
+      "lane_digest": "c86157b607842b158ed6e7702ff36535cddedb674bcf9bf96d219a951d4a52ab"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/ui_tars_desktop_v001/fidelity.py",
+      "declaration_digest": "a30a85d16238cfa2c074036133113d92d006e3b04e37613f68f3597d2923ac52",
+      "content_sha256": "8c55df652b396c53ece02010900f3048c144a626aadbe66686562130517e9982"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/ui_tars_desktop_v001/program.py",
+      "declaration_digest": "b9ed650c5dc288b474f47fab64f94534faa29f417cb4ac4ed4c6f2d8edbdc1d0",
+      "content_sha256": "341aa3f87cfa6985c8555c50f92b01b96c2e1eaf9e22d79e65bb0d009c4fd128"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/ui_tars_desktop_v001/study.py",
+      "declaration_digest": "9fd2b6c8975087479d4bdc333f3b7abb89192d6724346fb8a4b9884b087ea626",
+      "content_sha256": "847e07da6bb2a6f1a735b25b89a25395354577babd1983dae709db2d7dc9eb1c"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/ui_tars_desktop_v001/scaffold.py",
+      "declaration_digest": "5225e17dcbfb573138b53076c328e55a339a6ae4b15a2556e4e5418b92718724",
+      "content_sha256": "b1879779970794e7f8f493aee80281a17a7f74e7c2166bea1d14ff6f43809988"
+    }
+  ],
+  "primary_executable": "research/reproductions/ui_tars_desktop_v001/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [
+    "matched execution still requires an exact immutable OSWorld task/harness cut plus deployment-qualified GUI and VLM bindings"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_ui_tars_desktop_v001.py",
+      "content_sha256": "08ffe3c3e48b30318e8f70e2fa8af41f8f4698505a67c6c0eeb502fd5d140167"
+    },
+    {
+      "path": "tests/test_scientific_ui_tars_method_program_v1.py",
+      "content_sha256": "79ef5bb41b5ed474a52d0bff6e4ef481fdcb0598a12c22772020e105719f1b00"
+    }
+  ]
+}

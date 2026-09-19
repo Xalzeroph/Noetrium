@@ -5,10 +5,16 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.operator.maintenance.runtime.management_cli import main
+from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult
+from noetrium_platform.product.operator.maintenance.runtime.management_cli import _require_command_success, main
 
 
 class ManagementCliTests(unittest.TestCase):
+    def test_nonzero_managed_environment_command_is_not_reported_as_ok(self):
+        result = EnvironmentCommandResult(("python", "-m", "pip", "check"), 1, "", "missing dependency")
+        with self.assertRaisesRegex(RuntimeError, "missing dependency"):
+            _require_command_success(result)
+
     def test_directory_and_model_registry_commands(self):
         with TemporaryDirectory() as td:
             root = Path(td)

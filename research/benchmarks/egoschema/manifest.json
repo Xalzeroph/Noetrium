@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "egoschema",
+  "benchmark": {
+    "benchmark_id": "egoschema",
+    "title": "EgoSchema",
+    "source_uri": "https://github.com/egoschema/EgoSchema",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "video"
+    ]
+  }
+}

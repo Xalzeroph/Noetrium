@@ -1,23 +1,24 @@
 from __future__ import annotations
+from tests._concurrency_support import process_capture
 
-from research_platform.runtime.service.api import ServiceLaunchContract, ServiceProcessIdentity
-from service_os_test_support import make_service_supervisor
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from service_os_test_support import make_service_supervisor, ready_evidence
 
 from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.platform.composition.service_crash_failure import service_crash_failure
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.runtime.process.capture import SegmentedByteCapture
-from research_platform.reliability.primitives import CrashEvidence
-from research_platform.runtime.service.runtime.state_storage import FileServiceStateStore
-from research_platform.runtime.service.runtime import (
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.composition.service_crash_failure import service_crash_failure
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from tests._concurrency_support import segmented_byte_capture
+from noetrium_platform.infrastructure.reliability.primitives import CrashEvidence
+from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
+from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactServiceSupervisor,
 )
-from research_platform.reliability.diagnostics.runtime import FailureDiagnosisService
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import FailureDiagnosisService
 import hashlib
 
 
@@ -30,12 +31,12 @@ def contract():
 class Proc:
     def reconcile(self,s,c): return None,("reconcile",)
     def start(self,c): return ServiceProcessIdentity(7,"pid:7:start:1",7),("start",)
-    def wait_ready(self,p,c): return "ready","out","err"
+    def wait_ready(self,p,c): return ready_evidence(p,c,"ready","out","err")
     def stop(self,p,c): return ()
 
 class Crash:
     def __init__(self,root):
-        self.out=SegmentedByteCapture(root/"o","stdout"); self.err=SegmentedByteCapture(root/"e","stderr")
+        self.out=segmented_byte_capture(root/"o","stdout"); self.err=segmented_byte_capture(root/"e","stderr")
         self.err.append(b"CUDA out of memory")
     def inspect_crash(self,p,c): return CrashEvidence(exit_code=137,oom_killed=True)
     def captures(self,p,c): return self.out,self.err
@@ -57,7 +58,7 @@ class FailureDiagnosisTaxonomyV85Tests(unittest.TestCase):
 
     def test_unregistered_failure_is_explicit_not_silently_reinterpreted(self):
         with tempfile.TemporaryDirectory() as td:
-            from research_platform.reliability.failure.api import build_failure
+            from noetrium_platform.infrastructure.reliability.failure.api import build_failure
             root=Path(td); ctx=ExecutionContext("run","trace","span")
             f=build_failure(component_id="x",failure_domain="UNKNOWN",failure_code="X",stage="s",context=ctx,exc=RuntimeError("x"))
             with ForensicStore(root) as store:

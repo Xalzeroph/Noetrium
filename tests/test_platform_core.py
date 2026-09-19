@@ -2,17 +2,17 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from research_platform.governance.architecture import ArchitectureAudit, ComponentDescriptor
-from research_platform.reliability.failure.api import RecoveryAction, RiskLevel
-from research_platform.reliability.forensics.runtime import triage
-from research_platform.reliability.failure.api import build_failure
-from research_platform.platform.kernel import ExecutionContext, ImmutableModelIdentity
-from research_platform.participant.method.api import MethodIdentity
-from research_platform.model.serving.api import ModelPhase, ModelRunState
-from research_platform.model.serving.runtime import RecoveryPlanner
-from research_platform.model.request.prompt.runtime import PromptRegistry, default_prompt_specs
-from research_platform.observability.telemetry.metric.composition import build_default_registry
-from research_platform.observability.telemetry.metric.runtime import InMemoryMetricRecorder
+from noetrium_platform.foundation.governance.architecture import ArchitectureAudit, ComponentDescriptor
+from noetrium_platform.infrastructure.reliability.failure.api import RecoveryAction, RiskLevel
+from noetrium_platform.infrastructure.reliability.forensics.runtime import triage
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity
+from noetrium_platform.capabilities.participant.method.api import MethodIdentity
+from noetrium_platform.capabilities.model.serving.api import ModelPhase, ModelRunState
+from noetrium_platform.capabilities.model.serving.runtime import RecoveryPlanner
+from noetrium_platform.capabilities.model.request.prompt.runtime import PromptRegistry, default_prompt_specs
+from noetrium_platform.evidence.observability.telemetry.metric.composition import build_default_registry
+from noetrium_platform.evidence.observability.telemetry.metric.runtime import InMemoryMetricRecorder
 
 
 class PlatformCoreTests(unittest.TestCase):
@@ -43,20 +43,20 @@ class PlatformCoreTests(unittest.TestCase):
         self.assertIn("Verified current state", reg.get("planner.v6").text)
 
     def test_recovery_refuses_quality_or_identity_drift(self):
-        base = ImmutableModelIdentity("m", "Qwen/Qwen3.6-35B-A3B", "abc", "sglang", "0.5.13", "bfloat16", None, 262144)
-        changed = ImmutableModelIdentity("m", "Qwen/Qwen3.6-35B-A3B", "abc", "sglang", "0.5.13", "float16", None, 262144)
+        base = ImmutableModelIdentity("m", "example/model", "abc", "example-engine", "1.0.0", "bfloat16", None, 262144)
+        changed = ImmutableModelIdentity("m", "example/model", "abc", "example-engine", "1.0.0", "float16", None, 262144)
         state = ModelRunState.initial("run", base, "d"*64).transition(ModelPhase.INVENTORY).transition(ModelPhase.PREPARE).transition(ModelPhase.INTERRUPTED)
         with self.assertRaises(ValueError):
             RecoveryPlanner().plan(state,changed,state.deployment_digest)
 
     def test_recovery_refuses_deployment_stack_drift_even_when_logical_model_identity_matches(self):
-        base = ImmutableModelIdentity("m", "Qwen/Qwen3.6-35B-A3B", "abc", "sglang", "0.5.13", "bfloat16", None, 262144)
+        base = ImmutableModelIdentity("m", "example/model", "abc", "example-engine", "1.0.0", "bfloat16", None, 262144)
         state = ModelRunState.initial("run", base, "a"*64).transition(ModelPhase.INVENTORY).transition(ModelPhase.PREPARE).transition(ModelPhase.INTERRUPTED)
         with self.assertRaises(ValueError):
             RecoveryPlanner().plan(state, base, "b"*64)
 
     def test_recovery_is_exact_and_complete(self):
-        base = ImmutableModelIdentity("m", "Qwen/Qwen3.6-35B-A3B", "abc", "sglang", "0.5.13", "bfloat16", None, 262144)
+        base = ImmutableModelIdentity("m", "example/model", "abc", "example-engine", "1.0.0", "bfloat16", None, 262144)
         state = ModelRunState.initial("run", base, "d"*64).transition(ModelPhase.INVENTORY).transition(ModelPhase.PREPARE).transition(ModelPhase.INTERRUPTED)
         plan = RecoveryPlanner().plan(state,base,state.deployment_digest)
         self.assertEqual(plan.frozen_identity, base)
@@ -74,3 +74,36 @@ class PlatformCoreTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_retry_until_deadline_retries_only_classified_transient_errors() -> None:
+    from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
+
+    attempts = 0
+
+    def operation() -> str:
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise RuntimeError("transient")
+        return "ok"
+
+    assert retry_until_deadline(
+        operation,
+        should_retry=lambda exc: isinstance(exc, RuntimeError),
+        timeout_seconds=1.0,
+        interval_seconds=0.001,
+    ) == "ok"
+    assert attempts == 3
+
+
+def test_retry_until_deadline_fails_closed_for_unclassified_error() -> None:
+    import pytest
+    from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
+
+    with pytest.raises(ValueError, match="fatal"):
+        retry_until_deadline(
+            lambda: (_ for _ in ()).throw(ValueError("fatal")),
+            should_retry=lambda exc: isinstance(exc, RuntimeError),
+            timeout_seconds=1.0,
+        )

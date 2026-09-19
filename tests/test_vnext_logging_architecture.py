@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import pytest
 
-from research_platform.governance.system_registry.api import SystemIdentity
-from research_platform.observability.logging.api import DiagnosticAddress, LogLevel
-from research_platform.observability.logging.runtime import InMemoryLogStore, StructuredLogger
-from research_platform.reliability.diagnostics.runtime import DiagnosticLogQueryAdapter
-from research_platform.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
+from noetrium_platform.evidence.observability.logging.context.api import DiagnosticAddress
+from noetrium_platform.evidence.observability.logging.record.api import LogLevel
+from noetrium_platform.evidence.observability.logging.record.runtime import StructuredLogger
+from noetrium_platform.evidence.observability.logging.storage.runtime import InMemoryLogStore
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import DiagnosticLogQueryAdapter
+from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
 
 
 def address() -> DiagnosticAddress:

@@ -7,9 +7,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.execution.runtime.manager import RuntimeControlStore, RuntimeTxnPhase
-from research_platform.platform.kernel.durability import ChecksummedDocumentFailureCode
-from research_platform.execution.runtime.manager.runtime_state_codec import RuntimeControlStateIntegrityError
+from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeControlStore, RuntimeTxnPhase
+from noetrium_platform.foundation.kernel.kernel.durability import ChecksummedDocumentFailureCode
+from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_state_codec import RuntimeControlStateIntegrityError
 
 
 class RuntimeStateCodecV142Tests(unittest.TestCase):

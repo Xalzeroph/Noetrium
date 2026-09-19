@@ -1,0 +1,84 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "multiagent_debate",
+  "package_digest": "2f45d166d81cad9a9565894b3d15ffb2b59f94ff7ef634cdc72e95ae13cb05a1",
+  "definition_digest": "6e32641f182b9635568be12f256f8fd9ad4e44d0e4cedce161082bcf67afc3a7",
+  "source_registry_digest": "a444ca49adcadedba1e4bd45f955f057c6810af68c62d3b7782fe033e2d6882a",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "multiagent-debate",
+    "title": "Improving Factuality and Reasoning in Language Models through Multiagent Debate",
+    "paper_uri": "https://arxiv.org/abs/2305.14325",
+    "year": 2023,
+    "paper_revision": null,
+    "identity_digest": "c38d575f6d857b01433754a57104d2b1faf7466cd0756db9d9edf66326e256bc"
+  },
+  "catalog": {
+    "domains": [
+      "multi-agent",
+      "reasoning"
+    ],
+    "families": [
+      "debate",
+      "multi_agent",
+      "reasoning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "observability/telemetry",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "answer aggregation semantics",
+      "debate round protocol",
+      "peer-response injection policy"
+    ],
+    "platform_owned": [
+      "evaluation",
+      "message identity and transport",
+      "model invocation",
+      "participant topology",
+      "round evidence"
+    ],
+    "reference_repositories": [
+      "https://github.com/composable-models/llm_multiagent_debate"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "4ef98d5df79798f8a2d51c382056cb74b123aa2eacce64e18b3c3ebd814b09ab"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/composable-models/llm_multiagent_debate",
+      "commit": "9b32e0971105a3ada91706d130582bde9b9a855c",
+      "artifacts": [],
+      "lane_digest": "4c7a910cb0c5ea432d2410bb480b3a770d5767c1437ac987402d4a7245815a97"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/multiagent_debate/fidelity.py",
+      "declaration_digest": "27d3d153c6a462279e61d2ba6c487b4989e5d53facc649e89791409ad9ba0e3e",
+      "content_sha256": "bbd170b9b758b379feba6d8f0022470c70245d9af969a14ab9f730ff6e1bae8c"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_multiagent_debate_fidelity_v1.py",
+      "content_sha256": "b1a2b7960abfe5f68bf70e714974e27e4db5400083925384ed62d91c2c0bc4e8"
+    }
+  ]
+}

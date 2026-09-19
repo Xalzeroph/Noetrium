@@ -7,9 +7,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from research_platform.execution.runtime.manager.persistent_session_host import RuntimeControllerCommand, RuntimePersistentSessionHost
-from research_platform.runtime.session.api import PersistentSessionDrift, PersistentSessionSpec
-from research_platform.runtime.session.runtime import (
+from noetrium_platform.infrastructure.lifecycle.session.api import RuntimeControllerCommand
+from noetrium_platform.infrastructure.lifecycle.session.runtime import RuntimePersistentSessionHost
+from noetrium_platform.infrastructure.lifecycle.session.api import PersistentSessionDrift, PersistentSessionSpec
+from noetrium_platform.infrastructure.lifecycle.session.runtime import (
     DirectoryPersistentSessionBindingStore,
     PersistentSessionManager,
     TmuxPersistentSessionControl,
@@ -21,14 +22,16 @@ class FakeTmuxRunner:
     def __init__(self) -> None:
         self.sessions: dict[str, tuple[int, str, str]] = {}
         self.calls: list[tuple[tuple[str, ...], dict[str, str]]] = []
+        self.effects: list[str] = []
         self.next_pid = 700
 
-    def run(self, argv, *, environment):
+    def run(self, argv, *, environment, effect="unknown"):
         argv = tuple(argv)
         self.calls.append((argv, dict(environment)))
+        self.effects.append(effect)
         args = argv[5:]  # /usr/bin/tmux -L label
         if args[0] == "display-message":
-            name = args[args.index("-t") + 1].lstrip("=")
+            name = args[args.index("-t") + 1].lstrip("=").split(":", 1)[0]
             if name not in self.sessions:
                 return TmuxCommandResult(1, "", "can't find session")
             pid, command, cwd = self.sessions[name]
@@ -98,7 +101,7 @@ class TmuxServerSessionTests(unittest.TestCase):
             store = DirectoryPersistentSessionBindingStore(root / "bindings")
             first = PersistentSessionSpec("rp-race", ("/bin/echo", "one"), "/tmp", "c", "2" * 64)
             second = PersistentSessionSpec("rp-race", ("/bin/echo", "two"), "/tmp", "c", "2" * 64)
-            from research_platform.runtime.session.api import PersistentSessionBinding
+            from noetrium_platform.infrastructure.lifecycle.session.api import PersistentSessionBinding
             a = PersistentSessionBinding.from_spec(first, "3" * 64)
             b = PersistentSessionBinding.from_spec(second, "3" * 64)
             self.assertEqual(store.bind_once(a), a)
@@ -112,6 +115,7 @@ class TmuxServerSessionTests(unittest.TestCase):
             manager = self.manager(root, runner)
             spec = PersistentSessionSpec("rp-run", ("/bin/echo", "ok"), "/tmp", "c", "d" * 64)
             manager.ensure(spec)
+            self.assertIn("mutation", runner.effects)
             path = root / "bindings" / "rp-run.json"
             doc = json.loads(path.read_text())
             doc["payload"]["spec"]["control_id"] = "tampered"
@@ -165,7 +169,11 @@ class TmuxServerSessionTests(unittest.TestCase):
         with TemporaryDirectory() as td:
             runner = FakeTmuxRunner()
             host = RuntimePersistentSessionHost(self.manager(Path(td), runner))
-            cmd = RuntimeControllerCommand(("/usr/bin/python3", "-m", "server.entry"), "/srv/research")
+            cmd = RuntimeControllerCommand(
+                ("/usr/bin/python3", "-m", "server.entry"),
+                "/srv/research",
+                launcher_binary_sha256="a" * 64,
+            )
             report = host.ensure(manifest(), control_id="paper-1/run A", command=cmd)
             self.assertTrue(report.snapshot.session_name.startswith("rp-paper-1-run-A-"))
             self.assertIn(manifest().digest()[:12], report.snapshot.session_name)
@@ -199,6 +207,32 @@ class TmuxServerSessionTests(unittest.TestCase):
             changed = PersistentSessionManager(changed_cli, DirectoryPersistentSessionBindingStore(root / "bindings"))
             with self.assertRaises(PersistentSessionDrift):
                 changed.ensure(spec)
+
+    def test_attach_requires_exact_durable_binding_and_live_snapshot(self):
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            runner = FakeTmuxRunner()
+            manager = self.manager(root, runner)
+            spec = PersistentSessionSpec("rp-attach", ("/bin/echo", "attached"), "/tmp", "c", "8" * 64)
+            manager.ensure(spec)
+            argv = manager.attach(spec)
+            self.assertEqual(argv[-2:], ("-t", "=rp-attach"))
+
+            unbound = PersistentSessionSpec("rp-unbound", ("/bin/echo", "x"), "/tmp", "c", "9" * 64)
+            with self.assertRaises(PersistentSessionDrift):
+                manager.attach(unbound)
+
+    def test_attach_rejects_live_command_drift_before_materializing_tty(self):
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            runner = FakeTmuxRunner()
+            manager = self.manager(root, runner)
+            spec = PersistentSessionSpec("rp-attach-drift", ("/bin/echo", "expected"), "/tmp", "c", "a" * 64)
+            manager.ensure(spec)
+            pid, _, cwd = runner.sessions[spec.session_name]
+            runner.sessions[spec.session_name] = (pid, "exec /bin/echo changed", cwd)
+            with self.assertRaises(PersistentSessionDrift):
+                manager.attach(spec)
 
 
 if __name__ == "__main__":

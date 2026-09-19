@@ -1,0 +1,116 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "self_refine",
+  "package_digest": "8d8f3b997a2a128b2ee29b705e8d5aee389b1db85b53429a0b570c0dafbc4be5",
+  "definition_digest": "703e76e38fc4c0609f8bc2cc31cffec5b23cc5b3498a7f28ba1dfad284c0329f",
+  "source_registry_digest": "b3badf805b90ccd708fe9510374f12a0ea4bc3c0df3f1230667c5035820c2ba2",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "self-refine",
+    "title": "Self-Refine: Iterative Refinement with Self-Feedback",
+    "paper_uri": "https://papers.neurips.cc/paper_files/paper/2023/hash/91edff07232fb1b55a505a9e9f6c0ff3-Abstract-Conference.html",
+    "year": 2023,
+    "paper_revision": "NeurIPS 2023",
+    "identity_digest": "b9bf92fcb70e817154a73e0cf47a34acaf2aa272538e714b89fa0f6bc7272b03"
+  },
+  "catalog": {
+    "domains": [
+      "reflection-self-correction",
+      "self-improvement"
+    ],
+    "families": [
+      "reasoning",
+      "reflection",
+      "self_improvement"
+    ],
+    "priority": 2,
+    "benchmark_ids": [
+      "commongen"
+    ],
+    "platform_pressure": [
+      "execution",
+      "experimentation/study",
+      "model/request",
+      "participant/method"
+    ],
+    "method_owned": [
+      "init-feedback-iterate loop",
+      "task-specific feedback and stopping semantics"
+    ],
+    "platform_owned": [
+      "bounded method execution",
+      "evaluation",
+      "model invocation"
+    ],
+    "reference_repositories": [
+      "https://github.com/madaan/self-refine"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "4f05c2158ac91d9648ab85f5e4f99c9a24892561f057b154d7414b910fd0b673"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/madaan/self-refine",
+      "commit": "a56d135a49cdc9183e7db2527458822753a1f2c0",
+      "artifacts": [],
+      "lane_digest": "c98ade5463129a69091f47ee22be6098d6296401c93cf6ffa5786a3be2bb7eb2"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/self_refine/fidelity.py",
+      "declaration_digest": "33f8e89f1ebb69050d238b053f68a6b19c5eaaa5acf723a5cee9b2f4d9d150df",
+      "content_sha256": "7c152800628126df75a585d3b4f0608684b531d333504036ef2b3fab4723b23d"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/self_refine/program.py",
+      "declaration_digest": "002678c16806b585301ca96d5947736a25f093e8747fa997ad80bf4bad773319",
+      "content_sha256": "8ec0e0c286b9abc5373df6091ab925aa6605323a7025881367dc867f225a4428"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/self_refine/study.py",
+      "declaration_digest": "98b8e67bd36b09fb9868c0c91a28734ee45fd3d1b36d0e5c2d575a968c1e894e",
+      "content_sha256": "7a3a6b893f5ae7a7f58cfba7c6cb99b6a6bc4f3d6048300c81f91ffddeff9aef"
+    }
+  ],
+  "primary_executable": "research/reproductions/self_refine/program.py",
+  "reported_results": [],
+  "reference_baselines": [
+    {
+      "baseline_id": "direct_generation",
+      "description": "same model and CommonGen prompt bundle without feedback/refinement iterations",
+      "qualifiers": {},
+      "baseline_digest": "6aab8ecfcb8b08957c5c3ca05cb02fd2591813e37564a2c21d5a5bdcf69fb4b6"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "paper-era text-davinci-003 provider artifact is no longer intrinsically reproducible without an archived model endpoint",
+    "paper-era spaCy/NLTK lexical feedback post-processing artifacts remain to be content-addressed for exact historical replay"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_commongen_benchmark_v1.py",
+      "content_sha256": "2115c10c95ed2d95ae3a48c8f592e0eba6b78c3d32262c041cf2c990d5c95b06"
+    },
+    {
+      "path": "tests/test_scientific_reference_self_refine.py",
+      "content_sha256": "e24a1340878831aea12bfb5f845ba68f285f581c7ef26a943a6f048aae2ea557"
+    },
+    {
+      "path": "tests/test_scientific_self_refine_commongen_method_program_v1.py",
+      "content_sha256": "cb28a34b985d53490c1b02539d354578e2ef4aa748b0402ef42c6deba5559f95"
+    },
+    {
+      "path": "tests/test_scientific_self_refine_v1.py",
+      "content_sha256": "15f3f855f5fbdedc4e26c6804c9c58f8d3f2eaccf6f6aa5618a9ed6950c1b94e"
+    }
+  ]
+}

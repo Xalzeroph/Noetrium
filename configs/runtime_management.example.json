@@ -1,20 +1,20 @@
 {
   "directories": {
-    "releases": "/srv/research-platform/releases",
-    "runtime": "/srv/research-platform/runtime",
-    "state": "/srv/research-platform/state",
-    "logs": "/srv/research-platform/logs",
-    "model_artifacts": "/srv/research-platform/models",
-    "python_environments": "/srv/research-platform/envs",
-    "cache": "/srv/research-platform/cache",
-    "temp": "/srv/research-platform/tmp",
-    "locks": "/srv/research-platform/locks",
-    "workspaces": "/srv/research-platform/workspaces"
+    "releases": "/srv/noetrium/releases",
+    "runtime": "/srv/noetrium/runtime",
+    "state": "/srv/noetrium/state",
+    "logs": "/srv/noetrium/logs",
+    "model_artifacts": "/srv/noetrium/models",
+    "python_environments": "/srv/noetrium/envs",
+    "cache": "/srv/noetrium/cache",
+    "temp": "/srv/noetrium/tmp",
+    "locks": "/srv/noetrium/locks",
+    "workspaces": "/srv/noetrium/workspaces"
   },
   "service_environment": {
     "HOME": "/home/research",
     "PATH": "/usr/local/cuda/bin:/usr/local/bin:/usr/bin:/bin",
-    "HF_HOME": "/srv/research-platform/cache/huggingface"
+    "HF_HOME": "/srv/noetrium/cache/huggingface"
   },
   "model_storage_pools": {
     "nvme": "/mnt/nvme/research-models",
@@ -22,5 +22,8 @@
   },
   "model_sources": {
     "huggingface_cli": "hf"
+  },
+  "model_source_environment": {
+    "HF_ENDPOINT": "https://huggingface.co"
   }
 }

@@ -1,0 +1,67 @@
+name: Bug report
+description: Report a reproducible defect in Noetrium
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Noetrium. Do not disclose security vulnerabilities here; use the Security tab and SECURITY.md.
+  - type: input
+    id: revision
+    attributes:
+      label: Noetrium version or exact commit
+      description: Give the package version and, when possible, the exact Git SHA.
+      placeholder: "0.43.1 / c7d6aa5..."
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and why it appears incorrect.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Provide the smallest deterministic steps, command, or code needed to reproduce the problem.
+      placeholder: |
+        1. Install ...
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: State the contract or outcome you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, container/runtime details, and relevant provider versions.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Paste focused logs, traceback, receipts, or test output with sensitive material removed.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I searched existing issues and Discussions for this problem.
+          required: true
+        - label: I reduced the report to a platform defect rather than a project-specific research question.
+          required: true
+        - label: This report does not contain a privately reportable security vulnerability.
+          required: true

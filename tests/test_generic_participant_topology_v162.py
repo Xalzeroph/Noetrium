@@ -1,18 +1,19 @@
 from __future__ import annotations
-from research_platform.platform.composition.experiment_runtime import build_experiment_runtime
-from tests_support import participant
+from noetrium_platform.composition.experiment_runtime import build_experiment_runtime
+from tests_support import participant, model_role_for_test
 
 from dataclasses import replace
 
-from research_platform.platform.kernel import ComponentIdentity
-from research_platform.participant.core.api.checkpoint import ParticipantCheckpoint
-from research_platform.participant.core.api.runtime import ParticipantRuntimeHandle
-from research_platform.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
-from research_platform.execution.decision.cycle_identity import DecisionCycleIdentity
-from research_platform.experimentation.run.identity.api import RunIdentity
-from research_platform.experimentation.experiment.runtime import ExperimentRuntime
-from research_platform.execution.workflow.api import ScientificCycleExecution
-from research_platform.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity
+from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint
+from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
+from noetrium_platform.research.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
+from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantTopology
+from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
+from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
 
 
 class SidecarPlugin:
@@ -73,14 +74,14 @@ class SidecarAdapter:
         session.state = checkpoint.opaque_payload
 
 
-class NoOpWorkflow:
-    workflow_id = "no_op.v1"
+class NoOpTrialProtocol:
+    protocol_id = "no_op.v1"
     surface_id = "empty.operations.v1"
-    configuration_digest = ""
+    configuration_digest = "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
 
     def run(self, operations, context, *, task, input_kind, input_payload):
         del operations, input_kind
-        return ScientificCycleExecution(str(task), {"input": input_payload}, context, ())
+        return TrialCycleExecution(str(task), {"input": input_payload}, context, ())
 
 
 def spec():
@@ -89,15 +90,16 @@ def spec():
         study_id="default-study",
         project_id="default-project",
         participants=(participant("sidecar", "controller", "custom", implementation_version="1", abi_version="1", schema_version="1", configuration_digest="cfg"),),
-        model_stack_digest="model", prompt_generation="prompt", workload_digest="work",
-        seed_digest="seed", repetitions=1, scientific_workflow_id="no_op.v1",
+        model_roles=(model_role_for_test(),), workload_digest="b" * 64,
+        seed_digest="c" * 64, repetitions=1, trial_protocol_id="no_op.v1",
+        trial_protocol_configuration_digest="44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
     )
 
 
 def runtime(store=None):
     from tests_support import EmptyWorkflowSurfaceFactory
     return build_experiment_runtime(
-        scientific_workflow=NoOpWorkflow(),
+        trial_protocol=NoOpTrialProtocol(),
         participant_adapters=(SidecarAdapter(),),
         checkpoint_store=store,
         workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),),
@@ -201,16 +203,17 @@ def _dependency_spec(*participants: ExperimentParticipantSpec) -> ExperimentSpec
     return ExperimentSpec(
         experiment_id="dependency-study",
         study_id="default-study",
-        project_id="default-project", participants=participants, model_stack_digest="model",
-        prompt_generation="prompt", workload_digest="work", seed_digest="seed", repetitions=1,
-        scientific_workflow_id="no_op.v1",
+        project_id="default-project", participants=participants, model_roles=(model_role_for_test(),),
+        workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1,
+        trial_protocol_id="no_op.v1",
+        trial_protocol_configuration_digest="44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
     )
 
 
 def _dependency_runtime() -> ExperimentRuntime:
     from tests_support import EmptyWorkflowSurfaceFactory
     return build_experiment_runtime(
-        scientific_workflow=NoOpWorkflow(), participant_adapters=(DependencyAdapter(),),
+        trial_protocol=NoOpTrialProtocol(), participant_adapters=(DependencyAdapter(),),
         workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),),
     )
 
@@ -265,3 +268,13 @@ def test_participant_kind_rejects_operation_namespace_injection_before_resolve()
     with pytest.raises(ValueError, match="safe operation namespace token"):
         participant("dependency.evil", "evil", "evil")
     assert DependencyAdapter.resolves == 0
+
+
+def test_participant_topology_preserves_declared_order_within_dependency_waves():
+    graph = _dependency_spec(
+        participant("dependency", "child", "child", depends_on_roles=("root-x",)),
+        participant("dependency", "root-x", "root-x"),
+        participant("dependency", "root-y", "root-y"),
+    )
+    ordered = ExperimentParticipantTopology.from_spec(graph).ordered()
+    assert tuple(row.role for row in ordered) == ("root-x", "root-y", "child")

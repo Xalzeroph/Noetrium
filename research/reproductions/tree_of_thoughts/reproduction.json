@@ -1,0 +1,116 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "tree_of_thoughts",
+  "package_digest": "9a06ea0d9e5b455bc420ac05e570c222015a4ed8fca97b290ab862c003f1691c",
+  "definition_digest": "688efe6772a9621839c8b156d2fd7d5ff522cfede8a2a1ae01a9fed88cea11df",
+  "source_registry_digest": "f9293be77907acc25ce02bd3835acf300ca060aec59d9e4b22dd2d6803a08876",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "tree-of-thoughts",
+    "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+    "paper_uri": "https://proceedings.neurips.cc/paper/2023/hash/271db9922b8d1f4dd7aaef84ed5ac703-Abstract.html",
+    "year": 2023,
+    "paper_revision": "arXiv:2305.10601 / NeurIPS 2023",
+    "identity_digest": "88f8e018784a12e5a234a9d96caa780d29c47efc0931dc2d484f0db0979717b8"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "reasoning"
+    ],
+    "families": [
+      "reasoning",
+      "tree_search"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "game24"
+    ],
+    "platform_pressure": [
+      "experimentation/evaluation",
+      "experimentation/study",
+      "model/assignment",
+      "model/request"
+    ],
+    "method_owned": [
+      "frontier selection policy",
+      "thought evaluation policy",
+      "thought generation policy"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "evaluation evidence and measurements",
+      "named model-role binding",
+      "study expansion"
+    ],
+    "reference_repositories": [
+      "https://github.com/princeton-nlp/tree-of-thought-llm"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "cd2083e5ba0992bf5e0348fab44e07a8f6bc5af5f3f28e973416c6063bee834e"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "official_tot_repo",
+      "kind": "official_executable",
+      "repository": "https://github.com/princeton-nlp/tree-of-thought-llm",
+      "commit": "8050e67d0e3a0fddc424d7fa5801538722a4c4cc",
+      "artifacts": [
+        "src/tot/methods/bfs.py",
+        "src/tot/tasks/game24.py"
+      ],
+      "lane_digest": "0b7db775e107aba2a40c2de6f0368e7754dd26585063a85c01646d2d7884ad55"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/tree_of_thoughts/fidelity.py",
+      "declaration_digest": "11e0236df83c506f12f6c6e459522a2505f35da83f8a8d934b4289a4e5d63de2",
+      "content_sha256": "e330485cede1863d834713f6e6903dbe268efde9afaa31b0db5799016de3fa93"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/tree_of_thoughts/program.py",
+      "declaration_digest": "73ce8f48b174a64d7ec8a8389ff403c761b4650397081369a4f28b5ad3365390",
+      "content_sha256": "34389e1bf2ed4349c3e1be79343d06df5891be1cd20641249333a075c0482690"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/tree_of_thoughts/study.py",
+      "declaration_digest": "3fc270d3331732f1e0a205d17b50c1781a4fdcd9b6a1a7bbc5d19263639dfbca",
+      "content_sha256": "22030aaa07cd02969175bdf48ff8450f9339f3ba220a7bfa1f8115d4f91233bb"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/tree_of_thoughts/search.py",
+      "declaration_digest": "9f306c7e684c9a57a86071e773c48b2f6a2c7394338663ee6a0a5e4b1d6dfb8c",
+      "content_sha256": "c2d90dbdb6e7583233a7c21b180a571a8d70742b2914042034ffd02ec366265b"
+    }
+  ],
+  "primary_executable": "research/reproductions/tree_of_thoughts/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "historical hosted GPT-4 snapshot identity remains unresolved",
+      "delta_digest": "e74283225884251a5a23c32ff92df469659ea69493807a16d58acc142dcf9251"
+    }
+  ],
+  "blockers": [
+    "exact historical GPT-4 serving snapshot is not available as an immutable public model artifact"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_tree_of_thoughts_fidelity_v1.py",
+      "content_sha256": "e1ab3150bd2c7ac2bf59119fcb2addc4e9b19272e4e05a27526cb7367bc63b11"
+    },
+    {
+      "path": "tests/test_scientific_tree_of_thoughts_method_program_v1.py",
+      "content_sha256": "af33e06be33e457fdb502917bab60717972b0a2738c352ab2b2bfd469d49920c"
+    }
+  ]
+}

@@ -1,14 +1,14 @@
 from pathlib import Path
 import tempfile, unittest
 
-from research_platform.reliability.failure.api import RecoveryAction
+from tests._concurrency_support import OwnedForensicStore as ForensicStore
+from noetrium_platform.infrastructure.reliability.failure.api import RecoveryAction
 
-from research_platform.reliability.forensics.composition import ForensicStore
-from research_platform.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
-from research_platform.reliability.forensics.composition.incident_adapter import ForensicIncidentProjection
-from research_platform.reliability.failure.api import build_failure
-from research_platform.platform.kernel import ExecutionContext
-from research_platform.reliability.diagnostics.runtime import DebugSnapshotService, IncidentService
+from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
+from noetrium_platform.infrastructure.reliability.forensics.composition.incident_adapter import ForensicIncidentProjection
+from noetrium_platform.infrastructure.reliability.failure.api import build_failure
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.infrastructure.reliability.diagnostics.runtime import DebugSnapshotService, IncidentService
 
 class IncidentOSV32Tests(unittest.TestCase):
     def _ctx(self,run='r1'):

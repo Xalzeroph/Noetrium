@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 import unittest
-from research_platform.governance.architecture.process_invariants import audit_process_invariants
+from noetrium_platform.foundation.governance.architecture.process_invariants import audit_process_invariants
 
 class ProcessArchitectureV185Tests(unittest.TestCase):
     def test_process_capture_is_neutral_and_service_does_not_import_model_os(self):

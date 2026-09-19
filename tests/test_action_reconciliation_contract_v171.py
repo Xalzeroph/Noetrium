@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from research_platform.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.runtime.api import (
     ActionRecoveryRequired,
     ActionReconciliationDisposition,
     ActionReconciliationResult,
@@ -10,8 +10,8 @@ from research_platform.environment.runtime.api import (
     ActionResult,
     action_request_digest,
 )
-from research_platform.platform.kernel import EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
-from research_platform.execution.workflow.implementations.context_action.action_reconciliation import ActionReconciliationPolicy
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
+from noetrium_platform.research.execution.workflow.implementations.context_action.action_reconciliation import ActionReconciliationPolicy
 
 
 def request() -> ActionRequest:

@@ -1,1 +1,0 @@
-"""participant system api boundary."""

@@ -1,0 +1,94 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "generative_agents_memory",
+  "package_digest": "0935ed3dcb48ad9bf5879cd78d576fd5ff392d65cc5ee2f805c8c47b0fcbc7b2",
+  "definition_digest": "09b4f72a84dd4f590114695cc0975cfabea41388c4fc0a59ab2b3b42c1924326",
+  "source_registry_digest": "4eee9b9597e3af590b88c8a406bb7366ac2bc8cea07e32f8ca278990086caf7e",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "generative-agents",
+    "title": "Generative Agents: Interactive Simulacra of Human Behavior",
+    "paper_uri": "https://uist.acm.org/2023/proceedings/",
+    "year": 2023,
+    "paper_revision": null,
+    "identity_digest": "fb80a64896170cd9524cd20766511043130f08065babcc70a553ed6857713901"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multi-agent",
+      "social-economic"
+    ],
+    "families": [
+      "memory",
+      "multi_agent",
+      "planning",
+      "reflection"
+    ],
+    "priority": 2,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "data/projection",
+      "data/query",
+      "data/state",
+      "execution/workflow",
+      "experimentation/study",
+      "observability/telemetry",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "behavior planning semantics",
+      "memory stream scoring",
+      "reflection synthesis"
+    ],
+    "platform_owned": [
+      "durable state",
+      "multi-agent execution",
+      "semantic projection and query",
+      "study matrix",
+      "telemetry"
+    ],
+    "reference_repositories": [
+      "https://github.com/joonspk-research/generative_agents"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "853610c67e7a9b00cd4f1097a2be2a3c262b3fe72901292689eb86925ad06c8b"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/joonspk-research/generative_agents",
+      "commit": "fe05a71d3e4ed7d10bf68aa4eda6dd995ec070f4",
+      "artifacts": [],
+      "lane_digest": "9b0c30ac81871b40fa787953210fe528c3511c3c383d266d96cd0e8d1ca3911b"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/generative_agents_memory/fidelity.py",
+      "declaration_digest": "4e999244f74cb6cd1799b5946296ce603962d8418ad1252d372257b56996ec7a",
+      "content_sha256": "eadabe053f576e9bb2ae9652df3929352fb1f90f1023e6dbfc01c124c8996826"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/generative_agents_memory/retrieval.py",
+      "declaration_digest": "0a8b9cf6b6076c1fa98d5a82597bc9406577e432c7eb48658c21b13bd8fff1d2",
+      "content_sha256": "db6a57ae069b3a807f76de2a177f6e7bcacc9b1c8039f38d4cdc9059ab7f835e"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_generative_agents_retrieval_v1.py",
+      "content_sha256": "5ac32d32a9c79a7773ff3c27f55ebafee663d331e6b8811f7cb2ca44316b22b6"
+    }
+  ]
+}

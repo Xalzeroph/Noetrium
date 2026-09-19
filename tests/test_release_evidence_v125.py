@@ -4,22 +4,23 @@ import tempfile
 import unittest
 import zipfile
 
-from research_platform.governance.release.runtime.evidence import (
+from noetrium_platform.foundation.governance.release.runtime.evidence import (
     ReleaseEvidenceMismatch,
     build_release_evidence,
     verify_release_evidence,
     write_release_evidence,
 )
-from research_platform.governance.release.runtime.manifest import build_release_manifest
-from research_platform.platform.composition.release_quality import build_release_quality_evidence
-from research_platform.governance.release.runtime.packager import ReleasePackager
+from noetrium_platform.foundation.governance.release.runtime.manifest import build_release_manifest
+from noetrium_platform.composition.release_quality import build_release_quality_evidence
+from noetrium_platform.foundation.governance.providers import RepositorySourceTree
+from noetrium_platform.foundation.governance.release.runtime.packager import ReleasePackager
 
 
 class ReleaseEvidenceV125Tests(unittest.TestCase):
     def _tree(self, root: Path) -> None:
-        (root / "research_platform").mkdir(parents=True)
-        (root / "research_platform" / "__init__.py").write_text("", encoding="utf-8")
-        (root / "research_platform" / "x.py").write_text("x=1\n", encoding="utf-8")
+        (root / "noetrium_platform").mkdir(parents=True)
+        (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+        (root / "noetrium_platform" / "x.py").write_text("x=1\n", encoding="utf-8")
         (root / "pyproject.toml").write_text(
             '[project]\nname="x"\nversion="1.2.3"\nrequires-python=">=3.11"\n',
             encoding="utf-8",
@@ -29,16 +30,16 @@ class ReleaseEvidenceV125Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td); self._tree(root)
             before = build_release_manifest(root)
-            evidence = build_release_evidence(root, quality=build_release_quality_evidence(root), regression_tests_collected=7, regression_tests_passed=7, regression_tests_skipped=0, regression_shard_count=1, regression_test_inventory_sha256="1"*64, regression_runtime_sha256="2"*64)
+            evidence = build_release_evidence(root, quality=build_release_quality_evidence(root, source_index=RepositorySourceTree(root).index()), regression_tests_collected=7, regression_tests_passed=7, regression_tests_skipped=0, regression_shard_count=1, regression_test_inventory_sha256="1"*64, regression_runtime_sha256="2"*64, regression_plan_sha256="3"*64)
             write_release_evidence(root / "RELEASE_EVIDENCE.json", evidence)
             after = build_release_manifest(root)
             self.assertEqual(before.digest(), after.digest())
-            self.assertEqual(verify_release_evidence(root, evidence, quality=build_release_quality_evidence(root), observed_tests_passed=7), ())
+            self.assertEqual(verify_release_evidence(root, evidence, quality=build_release_quality_evidence(root, source_index=RepositorySourceTree(root).index()), observed_tests_passed=7), ())
 
     def test_packager_includes_only_matching_evidence(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td) / "src"; root.mkdir(); self._tree(root)
-            evidence = build_release_evidence(root, quality=build_release_quality_evidence(root), regression_tests_collected=7, regression_tests_passed=7, regression_tests_skipped=0, regression_shard_count=1, regression_test_inventory_sha256="1"*64, regression_runtime_sha256="2"*64)
+            evidence = build_release_evidence(root, quality=build_release_quality_evidence(root, source_index=RepositorySourceTree(root).index()), regression_tests_collected=7, regression_tests_passed=7, regression_tests_skipped=0, regression_shard_count=1, regression_test_inventory_sha256="1"*64, regression_runtime_sha256="2"*64, regression_plan_sha256="3"*64)
             write_release_evidence(root / "RELEASE_EVIDENCE.json", evidence)
             package = ReleasePackager().build(root, Path(td) / "x.zip")
             self.assertEqual(package.evidence_digest, evidence.digest())
@@ -49,9 +50,9 @@ class ReleaseEvidenceV125Tests(unittest.TestCase):
     def test_stale_evidence_blocks_packaging(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td) / "src"; root.mkdir(); self._tree(root)
-            evidence = build_release_evidence(root, quality=build_release_quality_evidence(root), regression_tests_collected=7, regression_tests_passed=7, regression_tests_skipped=0, regression_shard_count=1, regression_test_inventory_sha256="1"*64, regression_runtime_sha256="2"*64)
+            evidence = build_release_evidence(root, quality=build_release_quality_evidence(root, source_index=RepositorySourceTree(root).index()), regression_tests_collected=7, regression_tests_passed=7, regression_tests_skipped=0, regression_shard_count=1, regression_test_inventory_sha256="1"*64, regression_runtime_sha256="2"*64, regression_plan_sha256="3"*64)
             write_release_evidence(root / "RELEASE_EVIDENCE.json", evidence)
-            (root / "research_platform" / "x.py").write_text("x=2\n", encoding="utf-8")
+            (root / "noetrium_platform" / "x.py").write_text("x=2\n", encoding="utf-8")
             with self.assertRaises(ReleaseEvidenceMismatch):
                 ReleasePackager().build(root, Path(td) / "x.zip")
 

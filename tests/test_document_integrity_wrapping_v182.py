@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 
-from research_platform.reliability.failure.api import exception_correlation_refs
-from research_platform.platform.kernel.durability import ChecksummedDocumentFailureCode
-from research_platform.execution.runtime.manager.heartbeat_codec import (
+from noetrium_platform.infrastructure.reliability.failure.api import exception_correlation_refs
+from noetrium_platform.foundation.kernel.kernel.durability import ChecksummedDocumentFailureCode
+from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat_codec import (
     ServiceHeartbeatCodec,
     ServiceHeartbeatIntegrityError,
 )

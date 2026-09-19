@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 import unittest
-from research_platform.governance.architecture.prompt_invariants import audit_prompt_invariants
+from noetrium_platform.foundation.governance.architecture.prompt_invariants import audit_prompt_invariants
 
 class PromptTraceArchitectureV186Tests(unittest.TestCase):
     def test_prompt_trace_does_not_own_telemetry_backend(self):
