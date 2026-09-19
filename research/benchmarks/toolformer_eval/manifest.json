@@ -5,7 +5,9 @@
     "benchmark_id": "toolformer-eval",
     "title": "Toolformer Zero-Shot Evaluation Cut",
     "source_uri": "https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html",
-    "environment_kinds": ["tool_execution"],
-    "modalities": ["text"]
+    "environment_kinds": [],
+    "modalities": [
+      "text"
+    ]
   }
 }

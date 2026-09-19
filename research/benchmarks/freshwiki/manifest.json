@@ -5,7 +5,10 @@
     "benchmark_id": "freshwiki",
     "title": "FreshWiki",
     "source_uri": "https://github.com/stanford-oval/storm",
-    "environment_kinds": ["retrieval_knowledge"],
-    "modalities": ["text", "structured"]
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "structured"
+    ]
   }
 }

@@ -5,7 +5,12 @@
     "benchmark_id": "agentboard-pddl",
     "title": "AgentBoard PDDL evaluation",
     "source_uri": "https://github.com/hkust-nlp/AgentBoard",
-    "environment_kinds": ["pddl"],
-    "modalities": ["text", "structured"]
+    "environment_kinds": [
+      "text_world"
+    ],
+    "modalities": [
+      "text",
+      "structured"
+    ]
   }
 }

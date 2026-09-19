@@ -3,6 +3,18 @@
   "authority": "generated_from_benchmark_manifests",
   "benchmarks": [
     {
+      "benchmark_id": "agentboard-pddl",
+      "title": "AgentBoard PDDL evaluation",
+      "source_uri": "https://github.com/hkust-nlp/AgentBoard",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
       "benchmark_id": "alfworld",
       "title": "ALFWorld",
       "source_uri": "https://github.com/alfworld/alfworld",
@@ -42,6 +54,17 @@
       ]
     },
     {
+      "benchmark_id": "egolifeqa",
+      "title": "EgoLifeQA",
+      "source_uri": "https://huggingface.co/datasets/lmms-lab/EgoLife",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video",
+        "audio"
+      ]
+    },
+    {
       "benchmark_id": "egoschema",
       "title": "EgoSchema",
       "source_uri": "https://github.com/egoschema/EgoSchema",
@@ -64,6 +87,28 @@
       ]
     },
     {
+      "benchmark_id": "flow-practical-tasks",
+      "title": "Flow ICLR 2025 Three Designed Tasks",
+      "source_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "freshwiki",
+      "title": "FreshWiki",
+      "source_uri": "https://github.com/stanford-oval/storm",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
       "benchmark_id": "game24",
       "title": "Game24",
       "source_uri": "https://github.com/princeton-nlp/tree-of-thought-llm",
@@ -82,12 +127,36 @@
       ]
     },
     {
+      "benchmark_id": "generative-agents-smallville",
+      "title": "Generative Agents Smallville Paper Protocol",
+      "source_uri": "https://github.com/joonspk-research/generative_agents",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
       "benchmark_id": "gsm8k",
       "title": "GSM8K",
       "source_uri": "https://github.com/openai/grade-school-math",
       "environment_kinds": [],
       "modalities": [
         "text"
+      ]
+    },
+    {
+      "benchmark_id": "hugginggpt-paper-tasks",
+      "title": "HuggingGPT Paper-Era Multimodal Task Cut",
+      "source_uri": "https://github.com/microsoft/JARVIS",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image",
+        "audio",
+        "structured"
       ]
     },
     {
@@ -124,6 +193,18 @@
       "modalities": [
         "text",
         "video"
+      ]
+    },
+    {
+      "benchmark_id": "m3tooleval",
+      "title": "M3ToolEval vendored AgentSquare cut",
+      "source_uri": "https://github.com/tsinghua-fib-lab/AgentSquare",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
       ]
     },
     {
@@ -247,6 +328,28 @@
       ]
     },
     {
+      "benchmark_id": "scienceworld",
+      "title": "ScienceWorld / AgentBoard 90-task evaluation cut",
+      "source_uri": "https://github.com/hkust-nlp/AgentBoard",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "screenspot",
+      "title": "ScreenSpot GUI Grounding Benchmark",
+      "source_uri": "https://github.com/njucckevin/SeeClick",
+      "environment_kinds": [],
+      "modalities": [
+        "image",
+        "text"
+      ]
+    },
+    {
       "benchmark_id": "srdd",
       "title": "Software Requirement Description Dataset",
       "source_uri": "https://github.com/OpenBMB/ChatDev",
@@ -289,6 +392,27 @@
       "source_uri": "https://github.com/OpenBMB/ToolBench",
       "environment_kinds": [
         "web"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "toolformer-eval",
+      "title": "Toolformer Zero-Shot Evaluation Cut",
+      "source_uri": "https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "travelplanner",
+      "title": "TravelPlanner validation benchmark",
+      "source_uri": "https://github.com/OSU-NLP-Group/TravelPlanner",
+      "environment_kinds": [
+        "software"
       ],
       "modalities": [
         "text",

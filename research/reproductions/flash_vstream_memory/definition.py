@@ -99,7 +99,7 @@ REPRODUCTION = ReproductionDefinition(
         "Benchmark and study protocols are not yet bound in this package.",
     ),
     evidence_refs=(),
-    scientific_tests=(),
+    scientific_tests=("tests/test_scientific_flash_vstream_memory_v1.py",),
 )
 
 

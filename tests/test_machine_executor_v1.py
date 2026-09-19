@@ -107,6 +107,28 @@ def test_runtime_commits_and_replays_idempotently() -> None:
         runtime.step(command(0, "command-1-different"), interpreter)
 
 
+def test_runtime_replays_committed_command_after_head_revision_advances() -> None:
+    journal = InMemoryMachineJournal()
+    runtime = make_runtime(journal)
+    runtime.open({"count": 0})
+    interpreter = IncrementInterpreter()
+    first = runtime.step(command(0, "command-1"), interpreter)
+
+    replay_at_current_head = command(1, "command-1")
+    assert runtime.step(replay_at_current_head, interpreter) == first
+
+    drifted = MachineCommand(
+        command_id="command-1",
+        machine_id="run-1",
+        expected_revision=1,
+        kind="increment",
+        payload={"amount": 2},
+        scope=("run:run-1",),
+    )
+    with pytest.raises(MachineConflict, match="different payload"):
+        runtime.step(drifted, interpreter)
+
+
 def test_runtime_recovers_authoritative_head_after_restart() -> None:
     journal = InMemoryMachineJournal()
     first_runtime = make_runtime(journal)

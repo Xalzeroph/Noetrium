@@ -224,7 +224,7 @@ def _freeze_json(value: JsonInput, *, active: set[int], depth: int, max_depth: i
             raise CanonicalEncodingError("frozen JSON forbids non-finite floats")
         return value
     if not isinstance(value, (Mapping, list, tuple)):
-        raise CanonicalEncodingError(f"unsupported frozen JSON type: {type(value).__name__}")
+        raise CanonicalEncodingError(f"unsupported {type(value).__name__} in frozen JSON")
     identity = id(value)
     if identity in active:
         raise CanonicalEncodingError("cyclic frozen JSON is forbidden")

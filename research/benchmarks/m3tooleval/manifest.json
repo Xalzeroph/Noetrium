@@ -5,7 +5,12 @@
     "benchmark_id": "m3tooleval",
     "title": "M3ToolEval vendored AgentSquare cut",
     "source_uri": "https://github.com/tsinghua-fib-lab/AgentSquare",
-    "environment_kinds": ["tool_sandbox"],
-    "modalities": ["text", "structured"]
+    "environment_kinds": [
+      "software"
+    ],
+    "modalities": [
+      "text",
+      "structured"
+    ]
   }
 }

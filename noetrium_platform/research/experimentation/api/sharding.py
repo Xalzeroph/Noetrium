@@ -272,7 +272,6 @@ class CompiledExperimentShardPlan:
 def _assert_compiled_batch_authority(
     compiled: CompiledExperimentProgram,
 ) -> None:
-    _assert_compiled_batch_authority(compiled)
     expected_batch_plan_digest = canonical_digest(
         tuple(batch.batch_digest for batch in compiled.batches)
     )

@@ -186,7 +186,16 @@ class MachineExecutor:
         for commit in self.journal.commits(self.machine_id):
             if commit.command_id != command.command_id:
                 continue
-            if commit.command_digest != command.payload_digest:
+            # expected_revision is an optimistic-concurrency fence, not part of
+            # the semantic replay identity of an already committed command.
+            # Rebuild the incoming command at the original base revision so an
+            # exact retry returns the committed fact while any payload/kind/
+            # scope/identity drift still fails closed.
+            replay_digest = replace(
+                command,
+                expected_revision=commit.base_revision,
+            ).payload_digest
+            if commit.command_digest != replay_digest:
                 raise MachineConflict(
                     "command_id was already committed with a different payload"
                 )

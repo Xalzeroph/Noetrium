@@ -35,6 +35,61 @@ def _sha256(path: Path) -> str:
 _LICENSE_EXPRESSION = "Apache-2.0"
 _REQUIRED_LICENSE_FILES = ("LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md")
 
+_WORKSPACE_ONLY_PREFIXES = (
+    "research/",
+    "benchmarks/",
+    "docs/research/",
+)
+_WORKSPACE_ONLY_EXACT = frozenset({
+    ".github/workflows/research_workspace.yml",
+    "scripts/project_design_trace_gate.py",
+    "scripts/sync_benchmark_manifests.py",
+    "scripts/sync_reproductions.py",
+    "scripts/sync_publication_priority.py",
+    "scripts/sync_research_pressure.py",
+    "scripts/sync_research_program.py",
+    "scripts/sync_lineage_status.py",
+})
+_WORKSPACE_ONLY_TEST_PREFIXES = (
+    "tests/test_scientific_",
+    "tests/test_research_",
+    "tests/test_reproduction_",
+    "tests/test_publication_",
+    "tests/test_lineage_",
+)
+
+
+def _workspace_only_path(relative: str) -> bool:
+    normalized = relative.replace("\\", "/").lstrip("./")
+    return (
+        any(normalized.startswith(prefix) for prefix in _WORKSPACE_ONLY_PREFIXES)
+        or normalized in _WORKSPACE_ONLY_EXACT
+        or any(normalized.startswith(prefix) for prefix in _WORKSPACE_ONLY_TEST_PREFIXES)
+    )
+
+
+def _verify_workspace_exclusion(wheel: Path, sdist: Path) -> dict[str, object]:
+    with zipfile.ZipFile(wheel) as archive:
+        wheel_paths = tuple(sorted(name for name in archive.namelist() if _workspace_only_path(name)))
+    with tarfile.open(sdist, "r:gz") as archive:
+        relative_paths: list[str] = []
+        for name in archive.getnames():
+            parts = PurePosixPath(name).parts
+            if len(parts) < 2:
+                continue
+            relative_paths.append(PurePosixPath(*parts[1:]).as_posix())
+        sdist_paths = tuple(sorted(path for path in relative_paths if _workspace_only_path(path)))
+    if wheel_paths or sdist_paths:
+        raise RuntimeError(
+            "distribution contains source-workspace-only material: "
+            f"wheel={wheel_paths[:20]} sdist={sdist_paths[:20]}"
+        )
+    return {
+        "workspace_only_material_excluded": True,
+        "wheel_workspace_path_count": 0,
+        "sdist_workspace_path_count": 0,
+    }
+
 
 def _license_metadata(raw: bytes, *, artifact_kind: str) -> tuple[str, ...]:
     message = BytesParser(policy=default).parsebytes(raw)
@@ -335,6 +390,7 @@ def build_distribution_release(output: Path) -> dict:
     sha, branch = _require_clean_source()
     wheel, sdist, build_command, manifest = _build_distributions(output, sha=sha)
     oss_metadata = _verify_oss_metadata(wheel, sdist)
+    workspace_boundary = _verify_workspace_exclusion(wheel, sdist)
     _assert_source_identity(sha, branch)
 
     verification_refs: dict[str, dict[str, str]] = {}
@@ -372,6 +428,7 @@ def build_distribution_release(output: Path) -> dict:
         "python_requires": manifest.python_requires,
         "build_command": build_command,
         "oss_metadata": oss_metadata,
+        "workspace_boundary": workspace_boundary,
         "installed_verification": verification_refs,
         "artifacts": artifacts,
         "sbom_sha256": sbom_sha,

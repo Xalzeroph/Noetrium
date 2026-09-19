@@ -329,17 +329,47 @@ class StateMachineEnvironmentSession(EnvironmentSession):
     def act(self, request: ActionRequest) -> ActionResult:
         if not isinstance(request, ActionRequest):
             raise TypeError("state-machine act requires ActionRequest")
+        if not isinstance(request.payload, Mapping):
+            raise TypeError("state-machine action payload must be an object")
+        payload = freeze_json_mapping(request.payload, field="action_payload")
+        normalized = ActionRequest(
+            request.action_id,
+            request.action_type,
+            payload,
+            request.context,
+        )
+        request_digest = action_request_digest(normalized)
+
+        # Action identity is a domain-level idempotency contract. Resolve an
+        # already-applied action from the authoritative EnvironmentMachine
+        # ledger before issuing another revision-fenced MachineCommand.
+        actions_value = self._machine.data.get("actions", {})
+        if not isinstance(actions_value, Mapping):
+            raise TypeError("EnvironmentMachine action ledger must be an object")
+        prior = actions_value.get(request.action_id)
+        if prior is not None:
+            if not isinstance(prior, Mapping):
+                raise TypeError("EnvironmentMachine action ledger row must be an object")
+            if prior.get("request_digest") != request_digest:
+                raise ActionIdentityViolation(
+                    f"environment action identity was reused with drift: {request.action_id}"
+                )
+            prior_result = prior.get("result")
+            if not isinstance(prior_result, Mapping):
+                raise TypeError("EnvironmentMachine action ledger result must be an object")
+            return _action_result_from_payload(prior_result)
+
         value = self._event(
             "environment.act",
             {
-                "action_id": request.action_id,
-                "action_type": request.action_type,
-                "payload": request.payload,
-                "context": execution_context_payload(request.context),
+                "action_id": normalized.action_id,
+                "action_type": normalized.action_type,
+                "payload": normalized.payload,
+                "context": execution_context_payload(normalized.context),
             },
             command_id=(
                 f"{self._machine.machine_id}:action:"
-                f"{request.action_id}:{action_request_digest(request)[:16]}"
+                f"{normalized.action_id}:{request_digest[:16]}"
             ),
         )
         return _action_result_from_payload(value["action_result"])

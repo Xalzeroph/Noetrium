@@ -57,11 +57,18 @@ class ActionPreparationCoordinator:
 
     def preflight_action_slot(
         self, *, action_type: str, action_payload: object, context: ExecutionContext
-    ) -> tuple[OperationResult[JsonValue], ...]:
-        return self._capability.preflight(context) + self._slots.preflight_slot(
+    ) -> ActionSlotInspection:
+        inspection = self._slots.preflight_slot(
             action_type=action_type,
             action_payload=action_payload,
             context=context,
+        )
+        return replace(
+            inspection,
+            operation_results=(
+                self._capability.preflight(context)
+                + inspection.operation_results
+            ),
         )
 
     def prepare_action(
