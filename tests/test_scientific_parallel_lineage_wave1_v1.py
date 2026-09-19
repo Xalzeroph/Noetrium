@@ -122,7 +122,7 @@ def test_tot_rap_and_lats_compile_search_budget_into_typed_study_identity() -> N
         (row.role, row.requirement_id)
         for row in lats.binding_requirements.model_roles
     ) == (
-        ("action", "model.lats.agent"),
+        ("policy", "model.lats.agent"),
         ("reflection", "model.lats.reflection"),
         ("value", "model.lats.value"),
     )
