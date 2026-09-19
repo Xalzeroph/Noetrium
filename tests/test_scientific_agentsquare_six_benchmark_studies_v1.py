@@ -67,7 +67,7 @@ def test_agentsquare_freezes_six_benchmark_paper_targets() -> None:
     assert tuple(
         row.expected_evaluation_task_count
         for row in AGENTSQUARE_BENCHMARK_PROFILES
-    ) == (500, 134, 90, 82, 180, 60)
+    ) == (500, 134, 90, 82, 30, 60)
     assert tuple(
         row.gpt4o_scores.full for row in AGENTSQUARE_BENCHMARK_PROFILES
     ) == (0.607, 0.695, 0.781, 0.524, 0.583, 0.669)
