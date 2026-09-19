@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vima_embodied",
-  "package_digest": "19969c63085f0f823a91fd748205786fc3b75463b1c2a6868030b8429d83e7c2",
-  "definition_digest": "d533cb1dd3f0fb3b9e643e956cb885dd2951d5eabb999c87e799f5f83aba87ed",
+  "package_digest": "68b6279c843394d628e7e28c4363d44d75446f73f7190c48244db37413556f2a",
+  "definition_digest": "00eaa5c1480ed53594dae9c2bb14689b4f713dc1f117e3e1f5a5b4e9e7ba087f",
   "source_registry_digest": "bf35b8c87b325e6a50b501d4e2671f6c130a246df6340370de02382c8a31c33b",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -151,8 +151,51 @@
     }
   ],
   "primary_executable": "research/reproductions/vima_embodied/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "vima_hardest_zero_shot_multiplier",
+      "metric_id": "task_success_rate_multiplier",
+      "value": 2.9,
+      "qualifiers": {
+        "scope": "hardest-zero-shot-generalization",
+        "bound": "up-to",
+        "same_training_data": true,
+        "source": "ICML-2023 abstract"
+      },
+      "claim_digest": "0f11de5231e9040b61da34a60db9528e6425d14a996384d9452eaa4784ad04f9"
+    },
+    {
+      "claim_id": "vima_tenfold_less_data_multiplier",
+      "metric_id": "task_success_rate_multiplier",
+      "value": 2.7,
+      "qualifiers": {
+        "training_data_ratio": 0.1,
+        "comparison": "best-competing-variant",
+        "source": "ICML-2023 abstract"
+      },
+      "claim_digest": "5f214573954c9510b6b015c73e89672060a6c065f1a60cebe91bed400c12e37e"
+    },
+    {
+      "claim_id": "vima_expert_trajectory_scale",
+      "metric_id": "expert_trajectory_count",
+      "value": 600000,
+      "qualifiers": {
+        "bound": "greater-than",
+        "source": "ICML-2023 abstract"
+      },
+      "claim_digest": "c7db0053f39fe3c4ea7a9f215cb57784cc3748f6e43fedffcdc8c797fcd831bd"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "vima_competing_policy_variants",
+      "description": "Alternative robot-policy designs and competing variants in the ICML 2023 generalization and data-efficiency comparisons.",
+      "qualifiers": {
+        "source": "ICML-2023 paper evaluation"
+      },
+      "baseline_digest": "95ee8c88fee7838b17465dc6ce5eda10520620f7dc4d76daf5c9e798c94c1497"
+    }
+  ],
   "deltas": [],
   "blockers": [
     "A qualified concrete VIMA-Bench embodied simulator adapter is still required for formal environment execution.",

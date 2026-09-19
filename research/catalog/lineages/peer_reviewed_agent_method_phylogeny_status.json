@@ -68,7 +68,7 @@
       "reproductions": [
         {
           "package": "saycan",
-          "package_digest": "6350e604648d9a12d429719c97e59271e22563cfa17c34be0029b628eb0814e5",
+          "package_digest": "b673d05695260512aadf4fe6264a3c3b4fda06efd8e22fdb93c54a175123cbac",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "saycan-101"
@@ -129,8 +129,8 @@
             "Formal execution still requires the official SayCan v0 TSV bytes to be materialized under Artifact authority and an eligible human-majority evaluation provider for plan/execution judgments."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -377,7 +377,7 @@
       "reproductions": [
         {
           "package": "vima_embodied",
-          "package_digest": "19969c63085f0f823a91fd748205786fc3b75463b1c2a6868030b8429d83e7c2",
+          "package_digest": "68b6279c843394d628e7e28c4363d44d75446f73f7190c48244db37413556f2a",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "vima-bench"
@@ -449,8 +449,8 @@
             "Full checkpoint-level result reproduction requires immutable released policy checkpoints and the camera-ready observation/prompt frontend."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 3,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
@@ -1043,7 +1043,7 @@
       "reproductions": [
         {
           "package": "steve1_minecraft",
-          "package_digest": "48d7905675ef436c7719619bc177d1a2c0ec70909fc1902fa9bad103a674da7c",
+          "package_digest": "042c6618503cae8f3dbff2e83cc2deb29cfecb9010365e98b1739738040bf5aa",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "steve1-paper-prompts"
@@ -1098,8 +1098,8 @@
             "The released repository exposes 11 named paper prompts for both text and visual conditioning (22 executable cells), but does not expose the complete identity of the separate 13-task early-game result suite; that numerical claim remains unmatched rather than fabricated."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
@@ -1119,7 +1119,7 @@
       "reproductions": [
         {
           "package": "deps_minecraft",
-          "package_digest": "b1fe71b6e4fd1d5cca2f8fb8c7f580ee39bd3871164d80ff522275828bcdd87a",
+          "package_digest": "15e3a428ef2bb10b719270ae55eb517cbb76b06d7c7a07700b995fd54a70357c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "deps-minecraft-70"
@@ -1181,8 +1181,8 @@
             "Matched Minecraft results additionally require the paper-era goal-conditioned controller checkpoint and modified MineDojo simulator runtime under Artifact authority."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -2076,7 +2076,7 @@
       "reproductions": [
         {
           "package": "voyager_minecraft",
-          "package_digest": "27e7d7adf20ed731623f81105d74dfeb6a5f478c4f37ee518bd61efba3d656fe",
+          "package_digest": "217a6aa92ef678bb187503cbfdee3b7eb3386c21509bdd6fef53e995a296e074",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "voyager-minecraft"
@@ -2154,8 +2154,8 @@
             "no matched TMLR execution evidence has yet been produced"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 3,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 2,
           "scientific_tests": [
             {
@@ -2905,7 +2905,7 @@
       "reproductions": [
         {
           "package": "worldmm_memory",
-          "package_digest": "a5defa081c7af7e4803042b147555a5834664799af17f4a6fc5f5d7ed73f58f7",
+          "package_digest": "f20262724274fb07a99607f209939977e0913da5beb4bfa4f8e1c768c18ce3e9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egolifeqa"
@@ -2971,8 +2971,8 @@
             "Matched model behavior requires immutable identities for the retrieval and response models used by the evaluated configuration."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -2988,5 +2988,5 @@
       ]
     }
   ],
-  "projection_digest": "c15cc894743236eb75e8d6c287ced5497a7a3070c187f2c8f8faad60dc07b8ff"
+  "projection_digest": "d7af08012eed4e3ff34349ea0ea1f4b2ea19e3970653d2a7a26a8f46b0069e7e"
 }

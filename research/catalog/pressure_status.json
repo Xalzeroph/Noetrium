@@ -710,15 +710,14 @@
         "saycan_101"
       ],
       "scientific_test_count": 2,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 2,
+      "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers"
       ],
       "ready": true,
@@ -982,15 +981,14 @@
         "vima_bench"
       ],
       "scientific_test_count": 3,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers"
       ],
       "ready": true,
@@ -1024,15 +1022,14 @@
         "voyager_minecraft"
       ],
       "scientific_test_count": 6,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "blocker_count": 4,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers",
         "unresolved_fidelity_delta"
       ],
@@ -1186,15 +1183,14 @@
         "steve1_paper_prompts"
       ],
       "scientific_test_count": 2,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 2,
+      "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers"
       ],
       "ready": true,
@@ -1310,15 +1306,14 @@
         "egolifeqa"
       ],
       "scientific_test_count": 2,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 1,
+      "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers",
         "unresolved_fidelity_delta"
       ],
@@ -1470,15 +1465,14 @@
         "deps_minecraft"
       ],
       "scientific_test_count": 1,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 1,
+      "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers",
         "unresolved_fidelity_delta"
       ],
