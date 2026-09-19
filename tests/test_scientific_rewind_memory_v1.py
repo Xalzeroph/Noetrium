@@ -237,10 +237,10 @@ def test_rewind_memory_enforces_stage_order_and_paper_token_geometry(
         payload=_event("rewind.memory.select", {}),
         command_id_prefix="rewind:test",
     )
-    assert selected.previous_value["instruction_selected_indices"] == tuple(
+    assert tuple(selected.previous_value["instruction_selected_indices"]) == tuple(
         range(10)
     )
-    assert selected.previous_value["selected_indices"] == tuple(range(8))
+    assert tuple(selected.previous_value["selected_indices"]) == tuple(range(8))
     assert len(selected.previous_value["selected_frame_refs"]) == 8
     assert selector.requests[0].selected_frame_tokens == 32
 
@@ -326,13 +326,19 @@ def test_rewind_moviechat_study_binds_memory_and_selection_protocol() -> None:
     study = build_rewind_cvpr2025_study(benchmark)
 
     assert protocol.protocol_id == "rewind.cvpr2025.moviechat-1k.v1"
-    assert study.method.implementation == "rewind"
+    method = next(
+        row
+        for row in study.binding_requirements.participants
+        if row.participant_kind == "method"
+    )
+    assert method.method_id == "rewind"
     assert (
         study.trial_protocol_identity.configuration_digest
         == protocol.configuration_digest
     )
     names = {
-        row.name for row in study.measurement_protocol.definitions
+        row.measurement_id
+        for row in study.measurement_protocol.definitions
     }
     assert {
         "global_accuracy",
