@@ -3018,6 +3018,52 @@
       "evidence_refs": []
     },
     {
+      "method_id": "videollamb",
+      "title": "VideoLLaMB: Long Streaming Video Understanding with Recurrent Memory Bridges",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "long_video_understanding",
+        "multimodal_memory",
+        "recurrent_memory_bridge",
+        "streaming_video_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/bigai-nlco/VideoLLaMB"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "videollamb_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "artifact/tensor",
+        "benchmark/video",
+        "execution/machines/memory",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "SceneTiling semantic video segmentation",
+        "Transformer memory bridge update",
+        "memory-cache cross-attention retrieval",
+        "recurrent temporal memory tokens",
+        "streaming semantic-segment recurrence"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "artifact/evidence lineage",
+        "benchmark cut identity",
+        "immutable multimodal content identity",
+        "model execution and transport",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
       "method_id": "vima",
       "title": "VIMA: Robot Manipulation with Multimodal Prompts",
       "paper_uri": "https://proceedings.mlr.press/v202/jiang23b.html",
