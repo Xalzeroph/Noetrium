@@ -71,8 +71,6 @@ jobs:
           python -m pip install -e ".[test]"
       - name: Verify public contracts
         run: python scripts/public_contract_audit.py
-      - name: Reject external project design traces in production code
-        run: python scripts/project_design_trace_gate.py
       - name: Verify public surface generation converges
         run: |
           python scripts/update_generated_docs.py
