@@ -45,7 +45,7 @@ REPRODUCTION = ReproductionDefinition(
             "hierarchical_control",
         ),
         priority=1,
-        benchmark_ids=(),
+        benchmark_ids=("deps-minecraft-70",),
         platform_pressure=(
             "execution/workflow",
             "participant/agent",
@@ -73,12 +73,20 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("benchmark"),
+            path="research/reproductions/deps_minecraft/benchmark.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("fidelity"),
             path="research/reproductions/deps_minecraft/fidelity.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("method_program"),
             path="research/reproductions/deps_minecraft/program.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/deps_minecraft/study.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
@@ -106,8 +114,8 @@ REPRODUCTION = ReproductionDefinition(
         "The released planner targets historical code-davinci-002/text-davinci-003 "
         "serving; exact hosted model snapshots are not immutable public artifacts.",
         "Matched Minecraft results additionally require the paper-era "
-        "goal-conditioned controller checkpoint, modified MineDojo simulator "
-        "runtime, and evaluated task/environment cuts under Artifact authority.",
+        "goal-conditioned controller checkpoint and modified MineDojo simulator "
+        "runtime under Artifact authority.",
     ),
     evidence_refs=(),
     scientific_tests=(
