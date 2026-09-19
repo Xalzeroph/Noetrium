@@ -7,6 +7,17 @@ from noetrium_platform.foundation.kernel.kernel import (
 from noetrium_platform.research.execution.workflow.api import MethodAgentRequest
 from noetrium_platform.research.reproduction import ReproductionAssetKind
 
+from research.benchmarks.deps_minecraft import (
+    DEPS_ALL_SPLIT,
+    DEPS_TASK_COUNT,
+    DEPS_TASK_IDENTITIES,
+    build_deps_minecraft_70_cut,
+)
+from research.reproductions.deps_minecraft.study import (
+    build_deps_neurips2023_study,
+    deps_neurips2023_trial_protocol,
+)
+
 from research.reproductions.deps_minecraft import (
     DEPSGoal,
     DEPSGoalSelection,
@@ -193,3 +204,71 @@ def test_deps_reproduction_is_protocol_bound_with_explicit_selector_delta() -> N
     kinds = tuple(asset.kind for asset in REPRODUCTION.assets)
     assert ReproductionAssetKind("method_program") in kinds
     assert any("selector.py" in delta.description for delta in REPRODUCTION.deltas)
+
+
+
+def test_deps_official_benchmark_cut_freezes_all_70_release_tasks() -> None:
+    benchmark = build_deps_minecraft_70_cut()
+    selected = benchmark.selected_tasks(DEPS_ALL_SPLIT)
+
+    assert len(selected) == DEPS_TASK_COUNT == 70
+    assert len(DEPS_TASK_IDENTITIES) == 70
+    groups: dict[str, int] = {}
+    episode_counts: dict[int, int] = {}
+    for _, _, group, _, episode, _ in DEPS_TASK_IDENTITIES:
+        groups[group] = groups.get(group, 0) + 1
+        episode_counts[episode] = episode_counts.get(episode, 0) + 1
+    assert groups == {
+        "MT1": 13,
+        "MT2": 12,
+        "MT3": 7,
+        "MT4": 8,
+        "MT5": 9,
+        "MT6": 7,
+        "MT7": 13,
+        "MT8": 1,
+    }
+    assert episode_counts == {
+        3000: 33,
+        6000: 23,
+        9000: 13,
+        12000: 1,
+    }
+    diamond = next(
+        row for row in DEPS_TASK_IDENTITIES
+        if row[0] == "obtain_diamond"
+    )
+    assert diamond[2:] == ("MT8", "challenge", 12000, "diamond")
+
+
+def test_deps_study_binds_neurips2023_official_task_protocol() -> None:
+    benchmark = build_deps_minecraft_70_cut()
+    protocol = deps_neurips2023_trial_protocol(benchmark)
+    study = build_deps_neurips2023_study(benchmark)
+
+    assert protocol.protocol_id == (
+        "deps.neurips2023.minecraft-70.paper-release.v1"
+    )
+    assert study.trial_protocol_identity == protocol
+
+    method = next(
+        row
+        for row in study.binding_requirements.participants
+        if row.role == "interactive_minecraft_planner"
+    )
+    assert method.method_id == "deps-minecraft"
+    assert method.treatment_id == "neurips-2023-paper-release"
+    assert method.capability_requirement_ids == ("environment.act",)
+    assert {
+        row.role for row in study.binding_requirements.model_roles
+    } == {"parser", "planner", "selector"}
+    assert {
+        row.measurement_id
+        for row in study.measurement_protocol.definitions
+    } == {
+        "episode_steps",
+        "replan_rounds",
+        "task_success",
+        "trajectory_steps",
+    }
+    assert study.execution_policy.trial_budget.max_model_calls == 512
