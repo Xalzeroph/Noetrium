@@ -39,7 +39,7 @@ REPRODUCTION = ReproductionDefinition(
             "long_video_understanding",
         ),
         priority=1,
-        benchmark_ids=(),
+        benchmark_ids=("egoschema",),
         platform_pressure=(
             "execution/machines/memory",
             "model/multimodal",
@@ -73,6 +73,14 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/videollamb_memory/memory.py",
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("benchmark"),
+            path="research/reproductions/videollamb_memory/benchmark.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/videollamb_memory/study.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
             path="research/reproductions/videollamb_memory/source.py",
         ),
@@ -82,10 +90,10 @@ REPRODUCTION = ReproductionDefinition(
     reference_baselines=(),
     deltas=(),
     blockers=(
-        "EgoSchema, NExT-QA, EgoPlan, MVBench and NIAVH benchmark cuts are not "
-        "yet content-addressed in this package.",
-        "The ICCV Study, released checkpoints and matched-result evidence are "
-        "not yet bound.",
+        "NExT-QA, EgoPlan, MVBench and NIAVH benchmark cuts remain to be "
+        "content-addressed alongside the bound EgoSchema public cut.",
+        "Matched-result execution still requires the released checkpoint bytes "
+        "and exact video assets in content-addressed authority.",
     ),
     evidence_refs=(),
     scientific_tests=("tests/test_scientific_videollamb_memory_v1.py",),
