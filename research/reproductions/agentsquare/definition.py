@@ -35,7 +35,14 @@ REPRODUCTION = ReproductionDefinition(
             "module_recombination",
         ),
         priority=1,
-        benchmark_ids=("alfworld",),
+        benchmark_ids=(
+            "webshop",
+            "alfworld",
+            "scienceworld",
+            "m3tooleval",
+            "travelplanner",
+            "agentboard-pddl",
+        ),
         platform_pressure=(
             "execution/research_program",
             "experimentation/workbench",
@@ -68,6 +75,10 @@ REPRODUCTION = ReproductionDefinition(
             kind=ReproductionAssetKind("research_program"),
             path="research/reproductions/agentsquare/program.py",
         ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/agentsquare/study.py",
+        ),
     ),
     reported_results=(
         ReportedResult(
@@ -75,6 +86,42 @@ REPRODUCTION = ReproductionDefinition(
             metric_id="average_performance_gain_over_best_known_human_designs",
             value=17.2,
             qualifiers={"unit": "percent", "benchmarks": "six"},
+        ),
+        ReportedResult(
+            claim_id="agentsquare_gpt4o_webshop",
+            metric_id="webshop_reward",
+            value=0.607,
+            qualifiers={"model": "GPT-4o", "table": "1"},
+        ),
+        ReportedResult(
+            claim_id="agentsquare_gpt4o_alfworld",
+            metric_id="alfworld_success_rate",
+            value=0.695,
+            qualifiers={"model": "GPT-4o", "table": "1"},
+        ),
+        ReportedResult(
+            claim_id="agentsquare_gpt4o_sciworld",
+            metric_id="scienceworld_progress_rate",
+            value=0.781,
+            qualifiers={"model": "GPT-4o", "table": "1"},
+        ),
+        ReportedResult(
+            claim_id="agentsquare_gpt4o_m3tool",
+            metric_id="m3tool_success_rate",
+            value=0.524,
+            qualifiers={"model": "GPT-4o", "table": "1"},
+        ),
+        ReportedResult(
+            claim_id="agentsquare_gpt4o_travelplanner",
+            metric_id="travelplanner_constraint_pass_rate",
+            value=0.583,
+            qualifiers={"model": "GPT-4o", "table": "1"},
+        ),
+        ReportedResult(
+            claim_id="agentsquare_gpt4o_pddl",
+            metric_id="pddl_progress_rate",
+            value=0.669,
+            qualifiers={"model": "GPT-4o", "table": "1"},
         ),
     ),
     reference_baselines=(
@@ -105,14 +152,17 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     blockers=(
-        "the exact paper-era six benchmark search cuts and initial module archives are not all content-addressed in Noetrium",
-        "matched results require the historical model-service revisions used by the paper",
-        "the later official search implementation post-dates the final paper and cannot be treated as paper-era executable authority",
+        "the paper does not publish every benchmark-specific search sampling scope or random seed schedule",
+        "the exact paper-era initial module archives are not all content-addressed in Noetrium",
+        "matched results require the historical GPT-4o/GPT-3.5 service behavior used by the paper",
+        "the later official ALFWorld search implementation post-dates the final paper and is executable-reference evidence rather than paper-era authority",
         "no matched six-benchmark AgentSquare execution evidence has yet been produced",
     ),
     evidence_refs=(),
     scientific_tests=(
         "tests/test_scientific_agentsquare_optimization_program_v1.py",
+        "tests/test_scientific_agentsquare_webshop_cut_v1.py",
+        "tests/test_scientific_agentsquare_six_benchmark_studies_v1.py",
     ),
 )
 
