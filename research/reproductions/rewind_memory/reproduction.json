@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rewind_memory",
-  "package_digest": "4e85358e1523ea904c7b5a2e024b639eb6435c4692d3dbeaefa3da3318691b67",
-  "definition_digest": "7640889ebe8f4ce45297dc3c77321820d08559fbaca36adc12db1e4c67c7dbc6",
+  "package_digest": "aa56e0fca1a08151d5744b5dde8cc1f3b4a3dc64e7c4b88b1c1043837ae68ddc",
+  "definition_digest": "e236f27ae38c039524404d6193ed66ff12781b288f64fc582ea287d784d10585",
   "source_registry_digest": "fdb866db6a3c5cbcf051cd40e55caf5bb510d3af332ad4d5f61455c3af25568c",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -105,8 +105,51 @@
     }
   ],
   "primary_executable": "research/reproductions/rewind_memory/memory.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "rewind_moviechat_score_gain",
+      "metric_id": "score_gain_percent",
+      "value": 13.0,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "task": "video-question-answering",
+        "source": "CVPR-2025 abstract"
+      },
+      "claim_digest": "91b558d81da2fc3ea4c2a798534c642ee6de881e435094587bc198ddedfc0192"
+    },
+    {
+      "claim_id": "rewind_moviechat_accuracy_gain",
+      "metric_id": "accuracy_gain_percent",
+      "value": 12.0,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "task": "video-question-answering",
+        "source": "CVPR-2025 abstract"
+      },
+      "claim_digest": "d25dc4617dfbb96c9b1a517d97ccd56779d1d8ca9b60e2fa1162a6809e16daa9"
+    },
+    {
+      "claim_id": "rewind_charades_sta_miou_gain",
+      "metric_id": "miou_gain_percent",
+      "value": 8.0,
+      "qualifiers": {
+        "benchmark": "charades-sta",
+        "task": "temporal-grounding",
+        "source": "CVPR-2025 abstract"
+      },
+      "claim_digest": "be1912a51d0e7fb30cd93e5defac472d6d152fda38c8784d265af02383779d8f"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "rewind_paper_long_video_baselines",
+      "description": "Long-video VQA and temporal-grounding baselines used in the CVPR 2025 paper comparisons.",
+      "qualifiers": {
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "baseline_digest": "000a7fa6f4fdc83282d74f51a1c28eddd3b386355be87cc748280cf6dddf18a2"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

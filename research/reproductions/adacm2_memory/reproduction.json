@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adacm2_memory",
-  "package_digest": "96a57bdd122c381fe0d3b8831fd2d93b3f491b2e595bcdac44418f9ea1d4efd9",
-  "definition_digest": "207a787f10f7a17b1d8d265521d35bc24026ea4048dafc97a96b106b729b5733",
+  "package_digest": "5baeb86f5a2314fee16f14aa8fbc827c98a788c69d0b087a7f1d91ec702ede3c",
+  "definition_digest": "4c22e1c6b1b380c3d0c9d62d183211ac6eb2d5a5c06469baed310766fc2d18ce",
   "source_registry_digest": "d46d92fc46eb723b8905ef27d3104b049b7b560c6b2946d3ad5e25a04645996a",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -105,8 +105,39 @@
     }
   ],
   "primary_executable": "research/reproductions/adacm2_memory/memory.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "adacm2_lvu_average_improvement",
+      "metric_id": "reported_average_improvement_percent",
+      "value": 4.5,
+      "qualifiers": {
+        "benchmark": "lvu",
+        "scope": "multiple-lvu-tasks",
+        "source": "CVPR-2025 abstract"
+      },
+      "claim_digest": "db6027f648dbe0f3c0c9d5b6693bf711661f089b1ec6090c5addd5272566213b"
+    },
+    {
+      "claim_id": "adacm2_gpu_memory_reduction",
+      "metric_id": "gpu_memory_reduction_percent",
+      "value": 65.0,
+      "qualifiers": {
+        "scope": "up-to",
+        "source": "CVPR-2025 abstract"
+      },
+      "claim_digest": "07469d16e2b15cfbde1fd0dca809e7b6d3bfe3234514ebea43cc981afcdd76df"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "adacm2_paper_long_video_baselines",
+      "description": "Long-video understanding baselines used by the CVPR 2025 paper to establish the reported LVU and memory-efficiency gains.",
+      "qualifiers": {
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "baseline_digest": "75b695876d46400d858e3c9b0df89bb51a6a6b139f315d4294a6e66e74254770"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

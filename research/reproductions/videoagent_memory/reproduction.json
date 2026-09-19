@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoagent_memory",
-  "package_digest": "335f60b48d68a8c29bfe32a5c7c2ce64b68529be7c19059a9d5542c8880fa346",
-  "definition_digest": "394daa6673e870f67e94e8ada5d257fb1fb9d30d750b8b1f80df4726e5182c5a",
+  "package_digest": "18fb53bd3dba1a559727294b640f2497e8c5262891dbf7d7a2082071e8f02cce",
+  "definition_digest": "0aaabb72e5eb61f7d63bdee971cf3574e0816cc3b4d615294d8e995ecf5ce89d",
   "source_registry_digest": "2c4ad0c7f51054bfd49d84df431ced1c43641a42cd98243c8343899ebc7ce56e",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -159,8 +159,40 @@
     }
   ],
   "primary_executable": "research/reproductions/videoagent_memory/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "videoagent_nextqa_average_gain",
+      "metric_id": "average_improvement_percent",
+      "value": 6.6,
+      "qualifiers": {
+        "benchmark": "next-qa",
+        "scope": "average-over-evaluated-baselines",
+        "source": "ECCV-2024 abstract"
+      },
+      "claim_digest": "409bc78b6442af566f8ead4832e6c69cf459a02729bd7908952af078e8960ff4"
+    },
+    {
+      "claim_id": "videoagent_egoschema_average_gain",
+      "metric_id": "average_improvement_percent",
+      "value": 26.0,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "scope": "average-over-evaluated-baselines",
+        "source": "ECCV-2024 abstract"
+      },
+      "claim_digest": "2ed12e12ff820a1beec991dcf42aa75e264d9f6d1730a0232d5f9748bd046e00"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "videoagent_paper_video_baselines",
+      "description": "The long-horizon video-understanding baselines against which VideoAgent reports its average NExT-QA and EgoSchema gains.",
+      "qualifiers": {
+        "source": "ECCV-2024 paper evaluation"
+      },
+      "baseline_digest": "ae53c7af8faaa67cc7393a76ebc253fb6af2a067118ce67518a463d960b610ce"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

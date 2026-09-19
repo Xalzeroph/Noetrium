@@ -1982,7 +1982,7 @@
       "reproductions": [
         {
           "package": "videoagent_memory",
-          "package_digest": "335f60b48d68a8c29bfe32a5c7c2ce64b68529be7c19059a9d5542c8880fa346",
+          "package_digest": "18fb53bd3dba1a559727294b640f2497e8c5262891dbf7d7a2082071e8f02cce",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egoschema"
@@ -2055,8 +2055,8 @@
             "The full 5031-question EgoSchema claim requires an official evaluation-server/Kaggle receipt; the 500-answer public cut is a separate offline evaluation."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -2685,7 +2685,7 @@
       "reproductions": [
         {
           "package": "rewind_memory",
-          "package_digest": "4e85358e1523ea904c7b5a2e024b639eb6435c4692d3dbeaefa3da3318691b67",
+          "package_digest": "aa56e0fca1a08151d5744b5dde8cc1f3b4a3dc64e7c4b88b1c1043837ae68ddc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -2735,8 +2735,8 @@
             "Charades-STA temporal-grounding result reproduction requires a separate canonical Charades-STA benchmark cut and the paper fine-tuning assets."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 3,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -2752,7 +2752,7 @@
       "reproductions": [
         {
           "package": "adacm2_memory",
-          "package_digest": "96a57bdd122c381fe0d3b8831fd2d93b3f491b2e595bcdac44418f9ea1d4efd9",
+          "package_digest": "5baeb86f5a2314fee16f14aa8fbc827c98a788c69d0b087a7f1d91ec702ede3c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -2802,8 +2802,8 @@
             "Breakfast, COIN, MSRVTT-QA, MSVD-QA, MSRVTT, MSVD and YouCook2 paper results require their own canonical benchmark cuts."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 3,
           "scientific_tests": [
             {
@@ -2988,5 +2988,5 @@
       ]
     }
   ],
-  "projection_digest": "45f6b33e9185eb5301a3af8844fe276811a10981ea71622866afeb127b7d00ad"
+  "projection_digest": "c15cc894743236eb75e8d6c287ced5497a7a3070c187f2c8f8faad60dc07b8ff"
 }

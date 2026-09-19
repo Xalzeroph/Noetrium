@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videollamb_memory",
-  "package_digest": "5e6170b5067284ec5d59d0b68226e642e057741dff54ece97bb9a03d7b823e95",
-  "definition_digest": "7905f2cef700113932d85c8b81ed1e0733f9227d34bc04586257c6cdff725dcd",
+  "package_digest": "56e3565e7c16f22b8630c614e903c7f0612a3a18f77643f088710e544dedde10",
+  "definition_digest": "556a0739d312b2077ba1dddf462b82ff32a1287382a99494d3b409dc0e14224b",
   "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -125,8 +125,49 @@
     }
   ],
   "primary_executable": "research/reproductions/videollamb_memory/memory.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "videollamb_videoqa_gain",
+      "metric_id": "average_gain_points",
+      "value": 4.2,
+      "qualifiers": {
+        "scope": "four-videoqa-benchmarks",
+        "source": "ICCV-2025 abstract"
+      },
+      "claim_digest": "8620e73565b43a163caa7c1f797beaec7e964fc956ddc5b933c943457f17d6df"
+    },
+    {
+      "claim_id": "videollamb_egocentric_planning_gain",
+      "metric_id": "gain_points",
+      "value": 2.06,
+      "qualifiers": {
+        "task": "egocentric-planning",
+        "source": "ICCV-2025 abstract"
+      },
+      "claim_digest": "d77a0713b3b3a1afcc5c50aa746defdeb1d9ae3aa2397641d8de005e837c30d6"
+    },
+    {
+      "claim_id": "videollamb_single_a100_max_frames",
+      "metric_id": "processed_frame_count",
+      "value": 320,
+      "qualifiers": {
+        "hardware": "single-NVIDIA-A100",
+        "training_frames": 16,
+        "source": "ICCV-2025 abstract"
+      },
+      "claim_digest": "4559aed42e6949c327df44111bd70bab791e90d8d4c43c0698bdff81da6c5586"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "videollamb_paper_video_baselines",
+      "description": "Existing VideoQA and egocentric-planning models used by the ICCV 2025 paper to establish the reported gains.",
+      "qualifiers": {
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "baseline_digest": "4e649df850b71c80bc557c1258c4d8dbc7d0bdaf4e007c492f56602a2efeaf8f"
+    }
+  ],
   "deltas": [],
   "blockers": [
     "NExT-QA, EgoPlan, MVBench and NIAVH benchmark cuts remain to be content-addressed alongside the bound EgoSchema public cut.",
