@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -94,8 +96,29 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/deps_minecraft/program.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="deps_robust_minecraft_task_count",
+            metric_id="robustly_accomplished_task_count",
+            value=70,
+            qualifiers={
+                "bound": "greater-than",
+                "wording": "70+",
+                "setting": "zero-shot-multi-task",
+                "source": "NeurIPS-2023 abstract",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="deps_vanilla_planning_counterparts",
+            description=(
+                "Planning counterparts used by the NeurIPS 2023 paper to "
+                "establish the reported open-world multi-task gains."
+            ),
+            qualifiers={"source": "NeurIPS-2023 paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("unresolved"),
