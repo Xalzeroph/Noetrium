@@ -3,6 +3,20 @@ from .fidelity import (
     AGENTSQUARE_LATER_OFFICIAL_COMMIT,
     AgentSquareFidelity,
 )
+from .reported import (
+    AGENTSQUARE_BENCHMARK_PROFILES,
+    AGENTSQUARE_BENCHMARK_PROFILE_BY_ID,
+    AGENTSQUARE_BENCHMARK_PROFILE_BY_KEY,
+    AgentSquareBenchmarkProfile,
+    AgentSquareReportedScores,
+    AgentSquareSearchEconomics,
+    AgentSquareTreatment,
+)
+from .study import (
+    agentsquare_trial_protocol,
+    build_agentsquare_ablation_matrix,
+    build_agentsquare_evaluation_study,
+)
 from .program import (
     AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM,
     AgentSquareEvaluation,
@@ -19,6 +33,16 @@ from .program import (
 )
 
 __all__ = [
+    "AGENTSQUARE_BENCHMARK_PROFILES",
+    "AGENTSQUARE_BENCHMARK_PROFILE_BY_ID",
+    "AGENTSQUARE_BENCHMARK_PROFILE_BY_KEY",
+    "AgentSquareBenchmarkProfile",
+    "AgentSquareReportedScores",
+    "AgentSquareSearchEconomics",
+    "AgentSquareTreatment",
+    "agentsquare_trial_protocol",
+    "build_agentsquare_ablation_matrix",
+    "build_agentsquare_evaluation_study",
     "AGENTSQUARE_FIDELITY",
     "AGENTSQUARE_LATER_OFFICIAL_COMMIT",
     "AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM",
