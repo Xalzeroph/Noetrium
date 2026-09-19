@@ -702,7 +702,7 @@ def _evaluate_recombined(
     best_index = max(range(len(predictions)), key=lambda i: float(predictions[i]))
     result = bound.evaluator.evaluate_agent(
         agent=candidates[best_index],
-        episodes=AGENTSQUARE_FIDELITY.released_candidate_eval_episodes,
+        episodes=bound.profile.candidate_evaluation_episodes,
     )
     if not isinstance(result, AgentSquareEvaluation):
         raise TypeError("AgentSquare evaluator returned invalid recombined result")
