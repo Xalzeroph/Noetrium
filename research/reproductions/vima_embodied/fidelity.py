@@ -35,6 +35,10 @@ VIMA_EVAL_PARTITIONS = (
     "novel_task_generalization",
 )
 
+# Reproduction-harness safety ceiling only. Paper episode termination remains
+# the benchmark-provided oracle_max_steps + episode_bonus_steps.
+VIMA_EXECUTION_SAFETY_LIMIT = 512
+
 
 @dataclass(frozen=True, slots=True)
 class VimaReferenceFidelity:
@@ -106,6 +110,7 @@ VIMA_REFERENCE_FIDELITY = VimaReferenceFidelity()
 
 __all__ = [
     "VIMA_EVAL_PARTITIONS",
+    "VIMA_EXECUTION_SAFETY_LIMIT",
     "VIMA_REFERENCE_FIDELITY",
     "VIMA_TASKS",
     "VimaReferenceFidelity",
