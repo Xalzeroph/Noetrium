@@ -73,6 +73,7 @@ class _MetaAgent:
                 }
             )
         if phase == "debug":
+            debug_index = self.phase_calls[phase]
             return MethodAgentResult(
                 value={
                     "thought": f"refined thought {generation}",
@@ -80,7 +81,7 @@ class _MetaAgent:
                     "name": f"candidate-{generation}",
                     "code": (
                         "def forward(self, taskInfo):\n"
-                        f"    return 'debugged-{generation}'\n"
+                        f"    return 'debugged-{debug_index}-{generation}'\n"
                     ),
                 }
             )
@@ -308,3 +309,7 @@ def test_adas_never_admits_unexecuted_final_debug_source_with_stale_fitness() ->
         if request.payload["candidate_id"] == "adas:mgsm:generation:1"
     }
     assert len(evaluated_generation_one_sources) == 3
+    assert (
+        "def forward(self, taskInfo):\n"
+        "    return 'debugged-3-1'\n"
+    ) not in evaluated_generation_one_sources
