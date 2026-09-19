@@ -53,5 +53,5 @@ def test_webvoyager_official_study_binds_all_643_tasks() -> None:
         == WEBVOYAGER_ACL2024_TRIAL_PROTOCOL.protocol_id
     )
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
-    ) == ("task_success", "step_count", "model_call_count")
+        row.measurement_id for row in study.measurement_protocol.definitions
+    ) == ("model_call_count", "step_count", "task_success")

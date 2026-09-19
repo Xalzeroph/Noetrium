@@ -131,7 +131,7 @@ def _prepare_environment(request: MethodNodeRequest) -> MethodNodeResult:
     action = normalize_model_action(_required_text(request.state, "pending_action"))
     envelope = environment_action_capability_payload(_ENVIRONMENT_ACTION_TYPE, {"text": action})
     return MethodNodeResult(
-        value={"action": action},
+        value=envelope,
         state_update=envelope,
     )
 

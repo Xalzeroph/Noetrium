@@ -385,7 +385,8 @@ def test_moviechat_study_binds_memory_benchmark_and_paper_evaluator() -> None:
         == protocol.configuration_digest
     )
     measurement_names = {
-        measurement.name for measurement in definition.measurement_protocol.definitions
+        measurement.measurement_id
+        for measurement in definition.measurement_protocol.definitions
     }
     assert {
         "global_accuracy",

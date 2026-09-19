@@ -80,16 +80,24 @@ def test_worldmm_binds_content_addressed_egolifeqa_study() -> None:
         subject_id="A1_JAKE",
     )
     assert study.benchmark_split_id == "subject:A1_JAKE"
-    assert study.method.implementation == "worldmm-memory"
-    assert study.trial == trial
+    method = next(
+        row
+        for row in study.binding_requirements.participants
+        if row.role == "dynamic_multimodal_memory_agent"
+    )
+    assert method.method_id == "worldmm-memory"
+    assert study.trial_protocol_identity == trial
     assert WORLDMM_METHOD_PROGRAM.program_digest
     assert WORLDMM_MEMORY_PROGRAM.program_digest
-    assert tuple(study.models) == ("responder", "retriever")
-    assert tuple(
-        measurement.name for measurement in study.measurements
-    ) == (
+    assert {
+        row.role for row in study.binding_requirements.model_roles
+    } == {"responder", "retriever"}
+    assert {
+        measurement.measurement_id
+        for measurement in study.measurement_protocol.definitions
+    } == {
         "multiple_choice_accuracy",
         "retrieval_rounds",
         "reasoning_errors",
         "retrieved_item_count",
-    )
+    }

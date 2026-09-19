@@ -1,0 +1,85 @@
+name: research-projection-sync
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "research/**"
+      - "scripts/sync_benchmark_manifests.py"
+      - "scripts/sync_reproductions.py"
+      - "scripts/sync_publication_priority.py"
+      - "scripts/sync_research_pressure.py"
+      - "scripts/sync_research_program.py"
+      - "scripts/sync_lineage_status.py"
+      - ".github/workflows/research_projection_sync.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: research-projection-main
+  cancel-in-progress: true
+
+jobs:
+  project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Converge research workspace projections
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for attempt in 1 2 3 4 5; do
+            echo "research projection convergence attempt ${attempt}"
+            git fetch origin main
+            git reset --hard origin/main
+            python -m pip install -e .
+
+            python scripts/sync_benchmark_manifests.py
+            python scripts/sync_reproductions.py
+            python scripts/sync_research_pressure.py
+            python scripts/sync_publication_priority.py
+            python scripts/sync_research_program.py
+            python scripts/sync_lineage_status.py
+
+            python scripts/sync_benchmark_manifests.py --check
+            python scripts/sync_reproductions.py --check
+            python scripts/sync_research_pressure.py --check --enforce
+            python scripts/sync_publication_priority.py --check --enforce
+            python scripts/sync_research_program.py --check
+            python scripts/sync_lineage_status.py --check
+
+            if git diff --quiet; then
+              echo "Research workspace projections are current."
+              exit 0
+            fi
+
+            source_sha="$(git rev-parse HEAD)"
+            git add research
+            git commit -m "chore(research): refresh canonical projections"
+
+            if git push               --force-with-lease="refs/heads/main:${source_sha}"               origin HEAD:main; then
+              echo "Published research projection for source cut ${source_sha}."
+              exit 0
+            fi
+
+            echo "main advanced during research projection publication; retrying"
+          done
+
+          echo "Research projection convergence did not stabilize after 5 attempts."
+          exit 1

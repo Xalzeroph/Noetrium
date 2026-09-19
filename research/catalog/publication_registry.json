@@ -421,6 +421,17 @@
       "evidence_url": "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html"
     },
     {
+      "id": "flash-vstream",
+      "kind": "method",
+      "title": "Flash-VStream: Efficient Real-Time Understanding for Long Video Streams",
+      "year": 2025,
+      "venue": "ICCV",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "flash-vstream",
+      "evidence_url": "https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Flash-VStream_Efficient_Real-Time_Understanding_for_Long_Video_Streams_ICCV_2025_paper.html"
+    },
+    {
       "id": "agentless",
       "kind": "method",
       "title": "Agentless: Demystifying LLM-based Software Engineering Agents",

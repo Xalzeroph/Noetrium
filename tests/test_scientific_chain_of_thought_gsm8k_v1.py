@@ -66,8 +66,7 @@ def test_chain_of_thought_study_requires_full_gsm8k_test_cut() -> None:
 
     assert study.benchmark_split_id == "test"
     assert study.repetitions == 1
-    assert study.limits.max_model_calls == 1
-    assert tuple(row.measurement_id for row in study.measurements) == (
-        "task_success",
-        "model_call_count",
-    )
+    assert study.execution_policy.trial_budget.max_model_calls == 1
+    assert {
+        row.measurement_id for row in study.measurement_protocol.definitions
+    } == {"task_success", "model_call_count"}

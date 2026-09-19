@@ -102,6 +102,7 @@ def build_lats_webshop_released_study(benchmark: BenchmarkTaskSet) -> ResearchSt
         limits=TrialBudget(
             "lats-webshop-30-iterations",
             max_steps=25000,
+            max_turns=LATS_WEBSHOP_FIDELITY.max_iterations,
             max_model_calls=5000,
         ),
         replay_level=ReplayLevel.OBSERVATIONAL,

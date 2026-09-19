@@ -57,10 +57,8 @@ def test_voyager_primary_method_program_allows_nested_memory_programs() -> None:
         "path": "research/reproductions/voyager_minecraft/program.py",
     }
     assert "ambiguous_executable_program" not in row["gaps"]
-    assert row["gaps"] == [
-        "benchmark_binding_missing",
-        "missing_asset:study",
-    ]
+    assert row["ready"] is True
+    assert row["gaps"] == []
 
 
 def test_multimodal_memory_lanes_are_enforced_and_ready() -> None:

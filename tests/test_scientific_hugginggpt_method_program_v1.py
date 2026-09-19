@@ -58,10 +58,10 @@ def test_hugginggpt_paper_cut_and_study_bind_four_stage_protocol() -> None:
         "hugginggpt.neurips2023.paper-tasks.v1"
     )
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     ) == (
-        "task_success",
-        "subtask_count",
         "expert_call_count",
         "model_call_count",
+        "subtask_count",
+        "task_success",
     )

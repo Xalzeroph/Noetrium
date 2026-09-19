@@ -24,7 +24,8 @@
         "EMNLP",
         "CVPR",
         "AAAI",
-        "ECCV"
+        "ECCV",
+        "ICCV"
       ]
     },
     "P1_FIELD_LEADING": {
@@ -36,7 +37,8 @@
         "FSE",
         "CoRL",
         "NAACL",
-        "IEEE TPAMI"
+        "IEEE TPAMI",
+        "ICRA"
       ]
     },
     "P2_HIGH_QUALITY": {

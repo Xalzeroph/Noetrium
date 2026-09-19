@@ -130,7 +130,11 @@ def test_react_method_program_steps_think_then_overrides_visible_observation(tmp
         state_root=tmp_path / "machine",
     )
 
-    assert result.status is MethodRunStatus.SUCCEEDED
+    assert result.status is MethodRunStatus.SUCCEEDED, (
+        result.failure_code,
+        result.failure_phase,
+        result.failure,
+    )
     assert result.value["success"] is True
     assert result.value["turns"] == 2
     assert result.value["steps"] == (
@@ -166,7 +170,11 @@ def test_react_method_program_enforces_paper_turn_budget_as_method_semantics(tmp
         state_root=tmp_path / "machine",
     )
 
-    assert result.status is MethodRunStatus.SUCCEEDED
+    assert result.status is MethodRunStatus.SUCCEEDED, (
+        result.failure_code,
+        result.failure_phase,
+        result.failure,
+    )
     assert result.value["success"] is False
     assert result.value["turns"] == 49
     assert len(result.value["steps"]) == 49
