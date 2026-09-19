@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flash_vstream_memory",
-  "package_digest": "b5a42d6d8dc68da1af3c221bdb09ba924679fc0694c06f7c1ed2a053015d7d8f",
+  "package_digest": "e3ef23f4521d55e6ad9d6d44db17ff60a503a92a23182866516b4e4a3abf528e",
   "definition_digest": "6fa0fa853853e5740d2554ce5f324317d70ebcd608fdb81ea58b7c31f307f771",
   "source_registry_digest": "7d6fdeedd563fb8fff5cec18bda0051a643425a48a5a9943c6d5cddb34c9f8a9",
   "lifecycle": "protocol_bound",
@@ -137,7 +137,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_flash_vstream_memory_v1.py",
-      "content_sha256": "7297fd5dd4f5db21aedf027eec733478b6b1fb3e1a5e46dcf3f5051c84b646c1"
+      "content_sha256": "8f052874424af7cd4d0cb67f59af3a91a02630430f22cee5aa705b3e41c2f772"
     }
   ]
 }

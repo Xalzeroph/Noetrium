@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "saycan",
-  "package_digest": "38bbb97d749a3e8d5c1a9264d098b4b12cd2ce06f4b6dfdc17f2c85f1618adf3",
+  "package_digest": "6350e604648d9a12d429719c97e59271e22563cfa17c34be0029b628eb0814e5",
   "definition_digest": "e0bb0244f83567804c6b028fcde35bf6ff38a37cc3ab803f13c13f40e1f80ea6",
   "source_registry_digest": "358acfb9456c29c701634acb64fbce6b2a866522c9060ca11b081e7effdeec4f",
   "lifecycle": "protocol_bound",
@@ -99,7 +99,7 @@
       "kind": "method_program",
       "path": "research/reproductions/saycan/program.py",
       "declaration_digest": "75cb4168637e3a919fad3fa969dc86059ce79ad434c28f54fd799d231133a6f5",
-      "content_sha256": "69c33208d3ee995bea320dc7d4649db5dffbc42d20e0cdd296836e7c561dc379"
+      "content_sha256": "8d4a50934bc75eec1d3f0a018995352bef2755d8b3fd4bd5c848d499a77f8d2f"
     },
     {
       "kind": "study",
