@@ -27,6 +27,7 @@ from noetrium_platform.research.execution.workflow.api import (
 
 from .fidelity import (
     VIMA_EVAL_PARTITIONS,
+    VIMA_EXECUTION_SAFETY_LIMIT,
     VIMA_REFERENCE_FIDELITY,
     VIMA_TASKS,
 )
@@ -481,12 +482,14 @@ def build_vima_method_program() -> MethodProgram:
         VIMA_POLICY_AGENT_ID,
         ("prepare_environment",),
         view_handler=_agent_view,
+        max_visits=VIMA_EXECUTION_SAFETY_LIMIT,
     )
     builder.compute(
         "prepare_environment",
         "vima.environment.prepare",
         _prepare_environment,
         ("environment",),
+        max_visits=VIMA_EXECUTION_SAFETY_LIMIT,
     )
     builder.capability(
         "environment",
@@ -495,18 +498,21 @@ def build_vima_method_program() -> MethodProgram:
         ("record_environment",),
         effect_class=EffectClass.RECONCILABLE,
         evidence_obligations=("environment.effect",),
+        max_visits=VIMA_EXECUTION_SAFETY_LIMIT,
     )
     builder.compute(
         "record_environment",
         "vima.environment.record",
         _record_environment,
         ("terminal",),
+        max_visits=VIMA_EXECUTION_SAFETY_LIMIT,
     )
     builder.route(
         "terminal",
         "vima.terminal.route",
         _route_terminal,
         ("policy", "return"),
+        max_visits=VIMA_EXECUTION_SAFETY_LIMIT,
     )
     builder.return_node(
         "return",
