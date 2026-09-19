@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rap_reasoning",
-  "package_digest": "5359ee30dafd9dd7c8a2ed1854da50d6c0b8f1db6636c6ab847dbfc902a7f211",
+  "package_digest": "bb22c8d59d97ae3b487083fb125bd7bc667daa423a0160f4c4c187e7dba9a1cd",
   "definition_digest": "13f6a61afdd115a9593497fad22f6836b078c3ea9777f098b414c2ef18287485",
   "source_registry_digest": "ced15295ec849f883db78704fb7a1e4351e59bd9ff1229c652b243f23abfdff2",
   "lifecycle": "protocol_bound",
@@ -77,7 +77,7 @@
       "kind": "method_program",
       "path": "research/reproductions/rap_reasoning/program.py",
       "declaration_digest": "16761ca8e2a1fa885e92e661eb17bb9f3c2406bf53af198549ea98348a34fcde",
-      "content_sha256": "d5aa183d142e84955f172d3cd5e45899cef9ed4147613a1ba56ce401fd20fda6"
+      "content_sha256": "d933ae6b9e82a828d5d9830511fd26bc1664731e8f6a52d955d9357b53ba0a92"
     },
     {
       "kind": "study",
@@ -109,7 +109,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_rap_method_program_v1.py",
-      "content_sha256": "e1f02d3118e6a014ff5a725c2b9e877bfc26feb1a9605c117d99aba9833c8d7d"
+      "content_sha256": "c4580ed74f49a6109a5bab7f86ba11aeb4120aaa2acc6a0dbd2f173ea69c5972"
     },
     {
       "path": "tests/test_scientific_rap_reproduction_v1.py",
