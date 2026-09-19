@@ -68,6 +68,16 @@
       ]
     },
     {
+      "benchmark_id": "ego4d-goalstep",
+      "title": "Ego4D Goal-Step",
+      "source_uri": "https://github.com/facebookresearch/ego4d-goalstep",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
       "benchmark_id": "egolifeqa",
       "title": "EgoLifeQA",
       "source_uri": "https://huggingface.co/datasets/lmms-lab/EgoLife",

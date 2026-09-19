@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flash_vstream_memory",
-  "package_digest": "e3ef23f4521d55e6ad9d6d44db17ff60a503a92a23182866516b4e4a3abf528e",
-  "definition_digest": "6fa0fa853853e5740d2554ce5f324317d70ebcd608fdb81ea58b7c31f307f771",
+  "package_digest": "be7d29fda80d07fd0cf70ac72d873da34d075e7a9aa51eba7388b424f6390295",
+  "definition_digest": "dfa95056daad131a020784cbf7ae38cf3fb3b20cbde00cc136e2f48f447f2b19",
   "source_registry_digest": "7d6fdeedd563fb8fff5cec18bda0051a643425a48a5a9943c6d5cddb34c9f8a9",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -28,7 +28,9 @@
       "streaming_video_memory"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "egoschema"
+    ],
     "platform_pressure": [
       "artifact/tensor",
       "benchmark/video",
@@ -56,7 +58,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Flash-VStream_Efficient_Real-Time_Understanding_for_Long_Video_Streams_ICCV_2025_paper.html"
     ],
-    "catalog_digest": "6b1b45b8ed89e923e58aafa4c39703a641980315daf9e2bc039eb8fb34ec7a61"
+    "catalog_digest": "d01bdfc6a1dc35bb7b7d139201ff8d2544cfe3db05ba2234ae263119518810b0"
   },
   "source_lanes": [
     {
@@ -100,6 +102,12 @@
   ],
   "assets": [
     {
+      "kind": "benchmark",
+      "path": "research/reproductions/flash_vstream_memory/benchmark.py",
+      "declaration_digest": "cab3cebd7c4a1539af696eebbc83db225b48d34325b8f3e2c65c74adcb19a8d6",
+      "content_sha256": "193a7f5dc61a43a6b46f16fd2cfb79152661a301b4795a90f66b9eb1dd696a60"
+    },
+    {
       "kind": "fidelity",
       "path": "research/reproductions/flash_vstream_memory/fidelity.py",
       "declaration_digest": "728e3896aca7238779f7135cf47ac306028318f8556a47d39cd1e75feba92cf9",
@@ -112,6 +120,12 @@
       "content_sha256": "64fa58b8e5654f99470e07e345d89c61de9dff9748a9d5fa15d2b292cd272102"
     },
     {
+      "kind": "study",
+      "path": "research/reproductions/flash_vstream_memory/study.py",
+      "declaration_digest": "7e49631c462841adedd1d11c3ffff5f218bb68a4eb38cfb7241ab9c6b228a21f",
+      "content_sha256": "ca668f0939da98dc07bb6e1b00025bf4a5dde957839015e6fc7e8b80bfdf8a03"
+    },
+    {
       "kind": "support",
       "path": "research/reproductions/flash_vstream_memory/source.py",
       "declaration_digest": "6d85a9f78287eee171aa70a887e4b7e7810ad852a790e5d06ef8a934cd175009",
@@ -119,8 +133,59 @@
     }
   ],
   "primary_executable": "research/reproductions/flash_vstream_memory/memory.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "flash_vstream_egoschema_main",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 68.2,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "configuration": "CSM+DAM",
+        "visual_tokens": 11520,
+        "source": "ICCV-2025 paper memory-component ablation"
+      },
+      "claim_digest": "9daf912d847c9ce029751349d4ce078e58333fa588bb770c0b54bb0c26d506cd"
+    },
+    {
+      "claim_id": "flash_vstream_mvbench_main",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 65.4,
+      "qualifiers": {
+        "benchmark": "mvbench",
+        "configuration": "CSM+DAM",
+        "visual_tokens": 11520,
+        "source": "ICCV-2025 paper memory-component ablation"
+      },
+      "claim_digest": "ade284007417a4cdaee25b05ebf24fe613a17339c746162edb3a7833dd92f4ae"
+    },
+    {
+      "claim_id": "flash_vstream_video_mme_without_subtitles_main",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 61.2,
+      "qualifiers": {
+        "benchmark": "video-mme",
+        "subtitles": false,
+        "configuration": "CSM+DAM",
+        "visual_tokens": 11520,
+        "source": "ICCV-2025 paper memory-component ablation"
+      },
+      "claim_digest": "74c9e2d0826bd4750033c3ca78b75c92904a67e0b55a6c0ba9d9e1985d38f456"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "flash_vstream_csm_only",
+      "description": "Flash-VStream ablation retaining context memory while removing augmentation memory.",
+      "qualifiers": {
+        "egoschema_accuracy_percent": 66.8,
+        "mvbench_accuracy_percent": 64.0,
+        "video_mme_without_subtitles_accuracy_percent": 60.1,
+        "visual_tokens": 3840,
+        "source": "ICCV-2025 paper memory-component ablation"
+      },
+      "baseline_digest": "26606e008c1d28ce541041953b0eed3c322273fc9ee2c02c0573a07c0c80ecd3"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",
@@ -129,15 +194,15 @@
     }
   ],
   "blockers": [
-    "The current package binds the dual Flash MemoryProgram but has not yet bound the paper inference MethodProgram.",
-    "Matched result reproduction requires content-addressed benchmark video/annotation cuts and the exact released model/checkpoint assets.",
-    "Benchmark and study protocols are not yet bound in this package."
+    "Matched numerical execution requires content-addressed EgoSchema video bytes plus exact released Qwen2-VL/Flash-VStream checkpoint assets.",
+    "The paper also reports MLVU, LVBench, MVBench and Video-MME; those additional benchmark authorities remain to be bound.",
+    "A full end-to-end inference MethodProgram remains to be separated from the already bound dual Flash MemoryProgram."
   ],
   "evidence_refs": [],
   "scientific_tests": [
     {
       "path": "tests/test_scientific_flash_vstream_memory_v1.py",
-      "content_sha256": "8f052874424af7cd4d0cb67f59af3a91a02630430f22cee5aa705b3e41c2f772"
+      "content_sha256": "a41aef0de191acd264f657370090119a89ffe1434ffe21bc013be8ce474658f5"
     }
   ]
 }
