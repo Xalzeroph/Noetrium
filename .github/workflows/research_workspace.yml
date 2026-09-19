@@ -64,6 +64,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[test]"
 
+      - name: Reject source-project design traces from platform implementation
+        run: python scripts/project_design_trace_gate.py
+
       - name: Verify research workspace projections
         run: |
           python scripts/sync_benchmark_manifests.py --check
