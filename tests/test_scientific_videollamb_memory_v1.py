@@ -5,6 +5,14 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineStatus,
     canonical_digest,
 )
+from research.benchmarks.egoschema import (
+    EGOSCHEMA_PUBLIC_COUNT,
+    EGOSCHEMA_PUBLIC_SPLIT,
+    EgoSchemaTaskRecord,
+)
+from research.reproductions.videollamb_memory.benchmark import (
+    build_videollamb_egoschema_public_cut,
+)
 from research.reproductions.videollamb_memory.fidelity import (
     VIDEOLLAMB_REFERENCE_FIDELITY,
 )
@@ -15,6 +23,12 @@ from research.reproductions.videollamb_memory.memory import (
     VideoLLaMBSegmentBridgeResult,
     videollamb_memory_host,
     videollamb_memory_initial_data,
+)
+from research.reproductions.videollamb_memory.study import (
+    VIDEOLLAMB_EGOSCHEMA_CHECKPOINT,
+    VIDEOLLAMB_EGOSCHEMA_NUM_FRAMES,
+    build_videollamb_egoschema_public_study,
+    videollamb_egoschema_trial_protocol,
 )
 
 
@@ -150,3 +164,58 @@ def test_videollamb_iccv2025_fidelity_freezes_recurrent_memory_contract() -> Non
     assert fidelity.videoqa_improvement_points == 4.2
     assert fidelity.egocentric_planning_improvement_points == 2.06
     assert fidelity.source_commit == "962837c5b310559de18b375eaee20561123bb54c"
+
+
+def _egoschema_record(index: int) -> EgoSchemaTaskRecord:
+    return EgoSchemaTaskRecord(
+        q_uid=f"video-{index:04d}",
+        question=f"What happened in video {index}?",
+        options=(
+            f"option-a-{index}",
+            f"option-b-{index}",
+            f"option-c-{index}",
+            f"option-d-{index}",
+            f"option-e-{index}",
+        ),
+        video_content_sha256=canonical_digest({"video": index}),
+        answer_index=index % 5,
+    )
+
+
+def test_videollamb_egoschema_study_binds_paper_era_memory_protocol() -> None:
+    benchmark = build_videollamb_egoschema_public_cut(
+        tuple(_egoschema_record(index) for index in range(EGOSCHEMA_PUBLIC_COUNT)),
+        questions_content_sha256=canonical_digest({"egoschema": "questions"}),
+        public_answers_content_sha256=canonical_digest({"egoschema": "answers"}),
+    )
+    protocol = videollamb_egoschema_trial_protocol(benchmark)
+    study = build_videollamb_egoschema_public_study(benchmark)
+
+    assert len(benchmark.selected_tasks(EGOSCHEMA_PUBLIC_SPLIT)) == 500
+    assert protocol.protocol_id == (
+        "videollamb.iccv2025.egoschema-public.paper-era.v1"
+    )
+    assert study.trial_protocol_identity == protocol
+
+    method = next(
+        row
+        for row in study.binding_requirements.participants
+        if row.role == "recurrent_multimodal_memory_model"
+    )
+    assert method.method_id == "videollamb"
+    assert method.treatment_id == "iccv-2025-paper-era"
+    assert VIDEOLLAMB_EGOSCHEMA_CHECKPOINT == (
+        "llava-7b-ft-rmt1x-lvcn_16_4_poo12_new_loss"
+    )
+    assert VIDEOLLAMB_EGOSCHEMA_NUM_FRAMES == 16
+    assert {
+        row.role for row in study.binding_requirements.model_roles
+    } == {"multimodal"}
+    assert {
+        row.measurement_id for row in study.measurement_protocol.definitions
+    } == {
+        "memory_cache_size",
+        "multiple_choice_accuracy",
+        "processed_segment_count",
+    }
+    assert study.execution_policy.trial_budget.max_model_calls == 1
