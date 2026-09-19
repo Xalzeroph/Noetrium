@@ -170,8 +170,8 @@ def test_videoagent_memory_preserves_source_caption_quirk_and_18_11_localization
         )
     )
     assert localized.status.value == "runnable"
-    assert localized.result["segment_ids"][:2] == (2, 1)
-    assert localized.result["ensemble_scores"][:2] == (
+    assert tuple(localized.result["segment_ids"][:2]) == (2, 1)
+    assert tuple(localized.result["ensemble_scores"][:2]) == (
         18.0 * 1.0 + 11.0 * 0.7,
         18.0 * 0.8 + 11.0 * 1.0,
     )
