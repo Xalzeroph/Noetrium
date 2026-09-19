@@ -20,7 +20,7 @@ from research.benchmarks.vima_bench import (
     VIMA_PARTITION_TASKS,
 )
 
-from .fidelity import VIMA_REFERENCE_FIDELITY
+from .fidelity import VIMA_EXECUTION_SAFETY_LIMIT, VIMA_REFERENCE_FIDELITY
 from .program import VIMA_METHOD_PROGRAM
 from .source import VIMA_BENCH_AUDITED_COMMIT, VIMA_POLICY_AUDITED_COMMIT
 
@@ -124,9 +124,9 @@ def build_vima_icml2023_study(
         seeds=(str(VIMA_CAMERA_READY_EXECUTABLE_SEED),),
         limits=TrialBudget(
             "vima-icml2023-camera-ready-budget",
-            max_steps=512,
-            max_turns=512,
-            max_model_calls=512,
+            max_steps=VIMA_EXECUTION_SAFETY_LIMIT,
+            max_turns=VIMA_EXECUTION_SAFETY_LIMIT,
+            max_model_calls=VIMA_EXECUTION_SAFETY_LIMIT,
             max_working_seconds=1800.0,
         ),
         replay_level=ReplayLevel.OBSERVATIONAL,
