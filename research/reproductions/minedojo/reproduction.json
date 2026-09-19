@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "minedojo",
-  "package_digest": "b2ebfa45f63d6d700422d1b5fee82211b4c86e923b05a9e40423ed03e7b1352c",
+  "package_digest": "f8d95a1bad017fc5405e5aec08c6b123ede31a09d3399b3d13f0939d11f13ebd",
   "definition_digest": "3e7981b1749b7b2a564d33533f9f2d17ad11d66e5e9ee2b4610dc494ce4ae961",
   "source_registry_digest": "4e2bb1c63f4746aac56e56ee71551b01971ab4476cff7f802b1806783b01b3b1",
   "lifecycle": "protocol_bound",
@@ -122,7 +122,7 @@
       "kind": "method_program",
       "path": "research/reproductions/minedojo/program.py",
       "declaration_digest": "421ce9ae94216aa14c9a506f46af015655f801c606d339cec0175fcdff47196c",
-      "content_sha256": "b291d611b3c2ad423d13f9cc43afce424907ff38c272b4f2c691a0706b05ad9e"
+      "content_sha256": "62da26993983e5a79dd7d6e0d7716f3990a5268dec488a0dab9eac5156caf775"
     },
     {
       "kind": "semantics",
@@ -166,7 +166,7 @@
     },
     {
       "path": "tests/test_scientific_minedojo_v1.py",
-      "content_sha256": "b0030c49527489138a6261a6be839ad64f48ff56ad38f2974d681ad944ea7b87"
+      "content_sha256": "8663133a0a35ef58af29b571bd9a8b6c80f26f7370688d5785f6d7d618513e5c"
     }
   ]
 }

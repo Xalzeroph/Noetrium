@@ -1,0 +1,167 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "toolformer",
+  "package_digest": "9cbf6b75ffacc80ef5262d69be38a75ac72f37e512aa53d6a1d1c4b2e0000cd3",
+  "definition_digest": "913b23023b29c18805b8391d37299eb73859057fed35df248a25ff1d2734c24d",
+  "source_registry_digest": "0aa5c4ef466c87b4808d296ec9f3b44ddcff08ee64566c34ac93be4e38815682",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "toolformer",
+    "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+    "paper_uri": "https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html",
+    "year": 2023,
+    "paper_revision": "NeurIPS 2023 final",
+    "identity_digest": "6335d8b0ac59e19ebae37a7c01985ea5538ae8d5175a35060bcbf250f30dc777"
+  },
+  "catalog": {
+    "domains": [
+      "tool-use",
+      "training"
+    ],
+    "families": [
+      "self_supervision",
+      "tool_use",
+      "training"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "toolformer-eval"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "execution",
+      "experimentation/study",
+      "model/request",
+      "participant/capability",
+      "participant/method"
+    ],
+    "method_owned": [
+      "API-aware interrupted decoding policy",
+      "API-call augmented language-model finetuning semantics",
+      "candidate API position and call sampling",
+      "few-shot API-call annotation prompts",
+      "future-token loss based API-call filtering"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "capability execution and effect evidence",
+      "model invocation and immutable model identity",
+      "study and measurement authority",
+      "training artifact lineage when a qualified trainer is bound"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html"
+    ],
+    "catalog_digest": "47f7b2859f1dec5f2dcc6148c96ff88a331056a1eb93b847839f4a2bc2916fcf"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "neurips_2023_final",
+      "kind": "paper_provenance",
+      "venue": "NeurIPS",
+      "year": 2023,
+      "publication_id": "d842425e4bf79ba039352da0f658a906",
+      "publication_uri": "https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html",
+      "revision": "final conference version",
+      "content_sha256": null,
+      "lane_digest": "8181663c65926b5d61d935360fed5957a32481d0c28ee134470410390ff3f168"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/toolformer/fidelity.py",
+      "declaration_digest": "bc4775ad98f70d9afb583098fb4c2f2926d84353a4d7453597e316e671dd36eb",
+      "content_sha256": "cdac517647661e7594b8cd55261cd0024e5ee0863cd15c37e3492e3cf8f6876d"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/toolformer/program.py",
+      "declaration_digest": "793607ea78c4ebef01849f1a71bb95b60b4f9a14ea0045c5269e933ef5d5ade9",
+      "content_sha256": "96061ea771f41004ab10a5bee713a71249d513e94281a861ddac4269a0900719"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/toolformer/study.py",
+      "declaration_digest": "1cac10ba460aa534eadaf628dc161183822f949f944cbe8e650085651e5002ba",
+      "content_sha256": "f1ec6bd32c72ee9647c8bd75b8093c77a6e1f55d835e86053030072ad157541a"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/toolformer/filtering.py",
+      "declaration_digest": "cfb931b3bef959a738866f3d71e7f838b8595034acd1caad9fb493dc2fbc7279",
+      "content_sha256": "dc3057085e768b8d34e8b6c50e0f660642182a93efce134d52daa6b07eed3db0"
+    }
+  ],
+  "primary_executable": "research/reproductions/toolformer/program.py",
+  "reported_results": [
+    {
+      "claim_id": "toolformer_asdiv",
+      "metric_id": "task_success_percent",
+      "value": 40.4,
+      "qualifiers": {
+        "dataset": "ASDiv",
+        "model": "Toolformer"
+      },
+      "claim_digest": "552164532c67428dd82a0f9ece4cf2f8c5b8e786b8f18e6910ece5bcfcc4d8c2"
+    },
+    {
+      "claim_id": "toolformer_svamp",
+      "metric_id": "task_success_percent",
+      "value": 29.4,
+      "qualifiers": {
+        "dataset": "SVAMP",
+        "model": "Toolformer"
+      },
+      "claim_digest": "7ee2e01a9f34fccbaf0c68184c0de4c4c4868d911127a1ca23d8db3b6eacc1b6"
+    },
+    {
+      "claim_id": "toolformer_mawps",
+      "metric_id": "task_success_percent",
+      "value": 44.0,
+      "qualifiers": {
+        "dataset": "MAWPS",
+        "model": "Toolformer"
+      },
+      "claim_digest": "4bded53812bfa62f5adbc29fb2e925c0050c6322a28cb3e799ede836e07f35d7"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "toolformer-disabled",
+      "description": "the same finetuned Toolformer checkpoint with the API token probability forced to zero during decoding",
+      "qualifiers": {
+        "ASDiv": 14.8,
+        "SVAMP": 6.3,
+        "MAWPS": 15.0
+      },
+      "baseline_digest": "ba52722edb4a25a0bf6d4ef10f88deabb6713a3f261d2e2a5de360e8f26ce187"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "Paper inference interrupts one continuous decoding stream when the API result marker is emitted, inserts the external result, and resumes the same generation. The current MethodProgram represents the continuation as a second explicitly bound model invocation so both model-visible cuts remain auditable.",
+      "delta_digest": "65654dfde9e08ca49b20c2d0199b1065a390c232a18c6afc02915613740fa862"
+    },
+    {
+      "kind": "unresolved",
+      "description": "The exact CCNet subset, sampled candidate calls, and finetuned GPT-J Toolformer checkpoint are not yet materialized under immutable Artifact authority; filtering semantics are reproduced but matched training is not claim-ready.",
+      "delta_digest": "32ca9d61a1ca10e7e76ea23c47f7222c2114ee820e1871435745a45e6747a867"
+    }
+  ],
+  "blockers": [
+    "exact paper-era CCNet subset and API-annotated C* bytes are not yet materialized",
+    "the paper-era Toolformer GPT-J finetuned checkpoint is not available as an immutable bound artifact",
+    "historical Atlas, KILT Wikipedia, NLLB/fastText and calendar provider cuts must be frozen for matched execution"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_toolformer_v1.py",
+      "content_sha256": "203a068e6ad2678d3598004c418153d2446d52d3e811250fd46914b4d29ac286"
+    }
+  ]
+}

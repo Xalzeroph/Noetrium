@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "86c389f7047a8c1ec8f96bf67b723d71abc0a7a080a8829d6946de8619d103da",
+          "package_digest": "f22a701245d287d9b650da6008f5526f9ad7cfc5a85845be5cb9308ac1498bde",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -32,7 +32,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/react_alfworld/program.py",
-              "content_sha256": "7e321f2d93a5ba71cfdf59099f48486665ba79b2da5bf8ece5d5fc087b644316"
+              "content_sha256": "7bd1fd76fd1fe23a9d867c849c3704a3b2979e2df3cc238770bf62c4fd31b6df"
             },
             {
               "kind": "semantics",
@@ -66,7 +66,7 @@
             },
             {
               "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
-              "content_sha256": "15277c099e1d8b0aac8de0535a05266dba211cebfa37239d6bed0ac1beb2d0ef"
+              "content_sha256": "ead6ac7361d6b5b45333527395f77b6c2971f2ac00726324695e11c9aebdd24b"
             },
             {
               "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
@@ -81,7 +81,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "8d8f3b997a2a128b2ee29b705e8d5aee389b1db85b53429a0b570c0dafbc4be5",
+          "package_digest": "7588c1d74a091d02ec6d6a41e5160ab3d99e8a325cb6aa4021bf03d0fef26ebb",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -130,7 +130,7 @@
             },
             {
               "path": "tests/test_scientific_self_refine_commongen_method_program_v1.py",
-              "content_sha256": "cb28a34b985d53490c1b02539d354578e2ef4aa748b0402ef42c6deba5559f95"
+              "content_sha256": "8168268016f0497db05db1c0ea34a1ccfaf7bdacbcdbad036d5d942ad8daea3d"
             },
             {
               "path": "tests/test_scientific_self_refine_v1.py",
@@ -335,7 +335,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "775aa928c645f9b37d7c3d3f92aa1953723c058b08354e2473d15c9b46ff84b9",
+          "package_digest": "54a0e7baa771b383c9a7157f5236d0680270ad5b1a9f42ed53f82b84371dcadc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -362,7 +362,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/lats_webshop/study.py",
-              "content_sha256": "c6e5306def741fffadeed191cb592ca505ec5b7b09f2673cfff5172c17b4ce19"
+              "content_sha256": "b9c68d7cedfd36c55d65f3edf58a9826ad5dc25f6c0b12a920590f5d74e0e863"
             },
             {
               "kind": "support",
@@ -400,7 +400,7 @@
             },
             {
               "path": "tests/test_scientific_parallel_lineage_wave1_v1.py",
-              "content_sha256": "6df2c7837e6b47edc1df5cc38386bf5d5553585d3a1d28507f6bd7849d11a552"
+              "content_sha256": "3c869099f90c10f1cb72424126db54cbf21eddb613b5ff1084b7312ed7c4ad17"
             }
           ]
         }
@@ -411,7 +411,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "bdc6b65c4c094ebbcddf8aefbb53f290256448bcf3fd5deb250baa842c2b628c",
+          "package_digest": "934167b0be014f25c4e8e55b1c354bebc7ec04afc9afefec1e3188bef4e6663a",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -467,7 +467,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_qlass_alfworld_v1.py",
-              "content_sha256": "79fece2b32a2ee45ea202094ba373e3e4cc7cb45bb6e902878625b4942567fab"
+              "content_sha256": "8d89aba3aca5cf6de612658e7f4249452b86622d196ad1b99b25b70b306d994e"
             },
             {
               "path": "tests/test_scientific_qlass_method_program_v1.py",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "f86645911c1fc5a58e0b5158d78bbb1a421c05150e2d5c0eb50cb3132caf063f"
+  "projection_digest": "1854c66f707a2b41ecb69afaaa5c5263ce1bea07abf8dbc507ecd3ec677f7f43"
 }

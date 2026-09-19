@@ -1,0 +1,143 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "flash_vstream_memory",
+  "package_digest": "b5a42d6d8dc68da1af3c221bdb09ba924679fc0694c06f7c1ed2a053015d7d8f",
+  "definition_digest": "6fa0fa853853e5740d2554ce5f324317d70ebcd608fdb81ea58b7c31f307f771",
+  "source_registry_digest": "7d6fdeedd563fb8fff5cec18bda0051a643425a48a5a9943c6d5cddb34c9f8a9",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "flash-vstream",
+    "title": "Flash-VStream: Efficient Real-Time Understanding for Long Video Streams",
+    "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Flash-VStream_Efficient_Real-Time_Understanding_for_Long_Video_Streams_ICCV_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "ICCV 2025 camera-ready / official Qwen executable 6a82abfeac43012731610f27946d7ab2e86d6f8c",
+    "identity_digest": "62fd4f4c6bf9ed92de2531bb02057873d8039d8143d4db0e4b9167544f6ec097"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multimodal",
+      "streaming",
+      "video"
+    ],
+    "families": [
+      "dual_flash_memory",
+      "long_video_understanding",
+      "multimodal_memory",
+      "streaming_video_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/tensor",
+      "benchmark/video",
+      "execution/machines/memory",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "augmentation conditioned on context-memory centroids",
+      "augmentation-before-context memory composition",
+      "augmentation-memory high-resolution retrieval",
+      "context-memory temporal compression",
+      "memory-aware rotary-position semantics"
+    ],
+    "platform_owned": [
+      "MemoryMachine journal authority",
+      "benchmark cut identity",
+      "immutable tensor content references",
+      "multimodal model transport",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [
+      "https://github.com/IVGSZ/Flash-VStream"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Flash-VStream_Efficient_Real-Time_Understanding_for_Long_Video_Streams_ICCV_2025_paper.html"
+    ],
+    "catalog_digest": "6b1b45b8ed89e923e58aafa4c39703a641980315daf9e2bc039eb8fb34ec7a61"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iccv_2025_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "ICCV",
+      "year": 2025,
+      "publication_id": "flash-vstream-iccv-2025",
+      "publication_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Flash-VStream_Efficient_Real-Time_Understanding_for_Long_Video_Streams_ICCV_2025_paper.html",
+      "revision": "ICCV 2025 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "45164c10d8721ffd6c62f860d74dfb12fcb04e2df094fcf4af776c2052e9bc3b"
+    },
+    {
+      "lane_id": "official_llava_2024_precursor",
+      "kind": "official_artifact",
+      "repository": "https://github.com/IVGSZ/Flash-VStream",
+      "commit": "f7cccf5286b7849a814f6fca2f225f251ed7adbb",
+      "artifacts": [
+        "flash_vstream/model/compress_functions.py",
+        "flash_vstream/model/vstream_arch.py",
+        "flash_vstream/train/train.py",
+        "scripts/train_and_eval.sh"
+      ],
+      "lane_digest": "723d9b9e4c67733cab39e166cfa0e1602dc5c6b55f19d46677acc158a1e2b113"
+    },
+    {
+      "lane_id": "official_qwen_iccv_2025_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/IVGSZ/Flash-VStream",
+      "commit": "6a82abfeac43012731610f27946d7ab2e86d6f8c",
+      "artifacts": [
+        "Flash-VStream-Qwen/inference_mcq_vqa.py",
+        "Flash-VStream-Qwen/models/compress_functions.py",
+        "Flash-VStream-Qwen/models/flash_memory_constants.py",
+        "Flash-VStream-Qwen/models/vstream_qwen2vl_model.py",
+        "Flash-VStream-Qwen/models/vstream_qwen2vl_processor.py"
+      ],
+      "lane_digest": "8e56264d4650c5bde9072c57b8759dd8d315d728f95da04225b617374a89d6af"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/flash_vstream_memory/fidelity.py",
+      "declaration_digest": "728e3896aca7238779f7135cf47ac306028318f8556a47d39cd1e75feba92cf9",
+      "content_sha256": "629d4a0849fed5eed20eed0796e5f4e53f31e3d34d8a1fdd128a0aec06cd4523"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/flash_vstream_memory/memory.py",
+      "declaration_digest": "4cc0d6c059c38bfc51f087f2df258e590a2376083839516743b790413a7e335e",
+      "content_sha256": "64fa58b8e5654f99470e07e345d89c61de9dff9748a9d5fa15d2b292cd272102"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/flash_vstream_memory/source.py",
+      "declaration_digest": "6d85a9f78287eee171aa70a887e4b7e7810ad852a790e5d06ef8a934cd175009",
+      "content_sha256": "5a77eb04c26af74b71c8495461793e27eaffa90ce872497cca67a47752b3be06"
+    }
+  ],
+  "primary_executable": "research/reproductions/flash_vstream_memory/memory.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The official repository contains a 2024 LLaVA precursor and the 2025 Qwen implementation released with the ICCV version. They remain separate source lanes; the precursor is not treated as the ICCV executable.",
+      "delta_digest": "0e3606dfa30189e16438eb2851c8d018178f6a66b12fdd025ae245b102cd2909"
+    }
+  ],
+  "blockers": [
+    "The current package binds the dual Flash MemoryProgram but has not yet bound the paper inference MethodProgram.",
+    "Matched result reproduction requires content-addressed benchmark video/annotation cuts and the exact released model/checkpoint assets.",
+    "Benchmark and study protocols are not yet bound in this package."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_flash_vstream_memory_v1.py",
+      "content_sha256": "7297fd5dd4f5db21aedf027eec733478b6b1fb3e1a5e46dcf3f5051c84b646c1"
+    }
+  ]
+}

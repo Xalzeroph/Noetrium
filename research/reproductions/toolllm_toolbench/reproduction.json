@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolllm_toolbench",
-  "package_digest": "c72bdcad07f8595ecce0cc515082f90ff5c2aae1c026645836ddac21f6a85d62",
+  "package_digest": "127138175092145cc9b81141248e3fa9c345726d769906c4ed12578629b7e935",
   "definition_digest": "8449a7c44133655ac5d75dd4e55f7fcbe32db8216db6e8c5feb468eb14e39890",
   "source_registry_digest": "87536d5be60f9ec27323a2924c41fbf0380a3f575e43cc044fc3f39779050898",
   "lifecycle": "protocol_bound",
@@ -105,7 +105,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_toolbench_cut_v1.py",
-      "content_sha256": "c67877b153fb8e0df587f992f957dd523f836fe49313984fbe8d2d073b51d14b"
+      "content_sha256": "34504051bb66f89149a741b6923e75fed43d52c239984f023b6614fba8154dcd"
     },
     {
       "path": "tests/test_scientific_toolllm_dfsdt_v1.py",
@@ -117,7 +117,7 @@
     },
     {
       "path": "tests/test_scientific_toolllm_study_v1.py",
-      "content_sha256": "055b537208b97c1ed961d906943b6f0977d94d0748faf6340800f6c540b3c376"
+      "content_sha256": "66adf152411b3a3162151105aaf1e2d5669d4dd8e4119d651ddb67b9ae900417"
     },
     {
       "path": "tests/test_scientific_toolllm_toolbench_v1.py",

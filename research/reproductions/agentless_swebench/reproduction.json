@@ -1,0 +1,151 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "agentless_swebench",
+  "package_digest": "8968e14831654cbc95c1280e161acd76af3d1af1d55ec70e7b905bcf8f843168",
+  "definition_digest": "a54a5de13a8faddd6f3a763667237cb3a13907a9664b7beacdc0f759568b0fc4",
+  "source_registry_digest": "6c3f3a35e76b0138dfbc16be29a802509c86aa537b696a15da6f10d9b8a8dedf",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "agentless",
+    "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+    "paper_uri": "https://conf.researchr.org/details/fse-2025/fse-2025-research-papers/85/Demystifying-LLM-based-Software-Engineering-Agents",
+    "year": 2025,
+    "paper_revision": "FSE 2025 / official Agentless v1.5.0 b150f28465a77a81a7f4776384957a4271f5bd69",
+    "identity_digest": "3628c7867f96479e1c61f75e79fad65a65bd68b7ebc823caaca32e24dd1342d2"
+  },
+  "catalog": {
+    "domains": [
+      "software-engineering"
+    ],
+    "families": [
+      "repair",
+      "software_agent",
+      "validation",
+      "workflow"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "swe-bench"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/software",
+      "evaluation",
+      "execution/workflow",
+      "experimentation/study"
+    ],
+    "method_owned": [
+      "hierarchical file-to-symbol-to-edit localization",
+      "multiple patch candidate sampling",
+      "regression/reproduction-test validation policy",
+      "validation-conditioned patch reranking"
+    ],
+    "platform_owned": [
+      "artifact lineage",
+      "effect evidence",
+      "isolated verifier execution",
+      "model invocation",
+      "software workspace execution",
+      "study expansion"
+    ],
+    "reference_repositories": [
+      "https://github.com/OpenAutoCoder/Agentless"
+    ],
+    "reference_publications": [
+      "https://conf.researchr.org/details/fse-2025/fse-2025-research-papers/85/Demystifying-LLM-based-Software-Engineering-Agents"
+    ],
+    "catalog_digest": "192270cfdb3d177a0211b2d1b4335a2f7ec099fa3286f20cef99fdbaba792d74"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "agentless_v1_5",
+      "kind": "official_executable",
+      "repository": "https://github.com/OpenAutoCoder/Agentless",
+      "commit": "b150f28465a77a81a7f4776384957a4271f5bd69",
+      "artifacts": [
+        "agentless/fl/localize.py",
+        "agentless/repair/repair.py",
+        "agentless/repair/rerank.py",
+        "agentless/test/generate_reproduction_tests.py",
+        "agentless/test/run_tests.py",
+        "agentless/test/select_regression_tests.py"
+      ],
+      "lane_digest": "23d6a9ddb60891cd4a38eae32374acf8595ac63fb1d49f681c727ee95a2076b8"
+    },
+    {
+      "lane_id": "fse_2025_final",
+      "kind": "paper_provenance",
+      "venue": "FSE",
+      "year": 2025,
+      "publication_id": "10.1145/3715754",
+      "publication_uri": "https://conf.researchr.org/details/fse-2025/fse-2025-research-papers/85/Demystifying-LLM-based-Software-Engineering-Agents",
+      "revision": "FSE 2025 research paper",
+      "content_sha256": null,
+      "lane_digest": "ecdbe4b4e65df872215ab96ad528db18fedbbf82499f558da67950e84dff0f6f"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/agentless_swebench/fidelity.py",
+      "declaration_digest": "5a4add58bce2192049f78c935ef361f91f0f26153dba9c441bf775e273427513",
+      "content_sha256": "ded6c73f990f30b368e36c2bcf31f82d1a7bfe31b7eb6905a8b655aa0801eb04"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/agentless_swebench/program.py",
+      "declaration_digest": "376923edfcaced9dfbd6cd1f5220bd98bdaacc41d57934c4bff7e32458cb537b",
+      "content_sha256": "26e5e790a42254ab700f1f4569ab491ea53eae0b8705858988e297ef0eebca4f"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/agentless_swebench/study.py",
+      "declaration_digest": "7a13492a0a96db23163b6a3816773ae352ec79bfcb180a0ec880214e6ca9c479",
+      "content_sha256": "dd7d68da22228fec69e44b761a77595279a07fd86a89ca854a544cb778fde8f4"
+    }
+  ],
+  "primary_executable": "research/reproductions/agentless_swebench/program.py",
+  "reported_results": [
+    {
+      "claim_id": "fse2025_swebench_lite_resolved",
+      "metric_id": "resolved_rate",
+      "value": 0.3267,
+      "qualifiers": {
+        "resolved_instances": "98",
+        "task_count": "300"
+      },
+      "claim_digest": "ae88889318be26d199800223ac398744f41ad5728f150f07a3df12a7ffa82a48"
+    },
+    {
+      "claim_id": "fse2025_average_cost",
+      "metric_id": "average_cost_usd",
+      "value": 0.68,
+      "qualifiers": {
+        "benchmark": "SWE-bench Lite"
+      },
+      "claim_digest": "f41c15cf96137f4eff43e921b1c77238637e93cdfcae905fb6f6881781f11d8c"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "swe-agent",
+      "description": "autonomous software-agent baseline contrasted with the fixed localization-repair-validation workflow",
+      "qualifiers": {},
+      "baseline_digest": "5a5af8d3caee40cc88a9ffee086355b95d8e7b6e37a253b36f6f9bd58319267c"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "matched execution requires immutable paper-era SWE-bench Lite dataset and harness bytes",
+    "historical hosted model service revisions used for the reported FSE numbers are not content-addressable public artifacts",
+    "exact released validation artifacts must be materialized under Artifact/Evidence authority before claim reproduction"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_agentless_method_program_v1.py",
+      "content_sha256": "cd45ccf54064c74f844926d7f7352ad6edcfe91ca74b104f50f671404f3f5bf0"
+    }
+  ]
+}

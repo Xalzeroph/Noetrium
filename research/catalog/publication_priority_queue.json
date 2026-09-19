@@ -2,8 +2,8 @@
   "schema": "noetrium.publication-priority-queue.v1",
   "authority": "generated_from_publication_policy_registry_reproduction_and_pressure_projections",
   "updated_at": "2026-09-19",
-  "method_count": 39,
-  "benchmark_count": 6,
+  "method_count": 42,
+  "benchmark_count": 7,
   "formal_pressure_violation_count": 0,
   "method_queue": [
     {
@@ -45,112 +45,21 @@
       "implementation_state": "active_pressure_gap"
     },
     {
-      "publication_id": "storm",
-      "title": "Assisting in Writing Wikipedia-like Articles From Scratch with Large Language Models",
-      "year": 2024,
-      "venue": "NAACL",
-      "priority_class": "P1_FIELD_LEADING",
-      "priority_order": 1,
-      "method_id": "storm",
-      "packages": [
-        "storm_wiki"
-      ],
-      "lifecycles": [
-        "catalogued"
-      ],
-      "pressure_packages": [
-        "storm_wiki"
-      ],
-      "implementation_state": "active_pressure_gap"
-    },
-    {
-      "publication_id": "videoagent-memory",
-      "title": "VideoAgent: A Memory-augmented Multimodal Agent for Video Understanding",
-      "year": 2024,
-      "venue": "ECCV",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "videoagent-memory",
-      "packages": [
-        "videoagent_memory"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [
-        "videoagent_memory"
-      ],
-      "implementation_state": "active_pressure_gap"
-    },
-    {
-      "publication_id": "webvoyager",
-      "title": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
-      "year": 2024,
-      "venue": "ACL",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "webvoyager",
-      "packages": [
-        "webvoyager"
-      ],
-      "lifecycles": [
-        "catalogued"
-      ],
-      "pressure_packages": [
-        "webvoyager"
-      ],
-      "implementation_state": "active_pressure_gap"
-    },
-    {
-      "publication_id": "generative-agents",
-      "title": "Generative Agents: Interactive Simulacra of Human Behavior",
-      "year": 2023,
-      "venue": "UIST",
-      "priority_class": "P1_FIELD_LEADING",
-      "priority_order": 1,
-      "method_id": "generative-agents",
-      "packages": [
-        "generative_agents_memory"
-      ],
-      "lifecycles": [
-        "catalogued"
-      ],
-      "pressure_packages": [
-        "generative_agents_memory"
-      ],
-      "implementation_state": "active_pressure_gap"
-    },
-    {
-      "publication_id": "hugginggpt",
-      "title": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
-      "year": 2023,
-      "venue": "NeurIPS",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "hugginggpt",
-      "packages": [
-        "hugginggpt"
-      ],
-      "lifecycles": [
-        "catalogued"
-      ],
-      "pressure_packages": [
-        "hugginggpt"
-      ],
-      "implementation_state": "active_pressure_gap"
-    },
-    {
       "publication_id": "agentless",
       "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
       "year": 2025,
       "venue": "FSE",
       "priority_class": "P1_FIELD_LEADING",
       "priority_order": 1,
-      "method_id": null,
-      "packages": [],
-      "lifecycles": [],
+      "method_id": "agentless",
+      "packages": [
+        "agentless_swebench"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
       "pressure_packages": [],
-      "implementation_state": "missing_reproduction"
+      "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
       "publication_id": "agentsquare",
@@ -159,11 +68,32 @@
       "venue": "ICLR",
       "priority_class": "P1_FLAGSHIP",
       "priority_order": 1,
-      "method_id": null,
-      "packages": [],
-      "lifecycles": [],
+      "method_id": "agentsquare",
+      "packages": [
+        "agentsquare"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
       "pressure_packages": [],
-      "implementation_state": "missing_reproduction"
+      "implementation_state": "reproduction_exists_not_active_pressure"
+    },
+    {
+      "publication_id": "flash-vstream",
+      "title": "Flash-VStream: Efficient Real-Time Understanding for Long Video Streams",
+      "year": 2025,
+      "venue": "ICCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "flash-vstream",
+      "packages": [
+        "flash_vstream_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [],
+      "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
       "publication_id": "flow-modularized-agentic-workflow",
@@ -172,11 +102,15 @@
       "venue": "ICLR",
       "priority_class": "P1_FLAGSHIP",
       "priority_order": 1,
-      "method_id": null,
-      "packages": [],
-      "lifecycles": [],
+      "method_id": "flow-modularized-agentic-workflow",
+      "packages": [
+        "flow_modularized_agentic_workflow"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
       "pressure_packages": [],
-      "implementation_state": "missing_reproduction"
+      "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
       "publication_id": "cogagent",
@@ -185,11 +119,15 @@
       "venue": "CVPR",
       "priority_class": "P1_FLAGSHIP",
       "priority_order": 1,
-      "method_id": null,
-      "packages": [],
-      "lifecycles": [],
+      "method_id": "cogagent",
+      "packages": [
+        "cogagent"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
       "pressure_packages": [],
-      "implementation_state": "missing_reproduction"
+      "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
       "publication_id": "seeclick",
@@ -198,24 +136,32 @@
       "venue": "ACL",
       "priority_class": "P1_FLAGSHIP",
       "priority_order": 1,
-      "method_id": null,
-      "packages": [],
-      "lifecycles": [],
+      "method_id": "seeclick",
+      "packages": [
+        "seeclick"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
       "pressure_packages": [],
-      "implementation_state": "missing_reproduction"
+      "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
-      "publication_id": "toolformer",
-      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "publication_id": "code-as-policies",
+      "title": "Code as Policies: Language Model Programs for Embodied Control",
       "year": 2023,
-      "venue": "NeurIPS",
-      "priority_class": "P1_FLAGSHIP",
+      "venue": "ICRA",
+      "priority_class": "P1_FIELD_LEADING",
       "priority_order": 1,
-      "method_id": null,
-      "packages": [],
-      "lifecycles": [],
+      "method_id": "code-as-policies",
+      "packages": [
+        "code_as_policies"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
       "pressure_packages": [],
-      "implementation_state": "missing_reproduction"
+      "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
       "publication_id": "deps-minecraft",
@@ -233,6 +179,42 @@
       ],
       "pressure_packages": [],
       "implementation_state": "reproduction_exists_not_active_pressure"
+    },
+    {
+      "publication_id": "toolformer",
+      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "toolformer",
+      "packages": [
+        "toolformer"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [],
+      "implementation_state": "reproduction_exists_not_active_pressure"
+    },
+    {
+      "publication_id": "worldmm",
+      "title": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
+      "year": 2026,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "worldmm",
+      "packages": [
+        "worldmm_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "worldmm_memory"
+      ],
+      "implementation_state": "pressure_ready"
     },
     {
       "publication_id": "adacm2",
@@ -406,6 +388,25 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "storm",
+      "title": "Assisting in Writing Wikipedia-like Articles From Scratch with Large Language Models",
+      "year": 2024,
+      "venue": "NAACL",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": "storm",
+      "packages": [
+        "storm_wiki"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "storm_wiki"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "swe-agent",
       "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
       "year": 2024,
@@ -444,6 +445,25 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "videoagent-memory",
+      "title": "VideoAgent: A Memory-augmented Multimodal Agent for Video Understanding",
+      "year": 2024,
+      "venue": "ECCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "videoagent-memory",
+      "packages": [
+        "videoagent_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "videoagent_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "voyager",
       "title": "Voyager: An Open-Ended Embodied Agent with Large Language Models",
       "year": 2024,
@@ -463,6 +483,25 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "webvoyager",
+      "title": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
+      "year": 2024,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "webvoyager",
+      "packages": [
+        "webvoyager"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "webvoyager"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "camel",
       "title": "CAMEL: Communicative Agents for Mind Exploration of Large Language Model Society",
       "year": 2023,
@@ -478,6 +517,44 @@
       ],
       "pressure_packages": [
         "camel_role_playing"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "generative-agents",
+      "title": "Generative Agents: Interactive Simulacra of Human Behavior",
+      "year": 2023,
+      "venue": "UIST",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": "generative-agents",
+      "packages": [
+        "generative_agents_memory"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "generative_agents_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "hugginggpt",
+      "title": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "hugginggpt",
+      "packages": [
+        "hugginggpt"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "hugginggpt"
       ],
       "implementation_state": "pressure_ready"
     },
@@ -711,6 +788,16 @@
     }
   ],
   "benchmark_queue": [
+    {
+      "publication_id": "egolifeqa",
+      "title": "EgoLife: Towards Egocentric Life Assistant",
+      "year": 2025,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "benchmark_id": "egolifeqa",
+      "adapter_state": "manifest_present"
+    },
     {
       "publication_id": "osworld",
       "title": "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments",

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lats_webshop",
-  "package_digest": "775aa928c645f9b37d7c3d3f92aa1953723c058b08354e2473d15c9b46ff84b9",
+  "package_digest": "54a0e7baa771b383c9a7157f5236d0680270ad5b1a9f42ed53f82b84371dcadc",
   "definition_digest": "7a088f327c1c536071c3ac8b8117fe0ea744c85f0ac3cc802a48ff3dc4bf64f2",
   "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
   "lifecycle": "protocol_bound",
@@ -84,7 +84,7 @@
       "kind": "study",
       "path": "research/reproductions/lats_webshop/study.py",
       "declaration_digest": "4af48b66163b64c9523672787dc94a839abc3020119df67c93e59877d1c08ec6",
-      "content_sha256": "c6e5306def741fffadeed191cb592ca505ec5b7b09f2673cfff5172c17b4ce19"
+      "content_sha256": "b9c68d7cedfd36c55d65f3edf58a9826ad5dc25f6c0b12a920590f5d74e0e863"
     },
     {
       "kind": "support",
@@ -132,7 +132,7 @@
     },
     {
       "path": "tests/test_scientific_parallel_lineage_wave1_v1.py",
-      "content_sha256": "6df2c7837e6b47edc1df5cc38386bf5d5553585d3a1d28507f6bd7849d11a552"
+      "content_sha256": "3c869099f90c10f1cb72424126db54cbf21eddb613b5ff1084b7312ed7c4ad17"
     }
   ]
 }

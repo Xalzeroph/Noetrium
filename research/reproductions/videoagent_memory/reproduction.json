@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoagent_memory",
-  "package_digest": "efbefedd722c8cf4acacff36fbfe63b2f2d25638aaf33bcd5fa95159d34149f0",
-  "definition_digest": "8f82eee8d9953afbc4f45ce6d759cfe7bddb4a20a1eb222099870f08bd152b3b",
+  "package_digest": "335f60b48d68a8c29bfe32a5c7c2ce64b68529be7c19059a9d5542c8880fa346",
+  "definition_digest": "394daa6673e870f67e94e8ada5d257fb1fb9d30d750b8b1f80df4726e5182c5a",
   "source_registry_digest": "2c4ad0c7f51054bfd49d84df431ced1c43641a42cd98243c8343899ebc7ce56e",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -158,7 +158,7 @@
       "content_sha256": "59778c8525a97aa734334d190ebf0650104e23f4eb99656b588094ba5f277a07"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/videoagent_memory/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [
@@ -177,11 +177,11 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_videoagent_egoschema_v1.py",
-      "content_sha256": "d73b1e6164be16c307519b07a980c6862032f807d0d4ec5adf4365bb31473468"
+      "content_sha256": "ebe6da363022d257772de14b4a263dc963b4c342f9a17e5dedeb1eabe4f143a7"
     },
     {
       "path": "tests/test_scientific_videoagent_memory_v1.py",
-      "content_sha256": "03efa26d8643df42230ae236b7e65890d5ec3a50938abc01d742b0edf28f7b6b"
+      "content_sha256": "719956d342e969e93d4ccbff4d77d8a4ca3c930de9565872cc5a46881b3e301b"
     }
   ]
 }

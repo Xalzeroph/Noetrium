@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "react_alfworld",
-  "package_digest": "86c389f7047a8c1ec8f96bf67b723d71abc0a7a080a8829d6946de8619d103da",
+  "package_digest": "f22a701245d287d9b650da6008f5526f9ad7cfc5a85845be5cb9308ac1498bde",
   "definition_digest": "e5e50ba35607f445533ef9ed7b468ec8dd89a2180d2f353086aca4f22268e0d9",
   "source_registry_digest": "b362f56e91e03c46aecc86932f05c8a6dd1eed18062a14b73ce3d15e8d5c5bde",
   "lifecycle": "protocol_bound",
@@ -78,7 +78,7 @@
       "kind": "method_program",
       "path": "research/reproductions/react_alfworld/program.py",
       "declaration_digest": "0f03adf8741751737af9287a287a135bfb9e586bbb963d90ca40b6a8c89c8d94",
-      "content_sha256": "7e321f2d93a5ba71cfdf59099f48486665ba79b2da5bf8ece5d5fc087b644316"
+      "content_sha256": "7bd1fd76fd1fe23a9d867c849c3704a3b2979e2df3cc238770bf62c4fd31b6df"
     },
     {
       "kind": "semantics",
@@ -360,7 +360,7 @@
     },
     {
       "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
-      "content_sha256": "15277c099e1d8b0aac8de0535a05266dba211cebfa37239d6bed0ac1beb2d0ef"
+      "content_sha256": "ead6ac7361d6b5b45333527395f77b6c2971f2ac00726324695e11c9aebdd24b"
     },
     {
       "path": "tests/test_scientific_react_alfworld_protocol_v1.py",

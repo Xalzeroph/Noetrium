@@ -1,0 +1,173 @@
+{
+  "schema": "noetrium.reproduction.projection.v5",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "worldmm_memory",
+  "package_digest": "a5defa081c7af7e4803042b147555a5834664799af17f4a6fc5f5d7ed73f58f7",
+  "definition_digest": "8f6edee17eefa4d45b18a068e89049aa25f83a4aa129378c563161cb00848ba3",
+  "source_registry_digest": "59fad67df15f1fffd4579cda87465a6feb1607352e4bdf24806f77c92a06dc6e",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "worldmm",
+    "title": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yeo_WorldMM_Dynamic_Multimodal_Memory_Agent_for_Long_Video_Reasoning_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 camera-ready / official initial executable 5a5f779026d51024746e7b3fab7959dd0beedcd7",
+    "identity_digest": "1660043881f20e4e4f6afd79f69eb29100768033f4952d1ba57bc7fe934a831e"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "memory",
+      "multimodal",
+      "video"
+    ],
+    "families": [
+      "agentic_retrieval",
+      "episodic_semantic_visual_memory",
+      "heterogeneous_memory",
+      "long_video_understanding",
+      "multimodal_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "egolifeqa"
+    ],
+    "platform_pressure": [
+      "artifact/content",
+      "benchmark/video",
+      "execution/machines/memory",
+      "execution/workflow",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "HippoRAG candidate retrieval plus LLM multiscale reranking",
+      "cross-facet duplicate suppression",
+      "episodic memory over 30sec/3min/10min/1h temporal scales",
+      "five-round and five-error stopping semantics",
+      "iterative search-or-answer memory routing",
+      "semantic entity-relation graph retrieval with Personalized PageRank",
+      "visual clip similarity and timestamp-range frame retrieval"
+    ],
+    "platform_owned": [
+      "MethodProgram and child-machine composition",
+      "benchmark cut identity",
+      "capability/model transport",
+      "content-addressed multimodal artifacts",
+      "one MemoryMachine journal across heterogeneous memory facets",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [
+      "https://github.com/wgcyeo/WorldMM"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Yeo_WorldMM_Dynamic_Multimodal_Memory_Agent_for_Long_Video_Reasoning_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "837707a1152feb313a27ee3a49a3f613186d84a24a81b25243bbfcb42902dcbc"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2026_final",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "worldmm-cvpr-2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yeo_WorldMM_Dynamic_Multimodal_Memory_Agent_for_Long_Video_Reasoning_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 camera-ready publication",
+      "content_sha256": null,
+      "lane_digest": "a2fbd52d5954eb78e78cae5c9fd1f07127b962f6981571c0da6ad78fe50f4e1a"
+    },
+    {
+      "lane_id": "initial_public_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/wgcyeo/WorldMM",
+      "commit": "5a5f779026d51024746e7b3fab7959dd0beedcd7",
+      "artifacts": [
+        "eval/eval.py",
+        "src/worldmm/llm/templates/memory_reasoning.py",
+        "src/worldmm/llm/templates/multiscale_filter.py",
+        "src/worldmm/memory/episodic/memory.py",
+        "src/worldmm/memory/episodic/multiscale.py",
+        "src/worldmm/memory/memory.py",
+        "src/worldmm/memory/semantic/memory.py",
+        "src/worldmm/memory/semantic/semantic_consolidation.py",
+        "src/worldmm/memory/semantic/semantic_extraction.py",
+        "src/worldmm/memory/visual/memory.py"
+      ],
+      "lane_digest": "181fb4a3a28c41aa02bf567b1c0ba2cdafd620918875f5b395a20290f574feca"
+    },
+    {
+      "lane_id": "semantic_index_repair",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/wgcyeo/WorldMM",
+      "commit": "245faf6ce3309c1c87e205c634af230fdae69c71",
+      "artifacts": [
+        "src/worldmm/memory/semantic/memory.py"
+      ],
+      "lane_digest": "4dd5df0dca41348cc36399f7b1d214f23b85845223a41314404e97c2fd9de869"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/worldmm_memory/benchmark.py",
+      "declaration_digest": "a8329d0d869493d59faa39fd8f4babf7e83f5140476fe253a568f1c5dccea4c4",
+      "content_sha256": "a30d02d686900c3df6dad4e42d51f6023a5ae46565c44db0e49fa2a43d030747"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/worldmm_memory/fidelity.py",
+      "declaration_digest": "8f488fa1e0c67abb8735d5273606653d24bdc04890e95c6a9cc8ec664b69cec9",
+      "content_sha256": "8036c012ad21190e16efd5e4e77e279ad9fd811a5086838b347c3f03beb052ad"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/worldmm_memory/program.py",
+      "declaration_digest": "694d5449c06960b2c03e1523c5de5536207872c8ccc1a89651fffa8a14605724",
+      "content_sha256": "e5ff76b18b37d355b02aaeec15070ba05a7670af34a84dc2bc03a4c3d2516dd3"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/worldmm_memory/memory.py",
+      "declaration_digest": "fd579eee24b1474717507e20ae245ebc29c2231b91c3824c4dd7edfb6def5ac5",
+      "content_sha256": "433e17d18df07772c407bd627d88d7f344bfe8a711a7b5d9c4c81b67a4ab5261"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/worldmm_memory/study.py",
+      "declaration_digest": "fce9ee65a8e1e216ddcef47c38df4d8fc83c409c6d008a51cb7a2ca60db32deb",
+      "content_sha256": "876781ee8cd24faf7058384cd02b5ba08c85347d1cccd8000f4b7ffcdd7146c9"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/worldmm_memory/source.py",
+      "declaration_digest": "a9c810cc0797c0d7197aeb60bf39afe312e5b292753768b68078dca8defbcbc4",
+      "content_sha256": "8a19be477958edff46bbd5da85a5d9b511ace6f09bd0ed4b2ca9fce905f17287"
+    }
+  ],
+  "primary_executable": "research/reproductions/worldmm_memory/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The official repository's initial public executable is frozen as the primary source lane. A later 2025-12-24 commit explicitly repairs semantic-memory indexing; that repair is retained as a separate source lane rather than silently changing the initial executable semantics.",
+      "delta_digest": "bb5b34282ce158fe9db5c161337158bd0665ed230f7ecca45dd19a43f2c1756f"
+    }
+  ],
+  "blockers": [
+    "Matched EgoLifeQA reproduction requires a canonical content-addressed EgoLife/EgoLifeQA data cut, multiscale caption files, semantic consolidation artifacts, and visual embeddings.",
+    "Matched model behavior requires immutable identities for the retrieval and response models used by the evaluated configuration."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_worldmm_egolifeqa_v1.py",
+      "content_sha256": "9732dd04f25753998ce32612b2f52bb7622d8ccd0ae2403e0c31f08ce2589adc"
+    },
+    {
+      "path": "tests/test_scientific_worldmm_memory_v1.py",
+      "content_sha256": "a02c5403a94445704370fd736ec7939ca2bdfe6f644da20736562872e985cf01"
+    }
+  ]
+}

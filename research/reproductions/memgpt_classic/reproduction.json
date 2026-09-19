@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memgpt_classic",
-  "package_digest": "d8869f0f175f72bdef183c75cb94cda39f95a6ea42d0ebd407886b4657baa13e",
+  "package_digest": "523f9c7cb6ab3b21e26a932629be80d0b2da0baac461f07d1b8d08e44f9725c3",
   "definition_digest": "78d4819b2b7b9ef14b6bf80e5d64cc2c88e60f2eed9cc82f5d4dcfed94b04a02",
   "source_registry_digest": "a344ec7fde772c9140ac33832d9b9438b417ea0804035281115501feecff9998",
   "lifecycle": "protocol_bound",
@@ -118,7 +118,7 @@
     },
     {
       "path": "tests/test_scientific_memgpt_memoryarena_protocol_v1.py",
-      "content_sha256": "afeede8bc19efd48c5b1b602b23f4c465f482b057994c3702039c2f9b3eaaf42"
+      "content_sha256": "c14feda37b64a75d4b1380c3947930cb9f45fb8cc32e560c72ad4bb660d46e87"
     }
   ]
 }

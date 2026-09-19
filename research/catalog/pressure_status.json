@@ -2,10 +2,10 @@
   "schema": "noetrium.research-pressure-status.v1",
   "authority": "generated_from_pressure_suite_reproduction_and_benchmark_projections",
   "suite_updated_at": "2026-09-19",
-  "lane_count": 32,
-  "ready_count": 25,
-  "enforced_count": 23,
-  "enforced_ready_count": 22,
+  "lane_count": 33,
+  "ready_count": 31,
+  "enforced_count": 24,
+  "enforced_ready_count": 24,
   "lanes": [
     {
       "package": "adas_meta_agent_search",
@@ -190,47 +190,61 @@
       "package": "generative_agents_memory",
       "lineage": "agent_memory",
       "enforced": false,
-      "lifecycle": "catalogued",
+      "lifecycle": "protocol_bound",
       "asset_kinds": [
         "fidelity",
+        "method_program",
+        "study",
         "support"
       ],
-      "executable_asset_kinds": [],
-      "benchmark_ids": [],
-      "benchmark_packages": [],
-      "scientific_test_count": 1,
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/generative_agents_memory/program.py"
+      },
+      "benchmark_ids": [
+        "generative-agents-smallville"
+      ],
+      "benchmark_packages": [
+        "generative_agents_smallville"
+      ],
+      "scientific_test_count": 2,
       "reported_result_count": 0,
-      "blocker_count": 0,
-      "ready": false,
-      "gaps": [
-        "benchmark_binding_missing",
-        "lifecycle_below_protocol_bound",
-        "missing_asset:study",
-        "missing_executable_program"
-      ]
+      "blocker_count": 1,
+      "ready": true,
+      "gaps": []
     },
     {
       "package": "hugginggpt",
       "lineage": "tool_orchestration",
       "enforced": false,
-      "lifecycle": "catalogued",
+      "lifecycle": "protocol_bound",
       "asset_kinds": [
         "fidelity",
+        "method_program",
+        "study",
         "support"
       ],
-      "executable_asset_kinds": [],
-      "benchmark_ids": [],
-      "benchmark_packages": [],
-      "scientific_test_count": 1,
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/hugginggpt/program.py"
+      },
+      "benchmark_ids": [
+        "hugginggpt-paper-tasks"
+      ],
+      "benchmark_packages": [
+        "hugginggpt_paper_tasks"
+      ],
+      "scientific_test_count": 2,
       "reported_result_count": 0,
-      "blocker_count": 0,
-      "ready": false,
-      "gaps": [
-        "benchmark_binding_missing",
-        "lifecycle_below_protocol_bound",
-        "missing_asset:study",
-        "missing_executable_program"
-      ]
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
     },
     {
       "package": "lats_webshop",
@@ -604,24 +618,31 @@
       "package": "storm_wiki",
       "lineage": "research_agent",
       "enforced": false,
-      "lifecycle": "catalogued",
+      "lifecycle": "protocol_bound",
       "asset_kinds": [
         "fidelity",
+        "method_program",
+        "study",
         "support"
       ],
-      "executable_asset_kinds": [],
-      "benchmark_ids": [],
-      "benchmark_packages": [],
-      "scientific_test_count": 1,
-      "reported_result_count": 0,
-      "blocker_count": 0,
-      "ready": false,
-      "gaps": [
-        "benchmark_binding_missing",
-        "lifecycle_below_protocol_bound",
-        "missing_asset:study",
-        "missing_executable_program"
-      ]
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/storm_wiki/program.py"
+      },
+      "benchmark_ids": [
+        "freshwiki"
+      ],
+      "benchmark_packages": [
+        "freshwiki"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 2,
+      "blocker_count": 4,
+      "ready": true,
+      "gaps": []
     },
     {
       "package": "swe_agent_swebench",
@@ -781,23 +802,30 @@
       "package": "webvoyager",
       "lineage": "multimodal_web_agent",
       "enforced": false,
-      "lifecycle": "catalogued",
+      "lifecycle": "protocol_bound",
       "asset_kinds": [
-        "fidelity"
+        "fidelity",
+        "method_program",
+        "study"
       ],
-      "executable_asset_kinds": [],
-      "benchmark_ids": [],
-      "benchmark_packages": [],
-      "scientific_test_count": 1,
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/webvoyager/program.py"
+      },
+      "benchmark_ids": [
+        "webvoyager"
+      ],
+      "benchmark_packages": [
+        "webvoyager"
+      ],
+      "scientific_test_count": 2,
       "reported_result_count": 0,
-      "blocker_count": 0,
-      "ready": false,
-      "gaps": [
-        "benchmark_binding_missing",
-        "lifecycle_below_protocol_bound",
-        "missing_asset:study",
-        "missing_executable_program"
-      ]
+      "blocker_count": 3,
+      "ready": true,
+      "gaps": []
     },
     {
       "package": "rewind_memory",
@@ -909,6 +937,10 @@
         "method_program",
         "research_program"
       ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/videoagent_memory/program.py"
+      },
       "benchmark_ids": [
         "egoschema"
       ],
@@ -918,10 +950,8 @@
       "scientific_test_count": 2,
       "reported_result_count": 0,
       "blocker_count": 3,
-      "ready": false,
-      "gaps": [
-        "ambiguous_executable_program"
-      ]
+      "ready": true,
+      "gaps": []
     },
     {
       "package": "adacm2_memory",
@@ -951,6 +981,39 @@
       "scientific_test_count": 1,
       "reported_result_count": 0,
       "blocker_count": 3,
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "worldmm_memory",
+      "lineage": "multimodal_dynamic_heterogeneous_memory",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program",
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/worldmm_memory/program.py"
+      },
+      "benchmark_ids": [
+        "egolifeqa"
+      ],
+      "benchmark_packages": [
+        "egolifeqa"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 0,
+      "blocker_count": 2,
       "ready": true,
       "gaps": []
     }

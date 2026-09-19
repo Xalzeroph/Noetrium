@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "self_refine",
-  "package_digest": "8d8f3b997a2a128b2ee29b705e8d5aee389b1db85b53429a0b570c0dafbc4be5",
+  "package_digest": "7588c1d74a091d02ec6d6a41e5160ab3d99e8a325cb6aa4021bf03d0fef26ebb",
   "definition_digest": "703e76e38fc4c0609f8bc2cc31cffec5b23cc5b3498a7f28ba1dfad284c0329f",
   "source_registry_digest": "b3badf805b90ccd708fe9510374f12a0ea4bc3c0df3f1230667c5035820c2ba2",
   "lifecycle": "protocol_bound",
@@ -106,7 +106,7 @@
     },
     {
       "path": "tests/test_scientific_self_refine_commongen_method_program_v1.py",
-      "content_sha256": "cb28a34b985d53490c1b02539d354578e2ef4aa748b0402ef42c6deba5559f95"
+      "content_sha256": "8168268016f0497db05db1c0ea34a1ccfaf7bdacbcdbad036d5d942ad8daea3d"
     },
     {
       "path": "tests/test_scientific_self_refine_v1.py",
