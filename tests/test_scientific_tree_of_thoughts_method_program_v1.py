@@ -58,7 +58,7 @@ def test_tot_game24_method_program_compiles_bfs_into_explicit_model_and_selectio
         state_root=tmp_path / "machine",
     )
 
-    assert result.status is MethodRunStatus.SUCCEEDED
+    assert result.status is MethodRunStatus.SUCCEEDED, result.failure
     assert result.value["depth"] == TREE_OF_THOUGHTS_GAME24_FIDELITY.search_steps == 4
     assert result.value["best_candidate"] == "0000"
     assert result.value["candidates"] == ("0000", "0001", "0002", "0003", "0004")
