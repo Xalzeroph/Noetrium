@@ -75,8 +75,38 @@ REPRODUCTION = ReproductionDefinition(
     ),
     primary_executable='research/reproductions/saycan/program.py',
     reported_results=(
+        ReportedResult(
+            claim_id="saycan_mock_kitchen_plan_success",
+            metric_id="plan_success_rate_percent",
+            value=84.0,
+            qualifiers={
+                "instruction_count": 101,
+                "environment": "mock-kitchen",
+                "human_raters": 3,
+                "source": "CoRL-2022 paper Table 2",
+            },
+        ),
+        ReportedResult(
+            claim_id="saycan_mock_kitchen_execution_success",
+            metric_id="execution_success_rate_percent",
+            value=74.0,
+            qualifiers={
+                "instruction_count": 101,
+                "environment": "mock-kitchen",
+                "human_raters": 3,
+                "source": "CoRL-2022 paper Table 2",
+            },
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="saycan_language_and_affordance_ablations",
+            description=(
+                "Language-only, affordance-only, and related planning "
+                "ablations used in the SayCan paper evaluation."
+            ),
+            qualifiers={"source": "CoRL-2022 paper evaluation"},
+        ),
     ),
     deltas=(
         ReproductionDelta(
