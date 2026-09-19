@@ -5,7 +5,10 @@
     "benchmark_id": "screenspot",
     "title": "ScreenSpot GUI Grounding Benchmark",
     "source_uri": "https://github.com/njucckevin/SeeClick",
-    "environment_kinds": ["gui_grounding"],
-    "modalities": ["image", "text"]
+    "environment_kinds": [],
+    "modalities": [
+      "image",
+      "text"
+    ]
   }
 }
