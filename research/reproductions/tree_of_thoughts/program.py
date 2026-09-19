@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodProgramIdentity
 from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_digest
@@ -34,16 +34,24 @@ def _required_int(state: Mapping[str, JsonValue], key: str) -> int:
 
 
 def _text_tuple(value: JsonValue, field: str) -> tuple[str, ...]:
-    if not isinstance(value, tuple) or not value:
-        raise TypeError(f"Tree of Thoughts {field} must be a non-empty tuple")
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or not value
+    ):
+        raise TypeError(f"Tree of Thoughts {field} must be a non-empty sequence")
     if any(not isinstance(item, str) for item in value):
         raise TypeError(f"Tree of Thoughts {field} must contain text")
-    return value
+    return tuple(value)
 
 
 def _number_tuple(value: JsonValue, field: str) -> tuple[float, ...]:
-    if not isinstance(value, tuple) or not value:
-        raise TypeError(f"Tree of Thoughts {field} must be a non-empty tuple")
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or not value
+    ):
+        raise TypeError(f"Tree of Thoughts {field} must be a non-empty sequence")
     rows: list[float] = []
     for item in value:
         if isinstance(item, bool) or not isinstance(item, (int, float)):
