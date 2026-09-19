@@ -39,7 +39,12 @@ def _profile_for(benchmark: BenchmarkTaskSet) -> AgentSquareBenchmarkProfile:
         raise ValueError(
             "AgentSquare benchmark revision does not match frozen protocol"
         )
-    benchmark.selected_tasks(profile.evaluation_split_id)
+    selected = benchmark.selected_tasks(profile.evaluation_split_id)
+    if len(selected) != profile.expected_evaluation_task_count:
+        raise ValueError(
+            "AgentSquare benchmark cut task cardinality does not match "
+            "the frozen paper evaluation protocol"
+        )
     return profile
 
 
