@@ -1669,6 +1669,50 @@
       "evidence_refs": []
     },
     {
+      "method_id": "providellm",
+      "title": "Streaming VideoLLMs for Real-Time Procedural Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "interleaved_cache",
+        "multimodal_memory",
+        "procedural_video_understanding",
+        "streaming_video_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/dibschat/ProVideLLM"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "providellm_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "artifact/video",
+        "execution/machines/memory",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "DETR-QFormer short-term visual memory",
+        "independent short-term and long-term exits",
+        "single-entry multimodal interleaved FIFO cache",
+        "tau-window duplicate suppression for verbalized observations",
+        "verbalized long-term text memory"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "artifact and evidence identity",
+        "benchmark cut identity",
+        "multimodal provider execution",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
       "method_id": "qlass",
       "title": "QLASS: Boosting Language Agent Inference via Q-Guided Stepwise Search",
       "paper_uri": "https://proceedings.mlr.press/v267/lin25l.html",
