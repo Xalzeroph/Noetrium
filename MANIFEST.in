@@ -1,0 +1,18 @@
+# Noetrium release source distribution boundary.
+#
+# The repository is also used as a temporary research/reproduction workspace.
+# None of that workspace is part of the published platform source distribution.
+
+prune research
+prune benchmarks
+prune docs/research
+prune tests
+
+exclude .github/workflows/research_workspace.yml
+exclude scripts/project_design_trace_gate.py
+exclude scripts/sync_benchmark_manifests.py
+exclude scripts/sync_reproductions.py
+exclude scripts/sync_publication_priority.py
+exclude scripts/sync_research_pressure.py
+exclude scripts/sync_research_program.py
+exclude scripts/sync_lineage_status.py
