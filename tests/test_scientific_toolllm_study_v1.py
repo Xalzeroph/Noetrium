@@ -70,7 +70,7 @@ def test_toolllm_retrieval_study_adds_semantic_capability_and_changes_protocol()
         capabilities,
         retrieval_mode="retrieved-top5",
     )
-    assert oracle.protocol_digest != retrieved.protocol_digest
+    assert oracle.digest() != retrieved.digest()
 
     study = build_toolllm_toolbench_study(
         _benchmark("retrieved-top5"),
