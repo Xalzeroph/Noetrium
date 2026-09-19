@@ -106,19 +106,19 @@ jobs:
         run: python scripts/product_assurance_gate.py --full --skip-architecture --output "$RUNNER_TEMP/product-assurance.json"
 
       - name: Build and qualify installed distributions
-        run: python scripts/release_distribution.py "$RUNNER_TEMP/research-distribution"
+        run: python scripts/release_distribution.py "$RUNNER_TEMP/platform-distribution"
 
       - name: Prepare exact distribution container context
         run: |
           python scripts/prepare_container_context.py \
-            "$RUNNER_TEMP/research-distribution" \
-            "$RUNNER_TEMP/research-container-context" \
+            "$RUNNER_TEMP/platform-distribution" \
+            "$RUNNER_TEMP/platform-container-context" \
             --expected-source-sha "${GITHUB_SHA}"
           python - <<'PY' >> "$GITHUB_ENV"
           import json, os
           from pathlib import Path
           root = Path(os.environ["RUNNER_TEMP"])
-          ctx = json.loads((root / "research-container-context" / "CONTAINER_CONTEXT.json").read_text())
+          ctx = json.loads((root / "platform-container-context" / "CONTAINER_CONTEXT.json").read_text())
           print(f"ROLE06_WHEEL_SHA256={ctx['wheel_sha256']}")
           print(f"ROLE06_DISTRIBUTION_EVIDENCE_SHA256={ctx['distribution_evidence_sha256']}")
           PY
@@ -130,7 +130,7 @@ jobs:
             --build-arg PLATFORM_WHEEL_SHA256="${ROLE06_WHEEL_SHA256}" \
             --build-arg PLATFORM_DISTRIBUTION_EVIDENCE_SHA256="${ROLE06_DISTRIBUTION_EVIDENCE_SHA256}" \
             --tag "noetrium:${GITHUB_SHA}" \
-            "$RUNNER_TEMP/research-container-context"
+            "$RUNNER_TEMP/platform-container-context"
       - name: Verify installed container provenance and lifecycle
         run: |
           python scripts/verify_container_image.py \
@@ -148,6 +148,6 @@ jobs:
           if-no-files-found: error
           path: |
             ${{ runner.temp }}/product-assurance.json
-            ${{ runner.temp }}/research-distribution/**
-            ${{ runner.temp }}/research-container-context/CONTAINER_CONTEXT.json
+            ${{ runner.temp }}/platform-distribution/**
+            ${{ runner.temp }}/platform-container-context/CONTAINER_CONTEXT.json
             ${{ runner.temp }}/container-verification.json
