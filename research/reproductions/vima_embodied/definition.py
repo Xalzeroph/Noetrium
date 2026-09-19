@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -89,8 +91,48 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/vima_embodied/source.py",
         ),
     ),
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="vima_hardest_zero_shot_multiplier",
+            metric_id="task_success_rate_multiplier",
+            value=2.9,
+            qualifiers={
+                "scope": "hardest-zero-shot-generalization",
+                "bound": "up-to",
+                "same_training_data": True,
+                "source": "ICML-2023 abstract",
+            },
+        ),
+        ReportedResult(
+            claim_id="vima_tenfold_less_data_multiplier",
+            metric_id="task_success_rate_multiplier",
+            value=2.7,
+            qualifiers={
+                "training_data_ratio": 0.1,
+                "comparison": "best-competing-variant",
+                "source": "ICML-2023 abstract",
+            },
+        ),
+        ReportedResult(
+            claim_id="vima_expert_trajectory_scale",
+            metric_id="expert_trajectory_count",
+            value=600000,
+            qualifiers={
+                "bound": "greater-than",
+                "source": "ICML-2023 abstract",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="vima_competing_policy_variants",
+            description=(
+                "Alternative robot-policy designs and competing variants in "
+                "the ICML 2023 generalization and data-efficiency comparisons."
+            ),
+            qualifiers={"source": "ICML-2023 paper evaluation"},
+        ),
+    ),
     deltas=(),
     blockers=(
         "A qualified concrete VIMA-Bench embodied simulator adapter is still "
