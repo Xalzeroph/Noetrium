@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -80,8 +82,37 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/steve1_minecraft/program.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="steve1_early_game_completed_tasks",
+            metric_id="robustly_completed_task_count",
+            value=12,
+            qualifiers={
+                "evaluation_task_count": 13,
+                "scope": "early-game-evaluation-suite",
+                "source": "NeurIPS-2023 FMDM workshop paper",
+            },
+        ),
+        ReportedResult(
+            claim_id="steve1_training_cost",
+            metric_id="reported_training_cost_usd",
+            value=60,
+            qualifiers={
+                "wording": "just-$60-to-train",
+                "source": "NeurIPS-2023 FMDM workshop paper",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="steve1_previous_minecraft_instruction_baselines",
+            description=(
+                "Previous open-ended Minecraft instruction-following baselines "
+                "compared in the STEVE-1 paper."
+            ),
+            qualifiers={"source": "NeurIPS-2023 FMDM workshop paper"},
+        ),
+    ),
     deltas=(),
     blockers=(
         "Formal numerical claims require immutable VPT, MineCLIP, STEVE-1 "
