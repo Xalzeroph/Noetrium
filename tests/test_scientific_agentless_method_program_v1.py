@@ -48,5 +48,5 @@ def test_agentless_swebench_study_is_bound_to_generic_swebench_authority() -> No
     assert study.benchmark.benchmark_id == "swe-bench"
     assert study.method.implementation == "agentless-v1.5.0"
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     ) == ("task_resolved", "model_call_count", "validation_count")

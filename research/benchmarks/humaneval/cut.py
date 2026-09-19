@@ -94,7 +94,7 @@ def build_humaneval_task_set(
 
     ordered = tuple(by_index[index] for index in range(HUMANEVAL_TASK_COUNT))
     revision = humaneval_revision(dataset_content_sha256)
-    tasks = tuple(
+    tasks = tuple(sorted((
         TaskDefinition(
             task_id=row.task_id,
             revision_id=revision,
@@ -121,8 +121,8 @@ def build_humaneval_task_set(
             ),
         )
         for row in ordered
-    )
-    task_ids = tuple(row.task_id for row in ordered)
+    ), key=lambda row: row.task_id))
+    task_ids = tuple(row.task_id for row in tasks)
     return BenchmarkTaskSet(
         benchmark_id=HUMANEVAL_BENCHMARK_ID,
         revision_id=revision,

@@ -250,15 +250,17 @@ def lvu_revision(
     )
 
 
-def build_lvu_source(*, dataset_content_sha256: str) -> BenchmarkSourceSpec:
+def build_lvu_source(
+    *,
+    dataset_content_sha256: str,
+    revision_id: str,
+) -> BenchmarkSourceSpec:
     require_sha256(dataset_content_sha256, "LVU dataset content digest")
+    _text(revision_id, "LVU resolved revision_id")
     return BenchmarkSourceSpec(
         source_id=LVU_BENCHMARK_ID,
         kind=BenchmarkSourceKind.HTTP,
-        revision_id=(
-            f"lvu-{LVU_DATASET_VERSION}@{LVU_PAPER_ERA_COMMIT}:"
-            f"dataset:{dataset_content_sha256}"
-        ),
+        revision_id=revision_id,
         locator=LVU_DATASET_URI,
         content_digest=dataset_content_sha256,
         metadata={
@@ -427,15 +429,17 @@ def bind_lvu_cut(
     dataset_content_sha256: str,
     protocol: LVUSelectionProtocol,
 ) -> BenchmarkSourceResolution:
+    task_set = build_lvu_task_set(
+        records,
+        dataset_content_sha256=dataset_content_sha256,
+        protocol=protocol,
+    )
     return BenchmarkSourceResolution(
         source=build_lvu_source(
             dataset_content_sha256=dataset_content_sha256,
+            revision_id=task_set.revision_id,
         ),
-        task_set=build_lvu_task_set(
-            records,
-            dataset_content_sha256=dataset_content_sha256,
-            protocol=protocol,
-        ),
+        task_set=task_set,
     )
 
 
@@ -580,15 +584,17 @@ def bind_lvu_full_video_cut(
     dataset_content_sha256: str,
     protocol: LVUFullVideoProtocol,
 ) -> BenchmarkSourceResolution:
+    task_set = build_lvu_full_video_task_set(
+        records,
+        dataset_content_sha256=dataset_content_sha256,
+        protocol=protocol,
+    )
     return BenchmarkSourceResolution(
         source=build_lvu_source(
             dataset_content_sha256=dataset_content_sha256,
+            revision_id=task_set.revision_id,
         ),
-        task_set=build_lvu_full_video_task_set(
-            records,
-            dataset_content_sha256=dataset_content_sha256,
-            protocol=protocol,
-        ),
+        task_set=task_set,
     )
 
 

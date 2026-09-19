@@ -31,7 +31,7 @@ def test_generative_agents_smallville_cut_and_study_are_protocol_bound() -> None
     assert len(benchmark.tasks) == 1
     study = build_generative_agents_smallville_study(benchmark)
     assert study.benchmark.benchmark_id == GENERATIVE_AGENTS_BENCHMARK_ID
-    assert tuple(row.measurement_id for row in study.measurement_protocol.measurements) == (
+    assert tuple(row.measurement_id for row in study.measurement_protocol.definitions) == (
         "believability_score",
         "reflection_count",
         "model_call_count",

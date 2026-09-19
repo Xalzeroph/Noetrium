@@ -162,14 +162,17 @@ def build_toolbench_task_set(
         )
         for row in ordered
     )
-    splits = tuple(
-        TaskSetSplit(
-            subset,
-            tuple(row.task_id for row in ordered if row.subset_id == subset),
-        )
-        for subset in TOOLBENCH_SUBSETS
-        if any(row.subset_id == subset for row in ordered)
-    )
+    splits = tuple(sorted(
+        (
+            TaskSetSplit(
+                subset,
+                tuple(row.task_id for row in ordered if row.subset_id == subset),
+            )
+            for subset in TOOLBENCH_SUBSETS
+            if any(row.subset_id == subset for row in ordered)
+        ),
+        key=lambda split: split.split_id,
+    ))
     selection_policy_digest = canonical_digest(
         {
             "benchmark_id": TOOLBENCH_BENCHMARK_ID,

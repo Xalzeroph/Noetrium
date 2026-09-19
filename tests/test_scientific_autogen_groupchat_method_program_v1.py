@@ -160,7 +160,7 @@ def test_autogen_multiagentbench_study_freezes_team_and_metrics() -> None:
     assert roles == ("agent1", "agent2", "manager", "user_proxy")
     assert study.benchmark.cut_digest == benchmark.cut_digest
     assert tuple(
-        row.measurement_id for row in study.measurement_protocol.measurements
+        row.measurement_id for row in study.measurement_protocol.definitions
     ) == (
         "interrupt_count",
         "message_count",
