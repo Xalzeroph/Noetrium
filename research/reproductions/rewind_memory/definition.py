@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -83,8 +85,48 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/rewind_memory/memory.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="rewind_moviechat_score_gain",
+            metric_id="score_gain_percent",
+            value=13.0,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "task": "video-question-answering",
+                "source": "CVPR-2025 abstract",
+            },
+        ),
+        ReportedResult(
+            claim_id="rewind_moviechat_accuracy_gain",
+            metric_id="accuracy_gain_percent",
+            value=12.0,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "task": "video-question-answering",
+                "source": "CVPR-2025 abstract",
+            },
+        ),
+        ReportedResult(
+            claim_id="rewind_charades_sta_miou_gain",
+            metric_id="miou_gain_percent",
+            value=8.0,
+            qualifiers={
+                "benchmark": "charades-sta",
+                "task": "temporal-grounding",
+                "source": "CVPR-2025 abstract",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="rewind_paper_long_video_baselines",
+            description=(
+                "Long-video VQA and temporal-grounding baselines used in the "
+                "CVPR 2025 paper comparisons."
+            ),
+            qualifiers={"source": "CVPR-2025 paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("unresolved"),
