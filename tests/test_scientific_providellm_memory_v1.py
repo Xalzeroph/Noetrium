@@ -3,6 +3,11 @@ from __future__ import annotations
 from noetrium_platform.foundation.kernel.kernel import (
     InMemoryMachineJournal,
     MachineStatus,
+    canonical_digest,
+)
+from research.benchmarks.ego4d_goalstep import Ego4DGoalStepVideoRecord
+from research.reproductions.providellm_memory.benchmark import (
+    build_providellm_goalstep_cut,
 )
 from research.reproductions.providellm_memory.fidelity import (
     PROVIDELLM_REFERENCE_FIDELITY,
@@ -11,6 +16,10 @@ from research.reproductions.providellm_memory.memory import (
     PROVIDELLM_MEMORY_PROGRAM,
     providellm_memory_host,
     providellm_memory_initial_data,
+)
+from research.reproductions.providellm_memory.study import (
+    build_providellm_goalstep_val_study,
+    providellm_goalstep_trial_protocol,
 )
 
 
@@ -120,3 +129,40 @@ def test_providellm_iccv2025_fidelity_freezes_cache_contract() -> None:
     assert fidelity.reported_gpu_memory_gb == 2.0
     assert fidelity.official_streaming_interleave_code_released is False
     assert fidelity.official_detr_qformer_code_released is True
+
+
+def _goalstep_record(split_id: str, index: int) -> Ego4DGoalStepVideoRecord:
+    return Ego4DGoalStepVideoRecord(
+        split_id=split_id,
+        video_uid=f"goalstep-{split_id}-{index}",
+        duration_seconds=1800.0 + index,
+        step_segment_count=20 + index,
+        video_content_sha256=canonical_digest(
+            {"goalstep-video": split_id, "index": index}
+        ),
+        annotation_content_sha256=canonical_digest(
+            {"goalstep-annotation": split_id, "index": index}
+        ),
+    )
+
+
+def test_providellm_goalstep_study_binds_streaming_protocol() -> None:
+    benchmark = build_providellm_goalstep_cut(
+        (
+            _goalstep_record("train", 0),
+            _goalstep_record("val", 0),
+            _goalstep_record("val", 1),
+            _goalstep_record("test", 0),
+        ),
+        dataset_content_sha256=canonical_digest({"ego4d-goalstep": "fixture"}),
+    )
+    protocol = providellm_goalstep_trial_protocol(benchmark)
+    study = build_providellm_goalstep_val_study(benchmark)
+
+    assert len(benchmark.selected_tasks("val")) == 2
+    assert protocol.protocol_id == "providellm.iccv2025.ego4d-goalstep-val.v1"
+    assert study.trial_protocol_identity == protocol
+    assert {
+        row.measurement_id for row in study.measurement_protocol.definitions
+    } == {"gpu_memory_gb", "per_frame_map", "streaming_fps"}
+    assert study.execution_policy.trial_budget.max_model_calls == 32768

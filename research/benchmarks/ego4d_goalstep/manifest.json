@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "ego4d_goalstep",
+  "benchmark": {
+    "benchmark_id": "ego4d-goalstep",
+    "title": "Ego4D Goal-Step",
+    "source_uri": "https://github.com/facebookresearch/ego4d-goalstep",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "video"
+    ]
+  }
+}

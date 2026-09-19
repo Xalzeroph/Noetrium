@@ -1,12 +1,28 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel import MachineKind, thaw_json
+from noetrium_platform.foundation.kernel.kernel import (
+    MachineKind,
+    canonical_digest,
+    thaw_json,
+)
+from research.benchmarks.egoschema import (
+    EGOSCHEMA_PUBLIC_COUNT,
+    EGOSCHEMA_PUBLIC_SPLIT,
+    EgoSchemaTaskRecord,
+)
+from research.reproductions.flash_vstream_memory.benchmark import (
+    build_flash_vstream_egoschema_public_cut,
+)
 from research.reproductions.flash_vstream_memory.fidelity import (
     FLASH_VSTREAM_REFERENCE_FIDELITY,
 )
 from research.reproductions.flash_vstream_memory.memory import (
     FLASH_VSTREAM_MEMORY_PROGRAM,
     flash_vstream_memory_operations,
+)
+from research.reproductions.flash_vstream_memory.study import (
+    build_flash_vstream_egoschema_public_study,
+    flash_vstream_egoschema_trial_protocol,
 )
 
 
@@ -85,3 +101,46 @@ def test_flash_vstream_memory_program_has_exact_provider_operations() -> None:
         "flash_vstream.memory.compose",
     )
     assert len({row.implementation_digest for row in operations}) == 3
+
+
+def _egoschema_record(index: int) -> EgoSchemaTaskRecord:
+    return EgoSchemaTaskRecord(
+        q_uid=f"flash-{index:04d}",
+        question=f"What happened in video {index}?",
+        options=(
+            f"option-a-{index}",
+            f"option-b-{index}",
+            f"option-c-{index}",
+            f"option-d-{index}",
+            f"option-e-{index}",
+        ),
+        video_content_sha256=canonical_digest({"video": index}),
+        answer_index=index % 5,
+    )
+
+
+def test_flash_vstream_egoschema_study_binds_dual_memory_protocol() -> None:
+    benchmark = build_flash_vstream_egoschema_public_cut(
+        tuple(_egoschema_record(index) for index in range(EGOSCHEMA_PUBLIC_COUNT)),
+        questions_content_sha256=canonical_digest({"egoschema": "questions"}),
+        public_answers_content_sha256=canonical_digest({"egoschema": "answers"}),
+    )
+    protocol = flash_vstream_egoschema_trial_protocol(
+        benchmark,
+        split_id=EGOSCHEMA_PUBLIC_SPLIT,
+    )
+    study = build_flash_vstream_egoschema_public_study(benchmark)
+
+    assert len(benchmark.selected_tasks(EGOSCHEMA_PUBLIC_SPLIT)) == 500
+    assert protocol.protocol_id == (
+        "flash-vstream.iccv2025.egoschema.public-500.v1"
+    )
+    assert study.trial_protocol_identity == protocol
+    assert {
+        row.measurement_id for row in study.measurement_protocol.definitions
+    } == {
+        "augmentation_memory_slot_count",
+        "context_memory_slot_count",
+        "multiple_choice_accuracy",
+    }
+    assert study.execution_policy.trial_budget.max_model_calls == 1
