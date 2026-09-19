@@ -2534,7 +2534,9 @@
         }
       ],
       "priority": 1,
-      "benchmark_ids": [],
+      "benchmark_ids": [
+        "egoschema"
+      ],
       "platform_pressure": [
         "artifact/tensor",
         "benchmark/video",

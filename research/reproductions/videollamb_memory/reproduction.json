@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videollamb_memory",
-  "package_digest": "d1684448e06991e6b9073ac20e4f6eecf423cf2dde5fd06372b03f938d6c790c",
-  "definition_digest": "3b6c3937af31c94f0080615b31be101bbbe164b99850f342dc6d57d856bddafb",
+  "package_digest": "5e6170b5067284ec5d59d0b68226e642e057741dff54ece97bb9a03d7b823e95",
+  "definition_digest": "7905f2cef700113932d85c8b81ed1e0733f9227d34bc04586257c6cdff725dcd",
   "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -28,7 +28,9 @@
       "streaming_video_memory"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "egoschema"
+    ],
     "platform_pressure": [
       "artifact/tensor",
       "benchmark/video",
@@ -57,7 +59,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html"
     ],
-    "catalog_digest": "951e9a7f608aaf29a933284e2b3623f43215ce5cc0164a960fab0f096276f519"
+    "catalog_digest": "798d698684fbf5adbd2ca39d301c72713a766cf752975db7d35145a0f76ba413"
   },
   "source_lanes": [
     {
@@ -92,6 +94,12 @@
   ],
   "assets": [
     {
+      "kind": "benchmark",
+      "path": "research/reproductions/videollamb_memory/benchmark.py",
+      "declaration_digest": "2c8d5686d014f954ce523701593603fc4c003254993cb9e5de64f53ba2184542",
+      "content_sha256": "43274a5a00da9f3cc56afff09d826e5790672341ad5bf77514c89d51c528098a"
+    },
+    {
       "kind": "fidelity",
       "path": "research/reproductions/videollamb_memory/fidelity.py",
       "declaration_digest": "4b089da090946ea31c27175e9080317d279918526ec77ed325f3c009a6bad12f",
@@ -102,6 +110,12 @@
       "path": "research/reproductions/videollamb_memory/memory.py",
       "declaration_digest": "493715a6f1755df086e9d01a1dfe1056fdb67f1a8672ba3eefc708cad58a776a",
       "content_sha256": "ae2463a0114fda9fc49e4d07066bca4b753118481837484cd15c34779b2f4deb"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/videollamb_memory/study.py",
+      "declaration_digest": "50160674929c0fcb0b1a0905670f152695e6a3c6dd98eea35d0192cee110cfb7",
+      "content_sha256": "e3df7d04bb3f20ec3bc9d93b545903a527d94d7e265b78d99b648931b91335f5"
     },
     {
       "kind": "support",
@@ -115,14 +129,14 @@
   "reference_baselines": [],
   "deltas": [],
   "blockers": [
-    "EgoSchema, NExT-QA, EgoPlan, MVBench and NIAVH benchmark cuts are not yet content-addressed in this package.",
-    "The ICCV Study, released checkpoints and matched-result evidence are not yet bound."
+    "NExT-QA, EgoPlan, MVBench and NIAVH benchmark cuts remain to be content-addressed alongside the bound EgoSchema public cut.",
+    "Matched-result execution still requires the released checkpoint bytes and exact video assets in content-addressed authority."
   ],
   "evidence_refs": [],
   "scientific_tests": [
     {
       "path": "tests/test_scientific_videollamb_memory_v1.py",
-      "content_sha256": "93cc55461fb313bbe24eb6b17fd2f1cd671a25613363ea6e7dea2ba4372bb0ea"
+      "content_sha256": "af01b794ba17f4e3096176b923d3ca1661e1b6bad08b94d1f6f80594bf600b21"
     }
   ]
 }
