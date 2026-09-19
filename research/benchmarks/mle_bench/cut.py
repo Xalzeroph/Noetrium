@@ -266,12 +266,15 @@ def build_mle_bench_task_set(
         source_digest=source_digest,
         task_schema_id=MLE_BENCH_TASK_SCHEMA_ID,
         tasks=tasks,
-        splits=(
-            TaskSetSplit(MLE_BENCH_FULL75_SPLIT, ids(MLE_BENCH_FULL75_COMPETITIONS)),
-            TaskSetSplit(MLE_BENCH_LOW_SPLIT, ids(MLE_BENCH_LOW_COMPETITIONS)),
-            TaskSetSplit(MLE_BENCH_MEDIUM_SPLIT, ids(MLE_BENCH_MEDIUM_COMPETITIONS)),
-            TaskSetSplit(MLE_BENCH_HIGH_SPLIT, ids(MLE_BENCH_HIGH_COMPETITIONS)),
-        ),
+        splits=tuple(sorted(
+            (
+                TaskSetSplit(MLE_BENCH_FULL75_SPLIT, ids(MLE_BENCH_FULL75_COMPETITIONS)),
+                TaskSetSplit(MLE_BENCH_LOW_SPLIT, ids(MLE_BENCH_LOW_COMPETITIONS)),
+                TaskSetSplit(MLE_BENCH_MEDIUM_SPLIT, ids(MLE_BENCH_MEDIUM_COMPETITIONS)),
+                TaskSetSplit(MLE_BENCH_HIGH_SPLIT, ids(MLE_BENCH_HIGH_COMPETITIONS)),
+            ),
+            key=lambda split: split.split_id,
+        )),
         selection_policy_digest=MLE_BENCH_SELECTION_POLICY_DIGEST,
     )
 
