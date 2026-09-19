@@ -75,5 +75,12 @@ jobs:
       - name: Verify research workspace test ownership
         run: python research/tools/test_selection.py check
 
-      - name: Run research workspace tests
+      - name: Run full research workspace tests
+        if: github.event_name != 'pull_request' || github.base_ref == 'main'
         run: python research/tools/test_selection.py run
+
+      - name: Run affected research workspace tests
+        if: github.event_name == 'pull_request' && github.base_ref != 'main'
+        env:
+          RESEARCH_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python research/tools/test_selection.py run-affected "$RESEARCH_BASE_SHA"
