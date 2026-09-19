@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "reflexion_alfworld",
-  "package_digest": "c914bc892051c0b3b0f12c18d54230335fb80770e9ebcca10bc5881a7ac9d6f0",
+  "package_digest": "bc272fab05387e645022d830cba1537951f536601f1575ff14a8f0f4cd60e615",
   "definition_digest": "e8a239b968775a2d7cc1431c1c2d0e8aca3824a0aba6cf51ebf6ec876a034c0b",
   "source_registry_digest": "1ba271f6cca205054b041cb9ec92d5169ccecee597816374a82a9a19a1b0c81e",
   "lifecycle": "protocol_bound",
@@ -79,7 +79,7 @@
       "kind": "method_program",
       "path": "research/reproductions/reflexion_alfworld/program.py",
       "declaration_digest": "10ab90a13e79996c32bdc9c51139c9e164c1ea9a1137f3b0855076494703fd5f",
-      "content_sha256": "3a8f67d0f387908854fbc1beeb13c6afe925d0b6849800fbe52862c8c186e258"
+      "content_sha256": "9e1ae01f7230e9146f64b62c2ef9f9d4e4e21b2e7e09e0b5ed8c79b53a9b5308"
     },
     {
       "kind": "semantics",
