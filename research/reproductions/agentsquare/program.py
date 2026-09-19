@@ -800,11 +800,13 @@ def _finalize(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult
     )
 
 
-def build_agentsquare_alfworld_optimization_program() -> ResearchProgram:
+def build_agentsquare_optimization_program() -> ResearchProgram:
+    """Build the benchmark-neutral AgentSquare modular-search program graph."""
+
     builder = OptimizationProgramBuilder.create(
-        program_id="agentsquare.alfworld.later-official",
+        program_id="agentsquare.modular-search",
         version="1",
-        state_schema="agentsquare.alfworld.optimization-state.v1",
+        state_schema="agentsquare.modular-search-state.v1",
         entrypoint="evolve",
     )
     builder.semantic(
@@ -857,9 +859,14 @@ def build_agentsquare_alfworld_optimization_program() -> ResearchProgram:
     return builder.build()
 
 
-AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM = (
-    build_agentsquare_alfworld_optimization_program()
-)
+def build_agentsquare_alfworld_optimization_program() -> ResearchProgram:
+    """Build the generic graph used by the ALFWorld executable profile."""
+
+    return build_agentsquare_optimization_program()
+
+
+AGENTSQUARE_OPTIMIZATION_PROGRAM = build_agentsquare_optimization_program()
+AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM = AGENTSQUARE_OPTIMIZATION_PROGRAM
 
 
 def _operation_digest(operation: str) -> str:
@@ -867,11 +874,11 @@ def _operation_digest(operation: str) -> str:
         "paper": "AgentSquare",
         "source_commit": AGENTSQUARE_FIDELITY.audited_commit,
         "operation": operation,
-        "implementation_revision": 1,
+        "implementation_revision": 2,
     })
 
 
-def agentsquare_alfworld_operations() -> tuple[ResearchHostOperation, ...]:
+def agentsquare_operations() -> tuple[ResearchHostOperation, ...]:
     rows = (
         ("agentsquare.module.evolve", _evolve),
         ("agentsquare.module.validate", _validate_modules),
@@ -888,20 +895,59 @@ def agentsquare_alfworld_operations() -> tuple[ResearchHostOperation, ...]:
     )
 
 
-def agentsquare_alfworld_host(journal: MachineJournalPort) -> ResearchProgramHost:
+def agentsquare_alfworld_operations() -> tuple[ResearchHostOperation, ...]:
+    return agentsquare_operations()
+
+
+def agentsquare_host(
+    journal: MachineJournalPort,
+    *,
+    profile: AgentSquareSearchProfile,
+) -> ResearchProgramHost:
+    if not isinstance(profile, AgentSquareSearchProfile):
+        raise TypeError("AgentSquare host requires search profile")
     return ResearchProgramHost(
-        host_id="agentsquare.alfworld.optimization",
-        program=AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM,
-        operations=agentsquare_alfworld_operations(),
+        host_id=f"agentsquare.{profile.benchmark_id}.optimization",
+        program=AGENTSQUARE_OPTIMIZATION_PROGRAM,
+        operations=agentsquare_operations(),
         journal=journal,
-        max_steps=256,
+        max_steps=profile.search_iterations * 8 + 16,
         dependency_identity={
             "paper": "AgentSquare",
             "source_commit": AGENTSQUARE_FIDELITY.audited_commit,
             "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
-            "benchmark": "ALFWorld",
+            "search_profile_digest": profile.profile_digest,
+            "benchmark": profile.benchmark_id,
         },
     )
+
+
+def agentsquare_alfworld_host(journal: MachineJournalPort) -> ResearchProgramHost:
+    return agentsquare_host(
+        journal,
+        profile=AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE,
+    )
+
+
+def agentsquare_instance_identity(
+    *,
+    binding: AgentSquareOptimizationBinding,
+    initial_data: JsonObject,
+) -> JsonObject:
+    if not isinstance(binding, AgentSquareOptimizationBinding):
+        raise TypeError("AgentSquare instance identity requires binding")
+    if initial_data.get("search_profile_digest") != binding.profile.profile_digest:
+        raise ValueError(
+            "AgentSquare initial data and binding search profiles differ"
+        )
+    return {
+        "program_digest": AGENTSQUARE_OPTIMIZATION_PROGRAM.program_digest,
+        "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
+        "search_profile_digest": binding.profile.profile_digest,
+        "benchmark_id": binding.profile.benchmark_id,
+        "binding_digest": binding.binding_digest,
+        "initial_data_digest": canonical_digest(initial_data),
+    }
 
 
 def agentsquare_alfworld_instance_identity(
@@ -909,27 +955,38 @@ def agentsquare_alfworld_instance_identity(
     binding: AgentSquareOptimizationBinding,
     initial_data: JsonObject,
 ) -> JsonObject:
-    if not isinstance(binding, AgentSquareOptimizationBinding):
-        raise TypeError("AgentSquare instance identity requires binding")
-    return {
-        "program_digest": AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM.program_digest,
-        "fidelity_digest": AGENTSQUARE_FIDELITY.fidelity_digest,
-        "binding_digest": binding.binding_digest,
-        "initial_data_digest": canonical_digest(initial_data),
-    }
+    if (
+        binding.profile.profile_digest
+        != AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE.profile_digest
+    ):
+        raise ValueError(
+            "ALFWorld instance identity requires ALFWorld search profile"
+        )
+    return agentsquare_instance_identity(
+        binding=binding,
+        initial_data=initial_data,
+    )
 
 
 __all__ = [
+    "AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE",
     "AGENTSQUARE_ALFWORLD_OPTIMIZATION_PROGRAM",
+    "AGENTSQUARE_OPTIMIZATION_PROGRAM",
     "AgentSquareEvaluation",
     "AgentSquareEvaluatorPort",
     "AgentSquareEvolutionProposal",
     "AgentSquareModuleEvaluation",
     "AgentSquareOptimizationBinding",
     "AgentSquareSearchModelPort",
+    "AgentSquareSearchProfile",
     "agentsquare_alfworld_host",
     "agentsquare_alfworld_initial_data",
     "agentsquare_alfworld_instance_identity",
     "agentsquare_alfworld_operations",
+    "agentsquare_host",
+    "agentsquare_initial_data",
+    "agentsquare_instance_identity",
+    "agentsquare_operations",
     "build_agentsquare_alfworld_optimization_program",
+    "build_agentsquare_optimization_program",
 ]
