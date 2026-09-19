@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -86,8 +88,46 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/videollamb_memory/memory.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="videollamb_videoqa_gain",
+            metric_id="average_gain_points",
+            value=4.2,
+            qualifiers={
+                "scope": "four-videoqa-benchmarks",
+                "source": "ICCV-2025 abstract",
+            },
+        ),
+        ReportedResult(
+            claim_id="videollamb_egocentric_planning_gain",
+            metric_id="gain_points",
+            value=2.06,
+            qualifiers={
+                "task": "egocentric-planning",
+                "source": "ICCV-2025 abstract",
+            },
+        ),
+        ReportedResult(
+            claim_id="videollamb_single_a100_max_frames",
+            metric_id="processed_frame_count",
+            value=320,
+            qualifiers={
+                "hardware": "single-NVIDIA-A100",
+                "training_frames": 16,
+                "source": "ICCV-2025 abstract",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="videollamb_paper_video_baselines",
+            description=(
+                "Existing VideoQA and egocentric-planning models used by the "
+                "ICCV 2025 paper to establish the reported gains."
+            ),
+            qualifiers={"source": "ICCV-2025 paper evaluation"},
+        ),
+    ),
     deltas=(),
     blockers=(
         "NExT-QA, EgoPlan, MVBench and NIAVH benchmark cuts remain to be "
