@@ -334,8 +334,18 @@ def test_adacm2_lvu_uses_full_video_projection_and_two_ambiguity_studies() -> No
     eq6_study, eq8_study = build_adacm2_lvu_ambiguity_studies(
         benchmark
     )
-    assert eq6_study.method.treatment == "eq6_literal"
-    assert eq8_study.method.treatment == "eq8_consistent"
+    eq6_method = next(
+        row
+        for row in eq6_study.binding_requirements.participants
+        if row.participant_kind == "method"
+    )
+    eq8_method = next(
+        row
+        for row in eq8_study.binding_requirements.participants
+        if row.participant_kind == "method"
+    )
+    assert eq6_method.treatment_id == "eq6_literal"
+    assert eq8_method.treatment_id == "eq8_consistent"
     assert (
         eq6_study.trial_protocol_identity.configuration_digest
         != eq8_study.trial_protocol_identity.configuration_digest
@@ -343,7 +353,8 @@ def test_adacm2_lvu_uses_full_video_projection_and_two_ambiguity_studies() -> No
     assert eq6_study.benchmark_split_id == "test"
     assert eq8_study.benchmark_split_id == "test"
     names = {
-        row.name for row in eq8_study.measurement_protocol.definitions
+        row.measurement_id
+        for row in eq8_study.measurement_protocol.definitions
     }
     assert {
         "task_accuracy",
