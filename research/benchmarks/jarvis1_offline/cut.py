@@ -244,11 +244,18 @@ def jarvis1_offline_source_digest() -> str:
     })
 
 
+def jarvis1_offline_revision() -> str:
+    return (
+        f"jarvis1-offline@{JARVIS1_OFFLINE_COMMIT}:"
+        f"{jarvis1_offline_source_digest()}"
+    )
+
+
 def build_jarvis1_offline_source() -> BenchmarkSourceSpec:
     return BenchmarkSourceSpec(
         source_id=JARVIS1_OFFLINE_BENCHMARK_ID,
         kind=BenchmarkSourceKind.GIT,
-        revision_id=JARVIS1_OFFLINE_COMMIT,
+        revision_id=jarvis1_offline_revision(),
         locator=JARVIS1_OFFLINE_REPOSITORY,
         content_digest=jarvis1_offline_source_digest(),
         metadata={
@@ -327,10 +334,7 @@ def build_jarvis1_offline_cut() -> BenchmarkTaskSet:
     )
     return BenchmarkTaskSet(
         benchmark_id=JARVIS1_OFFLINE_BENCHMARK_ID,
-        revision_id=(
-            f"jarvis1-offline@{JARVIS1_OFFLINE_COMMIT}:"
-            f"{source.content_digest}"
-        ),
+        revision_id=source.revision_id,
         source_digest=source.content_digest,
         task_schema_id=JARVIS1_TASK_SCHEMA_ID,
         tasks=tasks,
@@ -371,5 +375,6 @@ __all__ = [
     "bind_jarvis1_offline_cut",
     "build_jarvis1_offline_cut",
     "build_jarvis1_offline_source",
+    "jarvis1_offline_revision",
     "jarvis1_offline_source_digest",
 ]
