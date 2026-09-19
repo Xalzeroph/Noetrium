@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -97,8 +99,38 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/videoagent_memory/program.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="videoagent_nextqa_average_gain",
+            metric_id="average_improvement_percent",
+            value=6.6,
+            qualifiers={
+                "benchmark": "next-qa",
+                "scope": "average-over-evaluated-baselines",
+                "source": "ECCV-2024 abstract",
+            },
+        ),
+        ReportedResult(
+            claim_id="videoagent_egoschema_average_gain",
+            metric_id="average_improvement_percent",
+            value=26.0,
+            qualifiers={
+                "benchmark": "egoschema",
+                "scope": "average-over-evaluated-baselines",
+                "source": "ECCV-2024 abstract",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="videoagent_paper_video_baselines",
+            description=(
+                "The long-horizon video-understanding baselines against which "
+                "VideoAgent reports its average NExT-QA and EgoSchema gains."
+            ),
+            qualifiers={"source": "ECCV-2024 paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind.UNRESOLVED,
