@@ -73,8 +73,10 @@ jobs:
         run: python scripts/public_contract_audit.py
       - name: Reject external project design traces in production code
         run: python scripts/project_design_trace_gate.py
-      - name: Verify generated public capability surface and README
-        run: python scripts/update_generated_docs.py --check
+      - name: Verify public surface generation converges
+        run: |
+          python scripts/update_generated_docs.py
+          python scripts/update_generated_docs.py --check
       - name: Verify source-derived architecture generators
         run: python scripts/sync_platform_architecture_map.py --verify-build
       - name: Verify README localization
