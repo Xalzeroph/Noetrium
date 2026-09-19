@@ -1,11 +1,13 @@
 {
-  "schema": "noetrium.research-pressure-status.v1",
+  "schema": "noetrium.research-pressure-status.v2",
   "authority": "generated_from_pressure_suite_reproduction_and_benchmark_projections",
   "suite_updated_at": "2026-09-19",
   "lane_count": 33,
   "ready_count": 33,
   "enforced_count": 24,
   "enforced_ready_count": 24,
+  "claim_ready_count": 0,
+  "enforced_claim_ready_count": 0,
   "lanes": [
     {
       "package": "adas_meta_agent_search",
@@ -32,7 +34,16 @@
       ],
       "scientific_test_count": 3,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 1,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -61,7 +72,17 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 5,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -90,7 +111,16 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 1,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -119,7 +149,16 @@
       ],
       "scientific_test_count": 3,
       "reported_result_count": 4,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -148,7 +187,16 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
       "blocker_count": 1,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -180,7 +228,16 @@
       ],
       "scientific_test_count": 4,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -210,7 +267,16 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 1,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -240,7 +306,17 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -270,7 +346,17 @@
       ],
       "scientific_test_count": 3,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -301,7 +387,16 @@
       ],
       "scientific_test_count": 1,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -330,7 +425,15 @@
       ],
       "scientific_test_count": 4,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 0,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -362,7 +465,17 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -393,7 +506,16 @@
       ],
       "scientific_test_count": 1,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -425,7 +547,17 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
       "blocker_count": 5,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -455,7 +587,17 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 1,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -488,7 +630,16 @@
       ],
       "scientific_test_count": 3,
       "reported_result_count": 8,
+      "reference_baseline_count": 4,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -519,7 +670,17 @@
       ],
       "scientific_test_count": 3,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -550,7 +711,16 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -579,7 +749,16 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
       "blocker_count": 1,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -608,7 +787,16 @@
       ],
       "scientific_test_count": 4,
       "reported_result_count": 0,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
       "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -638,7 +826,16 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
       "blocker_count": 4,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -668,7 +865,16 @@
       ],
       "scientific_test_count": 3,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 1,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -698,7 +904,15 @@
       ],
       "scientific_test_count": 5,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 0,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -728,7 +942,17 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 1,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -759,7 +983,16 @@
       ],
       "scientific_test_count": 3,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -792,7 +1025,17 @@
       ],
       "scientific_test_count": 6,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 4,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -821,7 +1064,16 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -852,7 +1104,17 @@
       ],
       "scientific_test_count": 1,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -885,7 +1147,17 @@
       ],
       "scientific_test_count": 3,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -916,7 +1188,16 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -949,7 +1230,17 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -980,7 +1271,17 @@
       ],
       "scientific_test_count": 1,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     },
@@ -1013,7 +1314,17 @@
       ],
       "scientific_test_count": 2,
       "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
       "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
       "ready": true,
       "gaps": []
     }
