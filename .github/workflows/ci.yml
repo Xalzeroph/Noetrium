@@ -50,6 +50,8 @@ jobs:
           assert noetrium is not None
           assert noetrium_platform is not None
           PY
+      - name: Verify programmable machine persistence
+        run: python -m pytest -q tests/test_programmable_research_machine_v1.py
 
   governance:
     name: governance / contracts / quality

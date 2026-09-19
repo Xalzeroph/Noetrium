@@ -502,9 +502,20 @@ class ProgrammableMachineInterpreter:
         if next_node is not None:
             self.program.node(next_node)
 
+        initial_data_digest = require_sha256(
+            _text(
+                current.get("initial_data_digest"),
+                "research program initial_data_digest",
+            ),
+            "research program initial_data_digest",
+        )
         updated: JsonObject = {
-            "program_digest": self.program.program_digest, "cursor": next_node,
-            "status": accepted.value, "visits": visits, "data": merged,
+            "program_digest": self.program.program_digest,
+            "initial_data_digest": initial_data_digest,
+            "cursor": next_node,
+            "status": accepted.value,
+            "visits": visits,
+            "data": merged,
             "previous_value": result.value,
         }
         return TransitionProposal(
