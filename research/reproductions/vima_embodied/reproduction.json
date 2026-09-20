@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v5",
+  "schema": "noetrium.reproduction.projection.v6",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vima_embodied",
   "package_digest": "68b6279c843394d628e7e28c4363d44d75446f73f7190c48244db37413556f2a",

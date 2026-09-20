@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v5",
+  "schema": "noetrium.reproduction.projection.v6",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimus1_minecraft",
   "package_digest": "d7609bbc9582c4ed9bf26d3f7b8c5ffb8c9b33da0df9445277ded567466ed543",

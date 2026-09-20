@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v5",
+  "schema": "noetrium.reproduction.projection.v6",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flash_vstream_memory",
   "package_digest": "be7d29fda80d07fd0cf70ac72d873da34d075e7a9aa51eba7388b424f6390295",

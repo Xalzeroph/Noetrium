@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v5",
+  "schema": "noetrium.reproduction.projection.v6",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoagent_memory",
   "package_digest": "18fb53bd3dba1a559727294b640f2497e8c5262891dbf7d7a2082071e8f02cce",

@@ -1,11 +1,11 @@
 {
-  "schema": "noetrium.research-pressure-status.v2",
+  "schema": "noetrium.research-pressure-status.v3",
   "authority": "generated_from_pressure_suite_reproduction_and_benchmark_projections",
   "suite_updated_at": "2026-09-20",
-  "lane_count": 37,
-  "ready_count": 37,
-  "enforced_count": 28,
-  "enforced_ready_count": 28,
+  "lane_count": 41,
+  "ready_count": 39,
+  "enforced_count": 32,
+  "enforced_ready_count": 32,
   "claim_ready_count": 0,
   "enforced_claim_ready_count": 0,
   "lanes": [
@@ -36,6 +36,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 1,
       "claim_ready": false,
       "claim_gaps": [
@@ -50,7 +53,7 @@
     {
       "package": "aflow",
       "lineage": "automated_workflow_design",
-      "enforced": false,
+      "enforced": true,
       "lifecycle": "protocol_bound",
       "asset_kinds": [
         "fidelity",
@@ -74,6 +77,9 @@
       "reported_result_count": 3,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 5,
       "claim_ready": false,
       "claim_gaps": [
@@ -112,6 +118,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 1,
       "claim_ready": false,
       "claim_gaps": [
@@ -150,6 +159,9 @@
       "reported_result_count": 4,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -188,6 +200,9 @@
       "reported_result_count": 2,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 1,
       "claim_ready": false,
       "claim_gaps": [
@@ -229,6 +244,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -268,6 +286,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 1,
       "claim_ready": false,
       "claim_gaps": [
@@ -307,6 +328,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -347,6 +371,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -388,6 +415,9 @@
       "reported_result_count": 4,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
@@ -425,6 +455,9 @@
       "reported_result_count": 1,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 0,
       "claim_ready": false,
       "claim_gaps": [
@@ -437,7 +470,7 @@
     {
       "package": "minedojo",
       "lineage": "minecraft_foundational_multimodal_reward",
-      "enforced": false,
+      "enforced": true,
       "lifecycle": "protocol_bound",
       "asset_kinds": [
         "benchmark",
@@ -464,6 +497,9 @@
       "reported_result_count": 5,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -504,6 +540,9 @@
       "reported_result_count": 4,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
@@ -544,6 +583,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 5,
       "claim_ready": false,
       "claim_gaps": [
@@ -584,6 +626,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 1,
       "claim_ready": false,
       "claim_gaps": [
@@ -627,6 +672,9 @@
       "reported_result_count": 8,
       "reference_baseline_count": 4,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -667,6 +715,9 @@
       "reported_result_count": 2,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
@@ -707,6 +758,9 @@
       "reported_result_count": 2,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -744,6 +798,9 @@
       "reported_result_count": 2,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 1,
       "claim_ready": false,
       "claim_gaps": [
@@ -782,6 +839,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
@@ -821,6 +881,9 @@
       "reported_result_count": 2,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 4,
       "claim_ready": false,
       "claim_gaps": [
@@ -860,6 +923,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 1,
       "claim_ready": false,
       "claim_gaps": [
@@ -899,6 +965,9 @@
       "reported_result_count": 6,
       "reference_baseline_count": 2,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 0,
       "claim_ready": false,
       "claim_gaps": [
@@ -936,6 +1005,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 1,
       "claim_ready": false,
       "claim_gaps": [
@@ -977,6 +1049,9 @@
       "reported_result_count": 3,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -1018,6 +1093,9 @@
       "reported_result_count": 3,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 4,
       "claim_ready": false,
       "claim_gaps": [
@@ -1056,6 +1134,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -1096,6 +1177,9 @@
       "reported_result_count": 3,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -1138,6 +1222,9 @@
       "reported_result_count": 0,
       "reference_baseline_count": 0,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -1179,6 +1266,9 @@
       "reported_result_count": 2,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
@@ -1220,6 +1310,9 @@
       "reported_result_count": 2,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -1260,6 +1353,9 @@
       "reported_result_count": 2,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -1302,6 +1398,9 @@
       "reported_result_count": 1,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
@@ -1342,6 +1441,9 @@
       "reported_result_count": 3,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -1382,6 +1484,9 @@
       "reported_result_count": 6,
       "reference_baseline_count": 2,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -1422,6 +1527,9 @@
       "reported_result_count": 3,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
@@ -1461,6 +1569,9 @@
       "reported_result_count": 1,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
       "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
@@ -1471,6 +1582,172 @@
       ],
       "ready": true,
       "gaps": []
+    },
+    {
+      "package": "drvideo",
+      "lineage": "multimodal_document_retrieval_video_agent",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/drvideo/program.py"
+      },
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_packages": [
+        "egoschema"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 8,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "vca_video",
+      "lineage": "multimodal_curiosity_video_agent",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/vca_video/program.py"
+      },
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_packages": [
+        "egoschema"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 6,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "optimus1_minecraft",
+      "lineage": "minecraft_hybrid_multimodal_memory_agent",
+      "enforced": false,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "research_program",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program",
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/optimus1_minecraft/program.py"
+      },
+      "benchmark_ids": [],
+      "benchmark_packages": [],
+      "scientific_test_count": 1,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": false,
+      "gaps": [
+        "benchmark_binding_missing",
+        "missing_asset:study"
+      ]
+    },
+    {
+      "package": "optimus2_minecraft",
+      "lineage": "minecraft_goal_observation_action_policy",
+      "enforced": false,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/optimus2_minecraft/program.py"
+      },
+      "benchmark_ids": [],
+      "benchmark_packages": [],
+      "scientific_test_count": 1,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 4,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": false,
+      "gaps": [
+        "benchmark_binding_missing",
+        "missing_asset:study"
+      ]
     }
   ]
 }
