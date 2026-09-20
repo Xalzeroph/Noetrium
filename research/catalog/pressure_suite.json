@@ -214,12 +214,12 @@
     {
       "package": "optimus1_minecraft",
       "lineage": "minecraft_hybrid_multimodal_memory_agent",
-      "enforced": false
+      "enforced": true
     },
     {
       "package": "optimus2_minecraft",
       "lineage": "minecraft_goal_observation_action_policy",
-      "enforced": false
+      "enforced": true
     }
   ],
   "publication_gate": "peer_reviewed_high_quality_only"

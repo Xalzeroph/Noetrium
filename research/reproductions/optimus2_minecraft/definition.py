@@ -49,7 +49,7 @@ REPRODUCTION = ReproductionDefinition(
             "planner_controller",
         ),
         priority=1,
-        benchmark_ids=(),
+        benchmark_ids=("minecraft-long-horizon-67",),
         platform_pressure=(
             "execution/machines/method",
             "participant/agent",
@@ -78,6 +78,14 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind("fidelity"),
             path="research/reproductions/optimus2_minecraft/fidelity.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("benchmark"),
+            path="research/reproductions/optimus2_minecraft/benchmark.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/optimus2_minecraft/study.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("method_program"),
@@ -156,12 +164,15 @@ REPRODUCTION = ReproductionDefinition(
         "The official repository does not publish executable paper-era code.",
         "MGOA training data and model/checkpoint identities are not yet "
         "content-addressed under reproduction authority.",
-        "Atomic, long-horizon and open-ended evaluation cuts are not yet "
-        "bound as exact BenchmarkTaskSet artifacts.",
+        "Atomic and open-ended evaluation cuts remain unbound; the shared "
+        "67-task long-horizon BenchmarkTaskSet is now exact.",
         "Matched paper-result execution is therefore not claim-ready.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_optimus2_minecraft_v1.py",),
+    scientific_tests=(
+        "tests/test_scientific_optimus2_minecraft_v1.py",
+        "tests/test_scientific_optimus_long_horizon_67_v1.py",
+    ),
 )
 
 

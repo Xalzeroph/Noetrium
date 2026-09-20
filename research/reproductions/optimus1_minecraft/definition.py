@@ -50,7 +50,7 @@ REPRODUCTION = ReproductionDefinition(
             "planning_reflection",
         ),
         priority=1,
-        benchmark_ids=(),
+        benchmark_ids=("minecraft-long-horizon-67",),
         platform_pressure=(
             "execution/machines/memory",
             "execution/machines/method",
@@ -82,6 +82,14 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind("fidelity"),
             path="research/reproductions/optimus1_minecraft/fidelity.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("benchmark"),
+            path="research/reproductions/optimus1_minecraft/benchmark.py",
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/optimus1_minecraft/study.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("research_program"),
@@ -146,15 +154,6 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionDelta(
             kind=ReproductionDeltaKind("unresolved"),
             description=(
-                "The NeurIPS paper describes a 67-task long-horizon benchmark, "
-                "while the paper-era official release contains 73 task rows across "
-                "seven benchmark YAML files. The reproduction does not silently "
-                "treat the release configuration union as the paper result cut."
-            ),
-        ),
-        ReproductionDelta(
-            kind=ReproductionDeltaKind("unresolved"),
-            description=(
                 "The paper analyzes GPT-4V and multiple MLLM backbones, while the "
                 "2024-10 official planning implementation invokes gpt-4o. Model "
                 "identity is therefore kept source-lane-specific until the exact "
@@ -174,15 +173,16 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     blockers=(
-        "The exact 67-task NeurIPS main-result cut must be recovered from the "
-        "paper appendix rather than inferred from the 73 released YAML rows.",
         "Matched execution requires the paper-era MCP-Reborn Minecraft runtime "
         "and STEVE-1 controller checkpoint under content-addressed authority.",
         "The later 2025 full-memory release must not be substituted for the "
         "NeurIPS 2024 paper-era memory state without explicit provenance.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_optimus1_minecraft_v1.py",),
+    scientific_tests=(
+        "tests/test_scientific_optimus1_minecraft_v1.py",
+        "tests/test_scientific_optimus_long_horizon_67_v1.py",
+    ),
 )
 
 
