@@ -49,6 +49,11 @@ SUPPORTED_BENCHMARKS = frozenset(
         "sg3d",
         "goat-bench",
         "minecraft-openha",
+        "gui-odyssey",
+        "guiact",
+        "aitz",
+        "amex",
+        "foreact-real11",
     }
 )
 
