@@ -30,7 +30,7 @@ There is no global runtime registry and no `require("service.name")` escape hatc
 The downstream author implements a `MethodProgram`:
 
 ```python
-from noetrium.contracts.systems.execution__workflow import (
+from noetrium.api import (
     MethodNodeKind,
     MethodNodeResult,
     MethodNodeSpec,
