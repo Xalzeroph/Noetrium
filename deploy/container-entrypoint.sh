@@ -29,13 +29,13 @@ PY
 
 minecraft_doctor() {
   doctor
-  command -v java >/dev/null || die "minecraft provider requires Java"
-  command -v node >/dev/null || die "minecraft provider requires Node"
-  command -v npm >/dev/null || die "minecraft provider requires npm"
+  command -v java >/dev/null || die "minecraft environment requires Java"
+  command -v node >/dev/null || die "minecraft environment requires Node"
+  command -v npm >/dev/null || die "minecraft environment requires npm"
   java -version 2>&1 | head -n 1
   node --version
   npm --version
-  local bridge="${MC_BRIDGE_DIR:-$PACKAGE_ROOT/environment/minecraft/providers/assets/mineflayer_bridge}"
+  local bridge="${MC_BRIDGE_DIR:-$PACKAGE_ROOT/capabilities/environment/minecraft/providers/assets/mineflayer_bridge}"
   test -f "$bridge/package.json" || die "missing Mineflayer bridge package.json"
   echo "minecraft_bridge_root=$bridge"
   MC_BRIDGE_DIR="$bridge" node - <<'JS'
@@ -52,11 +52,11 @@ function packageInfo(name) {
     }
     directory = path.dirname(directory)
   }
-  throw new Error(`package manifest not found for ${name}: entry=${entry}`)
+  throw new Error('package manifest not found for ' + name + ': entry=' + entry)
 }
 for (const name of ['mineflayer', 'mineflayer-pathfinder', 'mineflayer-pvp', 'vec3']) {
   const info = packageInfo(name)
-  console.log(`${name}=${info.version} entry=${info.entry}`)
+  console.log(name + '=' + info.version + ' entry=' + info.entry)
 }
 JS
   local data_dir="${MC_DATA_DIR:-/var/lib/minecraft}"
@@ -65,9 +65,79 @@ JS
   echo "minecraft_data_dir=$data_dir writable=true"
 }
 
+embodied_doctor() {
+  doctor
+  python - <<'PY'
+from ctypes.util import find_library
+required = ("EGL", "GL", "OSMesa")
+missing = [name for name in required if not find_library(name)]
+if missing:
+    raise SystemExit(f"missing embodied graphics libraries: {missing}")
+print("embodied_graphics=EGL,GL,OSMesa")
+PY
+  command -v Xvfb >/dev/null || die "embodied environment requires Xvfb"
+  echo "embodied_headless_display=Xvfb"
+}
+
+gui_doctor() {
+  doctor
+  command -v Xvfb >/dev/null || die "gui environment requires Xvfb"
+  command -v openbox >/dev/null || die "gui environment requires openbox"
+  command -v xdotool >/dev/null || die "gui environment requires xdotool"
+  command -v import >/dev/null || die "gui environment requires ImageMagick import"
+  echo "gui_headless_stack=Xvfb,openbox,xdotool,imagemagick"
+}
+
+web_doctor() {
+  doctor
+  command -v chromium >/dev/null || die "web environment requires Chromium"
+  chromium --version
+  echo "web_browser=chromium"
+}
+
+software_doctor() {
+  doctor
+  for command in git gcc g++ make cmake ninja patch rsync; do
+    command -v "$command" >/dev/null || die "software environment requires $command"
+  done
+  echo "software_toolchain=git,gcc,g++,make,cmake,ninja,patch,rsync"
+}
+
+environment_doctor() {
+  local profile="${1:-${NOETRIUM_ENVIRONMENT_PROFILE:-base}}"
+  case "$profile" in
+    base|text_world)
+      doctor
+      ;;
+    minecraft)
+      minecraft_doctor
+      ;;
+    embodied)
+      embodied_doctor
+      ;;
+    gui)
+      gui_doctor
+      ;;
+    web)
+      web_doctor
+      ;;
+    software)
+      software_doctor
+      ;;
+    *)
+      die "unknown environment profile '$profile'"
+      ;;
+  esac
+  echo "noetrium_environment_profile=$profile ready=true"
+}
+
 case "${1:-doctor}" in
   doctor)
     doctor
+    ;;
+  environment-doctor)
+    shift
+    environment_doctor "${1:-}"
     ;;
   minecraft-doctor)
     minecraft_doctor
@@ -84,6 +154,6 @@ case "${1:-doctor}" in
     exec "$@"
     ;;
   *)
-    die "unknown command '$1' (expected doctor, minecraft-doctor, verify or shell)"
+    die "unknown command '$1' (expected doctor, environment-doctor, minecraft-doctor, verify or shell)"
     ;;
 esac
