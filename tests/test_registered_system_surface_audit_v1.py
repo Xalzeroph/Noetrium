@@ -43,20 +43,26 @@ def test_shape_sync_materializes_missing_standard_planes(tmp_path: Path) -> None
         assert "AUTO-GENERATED registered-system plane stub" in text
 
 
-def test_generated_research_facade_preserves_both_experiment_plan_types() -> None:
-    from noetrium.contracts import research
-    from noetrium.contracts.systems import experimentation__experiment as experiment
-    from noetrium.contracts.systems import experimentation__study as study
+def test_unified_api_requires_explicit_selection_for_true_symbol_collision() -> None:
+    from noetrium import api
 
-    assert research.ExperimentPlan is study.ExperimentPlan
-    assert research.experimentation__study__ExperimentPlan is study.ExperimentPlan
-    assert research.experimentation__experiment__ExperimentPlan is experiment.ExperimentPlan
+    experiment = api.system("experimentation/experiment")
+    study = api.system("experimentation/study")
+
     assert experiment.ExperimentPlan is not study.ExperimentPlan
+    try:
+        api.resolve("ExperimentPlan")
+    except AttributeError as exc:
+        assert "ambiguous Noetrium public symbol" in str(exc)
+    else:
+        raise AssertionError("true public symbol collision must require explicit system selection")
 
 
-def test_previously_hidden_contracts_are_registered_downstream() -> None:
-    from noetrium.contracts.systems.execution import DeploymentStatusIdentity
-    from noetrium.contracts.systems.runtime__process import LocalCommandRunnerPort
+def test_registered_contracts_are_reachable_through_unified_api() -> None:
+    from noetrium import api
+
+    DeploymentStatusIdentity = api.DeploymentStatusIdentity
+    LocalCommandRunnerPort = api.LocalCommandRunnerPort
 
     assert DeploymentStatusIdentity.__module__.startswith("noetrium_platform.research.execution.api")
     assert LocalCommandRunnerPort.__module__.startswith(
