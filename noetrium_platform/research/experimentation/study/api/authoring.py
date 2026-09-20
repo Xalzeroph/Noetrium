@@ -264,4 +264,124 @@ class Study:
         return self._definition
 
 
-__all__ = ["Study", "StudyModel", "StudyParticipant"]
+@dataclass(frozen=True, slots=True)
+class AgentStudySpec:
+    """Common-path authoring for one method-program study.
+
+    This removes participant/model/seed boilerplate without hiding scientific
+    identities. Authors still supply the benchmark, trial protocol and budget;
+    multi-participant or otherwise non-standard studies use Study directly.
+    """
+
+    project_id: str
+    study_id: str
+    method_id: str
+    model: str | StudyModel
+    measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...]
+    treatment: str = "full"
+    participant_kind: str = "paper_method_program"
+    benchmark_ids: tuple[str, ...] = ()
+    capabilities: tuple[str, ...] = ()
+    configurations: tuple[str, ...] = ()
+    model_role: str = "agent_model"
+
+    def __post_init__(self) -> None:
+        _text(self.project_id, "agent study project_id")
+        _text(self.study_id, "agent study study_id")
+        _text(self.method_id, "agent study method_id")
+        _text(self.treatment, "agent study treatment")
+        _text(self.participant_kind, "agent study participant_kind")
+        _text(self.model_role, "agent study model_role")
+        if type(self.model) is str:
+            _text(self.model, "agent study model")
+        elif type(self.model) is not StudyModel:
+            raise TypeError("agent study model must be a requirement id or StudyModel")
+        if type(self.measurements) is MeasurementProtocol:
+            pass
+        elif type(self.measurements) is tuple and self.measurements and all(
+            type(row) is MeasurementDefinition for row in self.measurements
+        ):
+            pass
+        else:
+            raise TypeError(
+                "agent study measurements must be MeasurementProtocol or a non-empty "
+                "tuple of MeasurementDefinition"
+            )
+        object.__setattr__(
+            self,
+            "benchmark_ids",
+            _tokens(self.benchmark_ids, "agent study benchmark ids"),
+        )
+        object.__setattr__(
+            self,
+            "capabilities",
+            _tokens(self.capabilities, "agent study capabilities"),
+        )
+        object.__setattr__(
+            self,
+            "configurations",
+            _tokens(self.configurations, "agent study configurations"),
+        )
+
+    def build(
+        self,
+        benchmark: BenchmarkTaskSet,
+        *,
+        trial: ExperimentTrialProtocolIdentity,
+        limits: TrialBudget,
+        benchmark_split_id: str | None = None,
+        repetitions: int = 1,
+        seeds: tuple[str, ...] | None = None,
+        benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK,
+        experiment_id: str | None = None,
+        workload_id: str = "method-program",
+        trial_provider_requirement_id: str = "trial.method-program",
+        replay_level: ReplayLevel = ReplayLevel.OBSERVATIONAL,
+        repetition_timeout_seconds: float = 3600.0,
+        concurrency_policy: StudyConcurrencyPolicy | None = None,
+        factors: tuple[StudyFactorSpec, ...] = (),
+        revision: ResearchRevision | None = None,
+    ) -> ResearchStudyDefinition:
+        if not isinstance(benchmark, BenchmarkTaskSet):
+            raise TypeError("agent study benchmark must be BenchmarkTaskSet")
+        if self.benchmark_ids and benchmark.benchmark_id not in self.benchmark_ids:
+            raise ValueError(
+                f"benchmark {benchmark.benchmark_id!r} is outside declared agent study "
+                f"benchmarks {self.benchmark_ids!r}"
+            )
+        if seeds is None:
+            if type(repetitions) is not int or repetitions <= 0:
+                raise ValueError("agent study repetitions must be positive")
+            seeds = tuple(f"repetition-{index}" for index in range(repetitions))
+        return Study(
+            project_id=self.project_id,
+            study_id=self.study_id,
+            benchmark=benchmark,
+            benchmark_split_id=benchmark_split_id,
+            method=StudyParticipant(
+                role="agent",
+                kind=self.participant_kind,
+                implementation=self.method_id,
+                treatment=self.treatment,
+                capabilities=self.capabilities,
+                configurations=self.configurations,
+            ),
+            models={self.model_role: self.model},
+            measurements=self.measurements,
+            trial=trial,
+            repetitions=repetitions,
+            seeds=seeds,
+            limits=limits,
+            benchmark_assignment_mode=benchmark_assignment_mode,
+            experiment_id=experiment_id,
+            workload_id=workload_id,
+            trial_provider_requirement_id=trial_provider_requirement_id,
+            replay_level=replay_level,
+            repetition_timeout_seconds=repetition_timeout_seconds,
+            concurrency_policy=concurrency_policy,
+            factors=factors,
+            revision=revision,
+        ).build()
+
+
+__all__ = ["AgentStudySpec", "Study", "StudyModel", "StudyParticipant"]
