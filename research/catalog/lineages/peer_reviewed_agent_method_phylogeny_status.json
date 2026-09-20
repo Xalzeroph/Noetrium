@@ -1858,7 +1858,7 @@
       "reproductions": [
         {
           "package": "swe_agent_swebench",
-          "package_digest": "61dc29dabbbf79b2f0a19dd18acb6707c830e5a76892ae72186b880baa525641",
+          "package_digest": "ce57495dae21ce845641b66378eb91b6fcb65b3ccfa788b21c1b9a4125e8c5d7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -1890,7 +1890,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/swe_agent_swebench/aci.py",
-              "content_sha256": "b60e605eccbce5ecb3a6192331bee0ea4159d8d57d1b35872bd3298d31a74809"
+              "content_sha256": "26a59a0c5ab8d810097c10aefb5e3120c069c426baba27cdb9d36c3b61b8cd56"
             },
             {
               "kind": "support",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "e80dfa1025297659b22ef2b33a0a8ac3b7bda28cb9b3816d58d62612ae5a970f"
+  "projection_digest": "cf93bf05efa3cd70d9948a58bede7f025e26c9218f533ff42a41de3ff01a1c2f"
 }
