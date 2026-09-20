@@ -220,7 +220,7 @@ noetrium-architecture-gate
 python scripts/check_readme_i18n.py
 ```
 
-O código downstream importa contracts estáveis e componentes reutilizáveis de `noetrium`; não trate `noetrium_platform` como API de extensão do projeto. Para gerar um esqueleto de projeto author-first, use `noetrium project create <project-id> <destination> --version <version>`, execute `noetrium project doctor --project <destination>` e `noetrium project test --project <destination>`, e só então adicione seus próprios providers ou methods.
+O código downstream importa contracts estáveis e componentes reutilizáveis de `noetrium`; não trate `noetrium_platform` como API de extensão do projeto. Para gerar um esqueleto de projeto author-first, use `noetrium project create <project-id>`, execute `noetrium project doctor --project <destination>` e `noetrium project test --project <destination>`, e só então adicione seus próprios providers ou methods.
 
 <!-- readme-section:containers -->
 
