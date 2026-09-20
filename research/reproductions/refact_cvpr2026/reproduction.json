@@ -1,0 +1,121 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "refact_cvpr2026",
+  "package_digest": "163c964af78b6304dc3c08454ff1977bc1d79e333fe507a82010a93a965bf627",
+  "definition_digest": "17ccb06aaaec7e404dbb2a4240a2130442edffedeb6e20ae336fe731e6c32be0",
+  "source_registry_digest": "53720c064b39a3602333deb72b1dc6075b6c3cae6594bfa084990681eb67baff",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "refact_cvpr2026",
+    "title": "ReFAct: Empowering Multimodal Web Agents with Visual and Context Focusing",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_ReFAct_Empowering_Multimodal_Web_Agents_with_Visual_and_Context_Focusing_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "0504b7cb70d5e45a28cbb1d16f0b9ae54aaff40d4b1a62eec20b4b3eed4b3f17"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "multimodal-web-agent"
+    ],
+    "families": [
+      "active-perception",
+      "context-management",
+      "memory",
+      "multimodal-web-agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "groundedvqa"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Actively ground and filter visual information relevant to the current reasoning step.",
+      "Execute the next web-search or navigation action.",
+      "Observe new multimodal evidence and update the working context.",
+      "Reason over the current multimodal web-search state.",
+      "Use external-memory Defocus/Refocus operations to control retained context density."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_ReFAct_Empowering_Multimodal_Web_Agents_with_Visual_and_Context_Focusing_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "64e66b88c6e250f99342944fbe9a153cb9bc1a954b261bc3b31cb7922bd213c6"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Wu_ReFAct_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_ReFAct_Empowering_Multimodal_Web_Agents_with_Visual_and_Context_Focusing_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "e08b3e3ba5e5cd533f8579f4e0377926cf452f3a975efccdc37abb5d201a8ce2"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/refact_cvpr2026/benchmark.py",
+      "declaration_digest": "3710031ce6834b9db838324bf40bc5a975d742acb1e223a716d79d6c0af42674",
+      "content_sha256": "9faad8ac83f10395a4bc1c27d9e2746ecb4a222f3716a605ffcfc1fb78d7cc86"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/refact_cvpr2026/program.py",
+      "declaration_digest": "799eebcbcd1c6509a675ec9f0bd40c1139e3ded70bc34e676d8d5b31bc328bd5",
+      "content_sha256": "6adc30ec427cbc62a8443ef75d026971a50bcba6621c773738ee48281f2e3bf5"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/refact_cvpr2026/study.py",
+      "declaration_digest": "aeb827d5fe742ce34b91fa9586eb4d37bf08cdad39bdd6784450f380eb875645",
+      "content_sha256": "73d4903dcab1a251d2defceeaf2adbcc1a7eb55e90bb0848ad4aa2c7e5cc1e03"
+    }
+  ],
+  "primary_executable": "research/reproductions/refact_cvpr2026/program.py",
+  "reported_results": [],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "base multimodal web-search agent",
+      "qualifiers": {},
+      "baseline_digest": "fca5558c7b7c7165d3bb1a8e8f9baf79cf5ac1e871f26779bfc9b765357fd70f"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "final-paper web-agent baselines",
+      "qualifiers": {},
+      "baseline_digest": "1c44bd73c942b506906b8768bb7d652059870b99f4d203a9790babeef222320c"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires the released GroundedVQA cut, reproducible web state, prompts/model snapshot and grounding implementation.",
+    "Final quantitative claims require paper-table extraction plus real multimodal web execution receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "mm_mem_acl2026",
+  "package_digest": "20517cb738da4a688a4328f1b2f092955aa73becd35c3528237727f393a618ad",
+  "definition_digest": "5b10e22ad22b8e845c81e1c17f4862c729be9d28ba738711819f2cf468ac9607",
+  "source_registry_digest": "23068ada425dff308cddf569cf3d93ed1d222dcfaa14899dd001f70f66d8e0bb",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "mm_mem_acl2026",
+    "title": "From Verbatim to Gist: Distilling Pyramidal Multimodal Memory via Semantic Information Bottleneck for Long-Horizon Video Agents",
+    "paper_uri": "https://aclanthology.org/2026.acl-long.533/",
+    "year": 2026,
+    "paper_revision": "ACL 2026 final proceedings",
+    "identity_digest": "0de0e0f5b842d63a9ea9bfb11c142de92077999e5498ea8da5ccdfaf7a9a48b3"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "multimodal-memory"
+    ],
+    "families": [
+      "long-horizon",
+      "multimodal-memory",
+      "reinforcement-learning",
+      "video-agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "hd-epic",
+      "mlvu",
+      "video-mme",
+      "vstream-qa"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Answer the video query from retrieved multimodal memory.",
+      "Choose ADD_NEW, MERGE, or DISCARD under the Semantic Information Bottleneck objective.",
+      "Compress episodic evidence into high-level symbolic gist schemas.",
+      "Distill sensory traces into an episodic stream while preserving task-relevant evidence.",
+      "Encode incoming visual evidence into fine-grained sensory traces.",
+      "Retrieve memory top-down using entropy-driven adaptive selection."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/EliSpectre/MM-Mem"
+    ],
+    "reference_publications": [
+      "https://aclanthology.org/2026.acl-long.533/"
+    ],
+    "catalog_digest": "a33cf26eb42d8c7ec1466c855fc2fd2f397442023fc12431fa0d5625ca272e17"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2026,
+      "publication_id": "2026.acl-long.533",
+      "publication_uri": "https://aclanthology.org/2026.acl-long.533/",
+      "revision": "ACL 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "004209ee03d4031402e00dd4f4cb84efb40133acb8e2c914593c7abe4c81f400"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/EliSpectre/MM-Mem",
+      "commit": "7a5e214c14dd5d9c4bb9e2fca7ae12948d49b4e8",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "cc8e71fe9350afeb289dd1a72c29cf7c1152c82bf783248d0c79b048a64d6fdc"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/mm_mem_acl2026/benchmark.py",
+      "declaration_digest": "add48f05c8eec0c32b2b69a60a0b34ffaca50586c93b27d603f484dd818b4df7",
+      "content_sha256": "490fd1758b2d1c9631a16fdf3b1e549afc9f060149d0b0007438a820450acbc2"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/mm_mem_acl2026/program.py",
+      "declaration_digest": "13b50f45093f6592223459bf4ae722e12f9163911c864157e977af343cccc01a",
+      "content_sha256": "9d139fd564cccada5d6fffe701b345d39c83c6f2aa847939ddc7b6a3622358bb"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/mm_mem_acl2026/study.py",
+      "declaration_digest": "a53de3191abb026686688a125f722d615e58dae3f1b79bf94caaccbbb49e4bba",
+      "content_sha256": "a54dc253b464e591bb8ec70d8975accdf4a623bda4a5dd80dbb5ee9c27038681"
+    }
+  ],
+  "primary_executable": "research/reproductions/mm_mem_acl2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "mm_mem_videomme_subtitles",
+      "metric_id": "qa_accuracy",
+      "value": 78.1,
+      "qualifiers": {
+        "benchmark": "Video-MME",
+        "setting": "with subtitles",
+        "source": "ACL 2026 paper ablation/main results"
+      },
+      "claim_digest": "9be49515951abe56a10f9380207e576a288416d8d1488442a8cfec8ece422c28"
+    },
+    {
+      "claim_id": "mm_mem_vstream_ego",
+      "metric_id": "qa_accuracy",
+      "value": 62.5,
+      "qualifiers": {
+        "benchmark": "VStream-QA-Ego",
+        "source": "ACL 2026 paper"
+      },
+      "claim_digest": "336a10248b59370cbdbb8b501ca2d24f7d6f20db70ad2016ef1bef5760abd6ea"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "dense visual memory",
+      "qualifiers": {},
+      "baseline_digest": "ba1727eb0d54faacf36f876b1e7ad992cfbf810e973de12e7e9f524dd74c4a8b"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "text-centric caption memory",
+      "qualifiers": {},
+      "baseline_digest": "7f086d6f60a7aced3c19ab6271bdb84378c3e30b24393f0040b4d91db95dca09"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "Flash-VStream",
+      "qualifiers": {},
+      "baseline_digest": "8fff442e4d842fa9f704bb1469a89277087d53b34a6d61aa7c37b1906aaa1792"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "Qwen3-VL-8B",
+      "qualifiers": {},
+      "baseline_digest": "6f3d8679714430abd0b529b2c79aa12db833c4cda3bffbe2b834b7328ec36351"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires the pinned MM-Mem code/checkpoint and exact four benchmark media cuts.",
+    "Long-video claims require GPU inference receipts and benchmark evaluator artifacts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ]
+}

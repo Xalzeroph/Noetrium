@@ -1,0 +1,122 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "echotrail_gui_cvprf2026",
+  "package_digest": "eb3693948ba435020a6ac89fb32a3ef6c6fffb3ff11e28ec4acb1d9d65e6bb04",
+  "definition_digest": "7c0b14e2231d5054aebe39251986c3c2a220bfb28734e42147c04bd23d4dfe45",
+  "source_registry_digest": "f56a51b136c7de6c02f262d8367ce2fb13744bd3104f62e22dd9a2e05e14c6ce",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "echotrail_gui_cvprf2026",
+    "title": "EchoTrail-GUI: Building Actionable Memory for GUI Agents via Critic-Guided Self-Exploration",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026F/html/Li_EchoTrail-GUI_Building_Actionable_Memory_for_GUI_Agents_via_Critic-Guided_Self-Exploration_CVPRF_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR Findings 2026 final proceedings",
+    "identity_digest": "3bf116bba2006276df2520df6b3b459f9b54cd20cb362ecd3e4c9fc5fea272b4"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "gui-agent"
+    ],
+    "families": [
+      "gui-agent",
+      "memory",
+      "multimodal",
+      "self-exploration"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "androidlab",
+      "androidworld"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Autonomously explore GUI tasks and collect candidate successful trajectories.",
+      "Inject retrieved trajectories as in-context guidance and execute the task.",
+      "Retrieve relevant prior trajectories for a new GUI task.",
+      "Store critic-validated successful trajectories as actionable memories.",
+      "Validate explored trajectories with the reward/critic model."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026F/html/Li_EchoTrail-GUI_Building_Actionable_Memory_for_GUI_Agents_via_Critic-Guided_Self-Exploration_CVPRF_2026_paper.html"
+    ],
+    "catalog_digest": "b0a5bd4ae667cb318667ca79fe4103f97f03ca810c760376e12051c96b03725b"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR Findings",
+      "year": 2026,
+      "publication_id": "Li_EchoTrail_GUI_CVPRF_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026F/html/Li_EchoTrail-GUI_Building_Actionable_Memory_for_GUI_Agents_via_Critic-Guided_Self-Exploration_CVPRF_2026_paper.html",
+      "revision": "CVPR Findings 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "00b61e66bcef328e43ab3d0c57129a90fab49d856ce1d61b9451b0e84b72719e"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/echotrail_gui_cvprf2026/benchmark.py",
+      "declaration_digest": "3329e24b3f84d8b21eddcbde1077cf9669fd53652b7ee8cfbca4e2d57c16ba14",
+      "content_sha256": "6ce9085254214fa93b881695580048f40bca268dcf40e51ca4787d5c0867aa4c"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/echotrail_gui_cvprf2026/program.py",
+      "declaration_digest": "b7a759b4b613f85805ab6775a408b2d16fa091fa2d5b1388bab9bebce1b7e3f5",
+      "content_sha256": "76b87591b648ade0f51c7e33b58d631f5809033efe7f79555eebbe3e3e64e996"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/echotrail_gui_cvprf2026/study.py",
+      "declaration_digest": "26bc46849903516528bc6c8eeabcabd535bf4fdc93cc61708c065f464831fd7c",
+      "content_sha256": "112b7343f7abb5811ff07f380d6d3e5f9627bbd4942409adab0ea66fa5658cd0"
+    }
+  ],
+  "primary_executable": "research/reproductions/echotrail_gui_cvprf2026/program.py",
+  "reported_results": [],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "same GUI agent without memory",
+      "qualifiers": {},
+      "baseline_digest": "3ea4b262bf93bb564b334d4a7b4bf06ce9e25d4a35215c0c7d8ce6508e23872e"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "final-paper GUI-agent baselines",
+      "qualifiers": {},
+      "baseline_digest": "923b811024e0f5a0c12dd6a1f213a0489e3625d104d3e494815cfb00f3a5bf25"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires the released exploration trajectories/reward model and exact Android benchmark revisions.",
+    "Android environment runs must provide trajectory, critic and final-task evidence receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ]
+}

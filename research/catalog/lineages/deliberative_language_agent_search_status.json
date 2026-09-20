@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "f22a701245d287d9b650da6008f5526f9ad7cfc5a85845be5cb9308ac1498bde",
+          "package_digest": "0994bcbab9e15f57adfb37290117535ed78fa1156cb81d2bbd5c9a46cf444a2c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -66,7 +66,7 @@
             },
             {
               "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
-              "content_sha256": "ead6ac7361d6b5b45333527395f77b6c2971f2ac00726324695e11c9aebdd24b"
+              "content_sha256": "6721c1d681e7641de961288f1fbc216ddc8fed94f5824a4f8ae09716a362e473"
             },
             {
               "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
@@ -215,7 +215,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "43c9d14d996cfc914f4e3870507afa72d3332581ec7ee239e9e910535e43dcf7",
+          "package_digest": "7eec7f4d1816f0243d7c67fadb11239bf8c64404639a23aa4f4c13eb4be87298",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -264,7 +264,7 @@
             },
             {
               "path": "tests/test_scientific_tree_of_thoughts_method_program_v1.py",
-              "content_sha256": "84f382d8f254379d8fba8e5f2103eb72f849c0eff8ea7fdffe7d0e86b2bdd951"
+              "content_sha256": "e04e3664f1ea7fe24b0fcba99ca5a82ad98fcc4ffdbbb70ab4e3af1997a164ee"
             }
           ]
         }
@@ -275,7 +275,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "f5dd9f1acb7fcac0106a9529a3c4b36a723d50afb0d04d1c49a98ef4df55f1ab",
+          "package_digest": "65250babbb1817e91d4937286fb5a71a7e896179c48d8589bbc863e7aba14e64",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -320,7 +320,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_rap_method_program_v1.py",
-              "content_sha256": "cc8998e52cda1b5bc52dc172b385e14d58456fdbcdde1b70a06e0dc7dede4791"
+              "content_sha256": "d44dd1a8b8c60484c73b0a5062117f56ca01b82cd7dd6f212cbb3382827d20ac"
             },
             {
               "path": "tests/test_scientific_rap_reproduction_v1.py",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "98a9d9ce241d0fede6f38cd70afe182f507424ddd8f4223b166eafc6d65f6b14"
+  "projection_digest": "a5155a6aeac3ada2686e3f726b5fe0a24e1b9af34cbe8d52d56ad72b7e29ab71"
 }

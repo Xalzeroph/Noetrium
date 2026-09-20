@@ -1,0 +1,143 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "roboagent_cvpr2026",
+  "package_digest": "fc36dde0cec05dc80b291cd5c00bf6b9620712ce44d4c33c5b53710fc50d93b6",
+  "definition_digest": "dc8e4302cd23b8829e0d3686079eb12c71fe6fc5b9fce2cebdab9469e31e01a6",
+  "source_registry_digest": "0b3ad74ac3a4724a41459fdf4cb59a21de449af23739fab7aa2f6afc1fa298c0",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "roboagent_cvpr2026",
+    "title": "RoboAgent: Chaining Basic Capabilities for Embodied Task Planning",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Xu_RoboAgent_Chaining_Basic_Capabilities_for_Embodied_Task_Planning_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "d56f193193f86888625f6d00ab3362d400bc161489b23e6d9270f94ed6854ea1"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "embodied",
+      "frontier-2026"
+    ],
+    "families": [
+      "capability-routing",
+      "dagger",
+      "embodied",
+      "planning",
+      "reinforcement-learning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "alfworld",
+      "embodiedbench"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "memory",
+      "model/request",
+      "perception"
+    ],
+    "method_owned": [
+      "Decompose the current embodied task and route the next query to a basic capability.",
+      "Execute an atomic embodied action when the selected capability requires environment interaction.",
+      "Load the selected capability's private context rather than a monolithic global history.",
+      "Return the capability result to the scheduler and update the high-level plan.",
+      "Solve the routed vision-language subproblem with the shared VLM."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/woyut/RoboAgent_CVPR26"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Xu_RoboAgent_Chaining_Basic_Capabilities_for_Embodied_Task_Planning_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "d8ad5f0044bccde8f60907bcad1b646ad8ef341d349fecdd0f62e7988619897f"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Xu_RoboAgent_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Xu_RoboAgent_Chaining_Basic_Capabilities_for_Embodied_Task_Planning_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "45f04ffed9929f2f9b995c9d4c86698f1c6c20f5f96c9323eb515e5e085279c1"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/woyut/RoboAgent_CVPR26",
+      "commit": "ce2c4b02d993796866fb0815d0efa348fcb34b68",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "315158ceeac506a6f4642c3dda0e22146be668090633597d16bb918ad5bea774"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/roboagent_cvpr2026/benchmark.py",
+      "declaration_digest": "2c6c28b08e9c2db8b8f76872d752708b3360517a52088b42188a5c841b3dc18f",
+      "content_sha256": "fcec100438fab13196353dd05c584f873ef424f4ed5d66e55d97c210d4890202"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/roboagent_cvpr2026/program.py",
+      "declaration_digest": "0250dc451e96950d7bf8e45d3af5c3e688aa44195399fa530dfd892442566154",
+      "content_sha256": "9deb71b7b1d16e075a60acbf8f08a03f7fc419aa385c550c435438eb272a339a"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/roboagent_cvpr2026/study.py",
+      "declaration_digest": "f94216a7b9f88673d8b3c1bd1390c1f4eb3ffc2dec70e54ea32a805cd3ab76b2",
+      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+    }
+  ],
+  "primary_executable": "research/reproductions/roboagent_cvpr2026/program.py",
+  "reported_results": [],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "single-VLM embodied planner",
+      "qualifiers": {},
+      "baseline_digest": "a21f8196043aa558e0cbe01b1a47aa5a34dc53d7e2be7300acd35abc22a0e84d"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "behavior-cloning only",
+      "qualifiers": {},
+      "baseline_digest": "ea16708afc3c23898379d21136bba66c30dd079e1d031edb2bc8a2cfc07257db"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "paper embodied planning baselines",
+      "qualifiers": {},
+      "baseline_digest": "23d5a6efb213b71c53bfeb3fca24725ea510d470066bfcbf6a18ee725b1b0b82"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned RoboAgent checkpoint/code, exact ALFWorld and EmbodiedBench-ALFRED cuts, and simulator supervision pipeline.",
+    "BC/DAgger/RL stage claims require complete training-data and optimization receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_02.py",
+      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+    }
+  ]
+}

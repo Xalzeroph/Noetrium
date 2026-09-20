@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "pi05_openpi",
-  "package_digest": "305fdb39190e1979cf2b920d5f4e74618894efe7b614bca226b72d9fbef34cd6",
-  "definition_digest": "42f27b9eebecd32328e72737d39e8ed0acaca11579a133622760606a937a511f",
+  "package_digest": "36e91043eac045ccb61bd7e6c918afc0cb67b0e5375e0c7b44c87236ff22688b",
+  "definition_digest": "5305fdd3fc18b9ca981df4b40f49a93d7ca06e5120cd25aa14ea69b1d2447e30",
   "source_registry_digest": "6fd9550e5e62e26d5d5b30a198b91082ca51daf1f7f6619ca09c0115dcdf8f04",
   "lifecycle": "catalogued",
   "identity": {
@@ -70,9 +70,9 @@
     },
     {
       "kind": "support",
-      "path": "research/reproductions/pi05_openpi/compatibility.py",
-      "declaration_digest": "b98ada93d0d01509fdbc296eff405b0c66bdd35a9496eee4a2f834946d14a1fc",
-      "content_sha256": "79b6270b2637244236ece409dd68a8556c59d1b46981128d14f124bf56020f0e"
+      "path": "research/reproductions/pi05_openpi/binding.py",
+      "declaration_digest": "cf5dc6285a1803c633df64a75dc6672fb57c703c7f2b8532df8ab2ea126111be",
+      "content_sha256": "30e02532d22a9535970819e987f7df8728830793e3ab3150ca672530f8c642b7"
     }
   ],
   "primary_executable": null,
@@ -84,7 +84,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_pi05_openpi_v1.py",
-      "content_sha256": "ba07f17ff6ba15cd9562df315f4d53055ad821cdd82c13a7dff8fb00d6fc8622"
+      "content_sha256": "ac9810225dda5d38e5546d59d6f5a90251f67b3828ab41c17ac73e14d25f2f63"
     }
   ]
 }

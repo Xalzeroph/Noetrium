@@ -1,0 +1,126 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "mmbench_gui_cvpr2026",
+  "package_digest": "d862dd64c50037dad206fec27cf74ff185b4ed5a284f130a7570a2906ab98b2c",
+  "definition_digest": "4f3f3e46ee2fd2760cdc8ed995f8f24977f000da28e07b914bae2e0b132d50f3",
+  "source_registry_digest": "0bd637491221155365b0c5b74f30276537c21dcb8d83df4f0f8e86de19e11023",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "mmbench_gui_cvpr2026",
+    "title": "MMBench-GUI: A Unified Hierarchical Evaluation Framework for Multi-Platform GUI Agents",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_MMBench-GUI_A_Unified_Hierarchical_Evaluation_Framework_for_Multi-Platform_GUI_Agents_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "bc2f113d295dc9970d97c293aae354288b8ccd00f7463cd18fc84620e1841b62"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "benchmark",
+      "frontier-2026"
+    ],
+    "families": [
+      "benchmark",
+      "evaluation",
+      "gui-agent",
+      "multiplatform"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "mmbench-gui"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Compute Efficiency-Quality-Aware score from success and action redundancy.",
+      "Evaluate GUI content understanding.",
+      "Evaluate cross-application task collaboration.",
+      "Evaluate end-to-end task automation.",
+      "Evaluate visual element grounding."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_MMBench-GUI_A_Unified_Hierarchical_Evaluation_Framework_for_Multi-Platform_GUI_Agents_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "5359a43907586657b0b6d75d588eb697ec17724ac2e7a4c5bae81eebf4567c82"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Wang_MMBench_GUI_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_MMBench-GUI_A_Unified_Hierarchical_Evaluation_Framework_for_Multi-Platform_GUI_Agents_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "0254c5c4041828c8c9a70a071245913403a81907b8f42846221465fa64bf9de8"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/mmbench_gui_cvpr2026/benchmark.py",
+      "declaration_digest": "63d495dda49845c43da58cc42fef264d0bf9de07802fcee4890dd56fc4240441",
+      "content_sha256": "0bb23d08b870bb589873ccb84696b5c72f0965acac9acf7812969ff96e42a8e8"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/mmbench_gui_cvpr2026/program.py",
+      "declaration_digest": "8d053997d348d69d6632b42ee49cc724bf7a8332a3c19e77c42a83f911599a98",
+      "content_sha256": "85c5567e4a3c50e5a27fb6cdb6a37debd8c6cbeca325a675792cdf603f340fd9"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/mmbench_gui_cvpr2026/study.py",
+      "declaration_digest": "afdc13ab02fd849adee58acc1a3a932c546789a0ec08abbf543907dc04079423",
+      "content_sha256": "d91e72397ebec39425077134cac434ec752a298c0536f33caccf6924c3e8105b"
+    }
+  ],
+  "primary_executable": "research/reproductions/mmbench_gui_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "mmbench_gui_platform_count",
+      "metric_id": "platform_count",
+      "value": 6,
+      "qualifiers": {
+        "platforms": "Windows/macOS/Linux/iOS/Android/Web",
+        "source": "CVPR 2026 final paper"
+      },
+      "claim_digest": "b2aed520926bea279f12f7cac38621a52f88ffe72f54426cb779e91307cc5eac"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "GUI agents evaluated in the final CVPR paper",
+      "qualifiers": {},
+      "baseline_digest": "2903bb7aa4d2baae93daff34e1978aee235cb38a9c2b5b4da7406d1f28a768fd"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires the released benchmark revision plus six platform images/states and evaluator code.",
+    "Cross-platform GUI results require executable environment receipts rather than static benchmark metadata."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ]
+}

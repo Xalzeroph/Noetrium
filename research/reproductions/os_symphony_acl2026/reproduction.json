@@ -1,0 +1,146 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "os_symphony_acl2026",
+  "package_digest": "1490b90461ee71b1be9571c9392d768bed4291e9443bbc3e0ae331e6f3cc3b8a",
+  "definition_digest": "e2d24990280c12b84e4f26ba275a4b56032a08ec0986276bea064ad6e03c3d86",
+  "source_registry_digest": "fc096b46d72730d9dfe7cca9c304958c130cbd6207015f6b6fd8d51ca25b7584",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "os_symphony_acl2026",
+    "title": "OS-Symphony: A Holistic Framework for Robust and Generalist Computer-Using Agents",
+    "paper_uri": "https://aclanthology.org/2026.acl-long.1021/",
+    "year": 2026,
+    "paper_revision": "ACL 2026 final proceedings",
+    "identity_digest": "5de98eeb5fd1b5170d61118657ff51917fabfa9affc015fa808cf4a461cccd40"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "gui-agent"
+    ],
+    "families": [
+      "gui-agent",
+      "long-horizon",
+      "multimodal-memory",
+      "tool-agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "macosarena",
+      "osworld-verified",
+      "windowsagentarena"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Curate/prune visual history and record trajectory-level corrective memory.",
+      "Execute the next computer action using current tutorial and memory context.",
+      "Retrieve milestone-driven long-term trajectory memory.",
+      "Route work between reflection-memory and versatile tool agents.",
+      "Use a SeeAct multimodal browser searcher to synthesize a visually aligned tutorial when needed."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/OS-Copilot/OS-Symphony"
+    ],
+    "reference_publications": [
+      "https://aclanthology.org/2026.acl-long.1021/"
+    ],
+    "catalog_digest": "24e819504e5ff1347b70947f48d3184bc0001b9789eb7af58acb165ea7648921"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2026,
+      "publication_id": "2026.acl-long.1021",
+      "publication_uri": "https://aclanthology.org/2026.acl-long.1021/",
+      "revision": "ACL 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "9728cfa2e22bcdae56a0a9a309a6d8406118a5f9f903a7beb28fb6dfde85766b"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/OS-Copilot/OS-Symphony",
+      "commit": "983d2f9f778cc4e19f9c6be7dc672a1245193ec0",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "a592c34dc2c9479b7c0ac0da4dc14e015278e608c5d6746d98b408a0caaca521"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/os_symphony_acl2026/benchmark.py",
+      "declaration_digest": "d8bebc158c7ebb774a3549a029506e896afebf9d144bb7058ed26de6334151d1",
+      "content_sha256": "0a41e42a5328e4a5e400ec9e9eeac5964834dcee16519fd08d83ef4f48c67da0"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/os_symphony_acl2026/program.py",
+      "declaration_digest": "8fd38f886379b6b8c6de1780a5107aad3c24e60674bc26815e4a870426ce14cc",
+      "content_sha256": "b0f5dfe06109ba76619da88703b2d9d37b04c2484613f6327ec6c749c07e9b72"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/os_symphony_acl2026/study.py",
+      "declaration_digest": "b9271c869d3aebc4d001d76b7299769ce029e54bb9590d016fbf8aefbd3bdb9a",
+      "content_sha256": "fc96dc344f05b03d787c879115a42bf7f31f99d8ca5a0d77bdeb0c1ac1f52580"
+    }
+  ],
+  "primary_executable": "research/reproductions/os_symphony_acl2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "os_symphony_osworld",
+      "metric_id": "task_success_rate",
+      "value": 65.84,
+      "qualifiers": {
+        "benchmark": "OSWorld",
+        "source": "ACL 2026 final paper abstract"
+      },
+      "claim_digest": "84ce1e648e7ce6ffa9ef9bc714a720bf521463f5029434e1fac6b06a5b2c204b"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "backbone computer-use agent without OS-Symphony",
+      "qualifiers": {},
+      "baseline_digest": "efb0ba45775856ec520e3e13a5472c653b0f2a33424dd6b892deb9392e82c9ea"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "paper online CUA baselines",
+      "qualifiers": {},
+      "baseline_digest": "0873ec87ed3d51c1bfa87428357e8571dd314aa5630c3500e2a4280672a7c7bc"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires frozen OS images, online benchmark revisions, browser sandbox, prompts and model snapshots.",
+    "Online OS claims require replayable VM and Machine Journal receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "motus_cvpr2026",
+  "package_digest": "645275da31f19c34de3e91ebdfdbe55dc866376fab038c2cd15a1714078b98ec",
+  "definition_digest": "92ee3b475750b4cfb080be6c8f9419e824c4316b8631d36de9795e5ae1ec979f",
+  "source_registry_digest": "858a852bf2df784905dba0b3f7ee4b9fb68c96935b35d787eaf3f9097ac4ebcc",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "motus_cvpr2026",
+    "title": "Motus: A Unified Latent Action World Model",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Bi_Motus_A_Unified_Latent_Action_World_Model_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "c10d914a9201c951bbbd54956ab906190cdcb8e64ef2cc8e439382e630fb8a00"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "world-model"
+    ],
+    "families": [
+      "latent-action",
+      "robotics",
+      "video-generation",
+      "vision-language-action",
+      "world-model"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "motus-realworld",
+      "robotwin2"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "memory",
+      "model/request",
+      "perception"
+    ],
+    "method_owned": [
+      "Apply the UniDiffuser-style scheduler for the selected generation/prediction mode.",
+      "Derive optical-flow-based latent delta actions shared across heterogeneous data.",
+      "Emit action, future video, inverse action, or joint video-action prediction and preserve the corresponding artifact.",
+      "Encode image/video/language context through the understanding expert.",
+      "Route through the Mixture-of-Transformers understanding, action and video-generation experts.",
+      "Select world-model, VLA, inverse-dynamics, video-generation, or video-action joint-prediction mode."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/thu-ml/Motus"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Bi_Motus_A_Unified_Latent_Action_World_Model_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "19447c33e7f0ec752dcc257e0add749e5229b21a972469d60d233e867b75caf9"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Bi_Motus_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Bi_Motus_A_Unified_Latent_Action_World_Model_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "d7eec29c2512f3011ede6c3e316596460d3aae246daef75d733c059b0e2325bc"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/thu-ml/Motus",
+      "commit": "f771216802b8a1601599422f12088bee3c068c14",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "8db08c74ce260996dda81922b407542a2227d9479995a70bc8b07f73e385a577"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/motus_cvpr2026/benchmark.py",
+      "declaration_digest": "32aa90f41b4c465d937362da698b2254d5c97e2ef4488b3d45c757f016a1efdb",
+      "content_sha256": "f307f06faa1edc9d5e5c6ae597fdc3fc2f5bdc87c68bc8c977f3f37657fcf8ce"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/motus_cvpr2026/program.py",
+      "declaration_digest": "556348a5204593d28c36f572f4ba6012d748274dfd0c0e9f4a9fed8b154ec157",
+      "content_sha256": "75ebaad924596c0fd671c6529e1b15219709d0001ece7a8286d493d4b3bf8622"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/motus_cvpr2026/study.py",
+      "declaration_digest": "a3e96dbe32da2733309f7dd75d4150bcae2349d2e9e8a3e7b72f83507e7a2649",
+      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+    }
+  ],
+  "primary_executable": "research/reproductions/motus_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "motus_robotwin_avg",
+      "metric_id": "robotwin_success",
+      "value": 87.02,
+      "qualifiers": {
+        "benchmark": "RoboTwin 2.0",
+        "unit": "percent"
+      },
+      "claim_digest": "3928efb1aa62c09ca838d63df3aba94577a7cf3bc71bc1d63e731d02311c38c7"
+    },
+    {
+      "claim_id": "motus_vs_xvla_gain",
+      "metric_id": "robotwin_success_gain",
+      "value": 15,
+      "qualifiers": {
+        "reference": "X-VLA",
+        "unit": "percent_relative_or_reported_gain"
+      },
+      "claim_digest": "fcfb4d2233f1fbf085ea303dd47de37ae37db53af60a67a99e722d0ad53c925e"
+    },
+    {
+      "claim_id": "motus_vs_pi05_gain",
+      "metric_id": "robotwin_success_gain",
+      "value": 45,
+      "qualifiers": {
+        "reference": "pi_0.5",
+        "unit": "percent_relative_or_reported_gain"
+      },
+      "claim_digest": "eb06e18a78894a0b2432c55ba0bbe8555b97964caa3890137605339ad3638187"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "X-VLA",
+      "qualifiers": {},
+      "baseline_digest": "1a41c4bb6028c749c59dd90b59388608d0f33467e4130b6694497e6ee96692db"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "pi_0.5",
+      "qualifiers": {},
+      "baseline_digest": "ce2f1f6567a6a19cc45c113613d556369edb16d895a8a4822a62f7cdb3179755"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "paper world-model/VLA baselines",
+      "qualifiers": {},
+      "baseline_digest": "b04254d4a59398084215b1d3f2c16b3df1ab5b7d2db4caa15d2ab3a91b728565"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned Motus training code/checkpoints, six-layer data pyramid and RoboTwin 2.0 multi-task dataset cut.",
+    "Real-world claims require exact robot hardware/task protocol and synchronized generated-video/action execution evidence."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_03.py",
+      "content_sha256": "971be29ebf3ea8ac09c22786005adf4709e023b582f3fe3ff5ac05184ea32d1d"
+    }
+  ]
+}

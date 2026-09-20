@@ -1,0 +1,200 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ui_agile_cvprf2026",
+  "package_digest": "7b4dfe54a387520163c52b16535812138cf38d92985118855949c1c1801d70f5",
+  "definition_digest": "d80c612812b5c4f3825fb9996dd3ff08c7de36f87bd9fa62d359e447aac44da3",
+  "source_registry_digest": "5cef7fdf56a74ea0ec0a9ac1e0ec2a3bf5f5059a5d320f51b85b563711af9a3a",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "ui_agile_cvprf2026",
+    "title": "UI-AGILE: Advancing GUI Agents with Effective Reinforcement Learning and Precise Inference-Time Grounding",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026F/html/Lian_UI-AGILE_Advancing_GUI_Agents_with_Effective_Reinforcement_Learning_and_Precise_CVPRF_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR Findings 2026 final proceedings",
+    "identity_digest": "a76103f12a397e468a917258bc13b391b83b5c93d7ae62db7098a1f87f6cb032"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "gui-agent"
+    ],
+    "families": [
+      "gui-agent",
+      "inference-time-selection",
+      "reinforcement-learning",
+      "visual-grounding"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "androidcontrol",
+      "screenspot-pro",
+      "screenspot-v2"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "perception"
+    ],
+    "method_owned": [
+      "Decompose high-resolution screens into candidate regions for precise grounding.",
+      "Resample difficult examples through crop-based visual refinement to reduce sparse rewards.",
+      "Score grounding predictions with a continuous precision-sensitive reward.",
+      "Select the final candidate grounding with the VLM before emitting the GUI action.",
+      "Use concise task reasoning that balances planning depth with grounding latency."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/KDEGroup/UI-AGILE"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026F/html/Lian_UI-AGILE_Advancing_GUI_Agents_with_Effective_Reinforcement_Learning_and_Precise_CVPRF_2026_paper.html"
+    ],
+    "catalog_digest": "ff6d7d5beacc0cbb8d31a16cf8be28c8c4e9911ce864ddf6481f6d015ac9ffb7"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR Findings",
+      "year": 2026,
+      "publication_id": "Lian_UI_AGILE_CVPRF_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026F/html/Lian_UI-AGILE_Advancing_GUI_Agents_with_Effective_Reinforcement_Learning_and_Precise_CVPRF_2026_paper.html",
+      "revision": "CVPR Findings 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "eab37c4cc0f5e72f38f8d3faf7ae5ca85956adbf47806deb6fd719090dc12cf2"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/KDEGroup/UI-AGILE",
+      "commit": "3a397b078d6c14338f0646070212f8c3eb837881",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "cd7d8bc66e1319c8f3557d9eb899f44c99d1ee4f6ad264aad59b65e4e20217cd"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/ui_agile_cvprf2026/benchmark.py",
+      "declaration_digest": "6c37d02b29b61b33f2503b33301791cc4f81f12cad4154206466205b223d1979",
+      "content_sha256": "171f3e847eb501850591b19dfca4044b1245c434b722a9e86fde341c6b46f727"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/ui_agile_cvprf2026/program.py",
+      "declaration_digest": "675b188259d7f4b75c0729451d08d45ca4e058b8936c078015221033e8312d77",
+      "content_sha256": "180ed40f91398ac60145f22618b629025c3742078e3ad4034ac8c679b5c91ff8"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/ui_agile_cvprf2026/study.py",
+      "declaration_digest": "ba4750ce17e6d75f8edc8d64e75b3bbe60fdc6a2051f9d54d385d61d19f08854",
+      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+    }
+  ],
+  "primary_executable": "research/reproductions/ui_agile_cvprf2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "ui_agile_screenspot_pro",
+      "metric_id": "grounding_accuracy",
+      "value": 48.7,
+      "qualifiers": {
+        "benchmark": "ScreenSpot-Pro",
+        "model": "UI-AGILE-7B",
+        "setting": "decomposed grounding plus selection",
+        "unit": "percent"
+      },
+      "claim_digest": "6f966a043300ec0b79989ffe600c5e214a28fa1c878768c2995a38fdc061828f"
+    },
+    {
+      "claim_id": "ui_agile_screenspot_v2",
+      "metric_id": "grounding_accuracy",
+      "value": 92.1,
+      "qualifiers": {
+        "benchmark": "ScreenSpot-v2",
+        "model": "UI-AGILE-7B",
+        "unit": "percent"
+      },
+      "claim_digest": "f39ca52938d292960813d88b689ddd451a5e917527303e6e70d92fbaa4a912ed"
+    },
+    {
+      "claim_id": "ui_agile_android_low",
+      "metric_id": "androidcontrol_low_success",
+      "value": 77.6,
+      "qualifiers": {
+        "benchmark": "AndroidControl-Low",
+        "model": "UI-AGILE-7B",
+        "unit": "percent"
+      },
+      "claim_digest": "da5b1ac3b8aa1c06cf31fead05ccfa4c7f458961ea10bf10c3b24375596970f2"
+    },
+    {
+      "claim_id": "ui_agile_android_high",
+      "metric_id": "androidcontrol_high_success",
+      "value": 60.6,
+      "qualifiers": {
+        "benchmark": "AndroidControl-High",
+        "model": "UI-AGILE-7B",
+        "unit": "percent"
+      },
+      "claim_digest": "c0a9f93c1d1409cc1a964e703d0acb4b2f4c1d8ce0cd1a47b3438a6e17b21322"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "JEDI-7B",
+      "qualifiers": {},
+      "baseline_digest": "f4c87bd0f78683a2507df02a14f70c90383bb592123a292332ac26356849ffa5"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "UI-TARS",
+      "qualifiers": {},
+      "baseline_digest": "0164a4e3d5488bb4b5e2725b79616091e147fe67516c24332b3dee2e178a3638"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "GUI-R1",
+      "qualifiers": {},
+      "baseline_digest": "e4341b36e6cd6e4c957478b3758f39700347048335f55d4067296917d6699493"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "UI-R1-E",
+      "qualifiers": {},
+      "baseline_digest": "55ff801a06f6f8ab3dc34e8a054a0221ed67a1ddc6e683ad8e0302bc65a4c481"
+    },
+    {
+      "baseline_id": "baseline_05",
+      "description": "Qwen2.5-VL",
+      "qualifiers": {},
+      "baseline_digest": "51ac7ecfc7615cafcf486147edb5812c54beed771be6dda042a8332a021a439f"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned UI-AGILE training code/checkpoints, benchmark cuts and image preprocessing.",
+    "Inference-time grounding claims require full candidate-generation/selection traces and timing receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_02.py",
+      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+    }
+  ]
+}

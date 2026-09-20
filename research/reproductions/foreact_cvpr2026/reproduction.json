@@ -1,0 +1,187 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "foreact_cvpr2026",
+  "package_digest": "bd0cdf5c7a43df0dc77622007ff2e2e2d67f1ebad2405f9ec9365c0980c2f4e8",
+  "definition_digest": "9fba9413550420c80f72dac98d42b9327cdab7084153af93d8eeea00bf29b625",
+  "source_registry_digest": "d4af5fa79a4ea9d41bf67a7f2f4cacdb317f4a546024a54ac52ad3517b7d135e",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "foreact_cvpr2026",
+    "title": "ForeAct: Steering Your VLA with Efficient Visual Foresight Planning",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Zhang_ForeAct_Steering_Your_VLA_with_Efficient_Visual_Foresight_Planning_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "37f8be05d209d1d59773606430d72008681bb988b77d4db266ff1cbf586bd21a"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "vision-language-action"
+    ],
+    "families": [
+      "planning",
+      "robotic-manipulation",
+      "vision-language-action",
+      "visual-foresight",
+      "world-model"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "foreact-real11"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "memory",
+      "model/request",
+      "participant"
+    ],
+    "method_owned": [
+      "Attach imagined future observations to the VLA visual context without modifying VLA architecture.",
+      "Encode current multi-view robot observations and the high-level task instruction.",
+      "Generate the predicted future observation conditioned on current vision and the subtask.",
+      "Infer the next semantic subtask description.",
+      "Produce and execute the next visuo-motor action chunk.",
+      "Use the resulting observation to refresh foresight planning for the next step."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/mit-han-lab/foreact"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Zhang_ForeAct_Steering_Your_VLA_with_Efficient_Visual_Foresight_Planning_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "a7376a8d9bd5fa0605b011ca14e62097f4e3305efe506c3ce581b8135a888f8c"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Zhang_ForeAct_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Zhang_ForeAct_Steering_Your_VLA_with_Efficient_Visual_Foresight_Planning_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "78f63c9a53e9278d40b9fe31425d225a805d3d790bf19a5fff1bb81a2615924c"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/mit-han-lab/foreact",
+      "commit": "2f3d062e6129da7ce5fc75e68e01e87b8af9e10a",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "5f58f1ad712688952ee42bd51ea5bdfb35d6bdafe9d40ffaf6586f5c1ce59a4e"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/foreact_cvpr2026/benchmark.py",
+      "declaration_digest": "7319afb1fbd2a61fac42e0e1fc222c7d467378ec58778b5d0630d4247d4fdf68",
+      "content_sha256": "dd4a576789e928d8622982e12410a9e80d9254465fc2f610b8f91dbeba049535"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/foreact_cvpr2026/program.py",
+      "declaration_digest": "887158d34ec5b6023c1786306dc4aa001a3d07a97a4cb2b8f2210fc79f1bfd74",
+      "content_sha256": "c3b1a93a1a5fa6c3cc600697dd42656e5a9b40c124b0030f429207e9e418eb7b"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/foreact_cvpr2026/study.py",
+      "declaration_digest": "e4c173a73f1e575c51422e791e8921c906d16ce57654f2416c3c543d2c93c43b",
+      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+    }
+  ],
+  "primary_executable": "research/reproductions/foreact_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "foreact_real11",
+      "metric_id": "task_success",
+      "value": 87.4,
+      "qualifiers": {
+        "benchmark": "11 real-world multi-step tasks",
+        "unit": "percent"
+      },
+      "claim_digest": "a61f08d756f8f7a54a511bfa25dd2ffd061af6c113b28040ce79be80a283658d"
+    },
+    {
+      "claim_id": "foreact_pi0_baseline",
+      "metric_id": "task_success",
+      "value": 46.5,
+      "qualifiers": {
+        "benchmark": "11 real-world multi-step tasks",
+        "model": "pi_0",
+        "unit": "percent"
+      },
+      "claim_digest": "e2c97a564e4dd4811a01cd4459574c6f219e62ca98d2276b69e632e430600e3e"
+    },
+    {
+      "claim_id": "foreact_text_guidance",
+      "metric_id": "task_success",
+      "value": 57.1,
+      "qualifiers": {
+        "benchmark": "11 real-world multi-step tasks",
+        "setting": "textual subtask guidance",
+        "unit": "percent"
+      },
+      "claim_digest": "e05c3a2c3635f3f3aaa3fc6802bd8c2eb40c2b81cf29c589e1ce9c477c64e0cb"
+    },
+    {
+      "claim_id": "foreact_future_latency",
+      "metric_id": "foresight_latency",
+      "value": 0.33,
+      "qualifiers": {
+        "unit": "second",
+        "hardware": "H100",
+        "resolution": "640x480"
+      },
+      "claim_digest": "10c23ee230c592ca8713b2104b47b2a02a38037d96bc9974cbb170be44d3068b"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "pi_0",
+      "qualifiers": {},
+      "baseline_digest": "791af6059d0695a1ace3608847129bfaa35a4cb8e3d27df8ee048dc9bdc004bd"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "pi_0 plus text subtask guidance",
+      "qualifiers": {},
+      "baseline_digest": "1a0fc68723ea33109bc9bd45344d03b62c99f6727b9c706884d8369b3e4b189e"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "pi_0.5",
+      "qualifiers": {},
+      "baseline_digest": "ecb11e5c9dd66d9a3f6584e227c09170912b070f400552e7c9d135a2bc0e03e9"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned ForeAct generator/checkpoints, exact 11-task real-world protocol and VLA backbone snapshots.",
+    "Physical-robot claims require episode-level execution receipts and synchronized camera/action evidence."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_02.py",
+      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+    }
+  ]
+}

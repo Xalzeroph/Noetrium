@@ -1,0 +1,139 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ego2web_cvpr2026",
+  "package_digest": "9bc9631f3ea2288a4ce7a5ae2b6e5df59ea931dc669a01d995e2db4995e77253",
+  "definition_digest": "222f9637ab57a6a14fa6836546b02814d3e54238c5f60c67858a3e85f4964a8a",
+  "source_registry_digest": "84b00b2edc21f7c1d1c11ea0e7d13884aa5ff6e9ae5b535407b5f2014d87c39d",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "ego2web_cvpr2026",
+    "title": "Ego2Web: A Web Agent Benchmark Grounded in Egocentric Videos",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yu_Ego2Web_A_Web_Agent_Benchmark_Grounded_in_Egocentric_Videos_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "9debfc15d731e5bf2253b0c2197fa1afa173d13b221e8d7de7df2bd18725ac38"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "benchmark",
+      "frontier-2026"
+    ],
+    "families": [
+      "benchmark",
+      "egocentric-video",
+      "multimodal",
+      "web-agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "ego2web"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Execute web actions under the frozen benchmark environment.",
+      "Extract task-relevant evidence from first-person video.",
+      "Ground the online task in observed physical-world evidence.",
+      "Plan the required online workflow.",
+      "Score completion with Ego2WebJudge and retain judge evidence."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Yu_Ego2Web_A_Web_Agent_Benchmark_Grounded_in_Egocentric_Videos_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "74bd4983b349edcd1b8869b28ab31ae7d958c37879c0ced060bab6755e279343"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Yu_Ego2Web_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yu_Ego2Web_A_Web_Agent_Benchmark_Grounded_in_Egocentric_Videos_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "2ff5fa9472e0cd43d441319656b6c73faaddbbe4b1872403cc645411a9a14962"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/ego2web_cvpr2026/benchmark.py",
+      "declaration_digest": "6823f7d47e13dccb134d7735407ed7f29307e9100a94bd3dd027f06d29685e26",
+      "content_sha256": "0d00d5d70b5778b850a6248bea864a94aa90c19222fb3661992763fe9a23ae1a"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/ego2web_cvpr2026/program.py",
+      "declaration_digest": "d1a77cb8a457b2a5c216e7edb32c155b4e0c5d0ca17ec7aa16c80301e66d6757",
+      "content_sha256": "b3bf9785efe3cb2c849119982a3a536500c87d0362667080039f1ff80fcc54cd"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/ego2web_cvpr2026/study.py",
+      "declaration_digest": "4d000f9dfc2a6bfe21b797431914ea4bad712b966d30ce66c6bb1085aa484ff7",
+      "content_sha256": "00eb6985ecf18532812cb3542e2112901565abf06c33e04ab951277b1cdce6d8"
+    }
+  ],
+  "primary_executable": "research/reproductions/ego2web_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "ego2web_judge_agreement",
+      "metric_id": "judge_human_agreement",
+      "value": 84,
+      "qualifiers": {
+        "unit": "percent",
+        "source": "CVPR 2026 final paper abstract",
+        "approximate": true
+      },
+      "claim_digest": "3e154e12b4185a84c9698db3400690146a546b8d6cfdefbfd1b23c78b5da35b2"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "SoTA web agents evaluated in the final paper",
+      "qualifiers": {},
+      "baseline_digest": "d37010de2e1017980a91aa5576a6c6ab99eb0aaecd39d6aced1ba065c960826d"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "video-ablated controls",
+      "qualifiers": {},
+      "baseline_digest": "7811d9e029b407482689998b62e20250d839a8e458d76dbc00f94ef38442631d"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "existing automatic web-agent judges",
+      "qualifiers": {},
+      "baseline_digest": "239e2a98627ce67ec9accc1b8190df91befaaeb34f79baa43a5d2f2a1b6ce9a4"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires released video-task pairs, website state and frozen Ego2WebJudge model/configuration.",
+    "Web and video execution must generate Machine Journal and evaluator receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ]
+}
