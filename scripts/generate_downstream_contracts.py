@@ -17,6 +17,7 @@ import re
 import sys
 from typing import Any
 
+from noetrium._api_surface import UNIFIED_API_EXTRA_MODULES
 from noetrium_platform.foundation.governance.architecture.downstream_surface_policy import downstream_symbols
 
 SCHEMA = "noetrium-downstream-contracts.v3"
@@ -518,6 +519,101 @@ def render_convenience_facade(
     return "\n".join(lines)
 
 
+
+def _module_source(root: Path, module: str) -> Path:
+    base = root.joinpath(*module.split("."))
+    module_file = base.with_suffix(".py")
+    if module_file.is_file():
+        return module_file
+    init_file = base / "__init__.py"
+    if init_file.is_file():
+        return init_file
+    raise FileNotFoundError(f"public module source not found: {module}")
+
+
+def render_unified_api_stub(
+    root: Path,
+    surfaces: tuple[SystemSurface, ...],
+) -> tuple[str, int]:
+    registry_sources: dict[str, set[str]] = {}
+    for surface in surfaces:
+        for api in surface.api_modules:
+            for symbol in api.symbols:
+                if symbol.isidentifier():
+                    registry_sources.setdefault(symbol, set()).add(api.module)
+
+    extra_sources: dict[str, set[str]] = {}
+    for module in UNIFIED_API_EXTRA_MODULES:
+        symbols = downstream_symbols(_public_symbols(_module_source(root, module)))
+        for symbol in symbols:
+            if symbol.isidentifier():
+                extra_sources.setdefault(symbol, set()).add(module)
+
+    reserved = {
+        "ApiSymbolMatch",
+        "DownstreamCapabilityCatalog",
+        "DownstreamSystemSurface",
+        "catalog",
+        "system",
+        "resolve",
+        "owners",
+        "search",
+        "describe",
+        "interface_schema",
+        "symbol_schema",
+    }
+    selected: dict[str, str] = {}
+    for symbol, modules in registry_sources.items():
+        if symbol in reserved:
+            continue
+        if len(modules) == 1:
+            selected[symbol] = next(iter(modules))
+    for symbol, modules in extra_sources.items():
+        if symbol in reserved or symbol in registry_sources:
+            continue
+        if len(modules) == 1:
+            selected[symbol] = next(iter(modules))
+
+    by_module: dict[str, list[str]] = {}
+    for symbol, module in sorted(selected.items()):
+        by_module.setdefault(module, []).append(symbol)
+
+    lines = [
+        f'""" {_MARKER}.',
+        "Static typing projection for the single noetrium.api downstream entrypoint.",
+        '"""',
+        "from typing import Any",
+        "",
+        "from noetrium.contracts.discovery import (",
+        "    DownstreamCapabilityCatalog as DownstreamCapabilityCatalog,",
+        "    DownstreamSystemSurface as DownstreamSystemSurface,",
+        ")",
+        "",
+        "class ApiSymbolMatch:",
+        "    symbol: str",
+        "    owners: tuple[str, ...]",
+        "",
+        "def catalog() -> DownstreamCapabilityCatalog: ...",
+        "def system(system_key: str) -> Any: ...",
+        "def resolve(symbol: str) -> Any: ...",
+        "def owners(symbol: str) -> tuple[str, ...]: ...",
+        "def search(query: str, *, limit: int = 50) -> tuple[ApiSymbolMatch, ...]: ...",
+        "def describe(symbol: str) -> tuple[dict[str, Any], ...]: ...",
+        "def interface_schema() -> dict[str, Any]: ...",
+        "def symbol_schema(system_key: str, module: str, symbol: str) -> dict[str, Any]: ...",
+        "",
+    ]
+    for module in sorted(by_module):
+        lines.append(f"from {module} import (")
+        for symbol in sorted(by_module[module]):
+            lines.append(f"    {symbol} as {symbol},")
+        lines.extend([")", ""])
+    lines.append("def __getattr__(name: str) -> Any: ...")
+    lines.append("")
+    return "\n".join(lines), len(selected)
+
+
+
 def render_root_contract_init(root: Path) -> str:
     json_symbols = _public_symbols(root / "noetrium/contracts/json.py")
     sources = ("json", "discovery", *_CONVENIENCE_FACADES.keys())
@@ -806,11 +902,13 @@ def generate(root: Path, *, check: bool = False) -> int:
     markdown_path = root / "docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md"
     topology_path = root / "docs/architecture/VNEXT_SYSTEM_CATALOG.json"
     topology_source = root / "noetrium_platform/foundation/governance/system_registry/catalog.json"
+    api_stub, api_stub_symbol_count = render_unified_api_stub(root, surfaces)
     expected: dict[Path, bytes] = {
         facade_root / "__init__.py": render_init(surfaces).encode("utf-8"),
         catalog_path: render_catalog(root, surfaces),
         markdown_path: render_markdown(root, surfaces),
         topology_path: topology_source.read_bytes(),
+        root / "noetrium/api.pyi": api_stub.encode("utf-8"),
     }
     expected[root / "noetrium/contracts/__init__.py"] = (
         render_root_contract_init(root).encode("utf-8")
@@ -890,6 +988,7 @@ def generate(root: Path, *, check: bool = False) -> int:
         "api_symbol_count": sum(
             len(api.symbols) for surface in surfaces for api in surface.api_modules
         ),
+        "api_stub_symbol_count": api_stub_symbol_count,
         "catalog_digest": hashlib.sha256(expected[catalog_path]).hexdigest(),
         "check": check,
         "readme_changed": [],
