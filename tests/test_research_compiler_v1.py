@@ -9,7 +9,7 @@ from noetrium_platform.research.experimentation.api import (
     ResearchParticipantBinding,
     ResearchParticipantRequirement,
     ResearchModelRoleRequirement,
-    ResearchMethodHost,
+    compile_research_method,
     compile_research_plan,
     diff_research_plans,
     resolve_research_requirements,
@@ -236,11 +236,11 @@ def _compile(
     return compile_research_plan(definition, resolution, binding)
 
 
-def test_public_method_host_matches_direct_compiler() -> None:
+def test_public_method_compiler_matches_direct_compiler() -> None:
     definition = _definition()
     manifest, _, binding = _resolved_binding(definition)
-    hosted = ResearchMethodHost().compile_method(definition, manifest, binding)
-    assert hosted == _compile(definition)
+    compiled = compile_research_method(definition, manifest, binding)
+    assert compiled == _compile(definition)
 
 
 def test_compiler_expands_factor_seed_repetition_task_matrix_and_schedule() -> None:
