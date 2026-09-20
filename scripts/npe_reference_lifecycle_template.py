@@ -7,8 +7,8 @@ from pathlib import Path
 import sys
 import tempfile
 
-from noetrium.contracts.json import canonical_digest, thaw_json
-from noetrium.contracts.research import (
+from noetrium.api import canonical_digest, thaw_json
+from noetrium.api import (
     EvidenceBundleReceipt,
     MachineCut,
     RunArtifactKind,
