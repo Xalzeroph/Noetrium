@@ -5,7 +5,7 @@ import hashlib
 import tempfile
 from pathlib import Path
 
-from noetrium.contracts.research import (
+from noetrium.api import (
     AggregationFunction, AggregationSpec, BaselineSpec, DataColumn, DataTable,
     EvaluationContext, EvaluationStage, FigureCell, FigureKind, FigureOutputFormat, FigurePoint,
     FigureSeries, FigureSpec, FigureStyle, MissingValuePolicy, MultipleComparisonMethod,
