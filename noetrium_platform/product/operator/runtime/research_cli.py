@@ -36,6 +36,11 @@ def _add_lifecycle_command(subparsers, action: ResearchAction, help_text: str) -
         "--project", dest="project_root", type=Path, default=Path("."),
         help="downstream project root; defaults to current directory",
     )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        help="optional project-owned runtime configuration path",
+    )
     payload = parser.add_mutually_exclusive_group()
     payload.add_argument("--payload", help="inline JSON payload")
     payload.add_argument("--payload-file", type=Path, help="UTF-8 JSON payload file")
@@ -87,7 +92,7 @@ def _load_payload(args: argparse.Namespace):
 
 
 def _run_project_lifecycle(args: argparse.Namespace) -> int:
-    loaded = load_project_application(args.project_root)
+    loaded = load_project_application(args.project_root, config_path=args.config)
     application = loaded.application
     target = args.target or loaded.default_target
     facade = ResearchFacade(application)
