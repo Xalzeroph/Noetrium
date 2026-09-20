@@ -87,19 +87,27 @@ def test_optimus1_preserves_paper_release_benchmark_identity_delta() -> None:
     assert fidelity.official_release_controller_checkpoint == "steve1"
 
 
-def test_optimus1_reproduction_keeps_unresolved_paper_cut_explicit() -> None:
+def test_optimus1_reproduction_binds_exact_paper_cut_and_keeps_runtime_deltas() -> None:
     assert REPRODUCTION.lifecycle.value == "protocol_bound"
     assert REPRODUCTION.identity.method_id == "optimus1-minecraft"
-    assert REPRODUCTION.catalog.benchmark_ids == ()
+    assert REPRODUCTION.catalog.benchmark_ids == (
+        "minecraft-long-horizon-67",
+    )
     kinds = tuple(asset.kind for asset in REPRODUCTION.assets)
+    assert ReproductionAssetKind("benchmark") in kinds
     assert ReproductionAssetKind("fidelity") in kinds
+    assert ReproductionAssetKind("study") in kinds
     assert ReproductionAssetKind("research_program") in kinds
     assert ReproductionAssetKind("method_program") in kinds
     assert REPRODUCTION.primary_executable == (
         "research/reproductions/optimus1_minecraft/program.py"
     )
-    assert any(
+    assert not any(
         "67-task" in delta.description and "73" in delta.description
+        for delta in REPRODUCTION.deltas
+    )
+    assert any(
+        "gpt-4o" in delta.description.lower()
         for delta in REPRODUCTION.deltas
     )
 

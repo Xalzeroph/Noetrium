@@ -358,6 +358,7 @@ def build_minecraft_long_horizon_67_cut() -> BenchmarkTaskSet:
         )
         for row in MINECRAFT_LONG_HORIZON_67_TASKS
     )
+    tasks = tuple(sorted(tasks, key=lambda row: row.task_id))
     task_ids = tuple(row.task_id for row in tasks)
     splits = [TaskSetSplit(MINECRAFT_LONG_HORIZON_67_ALL_SPLIT, task_ids)]
     for group, _ in MINECRAFT_LONG_HORIZON_67_GROUP_COUNTS:
