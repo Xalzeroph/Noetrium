@@ -23,33 +23,22 @@ _SAFE = re.compile(r"[^A-Za-z0-9_.-]+")
 README_BLOCK_START = "<!-- noetrium-interface-catalog:start -->"
 README_BLOCK_END = "<!-- noetrium-interface-catalog:end -->"
 
-# Convenience facades name semantic registry roots, never individual symbols.
-# New registered descendants are picked up automatically for subtree entries.
-_CONVENIENCE_FACADES: dict[str, tuple[tuple[str, bool], ...]] = {
-    "agent": (("participant/agent", False),),
-    "environment": (("environment", False),),
-    "model": (("model", False),),
-    "participant": (("participant", False), ("participant/method", False)),
-    "project": (("portfolio", False),),
-    "research": (("experimentation", True), ("execution/workflow", False)),
-    "server": (("runtime/server", True), ("runtime/session", False)),
-    "session": (("runtime/session", False),),
-}
-_CONVENIENCE_CANONICAL_OWNERS: dict[str, dict[str, str]] = {
-    "research": {"ExperimentPlan": "experimentation/study"},
-}
-# A convenience facade may also expose stable concrete composition helpers.
-# The module roots are declarative; symbols still come from each module's
-# exported __all__ and are never copied into this generator.
-_CONVENIENCE_EXTRA_PLANES: dict[str, tuple[tuple[str, str], ...]] = {
-    "research": (
-        ("experimentation/study", "runtime"),
-        ("experimentation/workbench", "providers"),
-        ("experimentation/workbench", "runtime"),
-    ),
-}
+# Downstream has one product entrypoint: noetrium.api.
+# Generated system facades remain registry material used by discovery.
+_RETIRED_CONVENIENCE_FACADES = (
+    "agent",
+    "environment",
+    "model",
+    "participant",
+    "project",
+    "research",
+    "server",
+    "session",
+)
+_CONVENIENCE_FACADES: dict[str, tuple[tuple[str, bool], ...]] = {}
+_CONVENIENCE_CANONICAL_OWNERS: dict[str, dict[str, str]] = {}
+_CONVENIENCE_EXTRA_PLANES: dict[str, tuple[tuple[str, str], ...]] = {}
 _CONVENIENCE_EXCLUDED_NAMES = frozenset({"CONTRACT", "contract"})
-
 
 @dataclass(frozen=True)
 class ApiModuleSurface:
@@ -839,6 +828,20 @@ def generate(root: Path, *, check: bool = False) -> int:
                 )
         else:
             readme_updates[readme_path] = updated
+    contract_root = root / "noetrium/contracts"
+    for facade_name in _RETIRED_CONVENIENCE_FACADES:
+        retired = contract_root / f"{facade_name}.py"
+        if not retired.exists():
+            continue
+        if check:
+            ok = False
+            print(
+                f"retired downstream facade still exists: {retired.relative_to(root)}",
+                file=sys.stderr,
+            )
+        else:
+            retired.unlink()
+
     if not check:
         for readme_path, updated in readme_updates.items():
             temporary = readme_path.with_name(readme_path.name + ".tmp")
