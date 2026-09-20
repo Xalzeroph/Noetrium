@@ -63,37 +63,23 @@ def test_facade_rejects_application_result_identity_drift():
         ResearchFacade(_BadApplication()).run("run-1")
 
 
-def test_research_parser_has_one_common_lifecycle_surface():
+def test_research_parser_has_one_project_lifecycle_surface():
     parser = build_research_parser()
     for command in ("run", "inspect", "stop", "resume", "reconcile", "evidence"):
-        args = parser.parse_args(["--application", "sample:factory", command, "run-1"])
+        args = parser.parse_args([command, "run-1", "--project", "."])
         assert args.action.value == command
         assert args.route == "application"
+        assert args.application_project == Path(".")
 
 
-def test_lifecycle_cli_requires_explicit_project_or_application_binding(capsys):
-    assert main(["run", "run-1"]) == 2
-    error = json.loads(capsys.readouterr().err)
-    assert error["ok"] is False
-    assert error["error"] == "noetrium run requires --project PATH or --application MODULE:FACTORY"
-
-
-def test_lifecycle_cli_delegates_to_explicit_application(capsys):
+def test_lifecycle_cli_routes_only_through_project_binding(capsys):
     app = _Application()
+    loaded = type("Loaded", (), {"application": app, "default_target": "project-default"})()
     with patch(
-        "noetrium_platform.product.operator.runtime.research_cli.load_research_application",
-        return_value=app,
+        "noetrium_platform.product.operator.runtime.research_cli.load_project_application",
+        return_value=loaded,
     ):
-        rc = main(
-            [
-                "--application",
-                "sample:factory",
-                "run",
-                "run-7",
-                "--payload",
-                '{"seed": 7}',
-            ]
-        )
+        rc = main(["run", "run-7", "--project", ".", "--payload", '{"seed": 7}'])
     assert rc == 0
     output = json.loads(capsys.readouterr().out)
     assert output["ok"] is True
@@ -114,12 +100,17 @@ def test_lifecycle_cli_preserves_authoritative_operation_failure(capsys):
                 )
             )
 
+    loaded = type(
+        "Loaded",
+        (),
+        {"application": _FailingApplication(), "default_target": "run-7"},
+    )()
     with patch(
-        "noetrium_platform.product.operator.runtime.research_cli.load_research_application",
-        return_value=_FailingApplication(),
+        "noetrium_platform.product.operator.runtime.research_cli.load_project_application",
+        return_value=loaded,
     ):
         rc = main([
-            "--application", "sample:factory", "reconcile", "run-7",
+            "reconcile", "run-7", "--project", ".",
             "--payload", '{"expected_revision": 3}',
         ])
     assert rc == 3
