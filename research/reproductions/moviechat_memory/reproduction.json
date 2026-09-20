@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "moviechat_memory",
-  "package_digest": "c91ffd7777306457d681a75539a3addf129d884c4fb81ee438e9424ce55b89f8",
-  "definition_digest": "7a3c42678c35f3e495a612c228817eb4f0cb0e771f97856aa1b8ff9337561735",
+  "package_digest": "e7c2af4bd5c079d18fff90f4a61f8026a0a1432e17b9e3bca1c4b367ce8d55c3",
+  "definition_digest": "0e54dfdc27ebb7abf80a8c406e7ab0b3cca264c2ec6bbb4d957486f6a4cb71d8",
   "source_registry_digest": "2cef17c8d328384849759d7e5d19d69f4b2d8cee4baf1d186f767e439b1fd60c",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -132,8 +132,68 @@
     }
   ],
   "primary_executable": "research/reproductions/moviechat_memory/memory.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "moviechat_global_accuracy",
+      "metric_id": "open_ended_accuracy_percent",
+      "value": 67.8,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "global",
+        "evaluator": "gpt-3.5",
+        "source": "CVPR-2024 supplementary Table H5"
+      },
+      "claim_digest": "366bb59608724918f7e2548eabf396ffc24b3245c3b7a53b10111382f02b88bf"
+    },
+    {
+      "claim_id": "moviechat_global_score",
+      "metric_id": "open_ended_quality_score_0_to_5",
+      "value": 3.81,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "global",
+        "evaluator": "gpt-3.5",
+        "source": "CVPR-2024 supplementary Table H5"
+      },
+      "claim_digest": "300763226f8513f20bcc6bb45506e00a10676bdecec58a8fa0fa3fec5a0421d3"
+    },
+    {
+      "claim_id": "moviechat_breakpoint_accuracy",
+      "metric_id": "open_ended_accuracy_percent",
+      "value": 50.4,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "breakpoint",
+        "evaluator": "gpt-3.5",
+        "source": "CVPR-2024 supplementary Table H5"
+      },
+      "claim_digest": "121eeac464a71f2dbbf60b93b0f7ef50abd4e941ef7dce281e4fb8b800c4ec4b"
+    },
+    {
+      "claim_id": "moviechat_breakpoint_score",
+      "metric_id": "open_ended_quality_score_0_to_5",
+      "value": 2.96,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "breakpoint",
+        "evaluator": "gpt-3.5",
+        "source": "CVPR-2024 supplementary Table H5"
+      },
+      "claim_digest": "2b4b888a66a4c0d87c40356fadc1abdcd4e057dcee16924e9c31ca80ebd9f027"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "videochat_moviechat1k",
+      "description": "VideoChat baseline reported in the MovieChat-1K comparison.",
+      "qualifiers": {
+        "global_accuracy_percent": 61.0,
+        "global_score_0_to_5": 3.34,
+        "source": "CVPR-2024 supplementary evaluation"
+      },
+      "baseline_digest": "6e444e5b3e40a1c24259081743467a0b47b3a2c1829eceb9f0ad805717ef571b"
+    }
+  ],
   "deltas": [],
   "blockers": [
     "Full result reproduction requires acquisition of the official MovieChat-1K test video/QA bytes and released model weights into content-addressed artifact authority.",

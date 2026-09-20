@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vca_video",
-  "package_digest": "e840762bd5cf0f71b9a025adabc38df881de834aca5f1ef061f03d3edab1f402",
-  "definition_digest": "102d50a6a8f0ec9a24af11f9c2658cf9a071fe0c30de03bad4e57eb57dcc3574",
+  "package_digest": "bd50f9a2916f36e2bd08165a6f5f76af5e3711c448de7452580410a4c2724bda",
+  "definition_digest": "71b2e3512313cada1d7c398d136cb0f663b4a08bd7475d92c7d6f0bc31b1c058",
   "source_registry_digest": "993b22ccf2d2e42518ffca18ac76bb9e7465b2b1dfd22cf2c63ca2867c6a8a4b",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -99,8 +99,86 @@
     }
   ],
   "primary_executable": "research/reproductions/vca_video/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "vca_egoschema_accuracy",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 73.6,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "average_frames": 7.2,
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "claim_digest": "c4a87cff0f2c30cf690ea96e7ffd0317ed4ddfb55b5a8660ad555811dbad9a93"
+    },
+    {
+      "claim_id": "vca_egoschema_average_frames",
+      "metric_id": "average_selected_frame_count",
+      "value": 7.2,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "accuracy_percent": 73.6,
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "claim_digest": "b7fdc9f251b6d41a992992ae304e7a0970b7ffc8e90c23bffc37be6c74658b90"
+    },
+    {
+      "claim_id": "vca_lvbench_accuracy",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 41.3,
+      "qualifiers": {
+        "benchmark": "lvbench",
+        "average_frames": 20.0,
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "claim_digest": "dcb222bfbade2255ccb5123a271c43c70d4b676061f99297c961c330c44c03f7"
+    },
+    {
+      "claim_id": "vca_lvbench_average_frames",
+      "metric_id": "average_selected_frame_count",
+      "value": 20.0,
+      "qualifiers": {
+        "benchmark": "lvbench",
+        "accuracy_percent": 41.3,
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "claim_digest": "c4f61988d4b86bcffe57324a971ebe6839a8682f4bf86165a70d6d8b839514fd"
+    },
+    {
+      "claim_id": "vca_egoschema_uniform_gain",
+      "metric_id": "accuracy_gain_points",
+      "value": 3.2,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "comparison": "uniform-frame-gpt-4o",
+        "frame_budget": "less-than-30-percent",
+        "source": "ICCV-2025 paper analysis"
+      },
+      "claim_digest": "a0561a87d5769cb95fa13485d3a05973d1dac2c1673dcf3ffd7ca460a722a5e8"
+    },
+    {
+      "claim_id": "vca_lvbench_uniform_gain",
+      "metric_id": "accuracy_gain_points",
+      "value": 6.6,
+      "qualifiers": {
+        "benchmark": "lvbench",
+        "comparison": "uniform-frame-gpt-4o",
+        "frame_budget": "less-than-30-percent",
+        "source": "ICCV-2025 paper analysis"
+      },
+      "claim_digest": "8095d265b542f76e9a1d733861da2cc7c38f09e2333217da3692b9a9ea7e72e7"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "vca_uniform_frame_gpt4o",
+      "description": "Uniform-frame GPT-4o baseline used to measure the gain from curiosity-driven active video exploration.",
+      "qualifiers": {
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "baseline_digest": "aafaac5a63cae9d864d6e6bedec8e6435fd94fe727d1376eae81ec1f490ae6ac"
+    }
+  ],
   "deltas": [],
   "blockers": [
     "LVBench, MMBench-Video and Video-MME benchmark cuts remain to be content-addressed alongside the bound EgoSchema public cut.",
