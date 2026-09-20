@@ -27,6 +27,11 @@ def test_generated_catalog_covers_exact_registry() -> None:
     assert {row.system_key for row in catalog.systems} == set(registry)
     assert catalog.entrypoint == "noetrium.api"
     assert catalog.symbol_index
+    assert catalog.direct_symbol_sources
+    assert not (set(catalog.direct_symbol_sources) & set(catalog.ambiguous_symbol_sources))
+    assert set(catalog.symbol_index) <= (
+        set(catalog.direct_symbol_sources) | set(catalog.ambiguous_symbol_sources)
+    )
     assert catalog.topology_digest
     assert (
         ROOT / "docs/architecture/VNEXT_SYSTEM_CATALOG.json"
@@ -83,6 +88,17 @@ def test_unified_api_supports_symbol_search_and_schema_discovery() -> None:
 
     assert api.search("definitely-not-a-noetrium-symbol") == ()
     assert api.describe("definitely-not-a-noetrium-symbol") == ()
+
+
+def test_unified_api_resolution_index_and_unknown_suggestions() -> None:
+    from noetrium import api
+
+    assert api.catalog().direct_source("AgentMethodSpec")
+    assert not api.catalog().ambiguous_sources("AgentMethodSpec")
+    assert api.resolve("AgentMethodSpec") is api.AgentMethodSpec
+
+    with pytest.raises(AttributeError, match="did you mean"):
+        api.resolve("AgentMethodSpe")
 
 
 def test_unified_api_discovers_registry_and_helper_surfaces() -> None:
