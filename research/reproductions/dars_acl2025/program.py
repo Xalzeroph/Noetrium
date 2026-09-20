@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import DARS_FIDELITY
 
 DARS_PHASES = (
@@ -10,7 +10,7 @@ DARS_PHASES = (
     AgentPhaseSpec("select", "dars.select", "Aggregate branch outcomes and select the best repair trajectory."),
 )
 
-DARS_METHOD_PROGRAM = build_agent_phase_program(
+DARS_METHOD_PROGRAM = AgentMethodSpec(
     method_id="dars",
     implementation_version="2025-paper-protocol",
     schema_version="dars.phase-workflow.v1",
@@ -24,5 +24,5 @@ DARS_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("dars.phase-transcript", "dars.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("dars_trajectory",),
-)
+).compile()
 __all__ = ["DARS_METHOD_PROGRAM", "DARS_PHASES"]
