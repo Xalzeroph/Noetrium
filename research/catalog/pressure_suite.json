@@ -255,6 +255,56 @@
       "package": "toolformer",
       "lineage": "self_supervised_tool_use",
       "enforced": true
+    },
+    {
+      "package": "videoarm_cvpr2026",
+      "lineage": "recent_2026_videoarm",
+      "enforced": true
+    },
+    {
+      "package": "watch_learn_cvpr2026",
+      "lineage": "recent_2026_watch_and_learn",
+      "enforced": true
+    },
+    {
+      "package": "lvagent_iccv2025",
+      "lineage": "recent_2025_lvagent",
+      "enforced": true
+    },
+    {
+      "package": "embodied_videoagent_iccv2025",
+      "lineage": "recent_2025_embodied_videoagent",
+      "enforced": false
+    },
+    {
+      "package": "openwebvoyager_acl2025",
+      "lineage": "recent_2025_openwebvoyager",
+      "enforced": true
+    },
+    {
+      "package": "adaptagent_acl2025",
+      "lineage": "recent_2025_adaptagent",
+      "enforced": true
+    },
+    {
+      "package": "r2d2_acl2025",
+      "lineage": "recent_2025_r2d2",
+      "enforced": true
+    },
+    {
+      "package": "cer_acl2025",
+      "lineage": "recent_2025_contextual_experience_replay",
+      "enforced": true
+    },
+    {
+      "package": "dars_acl2025",
+      "lineage": "recent_2025_dars",
+      "enforced": true
+    },
+    {
+      "package": "webagent_r1_emnlp2025",
+      "lineage": "recent_2025_webagent_r1",
+      "enforced": true
     }
   ],
   "publication_gate": "peer_reviewed_high_quality_only"
