@@ -141,4 +141,109 @@ def build_agent_phase_program(
     )
 
 
-__all__ = ["AgentPhaseSpec", "build_agent_phase_program"]
+def _cycle_route(first_phase_id: str, max_cycles: int):
+    def handler(request: MethodNodeRequest) -> MethodNodeResult:
+        previous_count = request.state.get("__agent_cycle_count", 0)
+        if type(previous_count) is not int or previous_count < 0:
+            raise ValueError("agent cycle count must be a non-negative integer")
+        completed = previous_count + 1
+        return MethodNodeResult(
+            value={
+                "completed_cycles": completed,
+                "last_result": request.previous_value,
+            },
+            state_update={"__agent_cycle_count": completed},
+            next_node="return" if completed >= max_cycles else first_phase_id,
+        )
+    return handler
+
+
+def build_agent_cycle_program(
+    *,
+    method_id: str,
+    implementation_version: str,
+    schema_version: str,
+    phases: tuple[AgentPhaseSpec, ...],
+    max_cycles: int,
+    configuration: JsonObject | None = None,
+    evidence_obligations: tuple[str, ...] = (),
+    metric_names: tuple[str, ...] = (),
+    artifact_kinds: tuple[str, ...] = (),
+) -> MethodProgram:
+    """Compile a bounded repeated phase cycle into the canonical MethodProgram ABI."""
+
+    if type(max_cycles) is not int or max_cycles < 1:
+        raise ValueError("agent cycle max_cycles must be positive")
+    if type(phases) is not tuple or not phases:
+        raise ValueError("agent cycle program requires at least one phase")
+    if any(type(row) is not AgentPhaseSpec for row in phases):
+        raise TypeError("phases must contain AgentPhaseSpec")
+    phase_ids = tuple(row.phase_id for row in phases)
+    if len(phase_ids) != len(set(phase_ids)):
+        raise ValueError("agent cycle phase ids must be unique")
+
+    cfg: JsonObject = {
+        "authoring_form": "agent_phase_cycle.v1",
+        "max_cycles": max_cycles,
+        "phases": tuple(
+            {
+                "phase_id": row.phase_id,
+                "agent_id": row.agent_id,
+                "instruction": row.instruction,
+                "max_visits": max(row.max_visits, max_cycles),
+            }
+            for row in phases
+        ),
+    }
+    if configuration:
+        cfg = {**cfg, **configuration}
+
+    identity = MethodProgramIdentity(
+        MethodIdentity(
+            method_id=method_id,
+            implementation_version=implementation_version,
+            abi_version="noetrium.method-machine.v1",
+            schema_version=schema_version,
+        ),
+        configuration_digest=canonical_digest(cfg),
+    )
+    builder = MethodProgramBuilder(identity, entrypoint=phase_ids[0])
+    for index, phase in enumerate(phases):
+        next_id = phase_ids[index + 1] if index + 1 < len(phases) else "cycle_route"
+        builder.agent(
+            phase.phase_id,
+            f"{method_id}.{phase.phase_id}",
+            phase.agent_id,
+            (next_id,),
+            view_handler=_phase_view(phase),
+            max_visits=max(phase.max_visits, max_cycles),
+            evidence_obligations=(f"{method_id}.{phase.phase_id}",),
+        )
+    builder.route(
+        "cycle_route",
+        f"{method_id}.cycle-route",
+        _cycle_route(phase_ids[0], max_cycles),
+        (phase_ids[0], "return"),
+        max_visits=max_cycles,
+    )
+    builder.return_node(
+        "return",
+        f"{method_id}.return",
+        _return_view(method_id, phase_ids),
+    )
+    return builder.build(
+        configuration=cfg,
+        execution_class=MethodExecutionClass.EFFECT_RECORDED,
+        evidence_obligations=evidence_obligations or tuple(
+            f"{method_id}.{phase_id}" for phase_id in phase_ids
+        ),
+        metric_names=metric_names,
+        artifact_kinds=artifact_kinds,
+    )
+
+
+__all__ = [
+    "AgentPhaseSpec",
+    "build_agent_cycle_program",
+    "build_agent_phase_program",
+]

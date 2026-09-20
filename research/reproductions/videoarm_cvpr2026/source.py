@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.provenance import MethodSourceRegistry, PublicationSourceLane
+from noetrium_platform.research.provenance import MethodSourceLane, MethodSourceLaneKind, MethodSourceRegistry, PublicationSourceLane
 
 VIDEOARM_PUBLICATION = PublicationSourceLane(
     lane_id="cvpr_2026",
@@ -11,6 +11,16 @@ VIDEOARM_PUBLICATION = PublicationSourceLane(
     revision="CVPR 2026 proceedings publication",
 )
 
-SOURCES = MethodSourceRegistry(lanes=(VIDEOARM_PUBLICATION,))
+VIDEOARM_OFFICIAL_EXECUTABLE = MethodSourceLane(
+    lane_id="official_executable",
+    kind=MethodSourceLaneKind.OFFICIAL_EXECUTABLE,
+    repository="https://github.com/MILVLG/videoarm",
+    commit="af1973ad8ffdb1ae3815c1f4e3f22b8c82858ef6",
+    artifacts=("README.md",),
+)
+
+SOURCES = MethodSourceRegistry(
+    lanes=(VIDEOARM_PUBLICATION, VIDEOARM_OFFICIAL_EXECUTABLE)
+)
 
 __all__ = ["VIDEOARM_PUBLICATION","SOURCES"]
