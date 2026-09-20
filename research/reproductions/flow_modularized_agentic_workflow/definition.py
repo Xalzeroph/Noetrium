@@ -86,6 +86,9 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/flow_modularized_agentic_workflow/study.py",
         ),
     ),
+    primary_executable=(
+        "research/reproductions/flow_modularized_agentic_workflow/program.py"
+    ),
     reported_results=(
         ReportedResult(
             claim_id="flow_three_task_average_success",
