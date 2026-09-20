@@ -7,7 +7,7 @@ from typing import Protocol
 
 from noetrium_platform.foundation.portfolio.api import ProjectIdentity
 
-PROJECT_AUTHOR_TEMPLATE_REVISION = "noetrium.project-template.author.v2"
+PROJECT_AUTHOR_TEMPLATE_REVISION = "noetrium.project-template.author.v3"
 PROJECT_PROVIDER_TEMPLATE_REVISION = "noetrium.project-template.provider.v2"
 
 
