@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium.platform import (
+from noetrium.api import (
     QualifiedProjectModelBinding,
     bind_qualified_project_model,
 )
