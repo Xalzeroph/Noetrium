@@ -83,6 +83,65 @@ class PaperStudySpec:
         )
 
 
+    def trial_protocol(
+        self,
+        benchmark: BenchmarkTaskSet,
+        *,
+        benchmark_split_id: str,
+        treatment: str = "full",
+        model_binding: str = "model.paper-authoritative",
+    ) -> ExperimentTrialProtocolIdentity:
+        return trial_protocol_from_spec(
+            self,
+            benchmark,
+            benchmark_split_id=benchmark_split_id,
+            treatment=treatment,
+            model_binding=model_binding,
+        )
+
+    def study(
+        self,
+        benchmark: BenchmarkTaskSet,
+        *,
+        benchmark_split_id: str,
+        treatment: str = "full",
+        model_binding: str = "model.paper-authoritative",
+        repetitions: int = 1,
+        max_parallel_assignments: int = 8,
+        max_steps: int = 4096,
+        max_model_calls: int = 4096,
+        max_working_seconds: float = 14400.0,
+    ) -> ResearchStudyDefinition:
+        return build_study_from_spec(
+            self,
+            benchmark,
+            benchmark_split_id=benchmark_split_id,
+            treatment=treatment,
+            model_binding=model_binding,
+            repetitions=repetitions,
+            max_parallel_assignments=max_parallel_assignments,
+            max_steps=max_steps,
+            max_model_calls=max_model_calls,
+            max_working_seconds=max_working_seconds,
+        )
+
+    def ablation_matrix(
+        self,
+        benchmark: BenchmarkTaskSet,
+        *,
+        benchmark_split_id: str,
+        model_binding: str = "model.paper-authoritative",
+        repetitions: int = 1,
+    ) -> tuple[ResearchStudyDefinition, ...]:
+        return build_ablation_matrix_from_spec(
+            self,
+            benchmark,
+            benchmark_split_id=benchmark_split_id,
+            model_binding=model_binding,
+            repetitions=repetitions,
+        )
+
+
 def _measurement(metric: str, *, domain: str) -> MeasurementDefinition:
     normalized = metric.lower()
     if (
