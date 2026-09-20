@@ -122,6 +122,24 @@ def test_agent_study_spec_removes_common_single_method_boilerplate() -> None:
     assert model.prompt_configuration_id == "react.prompt"
 
 
+def test_agent_study_spec_derives_common_identity_from_method() -> None:
+    spec = AgentStudySpec(
+        method_id="react",
+        model="model.react",
+        measurements=(_success(),),
+    )
+    study = spec.build(
+        _benchmark(),
+        trial=ExperimentTrialProtocolIdentity("trial.react", "9" * 64),
+        limits=TrialBudget("react-limits", max_steps=10),
+    )
+
+    assert spec.project_id == "react"
+    assert spec.study_id == "react.study"
+    assert study.project_id == "react"
+    assert study.study_id == "react.study"
+
+
 def test_agent_study_spec_requires_explicit_science_and_declared_benchmark() -> None:
     spec = AgentStudySpec(
         project_id="project",
