@@ -12,21 +12,16 @@ class PublicAPIImportTests(unittest.TestCase):
         for module in (telemetry, forensics, model_serving, operator, prompt_runtime):
             self.assertIsNotNone(module)
 
-    def test_public_contract_and_extension_layers_are_discoverable(self):
-        import components
+    def test_unified_downstream_api_is_discoverable(self):
         import noetrium
-        import components.reference
-        import noetrium.contracts
-        import orchestration
-        from noetrium.contracts import AgentGoal, JsonValue, ResearchMethodHost
-        from orchestration.multi_agent import MultiAgentRuntime
+        from noetrium import api
 
-        self.assertEqual(noetrium.__all__, ["__version__"])
-        self.assertIsNotNone(AgentGoal)
-        self.assertIsNotNone(JsonValue)
-        self.assertIsNotNone(ResearchMethodHost)
-        self.assertIsNotNone(components.reference)
-        self.assertIsNotNone(MultiAgentRuntime)
+        self.assertEqual(noetrium.__all__, ["api", "__version__"])
+        self.assertIsNotNone(api.AgentGoal)
+        self.assertIsNotNone(api.JsonValue)
+        self.assertTrue(callable(api.compile_research_method))
+        self.assertIsNotNone(api.MultiAgentRuntime)
+        self.assertIsNotNone(api.VersionedMemoryGraph)
 
     def test_removed_extension_aliases_are_not_importable(self):
         for module_name in (
