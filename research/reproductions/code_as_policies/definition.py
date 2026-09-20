@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -36,7 +38,7 @@ REPRODUCTION = ReproductionDefinition(
             "robot_policy_synthesis",
         ),
         priority=1,
-        benchmark_ids=(),
+        benchmark_ids=("robocodegen-37",),
         platform_pressure=(
             "execution/workflow",
             "environment/embodied",
@@ -66,6 +68,10 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("benchmark"),
+            path="research/reproductions/code_as_policies/benchmark.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("fidelity"),
             path="research/reproductions/code_as_policies/fidelity.py",
         ),
@@ -78,13 +84,87 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/code_as_policies/program.py",
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("study"),
+            path="research/reproductions/code_as_policies/study.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
             path="research/reproductions/code_as_policies/source.py",
         ),
     ),
     primary_executable="research/reproductions/code_as_policies/program.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="code_as_policies_robocodegen_hierarchical_hierarchical",
+            metric_id="success_rate_percent",
+            value=97.0,
+            qualifiers={
+                "benchmark": "robocodegen-37",
+                "successes": 36,
+                "tasks": 37,
+                "model": "code-davinci-002",
+                "generation": "hierarchical-code-gen",
+                "prompt": "hierarchical",
+                "source": "official paper-era notebook Table II experiment",
+            },
+        ),
+        ReportedResult(
+            claim_id="code_as_policies_robocodegen_hierarchical_flat_prompt",
+            metric_id="success_rate_percent",
+            value=86.0,
+            qualifiers={
+                "benchmark": "robocodegen-37",
+                "successes": 32,
+                "tasks": 37,
+                "model": "code-davinci-002",
+                "generation": "hierarchical-code-gen",
+                "prompt": "flat",
+                "source": "official paper-era notebook Table II experiment",
+            },
+        ),
+        ReportedResult(
+            claim_id="code_as_policies_robocodegen_flat_hierarchical_prompt",
+            metric_id="success_rate_percent",
+            value=70.0,
+            qualifiers={
+                "benchmark": "robocodegen-37",
+                "successes": 26,
+                "tasks": 37,
+                "model": "code-davinci-002",
+                "generation": "flat-code-gen",
+                "prompt": "hierarchical",
+                "source": "official paper-era notebook Table II experiment",
+            },
+        ),
+        ReportedResult(
+            claim_id="code_as_policies_robocodegen_flat_flat_prompt",
+            metric_id="success_rate_percent",
+            value=81.0,
+            qualifiers={
+                "benchmark": "robocodegen-37",
+                "successes": 30,
+                "tasks": 37,
+                "model": "code-davinci-002",
+                "generation": "flat-code-gen",
+                "prompt": "flat",
+                "source": "official paper-era notebook Table II experiment",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="code_cushman_001_robocodegen",
+            description=(
+                "Paper-era code-cushman-001 comparisons under the same "
+                "RoboCodeGen notebook protocol."
+            ),
+            qualifiers={
+                "hierarchical_hierarchical_success_percent": 57.0,
+                "hierarchical_flat_success_percent": 57.0,
+                "source": "official paper-era notebook",
+            },
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("substitution"),
@@ -121,6 +201,9 @@ REPRODUCTION = ReproductionDefinition(
         "public model artifact.",
         "Formal embodied runs require a qualified isolated generated-program "
         "environment provider exposing the frozen robot/perception API surface.",
+        "The RoboCodeGen notebook generates five randomized test inputs per task "
+        "without publishing a fixed NumPy seed, so exact matched 36/37 execution "
+        "requires an explicitly reconstructed stochastic cut.",
         "Matched physical-robot claims require the paper-era robot platforms, "
         "perception/control stacks, prompts, task cuts, and evaluation artifacts "
         "under immutable content identity.",
@@ -128,6 +211,7 @@ REPRODUCTION = ReproductionDefinition(
     evidence_refs=(),
     scientific_tests=(
         "tests/test_scientific_code_as_policies_v1.py",
+        "tests/test_scientific_code_as_policies_robocodegen_v1.py",
     ),
 )
 
