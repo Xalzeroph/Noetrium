@@ -69,12 +69,12 @@ include = ["{package}*"]
 
 def _method_module(request: ProjectCreateRequest) -> str:
     return f'''"""Paper-specific method semantics."""
-from noetrium.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium import api
 
-METHOD_SPEC = AgentMethodSpec(
+METHOD_SPEC = api.AgentMethodSpec(
     method_id={request.project_id!r},
     phases=(
-        AgentPhaseSpec(
+        api.AgentPhaseSpec(
             "solve",
             "agent.solve",
             "Implement the paper-specific method semantics here.",
@@ -89,11 +89,11 @@ __all__ = ["METHOD_PROGRAM", "METHOD_SPEC"]
 
 def _study_module() -> str:
     return '''"""Paper experiment declaration."""
-from noetrium.api import AgentStudySpec
+from noetrium import api
 
 from .method import METHOD_SPEC
 
-STUDY_SPEC = AgentStudySpec(
+STUDY_SPEC = api.AgentStudySpec(
     project_id=METHOD_SPEC.method_id,
     study_id=f"{METHOD_SPEC.method_id}.study",
     method_id=METHOD_SPEC.method_id,
@@ -109,13 +109,7 @@ def _generated_test_module(package: str) -> str:
     return f'''import unittest
 from pathlib import Path
 
-from noetrium.api import (
-    AgentMethodSpec,
-    AgentStudySpec,
-    MethodProgram,
-    compile_research_method,
-    decode_project_manifest_bytes,
-)
+from noetrium import api
 from {package}.method import METHOD_PROGRAM, METHOD_SPEC
 from {package}.study import STUDY_SPEC, build_study
 
@@ -124,7 +118,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class GeneratedProjectTests(unittest.TestCase):
     def test_manifest_identity_matches_method_identity(self):
-        manifest = decode_project_manifest_bytes(
+        manifest = api.decode_project_manifest_bytes(
             (ROOT / {_MANIFEST_PATH!r}).read_bytes()
         )
         self.assertEqual(
@@ -133,11 +127,11 @@ class GeneratedProjectTests(unittest.TestCase):
         )
 
     def test_method_and_study_use_unified_public_contracts(self):
-        self.assertIsInstance(METHOD_SPEC, AgentMethodSpec)
-        self.assertIsInstance(METHOD_PROGRAM, MethodProgram)
-        self.assertIsInstance(STUDY_SPEC, AgentStudySpec)
+        self.assertIsInstance(METHOD_SPEC, api.AgentMethodSpec)
+        self.assertIsInstance(METHOD_PROGRAM, api.MethodProgram)
+        self.assertIsInstance(STUDY_SPEC, api.AgentStudySpec)
         self.assertTrue(callable(build_study))
-        self.assertTrue(callable(compile_research_method))
+        self.assertTrue(callable(api.compile_research_method))
 
 
 if __name__ == "__main__":
@@ -152,7 +146,7 @@ This is a unified Noetrium downstream project.
 
 Edit `method.py` for paper-specific method semantics and `study.py` for the
 scientific experiment declaration. Import platform capabilities only from
-`noetrium.api`.
+`from noetrium import api`.
 
 Runtime/provider/application code is optional project-owned extension code; it
 is not generated as a separate project type.
