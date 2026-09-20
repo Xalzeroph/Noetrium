@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from research.reproductions.frontier_2026.study import PaperStudySpec
+from research.authoring.frontier_2026.study import PaperStudySpec
 from research.reproductions.motus_cvpr2026.program import METHOD_PROGRAM as MOTUS
 from research.reproductions.motus_cvpr2026.study import SPEC as MOTUS_SPEC
 from research.reproductions.vilomem_cvpr2026.program import METHOD_PROGRAM as VILOMEM
