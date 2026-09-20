@@ -103,6 +103,10 @@ def build_frontier_2026_task_set(
     task_ids = tuple(row.task_id for row in records)
     if len(task_ids) != len(set(task_ids)):
         raise ValueError("frontier 2026 task ids must be unique")
+    schema_ids = {row.schema_id for row in records}
+    if len(schema_ids) != 1:
+        raise ValueError("one benchmark cut must use one task schema")
+    task_schema_id = next(iter(schema_ids))
 
     ordered = tuple(sorted(records, key=lambda row: row.task_id))
     tasks = tuple(
@@ -139,6 +143,7 @@ def build_frontier_2026_task_set(
             "revision": revision,
             "source_uri": source_uri,
             "source_digest": source_digest,
+            "task_schema_id": task_schema_id,
             "task_ids": tuple(row.task_id for row in ordered),
             "splits": tuple((split.split_id, split.task_ids) for split in splits),
         }
@@ -147,7 +152,7 @@ def build_frontier_2026_task_set(
         benchmark_id=benchmark_id,
         revision_id=revision,
         source_digest=source_digest,
-        task_schema_id="frontier-2026.task.v1",
+        task_schema_id=task_schema_id,
         tasks=tasks,
         splits=splits,
         selection_policy_digest=selection_policy_digest,
