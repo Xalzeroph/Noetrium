@@ -69,13 +69,19 @@ def build_game24_paper_task_set(
         )
         for row in ordered
     )
-    return api.BenchmarkTaskSet(
+    return api.BenchmarkCutSpec(
         benchmark_id=GAME24_BENCHMARK_ID,
         revision_id=GAME24_PAPER_REVISION,
         source_digest=source_digest,
         task_schema_id=GAME24_TASK_SCHEMA_ID,
-        tasks=tasks,
-        splits=(api.TaskSetSplit(GAME24_PAPER_SPLIT, tuple(row.task_id for row in ordered)),),
+    ).build(
+        tasks,
+        splits=(
+            api.TaskSetSplit(
+                GAME24_PAPER_SPLIT,
+                tuple(row.task_id for row in ordered),
+            ),
+        ),
         selection_policy_digest=GAME24_SELECTION_POLICY_DIGEST,
     )
 
