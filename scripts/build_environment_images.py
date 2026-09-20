@@ -75,6 +75,17 @@ def _profile_map(data: dict) -> dict[str, dict]:
     return result
 
 
+def _image_exists(tag: str) -> bool:
+    completed = subprocess.run(
+        ("docker", "image", "inspect", tag),
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return completed.returncode == 0
+
+
 def _image_identity(tag: str) -> dict:
     raw = _run(
         (
@@ -104,6 +115,7 @@ def build_environment_images(
     output: Path,
     java_runtime_image: str,
     node_version: str,
+    rebuild: bool = False,
 ) -> dict:
     source_sha = _git("rev-parse", "HEAD")
     if _git("status", "--porcelain"):
@@ -186,24 +198,26 @@ def build_environment_images(
     ]
 
     base_tag = f"noetrium:{source_sha}"
-    _run(
-        (
-            "docker",
-            "build",
-            "--build-arg",
-            f"PLATFORM_SOURCE_SHA={source_sha}",
-            "--build-arg",
-            f"PLATFORM_WHEEL_SHA256={wheel_sha256}",
-            "--build-arg",
+    reused_base = _image_exists(base_tag) and not rebuild
+    if not reused_base:
+        _run(
             (
-                "PLATFORM_DISTRIBUTION_EVIDENCE_SHA256="
-                f"{distribution_evidence_sha256}"
-            ),
-            "--tag",
-            base_tag,
-            str(context),
+                "docker",
+                "build",
+                "--build-arg",
+                f"PLATFORM_SOURCE_SHA={source_sha}",
+                "--build-arg",
+                f"PLATFORM_WHEEL_SHA256={wheel_sha256}",
+                "--build-arg",
+                (
+                    "PLATFORM_DISTRIBUTION_EVIDENCE_SHA256="
+                    f"{distribution_evidence_sha256}"
+                ),
+                "--tag",
+                base_tag,
+                str(context),
+            )
         )
-    )
     base_verification = work_root / "base-container-verification.json"
     _run(
         (
@@ -221,7 +235,9 @@ def build_environment_images(
         )
     )
 
-    images: dict[str, dict] = {"base": _image_identity(base_tag)}
+    base_identity = _image_identity(base_tag)
+    base_identity["reused"] = reused_base
+    images: dict[str, dict] = {"base": base_identity}
     for profile_id in profiles:
         row = by_id[profile_id]
         compose = row.get("compose")
@@ -237,19 +253,21 @@ def build_environment_images(
         env["JAVA_RUNTIME_IMAGE"] = java_runtime_image
         env["NODE_VERSION"] = node_version
         env["PLATFORM_HOST_DATA_ROOT"] = str(runtime_root)
-        _run(
-            (
-                "docker",
-                "compose",
-                "-f",
-                "deploy/compose.yaml",
-                "-f",
-                compose,
-                "build",
-                "platform-runtime",
-            ),
-            env=env,
-        )
+        reused_profile = _image_exists(tag) and not rebuild
+        if not reused_profile:
+            _run(
+                (
+                    "docker",
+                    "compose",
+                    "-f",
+                    "deploy/compose.yaml",
+                    "-f",
+                    compose,
+                    "build",
+                    "platform-runtime",
+                ),
+                env=env,
+            )
         _run(
             (
                 "docker",
@@ -266,7 +284,9 @@ def build_environment_images(
             ),
             env=env,
         )
-        images[profile_id] = _image_identity(tag)
+        profile_identity = _image_identity(tag)
+        profile_identity["reused"] = reused_profile
+        images[profile_id] = profile_identity
 
     receipt = {
         "schema": "noetrium.environment-image-build.v1",
@@ -278,6 +298,7 @@ def build_environment_images(
         "java_runtime_image": java_runtime_image,
         "node_version": node_version,
         "profiles": list(profiles),
+        "rebuild": rebuild,
         "images": images,
         "base_verification": json.loads(
             base_verification.read_text(encoding="utf-8")
@@ -320,6 +341,11 @@ def main(argv: list[str] | None = None) -> int:
         "--node-version",
         default=os.environ.get("NODE_VERSION", "22.22.2"),
     )
+    parser.add_argument(
+        "--rebuild",
+        action="store_true",
+        help="Ignore exact-SHA image cache and rebuild base/profile images.",
+    )
     args = parser.parse_args(argv)
     try:
         build_environment_images(
@@ -328,6 +354,7 @@ def main(argv: list[str] | None = None) -> int:
             output=args.output,
             java_runtime_image=args.java_runtime_image,
             node_version=args.node_version,
+            rebuild=args.rebuild,
         )
     except Exception as exc:
         print(
