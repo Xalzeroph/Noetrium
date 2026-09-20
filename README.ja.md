@@ -269,8 +269,8 @@ Deployment 層は immutable software と mutable runtime state を分離し、ho
 Minecraft は first-party の再利用可能な environment Provider です。Task suite と科学的 composition は downstream に残します。
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml run --rm platform-runtime minecraft-doctor
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
