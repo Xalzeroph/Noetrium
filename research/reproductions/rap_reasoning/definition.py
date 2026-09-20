@@ -51,8 +51,27 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="rap_llama33b_plan_generation_relative_gain",
+            metric_id="relative_improvement_percent",
+            value=33.0,
+            qualifiers={
+                "task": "plan generation",
+                "model": "LLaMA-33B",
+                "comparison": "CoT on GPT-4",
+                "source": "EMNLP 2023 abstract",
+            },
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="cot_gpt4_plan_generation",
+            description=(
+                "GPT-4 chain-of-thought plan-generation baseline used by the "
+                "RAP paper for the reported relative improvement comparison."
+            ),
+            qualifiers={"source": "EMNLP 2023 paper"},
+        ),
     ),
     deltas=(
         ReproductionDelta(

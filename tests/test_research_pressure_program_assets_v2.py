@@ -155,3 +155,21 @@ def test_second_ten_paper_wave_is_claim_bound_and_not_scaffold_only() -> None:
         "toolllm_toolbench": 6,
         "code_as_policies": 4,
     })
+
+
+
+def test_third_ten_paper_classic_wave_is_claim_bound() -> None:
+    """Lock a third peer-reviewed wave across reasoning, tools, GUI and agents."""
+    status = project()
+    _assert_paper_wave(status, {
+        "tree_of_thoughts": 1,
+        "rap_reasoning": 1,
+        "self_refine": 1,
+        "hugginggpt": 5,
+        "cogagent": 4,
+        "seeclick": 7,
+        "chain_of_thought_gsm8k": 2,
+        "self_consistency_gsm8k": 2,
+        "camel_role_playing": 4,
+        "react_alfworld": 8,
+    })
