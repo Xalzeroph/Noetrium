@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import CER_FIDELITY
 
 CER_PHASES = (
@@ -10,7 +10,7 @@ CER_PHASES = (
     AgentPhaseSpec("store_experience", "cer.store", "Store the contextualized experience for future self-improvement."),
 )
 
-CER_METHOD_PROGRAM = build_agent_phase_program(
+CER_METHOD_PROGRAM = AgentMethodSpec(
     method_id="contextual-experience-replay",
     implementation_version="2025-paper-protocol",
     schema_version="contextual-experience-replay.phase-workflow.v1",
@@ -24,5 +24,5 @@ CER_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("contextual-experience-replay.phase-transcript", "contextual-experience-replay.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("contextual-experience-replay_trajectory",),
-)
+).compile()
 __all__ = ["CER_METHOD_PROGRAM", "CER_PHASES"]
