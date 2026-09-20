@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "metagpt_software_company",
-  "package_digest": "51e3d244bff58e1a1fcff76ba6070c23fad76c37782d6ba696d8cc0ae1333c53",
-  "definition_digest": "eab58687883ea7023a65861c1825afcacde447eb06c05226d19b02ece15a6d80",
+  "package_digest": "ea75f83e562c07d5a7d9c4eb6ff54b2459de9e6f130bdecea0e5fc88c3b3496c",
+  "definition_digest": "19f94a698bcc04838c9aa612f99c10ad5552b30395c958b6f24df30d9f338e73",
   "source_registry_digest": "1ce38ee388bf0eb998ce4109eafce04c083c168dbd6b10ee369a739c76c06ae8",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -110,8 +110,17 @@
       "baseline_digest": "c7aa246b68712fb3e98c4f8ae30246f709c7825e276b2c8d120d8505c1ad7234"
     }
   ],
-  "deltas": [],
-  "blockers": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The typed executable Study currently binds the 164-task HumanEval cut, while the recorded paper claim is the MBPP executive-feedback ablation. HumanEval execution evidence must not be used to qualify the MBPP claim.",
+      "delta_digest": "6bd28ff8c446d33c095eb4e2acdb75d66bde0d4bf72737ee5c116ef7f94b84f1"
+    }
+  ],
+  "blockers": [
+    "the paper MBPP executive-feedback benchmark cut and evaluator are not yet bound as an executable Study",
+    "the exact paper-era hosted model service revisions used for the MBPP ablation are not immutable public model artifacts"
+  ],
   "evidence_refs": [],
   "scientific_tests": [
     {
