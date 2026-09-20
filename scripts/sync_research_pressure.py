@@ -322,6 +322,19 @@ def _lane_status(
     return detail
 
 
+def _known_benchmark_ids() -> set[str]:
+    document = _load(BENCHMARK_CATALOG_PATH)
+    rows = document.get("benchmarks")
+    if not isinstance(rows, list):
+        raise TypeError("benchmark catalog benchmarks must be a list")
+    return {
+        row["benchmark_id"]
+        for row in rows
+        if isinstance(row, Mapping)
+        and isinstance(row.get("benchmark_id"), str)
+    }
+
+
 def project() -> dict[str, Any]:
     suite = _load(SUITE_PATH)
     if suite.get("schema") != SUITE_SCHEMA:

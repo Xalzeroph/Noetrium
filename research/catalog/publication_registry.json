@@ -1,6 +1,6 @@
 {
   "schema": "noetrium.publication-registry.v1",
-  "updated_at": "2026-09-19",
+  "updated_at": "2026-09-20",
   "publications": [
     {
       "id": "code-as-policies",
@@ -606,6 +606,116 @@
       "priority_class": "P1_FLAGSHIP",
       "reproduction_method_id": "optimus2-minecraft",
       "evidence_url": "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html"
+    },
+    {
+      "id": "videoarm",
+      "kind": "method",
+      "title": "VideoARM: Agentic Reasoning over Hierarchical Memory for Long-Form Video Understanding",
+      "year": 2026,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "videoarm",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2026/html/Yin_VideoARM_Agentic_Reasoning_over_Hierarchical_Memory_for_Long-Form_Video_Understanding_CVPR_2026_paper.html"
+    },
+    {
+      "id": "watch-and-learn",
+      "kind": "method",
+      "title": "Watch and Learn: Learning to Use Computers from Online Videos",
+      "year": 2026,
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "watch-and-learn",
+      "evidence_url": "https://openaccess.thecvf.com/content/CVPR2026/html/Song_Watch_and_Learn_Learning_to_Use_Computers_from_Online_Videos_CVPR_2026_paper.html"
+    },
+    {
+      "id": "lvagent",
+      "kind": "method",
+      "title": "LVAgent: Long Video Understanding by Multi-Round Dynamical Collaboration of MLLM Agents",
+      "year": 2025,
+      "venue": "ICCV",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "lvagent",
+      "evidence_url": "https://openaccess.thecvf.com/content/ICCV2025/html/Chen_LVAgent_Long_Video_Understanding_by_Multi-Round_Dynamical_Collaboration_of_MLLM_ICCV_2025_paper.html"
+    },
+    {
+      "id": "embodied-videoagent",
+      "kind": "method",
+      "title": "Embodied VideoAgent: Persistent Memory from Egocentric Videos and Embodied Sensors Enables Dynamic Scene Understanding",
+      "year": 2025,
+      "venue": "ICCV",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "embodied-videoagent",
+      "evidence_url": "https://openaccess.thecvf.com/content/ICCV2025/html/Fan_Embodied_VideoAgent_Persistent_Memory_from_Egocentric_Videos_and_Embodied_Sensors_ICCV_2025_paper.html"
+    },
+    {
+      "id": "openwebvoyager",
+      "kind": "method",
+      "title": "OpenWebVoyager: Building Multimodal Web Agents via Iterative Real-World Exploration, Feedback and Optimization",
+      "year": 2025,
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "openwebvoyager",
+      "evidence_url": "https://aclanthology.org/2025.acl-long.1336/"
+    },
+    {
+      "id": "adaptagent",
+      "kind": "method",
+      "title": "AdaptAgent: Adapting Multimodal Web Agents with Few-Shot Learning from Human Demonstrations",
+      "year": 2025,
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "adaptagent",
+      "evidence_url": "https://aclanthology.org/2025.acl-long.1008/"
+    },
+    {
+      "id": "r2d2",
+      "kind": "method",
+      "title": "R2D2: Remembering, Replaying and Dynamic Decision Making with a Reflective Agentic Memory",
+      "year": 2025,
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "r2d2",
+      "evidence_url": "https://aclanthology.org/2025.acl-long.1464/"
+    },
+    {
+      "id": "contextual-experience-replay",
+      "kind": "method",
+      "title": "Contextual Experience Replay for Self-Improvement of Language Agents",
+      "year": 2025,
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "contextual-experience-replay",
+      "evidence_url": "https://aclanthology.org/2025.acl-long.694/"
+    },
+    {
+      "id": "dars",
+      "kind": "method",
+      "title": "DARS: Dynamic Action Re-Sampling to Enhance Coding Agent Performance by Adaptive Tree Traversal",
+      "year": 2025,
+      "venue": "ACL",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "dars",
+      "evidence_url": "https://aclanthology.org/2025.acl-long.973/"
+    },
+    {
+      "id": "webagent-r1",
+      "kind": "method",
+      "title": "WebAgent-R1: Training Web Agents via End-to-End Multi-Turn Reinforcement Learning",
+      "year": 2025,
+      "venue": "EMNLP",
+      "publication_status": "peer_reviewed_conference",
+      "priority_class": "P1_FLAGSHIP",
+      "reproduction_method_id": "webagent-r1",
+      "evidence_url": "https://aclanthology.org/2025.emnlp-main.401/"
     }
   ],
   "explicitly_ineligible_current_items": [
