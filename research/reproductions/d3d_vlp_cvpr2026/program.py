@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_cycle_program, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="d3d_vlp_cvpr2026"
 TITLE="D3D-VLP: Dynamic 3D Vision-Language-Planning Model for Embodied Grounding and Navigation"
 VENUE="CVPR 2026"
@@ -16,11 +16,11 @@ PHASES=(
     AgentPhaseSpec("navigate", "d3d_vlp.navigator", "Execute navigation actions toward the grounded target."),
     AgentPhaseSpec("feedback", "d3d_vlp.reasoner", "Use blocked-plan or missing-target feedback to trigger another reasoning cycle."),
 )
-METHOD_PROGRAM=build_agent_cycle_program(
+METHOD_PROGRAM=AgentMethodSpec(
     method_id=METHOD_ID,implementation_version="2026-paper-protocol",schema_version="d3d_vlp_cvpr2026.phase-workflow.v1",phases=PHASES,
     max_cycles=128,
     configuration={"paper_uri":PAPER_URI,"venue":VENUE,"benchmark_ids":BENCHMARK_IDS,"protocol":PROTOCOL,"ablations":ABLATIONS},
     evidence_obligations=(METHOD_ID+".phase-transcript",METHOD_ID+".model-tool-receipts",METHOD_ID+".metric-artifacts"),
     metric_names=METRICS,artifact_kinds=(METHOD_ID+"_trajectory",METHOD_ID+"_experiment_manifest"),
-)
+).compile()
 __all__=["ABLATIONS","BENCHMARK_IDS","METHOD_ID","METHOD_PROGRAM","METRICS","PAPER_URI","PHASES","PROTOCOL","TITLE","VENUE"]
