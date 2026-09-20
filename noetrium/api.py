@@ -21,10 +21,8 @@ from noetrium.contracts.discovery import (
 _EXTRA_MODULES = (
     "noetrium.contracts.json",
     "noetrium_platform.platform",
-    "components.reference.single_agent.agent",
-    "components.reference.single_agent.memory",
-    "components.reference.single_agent.tools",
-    "orchestration.multi_agent",
+    "components.api",
+    "orchestration.api",
     "noetrium_platform.research.experimentation.study.runtime",
     "noetrium_platform.research.experimentation.workbench.providers",
     "noetrium_platform.research.experimentation.workbench.runtime",
