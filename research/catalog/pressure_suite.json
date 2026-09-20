@@ -220,6 +220,76 @@
       "package": "optimus2_minecraft",
       "lineage": "minecraft_goal_observation_action_policy",
       "enforced": true
+    },
+    {
+      "package": "agent_q_surrogate",
+      "lineage": "web_agent_preference_learning_tree_search",
+      "enforced": false
+    },
+    {
+      "package": "agentless_swebench",
+      "lineage": "software_agent_agentless_repair",
+      "enforced": true
+    },
+    {
+      "package": "agentsquare",
+      "lineage": "automated_modular_agent_search",
+      "enforced": true
+    },
+    {
+      "package": "code_as_policies",
+      "lineage": "embodied_language_model_programs",
+      "enforced": false
+    },
+    {
+      "package": "cogagent",
+      "lineage": "multimodal_gui_agent",
+      "enforced": true
+    },
+    {
+      "package": "exact_vwa",
+      "lineage": "reflective_mcts_web_agent",
+      "enforced": false
+    },
+    {
+      "package": "flow_modularized_agentic_workflow",
+      "lineage": "modular_dynamic_agentic_workflow",
+      "enforced": true
+    },
+    {
+      "package": "gats",
+      "lineage": "graph_augmented_tree_search_world_model",
+      "enforced": false
+    },
+    {
+      "package": "lits_math500",
+      "lineage": "modular_language_model_tree_search",
+      "enforced": false
+    },
+    {
+      "package": "memgpt_classic",
+      "lineage": "virtual_context_memory_management",
+      "enforced": true
+    },
+    {
+      "package": "seeclick",
+      "lineage": "multimodal_gui_grounding_agent",
+      "enforced": true
+    },
+    {
+      "package": "toolformer",
+      "lineage": "self_supervised_tool_use",
+      "enforced": true
+    },
+    {
+      "package": "tree_search_language_model_agents",
+      "lineage": "test_time_tree_search_web_agent",
+      "enforced": false
+    },
+    {
+      "package": "ui_tars_desktop_v001",
+      "lineage": "native_multimodal_gui_agent",
+      "enforced": true
     }
   ],
   "publication_gate": "peer_reviewed_high_quality_only"
