@@ -7,125 +7,6 @@
   "formal_pressure_violation_count": 0,
   "method_queue": [
     {
-      "publication_id": "agentless",
-      "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
-      "year": 2025,
-      "venue": "FSE",
-      "priority_class": "P1_FIELD_LEADING",
-      "priority_order": 1,
-      "method_id": "agentless",
-      "packages": [
-        "agentless_swebench"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "agentsquare",
-      "title": "AgentSquare: Automatic LLM Agent Search in Modular Design Space",
-      "year": 2025,
-      "venue": "ICLR",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "agentsquare",
-      "packages": [
-        "agentsquare"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "flow-modularized-agentic-workflow",
-      "title": "Flow: Modularized Agentic Workflow Automation",
-      "year": 2025,
-      "venue": "ICLR",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "flow-modularized-agentic-workflow",
-      "packages": [
-        "flow_modularized_agentic_workflow"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "cogagent",
-      "title": "CogAgent: A Visual Language Model for GUI Agents",
-      "year": 2024,
-      "venue": "CVPR",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "cogagent",
-      "packages": [
-        "cogagent"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "seeclick",
-      "title": "SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents",
-      "year": 2024,
-      "venue": "ACL",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "seeclick",
-      "packages": [
-        "seeclick"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "code-as-policies",
-      "title": "Code as Policies: Language Model Programs for Embodied Control",
-      "year": 2023,
-      "venue": "ICRA",
-      "priority_class": "P1_FIELD_LEADING",
-      "priority_order": 1,
-      "method_id": "code-as-policies",
-      "packages": [
-        "code_as_policies"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "toolformer",
-      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
-      "year": 2023,
-      "venue": "NeurIPS",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "toolformer",
-      "packages": [
-        "toolformer"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
       "publication_id": "worldmm",
       "title": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
       "year": 2026,
@@ -202,6 +83,44 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "agentless",
+      "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+      "year": 2025,
+      "venue": "FSE",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": "agentless",
+      "packages": [
+        "agentless_swebench"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "agentless_swebench"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "agentsquare",
+      "title": "AgentSquare: Automatic LLM Agent Search in Modular Design Space",
+      "year": 2025,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "agentsquare",
+      "packages": [
+        "agentsquare"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "agentsquare"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "drvideo",
       "title": "DrVideo: Document Retrieval Based Long Video Understanding",
       "year": 2025,
@@ -236,6 +155,25 @@
       ],
       "pressure_packages": [
         "flash_vstream_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "flow-modularized-agentic-workflow",
+      "title": "Flow: Modularized Agentic Workflow Automation",
+      "year": 2025,
+      "venue": "ICLR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "flow-modularized-agentic-workflow",
+      "packages": [
+        "flow_modularized_agentic_workflow"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "flow_modularized_agentic_workflow"
       ],
       "implementation_state": "pressure_ready"
     },
@@ -392,6 +330,25 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "cogagent",
+      "title": "CogAgent: A Visual Language Model for GUI Agents",
+      "year": 2024,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "cogagent",
+      "packages": [
+        "cogagent"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "cogagent"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "lats",
       "title": "Language Agent Tree Search Unifies Reasoning, Acting, and Planning in Language Models",
       "year": 2024,
@@ -483,6 +440,25 @@
       ],
       "pressure_packages": [
         "optimus1_minecraft"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "seeclick",
+      "title": "SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents",
+      "year": 2024,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "seeclick",
+      "packages": [
+        "seeclick"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "seeclick"
       ],
       "implementation_state": "pressure_ready"
     },
@@ -616,6 +592,25 @@
       ],
       "pressure_packages": [
         "camel_role_playing"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "code-as-policies",
+      "title": "Code as Policies: Language Model Programs for Embodied Control",
+      "year": 2023,
+      "venue": "ICRA",
+      "priority_class": "P1_FIELD_LEADING",
+      "priority_order": 1,
+      "method_id": "code-as-policies",
+      "packages": [
+        "code_as_policies"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "code_as_policies"
       ],
       "implementation_state": "pressure_ready"
     },
@@ -787,6 +782,25 @@
       ],
       "pressure_packages": [
         "steve1_minecraft"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "toolformer",
+      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "year": 2023,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "toolformer",
+      "packages": [
+        "toolformer"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "toolformer"
       ],
       "implementation_state": "pressure_ready"
     },

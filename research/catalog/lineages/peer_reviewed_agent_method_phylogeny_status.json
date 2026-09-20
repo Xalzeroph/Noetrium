@@ -299,9 +299,11 @@
       "reproductions": [
         {
           "package": "code_as_policies",
-          "package_digest": "402ea45118948ac28860b26a489065bc08af9dcdd093882a33183400e91754d5",
+          "package_digest": "796a6aaa65a5cbdbfd6ccebc92d71f5807e0406dbd27ce6d02a3516bbd069e28",
           "lifecycle": "protocol_bound",
-          "benchmark_ids": [],
+          "benchmark_ids": [
+            "robocodegen-37"
+          ],
           "source_lanes": [
             {
               "lane_id": "icra_2023",
@@ -334,6 +336,11 @@
           ],
           "assets": [
             {
+              "kind": "benchmark",
+              "path": "research/reproductions/code_as_policies/benchmark.py",
+              "content_sha256": "02b05b9da591d8f926c6486fea00392bd107986cff2290801c53d0e796a43743"
+            },
+            {
               "kind": "fidelity",
               "path": "research/reproductions/code_as_policies/fidelity.py",
               "content_sha256": "34356f10bc193f77c7fb41be9f3a567b72f6fe907fcc2eae8d33e4545094a727"
@@ -349,6 +356,11 @@
               "content_sha256": "2f3ebd4f577c3ae23f7d887618e53bfa4df36d631909b17b1d7823eace49d66f"
             },
             {
+              "kind": "study",
+              "path": "research/reproductions/code_as_policies/study.py",
+              "content_sha256": "41e1d0bd79f7f0810ae0097a85c618b8ebf6b1b8ca42b633a7dc6181104929dc"
+            },
+            {
               "kind": "support",
               "path": "research/reproductions/code_as_policies/source.py",
               "content_sha256": "dea59b7ea581efe26f775130c12e27faf32a6819954151f036b587d67a0053b2"
@@ -357,13 +369,18 @@
           "blockers": [
             "Exact paper-era Codex/code-davinci-002 serving is not an immutable public model artifact.",
             "Formal embodied runs require a qualified isolated generated-program environment provider exposing the frozen robot/perception API surface.",
+            "The RoboCodeGen notebook generates five randomized test inputs per task without publishing a fixed NumPy seed, so exact matched 36/37 execution requires an explicitly reconstructed stochastic cut.",
             "Matched physical-robot claims require the paper-era robot platforms, perception/control stacks, prompts, task cuts, and evaluation artifacts under immutable content identity."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 4,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 3,
           "scientific_tests": [
+            {
+              "path": "tests/test_scientific_code_as_policies_robocodegen_v1.py",
+              "content_sha256": "c722e042583bf4dae05eb6476a6140273f1478adbda67bb089763c4113d61dec"
+            },
             {
               "path": "tests/test_scientific_code_as_policies_v1.py",
               "content_sha256": "5bc29113b2ffd4205d2e3d809773bebcb0932272e5f08041816d600b332cfdb4"
@@ -2539,7 +2556,7 @@
       "reproductions": [
         {
           "package": "flow_modularized_agentic_workflow",
-          "package_digest": "46c617fb76df942d2f028e5f7fc946ef68af9f87f8dfe0cf16a9ae14dd8a8434",
+          "package_digest": "0b5bb22b134b0ae0827f5a75c17868d02854535077b8a7e358e89eb379858ab7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "flow-practical-tasks"
@@ -2988,5 +3005,5 @@
       ]
     }
   ],
-  "projection_digest": "3ef691948196a244d8a90c6e1564b40e93cd52a629f1c21c2ab623abb813bdca"
+  "projection_digest": "d5b7e4bf9b2c497c64980b0d04d9e880b224904da315f2416de2d9804f383923"
 }

@@ -640,7 +640,9 @@
         }
       ],
       "priority": 1,
-      "benchmark_ids": [],
+      "benchmark_ids": [
+        "robocodegen-37"
+      ],
       "platform_pressure": [
         "artifact/lineage",
         "environment/embodied",

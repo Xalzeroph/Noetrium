@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v6",
   "authority": "generated_from_typed_definition_and_source",
   "package": "code_as_policies",
-  "package_digest": "402ea45118948ac28860b26a489065bc08af9dcdd093882a33183400e91754d5",
-  "definition_digest": "6d5ccae8dcda935ec6164fddbc7db3ca23a11a45896a5db46611f402afb2bdab",
+  "package_digest": "796a6aaa65a5cbdbfd6ccebc92d71f5807e0406dbd27ce6d02a3516bbd069e28",
+  "definition_digest": "792b4326e59ab9c8bba4c3ae77d98381d8a8237635321834eb72e0d27fedf172",
   "source_registry_digest": "e1872de17b63bc7ff35434899df6e865b802ced52f48f4b8b3757d34b8c9f15d",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -26,7 +26,9 @@
       "robot_policy_synthesis"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "robocodegen-37"
+    ],
     "platform_pressure": [
       "artifact/lineage",
       "environment/embodied",
@@ -59,7 +61,7 @@
     "reference_publications": [
       "https://arxiv.org/abs/2209.07753"
     ],
-    "catalog_digest": "0d5bb6d75239b07d92834850b1afa6eae2665cf60e5cff8971934f81fa218eba"
+    "catalog_digest": "7b5dd03d532e6e1459729dc4adb88fe670e8a60c84f34b67b6cc0a2c36386425"
   },
   "source_lanes": [
     {
@@ -115,6 +117,12 @@
   ],
   "assets": [
     {
+      "kind": "benchmark",
+      "path": "research/reproductions/code_as_policies/benchmark.py",
+      "declaration_digest": "b00b526a478f4b39045beb498b7bbd4a2224ec1b140a943bea2b65434d14cb4f",
+      "content_sha256": "02b05b9da591d8f926c6486fea00392bd107986cff2290801c53d0e796a43743"
+    },
+    {
       "kind": "fidelity",
       "path": "research/reproductions/code_as_policies/fidelity.py",
       "declaration_digest": "2a178a82e992a86a5a9c63d5e354b05770540417140454aa2faba53ae9aa78b9",
@@ -133,6 +141,12 @@
       "content_sha256": "2f3ebd4f577c3ae23f7d887618e53bfa4df36d631909b17b1d7823eace49d66f"
     },
     {
+      "kind": "study",
+      "path": "research/reproductions/code_as_policies/study.py",
+      "declaration_digest": "d614c87f5c66abe78e4ea8d57c037a9581641dc867d3b6889be7d4a79957fb20",
+      "content_sha256": "41e1d0bd79f7f0810ae0097a85c618b8ebf6b1b8ca42b633a7dc6181104929dc"
+    },
+    {
       "kind": "support",
       "path": "research/reproductions/code_as_policies/source.py",
       "declaration_digest": "7e45ff86509820809e819afedf4dc37b393833ed30d373f990f03c02cf05a372",
@@ -140,8 +154,80 @@
     }
   ],
   "primary_executable": "research/reproductions/code_as_policies/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "code_as_policies_robocodegen_hierarchical_hierarchical",
+      "metric_id": "success_rate_percent",
+      "value": 97.0,
+      "qualifiers": {
+        "benchmark": "robocodegen-37",
+        "successes": 36,
+        "tasks": 37,
+        "model": "code-davinci-002",
+        "generation": "hierarchical-code-gen",
+        "prompt": "hierarchical",
+        "source": "official paper-era notebook Table II experiment"
+      },
+      "claim_digest": "1bac341fca5e73fcced43d656317731f57933449814a413e70a44f74cc840e50"
+    },
+    {
+      "claim_id": "code_as_policies_robocodegen_hierarchical_flat_prompt",
+      "metric_id": "success_rate_percent",
+      "value": 86.0,
+      "qualifiers": {
+        "benchmark": "robocodegen-37",
+        "successes": 32,
+        "tasks": 37,
+        "model": "code-davinci-002",
+        "generation": "hierarchical-code-gen",
+        "prompt": "flat",
+        "source": "official paper-era notebook Table II experiment"
+      },
+      "claim_digest": "9b6382610cbf89cc1fb28838a17b59359f393f2179d472d6379aa4328a2e1d69"
+    },
+    {
+      "claim_id": "code_as_policies_robocodegen_flat_hierarchical_prompt",
+      "metric_id": "success_rate_percent",
+      "value": 70.0,
+      "qualifiers": {
+        "benchmark": "robocodegen-37",
+        "successes": 26,
+        "tasks": 37,
+        "model": "code-davinci-002",
+        "generation": "flat-code-gen",
+        "prompt": "hierarchical",
+        "source": "official paper-era notebook Table II experiment"
+      },
+      "claim_digest": "8631d693cfb132824c4ef1d2548cf174c96f5ff6cc70793a831ff05aad2587aa"
+    },
+    {
+      "claim_id": "code_as_policies_robocodegen_flat_flat_prompt",
+      "metric_id": "success_rate_percent",
+      "value": 81.0,
+      "qualifiers": {
+        "benchmark": "robocodegen-37",
+        "successes": 30,
+        "tasks": 37,
+        "model": "code-davinci-002",
+        "generation": "flat-code-gen",
+        "prompt": "flat",
+        "source": "official paper-era notebook Table II experiment"
+      },
+      "claim_digest": "8d07ac75e2f375147c5127919ebcb8e5abc5f05f1b735b7bb75c962ddbacb1fa"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "code_cushman_001_robocodegen",
+      "description": "Paper-era code-cushman-001 comparisons under the same RoboCodeGen notebook protocol.",
+      "qualifiers": {
+        "hierarchical_hierarchical_success_percent": 57.0,
+        "hierarchical_flat_success_percent": 57.0,
+        "source": "official paper-era notebook"
+      },
+      "baseline_digest": "a7d08211be3a7c7406fe0a3e35e23e301b7040f82731869f89990f370d072c74"
+    }
+  ],
   "deltas": [
     {
       "kind": "substitution",
@@ -162,10 +248,15 @@
   "blockers": [
     "Exact paper-era Codex/code-davinci-002 serving is not an immutable public model artifact.",
     "Formal embodied runs require a qualified isolated generated-program environment provider exposing the frozen robot/perception API surface.",
+    "The RoboCodeGen notebook generates five randomized test inputs per task without publishing a fixed NumPy seed, so exact matched 36/37 execution requires an explicitly reconstructed stochastic cut.",
     "Matched physical-robot claims require the paper-era robot platforms, perception/control stacks, prompts, task cuts, and evaluation artifacts under immutable content identity."
   ],
   "evidence_refs": [],
   "scientific_tests": [
+    {
+      "path": "tests/test_scientific_code_as_policies_robocodegen_v1.py",
+      "content_sha256": "c722e042583bf4dae05eb6476a6140273f1478adbda67bb089763c4113d61dec"
+    },
     {
       "path": "tests/test_scientific_code_as_policies_v1.py",
       "content_sha256": "5bc29113b2ffd4205d2e3d809773bebcb0932272e5f08041816d600b332cfdb4"

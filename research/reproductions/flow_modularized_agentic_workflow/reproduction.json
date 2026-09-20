@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v6",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flow_modularized_agentic_workflow",
-  "package_digest": "46c617fb76df942d2f028e5f7fc946ef68af9f87f8dfe0cf16a9ae14dd8a8434",
-  "definition_digest": "c988d4ee19ddcc3a2fd35a266708e0cac60ea9c07a9dd4d551999bdf720c37a7",
+  "package_digest": "0b5bb22b134b0ae0827f5a75c17868d02854535077b8a7e358e89eb379858ab7",
+  "definition_digest": "d7dcb5f56811068501c262cdef4f58f4ddabdfe59d5b648f3050e90aff41eb4f",
   "source_registry_digest": "871ee9bf57337e607fa5a5ed65434e3cc122df43f3db5d6cca12cb61261175b4",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -128,7 +128,7 @@
       "content_sha256": "83192ab25673afb8cacba54637a884b5cb99d5938370e0fe95c221028b629687"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/flow_modularized_agentic_workflow/program.py",
   "reported_results": [
     {
       "claim_id": "flow_three_task_average_success",
