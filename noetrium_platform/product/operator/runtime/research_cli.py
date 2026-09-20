@@ -14,7 +14,6 @@ from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 
 from noetrium_platform.product.operator.api.json_rendering import render_json
 
-from .application_loader import ResearchApplicationFactorySpec, load_research_application
 from .project_application_loader import load_project_application
 
 ResearchCliDelegate = Callable[[list[str] | None], int]
@@ -34,8 +33,8 @@ def _add_lifecycle_command(subparsers, action: ResearchAction, help_text: str) -
     parser.set_defaults(action=action, route="application")
     parser.add_argument("target", nargs="?", help="application-owned target identity")
     parser.add_argument(
-        "--project", dest="application_project", type=Path,
-        help="explicit downstream project root; defaults target to project identity",
+        "--project", dest="application_project", type=Path, default=Path("."),
+        help="downstream project root; defaults to current directory",
     )
     payload = parser.add_mutually_exclusive_group()
     payload.add_argument("--payload", help="inline JSON payload")
@@ -48,8 +47,8 @@ def _add_project_commands(subparsers) -> None:
 
     create = project_subparsers.add_parser("create", help="create a deterministic downstream scaffold")
     create.add_argument("project_id")
-    create.add_argument("destination", type=Path)
-    create.add_argument("--version", required=True)
+    create.add_argument("destination", type=Path, nargs="?")
+    create.add_argument("--version", default="0.1.0")
 
     doctor = project_subparsers.add_parser("doctor", help="validate project/platform/provider readiness")
     doctor.add_argument("--project", dest="project_root", type=Path, default=Path("."))
@@ -62,12 +61,6 @@ def build_research_parser() -> argparse.ArgumentParser:
         prog="noetrium",
         description="Canonical Noetrium product control surface",
     )
-    parser.add_argument(
-        "--application",
-        metavar="MODULE:FACTORY",
-        help="explicit application factory for lifecycle commands",
-    )
-    parser.add_argument("--application-config", type=Path)
     subparsers = parser.add_subparsers(dest="command", required=True)
     _add_lifecycle_command(subparsers, ResearchAction.RUN, "start one application-owned run")
     _add_lifecycle_command(subparsers, ResearchAction.INSPECT, "inspect exact application state")
@@ -94,24 +87,9 @@ def _load_payload(args: argparse.Namespace):
 
 
 def _run_application(args: argparse.Namespace) -> int:
-    if args.application_project is not None:
-        if args.application:
-            raise ValueError("use either --project or --application, not both")
-        loaded = load_project_application(
-            args.application_project, config_path=args.application_config
-        )
-        application = loaded.application
-        target = args.target or loaded.default_target
-    else:
-        if not args.application:
-            raise ValueError(
-                f"noetrium {args.command} requires --project PATH or --application MODULE:FACTORY"
-            )
-        if args.target is None:
-            raise ValueError("application lifecycle command requires target")
-        spec = ResearchApplicationFactorySpec.parse(args.application)
-        application = load_research_application(spec, config_path=args.application_config)
-        target = args.target
+    loaded = load_project_application(args.application_project)
+    application = loaded.application
+    target = args.target or loaded.default_target
     facade = ResearchFacade(application)
     operation = getattr(facade, args.action.value)
     result = operation(target, _load_payload(args))
@@ -121,7 +99,8 @@ def _run_application(args: argparse.Namespace) -> int:
 
 def _run_project(args: argparse.Namespace, project_experience: ProjectFacade) -> int:
     if args.project_command == "create":
-        receipt = project_experience.create(args.project_id, args.version, args.destination)
+        destination = args.destination or Path(args.project_id)
+        receipt = project_experience.create(args.project_id, args.version, destination)
         _emit({"ok": True, "command": "project create", "result": receipt})
         return 0
     if args.project_command == "doctor":
