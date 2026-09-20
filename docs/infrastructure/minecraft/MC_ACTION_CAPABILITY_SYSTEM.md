@@ -65,15 +65,6 @@ Prepared-action and generic reconciliation preserve the same four-way semantics:
 `NOT_APPLIED -> NO_EFFECT`, and `UNKNOWN` produces no terminal effect truth. A missing
 action-recovery record is therefore unknown, never retry-safe absence.
 
-### Frozen JSON-array consumer contract
-
-High-level `minecraft.build` block arrays and `minecraft.resource_plan` step arrays accept
-the Participant public frozen JSON-array representation (tuple-backed) as well as the
-legacy in-process list shape. Array elements remain Minecraft-validated mappings; strings,
-mappings used as arrays, and malformed element/payload shapes fail closed. Environment
-therefore consumes the typed immutable Participant boundary without reintroducing mutable
-builtin inheritance.
-
 ## Craft and resource invariants
 
 - Collection resolves canonical drop identities from the live block registry, verifies `canHarvest(heldItemType)` before destructive dig, and counts only expected-drop inventory/own-collection evidence. Source block identity and collected item identity are never assumed equal; unrelated positive inventory deltas do not advance `collected_count`.
