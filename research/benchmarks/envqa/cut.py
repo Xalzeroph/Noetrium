@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from noetrium import api
+
 from collections import defaultdict
 from dataclasses import dataclass
 
-from noetrium.api import canonical_digest, require_sha256
-from noetrium.api import (
-    BenchmarkSourceKind, BenchmarkSourceSpec, BenchmarkTaskSet,
-    TaskDefinition, TaskSetSplit,
+    api.BenchmarkSourceKind, api.BenchmarkSourceSpec, api.BenchmarkTaskSet,
+    api.TaskDefinition, api.TaskSetSplit,
 )
 
 BENCHMARK_ID = "envqa"
@@ -26,17 +26,17 @@ class TaskRecord:
             raise ValueError("Env-QA split_id must be text")
         if type(self.task_key) is not str or not self.task_key.strip():
             raise ValueError("Env-QA task_key must be text")
-        require_sha256(self.content_digest, "Env-QA task content_digest")
+        api.require_sha256(self.content_digest, "Env-QA task content_digest")
     @property
     def task_id(self) -> str:
         return f"envqa:{self.split_id}:{self.task_key}"
 
 
-def build_source_spec(*, content_digest: str) -> BenchmarkSourceSpec:
-    require_sha256(content_digest, "Env-QA source content_digest")
-    return BenchmarkSourceSpec(
+def build_source_spec(*, content_digest: str) -> api.BenchmarkSourceSpec:
+    api.require_sha256(content_digest, "Env-QA source content_digest")
+    return api.BenchmarkSourceSpec(
         source_id=BENCHMARK_ID,
-        kind=BenchmarkSourceKind.GIT,
+        kind=api.BenchmarkSourceKind.GIT,
         revision_id=REVISION,
         locator=OFFICIAL_REPOSITORY,
         content_digest=content_digest,
@@ -44,15 +44,15 @@ def build_source_spec(*, content_digest: str) -> BenchmarkSourceSpec:
     )
 
 
-def build_task_set(records: tuple[TaskRecord, ...], *, source_digest: str) -> BenchmarkTaskSet:
+def build_task_set(records: tuple[TaskRecord, ...], *, source_digest: str) -> api.BenchmarkTaskSet:
     if type(records) is not tuple or not records or any(type(row) is not TaskRecord for row in records):
         raise TypeError("Env-QA records must be a non-empty TaskRecord tuple")
-    require_sha256(source_digest, "Env-QA source_digest")
+    api.require_sha256(source_digest, "Env-QA source_digest")
     task_ids = [row.task_id for row in records]
     if len(task_ids) != len(set(task_ids)):
         raise ValueError("Env-QA task identities must be unique")
     tasks = tuple(sorted((
-        TaskDefinition(
+        api.TaskDefinition(
             task_id=row.task_id,
             revision_id=REVISION,
             family="envqa",
@@ -66,17 +66,17 @@ def build_task_set(records: tuple[TaskRecord, ...], *, source_digest: str) -> Be
     for row in records:
         splits[row.split_id].append(row.task_id)
     split_rows = tuple(
-        TaskSetSplit(split_id, tuple(sorted(ids)))
+        api.TaskSetSplit(split_id, tuple(sorted(ids)))
         for split_id, ids in sorted(splits.items())
     )
-    return BenchmarkTaskSet(
+    return api.BenchmarkTaskSet(
         benchmark_id=BENCHMARK_ID,
         revision_id=REVISION,
         source_digest=source_digest,
         task_schema_id=TASK_SCHEMA_ID,
         tasks=tasks,
         splits=split_rows,
-        selection_policy_digest=canonical_digest({
+        selection_policy_digest=api.canonical_digest({
             "benchmark_id": BENCHMARK_ID,
             "revision": REVISION,
             "task_ids": tuple(row.task_id for row in tasks),
