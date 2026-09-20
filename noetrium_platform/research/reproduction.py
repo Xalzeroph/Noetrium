@@ -16,6 +16,7 @@ from typing import Mapping
 
 from noetrium_platform.foundation.kernel.kernel import JsonObject, canonical_digest, freeze_json
 _TOKEN = re.compile(r"[a-z][a-z0-9_.-]*")
+_SHA256 = re.compile(r"[0-9a-f]{64}")
 
 
 def _text(value: object, field_name: str) -> str:
@@ -28,6 +29,13 @@ def _token(value: object, field_name: str) -> str:
     text = _text(value, field_name)
     if _TOKEN.fullmatch(text) is None:
         raise ValueError(f"{field_name} must be a canonical token")
+    return text
+
+
+def _sha256(value: object, field_name: str) -> str:
+    text = _text(value, field_name)
+    if _SHA256.fullmatch(text) is None:
+        raise ValueError(f"{field_name} must be lowercase SHA-256")
     return text
 
 
@@ -67,6 +75,11 @@ class ReproductionAssetKind(StrEnum):
 class ReproductionDeltaKind(StrEnum):
     SUBSTITUTION = "substitution"
     UNRESOLVED = "unresolved"
+
+
+class ReproductionEvidenceKind(StrEnum):
+    PILOT = "pilot"
+    MATCHED_RESULT = "matched_result"
 
 
 @dataclass(frozen=True, slots=True)
@@ -244,6 +257,82 @@ class ReproductionDelta:
 
 
 @dataclass(frozen=True, slots=True)
+class ReproductionEvidenceRef:
+    """Immutable link from one reproduction to a finalized run EvidenceBundle."""
+
+    evidence_id: str
+    kind: ReproductionEvidenceKind
+    run_id: str
+    run_manifest_digest: str
+    bundle_id: str
+    evidence_bundle_digest: str
+    manifest_ref: str
+    manifest_sha256: str
+    claim_ids: tuple[str, ...] = ()
+    evidence_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _token(self.evidence_id, "reproduction evidence_id")
+        if not isinstance(self.kind, ReproductionEvidenceKind):
+            raise TypeError(
+                "reproduction evidence kind must be ReproductionEvidenceKind"
+            )
+        _text(self.run_id, "reproduction evidence run_id")
+        _sha256(
+            self.run_manifest_digest,
+            "reproduction evidence run_manifest_digest",
+        )
+        bundle_id = _text(self.bundle_id, "reproduction evidence bundle_id")
+        _sha256(
+            self.evidence_bundle_digest,
+            "reproduction evidence bundle digest",
+        )
+        manifest_ref = _text(
+            self.manifest_ref,
+            "reproduction evidence manifest_ref",
+        )
+        if manifest_ref != f"evidence/{bundle_id}/manifest.json":
+            raise ValueError(
+                "reproduction evidence manifest_ref must match bundle identity"
+            )
+        _sha256(
+            self.manifest_sha256,
+            "reproduction evidence manifest_sha256",
+        )
+        claim_ids = tuple(
+            sorted(
+                _strings(
+                    self.claim_ids,
+                    "reproduction evidence claim_ids",
+                    non_empty=(
+                        self.kind is ReproductionEvidenceKind.MATCHED_RESULT
+                    ),
+                )
+            )
+        )
+        for claim_id in claim_ids:
+            _token(claim_id, "reproduction evidence claim_id")
+        object.__setattr__(self, "claim_ids", claim_ids)
+        object.__setattr__(
+            self,
+            "evidence_digest",
+            canonical_digest(
+                {
+                    "evidence_id": self.evidence_id,
+                    "kind": self.kind.value,
+                    "run_id": self.run_id,
+                    "run_manifest_digest": self.run_manifest_digest,
+                    "bundle_id": bundle_id,
+                    "evidence_bundle_digest": self.evidence_bundle_digest,
+                    "manifest_ref": manifest_ref,
+                    "manifest_sha256": self.manifest_sha256,
+                    "claim_ids": claim_ids,
+                }
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ReproductionDefinition:
     package: str
     lifecycle: ReproductionLifecycle
@@ -255,7 +344,7 @@ class ReproductionDefinition:
     reference_baselines: tuple[ReferenceBaseline, ...] = ()
     deltas: tuple[ReproductionDelta, ...] = ()
     blockers: tuple[str, ...] = ()
-    evidence_refs: tuple[str, ...] = ()
+    evidence_refs: tuple[ReproductionEvidenceRef, ...] = ()
     scientific_tests: tuple[str, ...] = ()
     definition_digest: str = field(init=False)
 
@@ -316,7 +405,70 @@ class ReproductionDefinition:
             if len(identities) != len(set(identities)):
                 raise ValueError(f"reproduction {name} identities must be unique")
         blockers = _strings(self.blockers, "reproduction blockers")
-        evidence_refs = _strings(self.evidence_refs, "reproduction evidence_refs")
+        evidence_refs = self.evidence_refs
+        if type(evidence_refs) is not tuple or any(
+            type(row) is not ReproductionEvidenceRef for row in evidence_refs
+        ):
+            raise TypeError(
+                "reproduction evidence_refs must contain ReproductionEvidenceRef"
+            )
+        evidence_refs = tuple(
+            sorted(evidence_refs, key=lambda row: row.evidence_id)
+        )
+        evidence_ids = tuple(row.evidence_id for row in evidence_refs)
+        if len(evidence_ids) != len(set(evidence_ids)):
+            raise ValueError("reproduction evidence identities must be unique")
+
+        reported_claim_ids = {
+            row.claim_id for row in self.reported_results
+        }
+        evidence_claim_ids = {
+            claim_id
+            for evidence in evidence_refs
+            for claim_id in evidence.claim_ids
+        }
+        unknown_claim_ids = evidence_claim_ids - reported_claim_ids
+        if unknown_claim_ids:
+            raise ValueError(
+                "reproduction evidence references unknown claims: "
+                + ", ".join(sorted(unknown_claim_ids))
+            )
+
+        matched_evidence = tuple(
+            row
+            for row in evidence_refs
+            if row.kind is ReproductionEvidenceKind.MATCHED_RESULT
+        )
+        matched_claim_ids = {
+            claim_id
+            for evidence in matched_evidence
+            for claim_id in evidence.claim_ids
+        }
+        if self.lifecycle is ReproductionLifecycle.MATCHED_REPRODUCTION:
+            if not self.reported_results:
+                raise ValueError(
+                    "matched reproduction requires reported results"
+                )
+            if blockers:
+                raise ValueError(
+                    "matched reproduction cannot retain blockers"
+                )
+            if any(
+                row.kind is ReproductionDeltaKind.UNRESOLVED
+                for row in self.deltas
+            ):
+                raise ValueError(
+                    "matched reproduction cannot retain unresolved deltas"
+                )
+            if not matched_evidence:
+                raise ValueError(
+                    "matched reproduction requires matched-result evidence"
+                )
+            if matched_claim_ids != reported_claim_ids:
+                raise ValueError(
+                    "matched-result evidence must cover every reported claim"
+                )
+
         scientific_tests = _strings(
             self.scientific_tests,
             "reproduction scientific_tests",
@@ -342,7 +494,9 @@ class ReproductionDefinition:
                     ),
                     "deltas": tuple(row.delta_digest for row in self.deltas),
                     "blockers": blockers,
-                    "evidence_refs": evidence_refs,
+                    "evidence_refs": tuple(
+                        row.evidence_digest for row in evidence_refs
+                    ),
                     "scientific_tests": self.scientific_tests,
                 }
             ),
@@ -358,6 +512,8 @@ __all__ = [
     "ReproductionDefinition",
     "ReproductionDelta",
     "ReproductionDeltaKind",
+    "ReproductionEvidenceKind",
+    "ReproductionEvidenceRef",
     "ReproductionIdentity",
     "ReproductionLifecycle",
 ]

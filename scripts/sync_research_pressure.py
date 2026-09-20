@@ -11,7 +11,7 @@ SUITE_PATH = ROOT / "research/catalog/pressure_suite.json"
 STATUS_PATH = ROOT / "research/catalog/pressure_status.json"
 
 SUITE_SCHEMA = "noetrium.research-pressure-suite.v2"
-STATUS_SCHEMA = "noetrium.research-pressure-status.v2"
+STATUS_SCHEMA = "noetrium.research-pressure-status.v3"
 
 _LIFECYCLE_RANK = {
     "catalogued": 0,
@@ -264,13 +264,42 @@ def _lane_status(
         if not isinstance(value, list):
             raise TypeError(f"{package}: reproduction projection {name} must be a list")
 
+    reported_claim_ids: set[str] = set()
+    for result in reported_results:
+        if not isinstance(result, Mapping):
+            raise TypeError(f"{package}: reported result must be an object")
+        claim_id = result.get("claim_id")
+        if not isinstance(claim_id, str) or not claim_id:
+            raise TypeError(f"{package}: reported result claim_id is invalid")
+        reported_claim_ids.add(claim_id)
+
+    evidence_kind_counts = {"pilot": 0, "matched_result": 0}
+    matched_claim_ids: set[str] = set()
+    for evidence in evidence_refs:
+        if not isinstance(evidence, Mapping):
+            raise TypeError(f"{package}: evidence ref must be an object")
+        kind = evidence.get("kind")
+        if kind not in evidence_kind_counts:
+            raise ValueError(f"{package}: unknown reproduction evidence kind")
+        evidence_kind_counts[kind] += 1
+        claim_ids = evidence.get("claim_ids")
+        if not isinstance(claim_ids, list) or any(
+            not isinstance(claim_id, str) or not claim_id
+            for claim_id in claim_ids
+        ):
+            raise TypeError(f"{package}: evidence claim_ids must be strings")
+        if kind == "matched_result":
+            matched_claim_ids.update(claim_ids)
+
     claim_gaps: list[str] = []
     if lifecycle != "matched_reproduction":
         claim_gaps.append("lifecycle_not_matched_reproduction")
     if not reported_results:
         claim_gaps.append("missing_reported_results")
-    if not evidence_refs:
+    if evidence_kind_counts["matched_result"] == 0:
         claim_gaps.append("missing_execution_evidence")
+    elif matched_claim_ids != reported_claim_ids:
+        claim_gaps.append("uncovered_reported_claims")
     if blockers:
         claim_gaps.append("unresolved_blockers")
     if any(
@@ -282,6 +311,9 @@ def _lane_status(
     detail["reported_result_count"] = len(reported_results)
     detail["reference_baseline_count"] = len(reference_baselines)
     detail["evidence_ref_count"] = len(evidence_refs)
+    detail["pilot_evidence_count"] = evidence_kind_counts["pilot"]
+    detail["matched_evidence_count"] = evidence_kind_counts["matched_result"]
+    detail["matched_evidence_claim_count"] = len(matched_claim_ids)
     detail["blocker_count"] = len(blockers)
     detail["claim_ready"] = not claim_gaps
     detail["claim_gaps"] = sorted(set(claim_gaps))
