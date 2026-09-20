@@ -248,7 +248,7 @@ noetrium-architecture-gate
 python scripts/check_readme_i18n.py
 ```
 
-다운스트림 코드는 `noetrium`에서 안정적인 contract와 재사용 가능한 component를 import합니다. `noetrium_platform`을 프로젝트 확장 API로 취급하지 마십시오. author-first 프로젝트 골격은 `noetrium project create <project-id> <destination> --version <version>`으로 생성한 뒤 `noetrium project doctor --project <destination>`과 `noetrium project test --project <destination>`를 실행하고, 프로젝트 고유 provider나 method를 추가합니다.
+다운스트림 코드는 `noetrium`에서 안정적인 contract와 재사용 가능한 component를 import합니다. `noetrium_platform`을 프로젝트 확장 API로 취급하지 마십시오. author-first 프로젝트 골격은 `noetrium project create <project-id>`으로 생성한 뒤 `noetrium project doctor --project <destination>`과 `noetrium project test --project <destination>`를 실행하고, 프로젝트 고유 provider나 method를 추가합니다.
 
 <!-- readme-section:containers -->
 
