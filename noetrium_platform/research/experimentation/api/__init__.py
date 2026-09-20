@@ -19,7 +19,7 @@ from .research_compiler import (
     CompiledResearchPlan, ResearchPlanDiff, compile_research_plan,
     diff_research_plans, resolve_research_requirements,
 )
-from .method_host import ResearchMethodHost, ResearchMethodHostPort
+from .method_host import compile_research_method
 from .sharding import (
     CompiledExperimentShardPlan,
     ExperimentBatchPlacement,
@@ -123,8 +123,7 @@ __all__ = [
     "compile_research_plan",
     "ResearchPlanDiff",
     "CompiledResearchPlan",
-    "ResearchMethodHost",
-    "ResearchMethodHostPort",
+    "compile_research_method",
     "CompiledExperimentShardPlan",
     "ExperimentBatchPlacement",
     "ExperimentShard",
