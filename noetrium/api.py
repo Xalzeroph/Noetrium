@@ -51,10 +51,10 @@ def symbol_schema(system_key: str, module: str, symbol: str) -> dict[str, Any]:
 
 def _system_candidates(symbol: str) -> tuple[tuple[str, Any], ...]:
     resolved: list[tuple[str, Any]] = []
-    for surface in catalog().systems:
+    current = catalog()
+    for system_key in current.owners(symbol):
+        surface = current.system(system_key)
         if surface.facade_module is None:
-            continue
-        if not any(symbol in api.symbols for api in surface.api_modules):
             continue
         module = importlib.import_module(surface.facade_module)
         if hasattr(module, symbol):
