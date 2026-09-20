@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "c5b3052503f9eb713209e05a7c4aeb7ba456f0d741d0482769c076f7f508e2a4",
+  "interface_digest": "a546f03ff352647a651b33285cd1e9222136d5c963c607c3c21718fc84bac740",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -25881,18 +25881,9 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "ResearchMethodHost",
+              "name": "compile_research_method",
               "origin_module": ".method_host",
-              "origin_name": "ResearchMethodHost",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "ResearchMethodHostPort",
-              "origin_module": ".method_host",
-              "origin_name": "ResearchMethodHostPort",
+              "origin_name": "compile_research_method",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -26416,8 +26407,7 @@
             "compile_research_plan",
             "ResearchPlanDiff",
             "CompiledResearchPlan",
-            "ResearchMethodHost",
-            "ResearchMethodHostPort",
+            "compile_research_method",
             "CompiledExperimentShardPlan",
             "ExperimentBatchPlacement",
             "ExperimentShard",
@@ -27268,127 +27258,44 @@
           "source": "noetrium_platform/research/experimentation/api/method_host.py",
           "symbol_schemas": [
             {
-              "bases": [],
               "decorators": [],
-              "doc": "Canonical Level-0 host; compilation performs no external side effects.",
-              "fields": [],
-              "kind": "class",
-              "members": [],
-              "methods": [
+              "doc": "Compile one study through the canonical requirement-resolution path.",
+              "kind": "function",
+              "name": "compile_research_method",
+              "parameters": [
                 {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "compile_method",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    },
-                    {
-                      "annotation": "ResearchStudyDefinition",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "definition",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "ProjectManifest",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "project_manifest",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "ResearchBindingContribution",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "binding",
-                      "receiver": false,
-                      "required": true
-                    }
-                  ],
-                  "return_annotation": "CompiledResearchPlan",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def compile_method(self, definition: ResearchStudyDefinition, project_manifest: ProjectManifest, binding: ResearchBindingContribution) -> CompiledResearchPlan:"
+                  "annotation": "ResearchStudyDefinition",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "definition",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "ProjectManifest",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "project_manifest",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "ResearchBindingContribution",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "binding",
+                  "receiver": false,
+                  "required": true
                 }
               ],
-              "name": "ResearchMethodHost",
+              "return_annotation": "CompiledResearchPlan",
               "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "bases": [
-                "Protocol"
-              ],
-              "decorators": [
-                "runtime_checkable"
-              ],
-              "doc": null,
-              "fields": [],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "compile_method",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    },
-                    {
-                      "annotation": "ResearchStudyDefinition",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "definition",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "ProjectManifest",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "project_manifest",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "ResearchBindingContribution",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "binding",
-                      "receiver": false,
-                      "required": true
-                    }
-                  ],
-                  "return_annotation": "CompiledResearchPlan",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def compile_method(self, definition: ResearchStudyDefinition, project_manifest: ProjectManifest, binding: ResearchBindingContribution) -> CompiledResearchPlan:"
-                }
-              ],
-              "name": "ResearchMethodHostPort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
+              "schema_version": "1",
+              "signature": "def compile_research_method(definition: ResearchStudyDefinition, project_manifest: ProjectManifest, binding: ResearchBindingContribution) -> CompiledResearchPlan:"
             }
           ],
           "symbols": [
-            "ResearchMethodHost",
-            "ResearchMethodHostPort"
+            "compile_research_method"
           ]
         },
         {
