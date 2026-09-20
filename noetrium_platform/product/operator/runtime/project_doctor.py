@@ -32,13 +32,18 @@ _PACKAGE = re.compile(r"[a-z][a-z0-9_]*")
 _PROVIDER_PROBE_TIMEOUT_S = 30
 _AUTHOR_PROBE_TIMEOUT_S = 30
 _AUTHOR_PROBE_SCRIPT = r'''
-from noetrium.contracts.research import ResearchMethodHostPort
-from __PACKAGE__.research import METHOD_HOST, compile_method
+from noetrium.contracts.research import AgentMethodSpec, MethodProgram, ResearchMethodHostPort
+from __PACKAGE__.method import METHOD_PROGRAM, METHOD_SPEC
+from __PACKAGE__.research import METHOD_HOST, compile_study
 
 if not isinstance(METHOD_HOST, ResearchMethodHostPort):
     raise TypeError("author Method Host does not implement ResearchMethodHostPort")
-if not callable(compile_method):
-    raise TypeError("author research module must export compile_method")
+if not isinstance(METHOD_SPEC, AgentMethodSpec):
+    raise TypeError("author method module must export AgentMethodSpec")
+if not isinstance(METHOD_PROGRAM, MethodProgram):
+    raise TypeError("author method module must compile MethodProgram")
+if not callable(compile_study):
+    raise TypeError("author research module must export compile_study")
 print("ready")
 '''
 _PROVIDER_PROBE_SCRIPT = r'''
@@ -389,8 +394,8 @@ def doctor_project(project_root: Path, *, boundary_auditor: RepositoryBoundaryAu
         f"src/{package}/project.py",
     )
     author_files = () if not package else (
-        f"src/{package}/methods.py", f"src/{package}/tasks.py",
-        f"src/{package}/measurements.py", f"src/{package}/studies.py",
+        f"src/{package}/method.py",
+        f"src/{package}/study.py",
         f"src/{package}/research.py",
         "tests/test_generated_author_project.py",
     )
@@ -437,7 +442,7 @@ def doctor_project(project_root: Path, *, boundary_auditor: RepositoryBoundaryAu
             author_ready, author_detail = False, "author template files are incomplete"
         checks.append(_check(
             "level0_standard_bindings", author_ready,
-            "Level-0 Research Method Host and typed compiler/binding seam are available",
+            "typed AgentMethodSpec/MethodProgram and Study compilation seam are available",
             "resolve author Method Host readiness: " + author_detail,
         ))
     elif profile is ProjectTemplateProfile.PROVIDER:
