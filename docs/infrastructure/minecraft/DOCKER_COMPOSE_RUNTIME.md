@@ -12,11 +12,11 @@ The base platform image remains provider-neutral and lightweight. The base image
 
 ## Compose overlay
 
-Build the exact qualified base image first, then use the environment overlay:
+Use the canonical environment image entrypoint. It builds the exact evidence-bound base only when needed, reuses exact-SHA images when available, runs the Minecraft doctor, and writes the provenance receipt:
 
-    export PLATFORM_IMAGE="noetrium:<exact-source-sha>"
-    docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
-    docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
+    python scripts/build_environment_images.py build --profiles minecraft
+
+Use `--rebuild` only when intentionally invalidating the exact-SHA cache. The Compose overlay remains an implementation detail consumed by the build entrypoint, not the downstream operational interface.
 
 Mutable Minecraft provider state is bound below `${PLATFORM_HOST_DATA_ROOT}/minecraft`; generic platform state remains below `${PLATFORM_HOST_DATA_ROOT}/platform-state`.
 
