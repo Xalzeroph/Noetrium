@@ -3,9 +3,9 @@
   "authority": "generated_from_pressure_suite_reproduction_and_benchmark_projections",
   "suite_updated_at": "2026-09-20",
   "lane_count": 41,
-  "ready_count": 39,
-  "enforced_count": 32,
-  "enforced_ready_count": 32,
+  "ready_count": 41,
+  "enforced_count": 34,
+  "enforced_ready_count": 34,
   "claim_ready_count": 0,
   "enforced_claim_ready_count": 0,
   "lanes": [
@@ -1670,12 +1670,14 @@
     {
       "package": "optimus1_minecraft",
       "lineage": "minecraft_hybrid_multimodal_memory_agent",
-      "enforced": false,
+      "enforced": true,
       "lifecycle": "protocol_bound",
       "asset_kinds": [
+        "benchmark",
         "fidelity",
         "method_program",
         "research_program",
+        "study",
         "support"
       ],
       "executable_asset_kinds": [
@@ -1686,16 +1688,20 @@
         "kind": "method_program",
         "path": "research/reproductions/optimus1_minecraft/program.py"
       },
-      "benchmark_ids": [],
-      "benchmark_packages": [],
-      "scientific_test_count": 1,
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
+      "benchmark_packages": [
+        "minecraft_long_horizon_67"
+      ],
+      "scientific_test_count": 2,
       "reported_result_count": 3,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "pilot_evidence_count": 0,
       "matched_evidence_count": 0,
       "matched_evidence_claim_count": 0,
-      "blocker_count": 3,
+      "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
@@ -1703,20 +1709,19 @@
         "unresolved_blockers",
         "unresolved_fidelity_delta"
       ],
-      "ready": false,
-      "gaps": [
-        "benchmark_binding_missing",
-        "missing_asset:study"
-      ]
+      "ready": true,
+      "gaps": []
     },
     {
       "package": "optimus2_minecraft",
       "lineage": "minecraft_goal_observation_action_policy",
-      "enforced": false,
+      "enforced": true,
       "lifecycle": "protocol_bound",
       "asset_kinds": [
+        "benchmark",
         "fidelity",
         "method_program",
+        "study",
         "support"
       ],
       "executable_asset_kinds": [
@@ -1726,9 +1731,13 @@
         "kind": "method_program",
         "path": "research/reproductions/optimus2_minecraft/program.py"
       },
-      "benchmark_ids": [],
-      "benchmark_packages": [],
-      "scientific_test_count": 1,
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
+      "benchmark_packages": [
+        "minecraft_long_horizon_67"
+      ],
+      "scientific_test_count": 2,
       "reported_result_count": 3,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
@@ -1743,11 +1752,8 @@
         "unresolved_blockers",
         "unresolved_fidelity_delta"
       ],
-      "ready": false,
-      "gaps": [
-        "benchmark_binding_missing",
-        "missing_asset:study"
-      ]
+      "ready": true,
+      "gaps": []
     }
   ]
 }

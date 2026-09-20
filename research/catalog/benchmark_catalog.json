@@ -277,6 +277,19 @@
       ]
     },
     {
+      "benchmark_id": "minecraft-long-horizon-67",
+      "title": "Minecraft Long-Horizon 67",
+      "source_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+      "environment_kinds": [
+        "minecraft"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "game_state"
+      ]
+    },
+    {
       "benchmark_id": "minedojo",
       "title": "MineDojo",
       "source_uri": "https://github.com/MineDojo/MineDojo",

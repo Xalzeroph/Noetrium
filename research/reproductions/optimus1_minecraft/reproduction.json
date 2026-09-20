@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v6",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimus1_minecraft",
-  "package_digest": "d7609bbc9582c4ed9bf26d3f7b8c5ffb8c9b33da0df9445277ded567466ed543",
-  "definition_digest": "45567d88668e23d1221e52a3e7830a06b95a741ce1bdbee61fdae071aa40d2b0",
+  "package_digest": "49e31679d6399cbdf0efe1ad938bd482b91a03a364906614e720f8e1beeb2c12",
+  "definition_digest": "01bdb975a7aa764bb4e645b5b65837f76725210438d24c2ce8ab6d37b79bf8b5",
   "source_registry_digest": "a3acfe40764ad2d81394436f3bd10ed392d9c039e7f7dd83810b26b7bffbf7fe",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -31,7 +31,9 @@
       "planning_reflection"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "minecraft-long-horizon-67"
+    ],
     "platform_pressure": [
       "artifact/multimodal",
       "environment/minecraft",
@@ -64,7 +66,7 @@
     "reference_publications": [
       "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html"
     ],
-    "catalog_digest": "29ed69650bf2db59ce0fe207699b304c1573653b2e369838a75892c04ff09016"
+    "catalog_digest": "326fa902c941c53d7ff42ed813396ea1b7d8a3b9bb9e3f51c4a3639359b82cda"
   },
   "source_lanes": [
     {
@@ -98,6 +100,12 @@
   ],
   "assets": [
     {
+      "kind": "benchmark",
+      "path": "research/reproductions/optimus1_minecraft/benchmark.py",
+      "declaration_digest": "60093beaf0e23dcd714b2a8517e3241b4783209020fd884d4247e8a860d4b03a",
+      "content_sha256": "07066f2927be89a57c0c682cb17066409c90624acc041c295da9c27b286ac19c"
+    },
+    {
       "kind": "fidelity",
       "path": "research/reproductions/optimus1_minecraft/fidelity.py",
       "declaration_digest": "c1cd532fea031b27a6fd8cb36a4e4f80f67a1d3e6e8939d31fbc2783b981e6fe",
@@ -114,6 +122,12 @@
       "path": "research/reproductions/optimus1_minecraft/memory.py",
       "declaration_digest": "95cf8bca4d80c759237c2e81b7ddf3e57b04150e15d6056d7c7132feb0532c87",
       "content_sha256": "b43332f8c18abc5be621b551f1459e423ce830e1c0fe5b8b1268da7471f453a6"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/optimus1_minecraft/study.py",
+      "declaration_digest": "4727bef3dbd5ed894003ddb4a09d5cbaf4a2af2d06a8badb77e17d23c96e6633",
+      "content_sha256": "387268a38b38fd4dd66b20ba64979d7b91a0a1c0713cdc6eae20a84788906676"
     },
     {
       "kind": "support",
@@ -174,11 +188,6 @@
   "deltas": [
     {
       "kind": "unresolved",
-      "description": "The NeurIPS paper describes a 67-task long-horizon benchmark, while the paper-era official release contains 73 task rows across seven benchmark YAML files. The reproduction does not silently treat the release configuration union as the paper result cut.",
-      "delta_digest": "c856076f0f8a9ec9db4a9000a67370d451a2f9271e13a4487c19a9da89f67db7"
-    },
-    {
-      "kind": "unresolved",
       "description": "The paper analyzes GPT-4V and multiple MLLM backbones, while the 2024-10 official planning implementation invokes gpt-4o. Model identity is therefore kept source-lane-specific until the exact main-result service cut is bound.",
       "delta_digest": "1c0c1a9592fea679ac5fb40895943f5533e1915446cf4171ebdb2b3fb321d47c"
     },
@@ -189,7 +198,6 @@
     }
   ],
   "blockers": [
-    "The exact 67-task NeurIPS main-result cut must be recovered from the paper appendix rather than inferred from the 73 released YAML rows.",
     "Matched execution requires the paper-era MCP-Reborn Minecraft runtime and STEVE-1 controller checkpoint under content-addressed authority.",
     "The later 2025 full-memory release must not be substituted for the NeurIPS 2024 paper-era memory state without explicit provenance."
   ],
@@ -198,6 +206,10 @@
     {
       "path": "tests/test_scientific_optimus1_minecraft_v1.py",
       "content_sha256": "4271abc327f4ce77b1c66c209b7dbf7f12a908511fea66b884636e895a5c9780"
+    },
+    {
+      "path": "tests/test_scientific_optimus_long_horizon_67_v1.py",
+      "content_sha256": "69bf0405efdf85a0ebb21b345c7a2a4b5a1b9239cbf51c3bc0877678cfd6c9c5"
     }
   ]
 }
