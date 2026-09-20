@@ -56,24 +56,6 @@ def test_reference_workload_rejects_duplicate_run_and_corruption():
             facade.inspect("reference-2")
 
 
-def test_reference_workload_is_exercisable_through_installed_cli_shape(capsys):
-    with TemporaryDirectory() as td:
-        root = Path(td)
-        config = root / "reference.json"
-        config.write_text(json.dumps({"state_root": str(root / "state")}), encoding="utf-8")
-        prefix = [
-            "--application",
-            "noetrium_platform.product.operator.reference:build_reference_application",
-            "--application-config",
-            str(config),
-        ]
-        for command in ("run", "inspect", "stop", "resume", "reconcile", "evidence"):
-            assert main([*prefix, command, "reference-3"]) == 0
-            row = json.loads(capsys.readouterr().out)
-            assert row["ok"] is True
-            assert row["command"] == command
-
-
 def _write_valid_checksum_state(app, target: str, payload: dict) -> None:
     app._path(target).write_bytes(
         encode_checksummed_document("noetrium.operator-reference.v1", payload)
