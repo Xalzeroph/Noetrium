@@ -1,53 +1,44 @@
 from __future__ import annotations
 
-from noetrium.api import (
-    ExperimentPlan,
-    StudyConcurrencyPolicy,
-    StudyProtocol,
-    StudyVariantSpec,
-    VariantBinding,
-    VariantKind,
-    StudyAssignment,
-)
-from noetrium.api import canonical_digest
+from noetrium import api
 
 
-def build_plan() -> ExperimentPlan:
-    control = StudyVariantSpec(
+def build_plan() -> api.ExperimentPlan:
+    control = api.StudyVariantSpec(
         variant_id="control",
-        kind=VariantKind.CONTROL,
+        kind=api.VariantKind.CONTROL,
         implementation_id="agent-baseline-v1",
-        configuration_digest=canonical_digest({"temperature": 0.0}),
+        configuration_digest=api.canonical_digest({"temperature": 0.0}),
     )
-    treatment = StudyVariantSpec(
+    treatment = api.StudyVariantSpec(
         variant_id="treatment",
-        kind=VariantKind.TREATMENT,
+        kind=api.VariantKind.TREATMENT,
         implementation_id="agent-candidate-v1",
-        configuration_digest=canonical_digest({"temperature": 0.2}),
+        configuration_digest=api.canonical_digest({"temperature": 0.2}),
     )
-    protocol = StudyProtocol(
+    protocol = api.StudyProtocol(
         study_id="noetrium-quickstart",
         workload_id="hello-agent-research",
         variants=(control, treatment),
         repetitions=3,
-        seed_schedule_digest=canonical_digest(("seed-0", "seed-1", "seed-2")),
+        seed_schedule_digest=api.canonical_digest(("seed-0", "seed-1", "seed-2")),
         metric_names=("success_rate", "steps"),
-        task_manifest_digest=canonical_digest(("task-a", "task-b")),
+        task_manifest_digest=api.canonical_digest(("task-a", "task-b")),
         budget_tiers=("standard",),
-        concurrency_policy=StudyConcurrencyPolicy.serial_shared_v1(
+        concurrency_policy=api.StudyConcurrencyPolicy.serial_shared_v1(
             repetition_timeout_seconds=3600.0
         ),
     )
     bindings = (
-        VariantBinding(control, canonical_digest("seed-schedule-v1"), canonical_digest("baseline-provider"), canonical_digest("none"), "reference"),
-        VariantBinding(treatment, canonical_digest("seed-schedule-v1"), canonical_digest("candidate-provider"), canonical_digest("none"), "candidate"),
+        api.VariantBinding(control, api.canonical_digest("seed-schedule-v1"), api.canonical_digest("baseline-provider"), api.canonical_digest("none"), "reference"),
+        api.VariantBinding(treatment, api.canonical_digest("seed-schedule-v1"), api.canonical_digest("candidate-provider"), api.canonical_digest("none"), "candidate"),
     )
     assignments = tuple(
-        StudyAssignment(protocol.study_id, variant.variant_id, repetition, f"seed-{repetition}-{variant.variant_id}")
+        api.StudyAssignment(protocol.study_id, variant.variant_id, repetition, f"seed-{repetition}-{variant.variant_id}")
         for repetition in range(protocol.repetitions)
         for variant in protocol.variants
     )
-    return ExperimentPlan.compile(protocol, bindings, assignments)
+    return api.ExperimentPlan.compile(protocol, bindings, assignments)
 
 
 def main() -> None:
