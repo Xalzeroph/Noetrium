@@ -43,9 +43,9 @@ class AgentPhaseSpec:
 def _canonical_text_tuple(value: tuple[str, ...], field: str) -> tuple[str, ...]:
     if type(value) is not tuple:
         raise TypeError(f"{field} must be a tuple")
-    rows = tuple(item.strip() for item in value)
     if any(type(item) is not str or not item for item in value):
         raise ValueError(f"{field} must contain non-empty text")
+    rows = tuple(item.strip() for item in value)
     if rows != value:
         raise ValueError(f"{field} values must already be stripped")
     if len(rows) != len(set(rows)):
