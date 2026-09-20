@@ -2,9 +2,9 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoarm_cvpr2026",
-  "package_digest": "ea312389676b6cbef2fc07ec97198c0c28baa7df803837d3cee38d9732afbfa8",
+  "package_digest": "4f041a46de501d45957d8971bcf19f8d17ff49993f6dba95f56b445b0f59e6b3",
   "definition_digest": "61142dc7f03f9893ab43054787d50ea047a6c3605f67d42c67287ce69d2fe71f",
-  "source_registry_digest": "6e89d27abc902fb8ffd562d5ab0f631fd02bb33f919810d1aca8348b0d2db09f",
+  "source_registry_digest": "dd8526fc8b15cc760274353f8a4c7bb10778f7149004af924220d6a2edcdd77e",
   "lifecycle": "protocol_bound",
   "identity": {
     "method_id": "videoarm",
@@ -48,7 +48,9 @@
       "model/provider transport",
       "run evidence and provenance"
     ],
-    "reference_repositories": [],
+    "reference_repositories": [
+      "https://github.com/MILVLG/videoarm"
+    ],
     "reference_publications": [
       "https://openaccess.thecvf.com/content/CVPR2026/html/Yin_VideoARM_Agentic_Reasoning_over_Hierarchical_Memory_for_Long-Form_Video_Understanding_CVPR_2026_paper.html"
     ],
@@ -65,6 +67,16 @@
       "revision": "CVPR 2026 proceedings publication",
       "content_sha256": null,
       "lane_digest": "339f44f6a3729714efbc695e62b23cf8f2cca860d8c038951ec4098170b59126"
+    },
+    {
+      "lane_id": "official_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/MILVLG/videoarm",
+      "commit": "af1973ad8ffdb1ae3815c1f4e3f22b8c82858ef6",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "34a80d1da010e7b03fc1d07af97c30f22963b35a0d729d725dddf1ad38902219"
     }
   ],
   "assets": [

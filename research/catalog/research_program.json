@@ -3622,7 +3622,9 @@
         "agentic_workflow",
         "videoarm"
       ],
-      "reference_repositories": [],
+      "reference_repositories": [
+        "https://github.com/MILVLG/videoarm"
+      ],
       "reproduction_packages": [
         {
           "package": "videoarm_cvpr2026",
