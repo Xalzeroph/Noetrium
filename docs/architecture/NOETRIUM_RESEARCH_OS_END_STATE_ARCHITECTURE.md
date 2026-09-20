@@ -1781,12 +1781,12 @@ previous historical section.
 
 ## 63. R20: Single product composition owner
 
-The public product bindings now have one implementation owner:
-noetrium_platform.platform.  The
-noetrium.platform module is only a forwarding entrypoint and contains no
-classes or functions.  This closes the previous horizontal split where the
-root facade itself also assembled environment, model, method, experiment,
-workbench, and agent capabilities.
+The public product bindings have one implementation owner:
+`noetrium_platform.platform`. The historical `noetrium.platform` forwarding
+module has been removed; downstream projects use only `noetrium.api`, which
+lazily projects registered contracts and stable composition helpers. This
+closes the previous horizontal split where multiple root facades assembled
+environment, model, method, experiment, workbench, and agent capabilities.
 
 The split is now explicit by layer: capability contracts and providers remain
 owned by their registered systems, the operator composition layer owns
