@@ -6,8 +6,8 @@ Do not edit it manually; run python scripts/update_generated_docs.py.
 ## How downstream projects use Noetrium
 
 1. Import only the unified noetrium.api surface.
-2. Use api.<Symbol> for unique public symbols and api.system(system_key) only when selecting a genuinely ambiguous or specialized system surface.
-3. Use api.catalog(), api.interface_schema(), and api.symbol_schema(...) for machine-readable discovery; do not import noetrium_platform implementation modules.
+2. Use api.<Symbol> by default. Equivalent registry re-exports collapse automatically; only a true name collision requires api.system(system_key).<Symbol>.
+3. Use api.search(), api.describe(), api.catalog(), and api.interface_schema() for discovery; do not import noetrium_platform implementation modules.
 4. Run python scripts/update_generated_docs.py after changing a registry descriptor or public API export.
 
 Example:
@@ -15,7 +15,7 @@ Example:
     from noetrium import api
 
     MethodSpec = api.AgentMethodSpec
-    MinecraftBridgePort = api.system("environment/minecraft").MinecraftBridgePort
+    MinecraftBridgePort = api.MinecraftBridgePort
 
 - Registered systems: 172
 - Public API modules: 319
