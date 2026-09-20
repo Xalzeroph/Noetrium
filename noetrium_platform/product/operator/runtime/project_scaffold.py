@@ -34,7 +34,7 @@ def _manifest(
     return ProjectManifest(
         project=ProjectSpec(
             identity=ProjectIdentity(request.project_id, request.version),
-            program_id=request.program_id,
+            program_id=request.project_id,
             name=request.project_id,
         ),
         template_revision=project_template_revision(),
@@ -240,7 +240,6 @@ def create_project(request: ProjectCreateRequest) -> ProjectCreateReceipt:
     return ProjectCreateReceipt(
         project_id=request.project_id,
         version=request.version,
-        program_id=request.program_id,
         destination=str(root),
         template_revision=project_template_revision(),
         manifest_path=_MANIFEST_PATH,
