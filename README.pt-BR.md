@@ -21,7 +21,7 @@
 
 <!-- readme-locale:pt-BR -->
 
-<!-- readme-source-sha256:5781bf57d8190f5000cc8d197ffddba27be87752e80367f9f680d8929dd705fa -->
+<!-- readme-source-sha256:ab99bc5e631b18d3017671d206ab5172a758b36cde6ffce597ad01bef24f93e6 -->
 
 <p align="center">
   <strong>Construa agentes. Execute experimentos. Verifique resultados.</strong><br>
@@ -99,7 +99,7 @@ Noetrium is a general-purpose research-systems platform for long-running agents,
 - 172 registered system surfaces; 352 public API modules; 3044 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
-- Import rule: use noetrium.contracts.systems.<system-slug>; do not import noetrium_platform implementation modules.
+- Import rule: downstream code uses the single noetrium.api surface; generated system facades are registry material, not separate product entrypoints.
 
 | Capability domain | Registered surfaces |
 | --- | ---: |
@@ -120,10 +120,11 @@ Noetrium is a general-purpose research-systems platform for long-running agents,
 | runtime | 13 |
 | scope | 7 |
 
-Discover a capability in the catalog, import its generated facade, and inject its typed ports in downstream composition:
+Discover and use every capability through the same API:
 
-    from noetrium.contracts.systems.environment__minecraft import MinecraftBridgePort
-    from noetrium.contracts.systems.participant__agent import AgentMemoryPort
+    from noetrium import api
+    MinecraftBridgePort = api.system("environment/minecraft").MinecraftBridgePort
+    AgentMemoryPort = api.system("participant/agent").AgentMemoryPort
 
 After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
 <!-- noetrium-interface-catalog:end -->
