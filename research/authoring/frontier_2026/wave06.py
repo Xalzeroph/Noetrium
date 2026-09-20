@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
-from research.reproductions.frontier_2026.study import PaperStudySpec
+from research.authoring.frontier_2026.study import PaperStudySpec
 
 
 def _paper(method_id, title, venue, uri, benchmarks, phases, metrics, ablations, protocol):
