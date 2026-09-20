@@ -220,7 +220,7 @@ noetrium-architecture-gate
 python scripts/check_readme_i18n.py
 ```
 
-Downstream-код импортирует стабильные contracts и повторно используемые components из `noetrium`; не рассматривайте `noetrium_platform` как API расширения проекта. Для создания author-first каркаса проекта используйте `noetrium project create <project-id> <destination> --version <version>`, затем выполните `noetrium project doctor --project <destination>` и `noetrium project test --project <destination>`, и только после этого добавляйте собственные providers или methods.
+Downstream-код импортирует стабильные contracts и повторно используемые components из `noetrium`; не рассматривайте `noetrium_platform` как API расширения проекта. Для создания author-first каркаса проекта используйте `noetrium project create <project-id>`, затем выполните `noetrium project doctor --project <destination>` и `noetrium project test --project <destination>`, и только после этого добавляйте собственные providers или methods.
 
 <!-- readme-section:containers -->
 
