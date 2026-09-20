@@ -145,8 +145,8 @@ def _readme(project_id: str) -> str:
 This is a unified Noetrium downstream project.
 
 Edit `method.py` for paper-specific method semantics and `study.py` for the
-scientific experiment declaration. Import platform capabilities only from
-`from noetrium import api`.
+scientific experiment declaration. Use `from noetrium import api` as the only
+platform import.
 
 Runtime/provider/application code is optional project-owned extension code; it
 is not generated as a separate project type.
