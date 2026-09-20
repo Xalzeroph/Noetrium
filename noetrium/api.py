@@ -15,7 +15,6 @@ from noetrium._api_surface import UNIFIED_API_EXTRA_MODULES
 from noetrium.contracts.discovery import (
     DownstreamCapabilityCatalog,
     DownstreamSystemSurface,
-    find_downstream_symbol_schema,
     load_downstream_capability_catalog,
     load_downstream_interface_schema,
 )
@@ -44,22 +43,6 @@ def system(system_key: str) -> Any:
 def interface_schema() -> dict[str, Any]:
     """Return the validated complete downstream interface schema."""
     return load_downstream_interface_schema()
-
-
-def symbol_schema(system_key: str, module: str, symbol: str) -> dict[str, Any]:
-    """Return the generated schema for one registered public symbol."""
-    return find_downstream_symbol_schema(system_key, module, symbol)
-
-
-@lru_cache(maxsize=1)
-def _extra_symbol_index() -> dict[str, tuple[str, ...]]:
-    rows: dict[str, list[str]] = {}
-    for module_name in _EXTRA_MODULES:
-        module = importlib.import_module(module_name)
-        for symbol in getattr(module, "__all__", ()):
-            if isinstance(symbol, str) and symbol and not symbol.startswith("_"):
-                rows.setdefault(symbol, []).append(module_name)
-    return {symbol: tuple(module_names) for symbol, module_names in rows.items()}
 
 
 def owners(symbol: str) -> tuple[str, ...]:
@@ -190,7 +173,6 @@ def __dir__() -> list[str]:
         "search",
         "describe",
         "interface_schema",
-        "symbol_schema",
     }
     for surface in catalog().systems:
         for module in surface.api_modules:
@@ -212,5 +194,4 @@ __all__ = (
     "search",
     "describe",
     "interface_schema",
-    "symbol_schema",
 )
