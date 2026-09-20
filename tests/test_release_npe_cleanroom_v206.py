@@ -129,7 +129,7 @@ def test_clean_room_records_level0_binding_blocker_without_false_pass(
     monkeypatch.setattr(npe, "_run", fake_run)
 
     result = npe.verify_npe_cleanroom(artifact)
-        assert result.npe_verified is False
+    assert result.npe_verified is False
     assert result.project_created is True
     assert result.generated_tests_passed is True
     assert result.public_import_boundary_passed is True
