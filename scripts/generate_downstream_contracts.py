@@ -11,6 +11,7 @@ import argparse
 import ast
 from dataclasses import asdict, dataclass
 import hashlib
+import importlib
 import json
 from pathlib import Path
 import re
@@ -531,6 +532,26 @@ def _module_source(root: Path, module: str) -> Path:
     raise FileNotFoundError(f"public module source not found: {module}")
 
 
+def _equivalent_runtime_source(
+    symbol: str,
+    modules: set[str],
+) -> str | None:
+    resolved: list[tuple[str, object]] = []
+    for module_name in sorted(modules):
+        try:
+            module = importlib.import_module(module_name)
+            value = getattr(module, symbol)
+        except (ImportError, AttributeError):
+            return None
+        resolved.append((module_name, value))
+    if not resolved:
+        return None
+    value = resolved[0][1]
+    if not all(candidate is value for _module, candidate in resolved[1:]):
+        return None
+    return resolved[0][0]
+
+
 def render_unified_api_stub(
     root: Path,
     surfaces: tuple[SystemSurface, ...],
@@ -563,16 +584,19 @@ def render_unified_api_stub(
         "symbol_schema",
     }
     selected: dict[str, str] = {}
-    for symbol, modules in registry_sources.items():
+    all_symbols = set(registry_sources) | set(extra_sources)
+    for symbol in sorted(all_symbols):
         if symbol in reserved:
             continue
+        modules = set(registry_sources.get(symbol, ())) | set(
+            extra_sources.get(symbol, ())
+        )
         if len(modules) == 1:
             selected[symbol] = next(iter(modules))
-    for symbol, modules in extra_sources.items():
-        if symbol in reserved or symbol in registry_sources:
             continue
-        if len(modules) == 1:
-            selected[symbol] = next(iter(modules))
+        source = _equivalent_runtime_source(symbol, modules)
+        if source is not None:
+            selected[symbol] = source
 
     by_module: dict[str, list[str]] = {}
     for symbol, module in sorted(selected.items()):
