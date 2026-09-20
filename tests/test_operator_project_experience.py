@@ -144,7 +144,7 @@ def test_project_doctor_rejects_manifest_and_private_import_drift(
     assert initial_checks["public_import_boundary"] is ProjectDoctorDisposition.PASS
     assert initial_checks["level0_standard_bindings"] is ProjectDoctorDisposition.PASS
     level0 = next(row for row in initial.checks if row.check_id == "level0_standard_bindings")
-    assert level0.summary == "typed AgentMethodSpec/MethodProgram and Study compilation seam are available"
+    assert level0.summary == "typed AgentMethodSpec/MethodProgram and AgentStudySpec compilation seams are available"
     assert "participant_provider_readiness" not in initial_checks
 
     manifest_path = root / "project.manifest.json"
