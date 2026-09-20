@@ -11,10 +11,44 @@ command -v docker >/dev/null 2>&1 || {
   exit 127
 }
 
-test -S /var/run/docker.sock || {
-  echo "Docker socket /var/run/docker.sock is unavailable." >&2
+docker info >/dev/null 2>&1 || {
+  echo "Noetrium environment bootstrap cannot reach the active Docker daemon." >&2
   exit 1
 }
+
+# Resolve the daemon endpoint from DOCKER_HOST first and otherwise from the
+# active Docker context. This keeps the host contract at Docker itself rather
+# than assuming a rootful /var/run/docker.sock installation.
+DAEMON_HOST="${DOCKER_HOST:-}"
+if [ -z "$DAEMON_HOST" ]; then
+  DAEMON_HOST="$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null || true)"
+fi
+[ -n "$DAEMON_HOST" ] || DAEMON_HOST="unix:///var/run/docker.sock"
+
+case "$DAEMON_HOST" in
+  unix://*)
+    DAEMON_SOCKET="${DAEMON_HOST#unix://}"
+    test -S "$DAEMON_SOCKET" || {
+      echo "Docker daemon socket is unavailable: $DAEMON_SOCKET" >&2
+      exit 1
+    }
+    DAEMON_ARGS="-v $DAEMON_SOCKET:$DAEMON_SOCKET -e DOCKER_HOST=$DAEMON_HOST"
+    ;;
+  tcp://*)
+    # Plain TCP endpoints need no host mount. TLS endpoints intentionally stay
+    # explicit because forwarding client certificates is deployment policy.
+    if [ "${DOCKER_TLS_VERIFY:-}" = "1" ]; then
+      echo "TLS Docker endpoints require an explicit bootstrap integration; refusing to copy host credentials implicitly." >&2
+      exit 1
+    fi
+    DAEMON_ARGS="-e DOCKER_HOST=$DAEMON_HOST"
+    ;;
+  *)
+    echo "Unsupported Docker daemon endpoint for containerized bootstrap: $DAEMON_HOST" >&2
+    echo "Use a unix:// or non-TLS tcp:// Docker endpoint." >&2
+    exit 1
+    ;;
+esac
 
 mkdir -p "$WORK_ROOT"
 WORK_ROOT="$(CDPATH= cd -- "$WORK_ROOT" && pwd)"
@@ -29,7 +63,7 @@ docker build \
 # inside the control-plane container so daemon-side build contexts and Compose
 # bind mounts resolve to the same files. Source stays read-only; only the
 # dedicated build/runtime root is writable.
-COMMON_ARGS="-v /var/run/docker.sock:/var/run/docker.sock -v $ROOT:$ROOT:ro -w $ROOT"
+COMMON_ARGS="$DAEMON_ARGS -v $ROOT:$ROOT:ro -w $ROOT"
 
 if [ "${1:-}" = "build" ]; then
   # shellcheck disable=SC2086
