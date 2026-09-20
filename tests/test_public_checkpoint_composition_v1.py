@@ -63,7 +63,7 @@ def test_public_checkpoint_composition_survives_fresh_process_reopen(tmp_path: P
     )
     assert imports
     assert all(not module.startswith("noetrium_platform") for module in imports)
-    assert set(imports) == {"pathlib", "noetrium.api", "noetrium.platform"}
+    assert set(imports) == {"pathlib", "noetrium.api"}
 
     state_root = tmp_path / "project-state"
     published = _run(script, "publish", state_root)
