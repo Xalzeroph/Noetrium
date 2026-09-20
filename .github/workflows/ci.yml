@@ -142,15 +142,17 @@ jobs:
             --expected-distribution-evidence-sha256 "${ROLE06_DISTRIBUTION_EVIDENCE_SHA256}" \
             --output "$RUNNER_TEMP/container-verification.json"
 
-      - name: Validate environment profile authority
-        run: python scripts/build_environment_images.py validate
+      - name: Validate environment profile authority through canonical bootstrap
+        env:
+          NOETRIUM_BUILD_WORK_ROOT: ${{ runner.temp }}/noetrium-environment-images
+        run: deploy/build-environments.sh validate
 
-      - name: Build and doctor reusable environment profiles
+      - name: Build and doctor reusable environment profiles through canonical bootstrap
+        env:
+          NOETRIUM_BUILD_WORK_ROOT: ${{ runner.temp }}/noetrium-environment-images
         run: |
-          python scripts/build_environment_images.py build \
-            --profiles minecraft embodied gui web software text_world \
-            --work-root "$RUNNER_TEMP/noetrium-environment-images" \
-            --output "$RUNNER_TEMP/environment-image-build.json"
+          deploy/build-environments.sh build \
+            --profiles minecraft embodied gui web software text_world
 
       - name: Upload assurance evidence
         if: always()
@@ -163,4 +165,4 @@ jobs:
             ${{ runner.temp }}/platform-distribution/**
             ${{ runner.temp }}/platform-container-context/CONTAINER_CONTEXT.json
             ${{ runner.temp }}/container-verification.json
-            ${{ runner.temp }}/environment-image-build.json
+            ${{ runner.temp }}/noetrium-environment-images/environment-image-build.json
