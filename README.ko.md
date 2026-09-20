@@ -269,8 +269,8 @@ Deployment 계층은 immutable software와 mutable runtime state를 분리하고
 Minecraft는 first-party 재사용 environment Provider입니다. Task suite와 과학적 composition은 downstream에 둡니다.
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml run --rm platform-runtime minecraft-doctor
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
