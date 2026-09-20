@@ -56068,9 +56068,9 @@
       ],
       "decorators": [],
       "fields": [
-        "AUTHOR_REQUIREMENTS",
         "PROJECT_SPEC",
         "PROVIDER_BINDINGS",
+        "REQUIREMENTS",
         "SCAFFOLD_PLATFORM_PROVENANCE",
         "TOTAL_CLOSURE"
       ],
@@ -56141,9 +56141,9 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
-        "author_requirements_digest",
         "project_spec_digest",
         "provider_bindings_digest",
+        "requirements_digest",
         "scaffold_platform_provenance_digest",
         "total_closure_digest"
       ],
@@ -72606,13 +72606,12 @@
         "generated_files",
         "manifest_path",
         "manifest_semantic_digest",
-        "program_id",
         "project_id",
         "template_revision",
         "version"
       ],
       "kind": "dataclass",
-      "line": 36,
+      "line": 35,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectCreateReceipt",
@@ -72630,7 +72629,6 @@
       ],
       "fields": [
         "destination",
-        "program_id",
         "project_id",
         "version"
       ],
@@ -72660,7 +72658,7 @@
         "summary"
       ],
       "kind": "dataclass",
-      "line": 48,
+      "line": 46,
       "methods": [
         "__post_init__"
       ],
@@ -72705,7 +72703,7 @@
         "template_revision"
       ],
       "kind": "dataclass",
-      "line": 62,
+      "line": 60,
       "methods": [
         "ready"
       ],
@@ -72725,7 +72723,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 100,
+      "line": 98,
       "methods": [
         "create",
         "doctor",
@@ -72745,7 +72743,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 106,
+      "line": 104,
       "methods": [
         "__init__",
         "create",
@@ -72771,7 +72769,7 @@
         "stages"
       ],
       "kind": "dataclass",
-      "line": 91,
+      "line": 89,
       "methods": [
         "passed"
       ],
@@ -72794,7 +72792,7 @@
         "CONTRACT_TEST"
       ],
       "kind": "enum",
-      "line": 74,
+      "line": 72,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectTestStage",
@@ -72816,7 +72814,7 @@
         "stage"
       ],
       "kind": "dataclass",
-      "line": 80,
+      "line": 78,
       "methods": [
         "passed"
       ],
@@ -143899,7 +143897,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "6d0e74ee8d2c4083088ec7ea412cb5ece1ab8545",
+  "source_git_sha": "10eff6937fdcad74329681782908ea43374e64f6",
   "system_import_edges": [
     {
       "count": 108,
