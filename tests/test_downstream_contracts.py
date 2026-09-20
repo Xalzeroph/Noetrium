@@ -25,6 +25,8 @@ def test_generated_catalog_covers_exact_registry() -> None:
     )
     catalog = load_downstream_capability_catalog()
     assert {row.system_key for row in catalog.systems} == set(registry)
+    assert catalog.entrypoint == "noetrium.api"
+    assert catalog.symbol_index
     assert catalog.topology_digest
     assert (
         ROOT / "docs/architecture/VNEXT_SYSTEM_CATALOG.json"
@@ -46,36 +48,25 @@ def test_generated_facades_are_importable() -> None:
             )
 
 
-def test_persistent_session_contract_is_downstream_visible() -> None:
-    module = importlib.import_module(
-        "noetrium.contracts.systems.runtime__session"
-    )
-    assert hasattr(module, "PersistentSessionSpec")
-    assert hasattr(module, "PersistentSessionRuntimePort")
-    assert hasattr(module, "RuntimeControllerCommand")
+def test_persistent_session_contract_is_visible_through_unified_api() -> None:
+    from noetrium import api
 
-    from noetrium.contracts import server, session
-
-    assert session.PersistentSessionSpec is module.PersistentSessionSpec
-    assert server.PersistentSessionSpec is module.PersistentSessionSpec
-    assert "SYSTEM_FACADES" in __import__("noetrium.contracts", fromlist=["SYSTEM_FACADES"]).__all__
+    module = api.system("runtime/session")
+    assert api.PersistentSessionSpec is module.PersistentSessionSpec
+    assert api.PersistentSessionRuntimePort is module.PersistentSessionRuntimePort
+    assert api.RuntimeControllerCommand is module.RuntimeControllerCommand
+    assert importlib.util.find_spec("noetrium.contracts.server") is None
+    assert importlib.util.find_spec("noetrium.contracts.session") is None
 
 
-def test_reusable_memory_graph_is_downstream_visible_as_reference_extension() -> None:
-    module = importlib.import_module("components.api")
-    expected = {
-        "MemoryGraphPort",
-        "MemoryGraphSnapshot",
-        "MemoryGraphOperation",
-        "MemoryGraphTransaction",
-        "VersionedMemoryGraph",
-    }
-    assert expected.issubset(set(module.__all__))
-    graph = module.VersionedMemoryGraph(module.MemoryGraphSnapshot("g0", (), ()))
+def test_reference_components_are_visible_through_unified_api() -> None:
+    from noetrium import api
+
+    graph = api.VersionedMemoryGraph(api.MemoryGraphSnapshot("g0", (), ()))
     assert graph.snapshot().generation == "g0"
 
-    # Reference/extension layers stay outside the canonical runtime topology.
-    # A generated system facade here would silently recreate a fake authority.
+    # Reference layers stay outside runtime topology while remaining reachable
+    # through the one product API.
     assert importlib.util.find_spec("noetrium.contracts.systems.components") is None
 
 
