@@ -8,6 +8,7 @@ from noetrium_platform.research.experimentation.experiment.api import (
 )
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage, ReplayLevel
 from noetrium_platform.research.experimentation.study.api import (
+    AgentStudySpec,
     BenchmarkTaskSet,
     FactorLevelSpec,
     MeasurementDefinition,
@@ -87,6 +88,61 @@ def test_declarative_study_lowers_to_internal_typed_protocol() -> None:
     assert action.usage is ModelRoleUsage.EXECUTION
     assert study.measurement_protocol.definition("success").semantic_kind == "task_success"
 
+
+
+def test_agent_study_spec_removes_common_single_method_boilerplate() -> None:
+    spec = AgentStudySpec(
+        project_id="react-reproduction",
+        study_id="react-alfworld",
+        method_id="react",
+        model=StudyModel("model.react.action", prompt="react.prompt"),
+        benchmark_ids=("benchmark",),
+        capabilities=("environment.act",),
+        configurations=("react.prompt",),
+    )
+    study = spec.build(
+        _benchmark(),
+        benchmark_split_id="eval",
+        trial=ExperimentTrialProtocolIdentity("trial.react", "7" * 64),
+        limits=TrialBudget("react-limits", max_turns=49, max_tokens=100_000),
+        measurements=(_success(),),
+        repetitions=3,
+    )
+
+    assert study.project_id == "react-reproduction"
+    assert study.study_id == "react-alfworld"
+    assert study.seeds == ("repetition-0", "repetition-1", "repetition-2")
+    participant = study.binding_requirements.participants[0]
+    assert participant.role == "agent"
+    assert participant.method_id == "react"
+    assert participant.capability_requirement_ids == ("environment.act",)
+    assert participant.configuration_ref_ids == ("react.prompt",)
+    model = study.binding_requirements.model_role("agent_model")
+    assert model.requirement_id == "model.react.action"
+    assert model.prompt_configuration_id == "react.prompt"
+
+
+def test_agent_study_spec_requires_explicit_science_and_declared_benchmark() -> None:
+    spec = AgentStudySpec(
+        project_id="project",
+        study_id="study",
+        method_id="method",
+        model="model.requirement",
+        benchmark_ids=("other-benchmark",),
+    )
+    common = dict(
+        trial=ExperimentTrialProtocolIdentity("trial.protocol", "8" * 64),
+        limits=TrialBudget("budget", max_steps=1),
+    )
+    with pytest.raises(ValueError, match="measurements"):
+        AgentStudySpec(
+            project_id="project",
+            study_id="study",
+            method_id="method",
+            model="model.requirement",
+        ).build(_benchmark(), **common)
+    with pytest.raises(ValueError, match="outside declared"):
+        spec.build(_benchmark(), measurements=(_success(),), **common)
 
 def test_user_simulator_is_explicit_participant_not_environment_state() -> None:
     study = Study(
