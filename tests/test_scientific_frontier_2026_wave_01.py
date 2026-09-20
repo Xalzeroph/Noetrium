@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from research.reproductions.frontier_2026 import (
+from research.authoring.frontier_2026 import (
     PROGRAM_BY_ID,
     REPRODUCTIONS,
     REPRODUCTION_BY_ID,
