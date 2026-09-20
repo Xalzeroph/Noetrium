@@ -32,7 +32,6 @@ class NpeCleanRoomReceipt:
     installed_version: str | None
     module_file: str | None
     installed_import_isolated: bool
-    template_profile: str | None
     template_revision: str | None
     project_created: bool
     doctor_ready: bool
@@ -133,33 +132,35 @@ def _json_output(receipt: CommandReceipt) -> dict[str, object] | None:
     return _strict_json_object(receipt.json_output)
 
 
-def _doctor_facts(receipt: CommandReceipt) -> tuple[bool, bool, str | None, str | None, tuple[str, ...]]:
+def _doctor_facts(
+    receipt: CommandReceipt,
+) -> tuple[bool, bool, str | None, tuple[str, ...]]:
     document = _json_output(receipt)
     if document is None:
-        return False, False, None, None, ("DOCTOR_RECEIPT_INVALID",)
+        return False, False, None, ("DOCTOR_RECEIPT_INVALID",)
     result = document.get("result")
     if not isinstance(result, dict):
-        return False, False, None, None, ("DOCTOR_RESULT_INVALID",)
+        return False, False, None, ("DOCTOR_RESULT_INVALID",)
     checks = result.get("checks")
     if not isinstance(checks, list):
-        return False, False, None, None, ("DOCTOR_CHECKS_INVALID",)
+        return False, False, None, ("DOCTOR_CHECKS_INVALID",)
     blocked: list[str] = []
     public_boundary = False
     for row in checks:
         if not isinstance(row, dict):
-            return False, False, None, None, ("DOCTOR_CHECK_INVALID",)
+            return False, False, None, ("DOCTOR_CHECK_INVALID",)
         check_id = row.get("check_id")
         disposition = row.get("disposition")
         if isinstance(check_id, str) and disposition == "blocked":
             blocked.append(check_id)
         if check_id == "public_import_boundary":
             public_boundary = disposition == "pass"
-    profile = result.get("template_profile")
     template = result.get("template_revision")
     return (
-        document.get("ok") is True, public_boundary,
-        profile if isinstance(profile, str) else None,
-        template if isinstance(template, str) else None, tuple(blocked),
+        document.get("ok") is True,
+        public_boundary,
+        template if isinstance(template, str) else None,
+        tuple(blocked),
     )
 
 
@@ -171,7 +172,6 @@ def _blocked_receipt(
     installed_version: str | None = None,
     module_file: str | None = None,
     installed_import_isolated: bool = False,
-    template_profile: str | None = None,
     template_revision: str | None = None,
     project_created: bool = False,
     doctor_ready: bool = False,
@@ -182,14 +182,13 @@ def _blocked_receipt(
     npe_verified: bool = False,
 ) -> NpeCleanRoomReceipt:
     return NpeCleanRoomReceipt(
-        schema="noetrium.npe-clean-room.v2",
+        schema="noetrium.npe-clean-room.v3",
         artifact_name=artifact.name,
         artifact_sha256=_sha256_file(artifact),
         artifact_size=artifact.stat().st_size,
         installed_version=installed_version,
         module_file=module_file,
         installed_import_isolated=installed_import_isolated,
-        template_profile=template_profile,
         template_revision=template_revision,
         project_created=project_created,
         doctor_ready=doctor_ready,
@@ -457,7 +456,7 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
             env=env,
         )
         commands.append(doctor)
-        doctor_ready, public_boundary, template_profile, template_revision, doctor_blockers = _doctor_facts(doctor)
+        doctor_ready, public_boundary, template_revision, doctor_blockers = _doctor_facts(doctor)
 
         generated_tests = _run(
             "project-test",
@@ -473,8 +472,8 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
 
         if not doctor_ready:
             blockers.extend(f"DOCTOR_BLOCKED:{check_id}" for check_id in doctor_blockers)
-            if "level0_standard_bindings" in doctor_blockers:
-                blockers.append("URE_LEVEL0_STANDARD_BINDINGS_UNAVAILABLE")
+            if "standard_bindings" in doctor_blockers:
+                blockers.append("URE_STANDARD_BINDINGS_UNAVAILABLE")
         if not tests_passed:
             blockers.append("GENERATED_TESTS_FAILED")
         if not public_boundary:
@@ -521,7 +520,6 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
             installed_version=installed_version,
             module_file=module_file,
             installed_import_isolated=True,
-            template_profile=template_profile,
             template_revision=template_revision,
             project_created=project_created,
             doctor_ready=doctor_ready,
