@@ -85,28 +85,24 @@ def test_current_repository_boundary_passes() -> None:
     report = audit_repository_boundary(root, include_release_manifest=False)
     assert report.passed, report.violations
 
-def test_minimal_downstream_project_imports_public_contracts_without_becoming_platform_source(tmp_path: Path) -> None:
+def test_minimal_downstream_project_uses_one_noetrium_api(tmp_path: Path) -> None:
     root = tmp_path / "downstream"
     package = root / "src" / "example_project"
     package.mkdir(parents=True)
     (package / "app.py").write_text(
-        "from noetrium_platform.foundation.portfolio.api import ProjectManifest\n"
-        "from noetrium_platform.product.operator.api import ResearchApplicationPort\n",
+        "from noetrium.api import ProjectManifest, ResearchApplicationPort\n",
         encoding="utf-8",
     )
     (package / "provider.py").write_text(
-        "from noetrium_platform.capabilities.environment.catalog.api import EnvironmentSpec\n",
+        "from noetrium import api\n"
+        "EnvironmentSpec = api.EnvironmentSpec\n",
         encoding="utf-8",
     )
     report = audit_downstream_project_imports(root)
     assert report.passed, report.violations
     observed = {(row.module, row.kind) for row in report.observations}
-    assert ("noetrium_platform.foundation.portfolio.api", DownstreamImportKind.COMMON_PLATFORM_API) in observed
-    assert ("noetrium_platform.product.operator.api", DownstreamImportKind.COMMON_PLATFORM_API) in observed
-    assert (
-        "noetrium_platform.capabilities.environment.catalog.api",
-        DownstreamImportKind.PROVIDER_DEVELOPMENT_API,
-    ) in observed
+    assert ("noetrium.api", DownstreamImportKind.NOETRIUM_API) in observed
+    assert ("noetrium", DownstreamImportKind.NOETRIUM_API) in observed
     assert not (root / "noetrium_platform").exists()
 
 
@@ -121,10 +117,33 @@ def test_downstream_project_private_platform_import_and_vendoring_fail_closed(tm
     (root / "noetrium_platform").mkdir()
     report = audit_downstream_project_imports(root)
     codes = {row.code for row in report.violations}
-    assert "DOWNSTREAM_PRIVATE_PLATFORM_IMPORT" in codes
+    assert "DOWNSTREAM_NON_UNIFIED_NOETRIUM_IMPORT" in codes
     assert "DOWNSTREAM_VENDORS_PLATFORM" in codes
     private = next(row for row in report.observations if row.module.startswith("noetrium_platform.infrastructure.lifecycle"))
-    assert private.kind is DownstreamImportKind.FORBIDDEN_PRIVATE_IMPLEMENTATION
+    assert private.kind is DownstreamImportKind.FORBIDDEN_INTERNAL
+
+
+def test_downstream_project_rejects_retired_noetrium_entrypoints(tmp_path: Path) -> None:
+    root = tmp_path / "downstream"
+    package = root / "src" / "example_project"
+    package.mkdir(parents=True)
+    (package / "bad.py").write_text(
+        "from noetrium.contracts.discovery import load_downstream_capability_catalog\n"
+        "from components.api import VersionedMemoryGraph\n"
+        "from orchestration.api import MultiAgentRuntime\n",
+        encoding="utf-8",
+    )
+    report = audit_downstream_project_imports(root)
+    assert not report.passed
+    assert {
+        row.module
+        for row in report.observations
+        if row.kind is DownstreamImportKind.FORBIDDEN_INTERNAL
+    } == {
+        "noetrium.contracts.discovery",
+        "components.api",
+        "orchestration.api",
+    }
 
 
 def test_downstream_project_source_parse_failure_is_blocking(tmp_path: Path) -> None:
