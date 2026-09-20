@@ -1,17 +1,9 @@
 from __future__ import annotations
 
+from noetrium import api
+
 from dataclasses import dataclass
 
-from noetrium.api import canonical_digest, require_sha256
-from noetrium.api import (
-    BenchmarkSourceKind,
-    BenchmarkSourceSpec,
-    BenchmarkTaskSet,
-    TaskDefinition,
-    TaskPackageSpec,
-    TaskSetSplit,
-    TaskVerifierIsolation,
-)
 
 MGSM_BENCHMARK_ID = "mgsm"
 MGSM_DATASET_LOCATOR = "https://huggingface.co/datasets/juletxara/mgsm"
@@ -44,7 +36,7 @@ class MGSMTaskRecord:
             raise ValueError("MGSM question must be non-empty")
         if type(self.answer) is not str or not self.answer.strip():
             raise ValueError("MGSM answer must be non-empty")
-        require_sha256(self.content_digest, "MGSM task content_digest")
+        api.require_sha256(self.content_digest, "MGSM task content_digest")
 
     @property
     def task_id(self) -> str:
@@ -64,11 +56,11 @@ def build_mgsm_source(
     *,
     dataset_revision: str,
     dataset_content_sha256: str,
-) -> BenchmarkSourceSpec:
-    require_sha256(dataset_content_sha256, "MGSM dataset_content_sha256")
-    return BenchmarkSourceSpec(
+) -> api.BenchmarkSourceSpec:
+    api.require_sha256(dataset_content_sha256, "MGSM dataset_content_sha256")
+    return api.BenchmarkSourceSpec(
         source_id=MGSM_BENCHMARK_ID,
-        kind=BenchmarkSourceKind.HUGGINGFACE,
+        kind=api.BenchmarkSourceKind.HUGGINGFACE,
         revision_id=mgsm_adas_revision(dataset_revision),
         locator=MGSM_DATASET_LOCATOR,
         content_digest=dataset_content_sha256,
@@ -87,7 +79,7 @@ def build_mgsm_adas_task_set(
     dataset_revision: str,
     dataset_content_sha256: str,
     paper_shuffle_task_ids: tuple[str, ...],
-) -> BenchmarkTaskSet:
+) -> api.BenchmarkTaskSet:
     """Freeze the MGSM cut and exact ADAS search/evaluation permutation.
 
     The caller supplies the task order emitted by the paper-era seeded shuffle.
@@ -97,7 +89,7 @@ def build_mgsm_adas_task_set(
 
     if type(records) is not tuple or any(type(row) is not MGSMTaskRecord for row in records):
         raise TypeError("MGSM records must be a tuple of MGSMTaskRecord")
-    require_sha256(dataset_content_sha256, "MGSM dataset_content_sha256")
+    api.require_sha256(dataset_content_sha256, "MGSM dataset_content_sha256")
 
     by_key = {(row.language, row.index): row for row in records}
     expected = {
@@ -126,7 +118,7 @@ def build_mgsm_adas_task_set(
     tasks = tuple(
         sorted(
             (
-                TaskDefinition(
+                api.TaskDefinition(
                     task_id=row.task_id,
                     revision_id=revision,
                     family=row.language,
@@ -136,11 +128,11 @@ def build_mgsm_adas_task_set(
                         f"language:{row.language}",
                         f"source-index:{row.index}",
                     ),
-                    package=TaskPackageSpec(
+                    package=api.TaskPackageSpec(
                         package_schema_id="mgsm.numeric-answer-package.v1",
                         instruction_digest=row.content_digest,
                         verifier_requirement_id="benchmark.mgsm.numeric-answer.verifier",
-                        verifier_isolation=TaskVerifierIsolation.SEPARATE,
+                        verifier_isolation=api.TaskVerifierIsolation.SEPARATE,
                     ),
                 )
                 for row in canonical_rows
@@ -153,17 +145,17 @@ def build_mgsm_adas_task_set(
     test_ids = paper_shuffle_task_ids[
         test_start : test_start + MGSM_ADAS_TEST_SIZE
     ]
-    return BenchmarkTaskSet(
+    return api.BenchmarkTaskSet(
         benchmark_id=MGSM_BENCHMARK_ID,
         revision_id=revision,
         source_digest=dataset_content_sha256,
         task_schema_id=MGSM_TASK_SCHEMA_ID,
         tasks=tasks,
         splits=(
-            TaskSetSplit(MGSM_ADAS_TEST_SPLIT, test_ids),
-            TaskSetSplit(MGSM_ADAS_VALID_SPLIT, valid_ids),
+            api.TaskSetSplit(MGSM_ADAS_TEST_SPLIT, test_ids),
+            api.TaskSetSplit(MGSM_ADAS_VALID_SPLIT, valid_ids),
         ),
-        selection_policy_digest=canonical_digest(
+        selection_policy_digest=api.canonical_digest(
             {
                 "source_order_languages": MGSM_LANGUAGES,
                 "tasks_per_language": MGSM_TASKS_PER_LANGUAGE,
