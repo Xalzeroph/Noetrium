@@ -34,6 +34,21 @@ SUPPORTED_BENCHMARKS = frozenset(
         "hd-epic",
         "mlvu",
         "vstream-qa",
+        "lmee-bench",
+        "libero",
+        "calvin",
+        "robotwin2-hard",
+        "screenspot-pro",
+        "screenspot-v2",
+        "androidcontrol",
+        "aitw",
+        "r2r-ce",
+        "reverie-ce",
+        "navrag-ce",
+        "hm3d-ovon",
+        "sg3d",
+        "goat-bench",
+        "minecraft-openha",
     }
 )
 
