@@ -506,10 +506,12 @@ from noetrium_platform.capabilities.participant.api import (
 
 from noetrium_platform.capabilities.participant.binding.api.contracts import (
     ParticipantBindingResolverPort as ParticipantBindingResolverPort,
-    ParticipantConfigurationCatalogPort as ParticipantConfigurationCatalogPort,
+    ParticipantConfigurationResolverPort as ParticipantConfigurationResolverPort,
     ParticipantImplementationRegistration as ParticipantImplementationRegistration,
+    ParticipantImplementationResolverPort as ParticipantImplementationResolverPort,
     ParticipantRuntimeEndpointFactory as ParticipantRuntimeEndpointFactory,
     ParticipantSessionRuntimeRegistration as ParticipantSessionRuntimeRegistration,
+    ParticipantSessionRuntimeResolverPort as ParticipantSessionRuntimeResolverPort,
 )
 
 from noetrium_platform.capabilities.participant.capability.api import (
@@ -606,6 +608,7 @@ from noetrium_platform.capabilities.participant.core.api.runtime_ports import (
 )
 
 from noetrium_platform.capabilities.participant.definition.api import (
+    ParticipantImplementationCatalogPort as ParticipantImplementationCatalogPort,
     ParticipantImplementationFactory as ParticipantImplementationFactory,
     RegisteredParticipantImplementation as RegisteredParticipantImplementation,
 )
@@ -640,6 +643,7 @@ from noetrium_platform.capabilities.participant.method.api import (
 )
 
 from noetrium_platform.capabilities.participant.session.api import (
+    ParticipantSessionRuntimeCatalogPort as ParticipantSessionRuntimeCatalogPort,
     ParticipantSessionRuntimeFactory as ParticipantSessionRuntimeFactory,
     RegisteredParticipantSessionRuntime as RegisteredParticipantSessionRuntime,
 )

@@ -6,16 +6,6 @@
       "noetrium_platform.research.experimentation.study.api",
       "noetrium_platform.research.experimentation.study.api.plan"
     ],
-    "ParticipantImplementationCatalogPort": [
-      "noetrium_platform.capabilities.participant.binding.api.contracts",
-      "noetrium_platform.capabilities.participant.definition.api",
-      "noetrium_platform.capabilities.participant.definition.api.ports"
-    ],
-    "ParticipantSessionRuntimeCatalogPort": [
-      "noetrium_platform.capabilities.participant.binding.api.contracts",
-      "noetrium_platform.capabilities.participant.session.api",
-      "noetrium_platform.capabilities.participant.session.api.ports"
-    ],
     "RecoveryAction": [
       "noetrium_platform.infrastructure.reliability.failure.api",
       "noetrium_platform.infrastructure.reliability.failure.api.contracts",
@@ -32,7 +22,7 @@
       "noetrium_platform.infrastructure.lifecycle.api.contracts"
     ]
   },
-  "catalog_digest": "33953ed1178225003d697f2e86679347a5d8469d6c830dd0fa146eb46235d01f",
+  "catalog_digest": "44d798ddd3ce6ffd34a05ce8048e516fc785b7289565ea5f75238d22ca7b68b2",
   "direct_symbol_sources": {
     "ActionIdentityViolation": "noetrium_platform.capabilities.environment.api",
     "ActionKind": "noetrium_platform.capabilities.environment.embodied.api",
@@ -895,12 +885,14 @@
     "ParticipantCheckpointRuntimePort": "noetrium_platform.capabilities.participant.core.api.runtime_ports",
     "ParticipantConcern": "noetrium_platform.research.execution.machines.api",
     "ParticipantConfigurationArtifact": "noetrium_platform.capabilities.participant.core.api.contracts",
-    "ParticipantConfigurationCatalogPort": "noetrium_platform.capabilities.participant.binding.api.contracts",
+    "ParticipantConfigurationResolverPort": "noetrium_platform.capabilities.participant.binding.api.contracts",
     "ParticipantIdentityMismatch": "noetrium_platform.capabilities.participant.core.api.lifecycle",
+    "ParticipantImplementationCatalogPort": "noetrium_platform.capabilities.participant.definition.api",
     "ParticipantImplementationFactory": "noetrium_platform.capabilities.participant.definition.api",
     "ParticipantImplementationIdentity": "noetrium_platform.capabilities.participant.core.api.contracts",
     "ParticipantImplementationInventory": "noetrium_platform.capabilities.participant.core.api.frozen_manifests",
     "ParticipantImplementationRegistration": "noetrium_platform.capabilities.participant.binding.api.contracts",
+    "ParticipantImplementationResolverPort": "noetrium_platform.capabilities.participant.binding.api.contracts",
     "ParticipantLifecycleAdapter": "noetrium_platform.capabilities.participant.core.api.lifecycle",
     "ParticipantLifecycleAdapterRegistry": "noetrium_platform.capabilities.participant.core.api.lifecycle",
     "ParticipantMessageKind": "noetrium_platform.research.execution.machines.api",
@@ -934,9 +926,11 @@
     "ParticipantSessionBinding": "noetrium_platform.capabilities.participant.core.api",
     "ParticipantSessionLifecyclePort": "noetrium_platform.capabilities.participant.core.api.runtime_ports",
     "ParticipantSessionRuntime": "noetrium_platform.capabilities.participant.core.api.runtime",
+    "ParticipantSessionRuntimeCatalogPort": "noetrium_platform.capabilities.participant.session.api",
     "ParticipantSessionRuntimeFactory": "noetrium_platform.capabilities.participant.session.api",
     "ParticipantSessionRuntimeIdentity": "noetrium_platform.capabilities.participant.core.api.contracts",
     "ParticipantSessionRuntimeRegistration": "noetrium_platform.capabilities.participant.binding.api.contracts",
+    "ParticipantSessionRuntimeResolverPort": "noetrium_platform.capabilities.participant.binding.api.contracts",
     "ParticipantStateCompatibility": "noetrium_platform.capabilities.participant.api",
     "ParticipantStateRevision": "noetrium_platform.capabilities.participant.api",
     "ParticipantStateTransition": "noetrium_platform.capabilities.participant.api",
@@ -4229,14 +4223,13 @@
       "participant/core",
       "participant/definition"
     ],
-    "ParticipantConfigurationCatalogPort": [
+    "ParticipantConfigurationResolverPort": [
       "participant/binding"
     ],
     "ParticipantIdentityMismatch": [
       "participant/core"
     ],
     "ParticipantImplementationCatalogPort": [
-      "participant/binding",
       "participant/definition"
     ],
     "ParticipantImplementationFactory": [
@@ -4250,6 +4243,9 @@
       "participant/core"
     ],
     "ParticipantImplementationRegistration": [
+      "participant/binding"
+    ],
+    "ParticipantImplementationResolverPort": [
       "participant/binding"
     ],
     "ParticipantLifecycleAdapter": [
@@ -4356,7 +4352,6 @@
       "participant/session"
     ],
     "ParticipantSessionRuntimeCatalogPort": [
-      "participant/binding",
       "participant/session"
     ],
     "ParticipantSessionRuntimeFactory": [
@@ -4367,6 +4362,9 @@
       "participant/session"
     ],
     "ParticipantSessionRuntimeRegistration": [
+      "participant/binding"
+    ],
+    "ParticipantSessionRuntimeResolverPort": [
       "participant/binding"
     ],
     "ParticipantStateCompatibility": [
@@ -12091,11 +12089,11 @@
           "source": "noetrium_platform/capabilities/participant/binding/api/contracts.py",
           "symbols": [
             "ParticipantBindingResolverPort",
-            "ParticipantConfigurationCatalogPort",
-            "ParticipantImplementationCatalogPort",
+            "ParticipantConfigurationResolverPort",
+            "ParticipantImplementationResolverPort",
             "ParticipantImplementationRegistration",
             "ParticipantRuntimeEndpointFactory",
-            "ParticipantSessionRuntimeCatalogPort",
+            "ParticipantSessionRuntimeResolverPort",
             "ParticipantSessionRuntimeRegistration"
           ]
         }
@@ -12104,7 +12102,7 @@
       "canonical_authority": "participant",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__binding",
-      "interface_digest": "632daacaacdf123b660997a707808356705c93a203d657496d77e3ace290b78a",
+      "interface_digest": "e5307a1108df19cfb17c2a156b21b4b6fcaae0ce970aef7c338f26516e07f398",
       "must_not_own": "provider internals",
       "node_kind": "facet",
       "owns": "binding participants to scopes, methods, environments or models",

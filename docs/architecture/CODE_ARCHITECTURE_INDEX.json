@@ -3792,38 +3792,28 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantConfigurationCatalogPort",
+      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantConfigurationResolverPort",
       "target": "noetrium_platform.capabilities.participant.core.api.contracts.ParticipantConfigurationArtifact"
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationCatalogPort",
+      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationRegistration",
+      "target": "noetrium_platform.capabilities.participant.core.api.contracts.ParticipantConfigurationArtifact"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationRegistration",
+      "target": "noetrium_platform.capabilities.participant.core.api.contracts.ParticipantImplementationIdentity"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationResolverPort",
       "target": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationRegistration"
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationCatalogPort",
+      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationResolverPort",
       "target": "noetrium_platform.capabilities.participant.core.api.contracts.ParticipantImplementationIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationRegistration",
-      "target": "noetrium_platform.capabilities.participant.core.api.contracts.ParticipantConfigurationArtifact"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationRegistration",
-      "target": "noetrium_platform.capabilities.participant.core.api.contracts.ParticipantImplementationIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeCatalogPort",
-      "target": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeRegistration"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeCatalogPort",
-      "target": "noetrium_platform.capabilities.participant.core.api.contracts.ParticipantSessionRuntimeIdentity"
     },
     {
       "kind": "references",
@@ -3837,23 +3827,33 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeResolverPort",
+      "target": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeRegistration"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeResolverPort",
+      "target": "noetrium_platform.capabilities.participant.core.api.contracts.ParticipantSessionRuntimeIdentity"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.capabilities.participant.binding.runtime.configuration.ParticipantConfigurationCatalog",
       "target": "noetrium_platform.capabilities.participant.core.api.contracts.ParticipantConfigurationArtifact"
     },
     {
       "kind": "references",
       "source": "noetrium_platform.capabilities.participant.binding.runtime.local_resolver.LocalParticipantResolver",
-      "target": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantConfigurationCatalogPort"
+      "target": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantConfigurationResolverPort"
     },
     {
       "kind": "references",
       "source": "noetrium_platform.capabilities.participant.binding.runtime.local_resolver.LocalParticipantResolver",
-      "target": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationCatalogPort"
+      "target": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationResolverPort"
     },
     {
       "kind": "references",
       "source": "noetrium_platform.capabilities.participant.binding.runtime.local_resolver.LocalParticipantResolver",
-      "target": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeCatalogPort"
+      "target": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeResolverPort"
     },
     {
       "kind": "references",
@@ -34515,31 +34515,11 @@
         "resolve"
       ],
       "module": "noetrium_platform.capabilities.participant.binding.api.contracts",
-      "name": "ParticipantConfigurationCatalogPort",
+      "name": "ParticipantConfigurationResolverPort",
       "nesting": [
-        "ParticipantConfigurationCatalogPort"
+        "ParticipantConfigurationResolverPort"
       ],
-      "qualname": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantConfigurationCatalogPort",
-      "system_key": "participant/binding",
-      "top_system": "participant"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 23,
-      "methods": [
-        "resolve"
-      ],
-      "module": "noetrium_platform.capabilities.participant.binding.api.contracts",
-      "name": "ParticipantImplementationCatalogPort",
-      "nesting": [
-        "ParticipantImplementationCatalogPort"
-      ],
-      "qualname": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationCatalogPort",
+      "qualname": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantConfigurationResolverPort",
       "system_key": "participant/binding",
       "top_system": "participant"
     },
@@ -34571,16 +34551,16 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 39,
+      "line": 23,
       "methods": [
         "resolve"
       ],
       "module": "noetrium_platform.capabilities.participant.binding.api.contracts",
-      "name": "ParticipantSessionRuntimeCatalogPort",
+      "name": "ParticipantImplementationResolverPort",
       "nesting": [
-        "ParticipantSessionRuntimeCatalogPort"
+        "ParticipantImplementationResolverPort"
       ],
-      "qualname": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeCatalogPort",
+      "qualname": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantImplementationResolverPort",
       "system_key": "participant/binding",
       "top_system": "participant"
     },
@@ -34602,6 +34582,26 @@
         "ParticipantSessionRuntimeRegistration"
       ],
       "qualname": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeRegistration",
+      "system_key": "participant/binding",
+      "top_system": "participant"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 39,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.capabilities.participant.binding.api.contracts",
+      "name": "ParticipantSessionRuntimeResolverPort",
+      "nesting": [
+        "ParticipantSessionRuntimeResolverPort"
+      ],
+      "qualname": "noetrium_platform.capabilities.participant.binding.api.contracts.ParticipantSessionRuntimeResolverPort",
       "system_key": "participant/binding",
       "top_system": "participant"
     },
@@ -143913,7 +143913,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "52659d17d3b85f5096ecceef898bb007eaedb792",
+  "source_git_sha": "3dd02e11c01f67114dd95e879769a20c3a41819a",
   "system_import_edges": [
     {
       "count": 108,

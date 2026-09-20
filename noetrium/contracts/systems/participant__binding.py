@@ -10,14 +10,14 @@ This module is regenerated from the canonical registry and API exports.
 
 from noetrium_platform.capabilities.participant.binding.api.contracts import (
     ParticipantBindingResolverPort,
-    ParticipantConfigurationCatalogPort,
-    ParticipantImplementationCatalogPort,
+    ParticipantConfigurationResolverPort,
+    ParticipantImplementationResolverPort,
     ParticipantImplementationRegistration,
     ParticipantRuntimeEndpointFactory,
-    ParticipantSessionRuntimeCatalogPort,
+    ParticipantSessionRuntimeResolverPort,
     ParticipantSessionRuntimeRegistration,
 )
 
 SYSTEM_KEY = 'participant/binding'
 PACKAGE_PREFIX = 'noetrium_platform.capabilities.participant.binding'
-__all__ = ('ParticipantBindingResolverPort', 'ParticipantConfigurationCatalogPort', 'ParticipantImplementationCatalogPort', 'ParticipantImplementationRegistration', 'ParticipantRuntimeEndpointFactory', 'ParticipantSessionRuntimeCatalogPort', 'ParticipantSessionRuntimeRegistration')
+__all__ = ('ParticipantBindingResolverPort', 'ParticipantConfigurationResolverPort', 'ParticipantImplementationResolverPort', 'ParticipantImplementationRegistration', 'ParticipantRuntimeEndpointFactory', 'ParticipantSessionRuntimeResolverPort', 'ParticipantSessionRuntimeRegistration')

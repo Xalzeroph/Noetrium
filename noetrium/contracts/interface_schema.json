@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "d25ee785960af163e5bfcbb3f22911d3de8a522e2a6b6ecc0894397d0c726566",
+  "interface_digest": "4527b73ac839050b260bcacf62fe70cf31b353946338b3fb7a596f0e8c273186",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -80657,7 +80657,7 @@
                   "signature": "def resolve(self, configuration_digest: str) -> ParticipantConfigurationArtifact:"
                 }
               ],
-              "name": "ParticipantConfigurationCatalogPort",
+              "name": "ParticipantConfigurationResolverPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -80700,7 +80700,7 @@
                   "signature": "def resolve(self, identity: ParticipantImplementationIdentity) -> ParticipantImplementationRegistration:"
                 }
               ],
-              "name": "ParticipantImplementationCatalogPort",
+              "name": "ParticipantImplementationResolverPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -80777,7 +80777,7 @@
                   "signature": "def resolve(self, identity: ParticipantSessionRuntimeIdentity) -> ParticipantSessionRuntimeRegistration:"
                 }
               ],
-              "name": "ParticipantSessionRuntimeCatalogPort",
+              "name": "ParticipantSessionRuntimeResolverPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -80809,11 +80809,11 @@
           ],
           "symbols": [
             "ParticipantBindingResolverPort",
-            "ParticipantConfigurationCatalogPort",
-            "ParticipantImplementationCatalogPort",
+            "ParticipantConfigurationResolverPort",
+            "ParticipantImplementationResolverPort",
             "ParticipantImplementationRegistration",
             "ParticipantRuntimeEndpointFactory",
-            "ParticipantSessionRuntimeCatalogPort",
+            "ParticipantSessionRuntimeResolverPort",
             "ParticipantSessionRuntimeRegistration"
           ]
         }
