@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from noetrium_platform.capabilities.participant.binding.api.contracts import (
-    ParticipantConfigurationCatalogPort,
-    ParticipantImplementationCatalogPort,
+    ParticipantConfigurationResolverPort,
+    ParticipantImplementationResolverPort,
     ParticipantRuntimeEndpointFactory,
-    ParticipantSessionRuntimeCatalogPort,
+    ParticipantSessionRuntimeResolverPort,
 )
 from noetrium_platform.capabilities.participant.core.api.contracts import (
     ParticipantConfigurationArtifact,
@@ -18,9 +18,9 @@ class LocalParticipantResolver:
 
     def __init__(
         self,
-        implementations: ParticipantImplementationCatalogPort,
-        runtimes: ParticipantSessionRuntimeCatalogPort,
-        configurations: ParticipantConfigurationCatalogPort,
+        implementations: ParticipantImplementationResolverPort,
+        runtimes: ParticipantSessionRuntimeResolverPort,
+        configurations: ParticipantConfigurationResolverPort,
         endpoint_factory: ParticipantRuntimeEndpointFactory,
     ) -> None:
         self._implementations = implementations
