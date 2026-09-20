@@ -301,7 +301,7 @@ def test_project_manifest_identity_facets_expose_total_closure_without_claiming_
     assert project_manifest_document(manifest)["semantic_digest"] == facets.total_closure_digest
     assert len({
         facets.project_spec_digest,
-        facets.author_requirements_digest,
+        facets.requirements_digest,
         facets.provider_bindings_digest,
         facets.scaffold_platform_provenance_digest,
         facets.total_closure_digest,
@@ -322,21 +322,21 @@ def test_project_manifest_facet_diff_localizes_provider_binding_change() -> None
     )
     left, right = manifest.identity_facets, changed.identity_facets
     assert left.project_spec_digest == right.project_spec_digest
-    assert left.author_requirements_digest == right.author_requirements_digest
+    assert left.requirements_digest == right.requirements_digest
     assert left.scaffold_platform_provenance_digest == right.scaffold_platform_provenance_digest
 
 
-def test_project_manifest_facet_diff_localizes_author_provenance_and_project_changes() -> None:
+def test_project_manifest_facet_diff_localizes_requirements_provenance_and_project_changes() -> None:
     manifest = _project_manifest_fixture()
 
-    author_changed = replace(
+    requirements_changed = replace(
         manifest,
         configuration_refs=(
             replace(manifest.configuration_refs[0], content_sha256="4" * 64),
         ),
     )
-    assert diff_project_manifest_facets(manifest, author_changed).changed_facets == (
-        ProjectManifestFacet.AUTHOR_REQUIREMENTS,
+    assert diff_project_manifest_facets(manifest, requirements_changed).changed_facets == (
+        ProjectManifestFacet.REQUIREMENTS,
         ProjectManifestFacet.TOTAL_CLOSURE,
     )
 
