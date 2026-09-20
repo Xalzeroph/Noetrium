@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import R2D2_FIDELITY
 
 R2D2_PHASES = (
@@ -10,7 +10,7 @@ R2D2_PHASES = (
     AgentPhaseSpec("reflect", "r2d2.reflect", "Analyze navigational mistakes and refine subsequent strategy."),
 )
 
-R2D2_METHOD_PROGRAM = build_agent_phase_program(
+R2D2_METHOD_PROGRAM = AgentMethodSpec(
     method_id="r2d2",
     implementation_version="2025-paper-protocol",
     schema_version="r2d2.phase-workflow.v1",
@@ -24,5 +24,5 @@ R2D2_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("r2d2.phase-transcript", "r2d2.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("r2d2_trajectory",),
-)
+).compile()
 __all__ = ["R2D2_METHOD_PROGRAM", "R2D2_PHASES"]
