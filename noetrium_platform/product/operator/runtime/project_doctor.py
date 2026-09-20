@@ -32,7 +32,7 @@ _PACKAGE = re.compile(r"[a-z][a-z0-9_]*")
 _PROVIDER_PROBE_TIMEOUT_S = 30
 _AUTHOR_PROBE_TIMEOUT_S = 30
 _AUTHOR_PROBE_SCRIPT = r'''
-from noetrium.contracts.research import AgentMethodSpec, AgentStudySpec, MethodProgram, ResearchMethodHostPort
+from noetrium.api import AgentMethodSpec, AgentStudySpec, MethodProgram, ResearchMethodHostPort
 from __PACKAGE__.method import METHOD_PROGRAM, METHOD_SPEC
 from __PACKAGE__.research import METHOD_HOST, compile_study
 from __PACKAGE__.study import STUDY_SPEC, build_study
@@ -54,19 +54,19 @@ print("ready")
 _PROVIDER_PROBE_SCRIPT = r'''
 import json
 
-from noetrium.contracts.environment import (
+from noetrium.api import (
     EnvironmentCapability,
     EnvironmentDiagnosticsPort,
     EnvironmentProviderCapabilities,
     EnvironmentProviderPort,
     EnvironmentSession,
 )
-from noetrium.contracts.model import (
+from noetrium.api import (
     ModelBindingDiagnostic,
     ModelBindingDiagnosticSeverity,
     ProjectModelProviderPort,
 )
-from noetrium.contracts.participant import (
+from noetrium.api import (
     ParticipantBindingDiagnostic,
     ParticipantBindingDiagnosticSeverity,
     ProjectParticipantProviderPort,
