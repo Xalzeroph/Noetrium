@@ -12,7 +12,7 @@ import sys
 _DOWNSTREAM_SOURCE = '''
 from pathlib import Path
 import sys
-from noetrium.contracts.research import RunCheckpointManifest
+from noetrium.api import RunCheckpointManifest
 from noetrium.platform import build_project_run_checkpoint_store
 
 root = Path(sys.argv[2])
@@ -63,7 +63,7 @@ def test_public_checkpoint_composition_survives_fresh_process_reopen(tmp_path: P
     )
     assert imports
     assert all(not module.startswith("noetrium_platform") for module in imports)
-    assert set(imports) == {"pathlib", "noetrium.contracts.research", "noetrium.platform"}
+    assert set(imports) == {"pathlib", "noetrium.api", "noetrium.platform"}
 
     state_root = tmp_path / "project-state"
     published = _run(script, "publish", state_root)
