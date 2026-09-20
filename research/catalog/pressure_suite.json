@@ -239,7 +239,7 @@
     {
       "package": "code_as_policies",
       "lineage": "embodied_language_model_programs",
-      "enforced": false
+      "enforced": true
     },
     {
       "package": "cogagent",
