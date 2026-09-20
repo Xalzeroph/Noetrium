@@ -14,11 +14,15 @@ def test_minecraft_bridge_assets_are_declared_as_package_data() -> None:
     assert "assets/mineflayer_bridge/package-lock.json" in patterns
 
 
-def test_minecraft_container_overlay_is_project_agnostic() -> None:
+def test_minecraft_environment_image_is_project_agnostic() -> None:
     root = Path(__file__).resolve().parents[1]
-    dockerfile = (root / "deploy" / "Dockerfile.minecraft").read_text(encoding="utf-8")
-    compose = (root / "deploy" / "compose.minecraft.yaml").read_text(encoding="utf-8")
-    assert "COPY projects" not in dockerfile
+    dockerfile = (root / "deploy" / "environments" / "minecraft" / "Dockerfile").read_text(encoding="utf-8")
+    compose = (root / "deploy" / "environments" / "minecraft" / "compose.yaml").read_text(encoding="utf-8")
+    assert "ARG PLATFORM_BASE_IMAGE" in dockerfile
+    assert "FROM ${PLATFORM_BASE_IMAGE}" in dockerfile
+    assert "COPY noetrium" not in dockerfile
+    assert "COPY research" not in dockerfile
+    assert "COPY benchmarks" not in dockerfile
     assert "projects/" not in dockerfile.lower()
-    assert "projects/" not in compose
-    assert "minecraft-doctor" in compose
+    assert "environment-doctor" in compose
+    assert "minecraft" in compose
