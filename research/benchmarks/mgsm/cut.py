@@ -145,27 +145,26 @@ def build_mgsm_adas_task_set(
     test_ids = paper_shuffle_task_ids[
         test_start : test_start + MGSM_ADAS_TEST_SIZE
     ]
-    return api.BenchmarkTaskSet(
+    return api.BenchmarkCutSpec(
         benchmark_id=MGSM_BENCHMARK_ID,
         revision_id=revision,
         source_digest=dataset_content_sha256,
         task_schema_id=MGSM_TASK_SCHEMA_ID,
-        tasks=tasks,
+    ).build(
+        tasks,
         splits=(
             api.TaskSetSplit(MGSM_ADAS_TEST_SPLIT, test_ids),
             api.TaskSetSplit(MGSM_ADAS_VALID_SPLIT, valid_ids),
         ),
-        selection_policy_digest=api.canonical_digest(
-            {
-                "source_order_languages": MGSM_LANGUAGES,
-                "tasks_per_language": MGSM_TASKS_PER_LANGUAGE,
-                "shuffle_seed": MGSM_ADAS_SHUFFLE_SEED,
-                "paper_shuffle_task_ids": paper_shuffle_task_ids,
-                "valid_size": MGSM_ADAS_VALID_SIZE,
-                "test_size": MGSM_ADAS_TEST_SIZE,
-                "source_commit": MGSM_ADAS_SOURCE_COMMIT,
-            }
-        ),
+        selection_policy={
+            "source_order_languages": MGSM_LANGUAGES,
+            "tasks_per_language": MGSM_TASKS_PER_LANGUAGE,
+            "shuffle_seed": MGSM_ADAS_SHUFFLE_SEED,
+            "paper_shuffle_task_ids": paper_shuffle_task_ids,
+            "valid_size": MGSM_ADAS_VALID_SIZE,
+            "test_size": MGSM_ADAS_TEST_SIZE,
+            "source_commit": MGSM_ADAS_SOURCE_COMMIT,
+        },
     )
 
 
