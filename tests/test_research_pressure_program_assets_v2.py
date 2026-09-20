@@ -108,6 +108,9 @@ def test_pressure_status_exposes_claim_evidence_counts() -> None:
 
 def test_priority_wave_has_paper_claims_but_not_false_matched_evidence() -> None:
     status = project()
+    # Flagship pressure wave spans long-video/multimodal memory, embodied control,
+    # and Minecraft.  Keep this list explicit so a newly protocol-bound paper
+    # cannot silently regress to a scaffold while aggregate readiness stays green.
     expected_minimum_results = {
         "adacm2_memory": 2,
         "flash_vstream_memory": 3,
@@ -121,12 +124,17 @@ def test_priority_wave_has_paper_claims_but_not_false_matched_evidence() -> None
         "steve1_minecraft": 2,
         "deps_minecraft": 1,
         "saycan": 2,
+        "optimus1_minecraft": 3,
+        "optimus2_minecraft": 3,
     }
+    assert len(expected_minimum_results) >= 10
     for package, expected in expected_minimum_results.items():
         row = _lane(status, package)
+        assert row["enforced"] is True
         assert row["ready"] is True
         assert row["reported_result_count"] >= expected
         assert row["reference_baseline_count"] >= 1
         assert row["claim_ready"] is False
         assert row["evidence_ref_count"] == 0
+        assert row["matched_evidence_count"] == 0
         assert "missing_execution_evidence" in row["claim_gaps"]
