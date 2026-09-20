@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import VIDEOARM_FIDELITY
 
 VIDEOARM_PHASES = (
@@ -10,7 +10,7 @@ VIDEOARM_PHASES = (
     AgentPhaseSpec("answer", "videoarm.answer", "Integrate hierarchical evidence and produce the final answer."),
 )
 
-VIDEOARM_METHOD_PROGRAM = build_agent_phase_program(
+VIDEOARM_METHOD_PROGRAM = AgentMethodSpec(
     method_id="videoarm",
     implementation_version="2026-paper-protocol",
     schema_version="videoarm.phase-workflow.v1",
@@ -24,5 +24,5 @@ VIDEOARM_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("videoarm.phase-transcript", "videoarm.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("videoarm_trajectory",),
-)
+).compile()
 __all__ = ["VIDEOARM_METHOD_PROGRAM", "VIDEOARM_PHASES"]
