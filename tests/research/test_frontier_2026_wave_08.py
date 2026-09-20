@@ -1,4 +1,4 @@
-from research.reproductions.frontier_2026.wave_08 import REPRODUCTIONS, PROGRAMS, STUDY_SPECS
+from research.authoring.frontier_2026.wave_08 import REPRODUCTIONS, PROGRAMS, STUDY_SPECS
 
 def test_wave08_has_ten_distinct_peer_reviewed_reproductions():
     assert len(REPRODUCTIONS)==10
