@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -70,8 +72,32 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/adas_meta_agent_search/study.py",
         ),
     ),
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="adas_mgsm_top_agent_accuracy",
+            metric_id="accuracy_percent",
+            value=53.4,
+            qualifiers={
+                "benchmark": "MGSM",
+                "agent": "Dynamic Role-Playing Architecture",
+                "search_method": "Meta Agent Search",
+                "source": "ICLR 2025 Table 1",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="llm_debate_mgsm",
+            description=(
+                "Strongest hand-designed MGSM baseline in the ADAS Table 1 "
+                "comparison."
+            ),
+            qualifiers={
+                "accuracy_percent": 39.0,
+                "source": "ICLR 2025 Table 1",
+            },
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("substitution"),

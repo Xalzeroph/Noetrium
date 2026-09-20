@@ -55,8 +55,25 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="swe_agent_swebench_pass_at_1",
+            metric_id="pass_at_1_percent",
+            value=12.5,
+            qualifiers={
+                "benchmark": "SWE-bench",
+                "source": "NeurIPS 2024 abstract",
+            },
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="noninteractive_swebench_prior_sota",
+            description=(
+                "Previous non-interactive language-model approaches surpassed "
+                "by SWE-agent on SWE-bench in the NeurIPS 2024 paper."
+            ),
+            qualifiers={"source": "NeurIPS 2024 paper"},
+        ),
     ),
     deltas=(
     ),
