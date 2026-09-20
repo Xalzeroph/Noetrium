@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_cycle_program, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="ui_agile_cvprf2026"
 TITLE="UI-AGILE: Advancing GUI Agents with Effective Reinforcement Learning and Precise Inference-Time Grounding"
 VENUE="CVPR Findings 2026"
@@ -15,10 +15,10 @@ PHASES=(
     AgentPhaseSpec("decomposed_grounding", "ui_agile.grounder", "Decompose high-resolution screens into candidate regions for precise grounding."),
     AgentPhaseSpec("vlm_select", "ui_agile.selector", "Select the final candidate grounding with the VLM before emitting the GUI action."),
 )
-METHOD_PROGRAM=build_agent_phase_program(
+METHOD_PROGRAM=AgentMethodSpec(
     method_id=METHOD_ID,implementation_version="2026-paper-protocol",schema_version="ui_agile_cvprf2026.phase-workflow.v1",phases=PHASES,
     configuration={"paper_uri":PAPER_URI,"venue":VENUE,"benchmark_ids":BENCHMARK_IDS,"protocol":PROTOCOL,"ablations":ABLATIONS},
     evidence_obligations=(METHOD_ID+".phase-transcript",METHOD_ID+".model-tool-receipts",METHOD_ID+".metric-artifacts"),
     metric_names=METRICS,artifact_kinds=(METHOD_ID+"_trajectory",METHOD_ID+"_experiment_manifest"),
-)
+).compile()
 __all__=["ABLATIONS","BENCHMARK_IDS","METHOD_ID","METHOD_PROGRAM","METRICS","PAPER_URI","PHASES","PROTOCOL","TITLE","VENUE"]
