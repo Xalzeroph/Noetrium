@@ -1,4 +1,4 @@
-from research.reproductions.frontier_2026.wave04 import PROGRAMS, SPECS
+from research.authoring.frontier_2026.wave04 import PROGRAMS, SPECS
 
 
 def test_wave04_contains_ten_peer_reviewed_reproductions():
