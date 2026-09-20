@@ -1,0 +1,167 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "lvagent_iccv2025",
+  "package_digest": "0c5a488f131cc3ecaec87b9483e1690d2210f1289f6f9585951c52d720588720",
+  "definition_digest": "52215a3f6848f12bb023b9b266b21b5412f816e253fdd04ca11a054ad7ecef9b",
+  "source_registry_digest": "c265547efa25c65b88369b73d855b68becbf18f48656a3f63ac40fc95d7456a2",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "lvagent",
+    "title": "LVAgent: Long Video Understanding by Multi-Round Dynamical Collaboration of MLLM Agents",
+    "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chen_LVAgent_Long_Video_Understanding_by_Multi-Round_Dynamical_Collaboration_of_MLLM_ICCV_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "ICCV 2025 proceedings",
+    "identity_digest": "7421a3ef6c34f127ce2e83cda00b99f7a7788ef10af1d74dcac536047c4da0e3"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "iccv",
+      "recent"
+    ],
+    "families": [
+      "agentic_workflow",
+      "lvagent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "egoschema"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "long-video temporal retrieval",
+      "multi-round reason exchange",
+      "round-wise team reflection and optimization",
+      "task-adaptive MLLM team selection"
+    ],
+    "platform_owned": [
+      "MethodProgram and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [
+      "https://github.com/64327069/LVAgent"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/ICCV2025/html/Chen_LVAgent_Long_Video_Understanding_by_Multi-Round_Dynamical_Collaboration_of_MLLM_ICCV_2025_paper.html"
+    ],
+    "catalog_digest": "ec0ee498357a78cc42d2a941af2c8efb02073f8a990af9ddd19ba53f9c294d82"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iccv_2025",
+      "kind": "paper_provenance",
+      "venue": "ICCV",
+      "year": 2025,
+      "publication_id": "lvagent-iccv-2025",
+      "publication_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chen_LVAgent_Long_Video_Understanding_by_Multi-Round_Dynamical_Collaboration_of_MLLM_ICCV_2025_paper.html",
+      "revision": "ICCV 2025 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "b5bf5e8ce3e5bc9aba3c607c7635a9a5f1d8ec4fda48f47f32b0784ab21bc188"
+    },
+    {
+      "lane_id": "official_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/64327069/LVAgent",
+      "commit": "659b9cb1cf41ddce15c7fe21a8a5d11abf93f147",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "854d32af22e54c3a5b5d5e419588eb23d1d43bf49c7a416a056b805ed956f37d"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/lvagent_iccv2025/benchmark.py",
+      "declaration_digest": "7ecae7639b72f7cf8d23890d9dbd892a4c3e8bc44e3fb48e69a6450c39a7ac3a",
+      "content_sha256": "08d96cdf94a0a505301c6be3972e882c903bfb48fc2e9b71137af318ba773ae7"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/lvagent_iccv2025/fidelity.py",
+      "declaration_digest": "e6d10d9fe12ea7adb0f05d185f89d4abce6622807baa1597e612a4ce49eb2e1b",
+      "content_sha256": "ebff31345d3bf813f0bb1923914e7bd7f5011eb89661b63111cdf4925a769518"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/lvagent_iccv2025/program.py",
+      "declaration_digest": "087ac7586c183a73e6d0ac2634afe1ca5ca7ee7d2b21f30ff55aa0e6347afa45",
+      "content_sha256": "c6f36fed9b7257b0d2c08ce8195e5da306cd71eb352581b54df0d6f792d3b022"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/lvagent_iccv2025/study.py",
+      "declaration_digest": "9c4f18520eabc3f155029b9613611ffd07c53b52227777618158763d396f7757",
+      "content_sha256": "1a661e493dc488a0da324255747f7386e0f5bb3c5c945231142a3f6d454e8d24"
+    }
+  ],
+  "primary_executable": "research/reproductions/lvagent_iccv2025/program.py",
+  "reported_results": [
+    {
+      "claim_id": "lvagent_egoschema_three_round",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 82.7,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "discussion_rounds": 3,
+        "source": "ICCV-2025 paper Figure 7"
+      },
+      "claim_digest": "f6a65f0640a0459bb8945af39014549839de20cde4b8fb68338389145ad5d72a"
+    },
+    {
+      "claim_id": "lvagent_longvideobench_three_round",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 80,
+      "qualifiers": {
+        "benchmark": "longvideobench",
+        "discussion_rounds": 3,
+        "source": "ICCV-2025 paper Figure 7"
+      },
+      "claim_digest": "cdb0cb3deb2d908123c90666d24cd6244732412db94ff6da3ed369764873ca36"
+    },
+    {
+      "claim_id": "lvagent_mlvu_three_round",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 83.8,
+      "qualifiers": {
+        "benchmark": "mlvu",
+        "discussion_rounds": 3,
+        "source": "ICCV-2025 paper Figure 7"
+      },
+      "claim_digest": "a8e8a4fb8fed0c7914fccbd8943701d13f020d2f56b62f4f552de9f613ed310b"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "lvagent_single_agent_pool",
+      "description": "Individual MLLM agents before multi-agent collaboration",
+      "qualifiers": {
+        "longvideobench_best_single_percent": 69,
+        "source": "ICCV-2025 paper agent-combination ablation"
+      },
+      "baseline_digest": "a5abe83b1660e6d079820d719437ed2626545371b32587835c665899b0700b48"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires exact LLaVA-Video and InternVL paper-era checkpoints and video sampling/retrieval artifacts.",
+    "LongVideoBench, MLVU and Video-MME remain additional canonical benchmark bindings beyond EgoSchema."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
+      "content_sha256": "7c39899b0550c191b0ab96d21b5dee38b0b37f806afe2fee0dd374c2368d210d"
+    }
+  ]
+}

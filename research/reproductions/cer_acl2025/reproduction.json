@@ -1,0 +1,153 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "cer_acl2025",
+  "package_digest": "df03ed756b8cd5809165c933c042c5e70f857c55536b80372832aec18ef9eb9e",
+  "definition_digest": "7b3d15d3e81c77a313b3e36970027faddf939042805f2a014f452ff2ad3be447",
+  "source_registry_digest": "96352d53ebea45f8a23d9d69fe9493442324bc24a3360e4efc379537ef4c2923",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "contextual-experience-replay",
+    "title": "Contextual Experience Replay for Self-Improvement of Language Agents",
+    "paper_uri": "https://aclanthology.org/2025.acl-long.694/",
+    "year": 2025,
+    "paper_revision": "ACL 2025 proceedings",
+    "identity_digest": "7ffed41236ab0f2b6decd7a0921ec40694a66ec43dc5f295a0cd6b063a525b53"
+  },
+  "catalog": {
+    "domains": [
+      "acl",
+      "agent",
+      "recent"
+    ],
+    "families": [
+      "agentic_workflow",
+      "contextual_experience_replay"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "visualwebarena",
+      "webarena"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "contextual experience replay",
+      "experience-conditioned action context",
+      "successful-and-failed experience retrieval",
+      "token-efficient test-time self-improvement"
+    ],
+    "platform_owned": [
+      "MethodProgram and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2025.acl-long.694/"
+    ],
+    "catalog_digest": "5852b02b28b7b881b6af815a72541a194893cfc0d885a9a911bd8aeb641b483b"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "acl_2025",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2025,
+      "publication_id": "cer-acl-2025",
+      "publication_uri": "https://aclanthology.org/2025.acl-long.694/",
+      "revision": "ACL 2025 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "892352c15e796c2698301266bc547099dbf5c0208dd6a7554b9fe28ce70fd61e"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/cer_acl2025/benchmark.py",
+      "declaration_digest": "95f7bfe625f13733aed877dd20a65818bc92ec9cb27e4f7b37617d0b365d4e36",
+      "content_sha256": "9545ed2cf630f05b22d0ef353dc56f6d59da85d0ed6553ae536fa0b8217e16b0"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/cer_acl2025/fidelity.py",
+      "declaration_digest": "fb8f340637e0711bf79bb638c8d4817d1389c2a563711afbb11153c1253fb645",
+      "content_sha256": "6dac004306ea2681b004f7f9d8ce1b094f9df4f32107d9dea1b075668ae16177"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/cer_acl2025/program.py",
+      "declaration_digest": "ac613af9498fbd3bbdb9f1d490d26905691abda59a4f90567c71761c17b4b2c8",
+      "content_sha256": "a4116eece0ed51ffbeedd9ed753215a854f558a18489868e939c0695e70a79ab"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/cer_acl2025/study.py",
+      "declaration_digest": "01361abb24ebbaf0a97c4e3005b7c9fde8301ceb7df35bcda67ddd2c9f6f4127",
+      "content_sha256": "d854eebaf30a80d72ea7cc7d08932ef885b7ce4b6f4b9c6af20c8cc862ef68bb"
+    }
+  ],
+  "primary_executable": "research/reproductions/cer_acl2025/program.py",
+  "reported_results": [
+    {
+      "claim_id": "cer_visualwebarena",
+      "metric_id": "task_success_rate_percent",
+      "value": 31.9,
+      "qualifiers": {
+        "benchmark": "visualwebarena",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "81cb571533264c40ea4b89b4dfab7f7468d170ab3c8af08f71421685f3b7427e"
+    },
+    {
+      "claim_id": "cer_webarena",
+      "metric_id": "task_success_rate_percent",
+      "value": 36.7,
+      "qualifiers": {
+        "benchmark": "webarena",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "952f37160c38eb5f30d90ceccc317823c931a5a70b2a9ff0ab22b7bc70f48ff7"
+    },
+    {
+      "claim_id": "cer_webarena_relative_gain",
+      "metric_id": "relative_success_gain_percent",
+      "value": 51,
+      "qualifiers": {
+        "benchmark": "webarena",
+        "comparison": "gpt-4o-agent-baseline",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "c6a67843454bfd74ac55497a8fb3d4ffcd4724fac6f984dfaba6408f21383e8e"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "gpt4o_web_agent",
+      "description": "GPT-4o web-agent baseline without Contextual Experience Replay",
+      "qualifiers": {
+        "source": "ACL-2025 evaluation"
+      },
+      "baseline_digest": "a902583794cd95521a4644f328be32e995612d9c9e0cd303ed060a3d6c2cab34"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires exact experience store initialization, retrieval parameters, prompts and web environment snapshots.",
+    "Experience token-cost accounting must use the paper evaluator and tokenizer identities."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
+      "content_sha256": "7c39899b0550c191b0ab96d21b5dee38b0b37f806afe2fee0dd374c2368d210d"
+    }
+  ]
+}

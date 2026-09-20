@@ -2,10 +2,10 @@
   "schema": "noetrium.research-pressure-status.v3",
   "authority": "generated_from_pressure_suite_reproduction_and_benchmark_projections",
   "suite_updated_at": "2026-09-20",
-  "lane_count": 48,
-  "ready_count": 48,
-  "enforced_count": 46,
-  "enforced_ready_count": 46,
+  "lane_count": 58,
+  "ready_count": 58,
+  "enforced_count": 55,
+  "enforced_ready_count": 55,
   "claim_ready_count": 0,
   "enforced_claim_ready_count": 0,
   "lanes": [
@@ -2048,6 +2048,426 @@
         "missing_execution_evidence",
         "unresolved_blockers",
         "unresolved_fidelity_delta"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "videoarm_cvpr2026",
+      "lineage": "recent_2026_videoarm",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/videoarm_cvpr2026/program.py"
+      },
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_packages": [
+        "egoschema"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "watch_learn_cvpr2026",
+      "lineage": "recent_2026_watch_and_learn",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/watch_learn_cvpr2026/program.py"
+      },
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "benchmark_packages": [
+        "osworld"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "lvagent_iccv2025",
+      "lineage": "recent_2025_lvagent",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/lvagent_iccv2025/program.py"
+      },
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_packages": [
+        "egoschema"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "embodied_videoagent_iccv2025",
+      "lineage": "recent_2025_embodied_videoagent",
+      "enforced": false,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/embodied_videoagent_iccv2025/program.py"
+      },
+      "benchmark_ids": [
+        "ego4d-vq3d",
+        "envqa",
+        "open-eqa"
+      ],
+      "benchmark_packages": [
+        "ego4d_vq3d",
+        "envqa",
+        "open_eqa"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "openwebvoyager_acl2025",
+      "lineage": "recent_2025_openwebvoyager",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/openwebvoyager_acl2025/program.py"
+      },
+      "benchmark_ids": [
+        "mind2web",
+        "webvoyager"
+      ],
+      "benchmark_packages": [
+        "mind2web",
+        "webvoyager"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "adaptagent_acl2025",
+      "lineage": "recent_2025_adaptagent",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/adaptagent_acl2025/program.py"
+      },
+      "benchmark_ids": [
+        "mind2web",
+        "visualwebarena"
+      ],
+      "benchmark_packages": [
+        "mind2web",
+        "visualwebarena"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "r2d2_acl2025",
+      "lineage": "recent_2025_r2d2",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/r2d2_acl2025/program.py"
+      },
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "benchmark_packages": [
+        "webarena"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "cer_acl2025",
+      "lineage": "recent_2025_contextual_experience_replay",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/cer_acl2025/program.py"
+      },
+      "benchmark_ids": [
+        "visualwebarena",
+        "webarena"
+      ],
+      "benchmark_packages": [
+        "visualwebarena",
+        "webarena"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "dars_acl2025",
+      "lineage": "recent_2025_dars",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/dars_acl2025/program.py"
+      },
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "benchmark_packages": [
+        "swe_bench"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "webagent_r1_emnlp2025",
+      "lineage": "recent_2025_webagent_r1",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/webagent_r1_emnlp2025/program.py"
+      },
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "benchmark_packages": [
+        "webarena"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 2,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
       ],
       "ready": true,
       "gaps": []
