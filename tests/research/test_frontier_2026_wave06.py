@@ -1,4 +1,4 @@
-from research.reproductions.frontier_2026.wave06 import PAPERS
+from research.authoring.frontier_2026.wave06 import PAPERS
 
 
 def test_wave06_contains_ten_distinct_published_reproductions():
