@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:732332957dc714284e6da5fa139f29f9192bf4ca8595eed3a9a4c414562f01df -->
+<!-- readme-source-sha256:b67f7d4422e281d288a14437db65810d295719e8345fdbf1f00a7bf36bbadbba -->
 
 <p align="center">
   <strong>Compose research systems. Run attributable executions. Verify evidence.</strong><br>
