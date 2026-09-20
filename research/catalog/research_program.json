@@ -89,6 +89,18 @@
       ]
     },
     {
+      "benchmark_id": "ego4d-vq3d",
+      "title": "Ego4D VQ3D",
+      "source_uri": "https://github.com/facebookresearch/Ego4d",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
       "benchmark_id": "egolifeqa",
       "title": "EgoLifeQA",
       "source_uri": "https://huggingface.co/datasets/lmms-lab/EgoLife",
@@ -104,6 +116,18 @@
       "title": "EgoSchema",
       "source_uri": "https://github.com/egoschema/EgoSchema",
       "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "envqa",
+      "title": "Env-QA",
+      "source_uri": "https://github.com/maybelu9/env-qa",
+      "environment_kinds": [
+        "embodied"
+      ],
       "modalities": [
         "text",
         "video"
@@ -349,6 +373,19 @@
         "text",
         "structured",
         "image"
+      ]
+    },
+    {
+      "benchmark_id": "open-eqa",
+      "title": "OpenEQA",
+      "source_uri": "https://github.com/facebookresearch/open-eqa",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "video"
       ]
     },
     {
@@ -601,6 +638,49 @@
         "cross-modal scorer implementation identity",
         "multimodal tensor content identity",
         "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "adaptagent",
+      "title": "AdaptAgent: Adapting Multimodal Web Agents with Few-Shot Learning from Human Demonstrations",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.1008/",
+      "year": 2025,
+      "families": [
+        "adaptagent",
+        "agentic_workflow"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "adaptagent_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "mind2web",
+        "visualwebarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "few-shot website adaptation",
+        "in-context and meta-adaptation variants",
+        "multimodal demonstration conditioning",
+        "two-demonstration adaptation regime"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
       ],
       "evidence_refs": []
     },
@@ -1267,6 +1347,91 @@
       "evidence_refs": []
     },
     {
+      "method_id": "contextual-experience-replay",
+      "title": "Contextual Experience Replay for Self-Improvement of Language Agents",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.694/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "contextual_experience_replay"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "cer_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "visualwebarena",
+        "webarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "contextual experience replay",
+        "experience-conditioned action context",
+        "successful-and-failed experience retrieval",
+        "token-efficient test-time self-improvement"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "dars",
+      "title": "DARS: Dynamic Action Re-Sampling to Enhance Coding Agent Performance by Adaptive Tree Traversal",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.973/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "dars"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "dars_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "adaptive coding-agent tree traversal",
+        "dynamic action re-sampling",
+        "feedback-conditioned branch selection",
+        "inference-time compute scaling"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
       "method_id": "deps-minecraft",
       "title": "Describe, Explain, Plan and Select: Interactive Planning with Large Language Models Enables Open-World Multi-Task Agents",
       "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html",
@@ -1364,6 +1529,50 @@
         "multimodal model transport",
         "semantic-similarity capability execution",
         "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "embodied-videoagent",
+      "title": "Embodied VideoAgent: Persistent Memory from Egocentric Videos and Embodied Sensors Enables Dynamic Scene Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Fan_Embodied_VideoAgent_Persistent_Memory_from_Egocentric_Videos_and_Embodied_Sensors_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "embodied_videoagent"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "embodied_videoagent_iccv2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "ego4d-vq3d",
+        "envqa",
+        "open-eqa"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "VLM-triggered dynamic object-state update",
+        "depth-and-pose object association",
+        "embodied memory retrieval for reasoning and planning",
+        "persistent object-centric 3D memory"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
       ],
       "evidence_refs": []
     },
@@ -1874,6 +2083,50 @@
       "evidence_refs": []
     },
     {
+      "method_id": "lvagent",
+      "title": "LVAgent: Long Video Understanding by Multi-Round Dynamical Collaboration of MLLM Agents",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chen_LVAgent_Long_Video_Understanding_by_Multi-Round_Dynamical_Collaboration_of_MLLM_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "lvagent"
+      ],
+      "reference_repositories": [
+        "https://github.com/64327069/LVAgent"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "lvagent_iccv2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "long-video temporal retrieval",
+        "multi-round reason exchange",
+        "round-wise team reflection and optimization",
+        "task-adaptive MLLM team selection"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
       "method_id": "ma-lmm",
       "title": "MA-LMM: Memory-Augmented Large Multimodal Model for Long-Term Video Understanding",
       "paper_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html",
@@ -2239,6 +2492,49 @@
       "evidence_refs": []
     },
     {
+      "method_id": "openwebvoyager",
+      "title": "OpenWebVoyager: Building Multimodal Web Agents via Iterative Real-World Exploration, Feedback and Optimization",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.1336/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "openwebvoyager"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "openwebvoyager_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "mind2web",
+        "webvoyager"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "external-model feedback",
+        "iterative self-improvement through retraining",
+        "real-web multimodal exploration",
+        "successful-trajectory filtering"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
       "method_id": "optimus1-minecraft",
       "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
       "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
@@ -2473,6 +2769,48 @@
         "environment execution and replay evidence",
         "named model-role binding",
         "study expansion and measurements"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "r2d2",
+      "title": "R2D2: Remembering, Replaying and Dynamic Decision Making with a Reflective Agentic Memory",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.1464/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "r2d2"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "r2d2_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "dynamic web-environment map reconstruction",
+        "memory-conditioned action selection",
+        "navigation-error reflection",
+        "reflective replay memory"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
       ],
       "evidence_refs": []
     },
@@ -3276,6 +3614,48 @@
       "evidence_refs": []
     },
     {
+      "method_id": "videoarm",
+      "title": "VideoARM: Agentic Reasoning over Hierarchical Memory for Long-Form Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yin_VideoARM_Agentic_Reasoning_over_Hierarchical_Memory_for_Long-Form_Video_Understanding_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "agentic_workflow",
+        "videoarm"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "videoarm_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "bounded long-video agent reasoning",
+        "coarse-to-fine evidence tool routing",
+        "hierarchical multimodal memory",
+        "observe-think-act-memorize control cycle"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
       "method_id": "videollamb",
       "title": "VideoLLaMB: Long Streaming Video Understanding with Recurrent Memory Bridges",
       "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html",
@@ -3423,6 +3803,92 @@
         "model invocation",
         "nested Machine composition",
         "recovery and effect receipts"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "watch-and-learn",
+      "title": "Watch and Learn: Learning to Use Computers from Online Videos",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Song_Watch_and_Learn_Learning_to_Use_Computers_from_Online_Videos_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "agentic_workflow",
+        "watch_and_learn"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "watch_learn_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "ICL and SFT use of web-scale demonstrations",
+        "inverse-dynamics UI trajectory annotation",
+        "task-aware tutorial-video retrieval",
+        "trajectory filtering"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "webagent-r1",
+      "title": "WebAgent-R1: Training Web Agents via End-to-End Multi-Turn Reinforcement Learning",
+      "paper_uri": "https://aclanthology.org/2025.emnlp-main.401/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "webagent_r1"
+      ],
+      "reference_repositories": [
+        "https://github.com/weizhepei/WebAgent-R1"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "webagent_r1_emnlp2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "behavior-cloning warm-up",
+        "end-to-end multi-turn web-agent reinforcement learning",
+        "interaction-count test-time scaling",
+        "thinking-based web prompting"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
       ],
       "evidence_refs": []
     },

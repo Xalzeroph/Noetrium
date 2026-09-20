@@ -78,6 +78,18 @@
       ]
     },
     {
+      "benchmark_id": "ego4d-vq3d",
+      "title": "Ego4D VQ3D",
+      "source_uri": "https://github.com/facebookresearch/Ego4d",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
       "benchmark_id": "egolifeqa",
       "title": "EgoLifeQA",
       "source_uri": "https://huggingface.co/datasets/lmms-lab/EgoLife",
@@ -93,6 +105,18 @@
       "title": "EgoSchema",
       "source_uri": "https://github.com/egoschema/EgoSchema",
       "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "envqa",
+      "title": "Env-QA",
+      "source_uri": "https://github.com/maybelu9/env-qa",
+      "environment_kinds": [
+        "embodied"
+      ],
       "modalities": [
         "text",
         "video"
@@ -338,6 +362,19 @@
         "text",
         "structured",
         "image"
+      ]
+    },
+    {
+      "benchmark_id": "open-eqa",
+      "title": "OpenEQA",
+      "source_uri": "https://github.com/facebookresearch/open-eqa",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "video"
       ]
     },
     {

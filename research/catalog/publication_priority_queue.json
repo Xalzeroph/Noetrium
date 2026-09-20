@@ -1,11 +1,49 @@
 {
   "schema": "noetrium.publication-priority-queue.v1",
   "authority": "generated_from_publication_policy_registry_reproduction_and_pressure_projections",
-  "updated_at": "2026-09-19",
-  "method_count": 48,
+  "updated_at": "2026-09-20",
+  "method_count": 58,
   "benchmark_count": 7,
   "formal_pressure_violation_count": 0,
   "method_queue": [
+    {
+      "publication_id": "videoarm",
+      "title": "VideoARM: Agentic Reasoning over Hierarchical Memory for Long-Form Video Understanding",
+      "year": 2026,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "videoarm",
+      "packages": [
+        "videoarm_cvpr2026"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "videoarm_cvpr2026"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "watch-and-learn",
+      "title": "Watch and Learn: Learning to Use Computers from Online Videos",
+      "year": 2026,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "watch-and-learn",
+      "packages": [
+        "watch_learn_cvpr2026"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "watch_learn_cvpr2026"
+      ],
+      "implementation_state": "pressure_ready"
+    },
     {
       "publication_id": "worldmm",
       "title": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
@@ -41,6 +79,25 @@
       ],
       "pressure_packages": [
         "adacm2_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "adaptagent",
+      "title": "AdaptAgent: Adapting Multimodal Web Agents with Few-Shot Learning from Human Demonstrations",
+      "year": 2025,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "adaptagent",
+      "packages": [
+        "adaptagent_acl2025"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "adaptagent_acl2025"
       ],
       "implementation_state": "pressure_ready"
     },
@@ -121,6 +178,44 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "contextual-experience-replay",
+      "title": "Contextual Experience Replay for Self-Improvement of Language Agents",
+      "year": 2025,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "contextual-experience-replay",
+      "packages": [
+        "cer_acl2025"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "cer_acl2025"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "dars",
+      "title": "DARS: Dynamic Action Re-Sampling to Enhance Coding Agent Performance by Adaptive Tree Traversal",
+      "year": 2025,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "dars",
+      "packages": [
+        "dars_acl2025"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "dars_acl2025"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "drvideo",
       "title": "DrVideo: Document Retrieval Based Long Video Understanding",
       "year": 2025,
@@ -136,6 +231,25 @@
       ],
       "pressure_packages": [
         "drvideo"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "embodied-videoagent",
+      "title": "Embodied VideoAgent: Persistent Memory from Egocentric Videos and Embodied Sensors Enables Dynamic Scene Understanding",
+      "year": 2025,
+      "venue": "ICCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "embodied-videoagent",
+      "packages": [
+        "embodied_videoagent_iccv2025"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "embodied_videoagent_iccv2025"
       ],
       "implementation_state": "pressure_ready"
     },
@@ -197,6 +311,44 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "lvagent",
+      "title": "LVAgent: Long Video Understanding by Multi-Round Dynamical Collaboration of MLLM Agents",
+      "year": 2025,
+      "venue": "ICCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "lvagent",
+      "packages": [
+        "lvagent_iccv2025"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "lvagent_iccv2025"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "openwebvoyager",
+      "title": "OpenWebVoyager: Building Multimodal Web Agents via Iterative Real-World Exploration, Feedback and Optimization",
+      "year": 2025,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "openwebvoyager",
+      "packages": [
+        "openwebvoyager_acl2025"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "openwebvoyager_acl2025"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "optimus2",
       "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
       "year": 2025,
@@ -254,6 +406,25 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "r2d2",
+      "title": "R2D2: Remembering, Replaying and Dynamic Decision Making with a Reflective Agentic Memory",
+      "year": 2025,
+      "venue": "ACL",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "r2d2",
+      "packages": [
+        "r2d2_acl2025"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "r2d2_acl2025"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "rewind",
       "title": "ReWind: Understanding Long Videos with Instructed Learnable Memory",
       "year": 2025,
@@ -307,6 +478,25 @@
       ],
       "pressure_packages": [
         "videollamb_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "webagent-r1",
+      "title": "WebAgent-R1: Training Web Agents via End-to-End Multi-Turn Reinforcement Learning",
+      "year": 2025,
+      "venue": "EMNLP",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "webagent-r1",
+      "packages": [
+        "webagent_r1_emnlp2025"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "webagent_r1_emnlp2025"
       ],
       "implementation_state": "pressure_ready"
     },

@@ -1,0 +1,148 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "openwebvoyager_acl2025",
+  "package_digest": "0f5451bf74a63471f1f761051c841ce8132244f824869f5f16603fa3aca4e5f4",
+  "definition_digest": "5260fc8138ae30927aa7d293b041e86635a75dce28b41191c313720354202387",
+  "source_registry_digest": "2786a755ecfaf94cc7a57d6cbb3293d435778d7369320d104cb57d3f0c44c4f4",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "openwebvoyager",
+    "title": "OpenWebVoyager: Building Multimodal Web Agents via Iterative Real-World Exploration, Feedback and Optimization",
+    "paper_uri": "https://aclanthology.org/2025.acl-long.1336/",
+    "year": 2025,
+    "paper_revision": "ACL 2025 proceedings",
+    "identity_digest": "fb90150955910f04e242985856c8b1b3a2d9b69986194d2a4abb7b3208deed93"
+  },
+  "catalog": {
+    "domains": [
+      "acl",
+      "agent",
+      "recent"
+    ],
+    "families": [
+      "agentic_workflow",
+      "openwebvoyager"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "mind2web",
+      "webvoyager"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "external-model feedback",
+      "iterative self-improvement through retraining",
+      "real-web multimodal exploration",
+      "successful-trajectory filtering"
+    ],
+    "platform_owned": [
+      "MethodProgram and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2025.acl-long.1336/"
+    ],
+    "catalog_digest": "638accb3ae1d85d51dd0b42ebc11bfff11953a38eb469d82d27a8631a0dd0fde"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "acl_2025",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2025,
+      "publication_id": "openwebvoyager-acl-2025",
+      "publication_uri": "https://aclanthology.org/2025.acl-long.1336/",
+      "revision": "ACL 2025 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "fd31b2160b2b149db08cdc8ed91abea726acad42fe20bf6e855ea9d2105b6fdc"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/openwebvoyager_acl2025/benchmark.py",
+      "declaration_digest": "4a30e0d84ea4bf8a416e21902dcb8a01500af7057c2f8bb4515cf9979159d8cb",
+      "content_sha256": "48da47585e500fae5eaa66085a61ddeb01181c9681e480e586f5576901c7cef7"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/openwebvoyager_acl2025/fidelity.py",
+      "declaration_digest": "6fe817a5c63d6c97090655657561cc92c6cd5489235eabe56ac1f4822bcc9ace",
+      "content_sha256": "c63f6184d7f177d7c63188a3139af89356692f1a29333390fd20c73b0de4c989"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/openwebvoyager_acl2025/program.py",
+      "declaration_digest": "773dbb80d9c642af46a7211b1ac968f50a78afce01b4cf5c6777970ea58bba52",
+      "content_sha256": "49eae19758a1006ba0a0b326c8dfc576f57fba006186ab2333d9f47354064fe9"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/openwebvoyager_acl2025/study.py",
+      "declaration_digest": "d4cd29f5d857ba8d55e51f2a603f8bed32065eab82dc14bdb15212bde27e25db",
+      "content_sha256": "e81eb68504c3c1e9d88e005e06db9f9cf4ef8202e0000a6362f3c4b603cc30e5"
+    }
+  ],
+  "primary_executable": "research/reproductions/openwebvoyager_acl2025/program.py",
+  "reported_results": [
+    {
+      "claim_id": "openwebvoyager_webvoyager_final",
+      "metric_id": "task_success_rate_percent",
+      "value": 25.8,
+      "qualifiers": {
+        "benchmark": "webvoyager",
+        "initial_percent": 19.9,
+        "cycles": 3,
+        "source": "ACL-2025 paper"
+      },
+      "claim_digest": "93a56964cf89c8896c89f281d87ce248a6019d23b5502b777ff6c8d327b6a5da"
+    },
+    {
+      "claim_id": "openwebvoyager_mind2web_cross_task_final",
+      "metric_id": "task_success_rate_percent",
+      "value": 19.6,
+      "qualifiers": {
+        "benchmark": "mind2web",
+        "initial_percent": 6.3,
+        "cycles": 3,
+        "source": "ACL-2025 paper"
+      },
+      "claim_digest": "e6d0382b2622583386f6e81a0ce84a52b5968f16f5e9a0a4384233b3c5aa55f8"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "openwebvoyager_initial_policy",
+      "description": "Initial imitation-learning policy before iterative real-world self-improvement",
+      "qualifiers": {
+        "webvoyager_percent": 19.9,
+        "mind2web_cross_task_percent": 6.3,
+        "source": "ACL-2025 paper"
+      },
+      "baseline_digest": "7738bc09206082fa3788959d239f192fa4617cd75a428e093bba8c3729395c12"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched training requires exact imitation/exploration trajectory corpus, judge outputs and model checkpoint identities.",
+    "Live web evaluation requires frozen website/environment state."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
+      "content_sha256": "7c39899b0550c191b0ab96d21b5dee38b0b37f806afe2fee0dd374c2368d210d"
+    }
+  ]
+}
