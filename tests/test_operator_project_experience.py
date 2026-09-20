@@ -57,7 +57,7 @@ def test_project_create_uses_one_canonical_manifest_and_is_idempotent(
 ) -> None:
     _bind_fixed_platform(monkeypatch)
     root = tmp_path / "demo-project"
-    request = ProjectCreateRequest("demo-project", "0.1.0", root, "standalone")
+    request = ProjectCreateRequest("demo-project", "0.1.0", root)
 
     first = project_scaffold.create_project(request)
     before = {
@@ -75,6 +75,7 @@ def test_project_create_uses_one_canonical_manifest_and_is_idempotent(
     manifest = decode_project_manifest_bytes((root / "project.manifest.json").read_bytes())
     assert manifest.project.identity.project_id == "demo-project"
     assert manifest.project.identity.version == "0.1.0"
+    assert manifest.project.program_id == "demo-project"
     assert manifest.template_revision == PROJECT_TEMPLATE_REVISION
     assert manifest.provenance.platform_artifact_sha256 == "a" * 64
     assert first.template_revision == PROJECT_TEMPLATE_REVISION
@@ -253,10 +254,16 @@ def test_project_cli_has_no_template_selector_and_emits_single_project_shape(
             "--version", "0.1.0", "--template", "provider",
         ])
 
+    with pytest.raises(SystemExit):
+        parser.parse_args([
+            "project", "create", "x", str(tmp_path / "program-x"),
+            "--version", "0.1.0", "--program-id", "program",
+        ])
+
     root = tmp_path / "demo-project"
     assert main([
         "project", "create", "demo-project", str(root),
-        "--version", "0.1.0", "--program-id", "standalone",
+        "--version", "0.1.0",
     ]) == 0
     created = json.loads(capsys.readouterr().out)
     assert created["ok"] is True
