@@ -7,6 +7,44 @@
   "formal_pressure_violation_count": 0,
   "method_queue": [
     {
+      "publication_id": "optimus2",
+      "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
+      "year": 2025,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "optimus2-minecraft",
+      "packages": [
+        "optimus2_minecraft"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "optimus2_minecraft"
+      ],
+      "implementation_state": "active_pressure_gap"
+    },
+    {
+      "publication_id": "optimus1",
+      "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
+      "year": 2024,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "optimus1-minecraft",
+      "packages": [
+        "optimus1_minecraft"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "optimus1_minecraft"
+      ],
+      "implementation_state": "active_pressure_gap"
+    },
+    {
       "publication_id": "agentless",
       "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
       "year": 2025,
@@ -41,23 +79,6 @@
       "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
-      "publication_id": "drvideo",
-      "title": "DrVideo: Document Retrieval Based Long Video Understanding",
-      "year": 2025,
-      "venue": "CVPR",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "drvideo",
-      "packages": [
-        "drvideo"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
       "publication_id": "flow-modularized-agentic-workflow",
       "title": "Flow: Modularized Agentic Workflow Automation",
       "year": 2025,
@@ -75,40 +96,6 @@
       "implementation_state": "reproduction_exists_not_active_pressure"
     },
     {
-      "publication_id": "optimus2",
-      "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
-      "year": 2025,
-      "venue": "CVPR",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "optimus2-minecraft",
-      "packages": [
-        "optimus2_minecraft"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "vca-video",
-      "title": "VCA: Video Curious Agent for Long Video Understanding",
-      "year": 2025,
-      "venue": "ICCV",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "vca-video",
-      "packages": [
-        "vca_video"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
       "publication_id": "cogagent",
       "title": "CogAgent: A Visual Language Model for GUI Agents",
       "year": 2024,
@@ -118,23 +105,6 @@
       "method_id": "cogagent",
       "packages": [
         "cogagent"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [],
-      "implementation_state": "reproduction_exists_not_active_pressure"
-    },
-    {
-      "publication_id": "optimus1",
-      "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
-      "year": 2024,
-      "venue": "NeurIPS",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "optimus1-minecraft",
-      "packages": [
-        "optimus1_minecraft"
       ],
       "lifecycles": [
         "protocol_bound"
@@ -270,6 +240,25 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "drvideo",
+      "title": "DrVideo: Document Retrieval Based Long Video Understanding",
+      "year": 2025,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "drvideo",
+      "packages": [
+        "drvideo"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "drvideo"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "flash-vstream",
       "title": "Flash-VStream: Efficient Real-Time Understanding for Long Video Streams",
       "year": 2025,
@@ -361,6 +350,25 @@
       ],
       "pressure_packages": [
         "rewind_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "vca-video",
+      "title": "VCA: Video Curious Agent for Long Video Understanding",
+      "year": 2025,
+      "venue": "ICCV",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "vca-video",
+      "packages": [
+        "vca_video"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "vca_video"
       ],
       "implementation_state": "pressure_ready"
     },

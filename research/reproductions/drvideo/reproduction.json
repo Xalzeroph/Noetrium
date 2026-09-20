@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v5",
+  "schema": "noetrium.reproduction.projection.v6",
   "authority": "generated_from_typed_definition_and_source",
   "package": "drvideo",
   "package_digest": "3131178908be1e990959034886399a575383ea1da11a904ed5562814b89e43f1",
