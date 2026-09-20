@@ -93,11 +93,7 @@ from noetrium import api
 
 from .method import METHOD_SPEC
 
-STUDY_SPEC = api.AgentStudySpec(
-    project_id=METHOD_SPEC.method_id,
-    study_id=f"{METHOD_SPEC.method_id}.study",
-    method_id=METHOD_SPEC.method_id,
-)
+STUDY_SPEC = api.AgentStudySpec(method_id=METHOD_SPEC.method_id)
 
 build_study = STUDY_SPEC.build
 
