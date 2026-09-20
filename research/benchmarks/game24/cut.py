@@ -1,13 +1,9 @@
 from __future__ import annotations
 
+from noetrium import api
+
 from dataclasses import dataclass
 
-from noetrium.api import canonical_digest, require_sha256
-from noetrium.api import (
-    BenchmarkTaskSet,
-    TaskDefinition,
-    TaskSetSplit,
-)
 
 GAME24_BENCHMARK_ID = "game24"
 GAME24_PAPER_REVISION = "tree-of-thought-llm@8050e67d"
@@ -16,7 +12,7 @@ GAME24_TASK_SCHEMA_ID = "game24.puzzle.v1"
 GAME24_PAPER_START_INDEX = 900
 GAME24_PAPER_END_INDEX = 1000
 GAME24_PAPER_TASK_COUNT = GAME24_PAPER_END_INDEX - GAME24_PAPER_START_INDEX
-GAME24_SELECTION_POLICY_DIGEST = canonical_digest(
+GAME24_SELECTION_POLICY_DIGEST = api.canonical_digest(
     {
         "benchmark_id": GAME24_BENCHMARK_ID,
         "revision": GAME24_PAPER_REVISION,
@@ -39,7 +35,7 @@ class Game24TaskRecord:
             raise ValueError("Game24 paper task index must be in [900, 1000)")
         if type(self.puzzle) is not str or not self.puzzle.strip():
             raise ValueError("Game24 puzzle must be non-empty")
-        require_sha256(self.content_digest, "Game24 task content_digest")
+        api.require_sha256(self.content_digest, "Game24 task content_digest")
 
     @property
     def task_id(self) -> str:
@@ -50,12 +46,12 @@ def build_game24_paper_task_set(
     records: tuple[Game24TaskRecord, ...],
     *,
     source_digest: str,
-) -> BenchmarkTaskSet:
+) -> api.BenchmarkTaskSet:
     """Freeze the exact 100-puzzle ToT Game24 evaluation range."""
 
     if type(records) is not tuple or any(type(row) is not Game24TaskRecord for row in records):
         raise TypeError("Game24 records must be a tuple of Game24TaskRecord")
-    require_sha256(source_digest, "Game24 source_digest")
+    api.require_sha256(source_digest, "Game24 source_digest")
     expected_indices = tuple(range(GAME24_PAPER_START_INDEX, GAME24_PAPER_END_INDEX))
     by_index = {row.index: row for row in records}
     if len(records) != GAME24_PAPER_TASK_COUNT or tuple(sorted(by_index)) != expected_indices:
@@ -63,7 +59,7 @@ def build_game24_paper_task_set(
 
     ordered = tuple(by_index[index] for index in expected_indices)
     tasks = tuple(
-        TaskDefinition(
+        api.TaskDefinition(
             task_id=row.task_id,
             revision_id=GAME24_PAPER_REVISION,
             family="game24",
@@ -73,13 +69,13 @@ def build_game24_paper_task_set(
         )
         for row in ordered
     )
-    return BenchmarkTaskSet(
+    return api.BenchmarkTaskSet(
         benchmark_id=GAME24_BENCHMARK_ID,
         revision_id=GAME24_PAPER_REVISION,
         source_digest=source_digest,
         task_schema_id=GAME24_TASK_SCHEMA_ID,
         tasks=tasks,
-        splits=(TaskSetSplit(GAME24_PAPER_SPLIT, tuple(row.task_id for row in ordered)),),
+        splits=(api.TaskSetSplit(GAME24_PAPER_SPLIT, tuple(row.task_id for row in ordered)),),
         selection_policy_digest=GAME24_SELECTION_POLICY_DIGEST,
     )
 
