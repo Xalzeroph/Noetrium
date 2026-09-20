@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v6",
+  "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flow_modularized_agentic_workflow",
   "package_digest": "0b5bb22b134b0ae0827f5a75c17868d02854535077b8a7e358e89eb379858ab7",

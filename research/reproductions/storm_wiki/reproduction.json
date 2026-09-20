@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v6",
+  "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "storm_wiki",
   "package_digest": "0d778fa9dc9f3b6c8155453f3a826ce21e864b9e7edeaefe93542296d016437a",

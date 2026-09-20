@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v6",
+  "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "aflow",
   "package_digest": "5a81e8f34c7f8faa6e944b2648f95660b22a052cecc1b6924c78ca7f11f0c0d2",
