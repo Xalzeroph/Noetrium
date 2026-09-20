@@ -134,18 +134,35 @@ def build_environment_images(
         shutil.rmtree(work_root)
     distribution = work_root / "distribution"
     context = work_root / "container-context"
+    tooling_venv = work_root / "tooling-venv"
     work_root.mkdir(parents=True)
+
+    _run((sys.executable, "-m", "venv", str(tooling_venv)))
+    tool_python = (
+        tooling_venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    )
+    _run(
+        (
+            str(tool_python),
+            "-m",
+            "pip",
+            "install",
+            "--upgrade",
+            "pip",
+            "build>=1.2,<2",
+        )
+    )
 
     _run(
         (
-            sys.executable,
+            str(tool_python),
             "scripts/release_distribution.py",
             str(distribution),
         )
     )
     _run(
         (
-            sys.executable,
+            str(tool_python),
             "scripts/prepare_container_context.py",
             str(distribution),
             str(context),
@@ -183,7 +200,7 @@ def build_environment_images(
     base_verification = work_root / "base-container-verification.json"
     _run(
         (
-            sys.executable,
+            str(tool_python),
             "scripts/verify_container_image.py",
             base_tag,
             "--expected-source-sha",
