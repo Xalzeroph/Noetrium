@@ -150,7 +150,7 @@
       "reproductions": [
         {
           "package": "minedojo",
-          "package_digest": "f8d95a1bad017fc5405e5aec08c6b123ede31a09d3399b3d13f0939d11f13ebd",
+          "package_digest": "a473300fe8761f78bae230b6a655ca5b1233cb66830e071ad7315d806b94e807",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minedojo"
@@ -217,8 +217,8 @@
             "Full MineCLIP/MineAgent matched-result reproduction additionally requires the released MineDojo video/data cuts, policy checkpoint, and real observation/prompt frontend artifacts to be materialized under immutable content identity."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 5,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -728,7 +728,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "bc272fab05387e645022d830cba1537951f536601f1575ff14a8f0f4cd60e615",
+          "package_digest": "8e470d7edaa57a5b8d965179071e4731490ccaa812596b874ba65ad7320e5e46",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -773,8 +773,8 @@
             "exact ALFWorld dataset/runtime deployment cut must be bound before matched execution"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -1486,7 +1486,7 @@
       "reproductions": [
         {
           "package": "metagpt_software_company",
-          "package_digest": "4ebd7d3c6cb8e5bea32fdbe9735d379396fc84072bedd7ade628b03a66da67f6",
+          "package_digest": "51e3d244bff58e1a1fcff76ba6070c23fad76c37782d6ba696d8cc0ae1333c53",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -1518,8 +1518,8 @@
           ],
           "blockers": [],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
@@ -1751,7 +1751,7 @@
       "reproductions": [
         {
           "package": "toolllm_toolbench",
-          "package_digest": "127138175092145cc9b81141248e3fa9c345726d769906c4ed12578629b7e935",
+          "package_digest": "8dedbdb7cb2384143d359cc0cacc3a321f324955c14f431fb12bac57483c5dd3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolbench"
@@ -1793,8 +1793,8 @@
           ],
           "blockers": [],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 6,
+          "reference_baseline_count": 2,
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
@@ -2317,7 +2317,7 @@
       "reproductions": [
         {
           "package": "aflow",
-          "package_digest": "b78477e05f9a5148117312b428569e16876df5884489f242cfbcbe47b4656bce",
+          "package_digest": "5a81e8f34c7f8faa6e944b2648f95660b22a052cecc1b6924c78ca7f11f0c0d2",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -2377,8 +2377,8 @@
             "no matched AFlow execution evidence has yet been produced"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 3,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 2,
           "scientific_tests": [
             {
@@ -2988,5 +2988,5 @@
       ]
     }
   ],
-  "projection_digest": "5efc58c1e69787eb31e6409202ced10c845248c5a4b9efc22cd04cbbc7976804"
+  "projection_digest": "3ef691948196a244d8a90c6e1564b40e93cd52a629f1c21c2ab623abb813bdca"
 }

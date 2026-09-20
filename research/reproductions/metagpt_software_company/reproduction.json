@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "metagpt_software_company",
-  "package_digest": "4ebd7d3c6cb8e5bea32fdbe9735d379396fc84072bedd7ade628b03a66da67f6",
-  "definition_digest": "a125237281949c46c13a0e35c5bcc4cd6698a0e032d271dfe49cb10cc5f54da2",
+  "package_digest": "51e3d244bff58e1a1fcff76ba6070c23fad76c37782d6ba696d8cc0ae1333c53",
+  "definition_digest": "eab58687883ea7023a65861c1825afcacde447eb06c05226d19b02ece15a6d80",
   "source_registry_digest": "1ce38ee388bf0eb998ce4109eafce04c083c168dbd6b10ee369a739c76c06ae8",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -87,8 +87,29 @@
     }
   ],
   "primary_executable": "research/reproductions/metagpt_software_company/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "metagpt_mbpp_executive_feedback_gain",
+      "metric_id": "absolute_improvement_points",
+      "value": 5.4,
+      "qualifiers": {
+        "benchmark": "mbpp",
+        "mechanism": "executive-feedback",
+        "source": "ICLR-2024 paper"
+      },
+      "claim_digest": "a17d3a66e97457b4f7b39dc52f8f585ad906f3c07ec446e714395e04db54c25d"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "metagpt_without_executive_feedback",
+      "description": "MetaGPT ablation without executive feedback used to quantify the MBPP improvement from the feedback mechanism.",
+      "qualifiers": {
+        "source": "ICLR-2024 paper evaluation"
+      },
+      "baseline_digest": "c7aa246b68712fb3e98c4f8ae30246f709c7825e276b2c8d120d8505c1ad7234"
+    }
+  ],
   "deltas": [],
   "blockers": [],
   "evidence_refs": [],
