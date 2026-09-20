@@ -85,6 +85,23 @@ def test_unified_api_supports_symbol_search_and_schema_discovery() -> None:
     assert api.describe("definitely-not-a-noetrium-symbol") == ()
 
 
+def test_unified_api_discovers_registry_and_helper_surfaces() -> None:
+    from noetrium import api
+
+    for symbol in ("AgentMethodSpec", "VersionedMemoryGraph", "MultiAgentRuntime"):
+        matches = api.search(symbol)
+        assert matches
+        assert matches[0].symbol == symbol
+        assert api.owners(symbol)
+        assert api.describe(symbol)
+        assert api.resolve(symbol) is getattr(api, symbol)
+
+    helper = api.describe("VersionedMemoryGraph")
+    assert any(row["module"] == "components.api" for row in helper)
+    multi = api.describe("MultiAgentRuntime")
+    assert any(row["module"] == "orchestration.api" for row in multi)
+
+
 def test_catalog_exposes_stable_document_and_surface_fingerprints() -> None:
     catalog = load_downstream_capability_catalog()
     assert len(catalog.catalog_digest) == 64
