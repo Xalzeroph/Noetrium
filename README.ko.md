@@ -257,10 +257,8 @@ python scripts/check_readme_i18n.py
 재사용 가능한 Linux image와 Compose 정의는 `deploy/`에서 관리합니다.
 
 ```bash
-cp deploy/.env.example deploy/.env
-docker compose -f deploy/compose.yaml config
-docker compose -f deploy/compose.yaml build
-docker compose -f deploy/compose.yaml run --rm platform-runtime doctor
+python scripts/build_environment_images.py validate
+python scripts/build_environment_images.py build --profiles text_world
 ```
 
 Deployment 계층은 immutable software와 mutable runtime state를 분리하고 host별 path와 secret을 commit된 composition code에 넣지 않습니다.
@@ -270,8 +268,7 @@ Deployment 계층은 immutable software와 mutable runtime state를 분리하고
 Minecraft는 first-party 재사용 environment Provider입니다. Task suite와 과학적 composition은 downstream에 둡니다.
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
+python scripts/build_environment_images.py build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
