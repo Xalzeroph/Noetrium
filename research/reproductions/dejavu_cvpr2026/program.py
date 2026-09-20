@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_cycle_program, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="dejavu_cvpr2026"
 TITLE="Dejavu: Towards Experience Feedback Learning for Embodied Intelligence"
 VENUE="CVPR 2026"
@@ -16,11 +16,11 @@ PHASES=(
     AgentPhaseSpec("reward_update", "dejavu.training", "Train the residual controller with task return plus semantic-similarity shaping."),
     AgentPhaseSpec("bank_update", "dejavu.memory", "Append successful trajectories and prioritize shorter successful experiences."),
 )
-METHOD_PROGRAM=build_agent_cycle_program(
+METHOD_PROGRAM=AgentMethodSpec(
     method_id=METHOD_ID,implementation_version="2026-paper-protocol",schema_version="dejavu_cvpr2026.phase-workflow.v1",phases=PHASES,
     max_cycles=320,
     configuration={"paper_uri":PAPER_URI,"venue":VENUE,"benchmark_ids":BENCHMARK_IDS,"protocol":PROTOCOL,"ablations":ABLATIONS},
     evidence_obligations=(METHOD_ID+".phase-transcript",METHOD_ID+".model-tool-receipts",METHOD_ID+".metric-artifacts"),
     metric_names=METRICS,artifact_kinds=(METHOD_ID+"_trajectory",METHOD_ID+"_experiment_manifest"),
-)
+).compile()
 __all__=["ABLATIONS","BENCHMARK_IDS","METHOD_ID","METHOD_PROGRAM","METRICS","PAPER_URI","PHASES","PROTOCOL","TITLE","VENUE"]
