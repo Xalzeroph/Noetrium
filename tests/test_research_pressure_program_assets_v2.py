@@ -15,17 +15,12 @@ def _lane(status, package: str):
 
 def test_pressure_suite_supports_primary_plus_nested_executables() -> None:
     suite = json.loads(
-        (ROOT / "research/catalog/pressure_suite.json").read_text(
-            encoding="utf-8"
-        )
+        (ROOT / "research/catalog/pressure_suite.json").read_text(encoding="utf-8")
     )
     assert suite["schema"] == SUITE_SCHEMA
     closure = suite["closure_contract"]
     assert closure["required_asset_kinds"] == ["fidelity", "study"]
-    assert closure["executable_asset_kinds"] == [
-        "method_program",
-        "research_program",
-    ]
+    assert closure["executable_asset_kinds"] == ["method_program", "research_program"]
 
 
 def test_existing_method_program_pressure_lane_remains_ready() -> None:
@@ -50,10 +45,7 @@ def test_aflow_enters_pressure_as_optimization_research_program() -> None:
 def test_voyager_primary_method_program_allows_nested_memory_programs() -> None:
     status = project()
     row = _lane(status, "voyager_minecraft")
-    assert row["executable_asset_kinds"] == [
-        "method_program",
-        "research_program",
-    ]
+    assert row["executable_asset_kinds"] == ["method_program", "research_program"]
     assert row["primary_executable"] == {
         "kind": "method_program",
         "path": "research/reproductions/voyager_minecraft/program.py",
@@ -106,12 +98,23 @@ def test_pressure_status_exposes_claim_evidence_counts() -> None:
     assert providellm["evidence_ref_count"] == 0
 
 
+def _assert_paper_wave(status, expected_minimum_results: dict[str, int]) -> None:
+    assert len(expected_minimum_results) >= 10
+    for package, expected in expected_minimum_results.items():
+        row = _lane(status, package)
+        assert row["enforced"] is True
+        assert row["ready"] is True
+        assert row["reported_result_count"] >= expected
+        assert row["reference_baseline_count"] >= 1
+        assert row["claim_ready"] is False
+        assert row["evidence_ref_count"] == 0
+        assert row["matched_evidence_count"] == 0
+        assert "missing_execution_evidence" in row["claim_gaps"]
+
+
 def test_priority_wave_has_paper_claims_but_not_false_matched_evidence() -> None:
     status = project()
-    # Flagship pressure wave spans long-video/multimodal memory, embodied control,
-    # and Minecraft.  Keep this list explicit so a newly protocol-bound paper
-    # cannot silently regress to a scaffold while aggregate readiness stays green.
-    expected_minimum_results = {
+    _assert_paper_wave(status, {
         "adacm2_memory": 2,
         "flash_vstream_memory": 3,
         "providellm_memory": 6,
@@ -126,15 +129,29 @@ def test_priority_wave_has_paper_claims_but_not_false_matched_evidence() -> None
         "saycan": 2,
         "optimus1_minecraft": 3,
         "optimus2_minecraft": 3,
-    }
-    assert len(expected_minimum_results) >= 10
-    for package, expected in expected_minimum_results.items():
-        row = _lane(status, package)
-        assert row["enforced"] is True
-        assert row["ready"] is True
-        assert row["reported_result_count"] >= expected
-        assert row["reference_baseline_count"] >= 1
-        assert row["claim_ready"] is False
-        assert row["evidence_ref_count"] == 0
-        assert row["matched_evidence_count"] == 0
-        assert "missing_execution_evidence" in row["claim_gaps"]
+    })
+
+
+def test_second_ten_paper_wave_is_claim_bound_and_not_scaffold_only() -> None:
+    """Lock ten additional peer-reviewed lineages beyond the flagship wave.
+
+    These lanes span multimodal/video memory, Minecraft/embodied environments,
+    workflow search, multi-agent software engineering, tool use and reflection.
+    A lane may remain protocol-bound while historical execution dependencies are
+    unresolved, but it may not regress to an empty scaffold or invent matched
+    evidence. This makes the next reproduction wave explicit and independently
+    pressure-tested instead of relying on aggregate catalog counts.
+    """
+    status = project()
+    _assert_paper_wave(status, {
+        "drvideo": 8,
+        "ma_lmm_memory": 4,
+        "moviechat_memory": 4,
+        "vca_video": 2,
+        "minedojo": 5,
+        "aflow": 3,
+        "metagpt_software_company": 1,
+        "reflexion_alfworld": 2,
+        "toolllm_toolbench": 6,
+        "code_as_policies": 4,
+    })
