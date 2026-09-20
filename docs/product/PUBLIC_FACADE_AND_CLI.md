@@ -1,4 +1,4 @@
-# Public facade and `research` CLI
+# Unified downstream API and `noetrium` CLI
 
 The common product boundary is intentionally small:
 
@@ -73,20 +73,38 @@ ROLE06 also waits for the ROLE01 PSC-03 neutral diagnostic metadata envelope ins
 
 ## Downstream project experience
 
-`noetrium project create <project-id> <destination> --version <version>` defaults to the author profile. It binds canonical Portfolio `ProjectManifest` identity/provenance and generates only two research-facing modules: `method.py` and `study.py`. `method.py` contains a directly compilable public `AgentMethodSpec`; `study.py` owns the paper's benchmark/measurement/treatment declaration through `AgentStudySpec`. Final compilation uses `noetrium.api.compile_research_method(...)` directly. The author project does **not** generate Participant/Model/Environment providers, direct `RunControlPort` wiring, checkpoint stores, resource leases, evidence publishers, or a redundant research-host wrapper. Older author-template revisions are intentionally unsupported rather than upgraded.
+`noetrium project create <project-id> <destination> --version <version>` creates one
+project shape. There are no author/provider template profiles and no `--template`
+selector.
 
-Provider authors explicitly opt in with `--template provider`. That advanced template retains the public Participant/Model/Environment requirement/provider stubs and application binding seam and deliberately fails closed until real bindings are supplied. Provider-specific plumbing is therefore no longer the default New Project Experience.
+The generated project contains the canonical manifest plus only the common
+scientific authoring surface:
 
-`noetrium project test --project .` first builds and installs the generated downstream package into an isolated temporary `site-packages`, then runs the generated conformance suite against that installed copy with user-site and ambient `PYTHONPATH` disabled. Build/test child-process output is captured inside the product boundary so the command emits exactly one strict JSON receipt on its top-level output stream; pip or unittest chatter must never prefix or trail that receipt. A source-tree-only import is not accepted as project-test success. `noetrium project doctor --project .` always verifies canonical manifest identity, installed Platform provenance, generated files and the downstream public-import boundary. For the author profile it additionally probes the public `AgentMethodSpec`, compiled `MethodProgram`, `AgentStudySpec`, and `compile_research_method` seam. This makes authoring/compilation readiness explicit while runtime execution still requires an injected BindingContribution and an explicit provider/runtime application. For the provider profile it verifies typed Participant/Model/Environment diagnostics, Environment readiness and explicit application binding.
+- `method.py` with a compilable `AgentMethodSpec`;
+- `study.py` with an `AgentStudySpec`;
+- an installed-package conformance test.
 
-`--project` is profile-aware. The default AUTHOR profile is compilation-only and calls the canonical `compile_research_method` path only when an explicit `BindingContribution` is supplied; it never searches for or generates `application.py`. The explicit PROVIDER profile may use direct application loading as a Level-2/provider-author escape hatch:
+Project identity exists only in `project.manifest.json`/package metadata; the
+scaffold does not generate a duplicate `project.py`. It also does not generate
+provider stubs, `research.py`, or a runtime application. All platform contracts
+are imported through `noetrium.api`.
 
-```bash
-noetrium run --project ./provider-project run-123 --payload '{"expected_revision":1}'
-noetrium inspect --project ./provider-project run-123
-```
+Provider/runtime/application code is an optional extension of the same project,
+not a second project type. If lifecycle execution is needed, the project may add
+`application.py` with `build_application(config_path)`; `noetrium run
+--project ...` loads it explicitly. A project without that optional module remains
+fully valid for method/study compilation and fails lifecycle execution with a
+clear "no runtime application" error.
 
-The provider loader derives the package identity from the canonical manifest and rejects an application module that resolves outside the explicit project root. `--project` and `--application` are mutually exclusive authority sources.
+`noetrium project doctor --project .` verifies the single template revision,
+manifest identity/provenance, exact generated scientific files, the
+`noetrium.api` import boundary, and typed Method/Study compilation.
+`noetrium project test --project .` builds and installs the downstream package
+into an isolated temporary site-packages before running its generated contract
+suite. Source-tree-only success is not accepted.
+
+`--project` and `--application` remain mutually exclusive application authority
+sources. This is a runtime selection rule, not a project-category distinction.
 
 ## NPE reference authority
 
@@ -94,4 +112,4 @@ The historical `noetrium_platform.product.operator.reference` workload remains a
 
 Claim-grade NPE reference acceptance composes producer-owned contracts through a downstream-owned binding: the project supplies a typed ROLE03 `RunControlPort`, while the public ROLE06 adapter translates its receipts. The verifier exercises the public research compiler, the explicit binding seam, and the complete revision-fenced `run -> inspect -> stop -> resume -> reconcile -> evidence` lifecycle in separate fresh processes. The historical Operator smoke workload remains excluded.
 
-The clean-room driver is deliberately materialized inside the generated downstream project and imports only `noetrium.api`, `noetrium.api`, and the Python standard library. It owns no Platform authority; it is a deterministic qualification binding whose state is stored at an explicit run-local path and reopened by a fresh process. Missing, malformed or non-finalized lifecycle receipts remain fail-closed.
+The clean-room driver is deliberately materialized inside the generated downstream project and imports only `noetrium.api` and the Python standard library. It owns no Platform authority; it is a deterministic qualification binding whose state is stored at an explicit run-local path and reopened by a fresh process. Missing, malformed or non-finalized lifecycle receipts remain fail-closed.
