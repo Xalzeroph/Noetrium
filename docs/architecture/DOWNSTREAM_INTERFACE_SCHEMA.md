@@ -16,20 +16,16 @@ fields, Protocol methods, documentation and re-export provenance.
 
 Downstream code can inspect it without importing implementation modules:
 
-    from noetrium.contracts.discovery import (
-        find_downstream_symbol_schema,
-        load_downstream_interface_schema,
-    )
+    from noetrium import api
 
-    schema = find_downstream_symbol_schema(
+    schema = api.symbol_schema(
         "environment/minecraft",
         "noetrium_platform.capabilities.environment.minecraft.api.ports",
         "MinecraftBridgePort",
     )
 
 The schema describes the public boundary; providers, credentials and runtime
-service lookup remain private. Downstream code imports generated facades and
-injects typed ports during its composition root.
+service lookup remain private. Downstream code uses only `noetrium.api`; generated system facades remain registry-backed implementation material behind that single entrypoint.
 
 After changing a registry descriptor or public api export, run:
 
