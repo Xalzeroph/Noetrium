@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -61,8 +63,68 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/cogagent/study.py",
         ),
     ),
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="cogagent_mind2web_cross_task",
+            metric_id="step_success_rate_percent",
+            value=62.3,
+            qualifiers={
+                "benchmark": "Mind2Web",
+                "split": "cross-task",
+                "representation": "screenshot-only",
+                "source": "CVPR 2024 Table 3",
+            },
+        ),
+        ReportedResult(
+            claim_id="cogagent_mind2web_cross_website",
+            metric_id="step_success_rate_percent",
+            value=54.0,
+            qualifiers={
+                "benchmark": "Mind2Web",
+                "split": "cross-website",
+                "representation": "screenshot-only",
+                "source": "CVPR 2024 Table 3",
+            },
+        ),
+        ReportedResult(
+            claim_id="cogagent_mind2web_cross_domain",
+            metric_id="step_success_rate_percent",
+            value=59.4,
+            qualifiers={
+                "benchmark": "Mind2Web",
+                "split": "cross-domain",
+                "representation": "screenshot-only",
+                "source": "CVPR 2024 Table 3",
+            },
+        ),
+        ReportedResult(
+            claim_id="cogagent_mind2web_overall",
+            metric_id="step_success_rate_percent",
+            value=58.2,
+            qualifiers={
+                "benchmark": "Mind2Web",
+                "split": "overall",
+                "representation": "screenshot-only",
+                "source": "CVPR 2024 Table 3",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="llama2_70b_html_mind2web",
+            description=(
+                "LLaMA2-70B using HTML screen representation in the same "
+                "Mind2Web comparison."
+            ),
+            qualifiers={
+                "cross_task_step_success_percent": 55.8,
+                "cross_website_step_success_percent": 51.6,
+                "cross_domain_step_success_percent": 55.7,
+                "overall_step_success_percent": 54.4,
+                "source": "CVPR 2024 Table 3",
+            },
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("unresolved"),

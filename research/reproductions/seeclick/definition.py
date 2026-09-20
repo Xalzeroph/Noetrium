@@ -72,6 +72,42 @@ REPRODUCTION = ReproductionDefinition(
             value=53.4,
             qualifiers={"benchmark": "ScreenSpot", "model": "SeeClick"},
         ),
+        ReportedResult(
+            claim_id="seeclick_screenspot_mobile_text",
+            metric_id="grounding_accuracy_percent",
+            value=78.0,
+            qualifiers={"benchmark": "ScreenSpot", "platform": "mobile", "element": "text"},
+        ),
+        ReportedResult(
+            claim_id="seeclick_screenspot_mobile_icon",
+            metric_id="grounding_accuracy_percent",
+            value=52.0,
+            qualifiers={"benchmark": "ScreenSpot", "platform": "mobile", "element": "icon-widget"},
+        ),
+        ReportedResult(
+            claim_id="seeclick_screenspot_desktop_text",
+            metric_id="grounding_accuracy_percent",
+            value=72.2,
+            qualifiers={"benchmark": "ScreenSpot", "platform": "desktop", "element": "text"},
+        ),
+        ReportedResult(
+            claim_id="seeclick_screenspot_desktop_icon",
+            metric_id="grounding_accuracy_percent",
+            value=30.0,
+            qualifiers={"benchmark": "ScreenSpot", "platform": "desktop", "element": "icon-widget"},
+        ),
+        ReportedResult(
+            claim_id="seeclick_screenspot_web_text",
+            metric_id="grounding_accuracy_percent",
+            value=55.7,
+            qualifiers={"benchmark": "ScreenSpot", "platform": "web", "element": "text"},
+        ),
+        ReportedResult(
+            claim_id="seeclick_screenspot_web_icon",
+            metric_id="grounding_accuracy_percent",
+            value=32.5,
+            qualifiers={"benchmark": "ScreenSpot", "platform": "web", "element": "icon-widget"},
+        ),
     ),
     reference_baselines=(
         ReferenceBaseline(

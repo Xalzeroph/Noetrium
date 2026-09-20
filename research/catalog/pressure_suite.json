@@ -39,7 +39,7 @@
     {
       "package": "chain_of_thought_gsm8k",
       "lineage": "reasoning_root",
-      "enforced": false
+      "enforced": true
     },
     {
       "package": "chatdev_v1",
@@ -54,7 +54,7 @@
     {
       "package": "hugginggpt",
       "lineage": "tool_orchestration",
-      "enforced": false
+      "enforced": true
     },
     {
       "package": "lats_webshop",
@@ -109,7 +109,7 @@
     {
       "package": "self_consistency_gsm8k",
       "lineage": "reasoning_path_aggregation",
-      "enforced": false
+      "enforced": true
     },
     {
       "package": "self_refine",

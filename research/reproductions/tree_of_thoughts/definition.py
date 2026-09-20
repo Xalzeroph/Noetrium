@@ -51,8 +51,31 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="tot_gpt4_game24",
+            metric_id="success_rate_percent",
+            value=74.0,
+            qualifiers={
+                "benchmark": "Game of 24",
+                "model": "GPT-4",
+                "method": "Tree of Thoughts",
+                "source": "NeurIPS 2023 abstract and Game of 24 evaluation",
+            },
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="cot_gpt4_game24",
+            description=(
+                "GPT-4 chain-of-thought prompting on the same Game of 24 "
+                "evaluation reported by the Tree of Thoughts paper."
+            ),
+            qualifiers={
+                "success_rate_percent": 4.0,
+                "benchmark": "Game of 24",
+                "model": "GPT-4",
+            },
+        ),
     ),
     deltas=(
         ReproductionDelta(

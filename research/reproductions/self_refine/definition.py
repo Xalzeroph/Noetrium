@@ -47,6 +47,18 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="self_refine_average_absolute_gain",
+            metric_id="average_absolute_improvement_points",
+            value=20.0,
+            qualifiers={
+                "scope": "seven evaluated tasks",
+                "approximate": True,
+                "models": ("GPT-3.5", "ChatGPT", "GPT-4"),
+                "comparison": "same-model one-step generation",
+                "source": "NeurIPS 2023 abstract",
+            },
+        ),
     ),
     reference_baselines=(
         ReferenceBaseline(

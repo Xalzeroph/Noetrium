@@ -51,8 +51,92 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="hugginggpt_gpt35_task_planning_passing",
+            metric_id="human_evaluation_percent",
+            value=91.22,
+            qualifiers={
+                "stage": "task-planning",
+                "measure": "passing-rate",
+                "model": "GPT-3.5",
+                "request_count": 130,
+                "source": "NeurIPS 2023 Table 8",
+            },
+        ),
+        ReportedResult(
+            claim_id="hugginggpt_gpt35_task_planning_rationality",
+            metric_id="human_evaluation_percent",
+            value=78.47,
+            qualifiers={
+                "stage": "task-planning",
+                "measure": "rationality",
+                "model": "GPT-3.5",
+                "request_count": 130,
+                "source": "NeurIPS 2023 Table 8",
+            },
+        ),
+        ReportedResult(
+            claim_id="hugginggpt_gpt35_model_selection_passing",
+            metric_id="human_evaluation_percent",
+            value=93.89,
+            qualifiers={
+                "stage": "model-selection",
+                "measure": "passing-rate",
+                "model": "GPT-3.5",
+                "request_count": 130,
+                "source": "NeurIPS 2023 Table 8",
+            },
+        ),
+        ReportedResult(
+            claim_id="hugginggpt_gpt35_model_selection_rationality",
+            metric_id="human_evaluation_percent",
+            value=84.29,
+            qualifiers={
+                "stage": "model-selection",
+                "measure": "rationality",
+                "model": "GPT-3.5",
+                "request_count": 130,
+                "source": "NeurIPS 2023 Table 8",
+            },
+        ),
+        ReportedResult(
+            claim_id="hugginggpt_gpt35_response_success",
+            metric_id="human_evaluation_percent",
+            value=63.08,
+            qualifiers={
+                "stage": "response",
+                "measure": "success-rate",
+                "model": "GPT-3.5",
+                "request_count": 130,
+                "source": "NeurIPS 2023 Table 8",
+            },
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="alpaca13b_human_eval",
+            description=(
+                "Alpaca-13B human-evaluation baseline reported in HuggingGPT "
+                "Table 8."
+            ),
+            qualifiers={
+                "task_planning_passing_percent": 51.04,
+                "task_planning_rationality_percent": 32.17,
+                "response_success_percent": 6.92,
+            },
+        ),
+        ReferenceBaseline(
+            baseline_id="vicuna13b_human_eval",
+            description=(
+                "Vicuna-13B human-evaluation baseline reported in HuggingGPT "
+                "Table 8."
+            ),
+            qualifiers={
+                "task_planning_passing_percent": 79.41,
+                "task_planning_rationality_percent": 58.41,
+                "response_success_percent": 15.64,
+            },
+        ),
     ),
     deltas=(
         ReproductionDelta(
