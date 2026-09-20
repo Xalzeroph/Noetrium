@@ -20,14 +20,14 @@ class ParticipantImplementationRegistration(Protocol):
     factory: Callable[[ParticipantConfigurationArtifact], object]
 
 
-class ParticipantImplementationCatalogPort(Protocol):
+class ParticipantImplementationResolverPort(Protocol):
     def resolve(
         self,
         identity: ParticipantImplementationIdentity,
     ) -> ParticipantImplementationRegistration: ...
 
 
-class ParticipantConfigurationCatalogPort(Protocol):
+class ParticipantConfigurationResolverPort(Protocol):
     def resolve(self, configuration_digest: str) -> ParticipantConfigurationArtifact: ...
 
 
@@ -36,7 +36,7 @@ class ParticipantSessionRuntimeRegistration(Protocol):
     factory: Callable[[], ParticipantSessionRuntime]
 
 
-class ParticipantSessionRuntimeCatalogPort(Protocol):
+class ParticipantSessionRuntimeResolverPort(Protocol):
     def resolve(
         self,
         identity: ParticipantSessionRuntimeIdentity,
@@ -55,10 +55,10 @@ class ParticipantBindingResolverPort(Protocol):
 
 __all__ = [
     "ParticipantBindingResolverPort",
-    "ParticipantConfigurationCatalogPort",
-    "ParticipantImplementationCatalogPort",
+    "ParticipantConfigurationResolverPort",
+    "ParticipantImplementationResolverPort",
     "ParticipantImplementationRegistration",
     "ParticipantRuntimeEndpointFactory",
-    "ParticipantSessionRuntimeCatalogPort",
+    "ParticipantSessionRuntimeResolverPort",
     "ParticipantSessionRuntimeRegistration",
 ]
