@@ -95,32 +95,6 @@ __all__ = ["STUDY_SPEC", "build_study"]
 '''
 
 
-def _author_research_module() -> str:
-    return '''from noetrium.api import ProjectManifest
-from noetrium.api import (
-    ResearchBindingContribution,
-    ResearchMethodHost,
-    ResearchMethodHostPort,
-    ResearchStudyDefinition,
-)
-
-from .method import METHOD_PROGRAM
-
-METHOD_HOST: ResearchMethodHostPort = ResearchMethodHost()
-
-
-def compile_study(
-    definition: ResearchStudyDefinition,
-    project_manifest: ProjectManifest,
-    binding: ResearchBindingContribution,
-):
-    return METHOD_HOST.compile_method(definition, project_manifest, binding)
-
-
-__all__ = ["METHOD_HOST", "METHOD_PROGRAM", "compile_study"]
-'''
-
-
 def _requirements_module(request: ProjectCreateRequest) -> str:
     agent_digest = hashlib.sha256(
         f"{request.project_id}:{request.version}:agent".encode("utf-8")
@@ -154,11 +128,16 @@ def _author_test_module(package: str) -> str:
     return f'''import unittest
 from pathlib import Path
 
-from noetrium.api import ProjectIdentity, decode_project_manifest_bytes
-from noetrium.api import AgentMethodSpec, AgentStudySpec, MethodProgram
+from noetrium.api import (
+    AgentMethodSpec,
+    AgentStudySpec,
+    MethodProgram,
+    ProjectIdentity,
+    compile_research_method,
+    decode_project_manifest_bytes,
+)
 from {package}.method import METHOD_PROGRAM, METHOD_SPEC
 from {package}.project import PROJECT_IDENTITY
-from {package}.research import METHOD_HOST, compile_study
 from {package}.study import STUDY_SPEC, build_study
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -175,7 +154,7 @@ class GeneratedAuthorProjectTests(unittest.TestCase):
         self.assertIsInstance(METHOD_PROGRAM, MethodProgram)
         self.assertIsInstance(STUDY_SPEC, AgentStudySpec)
         self.assertTrue(callable(build_study))
-        self.assertTrue(callable(compile_study))
+        self.assertTrue(callable(compile_research_method))
 
     def test_author_modules_import_without_provider_plumbing(self):
         self.assertFalse((ROOT / "src" / {package!r} / "participant_provider.py").exists())
@@ -195,7 +174,7 @@ def _provider_test_module(package: str) -> str:
 
 def _readme(project_id: str, profile: ProjectTemplateProfile) -> str:
     if profile is ProjectTemplateProfile.AUTHOR:
-        return f'''# {project_id}\n\nThis is the paper-author scaffold.\n\nStart in `method.py`: edit the generated `AgentMethodSpec` phases/configuration. `study.py` exposes an `AgentStudySpec`; pass the paper's benchmark, model requirement, measurements, trial identity and budget when building the experiment. Use `research.py` only for the public Method Host compilation seam. Provider, runtime, checkpoint, resource and evidence authorities remain outside the author project.\n\nRun `noetrium project doctor --project .` and `noetrium project test --project .`.\n'''
+        return f'''# {project_id}\n\nThis is the paper-author scaffold.\n\nStart in `method.py`: edit the generated `AgentMethodSpec` phases/configuration. `study.py` exposes an `AgentStudySpec`; pass the paper's benchmark, model requirement, measurements, trial identity and budget when building the experiment. Compile through `noetrium.api.compile_research_method`; provider, runtime, checkpoint, resource and evidence authorities remain outside the author project.\n\nRun `noetrium project doctor --project .` and `noetrium project test --project .`.\n'''
     return f'''# {project_id}\n\nThis is the explicit Level-2 provider-author scaffold.\n\nIt exposes Participant/Model/Environment provider stubs and direct RunControl application binding through public Platform contracts. Every stub fails closed until implemented.\n\nNormal paper authors should use the default `author` template instead.\n'''
 
 
@@ -215,7 +194,6 @@ def _scaffold_files(request: ProjectCreateRequest) -> tuple[dict[str, bytes], st
     if request.template_profile is ProjectTemplateProfile.AUTHOR:
         text_files[f"src/{package}/method.py"] = _author_method_module(request)
         text_files[f"src/{package}/study.py"] = _author_study_module()
-        text_files[f"src/{package}/research.py"] = _author_research_module()
         text_files["tests/test_generated_author_project.py"] = _author_test_module(package)
     else:
         text_files[f"src/{package}/requirements.py"] = _requirements_module(request)
