@@ -144,7 +144,7 @@ def test_project_doctor_rejects_manifest_and_private_import_drift(
     assert initial_checks["public_import_boundary"] is ProjectDoctorDisposition.PASS
     assert initial_checks["level0_standard_bindings"] is ProjectDoctorDisposition.PASS
     level0 = next(row for row in initial.checks if row.check_id == "level0_standard_bindings")
-    assert level0.summary == "Level-0 Research Method Host and typed compiler/binding seam are available"
+    assert level0.summary == "typed AgentMethodSpec/MethodProgram and Study compilation seam are available"
     assert "participant_provider_readiness" not in initial_checks
 
     manifest_path = root / "project.manifest.json"
@@ -378,8 +378,12 @@ def test_default_project_template_is_author_first(
     )
     assert receipt.template_profile is ProjectTemplateProfile.AUTHOR
     generated = set(receipt.generated_files)
-    for name in ("methods.py", "tasks.py", "measurements.py", "studies.py"):
+    for name in ("method.py", "study.py", "research.py"):
         assert f"src/author_first/{name}" in generated
+    assert "src/author_first/methods.py" not in generated
+    assert "src/author_first/tasks.py" not in generated
+    assert "src/author_first/measurements.py" not in generated
+    assert "src/author_first/studies.py" not in generated
     assert "src/author_first/participant_provider.py" not in generated
     assert "src/author_first/model_provider.py" not in generated
     assert "src/author_first/environment_provider.py" not in generated
@@ -401,7 +405,7 @@ def test_provider_template_is_explicit_opt_in(
     assert "src/provider_template/model_provider.py" in generated
     assert "src/provider_template/environment_provider.py" in generated
     assert "src/provider_template/application.py" in generated
-    assert "src/provider_template/methods.py" not in generated
+    assert "src/provider_template/method.py" not in generated
 
 
 def test_project_cli_provider_template_is_explicit(
