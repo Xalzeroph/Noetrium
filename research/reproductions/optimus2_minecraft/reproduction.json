@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v6",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimus2_minecraft",
-  "package_digest": "7b4f12289fc29b8236c660bc517444e3db8ca7dd3bef325a8f5a55739ad13861",
-  "definition_digest": "92ac5e1bc78d3bd946983989ff19f88f7e5502b31b47c0ddad0b806a7d9fc3d1",
+  "package_digest": "62da611b3484037dbd8c0f8047f216bf728ccf85865df45602b759a3b80d241a",
+  "definition_digest": "5bdadcd8893ce02793fd07aa9205d71c92e5b229cfecdb32bc57fd54f0717c76",
   "source_registry_digest": "fc349c4a36d38cb8541352f436038b853fa4237fa54f9f5e475cf987b8603ed0",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -29,7 +29,9 @@
       "planner_controller"
     ],
     "priority": 1,
-    "benchmark_ids": [],
+    "benchmark_ids": [
+      "minecraft-long-horizon-67"
+    ],
     "platform_pressure": [
       "artifact/trajectory",
       "environment/minecraft",
@@ -59,7 +61,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html"
     ],
-    "catalog_digest": "f28bedaf370a4b437298751fc4debd2dc9e177b5ee2177b24c4d3b2615afd46a"
+    "catalog_digest": "359671078ae8c94dfb71f854da9776e148daa6d298aa4ecb84ec41a771ef2938"
   },
   "source_lanes": [
     {
@@ -92,6 +94,12 @@
   ],
   "assets": [
     {
+      "kind": "benchmark",
+      "path": "research/reproductions/optimus2_minecraft/benchmark.py",
+      "declaration_digest": "962c808686b320ed15793bbd1c6d01155c632db777d338e846fefc3144c4c28f",
+      "content_sha256": "daad15535306612bb5059757d7d1aaed03c8d335617ef699f6b49ee8dfd191d7"
+    },
+    {
       "kind": "fidelity",
       "path": "research/reproductions/optimus2_minecraft/fidelity.py",
       "declaration_digest": "4caff9dc1e915ea6caa4e1182b82d519e3e6ee82a9e06bb9fe50f4dee348643d",
@@ -102,6 +110,12 @@
       "path": "research/reproductions/optimus2_minecraft/program.py",
       "declaration_digest": "95e564d47da581562b5a492ecf021dd5258a887f0f74c1bec838c7a173126d5f",
       "content_sha256": "108bd7e7ba9e555bfd64084568c7317a7bd3a8c3d564309093f104c802b8e3f5"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/optimus2_minecraft/study.py",
+      "declaration_digest": "7231724e32022bc95ba3552cfb1659ad49ae5933c39fb236040af0d65d1d3ba2",
+      "content_sha256": "de7fc9786cd384fc833432aab5e2fe7490cced094b27b3f1ad57a723c11aad79"
     },
     {
       "kind": "support",
@@ -169,7 +183,7 @@
   "blockers": [
     "The official repository does not publish executable paper-era code.",
     "MGOA training data and model/checkpoint identities are not yet content-addressed under reproduction authority.",
-    "Atomic, long-horizon and open-ended evaluation cuts are not yet bound as exact BenchmarkTaskSet artifacts.",
+    "Atomic and open-ended evaluation cuts remain unbound; the shared 67-task long-horizon BenchmarkTaskSet is now exact.",
     "Matched paper-result execution is therefore not claim-ready."
   ],
   "evidence_refs": [],
@@ -177,6 +191,10 @@
     {
       "path": "tests/test_scientific_optimus2_minecraft_v1.py",
       "content_sha256": "ebee783eb5007e391a649b2380a5cc46d469ed108b0ea83e3e428b43852086f2"
+    },
+    {
+      "path": "tests/test_scientific_optimus_long_horizon_67_v1.py",
+      "content_sha256": "69bf0405efdf85a0ebb21b345c7a2a4b5a1b9239cbf51c3bc0877678cfd6c9c5"
     }
   ]
 }

@@ -1704,7 +1704,9 @@
         }
       ],
       "priority": 1,
-      "benchmark_ids": [],
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
       "platform_pressure": [
         "artifact/multimodal",
         "environment/minecraft",
@@ -1755,7 +1757,9 @@
         }
       ],
       "priority": 1,
-      "benchmark_ids": [],
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
       "platform_pressure": [
         "artifact/trajectory",
         "environment/minecraft",

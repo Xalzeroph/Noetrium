@@ -7,44 +7,6 @@
   "formal_pressure_violation_count": 0,
   "method_queue": [
     {
-      "publication_id": "optimus2",
-      "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
-      "year": 2025,
-      "venue": "CVPR",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "optimus2-minecraft",
-      "packages": [
-        "optimus2_minecraft"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [
-        "optimus2_minecraft"
-      ],
-      "implementation_state": "active_pressure_gap"
-    },
-    {
-      "publication_id": "optimus1",
-      "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
-      "year": 2024,
-      "venue": "NeurIPS",
-      "priority_class": "P1_FLAGSHIP",
-      "priority_order": 1,
-      "method_id": "optimus1-minecraft",
-      "packages": [
-        "optimus1_minecraft"
-      ],
-      "lifecycles": [
-        "protocol_bound"
-      ],
-      "pressure_packages": [
-        "optimus1_minecraft"
-      ],
-      "implementation_state": "active_pressure_gap"
-    },
-    {
       "publication_id": "agentless",
       "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
       "year": 2025,
@@ -297,6 +259,25 @@
       "implementation_state": "pressure_ready"
     },
     {
+      "publication_id": "optimus2",
+      "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
+      "year": 2025,
+      "venue": "CVPR",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "optimus2-minecraft",
+      "packages": [
+        "optimus2_minecraft"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "optimus2_minecraft"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
       "publication_id": "providellm",
       "title": "Streaming VideoLLMs for Real-Time Procedural Video Understanding",
       "year": 2025,
@@ -483,6 +464,25 @@
       ],
       "pressure_packages": [
         "moviechat_memory"
+      ],
+      "implementation_state": "pressure_ready"
+    },
+    {
+      "publication_id": "optimus1",
+      "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
+      "year": 2024,
+      "venue": "NeurIPS",
+      "priority_class": "P1_FLAGSHIP",
+      "priority_order": 1,
+      "method_id": "optimus1-minecraft",
+      "packages": [
+        "optimus1_minecraft"
+      ],
+      "lifecycles": [
+        "protocol_bound"
+      ],
+      "pressure_packages": [
+        "optimus1_minecraft"
       ],
       "implementation_state": "pressure_ready"
     },
