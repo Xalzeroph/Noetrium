@@ -2,11 +2,23 @@ from __future__ import annotations
 
 from noetrium_platform.research.experimentation.study.api import BenchmarkTaskSet, ResearchStudyDefinition
 from research.reproductions.frontier_2026.study import (
-    build_ablation_matrix as _build_ablation_matrix,
-    build_study as _build_study,
+    PaperStudySpec,
+    build_ablation_matrix_from_spec,
+    build_study_from_spec,
 )
 from .benchmark import require_paper_benchmark
-from .program import METHOD_ID
+from .program import ABLATIONS, BENCHMARK_IDS, METHOD_ID, METRICS, PAPER_URI, PROTOCOL
+
+SPEC = PaperStudySpec(
+    method_id=METHOD_ID,
+    title="OS-Symphony: A Holistic Framework for Robust and Generalist Computer-Using Agents",
+    venue="ACL 2026",
+    paper_uri=PAPER_URI,
+    benchmark_ids=BENCHMARK_IDS,
+    protocol=PROTOCOL,
+    metrics=METRICS,
+    ablations=ABLATIONS,
+)
 
 
 def build_study(
@@ -18,8 +30,8 @@ def build_study(
     repetitions: int = 1,
 ) -> ResearchStudyDefinition:
     require_paper_benchmark(benchmark.benchmark_id)
-    return _build_study(
-        METHOD_ID,
+    return build_study_from_spec(
+        SPEC,
         benchmark,
         benchmark_split_id=benchmark_split_id,
         treatment=treatment,
@@ -36,8 +48,8 @@ def build_ablation_matrix(
     repetitions: int = 1,
 ) -> tuple[ResearchStudyDefinition, ...]:
     require_paper_benchmark(benchmark.benchmark_id)
-    return _build_ablation_matrix(
-        METHOD_ID,
+    return build_ablation_matrix_from_spec(
+        SPEC,
         benchmark,
         benchmark_split_id=benchmark_split_id,
         model_binding=model_binding,
@@ -45,4 +57,4 @@ def build_ablation_matrix(
     )
 
 
-__all__ = ["build_ablation_matrix", "build_study"]
+__all__ = ["SPEC", "build_ablation_matrix", "build_study"]
