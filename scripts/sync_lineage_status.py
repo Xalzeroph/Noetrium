@@ -6,8 +6,9 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from scripts.sync_reproductions import PROJECTION_SCHEMA as REPRODUCTION_SCHEMA
+
 LINEAGE_SCHEMA = "noetrium-research-lineage.v1"
-REPRODUCTION_SCHEMA = "noetrium.reproduction.projection.v5"
 STATUS_SCHEMA = "noetrium.lineage-reproduction-status.v2"
 STATUS_AUTHORITY = "generated_from_lineage_graph_and_typed_reproduction_projections"
 FORBIDDEN_NODE_FIELDS = frozenset(
