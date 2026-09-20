@@ -33,17 +33,17 @@ A registered node is not promoted to an authority merely because it receives a g
 
 Every registered node receives generated metadata. A node without downstream API exports may be represented as metadata-only; it is not silently treated as an executable public API.
 
-For example, a downstream consumer may import a generated facade such as:
+Downstream consumers do not import generated system facades directly. They use the single product entrypoint:
 
 ```python
-from noetrium.contracts.systems.runtime__session import (
+from noetrium.api import (
     PersistentSessionSpec,
     PersistentSessionRuntimePort,
     RuntimeControllerCommand,
 )
 ```
 
-This exposes the contract surface needed by downstream composition while keeping concrete providers, credentials, sockets, process state, and private runtime implementation behind the platform boundary.
+The generated system facades remain registry-backed internal material used by `noetrium.api` discovery. Concrete providers, credentials, sockets, process state, and private runtime implementation remain behind the platform boundary.
 
 ## Maintenance workflow
 
@@ -62,7 +62,7 @@ Adding a package or provider does **not** justify a new authority. New authority
 
 ## Runtime boundary
 
-`noetrium.contracts.discovery` is a read-only catalog/discovery API. Its explicit facade import operation is not a provider registry and is not a runtime service locator.
+`noetrium.api.catalog()` / `noetrium.api.interface_schema()` are the downstream discovery surface; their implementation uses the internal generated catalog. Its explicit facade import operation is not a provider registry and is not a runtime service locator.
 
 Runtime code still receives typed ports through composition roots:
 
