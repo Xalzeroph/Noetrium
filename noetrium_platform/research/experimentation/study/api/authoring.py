@@ -148,6 +148,7 @@ class Study:
         repetitions: int,
         seeds: tuple[str, ...],
         limits: TrialBudget,
+        model: str | StudyModel | None = None,
         measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...] | None = None,
         benchmark_split_id: str | None = None,
         benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK,
@@ -277,7 +278,7 @@ class AgentStudySpec:
     project_id: str
     study_id: str
     method_id: str
-    model: str | StudyModel
+    model: str | StudyModel | None = None
     measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...] | None = None
     treatment: str = "full"
     participant_kind: str = "paper_method_program"
@@ -293,10 +294,12 @@ class AgentStudySpec:
         _text(self.treatment, "agent study treatment")
         _text(self.participant_kind, "agent study participant_kind")
         _text(self.model_role, "agent study model_role")
-        if type(self.model) is str:
+        if self.model is None:
+            pass
+        elif type(self.model) is str:
             _text(self.model, "agent study model")
         elif type(self.model) is not StudyModel:
-            raise TypeError("agent study model must be a requirement id or StudyModel")
+            raise TypeError("agent study model must be None, a requirement id or StudyModel")
         if self.measurements is None:
             pass
         elif type(self.measurements) is MeasurementProtocol:
@@ -347,6 +350,9 @@ class AgentStudySpec:
     ) -> ResearchStudyDefinition:
         if not isinstance(benchmark, BenchmarkTaskSet):
             raise TypeError("agent study benchmark must be BenchmarkTaskSet")
+        resolved_model = self.model if model is None else model
+        if resolved_model is None:
+            raise ValueError("agent study model must be declared before build")
         resolved_measurements = self.measurements if measurements is None else measurements
         if resolved_measurements is None:
             raise ValueError("agent study measurements must be declared before build")
@@ -372,7 +378,7 @@ class AgentStudySpec:
                 capabilities=self.capabilities,
                 configurations=self.configurations,
             ),
-            models={self.model_role: self.model},
+            models={self.model_role: resolved_model},
             measurements=resolved_measurements,
             trial=trial,
             repetitions=repetitions,
