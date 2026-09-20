@@ -30,10 +30,10 @@ def _emit(value, *, stream=None) -> None:
 
 def _add_lifecycle_command(subparsers, action: ResearchAction, help_text: str) -> None:
     parser = subparsers.add_parser(action.value, help=help_text)
-    parser.set_defaults(action=action, route="application")
+    parser.set_defaults(action=action, route="project")
     parser.add_argument("target", nargs="?", help="application-owned target identity")
     parser.add_argument(
-        "--project", dest="application_project", type=Path, default=Path("."),
+        "--project", dest="project_root", type=Path, default=Path("."),
         help="downstream project root; defaults to current directory",
     )
     payload = parser.add_mutually_exclusive_group()
@@ -86,8 +86,8 @@ def _load_payload(args: argparse.Namespace):
     return None
 
 
-def _run_application(args: argparse.Namespace) -> int:
-    loaded = load_project_application(args.application_project)
+def _run_project_lifecycle(args: argparse.Namespace) -> int:
+    loaded = load_project_application(args.project_root)
     application = loaded.application
     target = args.target or loaded.default_target
     facade = ResearchFacade(application)
@@ -129,7 +129,7 @@ def run_research_cli(
     try:
         if args.command == "project":
             return _run_project(args, project_experience)
-        return _run_application(args)
+        return _run_project_lifecycle(args)
     except ResearchOperationFailure as exc:
         _emit({"ok": False, "command": args.command, "result": exc.result}, stream=sys.stderr)
         return 3
