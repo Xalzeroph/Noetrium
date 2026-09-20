@@ -8,7 +8,7 @@ The base platform image remains provider-neutral and lightweight. The base image
 
 `deploy/environments/minecraft/Dockerfile` consumes `PLATFORM_BASE_IMAGE` and adds Java 21, Node 22, and the lockfile-pinned Mineflayer bridge runtime. It copies no Noetrium source tree, benchmark manifest, paper method, checkpoint, or downstream project code.
 
-`deploy/environments/catalog.json` is the environment-profile authority. `deploy/compose.minecraft.yaml` remains only as a compatibility overlay and points to the canonical Minecraft environment Dockerfile.
+`deploy/environments/catalog.json` is the environment-profile authority. There is no legacy Minecraft compose alias; callers use the canonical environment profile path directly.
 
 ## Compose overlay
 
