@@ -27,10 +27,12 @@ from noetrium_platform.research.reproduction import (
     ReproductionAssetRef,
     ReproductionDefinition,
     ReproductionDelta,
+    ReproductionEvidenceQualification,
     ReproductionEvidenceRef,
+    ReproductionMatchCriterion,
 )
 
-PROJECTION_SCHEMA = "noetrium.reproduction.projection.v6"
+PROJECTION_SCHEMA = "noetrium.reproduction.projection.v7"
 REPRODUCTION_CATALOG_SCHEMA = "noetrium.reproduction-catalog.projection.v1"
 REPRODUCTION_CATALOG_AUTHORITY = "generated_from_typed_reproduction_definitions"
 _ALLOWED_DEFINITION_IMPORTS = {"__future__", "noetrium_platform.research.reproduction"}
@@ -162,6 +164,31 @@ def _baseline(row: ReferenceBaseline) -> dict[str, Any]:
     }
 
 
+def _match_criterion(row: ReproductionMatchCriterion) -> dict[str, Any]:
+    return {
+        "criterion_id": row.criterion_id,
+        "status": row.status.value,
+        "authority_digest": row.authority_digest,
+        "detail": row.detail,
+        "criterion_digest": row.criterion_digest,
+    }
+
+
+def _qualification(
+    row: ReproductionEvidenceQualification,
+) -> dict[str, Any]:
+    return {
+        "qualification_id": row.qualification_id,
+        "decision": row.decision.value,
+        "run_id": row.run_id,
+        "run_manifest_digest": row.run_manifest_digest,
+        "evidence_bundle_digest": row.evidence_bundle_digest,
+        "claim_ids": list(row.claim_ids),
+        "criteria": [_match_criterion(item) for item in row.criteria],
+        "qualification_digest": row.qualification_digest,
+    }
+
+
 def _evidence(row: ReproductionEvidenceRef) -> dict[str, Any]:
     return {
         "evidence_id": row.evidence_id,
@@ -173,6 +200,11 @@ def _evidence(row: ReproductionEvidenceRef) -> dict[str, Any]:
         "manifest_ref": row.manifest_ref,
         "manifest_sha256": row.manifest_sha256,
         "claim_ids": list(row.claim_ids),
+        "qualification": (
+            None
+            if row.qualification is None
+            else _qualification(row.qualification)
+        ),
         "evidence_digest": row.evidence_digest,
     }
 
