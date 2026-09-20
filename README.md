@@ -137,8 +137,9 @@ Noetrium is a general-purpose research-systems platform for long-running agents,
 Discover and use every capability through the same API:
 
     from noetrium import api
-    MinecraftBridgePort = api.system("environment/minecraft").MinecraftBridgePort
-    AgentMemoryPort = api.system("participant/agent").AgentMemoryPort
+    MinecraftBridgePort = api.MinecraftBridgePort
+    AgentMemoryPort = api.AgentMemoryPort
+    matches = api.search("memory")
 
 After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
 <!-- noetrium-interface-catalog:end -->
@@ -262,7 +263,7 @@ noetrium
 | Provider or integration | typed model, environment, resource, process, or server provider | port contracts, composition, readiness, and recovery semantics |
 | Multi-agent behavior | topology, node policy, message delivery, and coordination rules | orchestration primitives and run authority |
 
-Use `noetrium.contracts`, `noetrium.platform`, `components`, and `orchestration` as the supported project-facing surfaces. `noetrium_platform` is the internal semantic-plane implementation namespace, not a downstream extension API. The platform must not import a downstream project to decide scientific meaning or deployment policy.
+Use `noetrium.api` as the only supported downstream project-facing surface. Contract generation, reference components, orchestration, and platform composition remain internal aggregation layers behind that entrypoint. `noetrium_platform` is the internal semantic-plane implementation namespace, not a downstream extension API. The platform must not import a downstream project to decide scientific meaning or deployment policy.
 
 <!-- readme-section:quick-start -->
 
