@@ -150,7 +150,7 @@ def audit_repository_boundary(root: Path, *, include_release_manifest: bool = Tr
     return RepositoryBoundaryReport(_SCHEMA, ordered)
 
 
-_DOWNSTREAM_IMPORT_SCHEMA = "downstream-project-import-policy.v1"
+_DOWNSTREAM_IMPORT_SCHEMA = "downstream-project-import-policy.v2"
 _DOWNSTREAM_SCAN_EXCLUDES = frozenset({
     ".git", ".hg", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".tox",
     ".venv", "__pycache__", "build", "dist", "node_modules", "venv",
@@ -158,21 +158,19 @@ _DOWNSTREAM_SCAN_EXCLUDES = frozenset({
 
 
 def _downstream_import_kind(module: str) -> DownstreamImportKind:
-    if module == "noetrium_platform.api" or module.startswith("noetrium_platform.api."):
-        return DownstreamImportKind.COMMON_PLATFORM_API
-    if not (module == "noetrium_platform" or module.startswith("noetrium_platform.")):
-        return DownstreamImportKind.EXTERNAL
-    parts = module.split(".")
-    # The foundation plane contains stable cross-domain contracts. Capability,
-    # research, evidence, infrastructure, and product contracts remain qualified
-    # extension/provider APIs, even when their leaf path contains api.
-    if len(parts) >= 3 and parts[2] == "api":
-        return DownstreamImportKind.COMMON_PLATFORM_API
-    if len(parts) >= 4 and parts[1] in {"foundation", "product"} and parts[3] == "api":
-        return DownstreamImportKind.COMMON_PLATFORM_API
-    if len(parts) >= 4 and "api" in parts[3:]:
-        return DownstreamImportKind.PROVIDER_DEVELOPMENT_API
-    return DownstreamImportKind.FORBIDDEN_PRIVATE_IMPLEMENTATION
+    if module == "noetrium" or module == "noetrium.api":
+        return DownstreamImportKind.NOETRIUM_API
+    if (
+        module.startswith("noetrium.")
+        or module == "noetrium_platform"
+        or module.startswith("noetrium_platform.")
+        or module == "components"
+        or module.startswith("components.")
+        or module == "orchestration"
+        or module.startswith("orchestration.")
+    ):
+        return DownstreamImportKind.FORBIDDEN_INTERNAL
+    return DownstreamImportKind.EXTERNAL
 
 
 def _source_import_modules(tree: ast.AST) -> tuple[tuple[int, str], ...]:
@@ -219,11 +217,11 @@ def audit_downstream_project_imports(root: Path) -> DownstreamProjectImportRepor
             observations.append(DownstreamImportObservation(
                 str(relative).replace("\\", "/"), line, module, kind
             ))
-            if kind is DownstreamImportKind.FORBIDDEN_PRIVATE_IMPLEMENTATION:
+            if kind is DownstreamImportKind.FORBIDDEN_INTERNAL:
                 violations.append(_violation(
-                    "DOWNSTREAM_PRIVATE_PLATFORM_IMPORT",
+                    "DOWNSTREAM_NON_UNIFIED_NOETRIUM_IMPORT",
                     str(relative),
-                    f"line {line} imports private Platform implementation module {module}",
+                    f"line {line} bypasses the single noetrium.api entrypoint via {module}",
                 ))
     return DownstreamProjectImportReport(
         _DOWNSTREAM_IMPORT_SCHEMA,
