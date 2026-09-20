@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from noetrium_platform.capabilities.participant.method.api import (
     MethodIdentity,
     MethodProgramIdentity,
 )
-from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_digest
+from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_digest, freeze_json
 from .method_machine import (
     MethodExecutionClass,
     MethodNodeRequest,
@@ -37,6 +38,106 @@ class AgentPhaseSpec:
                 raise ValueError(f"agent phase {field_name} must be non-empty text")
         if type(self.max_visits) is not int or self.max_visits < 1:
             raise ValueError("agent phase max_visits must be positive")
+
+
+def _canonical_text_tuple(value: tuple[str, ...], field: str) -> tuple[str, ...]:
+    if type(value) is not tuple:
+        raise TypeError(f"{field} must be a tuple")
+    rows = tuple(item.strip() for item in value)
+    if any(type(item) is not str or not item for item in value):
+        raise ValueError(f"{field} must contain non-empty text")
+    if rows != value:
+        raise ValueError(f"{field} values must already be stripped")
+    if len(rows) != len(set(rows)):
+        raise ValueError(f"{field} values must be unique")
+    return rows
+
+
+@dataclass(frozen=True, slots=True)
+class AgentMethodSpec:
+    """Canonical low-friction declaration for phase-based agent methods.
+
+    Downstream authors declare method-owned phases and scientific surfaces once.
+    Compilation owns MethodProgram identity, canonical configuration, bounded
+    cycle wiring, default evidence obligations, and artifact/metric attachment.
+    """
+
+    method_id: str
+    phases: tuple[AgentPhaseSpec, ...]
+    implementation_version: str = "paper-method-v1"
+    schema_version: str | None = None
+    max_cycles: int | None = None
+    configuration: JsonObject | None = None
+    evidence_obligations: tuple[str, ...] = ()
+    metric_names: tuple[str, ...] = ()
+    artifact_kinds: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        for field_name, value in (
+            ("method_id", self.method_id),
+            ("implementation_version", self.implementation_version),
+        ):
+            if type(value) is not str or not value.strip() or value != value.strip():
+                raise ValueError(f"agent method {field_name} must be canonical non-empty text")
+        schema = self.schema_version
+        if schema is None:
+            schema = f"{self.method_id}.agent-method.v1"
+        if type(schema) is not str or not schema.strip() or schema != schema.strip():
+            raise ValueError("agent method schema_version must be canonical non-empty text")
+        object.__setattr__(self, "schema_version", schema)
+
+        if type(self.phases) is not tuple or not self.phases:
+            raise ValueError("agent method requires at least one phase")
+        if any(type(row) is not AgentPhaseSpec for row in self.phases):
+            raise TypeError("agent method phases must contain AgentPhaseSpec")
+        phase_ids = tuple(row.phase_id for row in self.phases)
+        if len(phase_ids) != len(set(phase_ids)):
+            raise ValueError("agent method phase ids must be unique")
+
+        if self.max_cycles is not None and (
+            type(self.max_cycles) is not int or self.max_cycles < 1
+        ):
+            raise ValueError("agent method max_cycles must be positive or None")
+
+        cfg = {} if self.configuration is None else dict(self.configuration)
+        frozen_cfg = freeze_json(cfg)
+        if not isinstance(frozen_cfg, Mapping):
+            raise TypeError("agent method configuration must be a JSON object")
+        object.__setattr__(self, "configuration", frozen_cfg)
+        object.__setattr__(
+            self,
+            "evidence_obligations",
+            _canonical_text_tuple(self.evidence_obligations, "agent method evidence obligations"),
+        )
+        object.__setattr__(
+            self,
+            "metric_names",
+            _canonical_text_tuple(self.metric_names, "agent method metric names"),
+        )
+        object.__setattr__(
+            self,
+            "artifact_kinds",
+            _canonical_text_tuple(self.artifact_kinds, "agent method artifact kinds"),
+        )
+
+    @property
+    def cyclic(self) -> bool:
+        return self.max_cycles is not None
+
+    def compile(self) -> MethodProgram:
+        common = {
+            "method_id": self.method_id,
+            "implementation_version": self.implementation_version,
+            "schema_version": self.schema_version,
+            "phases": self.phases,
+            "configuration": self.configuration,
+            "evidence_obligations": self.evidence_obligations,
+            "metric_names": self.metric_names,
+            "artifact_kinds": self.artifact_kinds,
+        }
+        if self.max_cycles is None:
+            return build_agent_phase_program(**common)
+        return build_agent_cycle_program(max_cycles=self.max_cycles, **common)
 
 
 def _phase_view(phase: AgentPhaseSpec):
@@ -243,6 +344,7 @@ def build_agent_cycle_program(
 
 
 __all__ = [
+    "AgentMethodSpec",
     "AgentPhaseSpec",
     "build_agent_cycle_program",
     "build_agent_phase_program",
