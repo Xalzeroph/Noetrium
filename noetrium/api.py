@@ -11,15 +11,12 @@ from functools import lru_cache
 import importlib
 from typing import Any
 
-from noetrium._api_surface import UNIFIED_API_EXTRA_MODULES
 from noetrium.contracts.discovery import (
     DownstreamCapabilityCatalog,
     DownstreamSystemSurface,
     load_downstream_capability_catalog,
     load_downstream_interface_schema,
 )
-
-_EXTRA_MODULES = UNIFIED_API_EXTRA_MODULES
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,34 +43,39 @@ def interface_schema() -> dict[str, Any]:
 
 
 def owners(symbol: str) -> tuple[str, ...]:
-    """Return every registered or stable-helper owner for one public symbol."""
+    """Return public owners without importing implementation modules."""
     if not isinstance(symbol, str) or not symbol:
         raise ValueError("symbol must be non-empty text")
-    return tuple(dict.fromkeys((*catalog().owners(symbol), *_extra_symbol_index().get(symbol, ()))))
-
+    current = catalog()
+    registered = current.owners(symbol)
+    if registered:
+        return registered
+    direct = current.direct_source(symbol)
+    if direct is not None:
+        return (direct,)
+    return current.ambiguous_sources(symbol)
 
 def search(query: str, *, limit: int = 50) -> tuple[ApiSymbolMatch, ...]:
-    """Search the unified public symbol index without importing implementations."""
+    """Search the unified symbol index without importing implementations."""
     if not isinstance(query, str) or not query.strip():
         raise ValueError("query must be non-empty text")
     if type(limit) is not int or limit < 1:
         raise ValueError("limit must be positive")
     needle = query.casefold()
-    index: dict[str, tuple[str, ...]] = {
-        symbol: tuple(system_keys)
-        for symbol, system_keys in catalog().symbol_index.items()
-    }
-    for symbol, module_names in _extra_symbol_index().items():
-        index[symbol] = tuple(dict.fromkeys((*index.get(symbol, ()), *module_names)))
+    current = catalog()
+    names = (
+        set(current.symbol_index)
+        | set(current.direct_symbol_sources)
+        | set(current.ambiguous_symbol_sources)
+    )
     rows = [
-        ApiSymbolMatch(symbol, owner_names)
-        for symbol, owner_names in index.items()
+        ApiSymbolMatch(symbol, owners(symbol))
+        for symbol in names
         if needle in symbol.casefold()
-        or any(needle in owner.casefold() for owner in owner_names)
+        or any(needle in owner.casefold() for owner in owners(symbol))
     ]
     rows.sort(key=lambda row: (row.symbol.casefold() != needle, row.symbol.casefold()))
     return tuple(rows[:limit])
-
 
 def describe(symbol: str) -> tuple[dict[str, Any], ...]:
     """Return all generated schemas for a symbol without requiring module paths."""
@@ -94,66 +96,55 @@ def describe(symbol: str) -> tuple[dict[str, Any], ...]:
                         "module": api_module["module"],
                         "schema": schema,
                     })
-    for module_name in _extra_symbol_index().get(symbol, ()):
-        rows.append({
-            "system_key": None,
-            "module": module_name,
-            "schema": {
-                "name": symbol,
-                "kind": "python_export",
-                "qualified_name": f"{module_name}.{symbol}",
-            },
-        })
+    registered = set(catalog().owners(symbol))
+    if not registered:
+        sources = ()
+        direct = catalog().direct_source(symbol)
+        if direct is not None:
+            sources = (direct,)
+        else:
+            sources = catalog().ambiguous_sources(symbol)
+        for module_name in sources:
+            rows.append({
+                "system_key": None,
+                "module": module_name,
+                "schema": {
+                    "name": symbol,
+                    "kind": "python_export",
+                    "qualified_name": f"{module_name}.{symbol}",
+                },
+            })
     return tuple(rows)
-
-
-def _system_candidates(symbol: str) -> tuple[tuple[str, Any], ...]:
-    resolved: list[tuple[str, Any]] = []
-    current = catalog()
-    for system_key in current.owners(symbol):
-        surface = current.system(system_key)
-        if surface.facade_module is None:
-            continue
-        module = importlib.import_module(surface.facade_module)
-        if hasattr(module, symbol):
-            resolved.append((surface.system_key, getattr(module, symbol)))
-    return tuple(resolved)
-
-
-def _extra_candidates(symbol: str) -> tuple[tuple[str, Any], ...]:
-    resolved: list[tuple[str, Any]] = []
-    for module_name in _EXTRA_MODULES:
-        module = importlib.import_module(module_name)
-        exports = getattr(module, "__all__", ())
-        if symbol in exports and hasattr(module, symbol):
-            resolved.append((module_name, getattr(module, symbol)))
-    return tuple(resolved)
 
 
 @lru_cache(maxsize=None)
 def resolve(symbol: str) -> Any:
-    """Resolve one public symbol across the complete unified API.
-
-    Multiple owners are accepted only when they resolve to the same Python
-    object. A true name collision must be selected explicitly through
-    system(system_key).
-    """
+    """Resolve one public symbol through the generated v4 resolution index."""
     if not isinstance(symbol, str) or not symbol or symbol.startswith("_"):
         raise AttributeError(symbol)
-    resolved = (*_system_candidates(symbol), *_extra_candidates(symbol))
-    if not resolved:
-        raise AttributeError(f"unknown Noetrium public symbol: {symbol}")
+    current = catalog()
+    source = current.direct_source(symbol)
+    if source is not None:
+        module = importlib.import_module(source)
+        try:
+            return getattr(module, symbol)
+        except AttributeError as exc:
+            raise AttributeError(
+                f"generated Noetrium symbol source is stale: {source}.{symbol}"
+            ) from exc
 
-    value = resolved[0][1]
-    if all(candidate is value for _owner, candidate in resolved[1:]):
-        return value
-    owners = tuple(owner for owner, _candidate in resolved)
-    raise AttributeError(
-        f"ambiguous Noetrium public symbol {symbol!r}; "
-        f"select a registered system with api.system(system_key).{symbol} "
-        f"or use a more specific symbol; owners={owners!r}"
-    )
-
+    ambiguous = current.ambiguous_sources(symbol)
+    if ambiguous:
+        registered = current.owners(symbol)
+        hint = (
+            f"select one with api.system(system_key).{symbol}; owners={registered!r}"
+            if registered
+            else f"symbol sources are ambiguous: {ambiguous!r}"
+        )
+        raise AttributeError(
+            f"ambiguous Noetrium public symbol {symbol!r}; {hint}"
+        )
+    raise AttributeError(f"unknown Noetrium public symbol: {symbol}")
 
 def __getattr__(name: str) -> Any:
     value = resolve(name)
@@ -162,6 +153,7 @@ def __getattr__(name: str) -> Any:
 
 
 def __dir__() -> list[str]:
+    current = catalog()
     names = {
         "ApiSymbolMatch",
         "DownstreamCapabilityCatalog",
@@ -173,13 +165,9 @@ def __dir__() -> list[str]:
         "search",
         "describe",
         "interface_schema",
+        *current.direct_symbol_sources,
+        *current.ambiguous_symbol_sources,
     }
-    for surface in catalog().systems:
-        for module in surface.api_modules:
-            names.update(module.symbols)
-    for module_name in _EXTRA_MODULES:
-        module = importlib.import_module(module_name)
-        names.update(getattr(module, "__all__", ()))
     return sorted(names)
 
 
