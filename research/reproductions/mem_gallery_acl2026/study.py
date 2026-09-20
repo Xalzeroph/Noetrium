@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.research.experimentation.study.api import BenchmarkTaskSet, ResearchStudyDefinition
-from research.reproductions.frontier_2026.study import (
+from research.authoring.frontier_2026.study import (
     PaperStudySpec,
     build_ablation_matrix_from_spec,
     build_study_from_spec,
