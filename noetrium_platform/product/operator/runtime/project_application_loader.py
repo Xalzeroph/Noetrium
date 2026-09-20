@@ -47,7 +47,7 @@ def load_project_application(
     if profile is ProjectTemplateProfile.AUTHOR:
         raise ValueError(
             "author project exposes the public Research Method Host, not a runtime "
-            "application; compile_method requires an injected BindingContribution, "
+            "application; compile_study requires an injected BindingContribution, "
             "and execution requires an explicit provider/runtime application"
         )
     if profile is not ProjectTemplateProfile.PROVIDER:
