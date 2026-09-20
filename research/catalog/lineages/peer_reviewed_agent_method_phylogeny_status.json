@@ -491,7 +491,7 @@
       "reproductions": [
         {
           "package": "generative_agents_memory",
-          "package_digest": "cc17edcc5cdde26151ced60f08332366f0f206e293460c4b10c5cc36b185fc5a",
+          "package_digest": "f477184c2d902cf1d40be751210f68fb2fefc6f70427c18af78026695d5fe429",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "generative-agents-smallville"
@@ -530,8 +530,8 @@
             "Matched UIST social-behavior results still require the exact paper-era Smallville persona/world snapshot, historical hosted model revision, and human believability rater assignment."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
@@ -1427,7 +1427,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "54a0e7baa771b383c9a7157f5236d0680270ad5b1a9f42ed53f82b84371dcadc",
+          "package_digest": "eb82846cc12ce30c7f50a19eced323322611713a51dbc57c61840b2ec15a4f69",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -1478,8 +1478,8 @@
             "branch-restorable WebShop environment binding is not yet matched"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -1702,7 +1702,7 @@
       "reproductions": [
         {
           "package": "swe_agent_swebench",
-          "package_digest": "633e8ed34a9323b86ae687eb9ef03ea509c2f5717dc31a4001d9b23a88de87c0",
+          "package_digest": "8db1911f8aaf5400d8604a84df2ee899350e329566187d457669d0060bf65c1b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -1746,8 +1746,8 @@
             "matched execution still requires exact paper-era model/prompt binding plus a deployment-qualified SWE-bench software environment cut"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
@@ -2282,7 +2282,7 @@
       "reproductions": [
         {
           "package": "adas_meta_agent_search",
-          "package_digest": "78bd32fc59ab1a4b9ab4135296096096cc7fff7f35cca1fac59e6946fb2a13f9",
+          "package_digest": "61da69ab2d11f6b732d6a3a6be81994d7d263c3bfa6a94292acf17751edb867f",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mgsm"
@@ -2316,8 +2316,8 @@
             "Exact historical hosted GPT-4o-2024-05-13 and candidate GPT-3.5-Turbo serving snapshots are not immutable public model artifacts."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -2638,7 +2638,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "934167b0be014f25c4e8e55b1c354bebc7ec04afc9afefec1e3188bef4e6663a",
+          "package_digest": "8be4d50fd5e5c2f566c7f01958f7ab5281548a4624e461aaf8563607c1cd8bc3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -2688,8 +2688,8 @@
             "released four-slice evaluator maps CUDA devices to 1,2,3,4 while the documented four-GPU server allocation is 0,1,2,3"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 1,
+          "reported_claim_count": 2,
+          "reference_baseline_count": 2,
           "fidelity_delta_count": 2,
           "scientific_tests": [
             {
@@ -3012,5 +3012,5 @@
       ]
     }
   ],
-  "projection_digest": "91e88542a91a3ce654854108e5b8c12d61de59b41e9eadc6ac0311c9cc3b19b2"
+  "projection_digest": "922bfc5dde42545cbdee25cf02cb50efc23a9250627559f0b06d5fe681fbddea"
 }

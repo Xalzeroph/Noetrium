@@ -335,7 +335,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "54a0e7baa771b383c9a7157f5236d0680270ad5b1a9f42ed53f82b84371dcadc",
+          "package_digest": "eb82846cc12ce30c7f50a19eced323322611713a51dbc57c61840b2ec15a4f69",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -386,8 +386,8 @@
             "branch-restorable WebShop environment binding is not yet matched"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -411,7 +411,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "934167b0be014f25c4e8e55b1c354bebc7ec04afc9afefec1e3188bef4e6663a",
+          "package_digest": "8be4d50fd5e5c2f566c7f01958f7ab5281548a4624e461aaf8563607c1cd8bc3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -461,8 +461,8 @@
             "released four-slice evaluator maps CUDA devices to 1,2,3,4 while the documented four-GPU server allocation is 0,1,2,3"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 1,
+          "reported_claim_count": 2,
+          "reference_baseline_count": 2,
           "fidelity_delta_count": 2,
           "scientific_tests": [
             {
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "8aed48ecbe9fa22b1b79d026bcce3a2b4d468a3b7b3acb78836ba640ee87639d"
+  "projection_digest": "98a9d9ce241d0fede6f38cd70afe182f507424ddd8f4223b166eafc6d65f6b14"
 }

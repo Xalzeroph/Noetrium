@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "qlass_alfworld",
-  "package_digest": "934167b0be014f25c4e8e55b1c354bebc7ec04afc9afefec1e3188bef4e6663a",
-  "definition_digest": "642b47b129134e83545d813fd590138c3b6321442077a778d5ae66e6e471a728",
+  "package_digest": "8be4d50fd5e5c2f566c7f01958f7ab5281548a4624e461aaf8563607c1cd8bc3",
+  "definition_digest": "018d222a2bfe76cad3902422017f980e6f98f678e48ff828fa13e5962d6dcae0",
   "source_registry_digest": "819fd0e885a29c9300eee6b6c1b86d1cea8854f8e10d988bf56fb3022f71ed29",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -108,13 +108,52 @@
     }
   ],
   "primary_executable": "research/reproductions/qlass_alfworld/program.py",
-  "reported_results": [],
+  "reported_results": [
+    {
+      "claim_id": "qlass_alfworld_seen_reward",
+      "metric_id": "average_reward",
+      "value": 77.9,
+      "qualifiers": {
+        "benchmark": "ALFWorld",
+        "split": "seen",
+        "base_model": "Llama-2-7B-Chat",
+        "source": "ICML 2025 Table 2"
+      },
+      "claim_digest": "019629b99869b4844a8eeac929f63698a5fc463faea33eee3ec1c4bf3c4f1c6f"
+    },
+    {
+      "claim_id": "qlass_alfworld_unseen_reward",
+      "metric_id": "average_reward",
+      "value": 82.8,
+      "qualifiers": {
+        "benchmark": "ALFWorld",
+        "split": "unseen",
+        "base_model": "Llama-2-7B-Chat",
+        "source": "ICML 2025 Table 2"
+      },
+      "claim_digest": "bd7399e66f7d1fec2b4b1d225600617b9cd437a7c8def159281d996a926ed13b"
+    }
+  ],
   "reference_baselines": [
     {
       "baseline_id": "sft_policy",
       "description": "SFT policy inference without Q-guided stepwise candidate selection",
-      "qualifiers": {},
-      "baseline_digest": "18e730069d5157cb4ba1da6ffbce0d4f818f1c24153c0a1f51a55d87e2a76ef7"
+      "qualifiers": {
+        "alfworld_seen_average_reward": 60.0,
+        "alfworld_unseen_average_reward": 67.2,
+        "source": "ICML 2025 Table 2"
+      },
+      "baseline_digest": "a41ca7991683b5f2a72b64ef2ee17235e808cd0b3c116815245b094408545511"
+    },
+    {
+      "baseline_id": "eto_policy",
+      "description": "ETO trajectory-level preference optimization baseline on the same ALFWorld evaluation.",
+      "qualifiers": {
+        "alfworld_seen_average_reward": 68.6,
+        "alfworld_unseen_average_reward": 72.4,
+        "source": "ICML 2025 Table 2"
+      },
+      "baseline_digest": "d94f85cf4cb225babab5480074ac03e7a47259f8a6d97c5ecb615df7700e0b92"
     }
   ],
   "deltas": [

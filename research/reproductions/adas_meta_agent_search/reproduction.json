@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adas_meta_agent_search",
-  "package_digest": "78bd32fc59ab1a4b9ab4135296096096cc7fff7f35cca1fac59e6946fb2a13f9",
-  "definition_digest": "274bddbfb4ada5f50a9b2984d4f609664140e6900c4a399ebd83bcb5fc556c89",
+  "package_digest": "61da69ab2d11f6b732d6a3a6be81994d7d263c3bfa6a94292acf17751edb867f",
+  "definition_digest": "e80683e0219fb5051990d41c19b7e3a8babaf68581c67e6a5f7f97dc366b6133",
   "source_registry_digest": "0c0b03477d5254347c34f420f4354bb8acbacc56f34dd4a40275e1d128b71eef",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -89,8 +89,31 @@
     }
   ],
   "primary_executable": "research/reproductions/adas_meta_agent_search/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "adas_mgsm_top_agent_accuracy",
+      "metric_id": "accuracy_percent",
+      "value": 53.4,
+      "qualifiers": {
+        "benchmark": "MGSM",
+        "agent": "Dynamic Role-Playing Architecture",
+        "search_method": "Meta Agent Search",
+        "source": "ICLR 2025 Table 1"
+      },
+      "claim_digest": "32f4ba64d678ba291f9043c89bd5fd267224148c795fa3f461bdb7d80a319791"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "llm_debate_mgsm",
+      "description": "Strongest hand-designed MGSM baseline in the ADAS Table 1 comparison.",
+      "qualifiers": {
+        "accuracy_percent": 39.0,
+        "source": "ICLR 2025 Table 1"
+      },
+      "baseline_digest": "2663bdccd7ee4b3d452a5923d8360f3736a2bd72f197a569ad7e752a66c01320"
+    }
+  ],
   "deltas": [
     {
       "kind": "substitution",
