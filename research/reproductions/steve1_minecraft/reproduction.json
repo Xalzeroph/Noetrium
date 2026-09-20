@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "steve1_minecraft",
-  "package_digest": "042c6618503cae8f3dbff2e83cc2deb29cfecb9010365e98b1739738040bf5aa",
+  "package_digest": "386fb8fc9b1fc5ccf651a6d66767a713baa9f20c62c727ea8335e898a8871e65",
   "definition_digest": "f0f19b97ed5412ff9ecac1901064f9121a004c739b5064e602032181b165c192",
   "source_registry_digest": "365b9a6eac2c92f89fc90b3802a0fdbdcf92ad106758f8a518a664be076f0881",
   "lifecycle": "protocol_bound",
@@ -168,7 +168,7 @@
     },
     {
       "path": "tests/test_scientific_steve1_minecraft_v1.py",
-      "content_sha256": "90888a2d15d2edde6e52e159af23d75d75eb1b476dd25a0fbedd7a6d02961eb0"
+      "content_sha256": "1d832409a6122912e39fe1dc2785ca46a2278bb42994a1f6ef491dfcfbee28d4"
     }
   ]
 }

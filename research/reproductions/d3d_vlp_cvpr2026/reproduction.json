@@ -1,0 +1,176 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "d3d_vlp_cvpr2026",
+  "package_digest": "4e8c658703b0bf84971edbb0c0944165dfd019cf041ba707a2a2bddb80e138ab",
+  "definition_digest": "897a23cb475475e60a672a70d4d3e60467cd828c6944adddaf5804db3b3ffabc",
+  "source_registry_digest": "2cdeb4231d82b4960adc04b241fa45eae325f9b560c0d815e9fa4a73b8b941ac",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "d3d_vlp_cvpr2026",
+    "title": "D3D-VLP: Dynamic 3D Vision-Language-Planning Model for Embodied Grounding and Navigation",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_D3D-VLP_Dynamic_3D_Vision-Language-Planning_Model_for_Embodied_Grounding_and_Navigation_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "ad6b8fae9aff96af7ad848d33e162ecba4977481d079c77c865ef535535c8de4"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "embodied",
+      "frontier-2026"
+    ],
+    "families": [
+      "3d-reasoning",
+      "dynamic-replanning",
+      "embodied",
+      "grounding",
+      "navigation",
+      "planning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "hm3d-ovon",
+      "navrag-ce",
+      "r2r-ce",
+      "reverie-ce",
+      "sg3d"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "memory",
+      "model/request",
+      "perception"
+    ],
+    "method_owned": [
+      "Execute navigation actions toward the grounded target.",
+      "Generate a dynamic 3D chain-of-thought spanning planning, grounding, navigation and question answering.",
+      "Generate or revise the plan using current 3D memory and grounding feedback.",
+      "Ground the next target or detect that the current target is missing.",
+      "Update multi-level 3D memory with observations, trajectory history, grounded targets and prior plans.",
+      "Use blocked-plan or missing-target feedback to trigger another reasoning cycle."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/MrZihan/D3D-VLP"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_D3D-VLP_Dynamic_3D_Vision-Language-Planning_Model_for_Embodied_Grounding_and_Navigation_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "194c9595e6e2352cd4c2c3bb5a598ea302d3bdcd957deca31194883e1619f0bd"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Wang_D3D_VLP_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_D3D-VLP_Dynamic_3D_Vision-Language-Planning_Model_for_Embodied_Grounding_and_Navigation_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "16be91ed269a1db3b189b9bfb712b65bb2089cb0575111a14a59255cfacaf0c0"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/MrZihan/D3D-VLP",
+      "commit": "0c285fe32bef11ea9067fb74d7c12edc46be5d1a",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "f6f11b46a6db3785fe6c7f7385436292f4673359e3ad03525b6597f46111ef24"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/d3d_vlp_cvpr2026/benchmark.py",
+      "declaration_digest": "42e3ceaa7f7d5068ffff6e288a2a835a247281b019e0cbbf2e92d4f21f5a67b7",
+      "content_sha256": "d693c0ff363042f398515c6d438282bcce087ac82f96ba7c24dc2b65590792ac"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/d3d_vlp_cvpr2026/program.py",
+      "declaration_digest": "6e8d42811ee41f4da49620fc7eff7d750783ec8f44fbc972b59d47e880bb6fea",
+      "content_sha256": "9824b3ef646e4eb1695a6c868687c31a337594677394822b58ff6297c316a2c4"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/d3d_vlp_cvpr2026/study.py",
+      "declaration_digest": "7bd973d5bdd22e503bf96d30e622e379f148247ebbab146c58f41317c0d646ec",
+      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+    }
+  ],
+  "primary_executable": "research/reproductions/d3d_vlp_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "d3d_hybrid_samples",
+      "metric_id": "hybrid_training_sample_count",
+      "value": 10000000,
+      "qualifiers": {
+        "unit": "samples"
+      },
+      "claim_digest": "0c665a5b952fd9f9a45ddb0602e5fe5beab2be734d4b69d26873f96f8ac7f58d"
+    },
+    {
+      "claim_id": "d3d_real_scans",
+      "metric_id": "real_scan_count",
+      "value": 5000,
+      "qualifiers": {
+        "unit": "scans"
+      },
+      "claim_digest": "fc2a9d06899f579492f704cfa4ab2602964e34705b8f59e9409a7062204b3a11"
+    },
+    {
+      "claim_id": "d3d_synthetic_scenes",
+      "metric_id": "synthetic_scene_count",
+      "value": 20000,
+      "qualifiers": {
+        "unit": "scenes"
+      },
+      "claim_digest": "60f4c9c97ea185561e5f96e9d3f6304df1156c3e553305ec8a2a2a045b0e9c2e"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "end-to-end VLA/VLN models",
+      "qualifiers": {},
+      "baseline_digest": "97760abea32e10abdcf655453df0fcb531cf8101ac7b22d7983fd3c415c7c815"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "modular planning-grounding-navigation systems",
+      "qualifiers": {},
+      "baseline_digest": "79554713a74251f47d4f490fc664d8e8151e591636c32b0fee9dae323e8de3ed"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "paper benchmark baselines",
+      "qualifiers": {},
+      "baseline_digest": "2f6ce62932e2cece0f255a6c877f812dd9d94d8adafec2cbd81044ebf954586b"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned D3D-VLP code plus released 10M hybrid training data and exact simulator cuts.",
+    "Real-world mobile-manipulation claims require the physical evaluation protocol and robot execution evidence."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_02.py",
+      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+    }
+  ]
+}

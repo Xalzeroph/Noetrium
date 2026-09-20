@@ -1,0 +1,172 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "eaglet_acl2026",
+  "package_digest": "1b4fe0186c28b83e3822c7c71bf320329444b9fa787c62e05e99c7e68e277bb0",
+  "definition_digest": "640079d47d7348056cfd58ad8a5d2f9f6bb8a5dfaf2b6913583c31e3f03ad149",
+  "source_registry_digest": "95a8891d6c68ac7e536b45a44f88468adc4588fb5fe74c25b93d0ab18721b5b9",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "eaglet_acl2026",
+    "title": "A Goal Without a Plan Is Just a Wish: Efficient and Effective Global Planner Training for Long-Horizon Agent Tasks",
+    "paper_uri": "https://aclanthology.org/2026.acl-long.597/",
+    "year": 2026,
+    "paper_revision": "ACL 2026 final proceedings",
+    "identity_digest": "c12630378bd6b94b8e9e2eae076d89d8f81920b692e16b35f9aec4a575f6ea66"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "planning"
+    ],
+    "families": [
+      "agent-training",
+      "long-horizon",
+      "planning",
+      "reinforcement-learning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "alfworld",
+      "scienceworld",
+      "webshop"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Apply homologous consensus filtering to retain high-quality plans.",
+      "Fine-tune the planner on filtered plans for cold start.",
+      "Generate a global plan and execute it with the downstream executor agent.",
+      "Optimize with executor capability-gain reward without a learned reward model.",
+      "Synthesize candidate global plans with the teacher LLM."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2026.acl-long.597/"
+    ],
+    "catalog_digest": "236def6e81594c3d2b1abb909d9a67b0ee287246ad15bfd75e76537e12adf6db"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2026,
+      "publication_id": "2026.acl-long.597",
+      "publication_uri": "https://aclanthology.org/2026.acl-long.597/",
+      "revision": "ACL 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "b9cd08e7d4ceaa16de8e063be7d24f8f1e9f57958ed838346790f634f57bc07f"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/eaglet_acl2026/benchmark.py",
+      "declaration_digest": "4b2e7ed376b07ebd40ba9709056320cd0fc9ebbe8cb2a9ea10d7b6a50a8d8a5c",
+      "content_sha256": "23f93230e45c1cef71fe856874afefdc1961e241cc4c6c682f2563add38848aa"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/eaglet_acl2026/program.py",
+      "declaration_digest": "48087575b1da6f98275bedc3017755a7fb8f8da0a78b4a4dd8f589a9f7fd9e0d",
+      "content_sha256": "2234ff352704695289a315a0bc1cfaa4c64d60d9e8170ef966478cd473f9cc68"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/eaglet_acl2026/study.py",
+      "declaration_digest": "b6e86453bb48795b7a6054d98cbd11dea4a575f2c014d6048493370eb79437ad",
+      "content_sha256": "e824c9957f224b32029b591ece2c7ef69a277551043beee69f022565897d6d0c"
+    }
+  ],
+  "primary_executable": "research/reproductions/eaglet_acl2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "eaglet_scienceworld",
+      "metric_id": "task_success",
+      "value": 83.6,
+      "qualifiers": {
+        "benchmark": "ScienceWorld",
+        "configuration": "EAGLET+GiGPO"
+      },
+      "claim_digest": "4b4ce5bfe057c5a5530df371b8ce08e640c95e161ad08ecc98b784e22723d29a"
+    },
+    {
+      "claim_id": "eaglet_alfworld",
+      "metric_id": "task_success",
+      "value": 91.8,
+      "qualifiers": {
+        "benchmark": "ALFWorld",
+        "configuration": "EAGLET+GiGPO"
+      },
+      "claim_digest": "960132e82ee1269877c24948450fe91514ad130b0a8924d40e4591d2c9f00650"
+    },
+    {
+      "claim_id": "eaglet_webshop",
+      "metric_id": "task_success",
+      "value": 86.2,
+      "qualifiers": {
+        "benchmark": "WebShop",
+        "configuration": "EAGLET+GiGPO"
+      },
+      "claim_digest": "29be3fd5943964b50542579dac79b07a8d2d40e63e0f82615148d3512c25ade6"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "executor without planner",
+      "qualifiers": {},
+      "baseline_digest": "05d2f2ced98cac008393cabc09544f1b12822cea48d9708ca0a46d61603e92d6"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "SFT-only planner",
+      "qualifiers": {},
+      "baseline_digest": "b74a2db1edaeb1176f87193d2112df6ddb9d47e33e14bf7a3bf6d5dae33333a6"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "GiGPO+MPO",
+      "qualifiers": {},
+      "baseline_digest": "32fb427e6f0a3a986ab0bf0fcb0101c20cc9562dda5c12338c83fd2efd02eccd"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "KnowAgent",
+      "qualifiers": {},
+      "baseline_digest": "997b603bf16c6dc2c654c85967e72ffabaaa3f8afb10c4a17becb5ee3f914a61"
+    },
+    {
+      "baseline_id": "baseline_05",
+      "description": "RL planner baselines",
+      "qualifiers": {},
+      "baseline_digest": "c9e3bc793831e370f20be77c4233e32c1d29fc5a73a0d44c2620950c7e5c1e3b"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires released planner data/configuration, teacher/model revisions and exact benchmark cuts.",
+    "Training-cost claims require complete planner-training compute receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ]
+}

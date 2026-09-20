@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "swe_agent_swebench",
-  "package_digest": "8db1911f8aaf5400d8604a84df2ee899350e329566187d457669d0060bf65c1b",
+  "package_digest": "61dc29dabbbf79b2f0a19dd18acb6707c830e5a76892ae72186b880baa525641",
   "definition_digest": "d6899a777308625ae9a8a58dc21b4a5c440efae4f3f1f4c1a50499d967ab2acc",
   "source_registry_digest": "00d44a186c1cdf9c7c0a7a546005f4f887b308f8096c14115aa63208447f17d3",
   "lifecycle": "protocol_bound",
@@ -84,7 +84,7 @@
       "kind": "support",
       "path": "research/reproductions/swe_agent_swebench/aci.py",
       "declaration_digest": "36b1f3f4f57f2e7b9785de4c1df3450ad2f8657b342a4b62663db047cefc25f3",
-      "content_sha256": "2563e02ebed98cc09efc5e73b60c63a3d1694e26491219fed8a91ae705b98899"
+      "content_sha256": "b60e605eccbce5ecb3a6192331bee0ea4159d8d57d1b35872bd3298d31a74809"
     },
     {
       "kind": "support",
@@ -128,11 +128,11 @@
     },
     {
       "path": "tests/test_scientific_swe_agent_method_program_v1.py",
-      "content_sha256": "bc825933db8a9b2e70e0152e3920d57a5377bcb1c59623ea5765e50fceabac7f"
+      "content_sha256": "4486f18adc9b14dc9d0e81566bb665dcf81d53d6acfa7c860950baa196caf222"
     },
     {
       "path": "tests/test_scientific_swe_agent_swebench_fidelity_v1.py",
-      "content_sha256": "00d66f42ac6c833a44215e8ed788945e0a9568df30c7720c78ea84d16e80a78a"
+      "content_sha256": "702102891d5e56e5c32db76f41cc6a6ffd7f3eaa0bc1c4c8173869d7b69896ef"
     }
   ]
 }

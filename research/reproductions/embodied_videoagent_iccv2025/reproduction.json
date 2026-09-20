@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "embodied_videoagent_iccv2025",
-  "package_digest": "da77a6ad4af45de2919e085c989129b42bcc140134ef06af675c86acd5761010",
+  "package_digest": "516fe127a8b7880594896b90e3bbad07b09c0e660015b87d203376b8da9ded2e",
   "definition_digest": "273a178fd6b6dfbacbde9b53bf66a9f669920bd8b5c9b3fc2780a1f2f6744ad2",
   "source_registry_digest": "02d0e0637b0b444d9c44e4be5e0d96c4e51df06bfe95c4adec1184fc215fecb6",
   "lifecycle": "protocol_bound",
@@ -86,7 +86,7 @@
       "kind": "method_program",
       "path": "research/reproductions/embodied_videoagent_iccv2025/program.py",
       "declaration_digest": "8a2090f198b1e58e39bd83bf1b1d358058e6fdb1eab3d868174d7dc3e2179392",
-      "content_sha256": "ba80ccde3e500a56e18836ee3f48fdaaf1e1c44e7befa74eadca76475892fb18"
+      "content_sha256": "93f4a75d6f61c7e18ff20d94051aaf4a26ffb3dc97f5525b8926f6539b0fac16"
     },
     {
       "kind": "study",

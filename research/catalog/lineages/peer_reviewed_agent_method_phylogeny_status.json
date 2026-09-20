@@ -2,7 +2,7 @@
   "schema": "noetrium.lineage-reproduction-status.v2",
   "authority": "generated_from_lineage_graph_and_typed_reproduction_projections",
   "lineage_id": "peer-reviewed-agent-method-phylogeny",
-  "lineage_source_sha256": "c0fa6ad13b3a2aafe7feab1e6bf3688e94a9444747e0ae1052754105d89e8501",
+  "lineage_source_sha256": "ae929b08caa488c980049263984076972c312c82350624d5e5a8b86f17e9b62d",
   "nodes": [
     {
       "id": "chain-of-thought",
@@ -64,93 +64,11 @@
       ]
     },
     {
-      "id": "saycan",
-      "reproductions": [
-        {
-          "package": "saycan",
-          "package_digest": "b673d05695260512aadf4fe6264a3c3b4fda06efd8e22fdb93c54a175123cbac",
-          "lifecycle": "protocol_bound",
-          "benchmark_ids": [
-            "saycan-101"
-          ],
-          "source_lanes": [
-            {
-              "lane_id": "corl_2022_camera_ready",
-              "kind": "paper_provenance",
-              "publication_uri": "https://proceedings.mlr.press/v205/ichter23a.html",
-              "venue": "CoRL",
-              "year": 2022,
-              "publication_id": "saycan-corl-2022",
-              "revision": "CoRL 2022 / PMLR 205 camera-ready publication",
-              "content_sha256": null
-            },
-            {
-              "lane_id": "official_pick_place_notebook",
-              "kind": "official_executable",
-              "repository": "https://github.com/google-research/google-research",
-              "commit": "8c56e5dfc49613a57b80d6cfa2c9d6605cc08d10"
-            }
-          ],
-          "assets": [
-            {
-              "kind": "benchmark",
-              "path": "research/reproductions/saycan/benchmark.py",
-              "content_sha256": "7e2131add608c01a4bc545bbfaa9673a8432fd6a378e2b702e50f46466ba8861"
-            },
-            {
-              "kind": "fidelity",
-              "path": "research/reproductions/saycan/fidelity.py",
-              "content_sha256": "d270a921fbd5a1ac8b80ace45fb73549c3a26937dd2fd42820f0fc3c96750c73"
-            },
-            {
-              "kind": "method_program",
-              "path": "research/reproductions/saycan/program.py",
-              "content_sha256": "8d4a50934bc75eec1d3f0a018995352bef2755d8b3fd4bd5c848d499a77f8d2f"
-            },
-            {
-              "kind": "study",
-              "path": "research/reproductions/saycan/study.py",
-              "content_sha256": "006b2d626dd91eccabcf79249016f96f3bf0a419bae29e809c2b1255b8b23f45"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/saycan/policy.py",
-              "content_sha256": "1574df8d21ade15a15c210d4513fa87a309c45c5dcd76b59c8e63e69d648a033"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/saycan/source.py",
-              "content_sha256": "4f0472a9e7075fa14307e8b20308c342d731f7e39c36b936a1e0a71a905d186e"
-            }
-          ],
-          "blockers": [
-            "Matched CoRL robot-result reproduction still requires immutable paper-era robot skill/value-function artifacts and the evaluated task scene/instruction cuts.",
-            "The historical hosted language-model serving snapshot used by the paper is not an immutable public model artifact.",
-            "Formal execution still requires the official SayCan v0 TSV bytes to be materialized under Artifact authority and an eligible human-majority evaluation provider for plan/execution judgments."
-          ],
-          "evidence_refs": [],
-          "reported_claim_count": 2,
-          "reference_baseline_count": 1,
-          "fidelity_delta_count": 1,
-          "scientific_tests": [
-            {
-              "path": "tests/test_scientific_saycan_benchmark_study_v1.py",
-              "content_sha256": "c0bff9301e2ec1b03f5b528a238047ad3fcd9c471c87eea71a049c2d8eeb226c"
-            },
-            {
-              "path": "tests/test_scientific_saycan_v1.py",
-              "content_sha256": "838d4a777a74fc7622c88eef57c2999ea6cec68976005a2d52652a068a447ddd"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "minedojo",
       "reproductions": [
         {
           "package": "minedojo",
-          "package_digest": "a473300fe8761f78bae230b6a655ca5b1233cb66830e071ad7315d806b94e807",
+          "package_digest": "f485342daed2d2780be355b150405843f96baa4b6c725a0d05f5987e3dc16e68",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minedojo"
@@ -227,7 +145,89 @@
             },
             {
               "path": "tests/test_scientific_minedojo_v1.py",
-              "content_sha256": "8663133a0a35ef58af29b571bd9a8b6c80f26f7370688d5785f6d7d618513e5c"
+              "content_sha256": "4e8a78741ba96dd4fc99c080d8e9c8426655520b0da3add7152c779820967cd4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "saycan",
+      "reproductions": [
+        {
+          "package": "saycan",
+          "package_digest": "1736823b19eaf4870635fb4a0554682ff371ff16f6b3ba0c08fd2613ff26fb03",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "saycan-101"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "corl_2022_camera_ready",
+              "kind": "paper_provenance",
+              "publication_uri": "https://proceedings.mlr.press/v205/ichter23a.html",
+              "venue": "CoRL",
+              "year": 2022,
+              "publication_id": "saycan-corl-2022",
+              "revision": "CoRL 2022 / PMLR 205 camera-ready publication",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_pick_place_notebook",
+              "kind": "official_executable",
+              "repository": "https://github.com/google-research/google-research",
+              "commit": "8c56e5dfc49613a57b80d6cfa2c9d6605cc08d10"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/saycan/benchmark.py",
+              "content_sha256": "7e2131add608c01a4bc545bbfaa9673a8432fd6a378e2b702e50f46466ba8861"
+            },
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/saycan/fidelity.py",
+              "content_sha256": "d270a921fbd5a1ac8b80ace45fb73549c3a26937dd2fd42820f0fc3c96750c73"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/saycan/program.py",
+              "content_sha256": "8d4a50934bc75eec1d3f0a018995352bef2755d8b3fd4bd5c848d499a77f8d2f"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/saycan/study.py",
+              "content_sha256": "006b2d626dd91eccabcf79249016f96f3bf0a419bae29e809c2b1255b8b23f45"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/saycan/policy.py",
+              "content_sha256": "1574df8d21ade15a15c210d4513fa87a309c45c5dcd76b59c8e63e69d648a033"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/saycan/source.py",
+              "content_sha256": "4f0472a9e7075fa14307e8b20308c342d731f7e39c36b936a1e0a71a905d186e"
+            }
+          ],
+          "blockers": [
+            "Matched CoRL robot-result reproduction still requires immutable paper-era robot skill/value-function artifacts and the evaluated task scene/instruction cuts.",
+            "The historical hosted language-model serving snapshot used by the paper is not an immutable public model artifact.",
+            "Formal execution still requires the official SayCan v0 TSV bytes to be materialized under Artifact authority and an eligible human-majority evaluation provider for plan/execution judgments."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 1,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_saycan_benchmark_study_v1.py",
+              "content_sha256": "c0bff9301e2ec1b03f5b528a238047ad3fcd9c471c87eea71a049c2d8eeb226c"
+            },
+            {
+              "path": "tests/test_scientific_saycan_v1.py",
+              "content_sha256": "a83482c2b4378403763400e73052d9ee47db8488964c19fee9f8c6008a25e12a"
             }
           ]
         }
@@ -390,97 +390,79 @@
       ]
     },
     {
-      "id": "vima",
+      "id": "deps-minecraft",
       "reproductions": [
         {
-          "package": "vima_embodied",
-          "package_digest": "68b6279c843394d628e7e28c4363d44d75446f73f7190c48244db37413556f2a",
+          "package": "deps_minecraft",
+          "package_digest": "15e3a428ef2bb10b719270ae55eb517cbb76b06d7c7a07700b995fd54a70357c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
-            "vima-bench"
+            "deps-minecraft-70"
           ],
           "source_lanes": [
             {
-              "lane_id": "benchmark_camera_ready",
-              "kind": "official_executable",
-              "repository": "https://github.com/vimalabs/VIMABench",
-              "commit": "224c2d870d6063d90215201ba42d4211ddc957d7"
-            },
-            {
-              "lane_id": "icml_2023_camera_ready",
+              "lane_id": "neurips_2023_main",
               "kind": "paper_provenance",
-              "publication_uri": "https://proceedings.mlr.press/v202/jiang23b.html",
-              "venue": "ICML",
+              "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html",
+              "venue": "NeurIPS",
               "year": 2023,
-              "publication_id": "vima-icml-2023",
-              "revision": "ICML 2023 camera-ready paper",
+              "publication_id": "deps-minecraft-neurips-2023",
+              "revision": "NeurIPS 2023 main conference paper",
               "content_sha256": null
             },
             {
-              "lane_id": "policy_camera_ready",
+              "lane_id": "official_mc_planner_release",
               "kind": "official_executable",
-              "repository": "https://github.com/vimalabs/VIMA",
-              "commit": "a16536f55780738ec2ce932f882f15bc011d7307"
+              "repository": "https://github.com/CraftJarvis/MC-Planner",
+              "commit": "df7067614ed527a2b56262441472886f1eb628ca"
+            },
+            {
+              "lane_id": "replan_semantics_fix",
+              "kind": "official_executable",
+              "repository": "https://github.com/CraftJarvis/MC-Planner",
+              "commit": "fa2278e523b85aede67a4225b2f0da2d187bc74b"
             }
           ],
           "assets": [
             {
               "kind": "benchmark",
-              "path": "research/reproductions/vima_embodied/benchmark.py",
-              "content_sha256": "044c0dc32e6e545ef9a562ceea4b34f28d9422d5f9206bf7725be30b4e2230d0"
+              "path": "research/reproductions/deps_minecraft/benchmark.py",
+              "content_sha256": "4d6c0df4bf5f63002488bb0e55c113c5de925136acbab9575d16efc747c4fe45"
             },
             {
               "kind": "fidelity",
-              "path": "research/reproductions/vima_embodied/fidelity.py",
-              "content_sha256": "411208fbf724b43d95ceb21086a8df95fcd6d0d7c2ba2e46618a5bad3c0f894d"
+              "path": "research/reproductions/deps_minecraft/fidelity.py",
+              "content_sha256": "1c7e5245fdcbc609de8f96cf1af0ef5ee9543858e2fc9ba166d624315bd82b66"
             },
             {
               "kind": "method_program",
-              "path": "research/reproductions/vima_embodied/program.py",
-              "content_sha256": "630447806548c82cac747539fa69126a4eecddf953ad81e8ceca633d63c76674"
+              "path": "research/reproductions/deps_minecraft/program.py",
+              "content_sha256": "eba7c21e78da9c4c7d9f3d02ae3fd8acaa9c0852a0aca778a716c1d2e52e2b66"
             },
             {
               "kind": "study",
-              "path": "research/reproductions/vima_embodied/study.py",
-              "content_sha256": "8863b85846e4e1d4d62c536a70e71cad3ee23033b272c9108d46a0fa72158dfb"
+              "path": "research/reproductions/deps_minecraft/study.py",
+              "content_sha256": "e1c8440a7f2f62c62c6554e3798abb47883951fef284d09e3aa05c8f1c108883"
             },
             {
               "kind": "support",
-              "path": "research/reproductions/vima_embodied/environment.py",
-              "content_sha256": "2367212ba5093c4cde31b3f9a175706f46706ad29b30af7dcbc1575d8b4455eb"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/vima_embodied/policy.py",
-              "content_sha256": "2230d49cc16c6dda8c28d8defbc8e7d71b534528bb6ce65b3a0afc79a8d9e601"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/vima_embodied/source.py",
-              "content_sha256": "dce81437f7de225177cc639d775c28e59c6d4d2aac7e53b83055a60b3362709c"
+              "path": "research/reproductions/deps_minecraft/source.py",
+              "content_sha256": "4c9c53262430da92beb5f464e991adf3c8ee4fa0b4a0272d4cd49703e5638763"
             }
           ],
           "blockers": [
-            "A qualified concrete VIMA-Bench embodied simulator adapter is still required for formal environment execution.",
-            "The paper specifies multiple test episodes but the complete paper-result episode seed/count schedule is not content-addressed in the audited camera-ready executable; the formal cut therefore freezes the official seed-42 executable protocol without claiming matched aggregate results.",
-            "Full checkpoint-level result reproduction requires immutable released policy checkpoints and the camera-ready observation/prompt frontend."
+            "Matched execution requires the unreleased paper-era learned Selector implementation/checkpoint or an authoritatively identified equivalent.",
+            "The released planner targets historical code-davinci-002/text-davinci-003 serving; exact hosted model snapshots are not immutable public artifacts.",
+            "Matched Minecraft results additionally require the paper-era goal-conditioned controller checkpoint and modified MineDojo simulator runtime under Artifact authority."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 3,
+          "reported_claim_count": 1,
           "reference_baseline_count": 1,
-          "fidelity_delta_count": 0,
+          "fidelity_delta_count": 1,
           "scientific_tests": [
             {
-              "path": "tests/test_scientific_vima_benchmark_study_v1.py",
-              "content_sha256": "5a7fea289aafcd58c56265e77ce0bc9153fb656beb84e8d72ceb7b7eb6e74380"
-            },
-            {
-              "path": "tests/test_scientific_vima_embodied_v1.py",
-              "content_sha256": "479eebf18db83f80fc912553ab106612aed76f2307b17a065780b9cbf03d1196"
-            },
-            {
-              "path": "tests/test_scientific_vima_environment_adapter_v1.py",
-              "content_sha256": "dce109378f3158a653d1602e7c77af79fc58267bfad2bcc3735d5af19b97d8e7"
+              "path": "tests/test_scientific_deps_minecraft_v1.py",
+              "content_sha256": "00b298bdb225736f6198fde210a9d73de763836bf6a230800a2756a57abc3b46"
             }
           ]
         }
@@ -613,7 +595,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "f5dd9f1acb7fcac0106a9529a3c4b36a723d50afb0d04d1c49a98ef4df55f1ab",
+          "package_digest": "65250babbb1817e91d4937286fb5a71a7e896179c48d8589bbc863e7aba14e64",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -658,7 +640,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_rap_method_program_v1.py",
-              "content_sha256": "cc8998e52cda1b5bc52dc172b385e14d58456fdbcdde1b70a06e0dc7dede4791"
+              "content_sha256": "d44dd1a8b8c60484c73b0a5062117f56ca01b82cd7dd6f212cbb3382827d20ac"
             },
             {
               "path": "tests/test_scientific_rap_reproduction_v1.py",
@@ -673,7 +655,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "f22a701245d287d9b650da6008f5526f9ad7cfc5a85845be5cb9308ac1498bde",
+          "package_digest": "0994bcbab9e15f57adfb37290117535ed78fa1156cb81d2bbd5c9a46cf444a2c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -730,7 +712,7 @@
             },
             {
               "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
-              "content_sha256": "ead6ac7361d6b5b45333527395f77b6c2971f2ac00726324695e11c9aebdd24b"
+              "content_sha256": "6721c1d681e7641de961288f1fbc216ddc8fed94f5824a4f8ae09716a362e473"
             },
             {
               "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
@@ -934,6 +916,82 @@
       ]
     },
     {
+      "id": "steve-1",
+      "reproductions": [
+        {
+          "package": "steve1_minecraft",
+          "package_digest": "386fb8fc9b1fc5ccf651a6d66767a713baa9f20c62c727ea8335e898a8871e65",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "steve1-paper-prompts"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "neurips_2023",
+              "kind": "paper_provenance",
+              "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/dd03f856fc7f2efeec8b1c796284561d-Abstract-Conference.html",
+              "venue": "NeurIPS",
+              "year": 2023,
+              "publication_id": "steve1-neurips-2023",
+              "revision": "NeurIPS 2023 Main Conference",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_paper_consistent",
+              "kind": "official_executable",
+              "repository": "https://github.com/Shalev-Lifshitz/STEVE-1",
+              "commit": "874cf9b808c9dd0a5d4446ef2e008e3789c55c57"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/steve1_minecraft/benchmark.py",
+              "content_sha256": "9a6ae3015c101fb08dde26a99eaf6cc2f298bcf69d5ade136aec0234b2542dae"
+            },
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/steve1_minecraft/fidelity.py",
+              "content_sha256": "b2f4c9a2fe55d2bd17b152c6ce6e5084bb98c26ce1f068735a3ec4be79497ab3"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/steve1_minecraft/program.py",
+              "content_sha256": "93d6a4128dec047843fba04c379be9f79d83b44ddc1a690ead27b4a0eaf3939b"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/steve1_minecraft/study.py",
+              "content_sha256": "ecce346f86797d99a08d50f73fa2fb692cdd820b1719f5f0c85862c56e9c8d86"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/steve1_minecraft/source.py",
+              "content_sha256": "8e3c070e7e0bdda446bc689d4c2b99fcdf48663539b2cb6caa30ffbc495c0af4"
+            }
+          ],
+          "blockers": [
+            "Formal numerical claims require immutable VPT, MineCLIP, STEVE-1 policy and prior weight artifacts plus the paper-era MineRL runtime.",
+            "The released repository exposes 11 named paper prompts for both text and visual conditioning (22 executable cells), but does not expose the complete identity of the separate 13-task early-game result suite; that numerical claim remains unmatched rather than fabricated."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_steve1_benchmark_study_v1.py",
+              "content_sha256": "d7bb4f8c6de18089ecfb2ec9fc1ab37541f574ff4bf22055917a4096c4f72727"
+            },
+            {
+              "path": "tests/test_scientific_steve1_minecraft_v1.py",
+              "content_sha256": "1d832409a6122912e39fe1dc2785ca46a2278bb42994a1f6ef491dfcfbee28d4"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "toolformer",
       "reproductions": [
         {
@@ -1000,7 +1058,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "43c9d14d996cfc914f4e3870507afa72d3332581ec7ee239e9e910535e43dcf7",
+          "package_digest": "7eec7f4d1816f0243d7c67fadb11239bf8c64404639a23aa4f4c13eb4be87298",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -1049,162 +1107,104 @@
             },
             {
               "path": "tests/test_scientific_tree_of_thoughts_method_program_v1.py",
-              "content_sha256": "84f382d8f254379d8fba8e5f2103eb72f849c0eff8ea7fdffe7d0e86b2bdd951"
+              "content_sha256": "e04e3664f1ea7fe24b0fcba99ca5a82ad98fcc4ffdbbb70ab4e3af1997a164ee"
             }
           ]
         }
       ]
     },
     {
-      "id": "steve-1",
+      "id": "vima",
       "reproductions": [
         {
-          "package": "steve1_minecraft",
-          "package_digest": "042c6618503cae8f3dbff2e83cc2deb29cfecb9010365e98b1739738040bf5aa",
+          "package": "vima_embodied",
+          "package_digest": "2230af82c66ba00418b9c09d4e5e1921d809f2d8cd8b59728ee27d1989b123c4",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
-            "steve1-paper-prompts"
+            "vima-bench"
           ],
           "source_lanes": [
             {
-              "lane_id": "neurips_2023",
+              "lane_id": "benchmark_camera_ready",
+              "kind": "official_executable",
+              "repository": "https://github.com/vimalabs/VIMABench",
+              "commit": "224c2d870d6063d90215201ba42d4211ddc957d7"
+            },
+            {
+              "lane_id": "icml_2023_camera_ready",
               "kind": "paper_provenance",
-              "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/dd03f856fc7f2efeec8b1c796284561d-Abstract-Conference.html",
-              "venue": "NeurIPS",
+              "publication_uri": "https://proceedings.mlr.press/v202/jiang23b.html",
+              "venue": "ICML",
               "year": 2023,
-              "publication_id": "steve1-neurips-2023",
-              "revision": "NeurIPS 2023 Main Conference",
+              "publication_id": "vima-icml-2023",
+              "revision": "ICML 2023 camera-ready paper",
               "content_sha256": null
             },
             {
-              "lane_id": "official_paper_consistent",
+              "lane_id": "policy_camera_ready",
               "kind": "official_executable",
-              "repository": "https://github.com/Shalev-Lifshitz/STEVE-1",
-              "commit": "874cf9b808c9dd0a5d4446ef2e008e3789c55c57"
+              "repository": "https://github.com/vimalabs/VIMA",
+              "commit": "a16536f55780738ec2ce932f882f15bc011d7307"
             }
           ],
           "assets": [
             {
               "kind": "benchmark",
-              "path": "research/reproductions/steve1_minecraft/benchmark.py",
-              "content_sha256": "9a6ae3015c101fb08dde26a99eaf6cc2f298bcf69d5ade136aec0234b2542dae"
+              "path": "research/reproductions/vima_embodied/benchmark.py",
+              "content_sha256": "044c0dc32e6e545ef9a562ceea4b34f28d9422d5f9206bf7725be30b4e2230d0"
             },
             {
               "kind": "fidelity",
-              "path": "research/reproductions/steve1_minecraft/fidelity.py",
-              "content_sha256": "b2f4c9a2fe55d2bd17b152c6ce6e5084bb98c26ce1f068735a3ec4be79497ab3"
+              "path": "research/reproductions/vima_embodied/fidelity.py",
+              "content_sha256": "411208fbf724b43d95ceb21086a8df95fcd6d0d7c2ba2e46618a5bad3c0f894d"
             },
             {
               "kind": "method_program",
-              "path": "research/reproductions/steve1_minecraft/program.py",
-              "content_sha256": "93d6a4128dec047843fba04c379be9f79d83b44ddc1a690ead27b4a0eaf3939b"
+              "path": "research/reproductions/vima_embodied/program.py",
+              "content_sha256": "630447806548c82cac747539fa69126a4eecddf953ad81e8ceca633d63c76674"
             },
             {
               "kind": "study",
-              "path": "research/reproductions/steve1_minecraft/study.py",
-              "content_sha256": "ecce346f86797d99a08d50f73fa2fb692cdd820b1719f5f0c85862c56e9c8d86"
+              "path": "research/reproductions/vima_embodied/study.py",
+              "content_sha256": "8863b85846e4e1d4d62c536a70e71cad3ee23033b272c9108d46a0fa72158dfb"
             },
             {
               "kind": "support",
-              "path": "research/reproductions/steve1_minecraft/source.py",
-              "content_sha256": "8e3c070e7e0bdda446bc689d4c2b99fcdf48663539b2cb6caa30ffbc495c0af4"
+              "path": "research/reproductions/vima_embodied/environment.py",
+              "content_sha256": "2367212ba5093c4cde31b3f9a175706f46706ad29b30af7dcbc1575d8b4455eb"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/vima_embodied/policy.py",
+              "content_sha256": "2230d49cc16c6dda8c28d8defbc8e7d71b534528bb6ce65b3a0afc79a8d9e601"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/vima_embodied/source.py",
+              "content_sha256": "dce81437f7de225177cc639d775c28e59c6d4d2aac7e53b83055a60b3362709c"
             }
           ],
           "blockers": [
-            "Formal numerical claims require immutable VPT, MineCLIP, STEVE-1 policy and prior weight artifacts plus the paper-era MineRL runtime.",
-            "The released repository exposes 11 named paper prompts for both text and visual conditioning (22 executable cells), but does not expose the complete identity of the separate 13-task early-game result suite; that numerical claim remains unmatched rather than fabricated."
+            "A qualified concrete VIMA-Bench embodied simulator adapter is still required for formal environment execution.",
+            "The paper specifies multiple test episodes but the complete paper-result episode seed/count schedule is not content-addressed in the audited camera-ready executable; the formal cut therefore freezes the official seed-42 executable protocol without claiming matched aggregate results.",
+            "Full checkpoint-level result reproduction requires immutable released policy checkpoints and the camera-ready observation/prompt frontend."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 2,
+          "reported_claim_count": 3,
           "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
-              "path": "tests/test_scientific_steve1_benchmark_study_v1.py",
-              "content_sha256": "d7bb4f8c6de18089ecfb2ec9fc1ab37541f574ff4bf22055917a4096c4f72727"
+              "path": "tests/test_scientific_vima_benchmark_study_v1.py",
+              "content_sha256": "5a7fea289aafcd58c56265e77ce0bc9153fb656beb84e8d72ceb7b7eb6e74380"
             },
             {
-              "path": "tests/test_scientific_steve1_minecraft_v1.py",
-              "content_sha256": "90888a2d15d2edde6e52e159af23d75d75eb1b476dd25a0fbedd7a6d02961eb0"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "deps-minecraft",
-      "reproductions": [
-        {
-          "package": "deps_minecraft",
-          "package_digest": "15e3a428ef2bb10b719270ae55eb517cbb76b06d7c7a07700b995fd54a70357c",
-          "lifecycle": "protocol_bound",
-          "benchmark_ids": [
-            "deps-minecraft-70"
-          ],
-          "source_lanes": [
-            {
-              "lane_id": "neurips_2023_main",
-              "kind": "paper_provenance",
-              "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html",
-              "venue": "NeurIPS",
-              "year": 2023,
-              "publication_id": "deps-minecraft-neurips-2023",
-              "revision": "NeurIPS 2023 main conference paper",
-              "content_sha256": null
+              "path": "tests/test_scientific_vima_embodied_v1.py",
+              "content_sha256": "6a4ebb88e1654609a6deed3065b1844efe336ce3ff802a3de6800f91bc3f0ce0"
             },
             {
-              "lane_id": "official_mc_planner_release",
-              "kind": "official_executable",
-              "repository": "https://github.com/CraftJarvis/MC-Planner",
-              "commit": "df7067614ed527a2b56262441472886f1eb628ca"
-            },
-            {
-              "lane_id": "replan_semantics_fix",
-              "kind": "official_executable",
-              "repository": "https://github.com/CraftJarvis/MC-Planner",
-              "commit": "fa2278e523b85aede67a4225b2f0da2d187bc74b"
-            }
-          ],
-          "assets": [
-            {
-              "kind": "benchmark",
-              "path": "research/reproductions/deps_minecraft/benchmark.py",
-              "content_sha256": "4d6c0df4bf5f63002488bb0e55c113c5de925136acbab9575d16efc747c4fe45"
-            },
-            {
-              "kind": "fidelity",
-              "path": "research/reproductions/deps_minecraft/fidelity.py",
-              "content_sha256": "1c7e5245fdcbc609de8f96cf1af0ef5ee9543858e2fc9ba166d624315bd82b66"
-            },
-            {
-              "kind": "method_program",
-              "path": "research/reproductions/deps_minecraft/program.py",
-              "content_sha256": "eba7c21e78da9c4c7d9f3d02ae3fd8acaa9c0852a0aca778a716c1d2e52e2b66"
-            },
-            {
-              "kind": "study",
-              "path": "research/reproductions/deps_minecraft/study.py",
-              "content_sha256": "e1c8440a7f2f62c62c6554e3798abb47883951fef284d09e3aa05c8f1c108883"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/deps_minecraft/source.py",
-              "content_sha256": "4c9c53262430da92beb5f464e991adf3c8ee4fa0b4a0272d4cd49703e5638763"
-            }
-          ],
-          "blockers": [
-            "Matched execution requires the unreleased paper-era learned Selector implementation/checkpoint or an authoritatively identified equivalent.",
-            "The released planner targets historical code-davinci-002/text-davinci-003 serving; exact hosted model snapshots are not immutable public artifacts.",
-            "Matched Minecraft results additionally require the paper-era goal-conditioned controller checkpoint and modified MineDojo simulator runtime under Artifact authority."
-          ],
-          "evidence_refs": [],
-          "reported_claim_count": 1,
-          "reference_baseline_count": 1,
-          "fidelity_delta_count": 1,
-          "scientific_tests": [
-            {
-              "path": "tests/test_scientific_deps_minecraft_v1.py",
-              "content_sha256": "00b298bdb225736f6198fde210a9d73de763836bf6a230800a2756a57abc3b46"
+              "path": "tests/test_scientific_vima_environment_adapter_v1.py",
+              "content_sha256": "dce109378f3158a653d1602e7c77af79fc58267bfad2bcc3735d5af19b97d8e7"
             }
           ]
         }
@@ -1215,7 +1215,7 @@
       "reproductions": [
         {
           "package": "autogen_agentchat",
-          "package_digest": "b7a8f99be2b0c0c4fdcca61e453c5c39e116da5ddb0271822e35cc1c4796094d",
+          "package_digest": "6fccb54c4588b0154da2b380336a17c3cea07856973ae1e2bd3130ca8352c0f9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "multiagentbench"
@@ -1259,7 +1259,7 @@
             },
             {
               "path": "tests/test_scientific_autogen_groupchat_method_program_v1.py",
-              "content_sha256": "dcda51980387f676d84af1f3eee13e25495008e07f0f1b51ecff116a4ad8f912"
+              "content_sha256": "a479c9f5ff459c74ab8e60df97651228e0475bb850fb8af4c94b008442e51afe"
             }
           ]
         }
@@ -1499,6 +1499,84 @@
       ]
     },
     {
+      "id": "ma-lmm",
+      "reproductions": [
+        {
+          "package": "ma_lmm_memory",
+          "package_digest": "947642276cb8ee48e72f98b883f222ebba9f756006af98f9ca7a4113ac2f01ec",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "lvu"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "compatibility_video_path_bugfix",
+              "kind": "later_released_executable",
+              "repository": "https://github.com/boheumd/MA-LMM",
+              "commit": "f9467665132bc258ae4119d0dc80ea02c4b5bd60"
+            },
+            {
+              "lane_id": "cvpr_2024_final",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html",
+              "venue": "CVPR",
+              "year": 2024,
+              "publication_id": "ma-lmm-cvpr-2024",
+              "revision": "CVPR 2024 final paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "paper_era_official_initial",
+              "kind": "official_executable",
+              "repository": "https://github.com/boheumd/MA-LMM",
+              "commit": "6ad50f3efcaca7776d2e1e5f1be32e09ceff9910"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/ma_lmm_memory/benchmark.py",
+              "content_sha256": "42baef81105dfb9b1f767da8cac245f150b140b9aa8edcd1bb89c719ac7ed391"
+            },
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/ma_lmm_memory/fidelity.py",
+              "content_sha256": "e085034880f901dd47a03c4f546bd46d32c774ade0f8c4f5b066dda584ff0d29"
+            },
+            {
+              "kind": "research_program",
+              "path": "research/reproductions/ma_lmm_memory/memory.py",
+              "content_sha256": "b1d4fd607968bbd4c9a3871c1cc4474902755af79e707c559b7b20c4fc5dfb5b"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/ma_lmm_memory/study.py",
+              "content_sha256": "9a14b4e4e7f93aa36c05328ae38752288e7e8bb482d5fc93ecf0ab3090e26e22"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/ma_lmm_memory/source.py",
+              "content_sha256": "18cd06479db9652654e4213ed022bef0a5eb2fc6a740ffdf6e19563db91fe169"
+            }
+          ],
+          "blockers": [
+            "Full checkpoint-level CVPR result reproduction still requires frozen official model weights and acquisition of the LVU 1.0 video/data bytes into content-addressed artifact authority.",
+            "The current executable pressure target isolates the paper memory algorithm from the surrounding LAVIS/Vicuna tensor stack."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 4,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_ma_lmm_memory_v1.py",
+              "content_sha256": "909083f97394d2aab8297a8ed41504d4d3dd54ffdf0300fb9c8af7cc3f1a904f"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "metagpt",
       "reproductions": [
         {
@@ -1557,6 +1635,84 @@
             {
               "path": "tests/test_scientific_metagpt_method_program_v1.py",
               "content_sha256": "2d766a3a65ebc694af8236fb762eb9597c6fd818c3273d77a3ddfee90beb7279"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moviechat",
+      "reproductions": [
+        {
+          "package": "moviechat_memory",
+          "package_digest": "e7c2af4bd5c079d18fff90f4a61f8026a0a1432e17b9e3bca1c4b367ce8d55c3",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "moviechat-1k"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "cvpr_2024_final",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Song_MovieChat_From_Dense_Token_to_Sparse_Memory_for_Long_Video_CVPR_2024_paper.html",
+              "venue": "CVPR",
+              "year": 2024,
+              "publication_id": "moviechat-cvpr-2024",
+              "revision": "CVPR 2024 final paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "initial_public_executable",
+              "kind": "official_executable",
+              "repository": "https://github.com/wenhaochai/MovieChat",
+              "commit": "20fe48055acbb9f95dcf628fd90caacbe418d2d5"
+            },
+            {
+              "lane_id": "paper_era_final_executable",
+              "kind": "official_executable",
+              "repository": "https://github.com/wenhaochai/MovieChat",
+              "commit": "f73f49233ea315bddc659ab3d1e358e0130eadb7"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/moviechat_memory/benchmark.py",
+              "content_sha256": "63efe381bc7e8cee2c906f139dafefe2ccd70bea6814321effbb77d607cff21b"
+            },
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/moviechat_memory/fidelity.py",
+              "content_sha256": "3f5c8991e51aea0871d07b1d31c9debeabb9c06eb742b1107ef677a984aa327c"
+            },
+            {
+              "kind": "research_program",
+              "path": "research/reproductions/moviechat_memory/memory.py",
+              "content_sha256": "d6e003d654f5002326d0113fb434a988fc80b456c14568e7bc0119ac514d8a6c"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/moviechat_memory/study.py",
+              "content_sha256": "b788ae8064892ae07930cd5ca290df606f0fb3a3ca3ec3662e851b4d0afee14b"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/moviechat_memory/source.py",
+              "content_sha256": "493f85bea503045fa4f0fe4820bfa0092de54f8a131affacfc6cbb32e9c87d82"
+            }
+          ],
+          "blockers": [
+            "Full result reproduction requires acquisition of the official MovieChat-1K test video/QA bytes and released model weights into content-addressed artifact authority.",
+            "The executable source and the paper differ in one direct-LTM pair selection detail; both identities are preserved rather than silently normalizing the implementation to the paper description."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 4,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_moviechat_memory_v1.py",
+              "content_sha256": "e6e5001e4ca5ae177ceaf71b09775df9453b2cee898161ffed182f19e8b42206"
             }
           ]
         }
@@ -1702,7 +1858,7 @@
       "reproductions": [
         {
           "package": "swe_agent_swebench",
-          "package_digest": "8db1911f8aaf5400d8604a84df2ee899350e329566187d457669d0060bf65c1b",
+          "package_digest": "61dc29dabbbf79b2f0a19dd18acb6707c830e5a76892ae72186b880baa525641",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -1734,7 +1890,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/swe_agent_swebench/aci.py",
-              "content_sha256": "2563e02ebed98cc09efc5e73b60c63a3d1694e26491219fed8a91ae705b98899"
+              "content_sha256": "b60e605eccbce5ecb3a6192331bee0ea4159d8d57d1b35872bd3298d31a74809"
             },
             {
               "kind": "support",
@@ -1756,11 +1912,11 @@
             },
             {
               "path": "tests/test_scientific_swe_agent_method_program_v1.py",
-              "content_sha256": "bc825933db8a9b2e70e0152e3920d57a5377bcb1c59623ea5765e50fceabac7f"
+              "content_sha256": "4486f18adc9b14dc9d0e81566bb665dcf81d53d6acfa7c860950baa196caf222"
             },
             {
               "path": "tests/test_scientific_swe_agent_swebench_fidelity_v1.py",
-              "content_sha256": "00d66f42ac6c833a44215e8ed788945e0a9568df30c7720c78ea84d16e80a78a"
+              "content_sha256": "702102891d5e56e5c32db76f41cc6a6ffd7f3eaa0bc1c4c8173869d7b69896ef"
             }
           ]
         }
@@ -1840,162 +1996,6 @@
             {
               "path": "tests/test_scientific_toolllm_toolbench_v1.py",
               "content_sha256": "28cbc0c336c8b9f1dc99163dffd077ee469f1591e8cc9580d84178cd50ec9eb2"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "moviechat",
-      "reproductions": [
-        {
-          "package": "moviechat_memory",
-          "package_digest": "e7c2af4bd5c079d18fff90f4a61f8026a0a1432e17b9e3bca1c4b367ce8d55c3",
-          "lifecycle": "protocol_bound",
-          "benchmark_ids": [
-            "moviechat-1k"
-          ],
-          "source_lanes": [
-            {
-              "lane_id": "cvpr_2024_final",
-              "kind": "paper_provenance",
-              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Song_MovieChat_From_Dense_Token_to_Sparse_Memory_for_Long_Video_CVPR_2024_paper.html",
-              "venue": "CVPR",
-              "year": 2024,
-              "publication_id": "moviechat-cvpr-2024",
-              "revision": "CVPR 2024 final paper",
-              "content_sha256": null
-            },
-            {
-              "lane_id": "initial_public_executable",
-              "kind": "official_executable",
-              "repository": "https://github.com/wenhaochai/MovieChat",
-              "commit": "20fe48055acbb9f95dcf628fd90caacbe418d2d5"
-            },
-            {
-              "lane_id": "paper_era_final_executable",
-              "kind": "official_executable",
-              "repository": "https://github.com/wenhaochai/MovieChat",
-              "commit": "f73f49233ea315bddc659ab3d1e358e0130eadb7"
-            }
-          ],
-          "assets": [
-            {
-              "kind": "benchmark",
-              "path": "research/reproductions/moviechat_memory/benchmark.py",
-              "content_sha256": "63efe381bc7e8cee2c906f139dafefe2ccd70bea6814321effbb77d607cff21b"
-            },
-            {
-              "kind": "fidelity",
-              "path": "research/reproductions/moviechat_memory/fidelity.py",
-              "content_sha256": "3f5c8991e51aea0871d07b1d31c9debeabb9c06eb742b1107ef677a984aa327c"
-            },
-            {
-              "kind": "research_program",
-              "path": "research/reproductions/moviechat_memory/memory.py",
-              "content_sha256": "d6e003d654f5002326d0113fb434a988fc80b456c14568e7bc0119ac514d8a6c"
-            },
-            {
-              "kind": "study",
-              "path": "research/reproductions/moviechat_memory/study.py",
-              "content_sha256": "b788ae8064892ae07930cd5ca290df606f0fb3a3ca3ec3662e851b4d0afee14b"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/moviechat_memory/source.py",
-              "content_sha256": "493f85bea503045fa4f0fe4820bfa0092de54f8a131affacfc6cbb32e9c87d82"
-            }
-          ],
-          "blockers": [
-            "Full result reproduction requires acquisition of the official MovieChat-1K test video/QA bytes and released model weights into content-addressed artifact authority.",
-            "The executable source and the paper differ in one direct-LTM pair selection detail; both identities are preserved rather than silently normalizing the implementation to the paper description."
-          ],
-          "evidence_refs": [],
-          "reported_claim_count": 4,
-          "reference_baseline_count": 1,
-          "fidelity_delta_count": 0,
-          "scientific_tests": [
-            {
-              "path": "tests/test_scientific_moviechat_memory_v1.py",
-              "content_sha256": "e6e5001e4ca5ae177ceaf71b09775df9453b2cee898161ffed182f19e8b42206"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "ma-lmm",
-      "reproductions": [
-        {
-          "package": "ma_lmm_memory",
-          "package_digest": "947642276cb8ee48e72f98b883f222ebba9f756006af98f9ca7a4113ac2f01ec",
-          "lifecycle": "protocol_bound",
-          "benchmark_ids": [
-            "lvu"
-          ],
-          "source_lanes": [
-            {
-              "lane_id": "compatibility_video_path_bugfix",
-              "kind": "later_released_executable",
-              "repository": "https://github.com/boheumd/MA-LMM",
-              "commit": "f9467665132bc258ae4119d0dc80ea02c4b5bd60"
-            },
-            {
-              "lane_id": "cvpr_2024_final",
-              "kind": "paper_provenance",
-              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html",
-              "venue": "CVPR",
-              "year": 2024,
-              "publication_id": "ma-lmm-cvpr-2024",
-              "revision": "CVPR 2024 final paper",
-              "content_sha256": null
-            },
-            {
-              "lane_id": "paper_era_official_initial",
-              "kind": "official_executable",
-              "repository": "https://github.com/boheumd/MA-LMM",
-              "commit": "6ad50f3efcaca7776d2e1e5f1be32e09ceff9910"
-            }
-          ],
-          "assets": [
-            {
-              "kind": "benchmark",
-              "path": "research/reproductions/ma_lmm_memory/benchmark.py",
-              "content_sha256": "42baef81105dfb9b1f767da8cac245f150b140b9aa8edcd1bb89c719ac7ed391"
-            },
-            {
-              "kind": "fidelity",
-              "path": "research/reproductions/ma_lmm_memory/fidelity.py",
-              "content_sha256": "e085034880f901dd47a03c4f546bd46d32c774ade0f8c4f5b066dda584ff0d29"
-            },
-            {
-              "kind": "research_program",
-              "path": "research/reproductions/ma_lmm_memory/memory.py",
-              "content_sha256": "b1d4fd607968bbd4c9a3871c1cc4474902755af79e707c559b7b20c4fc5dfb5b"
-            },
-            {
-              "kind": "study",
-              "path": "research/reproductions/ma_lmm_memory/study.py",
-              "content_sha256": "9a14b4e4e7f93aa36c05328ae38752288e7e8bb482d5fc93ecf0ab3090e26e22"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/ma_lmm_memory/source.py",
-              "content_sha256": "18cd06479db9652654e4213ed022bef0a5eb2fc6a740ffdf6e19563db91fe169"
-            }
-          ],
-          "blockers": [
-            "Full checkpoint-level CVPR result reproduction still requires frozen official model weights and acquisition of the LVU 1.0 video/data bytes into content-addressed artifact authority.",
-            "The current executable pressure target isolates the paper memory algorithm from the surrounding LAVIS/Vicuna tensor stack."
-          ],
-          "evidence_refs": [],
-          "reported_claim_count": 4,
-          "reference_baseline_count": 1,
-          "fidelity_delta_count": 0,
-          "scientific_tests": [
-            {
-              "path": "tests/test_scientific_ma_lmm_memory_v1.py",
-              "content_sha256": "909083f97394d2aab8297a8ed41504d4d3dd54ffdf0300fb9c8af7cc3f1a904f"
             }
           ]
         }
@@ -2272,6 +2272,73 @@
             {
               "path": "tests/test_scientific_webvoyager_method_program_v1.py",
               "content_sha256": "9e0481e1e8b3f9c5789ad2a8e5d84bfe40c0a807d6304c4577df4124e4d4eeb8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "adacm2",
+      "reproductions": [
+        {
+          "package": "adacm2_memory",
+          "package_digest": "5baeb86f5a2314fee16f14aa8fbc827c98a788c69d0b087a7f1d91ec702ede3c",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "lvu"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "cvpr_2025_camera_ready",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html",
+              "venue": "CVPR",
+              "year": 2025,
+              "publication_id": "man2025adacm2",
+              "revision": "CVPR 2025 camera-ready paper",
+              "content_sha256": null
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/adacm2_memory/benchmark.py",
+              "content_sha256": "0bf620fce3dc4ed24b5f6dff61eb98926f0be46d641b42687b40d23eec58ecd2"
+            },
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/adacm2_memory/fidelity.py",
+              "content_sha256": "e62e52b00b67c6233e2f9a5d955f00616aa479dabdffb538a0312a13dd27a793"
+            },
+            {
+              "kind": "research_program",
+              "path": "research/reproductions/adacm2_memory/memory.py",
+              "content_sha256": "d0114e717ca2c460ca50121c98160ebb739086537e76562ee106af6aba6fce2b"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/adacm2_memory/study.py",
+              "content_sha256": "4ff74a3f215293bd561b493f8eac83c6a7109283eaf43e7b5b6905346db157ef"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/adacm2_memory/source.py",
+              "content_sha256": "67bcd34e5ca9a4dcb05a28d1e079ae129c474f970b41733291c3c74f32334d46"
+            }
+          ],
+          "blockers": [
+            "Matched result reproduction requires official or authoritatively frozen AdaCM2 Q-Former weights and exact trained cross-modal scorer.",
+            "Full LVU result reproduction requires the LVU 1.0 video/data bytes under content-addressed artifact authority.",
+            "Breakfast, COIN, MSRVTT-QA, MSVD-QA, MSRVTT, MSVD and YouCook2 paper results require their own canonical benchmark cuts."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 3,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_adacm2_memory_v1.py",
+              "content_sha256": "4b220581d65fea4c342b18f1e961a0346e633ca0485af4f5b3055b1abf27d162"
             }
           ]
         }
@@ -2563,7 +2630,7 @@
       "reproductions": [
         {
           "package": "flow_modularized_agentic_workflow",
-          "package_digest": "0b5bb22b134b0ae0827f5a75c17868d02854535077b8a7e358e89eb379858ab7",
+          "package_digest": "07586366ce193b5edb76efbaab48f548a259b1d45262062e28c3ed51afe5f209",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "flow-practical-tasks"
@@ -2627,7 +2694,93 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_flow_modularized_workflow_v1.py",
-              "content_sha256": "590ba4f68532c7188f4018f77356a5f816eeea1cb2d34f976d3442af72b16dba"
+              "content_sha256": "51387e22708de7ded369359febb01313ac10ff11b4167cebc06df5cfc0251c53"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jarvis1",
+      "reproductions": [
+        {
+          "package": "jarvis1_minecraft",
+          "package_digest": "aabd017e089b3f7ae7c075eba23661fbf762a4d4f7986eaeaea9a2e59335873f",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "jarvis1-offline-185"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "partial_official_fixed_memory",
+              "kind": "official_executable",
+              "repository": "https://github.com/CraftJarvis/JARVIS-1",
+              "commit": "aa9bd97debee045cb35b37564c71dee4c465b9ad"
+            },
+            {
+              "lane_id": "tpami_2025",
+              "kind": "paper_provenance",
+              "publication_uri": "https://ieeexplore.ieee.org/document/10778628/",
+              "venue": "IEEE TPAMI",
+              "year": 2025,
+              "publication_id": "jarvis1-tpami-2025",
+              "revision": "IEEE Transactions on Pattern Analysis and Machine Intelligence, 47(3):1894-1907",
+              "content_sha256": null
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/jarvis1_minecraft/benchmark.py",
+              "content_sha256": "aa8ad7e8a3d4a5f3bc98175cc6820ca36f194986f031ec4b6281ee3cfb9cd5e5"
+            },
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/jarvis1_minecraft/fidelity.py",
+              "content_sha256": "56db5dca6934beb809d854737059cfb9eb21fda8305edcb26e8b8af06987e84c"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/jarvis1_minecraft/program.py",
+              "content_sha256": "66c4fede901e2fc6931ffb17b7db84f87b0335d0d1ff511ab25a87dfb8bcb96a"
+            },
+            {
+              "kind": "research_program",
+              "path": "research/reproductions/jarvis1_minecraft/memory.py",
+              "content_sha256": "c84d5e59ccae11e90cd626b661feb15964185fcfebcb6c1880f5fed430841fcd"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/jarvis1_minecraft/study.py",
+              "content_sha256": "a0311885a978912953af5840387c7599ed8abe5a07a9dbaecae2d9113c207c2a"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/jarvis1_minecraft/source.py",
+              "content_sha256": "79bf8871222551f9638e0c599ba05260be6491d9c4ee897e0a9ec983f6ce1af7"
+            }
+          ],
+          "blockers": [
+            "Matched multimodal-memory retrieval requires the unreleased paper-era descriptor/retrieval implementation or an explicitly declared clean-room substitution.",
+            "Matched lifelong-learning claims require the unreleased online learning implementation and growing-memory protocol.",
+            "The canonical study binds the released 185-task public offline fixed-memory lane only; it does not turn the unreleased multimodal retrieval or online lifelong-learning path into matched evidence."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 0,
+          "reference_baseline_count": 0,
+          "fidelity_delta_count": 3,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_jarvis1_benchmark_study_v1.py",
+              "content_sha256": "57326041f27bb2219ef3c91744cc0e6210770e2a4c5af52202dd564b470120a3"
+            },
+            {
+              "path": "tests/test_scientific_jarvis1_memory_v1.py",
+              "content_sha256": "0ea5396c39ff99a00eb45a232e88d20cdbc675848ab793b57cc6f360dce3e5af"
+            },
+            {
+              "path": "tests/test_scientific_jarvis1_method_program_v1.py",
+              "content_sha256": "92804b9e12844c9530d7c1cb79be33ff297e25377b4a2edd7da29e353d87aa27"
             }
           ]
         }
@@ -2772,153 +2925,884 @@
       ]
     },
     {
-      "id": "adacm2",
+      "id": "astranav_memory_cvpr2026",
       "reproductions": [
         {
-          "package": "adacm2_memory",
-          "package_digest": "5baeb86f5a2314fee16f14aa8fbc827c98a788c69d0b087a7f1d91ec702ede3c",
+          "package": "astranav_memory_cvpr2026",
+          "package_digest": "8679cc2f0946047feaeb4d985d27770d2a32ac1bdb77f6ed4cc42bfc109a8ed4",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
-            "lvu"
+            "goat-bench",
+            "hm3d-ovon"
           ],
           "source_lanes": [
             {
-              "lane_id": "cvpr_2025_camera_ready",
+              "lane_id": "final_publication",
               "kind": "paper_provenance",
-              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Hu_AstraNav-Memory_Contexts_Compression_for_Long_Memory_CVPR_2026_paper.html",
               "venue": "CVPR",
-              "year": 2025,
-              "publication_id": "man2025adacm2",
-              "revision": "CVPR 2025 camera-ready paper",
+              "year": 2026,
+              "publication_id": "Hu_AstraNav_Memory_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
               "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/amap-cvlab/AstraNav-Memory",
+              "commit": "d32b59fa014bae05dce9c2caa72e1fd52af62559"
             }
           ],
           "assets": [
             {
               "kind": "benchmark",
-              "path": "research/reproductions/adacm2_memory/benchmark.py",
-              "content_sha256": "0bf620fce3dc4ed24b5f6dff61eb98926f0be46d641b42687b40d23eec58ecd2"
+              "path": "research/reproductions/astranav_memory_cvpr2026/benchmark.py",
+              "content_sha256": "cd25051dd73330c513090443486f88543671f44f463b20c2ad3a73eafda4fda7"
             },
             {
-              "kind": "fidelity",
-              "path": "research/reproductions/adacm2_memory/fidelity.py",
-              "content_sha256": "e62e52b00b67c6233e2f9a5d955f00616aa479dabdffb538a0312a13dd27a793"
-            },
-            {
-              "kind": "research_program",
-              "path": "research/reproductions/adacm2_memory/memory.py",
-              "content_sha256": "d0114e717ca2c460ca50121c98160ebb739086537e76562ee106af6aba6fce2b"
+              "kind": "method_program",
+              "path": "research/reproductions/astranav_memory_cvpr2026/program.py",
+              "content_sha256": "556da24d809516323eb8477704e7b20ca957959b706c204344c678ac2ec07166"
             },
             {
               "kind": "study",
-              "path": "research/reproductions/adacm2_memory/study.py",
-              "content_sha256": "4ff74a3f215293bd561b493f8eac83c6a7109283eaf43e7b5b6905346db157ef"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/adacm2_memory/source.py",
-              "content_sha256": "67bcd34e5ca9a4dcb05a28d1e079ae129c474f970b41733291c3c74f32334d46"
+              "path": "research/reproductions/astranav_memory_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
             }
           ],
           "blockers": [
-            "Matched result reproduction requires official or authoritatively frozen AdaCM2 Q-Former weights and exact trained cross-modal scorer.",
-            "Full LVU result reproduction requires the LVU 1.0 video/data bytes under content-addressed artifact authority.",
-            "Breakfast, COIN, MSRVTT-QA, MSVD-QA, MSRVTT, MSVD and YouCook2 paper results require their own canonical benchmark cuts."
+            "Matched reproduction requires the pinned AstraNav checkpoints/training code and exact GOAT-Bench/HM3D-OVON releases.",
+            "Navigation-efficiency claims require closed-loop simulator execution and path-metric receipts."
           ],
           "evidence_refs": [],
           "reported_claim_count": 2,
-          "reference_baseline_count": 1,
-          "fidelity_delta_count": 3,
+          "reference_baseline_count": 3,
+          "fidelity_delta_count": 0,
           "scientific_tests": [
             {
-              "path": "tests/test_scientific_adacm2_memory_v1.py",
-              "content_sha256": "4b220581d65fea4c342b18f1e961a0346e633ca0485af4f5b3055b1abf27d162"
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
             }
           ]
         }
       ]
     },
     {
-      "id": "jarvis1",
+      "id": "ces_gui_cvpr2026",
       "reproductions": [
         {
-          "package": "jarvis1_minecraft",
-          "package_digest": "d2d7251467943ebbead325961a49f1107a3f489cba72072402f6371046a3ba9c",
+          "package": "ces_gui_cvpr2026",
+          "package_digest": "3df20603ad31b21e46b8e4a0c71bdd6c5cfa084805ae1bb483becc5345587163",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
-            "jarvis1-offline-185"
+            "aitz",
+            "amex",
+            "gui-odyssey"
           ],
           "source_lanes": [
             {
-              "lane_id": "partial_official_fixed_memory",
-              "kind": "official_executable",
-              "repository": "https://github.com/CraftJarvis/JARVIS-1",
-              "commit": "aa9bd97debee045cb35b37564c71dee4c465b9ad"
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Deng_Training_High-Level_Schedulers_with_Execution-Feedback_Reinforcement_Learning_for_Long-Horizon_GUI_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Deng_CES_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
             },
             {
-              "lane_id": "tpami_2025",
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/hehehahi4/CES",
+              "commit": "bf54b363eb769b957d6f80459fd0c0aadbbed44e"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/ces_gui_cvpr2026/benchmark.py",
+              "content_sha256": "ec74c2995f85358fb01f072602c98bf14bc19250fe314d73a516b832e60a9749"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/ces_gui_cvpr2026/program.py",
+              "content_sha256": "99826fd745f4c9a3ec2d07dee84cb80abf939e5d4dff6b75ceaa7b0d7818592f"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/ces_gui_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned CES model/data revisions, exact AITZ/AMEX/GUI-Odyssey cuts and frozen Executor identity.",
+            "Staged-RL claims require Coordinator and State-Tracker optimization receipts plus execution-feedback trajectories."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 0,
+          "reference_baseline_count": 4,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crossha_cvpr2026",
+      "reproductions": [
+        {
+          "package": "crossha_cvpr2026",
+          "package_digest": "63bd73741f6f1456b8ecd7449c5ae8dd9a12c30f0e44ca99343dd67c018b22c2",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "minecraft-openha"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
               "kind": "paper_provenance",
-              "publication_uri": "https://ieeexplore.ieee.org/document/10778628/",
-              "venue": "IEEE TPAMI",
-              "year": 2025,
-              "publication_id": "jarvis1-tpami-2025",
-              "revision": "IEEE Transactions on Pattern Analysis and Machine Intelligence, 47(3):1894-1907",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/He_Training_One_Model_to_Master_Cross-Level_Agentic_Actions_via_Reinforcement_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "He_CrossHA_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/CraftJarvis/OpenHA",
+              "commit": "606efc69e945bd02c700e584136bcc105d22f122"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/crossha_cvpr2026/benchmark.py",
+              "content_sha256": "2fd05d20a3e61afaa6e8636045108246b6add42d7a126a8718471739fda8d98d"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/crossha_cvpr2026/program.py",
+              "content_sha256": "18ae60b1b9ecc039a2cd703fdee5700b4a25962f707992ad6c19d088a4aa56fe"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/crossha_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned OpenHA/CrossAgent code, model/data revisions, MineStudio/Minecraft 1.16.5 runtime and exact 800+ task manifest.",
+            "Multi-turn GRPO claims require rollout groups, reward traces, action-space selections and training receipts."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 2,
+          "reference_baseline_count": 5,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d3d_vlp_cvpr2026",
+      "reproductions": [
+        {
+          "package": "d3d_vlp_cvpr2026",
+          "package_digest": "4e8c658703b0bf84971edbb0c0944165dfd019cf041ba707a2a2bddb80e138ab",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "hm3d-ovon",
+            "navrag-ce",
+            "r2r-ce",
+            "reverie-ce",
+            "sg3d"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_D3D-VLP_Dynamic_3D_Vision-Language-Planning_Model_for_Embodied_Grounding_and_Navigation_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Wang_D3D_VLP_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/MrZihan/D3D-VLP",
+              "commit": "0c285fe32bef11ea9067fb74d7c12edc46be5d1a"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/d3d_vlp_cvpr2026/benchmark.py",
+              "content_sha256": "d693c0ff363042f398515c6d438282bcce087ac82f96ba7c24dc2b65590792ac"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/d3d_vlp_cvpr2026/program.py",
+              "content_sha256": "9824b3ef646e4eb1695a6c868687c31a337594677394822b58ff6297c316a2c4"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/d3d_vlp_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned D3D-VLP code plus released 10M hybrid training data and exact simulator cuts.",
+            "Real-world mobile-manipulation claims require the physical evaluation protocol and robot execution evidence."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 3,
+          "reference_baseline_count": 3,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dejavu_cvpr2026",
+      "reproductions": [
+        {
+          "package": "dejavu_cvpr2026",
+          "package_digest": "36ad0804b0ff19f744e487548476c9660d69aa10dd4c6f016fbdf14c74839cd9",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "libero"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_Dejavu_Towards_Experience_Feedback_Learning_for_Embodied_Intelligence_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Wu_Dejavu_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
               "content_sha256": null
             }
           ],
           "assets": [
             {
               "kind": "benchmark",
-              "path": "research/reproductions/jarvis1_minecraft/benchmark.py",
-              "content_sha256": "aa8ad7e8a3d4a5f3bc98175cc6820ca36f194986f031ec4b6281ee3cfb9cd5e5"
-            },
-            {
-              "kind": "fidelity",
-              "path": "research/reproductions/jarvis1_minecraft/fidelity.py",
-              "content_sha256": "56db5dca6934beb809d854737059cfb9eb21fda8305edcb26e8b8af06987e84c"
+              "path": "research/reproductions/dejavu_cvpr2026/benchmark.py",
+              "content_sha256": "79647e06083618aadb15c69ebf1fac96423593d1f089cfd01f8b33a2958b7665"
             },
             {
               "kind": "method_program",
-              "path": "research/reproductions/jarvis1_minecraft/program.py",
-              "content_sha256": "66c4fede901e2fc6931ffb17b7db84f87b0335d0d1ff511ab25a87dfb8bcb96a"
-            },
-            {
-              "kind": "research_program",
-              "path": "research/reproductions/jarvis1_minecraft/memory.py",
-              "content_sha256": "c84d5e59ccae11e90cd626b661feb15964185fcfebcb6c1880f5fed430841fcd"
+              "path": "research/reproductions/dejavu_cvpr2026/program.py",
+              "content_sha256": "1718a2a838acb94a965b2a1be4898930e5234e5d1c7e07c6f2efa4ad526f6744"
             },
             {
               "kind": "study",
-              "path": "research/reproductions/jarvis1_minecraft/study.py",
-              "content_sha256": "a0311885a978912953af5840387c7599ed8abe5a07a9dbaecae2d9113c207c2a"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/jarvis1_minecraft/source.py",
-              "content_sha256": "79bf8871222551f9638e0c599ba05260be6491d9c4ee897e0a9ec983f6ce1af7"
+              "path": "research/reproductions/dejavu_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
             }
           ],
           "blockers": [
-            "Matched multimodal-memory retrieval requires the unreleased paper-era descriptor/retrieval implementation or an explicitly declared clean-room substitution.",
-            "Matched lifelong-learning claims require the unreleased online learning implementation and growing-memory protocol.",
-            "The canonical study binds the released 185-task public offline fixed-memory lane only; it does not turn the unreleased multimodal retrieval or online lifelong-learning path into matched evidence."
+            "Matched simulation requires exact LIBERO suite cuts, frozen VLA checkpoints and experience-bank initialization.",
+            "Real-world AgiBot-G1 claims require the physical platform protocol and full rollout evidence."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 2,
+          "reference_baseline_count": 5,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "foreact_cvpr2026",
+      "reproductions": [
+        {
+          "package": "foreact_cvpr2026",
+          "package_digest": "bd0cdf5c7a43df0dc77622007ff2e2e2d67f1ebad2405f9ec9365c0980c2f4e8",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "foreact-real11"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Zhang_ForeAct_Steering_Your_VLA_with_Efficient_Visual_Foresight_Planning_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Zhang_ForeAct_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/mit-han-lab/foreact",
+              "commit": "2f3d062e6129da7ce5fc75e68e01e87b8af9e10a"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/foreact_cvpr2026/benchmark.py",
+              "content_sha256": "dd4a576789e928d8622982e12410a9e80d9254465fc2f610b8f91dbeba049535"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/foreact_cvpr2026/program.py",
+              "content_sha256": "c3b1a93a1a5fa6c3cc600697dd42656e5a9b40c124b0030f429207e9e418eb7b"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/foreact_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned ForeAct generator/checkpoints, exact 11-task real-world protocol and VLA backbone snapshots.",
+            "Physical-robot claims require episode-level execution receipts and synchronized camera/action evidence."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 4,
+          "reference_baseline_count": 3,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hats_cvpr2026",
+      "reproductions": [
+        {
+          "package": "hats_cvpr2026",
+          "package_digest": "30fd2508d415b9cb3d49ff86973712fddf439b39b98027399d804f79e6d177d4",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "androidworld",
+            "webarena"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Shao_HATS_Hardness-Aware_Trajectory_Synthesis_for_GUI_Agents_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Shao_HATS_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/JiuTian-VL/HATS",
+              "commit": "8840bd1b7c28c0d04a2733e67fd69ed09f406278"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/hats_cvpr2026/benchmark.py",
+              "content_sha256": "b98b9f307133aabbaafa5d3bdb9321b4f223e6a3f78a2488d54c1185e1472afa"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/hats_cvpr2026/program.py",
+              "content_sha256": "e1155617cfebf17ebe10626c32b23c2015bbc32cf6ff4590de9ffe36b303b506"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/hats_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned HATS repository, AndroidWorld/WebArena cuts and synthesis-model identities.",
+            "Training-set downstream gains require regenerated accepted trajectories plus downstream agent-training receipts."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 2,
+          "reference_baseline_count": 3,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ishift_cvpr2026",
+      "reproductions": [
+        {
+          "package": "ishift_cvpr2026",
+          "package_digest": "5a75bf8a8a65abdc9bda9ccd3a6daaac57f5886526ed1ba99b2b58cc34342ef8",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "aitw",
+            "androidcontrol",
+            "gui-odyssey",
+            "guiact"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Mehrotra_iSHIFT_Lightweight_Slow-Fast_GUI_Agent_with_Adaptive_Perception_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Mehrotra_iSHIFT_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/SarthakM320/iSHIFT",
+              "commit": "d77267511fdb27cd46c030990bffe8d025fb8489"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/ishift_cvpr2026/benchmark.py",
+              "content_sha256": "ed9e97d4b6029df27ed3c21dff367f5fff9abc751d97d72ac47ba0e36c6aa229"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/ishift_cvpr2026/program.py",
+              "content_sha256": "cc2af6c58813d1be7b80f619aacf127bf96e4f9cf0fd06ed13eca4f78b61304a"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/ishift_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned iSHIFT code/checkpoint, DINOv2/SAM/base-model revisions and exact benchmark preprocessing.",
+            "Efficiency claims require matched hardware, token accounting and inference traces."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 4,
+          "reference_baseline_count": 6,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lmee_cvpr2026",
+      "reproductions": [
+        {
+          "package": "lmee_cvpr2026",
+          "package_digest": "dcd30ca517c59b614d8d93b580a544cfb21de854fb064b0087a33aad419f413b",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "lmee-bench"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_Explore_with_Long-term_Memory_A_Benchmark_and_Multimodal_LLM-based_Reinforcement_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Wang_Explore_with_Long-term_Memory_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/wangsen99/LMEE",
+              "commit": "44b3d99af3f3b698566c1a76f69b73c36a4a4cdd"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/lmee_cvpr2026/benchmark.py",
+              "content_sha256": "7fb087b0a1377b47ba74331a96895d0c2895475e2c646b53464815059b182605"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/lmee_cvpr2026/program.py",
+              "content_sha256": "09e7c5088d0478e1276d9a6b8700f513cbec30748f73e88f877acb7a1f9886b5"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/lmee_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the released LMEE-Bench data, HM3D-Sem environment cut, MemoryExplorer checkpoint and training configuration.",
+            "Training and interactive navigation claims require GPU/environment receipts and benchmark evaluator artifacts."
           ],
           "evidence_refs": [],
           "reported_claim_count": 0,
-          "reference_baseline_count": 0,
-          "fidelity_delta_count": 3,
+          "reference_baseline_count": 3,
+          "fidelity_delta_count": 0,
           "scientific_tests": [
             {
-              "path": "tests/test_scientific_jarvis1_benchmark_study_v1.py",
-              "content_sha256": "57326041f27bb2219ef3c91744cc0e6210770e2a4c5af52202dd564b470120a3"
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "motus_cvpr2026",
+      "reproductions": [
+        {
+          "package": "motus_cvpr2026",
+          "package_digest": "645275da31f19c34de3e91ebdfdbe55dc866376fab038c2cd15a1714078b98ec",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "motus-realworld",
+            "robotwin2"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Bi_Motus_A_Unified_Latent_Action_World_Model_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Bi_Motus_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
             },
             {
-              "path": "tests/test_scientific_jarvis1_memory_v1.py",
-              "content_sha256": "0ea5396c39ff99a00eb45a232e88d20cdbc675848ab793b57cc6f360dce3e5af"
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/thu-ml/Motus",
+              "commit": "f771216802b8a1601599422f12088bee3c068c14"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/motus_cvpr2026/benchmark.py",
+              "content_sha256": "f307f06faa1edc9d5e5c6ae597fdc3fc2f5bdc87c68bc8c977f3f37657fcf8ce"
             },
             {
-              "path": "tests/test_scientific_jarvis1_method_program_v1.py",
-              "content_sha256": "f1cad9629f327c5cce647c84fc708cc6d044c6126610f7307e53478b2c17d1a8"
+              "kind": "method_program",
+              "path": "research/reproductions/motus_cvpr2026/program.py",
+              "content_sha256": "75ebaad924596c0fd671c6529e1b15219709d0001ece7a8286d493d4b3bf8622"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/motus_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned Motus training code/checkpoints, six-layer data pyramid and RoboTwin 2.0 multi-task dataset cut.",
+            "Real-world claims require exact robot hardware/task protocol and synchronized generated-video/action execution evidence."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 3,
+          "reference_baseline_count": 3,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_03.py",
+              "content_sha256": "971be29ebf3ea8ac09c22786005adf4709e023b582f3fe3ff5ac05184ea32d1d"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "optimusvla_cvpr2026",
+      "reproductions": [
+        {
+          "package": "optimusvla_cvpr2026",
+          "package_digest": "8b5dcd1e6f502df2b8faa866659c17efead891b0fb5683df6fe26193f373729b",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "calvin",
+            "libero",
+            "robotwin2-hard"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Li_Global_Prior_Meets_Local_Consistency_Dual-Memory_Augmented_Vision-Language-Action_Model_for_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Li_Global_Prior_Meets_Local_Consistency_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/iLearn-Lab/CVPR26-OptimusVLA",
+              "commit": "6d0c26bdd0efb5921d14844b9024e458a2e00fc7"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/optimusvla_cvpr2026/benchmark.py",
+              "content_sha256": "94aa3b93cfaaae3627b00f9c052719aa061e9b178d69091a12cf01b3284772e2"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/optimusvla_cvpr2026/program.py",
+              "content_sha256": "03829e0fd780379cae222ad94a57ba36f42e7c039391b0ca614f75d976b5d662"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/optimusvla_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned OptimusVLA code/checkpoints plus exact LIBERO, CALVIN and RoboTwin 2.0 cuts.",
+            "Real-world long-horizon claims require the GALAXEA robot protocol and physical execution receipts."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 4,
+          "reference_baseline_count": 3,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "roboagent_cvpr2026",
+      "reproductions": [
+        {
+          "package": "roboagent_cvpr2026",
+          "package_digest": "fc36dde0cec05dc80b291cd5c00bf6b9620712ce44d4c33c5b53710fc50d93b6",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "alfworld",
+            "embodiedbench"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Xu_RoboAgent_Chaining_Basic_Capabilities_for_Embodied_Task_Planning_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Xu_RoboAgent_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/woyut/RoboAgent_CVPR26",
+              "commit": "ce2c4b02d993796866fb0815d0efa348fcb34b68"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/roboagent_cvpr2026/benchmark.py",
+              "content_sha256": "fcec100438fab13196353dd05c584f873ef424f4ed5d66e55d97c210d4890202"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/roboagent_cvpr2026/program.py",
+              "content_sha256": "9deb71b7b1d16e075a60acbf8f08a03f7fc419aa385c550c435438eb272a339a"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/roboagent_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned RoboAgent checkpoint/code, exact ALFWorld and EmbodiedBench-ALFRED cuts, and simulator supervision pipeline.",
+            "BC/DAgger/RL stage claims require complete training-data and optimization receipts."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 0,
+          "reference_baseline_count": 3,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ui_agile_cvprf2026",
+      "reproductions": [
+        {
+          "package": "ui_agile_cvprf2026",
+          "package_digest": "7b4dfe54a387520163c52b16535812138cf38d92985118855949c1c1801d70f5",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "androidcontrol",
+            "screenspot-pro",
+            "screenspot-v2"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026F/html/Lian_UI-AGILE_Advancing_GUI_Agents_with_Effective_Reinforcement_Learning_and_Precise_CVPRF_2026_paper.html",
+              "venue": "CVPR Findings",
+              "year": 2026,
+              "publication_id": "Lian_UI_AGILE_CVPRF_2026",
+              "revision": "CVPR Findings 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/KDEGroup/UI-AGILE",
+              "commit": "3a397b078d6c14338f0646070212f8c3eb837881"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/ui_agile_cvprf2026/benchmark.py",
+              "content_sha256": "171f3e847eb501850591b19dfca4044b1245c434b722a9e86fde341c6b46f727"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/ui_agile_cvprf2026/program.py",
+              "content_sha256": "180ed40f91398ac60145f22618b629025c3742078e3ad4034ac8c679b5c91ff8"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/ui_agile_cvprf2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the pinned UI-AGILE training code/checkpoints, benchmark cuts and image preprocessing.",
+            "Inference-time grounding claims require full candidate-generation/selection traces and timing receipts."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 4,
+          "reference_baseline_count": 5,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_02.py",
+              "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vilomem_cvpr2026",
+      "reproductions": [
+        {
+          "package": "vilomem_cvpr2026",
+          "package_digest": "daa041d3b3969ab62c83d17eae76ebfe01323f5c6f8b037091adad4cffb57e40",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "hallusionbench",
+            "mathvision",
+            "mathvista",
+            "mmmu",
+            "mmstar",
+            "realworldqa"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "final_publication",
+              "kind": "paper_provenance",
+              "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Bo_ViLoMem_Agentic_Learner_with_Grow-and-Refine_Multimodal_Semantic_Memory_CVPR_2026_paper.html",
+              "venue": "CVPR",
+              "year": 2026,
+              "publication_id": "Bo_ViLoMem_CVPR_2026",
+              "revision": "CVPR 2026 final proceedings paper",
+              "content_sha256": null
+            },
+            {
+              "lane_id": "official_repository_cut",
+              "kind": "official_artifact",
+              "repository": "https://github.com/weihao-bo/ViLoMem",
+              "commit": "dd19e2539dab0bb70e0ead70daf0b4f544fd8cac"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "benchmark",
+              "path": "research/reproductions/vilomem_cvpr2026/benchmark.py",
+              "content_sha256": "b42589008a189902f287731727f9b921340c5d3f6b0ffff3c0ad1450452b9f4a"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/vilomem_cvpr2026/program.py",
+              "content_sha256": "07f03e9859736039866ba3130878a88444561b640cb3be5297a8fa0c2243fd44"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/vilomem_cvpr2026/study.py",
+              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+            }
+          ],
+          "blockers": [
+            "Matched reproduction requires the paper-ready ViLoMem source cut, exact VLMEvalKit dataset revisions, model-provider snapshots and attention-map configuration.",
+            "Cross-benchmark/cross-model transfer claims require immutable memory-schema artifacts and source-run lineage rather than reusing opaque mutable memory directories."
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 6,
+          "reference_baseline_count": 4,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_frontier_2026_wave_03.py",
+              "content_sha256": "971be29ebf3ea8ac09c22786005adf4709e023b582f3fe3ff5ac05184ea32d1d"
             }
           ]
         }
@@ -3012,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "922bfc5dde42545cbdee25cf02cb50efc23a9250627559f0b06d5fe681fbddea"
+  "projection_digest": "e80dfa1025297659b22ef2b33a0a8ac3b7bda28cb9b3816d58d62612ae5a970f"
 }

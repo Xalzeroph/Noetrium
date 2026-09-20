@@ -1,0 +1,222 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "vilomem_cvpr2026",
+  "package_digest": "daa041d3b3969ab62c83d17eae76ebfe01323f5c6f8b037091adad4cffb57e40",
+  "definition_digest": "9f6e0cc130e4b1238a11d1c34d2f08a56a4b1d1a7e7122fa3d68b1bd5b8e49b1",
+  "source_registry_digest": "5800084d54705cb425925baff25d1b4265d9ff1079e122cdf75b3705ff0ca64c",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "vilomem_cvpr2026",
+    "title": "ViLoMem: Agentic Learner with Grow-and-Refine Multimodal Semantic Memory",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Bo_ViLoMem_Agentic_Learner_with_Grow-and-Refine_Multimodal_Semantic_Memory_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "0ead5c6fd30de5052b5eac2fd736bebd234966df2350675ee57ed179688c82dd"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "multimodal-memory"
+    ],
+    "families": [
+      "agentic-learning",
+      "error-attribution",
+      "lifelong-learning",
+      "multimodal-memory",
+      "semantic-memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "hallusionbench",
+      "mathvision",
+      "mathvista",
+      "mmmu",
+      "mmstar",
+      "realworldqa"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "memory",
+      "model/request",
+      "perception"
+    ],
+    "method_owned": [
+      "Analyze attention/perception failures and isolate visual distraction or hallucination patterns.",
+      "Attribute reasoning failures into structured logical error and strategy schemas.",
+      "Merge with a similar memory schema or create a new schema while preserving stable reusable knowledge.",
+      "Retrieve logical memories by problem/text similarity and visual memories by image embedding plus query filtering.",
+      "Solve the multimodal query using retrieved logical and visual semantic memories.",
+      "Verify the prediction and identify whether the attempt should contribute new memory."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/weihao-bo/ViLoMem"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Bo_ViLoMem_Agentic_Learner_with_Grow-and-Refine_Multimodal_Semantic_Memory_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "2b54ce8173317d28f21c0702a123793a19331b35526d8b0ae01873e833ae8f80"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Bo_ViLoMem_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Bo_ViLoMem_Agentic_Learner_with_Grow-and-Refine_Multimodal_Semantic_Memory_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "bd2413049153a80c7f3da7be8a4bfdd0b389b745928c0370707e94a360e85829"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/weihao-bo/ViLoMem",
+      "commit": "dd19e2539dab0bb70e0ead70daf0b4f544fd8cac",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "78e8e109e46cf37b2e2711ede2afdedd523d6c199bf4ef115ba2d207908960fb"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/vilomem_cvpr2026/benchmark.py",
+      "declaration_digest": "6dda5813f58fe5cb4b2aab257b208a4b98e9e08c4f1a61bfb946e15571fa9e55",
+      "content_sha256": "b42589008a189902f287731727f9b921340c5d3f6b0ffff3c0ad1450452b9f4a"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/vilomem_cvpr2026/program.py",
+      "declaration_digest": "1d545bd8f4496881f7ccc77fbf6afa76859230ac2e01d0fac59cf4e32ea3373d",
+      "content_sha256": "07f03e9859736039866ba3130878a88444561b640cb3be5297a8fa0c2243fd44"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/vilomem_cvpr2026/study.py",
+      "declaration_digest": "1564ac5698202faa455eedd753fbb486713937409c3ff3620b44457b6ff9c102",
+      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+    }
+  ],
+  "primary_executable": "research/reproductions/vilomem_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "vilomem_gpt41_mmmu",
+      "metric_id": "pass_at_1",
+      "value": 77.26,
+      "qualifiers": {
+        "benchmark": "MMMU",
+        "model": "GPT-4.1",
+        "unit": "percent"
+      },
+      "claim_digest": "53b30b0a4fbba3f373fa7a9ebc0bfb2a9c0c183170dacbf5ded5d35efb283e75"
+    },
+    {
+      "claim_id": "vilomem_gpt41_mathvista",
+      "metric_id": "pass_at_1",
+      "value": 76.88,
+      "qualifiers": {
+        "benchmark": "MathVista",
+        "model": "GPT-4.1",
+        "unit": "percent"
+      },
+      "claim_digest": "54b380011479c3563d0f8b53a309c557ddce85acca6950dcadb932b8102ae698"
+    },
+    {
+      "claim_id": "vilomem_gpt41_mathvision",
+      "metric_id": "pass_at_1",
+      "value": 53.95,
+      "qualifiers": {
+        "benchmark": "MathVision",
+        "model": "GPT-4.1",
+        "unit": "percent"
+      },
+      "claim_digest": "f186b41a8e95e78d62f886f07de2ba35259ca4cf33b42afc56d7d051cf7c2bd9"
+    },
+    {
+      "claim_id": "vilomem_gpt41_hallusion",
+      "metric_id": "pass_at_1",
+      "value": 75.29,
+      "qualifiers": {
+        "benchmark": "HallusionBench",
+        "model": "GPT-4.1",
+        "unit": "percent"
+      },
+      "claim_digest": "56e9c961898c0048f2a0ec6dafb59f61517246e0e160beb28ffde24c07373d59"
+    },
+    {
+      "claim_id": "vilomem_gpt41_mmstar",
+      "metric_id": "pass_at_1",
+      "value": 72.43,
+      "qualifiers": {
+        "benchmark": "MMStar",
+        "model": "GPT-4.1",
+        "unit": "percent"
+      },
+      "claim_digest": "2d99c7514dd42302e659fa4ac7719f263949e7cbe07a4dfd3193f4beea9f0cf1"
+    },
+    {
+      "claim_id": "vilomem_gpt41_realworldqa",
+      "metric_id": "pass_at_1",
+      "value": 74.38,
+      "qualifiers": {
+        "benchmark": "RealWorldQA",
+        "model": "GPT-4.1",
+        "unit": "percent"
+      },
+      "claim_digest": "4aaaa0caf04eb4a9176755a2b9c2051f6129c656aa631682e327da952b3d46a4"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "no-memory baseline",
+      "qualifiers": {},
+      "baseline_digest": "6a2d11758c241bf224fb580e8ed872d4592ad3e16ce44fd3ffa0e7fd3b5e0e49"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "step-by-step baseline",
+      "qualifiers": {},
+      "baseline_digest": "4e2e0ebac998ca2723a18eb391440a5eccf916373b07ffe8961dc895b9747514"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "Dynamic-Cheatsheet",
+      "qualifiers": {},
+      "baseline_digest": "c860410dab5d41c727fe1c47487f647b9685b8396da4b95bfe80efdc1b5b7fab"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "attention-augmented variants",
+      "qualifiers": {},
+      "baseline_digest": "3e48dd6f476665e6e59c4e7ee783d1c5eef72fd9a123f0dedd0f79f950f9c994"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the paper-ready ViLoMem source cut, exact VLMEvalKit dataset revisions, model-provider snapshots and attention-map configuration.",
+    "Cross-benchmark/cross-model transfer claims require immutable memory-schema artifacts and source-run lineage rather than reusing opaque mutable memory directories."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_03.py",
+      "content_sha256": "971be29ebf3ea8ac09c22786005adf4709e023b582f3fe3ff5ac05184ea32d1d"
+    }
+  ]
+}

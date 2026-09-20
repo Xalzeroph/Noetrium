@@ -1,0 +1,174 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "orbit_acl2026",
+  "package_digest": "d57da0a598bd5bc274e26e768c3042331492e16e5e03c3055ee06a47fc96f52c",
+  "definition_digest": "15720e37389bbc73d08c4dded95a5d1c1782311dfec02f99c94ea2b8aaee84b8",
+  "source_registry_digest": "f4d993f22dde65b3c172032c7553b1c4cd9fa0d2095143a46cca690494315612",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "orbit_acl2026",
+    "title": "On-policy Reinforcement Fine-tuning with Offline reward for Multi-step Embodied Planning",
+    "paper_uri": "https://aclanthology.org/2026.acl-long.1822/",
+    "year": 2026,
+    "paper_revision": "ACL 2026 final proceedings",
+    "identity_digest": "811f4947962dfd254d8202a533c973821123cf51f169ba1119f62b4bf56adfb7"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "embodied",
+      "frontier-2026"
+    ],
+    "families": [
+      "embodied",
+      "multimodal",
+      "planning",
+      "reinforcement-learning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "embodiedbench"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Apply reinforcement fine-tuning using offline reward.",
+      "Collect on-policy multi-step embodied planning trajectories.",
+      "Evaluate in-domain EB-ALFRED tasks.",
+      "Evaluate unseen EB-Habitat tasks.",
+      "Score collected trajectories with the paper's offline reward mechanism."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/mail-taii/Reinforced-Reasoning-for-Embodied-Planning"
+    ],
+    "reference_publications": [
+      "https://aclanthology.org/2026.acl-long.1822/"
+    ],
+    "catalog_digest": "408ea1109b54c3e6b811fd7b834a2fa69613331d1b681d242fb802aac98b3469"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2026,
+      "publication_id": "2026.acl-long.1822",
+      "publication_uri": "https://aclanthology.org/2026.acl-long.1822/",
+      "revision": "ACL 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "b96d9f440f6e69c578a22a0702fc121dda72ef3918f6c252ebc213335e47edf1"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/mail-taii/Reinforced-Reasoning-for-Embodied-Planning",
+      "commit": "48802811cbf30a1071cac7f3227dccab258cc1fe",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "c608812d0217deabe17b887ade54b56b31baa9364a656c09a6ec458224311089"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/orbit_acl2026/benchmark.py",
+      "declaration_digest": "05c29e644cf80c93a3764e6668ab4c64b4a4b976020775a3cb2f3ff844084d4a",
+      "content_sha256": "f18ef56ecd18204e0830fd5a9c988d078014a5019f5b85976c9ff3f94dc3a8f3"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/orbit_acl2026/program.py",
+      "declaration_digest": "d5d45ecb5d4a12b130f2129e021ead131a1b853d8bf716a332993108d4ff34eb",
+      "content_sha256": "40ac51f8cbecbc3b139cd7a61095a844b321b7f607f311deadb24aed9d07660c"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/orbit_acl2026/study.py",
+      "declaration_digest": "3fb0074e72a6ab1772be78865ff4c5db2f103e11246e8bd150b23d66c6cff284",
+      "content_sha256": "b454a669f0999e54087f53810c0fe0f1a02a9d5f9062ff9afc63dcb63960aa4c"
+    }
+  ],
+  "primary_executable": "research/reproductions/orbit_acl2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "orbit_eb_alfred_seen",
+      "metric_id": "task_success",
+      "value": 72.4,
+      "qualifiers": {
+        "benchmark": "EB-ALFRED",
+        "setting": "SFT+RFT",
+        "model": "Qwen2.5-VL-7B"
+      },
+      "claim_digest": "3e60dc52271b08d30f1122318eac2651df7d1f34d55dd363e09b7a3887f472a9"
+    },
+    {
+      "claim_id": "orbit_eb_habitat_unseen",
+      "metric_id": "task_success",
+      "value": 22.4,
+      "qualifiers": {
+        "benchmark": "EB-Habitat",
+        "setting": "SFT+RFT",
+        "model": "Qwen2.5-VL-7B"
+      },
+      "claim_digest": "65138bebc724d01152b6028c3b02ffbfd60fd3d5c4180cc71d62061b7ee60de9"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "base Qwen2.5-VL-7B planner",
+      "qualifiers": {},
+      "baseline_digest": "b8bd5b8135b7247b3e56bd36789d8052032aaf0228e177d7ed7582f84b67c2d0"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "closed-source MLLMs",
+      "qualifiers": {},
+      "baseline_digest": "baf98d21488f7dbecc122e62807ca9e13d15db9b2aa113e9737e22fc6d7ea11e"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "WAP-7B",
+      "qualifiers": {},
+      "baseline_digest": "f544332e7be383cac55c1c201ccfd64c7630d847d8af689e7da232d41a608881"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "ERA-7B",
+      "qualifiers": {},
+      "baseline_digest": "52e495cf17c7e92235415f6eee69b49f2e5121fd4cefbb8aca80e4dfcd94792b"
+    },
+    {
+      "baseline_id": "baseline_05",
+      "description": "VAGEN-3B",
+      "qualifiers": {},
+      "baseline_digest": "883c1a4b5fd8cfa2b8a87bd3d5ba2322446e3262a5e99b8d60a455aa6ea3b1b7"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires the pinned ORBIT code/training configuration and EmbodiedBench release.",
+    "Training-efficiency and generalization claims require GPU training plus interactive environment receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ]
+}

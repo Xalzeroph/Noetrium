@@ -1,0 +1,137 @@
+{
+  "schema": "noetrium.reproduction.projection.v7",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "mem_gallery_acl2026",
+  "package_digest": "5459674a408dd3e22d543b61d24dd354e4644908df375496881257a6b685d696",
+  "definition_digest": "2c058fa750ced19ee859329d367bb3e3958fe5b87a4fa8e7f9df10799a1b5a66",
+  "source_registry_digest": "7402ae58773e74f862766dcc2e5e4540c703bd1cb90a0b7a00fb6cd882686b3b",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "mem_gallery_acl2026",
+    "title": "Mem-Gallery: Benchmarking Multimodal Long-Term Conversational Memory for MLLM Agents",
+    "paper_uri": "https://aclanthology.org/2026.acl-long.1892/",
+    "year": 2026,
+    "paper_revision": "ACL 2026 final proceedings",
+    "identity_digest": "784433ded630550ef9eb5505c0a97baa6a41a5eb9705346707820282bfcde247"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "multimodal-memory"
+    ],
+    "families": [
+      "benchmark",
+      "conversation",
+      "long-term-memory",
+      "multimodal-memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "mem-gallery"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Aggregate functional capability and efficiency measurements.",
+      "Evaluate memory extraction and test-time adaptation.",
+      "Evaluate organization and evolution of memory knowledge.",
+      "Evaluate reasoning over cross-session multimodal memories.",
+      "Replay the frozen multimodal multi-session conversation history."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/YuanchenBei/Mem-Gallery"
+    ],
+    "reference_publications": [
+      "https://aclanthology.org/2026.acl-long.1892/"
+    ],
+    "catalog_digest": "0df9b1ef3934c670da8ba17bf428fde7553fcfd47d27fabe15e83282d5745bef"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2026,
+      "publication_id": "2026.acl-long.1892",
+      "publication_uri": "https://aclanthology.org/2026.acl-long.1892/",
+      "revision": "ACL 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "a603cccab3b7c429e8e61e9d57a12684132e21f28a3f4b8367ba888a878ba423"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/YuanchenBei/Mem-Gallery",
+      "commit": "a93959e1e978a6a7d77798ae92c2ffe41c538c62",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "77b281eb14326dee0c09a131e5cbe690333df6883a3c06b1d395fc43670a8758"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/mem_gallery_acl2026/benchmark.py",
+      "declaration_digest": "9b83755f113192fa2e0e0b7f180c54ace55dfd3f0f109428dbbd7bdd485b3fd0",
+      "content_sha256": "022f9c99937013494015bc36d2acc89ff933009a796e6cc2a8d504031c87a185"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/mem_gallery_acl2026/program.py",
+      "declaration_digest": "22a33a4f463236326d73ed1a6d7e6209f18779f7fbc2ad393093509eea9926b6",
+      "content_sha256": "0cec6454ec883fb938971ab606218cc0f245435c2b449f40f64c30a5de75986f"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/mem_gallery_acl2026/study.py",
+      "declaration_digest": "99f7ada0701a80f3165019d6abbe28e0a8f4db3f0357ca69904eda4c5d52bc97",
+      "content_sha256": "cf8a4e2ac57a6b80cc23844059357e98489a2ab95896ecb4bc9d5d4a60322a6f"
+    }
+  ],
+  "primary_executable": "research/reproductions/mem_gallery_acl2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "mem_gallery_systems",
+      "metric_id": "evaluated_memory_system_count",
+      "value": 12,
+      "qualifiers": {
+        "source": "ACL 2026 final paper"
+      },
+      "claim_digest": "4dcb63a4d8e17cc30afcbfbfd4995bd87bae8033c779d17a4db5c32e7e2e7bc9"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "twelve memory systems evaluated in the final ACL paper",
+      "qualifiers": {},
+      "baseline_digest": "ab2c97b170575386404b6c925a7f73735105ab1851c7aae6e6fb152dbf0cc9a5"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched benchmarking requires the pinned Mem-Gallery dataset/scoring revision and model revisions.",
+    "Multimodal inference results require real model receipts and retained media assets."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ]
+}
