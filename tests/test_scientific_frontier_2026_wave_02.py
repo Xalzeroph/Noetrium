@@ -24,7 +24,7 @@ from research.reproductions.roboagent_cvpr2026.program import METHOD_PROGRAM as 
 from research.reproductions.roboagent_cvpr2026.study import SPEC as ROBOAGENT_SPEC
 from research.reproductions.ui_agile_cvprf2026.program import METHOD_PROGRAM as UI_AGILE
 from research.reproductions.ui_agile_cvprf2026.study import SPEC as UI_AGILE_SPEC
-from research.reproductions.frontier_2026.study import PaperStudySpec
+from research.authoring.frontier_2026.study import PaperStudySpec
 
 
 PROGRAMS = (
