@@ -6,7 +6,7 @@ from noetrium.api import (
     EnvironmentCapability,
     EnvironmentProviderPort,
 )
-from noetrium.platform import (
+from noetrium.api import (
     MinecraftEnvironmentBinding,
     bind_bundled_minecraft_environment,
 )
