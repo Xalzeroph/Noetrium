@@ -150,6 +150,9 @@ jobs:
           PLATFORM_IMAGE: noetrium:${{ github.sha }}
         run: |
           set -euo pipefail
+          export PLATFORM_HOST_DATA_ROOT="$RUNNER_TEMP/noetrium-runtime"
+          mkdir -p "$PLATFORM_HOST_DATA_ROOT/platform-state" "$PLATFORM_HOST_DATA_ROOT/minecraft"
+          chmod 0777 "$PLATFORM_HOST_DATA_ROOT/platform-state" "$PLATFORM_HOST_DATA_ROOT/minecraft"
           for profile in minecraft embodied gui web software; do
             echo "building environment profile: ${profile}"
             docker compose \
