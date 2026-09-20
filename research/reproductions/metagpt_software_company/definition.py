@@ -47,8 +47,26 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="metagpt_mbpp_executive_feedback_gain",
+            metric_id="absolute_improvement_points",
+            value=5.4,
+            qualifiers={
+                "benchmark": "mbpp",
+                "mechanism": "executive-feedback",
+                "source": "ICLR-2024 paper",
+            },
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="metagpt_without_executive_feedback",
+            description=(
+                "MetaGPT ablation without executive feedback used to quantify "
+                "the MBPP improvement from the feedback mechanism."
+            ),
+            qualifiers={"source": "ICLR-2024 paper evaluation"},
+        ),
     ),
     deltas=(
     ),

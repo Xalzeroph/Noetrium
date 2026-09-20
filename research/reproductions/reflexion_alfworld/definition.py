@@ -55,8 +55,37 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="reflexion_alfworld_completed_tasks",
+            metric_id="completed_task_count",
+            value=130,
+            qualifiers={
+                "benchmark": "alfworld",
+                "total_tasks": 134,
+                "method": "react-plus-reflexion",
+                "source": "NeurIPS-2023 paper",
+            },
+        ),
+        ReportedResult(
+            claim_id="reflexion_alfworld_gain",
+            metric_id="success_improvement_percent",
+            value=22.0,
+            qualifiers={
+                "benchmark": "alfworld",
+                "comparison": "strong-baselines",
+                "source": "NeurIPS-2023 paper",
+            },
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="react_alfworld",
+            description=(
+                "ReAct-style ALFWorld agent baseline used to isolate the value "
+                "of verbal reflection across repeated trials."
+            ),
+            qualifiers={"source": "NeurIPS-2023 paper evaluation"},
+        ),
     ),
     deltas=(
         ReproductionDelta(

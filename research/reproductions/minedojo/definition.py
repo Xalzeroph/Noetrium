@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -100,8 +102,70 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/minedojo/program.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="mineclip_attn_find_nether_portal",
+            metric_id="reward_model_f1_percent",
+            value=98.7,
+            qualifiers={
+                "task": "find-nether-portal",
+                "variant": "mineclip-attn",
+                "source": "NeurIPS-2022 paper reward-model evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="mineclip_attn_find_ocean",
+            metric_id="reward_model_f1_percent",
+            value=100.0,
+            qualifiers={
+                "task": "find-ocean",
+                "variant": "mineclip-attn",
+                "source": "NeurIPS-2022 paper reward-model evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="mineclip_attn_dig_hole",
+            metric_id="reward_model_f1_percent",
+            value=99.4,
+            qualifiers={
+                "task": "dig-hole",
+                "variant": "mineclip-attn",
+                "source": "NeurIPS-2022 paper reward-model evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="mineclip_attn_lay_carpet",
+            metric_id="reward_model_f1_percent",
+            value=97.4,
+            qualifiers={
+                "task": "lay-carpet",
+                "variant": "mineclip-attn",
+                "source": "NeurIPS-2022 paper reward-model evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="minedojo_benchmark_task_count",
+            metric_id="benchmark_task_count",
+            value=3142,
+            qualifiers={
+                "benchmark": "minedojo",
+                "source": "NeurIPS-2022 paper",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="clip_openai_reward_model",
+            description="OpenAI CLIP reward-model baseline reported against MineCLIP.",
+            qualifiers={
+                "find_nether_portal_f1_percent": 48.7,
+                "find_ocean_f1_percent": 98.4,
+                "dig_hole_f1_percent": 80.6,
+                "lay_carpet_f1_percent": 54.1,
+                "source": "NeurIPS-2022 paper reward-model evaluation",
+            },
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("unresolved"),
