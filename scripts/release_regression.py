@@ -10,7 +10,6 @@ import json
 import os
 from pathlib import Path
 import platform
-import re
 import signal
 import subprocess
 import sys
@@ -51,11 +50,6 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 )
 from noetrium_platform.composition.concurrency import build_execution_concurrency_runtime
 
-
-# Kept only for backwards-compatible diagnostics/tests.  Release evidence no
-# longer depends on human terminal output parsing.
-_COLLECT_RE = re.compile(r"(?P<count>\d+) tests? collected")
-_RESULT_RE = re.compile(r"(?P<passed>\d+) passed(?:, (?P<skipped>\d+) skipped)?")
 _IS_WINDOWS = os.name == "nt"
 _RESULT_SCHEMA_VERSION = 1
 _PARALLEL_SHARD_SIZE = 8
@@ -399,20 +393,6 @@ def _run_pytest_shard(
         )
         return _decode_pytest_shard_evidence(result_path)
 
-
-def _parse_collected(output: str) -> int:
-    matches = list(_COLLECT_RE.finditer(output))
-    if not matches:
-        raise ReleaseRegressionFailure("unable to parse pytest collection count")
-    return int(matches[-1].group("count"))
-
-
-def _parse_result(output: str) -> tuple[int, int]:
-    matches = list(_RESULT_RE.finditer(output))
-    if not matches:
-        raise ReleaseRegressionFailure("unable to parse pytest shard result")
-    match = matches[-1]
-    return int(match.group("passed")), int(match.group("skipped") or 0)
 
 
 def _pytest_plugin_versions() -> tuple[tuple[str, str], ...]:
