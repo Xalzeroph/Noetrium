@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium.contracts.research import (
+from noetrium.api import (
     ExperimentPlan,
     StudyConcurrencyPolicy,
     StudyProtocol,
