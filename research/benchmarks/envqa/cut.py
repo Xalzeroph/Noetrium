@@ -69,19 +69,20 @@ def build_task_set(records: tuple[TaskRecord, ...], *, source_digest: str) -> ap
         api.TaskSetSplit(split_id, tuple(sorted(ids)))
         for split_id, ids in sorted(splits.items())
     )
-    return api.BenchmarkTaskSet(
+    return api.BenchmarkCutSpec(
         benchmark_id=BENCHMARK_ID,
         revision_id=REVISION,
         source_digest=source_digest,
         task_schema_id=TASK_SCHEMA_ID,
-        tasks=tasks,
+    ).build(
+        tasks,
         splits=split_rows,
-        selection_policy_digest=api.canonical_digest({
+        selection_policy={
             "benchmark_id": BENCHMARK_ID,
             "revision": REVISION,
             "task_ids": tuple(row.task_id for row in tasks),
             "selection": "content_addressed_external_release",
-        }),
+        },
     )
 
 
