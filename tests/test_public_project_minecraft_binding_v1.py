@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium.contracts.environment import (
+from noetrium.api import (
     EnvironmentCapability,
     EnvironmentProviderPort,
 )
