@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.generate_downstream_contracts import build_surfaces, _api_modules, _public_symbols
+from noetrium_platform.foundation.governance.architecture.downstream_surface_policy import downstream_symbols
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,7 +49,7 @@ def _runtime_export_drift(module_name: str, expected: tuple[str, ...]) -> tuple[
     declared = getattr(module, "__all__", None)
     if declared is None:
         return ()
-    observed = tuple(declared)
+    observed = downstream_symbols(tuple(declared))
     if len(observed) != len(set(observed)):
         return ("runtime __all__ contains duplicate symbols",)
     missing = sorted(set(observed) - set(expected))
@@ -93,7 +94,7 @@ def _uncovered_public_api_findings(
             if path.name.startswith("_") and path.name != "__init__.py":
                 continue
             try:
-                symbols = _public_symbols(path)
+                symbols = downstream_symbols(_public_symbols(path))
             except BaseException as exc:
                 rows.append(SurfaceFinding(
                     "PUBLIC_API_STATIC_EVALUATION_FAILED",
