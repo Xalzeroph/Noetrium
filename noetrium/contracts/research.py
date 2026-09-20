@@ -20,11 +20,12 @@ from noetrium.contracts.systems import experimentation__study as _surface_12
 from noetrium.contracts.systems import experimentation__variant as _surface_13
 from noetrium.contracts.systems import experimentation__workbench as _surface_14
 from noetrium.contracts.systems import experimentation__workload as _surface_15
+from noetrium.contracts.systems import execution__workflow as _surface_16
 from noetrium_platform.research.experimentation.study import runtime as _extra_0
 from noetrium_platform.research.experimentation.workbench import providers as _extra_1
 from noetrium_platform.research.experimentation.workbench import runtime as _extra_2
 
-_SOURCES = (('experimentation', '_surface_0'), ('experimentation/branch', '_surface_1'), ('experimentation/catalog', '_surface_2'), ('experimentation/checkpoint', '_surface_3'), ('experimentation/evaluation', '_surface_4'), ('experimentation/experiment', '_surface_5'), ('experimentation/resource', '_surface_6'), ('experimentation/run', '_surface_7'), ('experimentation/run/control', '_surface_8'), ('experimentation/run/identity', '_surface_9'), ('experimentation/run/lifecycle', '_surface_10'), ('experimentation/run/manifest', '_surface_11'), ('experimentation/study', '_surface_12'), ('experimentation/variant', '_surface_13'), ('experimentation/workbench', '_surface_14'), ('experimentation/workload', '_surface_15'), ('experimentation/study/runtime', '_extra_0'), ('experimentation/workbench/providers', '_extra_1'), ('experimentation/workbench/runtime', '_extra_2'))
+_SOURCES = (('experimentation', '_surface_0'), ('experimentation/branch', '_surface_1'), ('experimentation/catalog', '_surface_2'), ('experimentation/checkpoint', '_surface_3'), ('experimentation/evaluation', '_surface_4'), ('experimentation/experiment', '_surface_5'), ('experimentation/resource', '_surface_6'), ('experimentation/run', '_surface_7'), ('experimentation/run/control', '_surface_8'), ('experimentation/run/identity', '_surface_9'), ('experimentation/run/lifecycle', '_surface_10'), ('experimentation/run/manifest', '_surface_11'), ('experimentation/study', '_surface_12'), ('experimentation/variant', '_surface_13'), ('experimentation/workbench', '_surface_14'), ('experimentation/workload', '_surface_15'), ('execution/workflow', '_surface_16'), ('experimentation/study/runtime', '_extra_0'), ('experimentation/workbench/providers', '_extra_1'), ('experimentation/workbench/runtime', '_extra_2'))
 _CANONICAL_OWNERS = {'ExperimentPlan': 'experimentation/study'}
 _EXCLUDED = frozenset(('CONTRACT', 'contract'))
 _owners: dict[str, str] = {}
