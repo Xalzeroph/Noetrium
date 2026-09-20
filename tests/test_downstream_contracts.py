@@ -70,6 +70,21 @@ def test_reference_components_are_visible_through_unified_api() -> None:
     assert importlib.util.find_spec("noetrium.contracts.systems.components") is None
 
 
+def test_unified_api_supports_symbol_search_and_schema_discovery() -> None:
+    from noetrium import api
+
+    matches = api.search("AgentMethodSpec")
+    assert matches
+    assert matches[0].symbol == "AgentMethodSpec"
+    assert api.owners("AgentMethodSpec")
+    schemas = api.describe("AgentMethodSpec")
+    assert schemas
+    assert all(row["schema"]["name"] == "AgentMethodSpec" for row in schemas)
+
+    assert api.search("definitely-not-a-noetrium-symbol") == ()
+    assert api.describe("definitely-not-a-noetrium-symbol") == ()
+
+
 def test_catalog_exposes_stable_document_and_surface_fingerprints() -> None:
     catalog = load_downstream_capability_catalog()
     assert len(catalog.catalog_digest) == 64
