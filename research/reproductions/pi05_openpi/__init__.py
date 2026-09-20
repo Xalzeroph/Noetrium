@@ -1,4 +1,4 @@
-from .compatibility import build_pi05_action_command, build_pi05_embodiment_spec
+from .binding import build_pi05_action_command, build_pi05_embodiment_spec
 from .fidelity import (
     PI05_OPENPI_FIDELITY,
     PI05_OPENPI_REPOSITORY,
