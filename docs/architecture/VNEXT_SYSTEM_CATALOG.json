@@ -370,7 +370,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "environment/catalog": {
     "authority": "environment_catalog",
@@ -429,7 +429,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "environment/instance/readiness": {
     "authority": "environment_readiness",
@@ -448,7 +448,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "environment/minecraft": {
     "authority": "minecraft_environment",
@@ -674,7 +674,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "environment/specification/schema": {
     "authority": "environment_schema",
@@ -693,7 +693,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "execution": {
     "authority": "execution_operations",
@@ -921,7 +921,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "experimentation",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "experimentation/catalog": {
     "authority": "experiment_catalog_view",
@@ -1184,7 +1184,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "experimentation",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "experimentation/workbench": {
     "authority": "research_analysis_publication",
@@ -1434,7 +1434,7 @@
     "components": [],
     "node_kind": "policy",
     "canonical_authority": null,
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "governance/security": {
     "authority": "security_policy",
@@ -1453,7 +1453,7 @@
     "components": [],
     "node_kind": "policy",
     "canonical_authority": null,
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "governance/system_registry": {
     "authority": "system_topology",
@@ -1603,7 +1603,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "model",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "model/catalog/revision": {
     "authority": "model_revision",
@@ -1663,7 +1663,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "model",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "model/qualification": {
     "authority": "model_qualification",
@@ -1722,7 +1722,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "model",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "model/request/output": {
     "authority": "request_output",
@@ -1741,7 +1741,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "model",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "model/request/prompt": {
     "authority": "model_prompt_compilation",
@@ -2744,7 +2744,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "platform",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "platform/identity": {
     "authority": "platform_identity",
@@ -2763,7 +2763,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "platform",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "platform/lifecycle": {
     "authority": "platform_lifecycle",
@@ -2782,7 +2782,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "platform",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "portfolio": {
     "authority": "portfolio_metadata",
@@ -2823,7 +2823,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "portfolio",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "portfolio/program": {
     "authority": "program_metadata",
@@ -2842,7 +2842,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "portfolio",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "portfolio/project": {
     "authority": "project_metadata",
@@ -2880,7 +2880,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "portfolio",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "reliability": {
     "authority": "reliability_authority",
@@ -3493,7 +3493,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "scope/identity": {
     "authority": "scope_identity",
@@ -3512,7 +3512,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "scope/membership": {
     "authority": "scope_membership",
@@ -3531,7 +3531,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "scope/ownership": {
     "authority": "scope_ownership",
@@ -3550,7 +3550,7 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "scope/path": {
     "authority": "scope_path",
@@ -3588,6 +3588,6 @@
     "components": [],
     "node_kind": "facet",
     "canonical_authority": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   }
 }

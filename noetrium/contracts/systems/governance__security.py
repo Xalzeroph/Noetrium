@@ -3,16 +3,11 @@ System: governance/security
 Authority: None
 Canonical authority: None
 Node kind: policy
-Downstream surface: public
-API exports: available
+Downstream surface: metadata_only
+API exports: none (metadata-only facade)
 This module is regenerated from the canonical registry and API exports.
 """
 
-from noetrium_platform.foundation.governance.security.api.boundary import (
-    SystemLeafContract,
-    contract,
-)
-
 SYSTEM_KEY = 'governance/security'
 PACKAGE_PREFIX = 'noetrium_platform.foundation.governance.security'
-__all__ = ('SystemLeafContract', 'contract')
+__all__ = ()

@@ -10,15 +10,8 @@ This module is regenerated from the canonical registry and API exports.
 
 from noetrium_platform.research.execution.scheduling.api import (
     AdmissionSchedulingPolicyPort,
-    CONTRACT,
     ExecutionPriority,
     SchedulingCandidate,
-    contract,
-)
-
-from noetrium_platform.research.execution.scheduling.api.boundary import (
-    SystemLeafContract,
-    contract as boundary__contract,
 )
 
 from noetrium_platform.research.execution.scheduling.api.contracts import (
@@ -33,4 +26,4 @@ from noetrium_platform.research.execution.scheduling.api.ports import (
 
 SYSTEM_KEY = 'execution/scheduling'
 PACKAGE_PREFIX = 'noetrium_platform.research.execution.scheduling'
-__all__ = ('AdmissionSchedulingPolicyPort', 'CONTRACT', 'ExecutionPriority', 'SchedulingCandidate', 'contract', 'SystemLeafContract', 'boundary__contract', 'contracts__ExecutionPriority', 'contracts__SchedulingCandidate', 'ports__SchedulingCandidate', 'ports__AdmissionSchedulingPolicyPort')
+__all__ = ('AdmissionSchedulingPolicyPort', 'ExecutionPriority', 'SchedulingCandidate', 'contracts__ExecutionPriority', 'contracts__SchedulingCandidate', 'ports__SchedulingCandidate', 'ports__AdmissionSchedulingPolicyPort')

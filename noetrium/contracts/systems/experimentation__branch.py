@@ -3,16 +3,11 @@ System: experimentation/branch
 Authority: None
 Canonical authority: experimentation
 Node kind: facet
-Downstream surface: public
-API exports: available
+Downstream surface: metadata_only
+API exports: none (metadata-only facade)
 This module is regenerated from the canonical registry and API exports.
 """
 
-from noetrium_platform.research.experimentation.branch.api.boundary import (
-    SystemLeafContract,
-    contract,
-)
-
 SYSTEM_KEY = 'experimentation/branch'
 PACKAGE_PREFIX = 'noetrium_platform.research.experimentation.branch'
-__all__ = ('SystemLeafContract', 'contract')
+__all__ = ()
