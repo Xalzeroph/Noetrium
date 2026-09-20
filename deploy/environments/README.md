@@ -39,11 +39,11 @@ Read wheel/evidence digests from the generated release evidence, then build `dep
 | Profile | Adds | Does not add |
 | --- | --- | --- |
 | `minecraft` | Java 21, Node 22, lockfile-pinned Mineflayer bridge runtime | Minecraft server/world/task/benchmark |
-| `embodied` | EGL, OpenGL, OSMesa, headless X runtime | Habitat, ManiSkill, LIBERO, CALVIN, RoboTwin |
-| `gui` | Xvfb, Openbox, xdotool, screenshot tooling | OSWorld, AndroidWorld, benchmark VM images |
-| `web` | Chromium and chromedriver | WebArena, benchmark websites/application state |
-| `software` | compiler/build/SSH workspace prerequisites | SWE-bench images, target repositories/tasks |
-| `text_world` | base image only | ALFWorld, ScienceWorld, Jericho/task corpora |
+| `embodied` | EGL, OpenGL, OSMesa, headless X runtime | benchmark simulators, task packages, robot-specific assets |
+| `gui` | Xvfb, Openbox, xdotool, screenshot tooling | benchmark VM images, applications, task manifests |
+| `web` | Chromium and chromedriver | benchmark websites, application state, task manifests |
+| `software` | compiler/build/SSH workspace prerequisites | benchmark images, target repositories, task patches |
+| `text_world` | base image only | benchmark runtimes and task corpora |
 
 Build and diagnose one environment profile by composing the base service with one overlay:
 
