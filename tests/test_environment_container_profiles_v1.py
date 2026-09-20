@@ -34,7 +34,13 @@ def test_environment_images_extend_qualified_base_only() -> None:
         assert "ARG PLATFORM_BASE_IMAGE" in text
         assert "FROM ${PLATFORM_BASE_IMAGE}" in text
         lowered = text.lower()
-        for forbidden in ("copy research", "copy benchmarks", "openha", "osworld", "webarena", "libero", "calvin", "robotwin", "swe-bench"):
+        for forbidden in (
+            "copy research",
+            "copy benchmarks",
+            "copy datasets",
+            "copy checkpoints",
+            "copy experiments",
+        ):
             assert forbidden not in lowered
 
 
