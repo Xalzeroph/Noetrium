@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "mem_gallery",
+  "benchmark": {
+    "benchmark_id": "mem-gallery",
+    "title": "Mem-Gallery",
+    "source_uri": "https://github.com/YuanchenBei/Mem-Gallery",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "structured"
+    ]
+  }
+}

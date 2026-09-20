@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "navrag_ce",
+  "benchmark": {
+    "benchmark_id": "navrag-ce",
+    "title": "NavRAG-CE",
+    "source_uri": "https://github.com/MrZihan/D3D-VLP",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

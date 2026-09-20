@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "video_mme",
+  "benchmark": {
+    "benchmark_id": "video-mme",
+    "title": "Video-MME",
+    "source_uri": "https://video-mme.github.io/",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "video"
+    ]
+  }
+}

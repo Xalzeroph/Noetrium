@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "groundedvqa",
+  "benchmark": {
+    "benchmark_id": "groundedvqa",
+    "title": "GroundedVQA",
+    "source_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_ReFAct_Empowering_Multimodal_Web_Agents_with_Visual_and_Context_Focusing_CVPR_2026_paper.html",
+    "environment_kinds": [
+      "web"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

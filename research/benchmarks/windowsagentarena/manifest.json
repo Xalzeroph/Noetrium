@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "windowsagentarena",
+  "benchmark": {
+    "benchmark_id": "windowsagentarena",
+    "title": "WindowsAgentArena",
+    "source_uri": "https://github.com/microsoft/WindowsAgentArena",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

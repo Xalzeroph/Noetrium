@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "goat_bench",
+  "benchmark": {
+    "benchmark_id": "goat-bench",
+    "title": "GOAT-Bench",
+    "source_uri": "https://github.com/Ram81/goat-bench",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

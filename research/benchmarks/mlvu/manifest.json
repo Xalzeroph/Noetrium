@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "mlvu",
+  "benchmark": {
+    "benchmark_id": "mlvu",
+    "title": "MLVU",
+    "source_uri": "https://github.com/JUNJIE99/MLVU",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "video"
+    ]
+  }
+}

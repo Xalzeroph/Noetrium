@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "screenspot_pro",
+  "benchmark": {
+    "benchmark_id": "screenspot-pro",
+    "title": "ScreenSpot-Pro",
+    "source_uri": "https://github.com/likaixin2000/ScreenSpot-Pro-GUI-Grounding",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "amex",
+  "benchmark": {
+    "benchmark_id": "amex",
+    "title": "AMEX",
+    "source_uri": "https://github.com/hehehahi4/CES",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}
