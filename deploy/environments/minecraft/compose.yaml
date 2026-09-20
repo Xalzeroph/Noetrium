@@ -1,0 +1,23 @@
+services:
+  platform-runtime:
+    build:
+      context: ..
+      dockerfile: deploy/environments/minecraft/Dockerfile
+      args:
+        PLATFORM_BASE_IMAGE: ${PLATFORM_IMAGE:-noetrium:local}
+        JAVA_RUNTIME_IMAGE: ${JAVA_RUNTIME_IMAGE:-eclipse-temurin:21-jre-jammy}
+        NODE_VERSION: ${NODE_VERSION:-22.22.2}
+    image: ${PLATFORM_MINECRAFT_IMAGE:-noetrium-env-minecraft:local}
+    environment:
+      NOETRIUM_ENVIRONMENT_PROFILE: minecraft
+      MC_DATA_DIR: /var/lib/minecraft
+    volumes:
+      - type: bind
+        source: ${PLATFORM_HOST_DATA_ROOT:-./.runtime}/minecraft
+        target: /var/lib/minecraft
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/noetrium-entrypoint", "environment-doctor", "minecraft"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 10s
