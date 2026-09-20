@@ -1,30 +1,27 @@
 # Minecraft Docker runtime
 
-The base platform image remains provider-neutral and lightweight. Minecraft is shipped upstream as a bundled provider, but its Java/Node runtime is opt-in through `deploy/Dockerfile.minecraft` and `deploy/compose.minecraft.yaml`.
-
-This separation keeps ordinary platform users from paying the cost of Java, Node and Mineflayer while preserving a reproducible first-party Minecraft runtime.
+The base platform image remains provider-neutral and lightweight. The base image is built from the formally qualified Noetrium wheel. Minecraft is a reusable upstream environment profile layered on that immutable base image.
 
 ## Images
 
-`deploy/Dockerfile` builds the generic Python platform image.
+`deploy/Dockerfile` defines the evidence-bound generic Python platform image. It is built only from a prepared formal container context; `deploy/compose.yaml` consumes the resulting image and does not rebuild Platform source.
 
-`deploy/Dockerfile.minecraft` builds the Minecraft-capable image with Python 3.12, Java 21, Node 22 and the lockfile-pinned Mineflayer bridge. It contains no downstream project code or benchmark manifests.
+`deploy/environments/minecraft/Dockerfile` consumes `PLATFORM_BASE_IMAGE` and adds Java 21, Node 22, and the lockfile-pinned Mineflayer bridge runtime. It copies no Noetrium source tree, benchmark manifest, paper method, checkpoint, or downstream project code.
+
+`deploy/environments/catalog.json` is the environment-profile authority. `deploy/compose.minecraft.yaml` remains only as a compatibility overlay and points to the canonical Minecraft environment Dockerfile.
 
 ## Compose overlay
 
-Use both Compose files when Minecraft capability is required:
+Build the exact qualified base image first, then use the environment overlay:
 
-```bash
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml run --rm platform-runtime minecraft-doctor
-```
+    export PLATFORM_IMAGE="noetrium:<exact-source-sha>"
+    docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
+    docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
 
-Mutable Minecraft state is bound below `${PLATFORM_HOST_DATA_ROOT}/minecraft`; generic platform state remains below `${PLATFORM_HOST_DATA_ROOT}/platform-state`.
+Mutable Minecraft provider state is bound below `${PLATFORM_HOST_DATA_ROOT}/minecraft`; generic platform state remains below `${PLATFORM_HOST_DATA_ROOT}/platform-state`.
 
-The overlay does not publish a Minecraft TCP port by default. A downstream deployment may add a port mapping when external clients genuinely require one.
+The environment profile does not publish a Minecraft TCP port and does not ship a Minecraft server artifact. Downstream scientific deployments own the exact server/world cut, task manifest, benchmark adapter, method, model/checkpoint bindings, metrics, seeds, and claims.
 
 ## Reproducibility
 
-Production automation should pin the platform release/source identity, Node version, Minecraft server artifact digest and Java/runtime evidence. Build an immutable image once and reuse that exact image identity across execution nodes rather than rebuilding under the same tag.
-
-Project-specific task manifests, scenario choices and scientific run configuration are downstream inputs and must not be baked into the upstream image.
+Production automation should pin the base image digest, environment image digest, Node version, Java runtime image digest, Minecraft server artifact digest, and downstream world/task identities. Build immutable images once and reuse those exact identities across execution nodes.
