@@ -53,8 +53,7 @@ def _doctor(*, ready: bool, blocked: tuple[str, ...] = ()) -> dict:
         "command": "project doctor",
         "result": {
             "project_root": "project",
-            "template_profile": "author",
-            "template_revision": "noetrium.project-template.author.v3",
+            "template_revision": "noetrium.project-template.v6",
             "checks": checks,
         },
     }
@@ -66,17 +65,16 @@ def test_doctor_facts_preserve_public_boundary_and_blocker_ids() -> None:
         4,
         _doctor(ready=False, blocked=("participant_provider_readiness", "application_binding")),
     )
-    ready, public_boundary, profile, template, blockers = npe._doctor_facts(receipt)
+    ready, public_boundary, template, blockers = npe._doctor_facts(receipt)
     assert ready is False
     assert public_boundary is True
-    assert profile == "author"
-    assert template == "noetrium.project-template.author.v3"
+    assert template == "noetrium.project-template.v6"
     assert blockers == ("participant_provider_readiness", "application_binding")
 
 
 def test_doctor_facts_fail_closed_on_invalid_json() -> None:
     receipt = _receipt("project-doctor", 4, stdout="not-json")
-    assert npe._doctor_facts(receipt) == (False, False, None, None, ("DOCTOR_RECEIPT_INVALID",))
+    assert npe._doctor_facts(receipt) == (False, False, None, ("DOCTOR_RECEIPT_INVALID",))
 
 
 def _bind_fake_venv(monkeypatch) -> dict[str, Path]:
@@ -115,10 +113,10 @@ def test_clean_room_records_level0_binding_blocker_without_false_pass(
     venv_state = _bind_fake_venv(monkeypatch)
     rows = {
         "install-artifact": _receipt("install-artifact", 0),
-        "project-create": _receipt("project-create", 0, {"ok": True, "result": {"template_profile": "author"}}),
+        "project-create": _receipt("project-create", 0, {"ok": True, "result": {"template_revision": "noetrium.project-template.v6"}}),
         "project-doctor": _receipt(
             "project-doctor", 4,
-            _doctor(ready=False, blocked=("level0_standard_bindings",)),
+            _doctor(ready=False, blocked=("standard_bindings",)),
         ),
         "project-test": _receipt("project-test", 0, {"ok": True}),
     }
@@ -131,13 +129,12 @@ def test_clean_room_records_level0_binding_blocker_without_false_pass(
     monkeypatch.setattr(npe, "_run", fake_run)
 
     result = npe.verify_npe_cleanroom(artifact)
-    assert result.template_profile == "author"
-    assert result.npe_verified is False
+        assert result.npe_verified is False
     assert result.project_created is True
     assert result.generated_tests_passed is True
     assert result.public_import_boundary_passed is True
-    assert "DOCTOR_BLOCKED:level0_standard_bindings" in result.blocker_codes
-    assert "URE_LEVEL0_STANDARD_BINDINGS_UNAVAILABLE" in result.blocker_codes
+    assert "DOCTOR_BLOCKED:standard_bindings" in result.blocker_codes
+    assert "URE_STANDARD_BINDINGS_UNAVAILABLE" in result.blocker_codes
 
 def test_clean_room_verifies_explicit_downstream_lifecycle_and_fresh_reopen(
     tmp_path: Path, monkeypatch
@@ -186,8 +183,7 @@ def test_clean_room_verifies_explicit_downstream_lifecycle_and_fresh_reopen(
         return rows[name]
     monkeypatch.setattr(npe, "_run", fake_run)
     result = npe.verify_npe_cleanroom(artifact)
-    assert result.template_profile == "author"
-    assert result.doctor_ready is True
+        assert result.doctor_ready is True
     assert result.reference_lifecycle_complete is True, result.blocker_codes
     assert result.fresh_process_reopen_passed is True, result.blocker_codes
     assert result.npe_verified is True
