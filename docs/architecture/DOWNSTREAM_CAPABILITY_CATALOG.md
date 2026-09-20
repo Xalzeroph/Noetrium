@@ -2046,7 +2046,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.capabilities.participant.binding.api.contracts ?w^~)?t ParticipantBindingResolverPort, ParticipantConfigurationCatalogPort, ParticipantImplementationCatalogPort, ParticipantImplementationRegistration, ParticipantRuntimeEndpointFactory, ParticipantSessionRuntimeCatalogPort, ParticipantSessionRuntimeRegistration
+- noetrium_platform.capabilities.participant.binding.api.contracts ?w^~)?t ParticipantBindingResolverPort, ParticipantConfigurationResolverPort, ParticipantImplementationResolverPort, ParticipantImplementationRegistration, ParticipantRuntimeEndpointFactory, ParticipantSessionRuntimeResolverPort, ParticipantSessionRuntimeRegistration
 
 ### participant/capability
 
