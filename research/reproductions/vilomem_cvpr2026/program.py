@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_cycle_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="vilomem_cvpr2026"
 TITLE="ViLoMem: Agentic Learner with Grow-and-Refine Multimodal Semantic Memory"
 VENUE="CVPR 2026"
@@ -16,10 +16,10 @@ PHASES=(
     AgentPhaseSpec("grow_or_refine", "vilomem.memory", "Merge with a similar memory schema or create a new schema while preserving stable reusable knowledge."),
     AgentPhaseSpec("dual_retrieve", "vilomem.retriever", "Retrieve logical memories by problem/text similarity and visual memories by image embedding plus query filtering."),
 )
-METHOD_PROGRAM=build_agent_cycle_program(
+METHOD_PROGRAM=AgentMethodSpec(
     method_id=METHOD_ID,implementation_version="2026-paper-protocol",schema_version="vilomem_cvpr2026.phase-workflow.v1",phases=PHASES,max_cycles=8,
     configuration={"paper_uri":PAPER_URI,"venue":VENUE,"benchmark_ids":BENCHMARK_IDS,"protocol":PROTOCOL,"ablations":ABLATIONS},
     evidence_obligations=(METHOD_ID+".phase-transcript",METHOD_ID+".model-tool-receipts",METHOD_ID+".metric-artifacts"),
     metric_names=METRICS,artifact_kinds=(METHOD_ID+"_trajectory",METHOD_ID+"_experiment_manifest"),
-)
+).compile()
 __all__=["ABLATIONS","BENCHMARK_IDS","METHOD_ID","METHOD_PROGRAM","METRICS","PAPER_URI","PHASES","PROTOCOL","TITLE","VENUE"]
