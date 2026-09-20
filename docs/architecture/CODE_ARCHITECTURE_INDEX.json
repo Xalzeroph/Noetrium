@@ -14882,6 +14882,26 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkCutSpec",
+      "target": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkTaskSet"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkCutSpec",
+      "target": "noetrium_platform.research.experimentation.study.api.benchmark.TaskDefinition"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkCutSpec",
+      "target": "noetrium_platform.research.experimentation.study.api.benchmark.TaskGraph"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkCutSpec",
+      "target": "noetrium_platform.research.experimentation.study.api.benchmark.TaskSetSplit"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkSourcePort",
       "target": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkSourceResolution"
     },
@@ -87315,6 +87335,33 @@
       "top_system": "experimentation"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "benchmark_id",
+        "revision_id",
+        "source_digest",
+        "source_reference",
+        "task_schema_id"
+      ],
+      "kind": "dataclass",
+      "line": 384,
+      "methods": [
+        "__post_init__",
+        "build"
+      ],
+      "module": "noetrium_platform.research.experimentation.study.api.benchmark",
+      "name": "BenchmarkCutSpec",
+      "nesting": [
+        "BenchmarkCutSpec"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkCutSpec",
+      "system_key": "experimentation/study",
+      "top_system": "experimentation"
+    },
+    {
       "bases": [
         "StrEnum"
       ],
@@ -87327,7 +87374,7 @@
         "LOCAL_FILE"
       ],
       "kind": "enum",
-      "line": 390,
+      "line": 460,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.study.api.benchmark",
       "name": "BenchmarkSourceKind",
@@ -87345,7 +87392,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 455,
+      "line": 525,
       "methods": [
         "resolve"
       ],
@@ -87369,7 +87416,7 @@
         "task_set"
       ],
       "kind": "dataclass",
-      "line": 432,
+      "line": 502,
       "methods": [
         "__post_init__",
         "cut_digest"
@@ -87399,7 +87446,7 @@
         "source_id"
       ],
       "kind": "dataclass",
-      "line": 399,
+      "line": 469,
       "methods": [
         "__post_init__"
       ],
@@ -87452,7 +87499,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 460,
+      "line": 530,
       "methods": [
         "__init__",
         "register",
@@ -96060,6 +96107,16 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkCutSpec",
+      "target": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkTaskSet"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkCutSpec",
+      "target": "noetrium_platform.research.experimentation.study.api.benchmark.TaskGraph"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.study.api.benchmark.InMemoryBenchmarkSource",
       "target": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkSourceResolution"
     },
@@ -96185,9 +96242,9 @@
     }
   ],
   "counts": {
-    "association_edges": 3198,
-    "classes": 3152,
-    "constructor_edges": 858,
+    "association_edges": 3202,
+    "classes": 3153,
+    "constructor_edges": 860,
     "inheritance_edges": 138,
     "module_import_edges": 5471,
     "parse_errors": 0,
@@ -143856,7 +143913,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "9acb2a322223e008c2769e2b54f5f2f7c4f4836f",
+  "source_git_sha": "52659d17d3b85f5096ecceef898bb007eaedb792",
   "system_import_edges": [
     {
       "count": 108,

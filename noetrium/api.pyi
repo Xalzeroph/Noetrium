@@ -1898,6 +1898,10 @@ from noetrium_platform.research.experimentation.study.api.analysis import (
     EvidenceManifestProjection as EvidenceManifestProjection,
 )
 
+from noetrium_platform.research.experimentation.study.api.benchmark import (
+    BenchmarkCutSpec as BenchmarkCutSpec,
+)
+
 from noetrium_platform.research.experimentation.study.api.materialization import (
     MaterializedTaskVerifierArchive as MaterializedTaskVerifierArchive,
     TaskVerifierArchiveMaterializationPort as TaskVerifierArchiveMaterializationPort,
