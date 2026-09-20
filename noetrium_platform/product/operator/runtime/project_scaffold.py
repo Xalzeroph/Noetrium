@@ -49,8 +49,41 @@ def _project_module(request: ProjectCreateRequest) -> str:
     return f'''from noetrium.contracts.project import ProjectIdentity\n\nPROJECT_IDENTITY = ProjectIdentity({request.project_id!r}, {request.version!r})\n\n__all__ = ["PROJECT_IDENTITY"]\n'''
 
 
-def _author_module(kind: str) -> str:
-    return f'''"""Paper-author {kind} definitions.\n\nKeep paper-specific semantics here. The Platform compiler/binding layer consumes\nauthor definitions through public contracts once the producer handoff is available.\nDo not import Platform runtime/provider implementation modules from this file.\n"""\n\n__all__: tuple[str, ...] = ()\n'''
+def _author_method_module(request: ProjectCreateRequest) -> str:
+    return f'''"""Paper-specific method semantics.
+
+Edit the phases/configuration below. No provider/runtime plumbing belongs here.
+"""
+from noetrium.contracts.research import AgentMethodSpec, AgentPhaseSpec
+
+METHOD_SPEC = AgentMethodSpec(
+    method_id={request.project_id!r},
+    phases=(
+        AgentPhaseSpec(
+            "solve",
+            "agent.solve",
+            "Implement the paper-specific method semantics here.",
+        ),
+    ),
+)
+METHOD_PROGRAM = METHOD_SPEC.compile()
+
+__all__ = ["METHOD_PROGRAM", "METHOD_SPEC"]
+'''
+
+
+def _author_study_module() -> str:
+    return '''"""Paper experiment declarations.
+
+Keep benchmark task identity, measurements, baselines, treatments and Study
+construction here. Provider/runtime/checkpoint/evidence implementation remains
+outside the author project.
+"""
+
+from .method import METHOD_PROGRAM
+
+__all__ = ["METHOD_PROGRAM"]
+'''
 
 
 def _author_research_module() -> str:
@@ -62,10 +95,12 @@ from noetrium.contracts.research import (
     ResearchStudyDefinition,
 )
 
+from .method import METHOD_PROGRAM
+
 METHOD_HOST: ResearchMethodHostPort = ResearchMethodHost()
 
 
-def compile_method(
+def compile_study(
     definition: ResearchStudyDefinition,
     project_manifest: ProjectManifest,
     binding: ResearchBindingContribution,
@@ -73,7 +108,7 @@ def compile_method(
     return METHOD_HOST.compile_method(definition, project_manifest, binding)
 
 
-__all__ = ["METHOD_HOST", "compile_method"]
+__all__ = ["METHOD_HOST", "METHOD_PROGRAM", "compile_study"]
 '''
 
 
@@ -107,7 +142,40 @@ def _application_module() -> str:
 
 
 def _author_test_module(package: str) -> str:
-    return f'''import unittest\nfrom pathlib import Path\n\nfrom noetrium.contracts.project import ProjectIdentity, decode_project_manifest_bytes\nfrom {package}.project import PROJECT_IDENTITY\nfrom {package}.research import METHOD_HOST, compile_method\nimport {package}.methods\nimport {package}.tasks\nimport {package}.measurements\nimport {package}.studies\n\nROOT = Path(__file__).resolve().parents[1]\n\n\nclass GeneratedAuthorProjectTests(unittest.TestCase):\n    def test_manifest_identity_matches_public_project_identity(self):\n        manifest = decode_project_manifest_bytes((ROOT / {_MANIFEST_PATH!r}).read_bytes())\n        self.assertIsInstance(PROJECT_IDENTITY, ProjectIdentity)\n        self.assertEqual(manifest.project.identity, PROJECT_IDENTITY)\n\n    def test_author_modules_import_without_provider_plumbing(self):\n        self.assertFalse((ROOT / "src" / {package!r} / "participant_provider.py").exists())\n        self.assertFalse((ROOT / "src" / {package!r} / "model_provider.py").exists())\n        self.assertFalse((ROOT / "src" / {package!r} / "environment_provider.py").exists())\n        self.assertFalse((ROOT / "src" / {package!r} / "application.py").exists())\n\n\nif __name__ == "__main__":\n    unittest.main()\n'''
+    return f'''import unittest
+from pathlib import Path
+
+from noetrium.contracts.project import ProjectIdentity, decode_project_manifest_bytes
+from noetrium.contracts.research import AgentMethodSpec, MethodProgram
+from {package}.method import METHOD_PROGRAM, METHOD_SPEC
+from {package}.project import PROJECT_IDENTITY
+from {package}.research import METHOD_HOST, compile_study
+import {package}.study
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class GeneratedAuthorProjectTests(unittest.TestCase):
+    def test_manifest_identity_matches_public_project_identity(self):
+        manifest = decode_project_manifest_bytes((ROOT / {_MANIFEST_PATH!r}).read_bytes())
+        self.assertIsInstance(PROJECT_IDENTITY, ProjectIdentity)
+        self.assertEqual(manifest.project.identity, PROJECT_IDENTITY)
+
+    def test_method_spec_compiles_through_public_contracts(self):
+        self.assertIsInstance(METHOD_SPEC, AgentMethodSpec)
+        self.assertIsInstance(METHOD_PROGRAM, MethodProgram)
+        self.assertTrue(callable(compile_study))
+
+    def test_author_modules_import_without_provider_plumbing(self):
+        self.assertFalse((ROOT / "src" / {package!r} / "participant_provider.py").exists())
+        self.assertFalse((ROOT / "src" / {package!r} / "model_provider.py").exists())
+        self.assertFalse((ROOT / "src" / {package!r} / "environment_provider.py").exists())
+        self.assertFalse((ROOT / "src" / {package!r} / "application.py").exists())
+
+
+if __name__ == "__main__":
+    unittest.main()
+'''
 
 
 def _provider_test_module(package: str) -> str:
@@ -116,7 +184,7 @@ def _provider_test_module(package: str) -> str:
 
 def _readme(project_id: str, profile: ProjectTemplateProfile) -> str:
     if profile is ProjectTemplateProfile.AUTHOR:
-        return f'''# {project_id}\n\nThis is the Level-0 paper-author scaffold.\n\nEdit `methods.py`, `tasks.py`, `measurements.py`, and `studies.py`. Use `research.py` as the public Method Host entry point: it compiles typed author facts with an injected ProjectManifest and BindingContribution. Provider, runtime, checkpoint, resource, and evidence authorities remain outside the author project.\n\nRun `noetrium project doctor --project .` to verify the public compiler/binding seam and `noetrium project test --project .` for structural/public-boundary conformance.\n'''
+        return f'''# {project_id}\n\nThis is the paper-author scaffold.\n\nStart in `method.py`: edit the generated `AgentMethodSpec` phases/configuration and compile it to the canonical `MethodProgram`. Put benchmark identity, measurements, baselines, treatments and `Study` construction in `study.py`. Use `research.py` only for the public Method Host compilation seam. Provider, runtime, checkpoint, resource and evidence authorities remain outside the author project.\n\nRun `noetrium project doctor --project .` and `noetrium project test --project .`.\n'''
     return f'''# {project_id}\n\nThis is the explicit Level-2 provider-author scaffold.\n\nIt exposes Participant/Model/Environment provider stubs and direct RunControl application binding through public Platform contracts. Every stub fails closed until implemented.\n\nNormal paper authors should use the default `author` template instead.\n'''
 
 
@@ -134,8 +202,8 @@ def _scaffold_files(request: ProjectCreateRequest) -> tuple[dict[str, bytes], st
         f"src/{package}/project.py": _project_module(request),
     }
     if request.template_profile is ProjectTemplateProfile.AUTHOR:
-        for kind in ("methods", "tasks", "measurements", "studies"):
-            text_files[f"src/{package}/{kind}.py"] = _author_module(kind)
+        text_files[f"src/{package}/method.py"] = _author_method_module(request)
+        text_files[f"src/{package}/study.py"] = _author_study_module()
         text_files[f"src/{package}/research.py"] = _author_research_module()
         text_files["tests/test_generated_author_project.py"] = _author_test_module(package)
     else:
