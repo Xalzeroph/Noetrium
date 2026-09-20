@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 from noetrium_platform.product.operator.api import (
-    ProjectCreateRequest, ProjectTemplateProfile, ResearchAction, ResearchFacade, ResearchOperationFailure,
+    ProjectCreateRequest, ResearchAction, ResearchFacade, ResearchOperationFailure,
 )
 from noetrium_platform.product.operator.api.project_experience import ProjectFacade
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
@@ -51,7 +51,6 @@ def _add_project_commands(subparsers) -> None:
     create.add_argument("destination", type=Path)
     create.add_argument("--version", required=True)
     create.add_argument("--program-id", default="standalone")
-    create.add_argument("--template", choices=tuple(row.value for row in ProjectTemplateProfile), default=ProjectTemplateProfile.AUTHOR.value)
 
     doctor = project_subparsers.add_parser("doctor", help="validate project/platform/provider readiness")
     doctor.add_argument("--project", dest="project_root", type=Path, default=Path("."))
@@ -123,7 +122,7 @@ def _run_application(args: argparse.Namespace) -> int:
 
 def _run_project(args: argparse.Namespace, project_experience: ProjectFacade) -> int:
     if args.project_command == "create":
-        receipt = project_experience.create(args.project_id, args.version, args.destination, program_id=args.program_id, template_profile=ProjectTemplateProfile(args.template))
+        receipt = project_experience.create(args.project_id, args.version, args.destination, program_id=args.program_id)
         _emit({"ok": True, "command": "project create", "result": receipt})
         return 0
     if args.project_command == "doctor":
