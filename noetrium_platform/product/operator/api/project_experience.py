@@ -7,22 +7,11 @@ from typing import Protocol
 
 from noetrium_platform.foundation.portfolio.api import ProjectIdentity
 
-PROJECT_AUTHOR_TEMPLATE_REVISION = "noetrium.project-template.author.v5"
-PROJECT_PROVIDER_TEMPLATE_REVISION = "noetrium.project-template.provider.v2"
+PROJECT_TEMPLATE_REVISION = "noetrium.project-template.v6"
 
 
-class ProjectTemplateProfile(StrEnum):
-    AUTHOR = "author"
-    PROVIDER = "provider"
-
-
-def project_template_revision(profile: ProjectTemplateProfile) -> str:
-    if type(profile) is not ProjectTemplateProfile:
-        raise TypeError("project template profile must be ProjectTemplateProfile")
-    return {
-        ProjectTemplateProfile.AUTHOR: PROJECT_AUTHOR_TEMPLATE_REVISION,
-        ProjectTemplateProfile.PROVIDER: PROJECT_PROVIDER_TEMPLATE_REVISION,
-    }[profile]
+def project_template_revision() -> str:
+    return PROJECT_TEMPLATE_REVISION
 
 
 class ProjectDoctorDisposition(StrEnum):
@@ -36,14 +25,11 @@ class ProjectCreateRequest:
     version: str
     destination: Path
     program_id: str = "standalone"
-    template_profile: ProjectTemplateProfile = ProjectTemplateProfile.AUTHOR
 
     def __post_init__(self) -> None:
         ProjectIdentity(self.project_id, self.version)
         if not isinstance(self.destination, Path):
             raise TypeError("project destination must be a pathlib.Path")
-        if type(self.template_profile) is not ProjectTemplateProfile:
-            raise TypeError("project template profile must be ProjectTemplateProfile")
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,7 +38,6 @@ class ProjectCreateReceipt:
     version: str
     program_id: str
     destination: str
-    template_profile: ProjectTemplateProfile
     template_revision: str
     manifest_path: str
     manifest_semantic_digest: str
@@ -76,7 +61,6 @@ class ProjectDoctorCheck:
 @dataclass(frozen=True, slots=True)
 class ProjectDoctorReport:
     project_root: str
-    template_profile: ProjectTemplateProfile | None
     template_revision: str | None
     checks: tuple[ProjectDoctorCheck, ...]
 
@@ -114,17 +98,13 @@ class ProjectTestReceipt:
 
 
 class ProjectExperiencePort(Protocol):
-    """Injected product authority for downstream project experience operations."""
-
     def create(self, request: ProjectCreateRequest) -> ProjectCreateReceipt: ...
-
     def doctor(self, project_root: Path) -> ProjectDoctorReport: ...
-
     def test(self, project_root: Path) -> ProjectTestReceipt: ...
 
 
 class ProjectFacade:
-    """Topology-hiding Python facade over an explicitly injected project experience port."""
+    """Topology-hiding Python facade over the unified project experience."""
 
     def __init__(self, experience: ProjectExperiencePort) -> None:
         for name in ("create", "doctor", "test"):
@@ -139,12 +119,9 @@ class ProjectFacade:
         destination: Path,
         *,
         program_id: str = "standalone",
-        template_profile: ProjectTemplateProfile = ProjectTemplateProfile.AUTHOR,
     ) -> ProjectCreateReceipt:
         return self._experience.create(
-            ProjectCreateRequest(
-                project_id, version, destination, program_id, template_profile
-            )
+            ProjectCreateRequest(project_id, version, destination, program_id)
         )
 
     def doctor(self, project_root: Path) -> ProjectDoctorReport:
@@ -155,8 +132,7 @@ class ProjectFacade:
 
 
 __all__ = [
-    "PROJECT_AUTHOR_TEMPLATE_REVISION",
-    "PROJECT_PROVIDER_TEMPLATE_REVISION",
+    "PROJECT_TEMPLATE_REVISION",
     "ProjectCreateReceipt",
     "ProjectCreateRequest",
     "ProjectDoctorCheck",
@@ -164,7 +140,6 @@ __all__ = [
     "ProjectDoctorReport",
     "ProjectExperiencePort",
     "ProjectFacade",
-    "ProjectTemplateProfile",
     "ProjectTestReceipt",
     "ProjectTestStage",
     "ProjectTestStageReceipt",
