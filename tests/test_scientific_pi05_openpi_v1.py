@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from noetrium.contracts.systems.environment__embodied import (
+from noetrium.api import (
     ActionKind,
     EmbodimentKind,
     SensorModality,
