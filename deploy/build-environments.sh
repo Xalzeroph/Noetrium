@@ -17,6 +17,7 @@ test -S /var/run/docker.sock || {
 }
 
 mkdir -p "$WORK_ROOT"
+WORK_ROOT="$(CDPATH= cd -- "$WORK_ROOT" && pwd)"
 
 docker build \
   --build-arg "DOCKER_CLI_IMAGE=$DOCKER_CLI_IMAGE" \
@@ -24,24 +25,23 @@ docker build \
   --file "$ROOT/deploy/bootstrap/Dockerfile" \
   "$ROOT"
 
-# Git metadata is mounted read-only because exact source identity and a clean
-# checkout are scientific provenance inputs. Source is mounted read-only; only
-# the dedicated build/runtime root is writable.
+# The bootstrap talks to the host Docker daemon. Preserve host absolute paths
+# inside the control-plane container so daemon-side build contexts and Compose
+# bind mounts resolve to the same files. Source stays read-only; only the
+# dedicated build/runtime root is writable.
+COMMON_ARGS="-v /var/run/docker.sock:/var/run/docker.sock -v $ROOT:$ROOT:ro -w $ROOT"
+
 if [ "${1:-}" = "build" ]; then
-  exec docker run --rm \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v "$ROOT:/workspace:ro" \
-    -v "$WORK_ROOT:/work" \
-    -w /workspace \
+  # shellcheck disable=SC2086
+  exec docker run --rm $COMMON_ARGS \
+    -v "$WORK_ROOT:$WORK_ROOT" \
     "$BOOTSTRAP_IMAGE" \
     "$@" \
-    --work-root /work \
-    --output /work/environment-image-build.json
+    --work-root "$WORK_ROOT" \
+    --output "$WORK_ROOT/environment-image-build.json"
 fi
 
-exec docker run --rm \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "$ROOT:/workspace:ro" \
-  -w /workspace \
+# shellcheck disable=SC2086
+exec docker run --rm $COMMON_ARGS \
   "$BOOTSTRAP_IMAGE" \
   "$@"
