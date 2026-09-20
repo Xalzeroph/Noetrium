@@ -1,13 +1,9 @@
-"""Stable downstream API for reusable reference components.
+"""Internal aggregation boundary for reusable reference components.
 
-``components`` is a repository extension/reference layer, not a registered
-runtime authority node.  Downstream projects import these generic substrates
-through ``components.api`` directly.  The canonical system registry and the
-generated ``noetrium.contracts.systems`` facades intentionally cover only the
-runtime topology; they must not synthesize a fake ``components`` authority.
-
-SEM and other research projects supply scientific/semantic policy.  This module
-supplies reusable reference implementations such as the versioned memory graph.
+Downstream projects use ``noetrium.api``. This package exists so the unified
+facade can consume reusable reference implementations without importing
+component implementation paths directly. It is not a second product entrypoint
+and it does not create a runtime authority.
 """
 
 from ..reference.single_agent.memory import (
