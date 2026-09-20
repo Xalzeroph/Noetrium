@@ -32,24 +32,19 @@ _MANIFEST_PATH = "project.manifest.json"
 _PACKAGE = re.compile(r"[a-z][a-z0-9_]*")
 _PROBE_TIMEOUT_S = 30
 _PROBE_SCRIPT = r'''
-from noetrium.api import (
-    AgentMethodSpec,
-    AgentStudySpec,
-    MethodProgram,
-    compile_research_method,
-)
+from noetrium import api
 from __PACKAGE__.method import METHOD_PROGRAM, METHOD_SPEC
 from __PACKAGE__.study import STUDY_SPEC, build_study
 
-if not isinstance(METHOD_SPEC, AgentMethodSpec):
+if not isinstance(METHOD_SPEC, api.AgentMethodSpec):
     raise TypeError("method module must export AgentMethodSpec")
-if not isinstance(METHOD_PROGRAM, MethodProgram):
+if not isinstance(METHOD_PROGRAM, api.MethodProgram):
     raise TypeError("method module must compile MethodProgram")
-if not isinstance(STUDY_SPEC, AgentStudySpec):
+if not isinstance(STUDY_SPEC, api.AgentStudySpec):
     raise TypeError("study module must export AgentStudySpec")
 if not callable(build_study):
     raise TypeError("study module must export build_study")
-if not callable(compile_research_method):
+if not callable(api.compile_research_method):
     raise TypeError("unified API must expose compile_research_method")
 print("ready")
 '''
