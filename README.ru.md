@@ -229,10 +229,8 @@ Downstream-код импортирует стабильные contracts и по�
 Повторно используемый Linux image и Compose-описание находятся в `deploy/`.
 
 ```bash
-cp deploy/.env.example deploy/.env
-docker compose -f deploy/compose.yaml config
-docker compose -f deploy/compose.yaml build
-docker compose -f deploy/compose.yaml run --rm platform-runtime doctor
+python scripts/build_environment_images.py validate
+python scripts/build_environment_images.py build --profiles text_world
 ```
 
 Deployment-слой отделяет immutable software от mutable runtime state; host-specific paths и secrets не попадают в versioned composition code.
@@ -242,8 +240,7 @@ Deployment-слой отделяет immutable software от mutable runtime sta
 Minecraft — first-party повторно используемый Environment Provider. Task suites и научная composition остаются downstream.
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
+python scripts/build_environment_images.py build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
