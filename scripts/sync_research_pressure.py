@@ -175,10 +175,11 @@ def _lane_status(
                 gaps.append("missing_method_program_file")
             else:
                 names = _ast_names(program_file)
-                if (
-                    "MethodProgram" not in names
-                    and "MethodProgramBuilder" not in names
-                ):
+                if not names.intersection({
+                    "MethodProgram",
+                    "MethodProgramBuilder",
+                    "build_agent_phase_program",
+                }):
                     gaps.append("method_program_not_bound_to_umm")
         elif primary_kind == "research_program":
             if not program_file.is_file():
