@@ -257,10 +257,8 @@ python scripts/check_readme_i18n.py
 再利用可能な Linux image と Compose 定義は `deploy/` で管理します。
 
 ```bash
-cp deploy/.env.example deploy/.env
-docker compose -f deploy/compose.yaml config
-docker compose -f deploy/compose.yaml build
-docker compose -f deploy/compose.yaml run --rm platform-runtime doctor
+python scripts/build_environment_images.py validate
+python scripts/build_environment_images.py build --profiles text_world
 ```
 
 Deployment 層は immutable software と mutable runtime state を分離し、host 固有 path と secret を commit 済み composition code に入れません。
@@ -270,8 +268,7 @@ Deployment 層は immutable software と mutable runtime state を分離し、ho
 Minecraft は first-party の再利用可能な environment Provider です。Task suite と科学的 composition は downstream に残します。
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
+python scripts/build_environment_images.py build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
