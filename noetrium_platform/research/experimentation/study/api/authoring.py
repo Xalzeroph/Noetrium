@@ -148,6 +148,7 @@ class Study:
         repetitions: int,
         seeds: tuple[str, ...],
         limits: TrialBudget,
+        measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...] | None = None,
         benchmark_split_id: str | None = None,
         benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK,
         experiment_id: str | None = None,
@@ -277,7 +278,7 @@ class AgentStudySpec:
     study_id: str
     method_id: str
     model: str | StudyModel
-    measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...]
+    measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...] | None = None
     treatment: str = "full"
     participant_kind: str = "paper_method_program"
     benchmark_ids: tuple[str, ...] = ()
@@ -296,7 +297,9 @@ class AgentStudySpec:
             _text(self.model, "agent study model")
         elif type(self.model) is not StudyModel:
             raise TypeError("agent study model must be a requirement id or StudyModel")
-        if type(self.measurements) is MeasurementProtocol:
+        if self.measurements is None:
+            pass
+        elif type(self.measurements) is MeasurementProtocol:
             pass
         elif type(self.measurements) is tuple and self.measurements and all(
             type(row) is MeasurementDefinition for row in self.measurements
@@ -304,8 +307,8 @@ class AgentStudySpec:
             pass
         else:
             raise TypeError(
-                "agent study measurements must be MeasurementProtocol or a non-empty "
-                "tuple of MeasurementDefinition"
+                "agent study measurements must be None, MeasurementProtocol or a "
+                "non-empty tuple of MeasurementDefinition"
             )
         object.__setattr__(
             self,
@@ -344,6 +347,9 @@ class AgentStudySpec:
     ) -> ResearchStudyDefinition:
         if not isinstance(benchmark, BenchmarkTaskSet):
             raise TypeError("agent study benchmark must be BenchmarkTaskSet")
+        resolved_measurements = self.measurements if measurements is None else measurements
+        if resolved_measurements is None:
+            raise ValueError("agent study measurements must be declared before build")
         if self.benchmark_ids and benchmark.benchmark_id not in self.benchmark_ids:
             raise ValueError(
                 f"benchmark {benchmark.benchmark_id!r} is outside declared agent study "
@@ -367,7 +373,7 @@ class AgentStudySpec:
                 configurations=self.configurations,
             ),
             models={self.model_role: self.model},
-            measurements=self.measurements,
+            measurements=resolved_measurements,
             trial=trial,
             repetitions=repetitions,
             seeds=seeds,
