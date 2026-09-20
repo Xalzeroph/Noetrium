@@ -90,12 +90,36 @@ def _matched_evidence(*claim_ids: str) -> ReproductionEvidenceRef:
                 detail="Exact benchmark cut is content-addressed.",
             ),
             ReproductionMatchCriterion(
+                criterion_id="method-semantics",
+                status=ReproductionMatchCriterionStatus.SATISFIED,
+                authority_digest=canonical_digest(
+                    {"method": "fixture-method"}
+                ),
+                detail="Method semantics match the declared reproduction.",
+            ),
+            ReproductionMatchCriterion(
+                criterion_id="model-identity",
+                status=ReproductionMatchCriterionStatus.NOT_APPLICABLE,
+                authority_digest=canonical_digest(
+                    {"model": "not-applicable"}
+                ),
+                detail="Fixture claim has no model dependency.",
+            ),
+            ReproductionMatchCriterion(
                 criterion_id="environment",
                 status=ReproductionMatchCriterionStatus.NOT_APPLICABLE,
                 authority_digest=canonical_digest(
                     {"environment": "not-applicable"}
                 ),
                 detail="Fixture claim has no external environment dependency.",
+            ),
+            ReproductionMatchCriterion(
+                criterion_id="evaluation-protocol",
+                status=ReproductionMatchCriterionStatus.SATISFIED,
+                authority_digest=canonical_digest(
+                    {"evaluation": "fixture-evaluator"}
+                ),
+                detail="Evaluation protocol is content-addressed.",
             ),
         ),
     )
@@ -199,12 +223,36 @@ def test_matched_qualification_rejects_unresolved_criterion() -> None:
             claim_ids=("fixture_claim",),
             criteria=(
                 ReproductionMatchCriterion(
+                    criterion_id="benchmark-cut",
+                    status=ReproductionMatchCriterionStatus.SATISFIED,
+                    authority_digest=canonical_digest({"benchmark": "fixture"}),
+                    detail="Benchmark is frozen.",
+                ),
+                ReproductionMatchCriterion(
+                    criterion_id="method-semantics",
+                    status=ReproductionMatchCriterionStatus.SATISFIED,
+                    authority_digest=canonical_digest({"method": "fixture"}),
+                    detail="Method is frozen.",
+                ),
+                ReproductionMatchCriterion(
                     criterion_id="model-identity",
                     status=ReproductionMatchCriterionStatus.UNRESOLVED,
                     authority_digest=canonical_digest(
                         {"model": "unresolved"}
                     ),
                     detail="Historical model service identity is unresolved.",
+                ),
+                ReproductionMatchCriterion(
+                    criterion_id="environment",
+                    status=ReproductionMatchCriterionStatus.NOT_APPLICABLE,
+                    authority_digest=canonical_digest({"environment": "na"}),
+                    detail="No external environment.",
+                ),
+                ReproductionMatchCriterion(
+                    criterion_id="evaluation-protocol",
+                    status=ReproductionMatchCriterionStatus.SATISFIED,
+                    authority_digest=canonical_digest({"evaluation": "fixture"}),
+                    detail="Evaluator is frozen.",
                 ),
             ),
         )
@@ -241,4 +289,25 @@ def test_evidence_qualification_must_bind_same_bundle() -> None:
             manifest_ref="evidence/bundle-fixture/manifest.json",
             manifest_sha256=canonical_digest({"manifest": "fixture"}),
             qualification=qualification,
+        )
+
+
+
+def test_matched_qualification_requires_full_scientific_closure() -> None:
+    with pytest.raises(ValueError, match="missing required criteria"):
+        ReproductionEvidenceQualification(
+            qualification_id="partial-match",
+            decision=ReproductionEvidenceKind.MATCHED_RESULT,
+            run_id="run-fixture",
+            run_manifest_digest=canonical_digest({"run": "fixture"}),
+            evidence_bundle_digest=canonical_digest({"bundle": "fixture"}),
+            claim_ids=("fixture_claim",),
+            criteria=(
+                ReproductionMatchCriterion(
+                    criterion_id="benchmark-cut",
+                    status=ReproductionMatchCriterionStatus.SATISFIED,
+                    authority_digest=canonical_digest({"benchmark": "fixture"}),
+                    detail="Only benchmark identity was checked.",
+                ),
+            ),
         )
