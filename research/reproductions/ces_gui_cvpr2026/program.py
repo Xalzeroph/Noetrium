@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_cycle_program, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="ces_gui_cvpr2026"
 TITLE="Training High-Level Schedulers with Execution-Feedback Reinforcement Learning for Long-Horizon GUI Automation"
 VENUE="CVPR 2026"
@@ -15,11 +15,11 @@ PHASES=(
     AgentPhaseSpec("track_state", "ces.state_tracker", "Compress previous state and execution feedback into an updated progress summary."),
     AgentPhaseSpec("replan", "ces.coordinator", "Use the new state summary to continue, revise, or terminate the high-level plan."),
 )
-METHOD_PROGRAM=build_agent_cycle_program(
+METHOD_PROGRAM=AgentMethodSpec(
     method_id=METHOD_ID,implementation_version="2026-paper-protocol",schema_version="ces_gui_cvpr2026.phase-workflow.v1",phases=PHASES,
     max_cycles=128,
     configuration={"paper_uri":PAPER_URI,"venue":VENUE,"benchmark_ids":BENCHMARK_IDS,"protocol":PROTOCOL,"ablations":ABLATIONS},
     evidence_obligations=(METHOD_ID+".phase-transcript",METHOD_ID+".model-tool-receipts",METHOD_ID+".metric-artifacts"),
     metric_names=METRICS,artifact_kinds=(METHOD_ID+"_trajectory",METHOD_ID+"_experiment_manifest"),
-)
+).compile()
 __all__=["ABLATIONS","BENCHMARK_IDS","METHOD_ID","METHOD_PROGRAM","METRICS","PAPER_URI","PHASES","PROTOCOL","TITLE","VENUE"]
