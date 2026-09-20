@@ -91485,7 +91485,7 @@
         "qualifiers"
       ],
       "kind": "dataclass",
-      "line": 222,
+      "line": 231,
       "methods": [
         "__post_init__"
       ],
@@ -91511,7 +91511,7 @@
         "value"
       ],
       "kind": "dataclass",
-      "line": 191,
+      "line": 200,
       "methods": [
         "__post_init__"
       ],
@@ -91561,7 +91561,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 172,
+      "line": 181,
       "methods": [
         "__post_init__"
       ],
@@ -91590,7 +91590,7 @@
         "priority"
       ],
       "kind": "dataclass",
-      "line": 126,
+      "line": 135,
       "methods": [
         "__post_init__"
       ],
@@ -91624,7 +91624,7 @@
         "scientific_tests"
       ],
       "kind": "dataclass",
-      "line": 523,
+      "line": 542,
       "methods": [
         "__post_init__"
       ],
@@ -91648,7 +91648,7 @@
         "kind"
       ],
       "kind": "dataclass",
-      "line": 249,
+      "line": 258,
       "methods": [
         "__post_init__"
       ],
@@ -91719,7 +91719,7 @@
         "run_manifest_digest"
       ],
       "kind": "dataclass",
-      "line": 300,
+      "line": 309,
       "methods": [
         "__post_init__"
       ],
@@ -91751,7 +91751,7 @@
         "run_manifest_digest"
       ],
       "kind": "dataclass",
-      "line": 405,
+      "line": 424,
       "methods": [
         "__post_init__"
       ],
@@ -91778,7 +91778,7 @@
         "year"
       ],
       "kind": "dataclass",
-      "line": 92,
+      "line": 101,
       "methods": [
         "__post_init__"
       ],
@@ -91831,7 +91831,7 @@
         "status"
       ],
       "kind": "dataclass",
-      "line": 266,
+      "line": 275,
       "methods": [
         "__post_init__"
       ],
@@ -143804,7 +143804,7 @@
   "parse_errors": [],
   "registry_sha256": "e4ea173ff1460ed18af96b3de44996a6bb9c859342697cc3084344ee60a52574",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "d914de6188c332b7413a184f900a07977479caa0",
+  "source_git_sha": "1215cd537b76b460f10037c98c38a69f5032933d",
   "system_import_edges": [
     {
       "count": 108,
