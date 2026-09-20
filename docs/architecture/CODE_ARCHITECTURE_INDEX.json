@@ -15918,6 +15918,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.research.reproduction.ReproductionDefinition",
+      "target": "noetrium_platform.research.reproduction.ReproductionEvidenceRef"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.reproduction.ReproductionDefinition",
       "target": "noetrium_platform.research.reproduction.ReproductionIdentity"
     },
     {
@@ -15929,6 +15934,11 @@
       "kind": "references",
       "source": "noetrium_platform.research.reproduction.ReproductionDelta",
       "target": "noetrium_platform.research.reproduction.ReproductionDeltaKind"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.reproduction.ReproductionEvidenceRef",
+      "target": "noetrium_platform.research.reproduction.ReproductionEvidenceKind"
     }
   ],
   "classes": [
@@ -91428,7 +91438,7 @@
         "qualifiers"
       ],
       "kind": "dataclass",
-      "line": 203,
+      "line": 216,
       "methods": [
         "__post_init__"
       ],
@@ -91454,7 +91464,7 @@
         "value"
       ],
       "kind": "dataclass",
-      "line": 172,
+      "line": 185,
       "methods": [
         "__post_init__"
       ],
@@ -91482,7 +91492,7 @@
         "SUPPORT"
       ],
       "kind": "enum",
-      "line": 57,
+      "line": 65,
       "methods": [],
       "module": "noetrium_platform.research.reproduction",
       "name": "ReproductionAssetKind",
@@ -91504,7 +91514,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 153,
+      "line": 166,
       "methods": [
         "__post_init__"
       ],
@@ -91533,7 +91543,7 @@
         "priority"
       ],
       "kind": "dataclass",
-      "line": 107,
+      "line": 120,
       "methods": [
         "__post_init__"
       ],
@@ -91567,7 +91577,7 @@
         "scientific_tests"
       ],
       "kind": "dataclass",
-      "line": 247,
+      "line": 336,
       "methods": [
         "__post_init__"
       ],
@@ -91591,7 +91601,7 @@
         "kind"
       ],
       "kind": "dataclass",
-      "line": 230,
+      "line": 243,
       "methods": [
         "__post_init__"
       ],
@@ -91614,7 +91624,7 @@
         "UNRESOLVED"
       ],
       "kind": "enum",
-      "line": 67,
+      "line": 75,
       "methods": [],
       "module": "noetrium_platform.research.reproduction",
       "name": "ReproductionDeltaKind",
@@ -91622,6 +91632,58 @@
         "ReproductionDeltaKind"
       ],
       "qualname": "noetrium_platform.research.reproduction.ReproductionDeltaKind",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "MATCHED_RESULT",
+        "PILOT"
+      ],
+      "kind": "enum",
+      "line": 80,
+      "methods": [],
+      "module": "noetrium_platform.research.reproduction",
+      "name": "ReproductionEvidenceKind",
+      "nesting": [
+        "ReproductionEvidenceKind"
+      ],
+      "qualname": "noetrium_platform.research.reproduction.ReproductionEvidenceKind",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "bundle_id",
+        "claim_ids",
+        "evidence_bundle_digest",
+        "evidence_digest",
+        "evidence_id",
+        "kind",
+        "manifest_ref",
+        "manifest_sha256",
+        "run_id",
+        "run_manifest_digest"
+      ],
+      "kind": "dataclass",
+      "line": 260,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.reproduction",
+      "name": "ReproductionEvidenceRef",
+      "nesting": [
+        "ReproductionEvidenceRef"
+      ],
+      "qualname": "noetrium_platform.research.reproduction.ReproductionEvidenceRef",
       "system_key": null,
       "top_system": null
     },
@@ -91639,7 +91701,7 @@
         "year"
       ],
       "kind": "dataclass",
-      "line": 73,
+      "line": 86,
       "methods": [
         "__post_init__"
       ],
@@ -91668,7 +91730,7 @@
         "RUNNABLE"
       ],
       "kind": "enum",
-      "line": 46,
+      "line": 54,
       "methods": [],
       "module": "noetrium_platform.research.reproduction",
       "name": "ReproductionLifecycle",
@@ -95963,8 +96025,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3186,
-    "classes": 3147,
+    "association_edges": 3188,
+    "classes": 3149,
     "constructor_edges": 856,
     "inheritance_edges": 138,
     "module_import_edges": 5463,
@@ -143579,7 +143641,7 @@
   "parse_errors": [],
   "registry_sha256": "e4ea173ff1460ed18af96b3de44996a6bb9c859342697cc3084344ee60a52574",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "ccd6a0220e478eb2e1a32f9cc5276935341e765c",
+  "source_git_sha": "07b8311cc389914661378d8c9ee2e85ce5d6faec",
   "system_import_edges": [
     {
       "count": 108,
