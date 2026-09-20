@@ -372,6 +372,7 @@ def build_minecraft_long_horizon_67_cut() -> BenchmarkTaskSet:
                 ),
             )
         )
+    splits = sorted(splits, key=lambda row: row.split_id)
     return BenchmarkTaskSet(
         benchmark_id=MINECRAFT_LONG_HORIZON_67_BENCHMARK_ID,
         revision_id=revision,
