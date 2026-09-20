@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolllm_toolbench",
-  "package_digest": "8dedbdb7cb2384143d359cc0cacc3a321f324955c14f431fb12bac57483c5dd3",
-  "definition_digest": "c35e420eb0d85ed51cc90908c661a3ca499510a7918c87e95331e4090470bf9c",
+  "package_digest": "25906197bf281af0991daa317966cd6764a977b04de8ad53a15dd2e9ce75d8d6",
+  "definition_digest": "b26dbbb18ad7ac798eceee5a47dce372d5770e91526ed7774cd7437dc1af4401",
   "source_registry_digest": "87536d5be60f9ec27323a2924c41fbf0380a3f575e43cc044fc3f39779050898",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -188,8 +188,18 @@
       "baseline_digest": "500e55621efd53971cae26454d3fad72ef8feee96fbf35ea623e2fb2b9fada0a"
     }
   ],
-  "deltas": [],
-  "blockers": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "Paper Table 4 combines ToolLLaMA checkpoint identity, paper-era RapidAPI availability and ToolEval model judging. Those external identities are not fully content-addressed by the current executable Study.",
+      "delta_digest": "28cf3d1eb6cdd58a8c36e80c7f8e925bef3496e1365ffc056fb151cd1714c70e"
+    }
+  ],
+  "blockers": [
+    "the exact paper-era ToolLLaMA checkpoint used for Table 4 must be materialized under immutable model identity",
+    "the paper-era RapidAPI inventory, availability and response behavior must be frozen before matched ToolBench execution",
+    "ToolEval pass/win claims require the historical evaluator model and prompt/service revisions under immutable authority"
+  ],
   "evidence_refs": [],
   "scientific_tests": [
     {

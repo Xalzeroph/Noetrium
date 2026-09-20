@@ -457,11 +457,13 @@
       "pilot_evidence_count": 0,
       "matched_evidence_count": 0,
       "matched_evidence_claim_count": 0,
-      "blocker_count": 0,
+      "blocker_count": 2,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
-        "missing_execution_evidence"
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
       ],
       "ready": true,
       "gaps": []
@@ -965,11 +967,13 @@
       "pilot_evidence_count": 0,
       "matched_evidence_count": 0,
       "matched_evidence_claim_count": 0,
-      "blocker_count": 0,
+      "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
-        "missing_execution_evidence"
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
       ],
       "ready": true,
       "gaps": []

@@ -1503,7 +1503,7 @@
       "reproductions": [
         {
           "package": "metagpt_software_company",
-          "package_digest": "51e3d244bff58e1a1fcff76ba6070c23fad76c37782d6ba696d8cc0ae1333c53",
+          "package_digest": "ea75f83e562c07d5a7d9c4eb6ff54b2459de9e6f130bdecea0e5fc88c3b3496c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -1533,11 +1533,14 @@
               "content_sha256": "1186a575a89e01d53564acc3f833f6963830e916b0394419c24288ff1de8130b"
             }
           ],
-          "blockers": [],
+          "blockers": [
+            "the paper MBPP executive-feedback benchmark cut and evaluator are not yet bound as an executable Study",
+            "the exact paper-era hosted model service revisions used for the MBPP ablation are not immutable public model artifacts"
+          ],
           "evidence_refs": [],
           "reported_claim_count": 1,
           "reference_baseline_count": 1,
-          "fidelity_delta_count": 0,
+          "fidelity_delta_count": 1,
           "scientific_tests": [
             {
               "path": "tests/test_scientific_humaneval_cut_v1.py",
@@ -1768,7 +1771,7 @@
       "reproductions": [
         {
           "package": "toolllm_toolbench",
-          "package_digest": "8dedbdb7cb2384143d359cc0cacc3a321f324955c14f431fb12bac57483c5dd3",
+          "package_digest": "25906197bf281af0991daa317966cd6764a977b04de8ad53a15dd2e9ce75d8d6",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolbench"
@@ -1808,11 +1811,15 @@
               "content_sha256": "217963e130fe7f9fd0a8ef229a4c56c5f74e0fe29e8777fcc1817273b8f2cd9f"
             }
           ],
-          "blockers": [],
+          "blockers": [
+            "the exact paper-era ToolLLaMA checkpoint used for Table 4 must be materialized under immutable model identity",
+            "the paper-era RapidAPI inventory, availability and response behavior must be frozen before matched ToolBench execution",
+            "ToolEval pass/win claims require the historical evaluator model and prompt/service revisions under immutable authority"
+          ],
           "evidence_refs": [],
           "reported_claim_count": 6,
           "reference_baseline_count": 2,
-          "fidelity_delta_count": 0,
+          "fidelity_delta_count": 1,
           "scientific_tests": [
             {
               "path": "tests/test_scientific_toolbench_cut_v1.py",
@@ -3005,5 +3012,5 @@
       ]
     }
   ],
-  "projection_digest": "3a14bb37d64a236327f018739385a2f843393c85f61f1f7ea41be176465248ce"
+  "projection_digest": "91e88542a91a3ce654854108e5b8c12d61de59b41e9eadc6ac0311c9cc3b19b2"
 }
