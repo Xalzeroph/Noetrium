@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import EMBODIED_VIDEOAGENT_FIDELITY
 
 EMBODIED_VIDEOAGENT_PHASES = (
@@ -10,7 +10,7 @@ EMBODIED_VIDEOAGENT_PHASES = (
     AgentPhaseSpec("respond", "embodied_videoagent.respond", "Generate the embodied answer, interaction or manipulation plan."),
 )
 
-EMBODIED_VIDEOAGENT_METHOD_PROGRAM = build_agent_phase_program(
+EMBODIED_VIDEOAGENT_METHOD_PROGRAM = AgentMethodSpec(
     method_id="embodied-videoagent",
     implementation_version="2025-paper-protocol",
     schema_version="embodied-videoagent.phase-workflow.v1",
@@ -24,5 +24,5 @@ EMBODIED_VIDEOAGENT_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("embodied-videoagent.phase-transcript", "embodied-videoagent.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("embodied-videoagent_trajectory",),
-)
+).compile()
 __all__ = ["EMBODIED_VIDEOAGENT_METHOD_PROGRAM", "EMBODIED_VIDEOAGENT_PHASES"]
