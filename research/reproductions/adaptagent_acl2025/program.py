@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import ADAPTAGENT_FIDELITY
 
 ADAPTAGENT_PHASES = (
@@ -10,7 +10,7 @@ ADAPTAGENT_PHASES = (
     AgentPhaseSpec("act", "adaptagent.act", "Execute and observe the target website action."),
 )
 
-ADAPTAGENT_METHOD_PROGRAM = build_agent_phase_program(
+ADAPTAGENT_METHOD_PROGRAM = AgentMethodSpec(
     method_id="adaptagent",
     implementation_version="2025-paper-protocol",
     schema_version="adaptagent.phase-workflow.v1",
@@ -24,5 +24,5 @@ ADAPTAGENT_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("adaptagent.phase-transcript", "adaptagent.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("adaptagent_trajectory",),
-)
+).compile()
 __all__ = ["ADAPTAGENT_METHOD_PROGRAM", "ADAPTAGENT_PHASES"]
