@@ -4,7 +4,7 @@ from collections.abc import Sequence
 import json
 import math
 
-from noetrium.contracts.systems.environment__embodied import (
+from noetrium.api import (
     ActionKind,
     ActionSpec,
     EmbodiedActionCommand,
