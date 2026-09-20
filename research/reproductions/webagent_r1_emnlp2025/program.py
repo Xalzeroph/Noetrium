@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import WEBAGENT_R1_FIDELITY
 
 WEBAGENT_R1_PHASES = (
@@ -10,7 +10,7 @@ WEBAGENT_R1_PHASES = (
     AgentPhaseSpec("test_scale", "webagent_r1.test", "Run increased-interaction test-time scaling on WebArena-Lite tasks."),
 )
 
-WEBAGENT_R1_METHOD_PROGRAM = build_agent_phase_program(
+WEBAGENT_R1_METHOD_PROGRAM = AgentMethodSpec(
     method_id="webagent-r1",
     implementation_version="2025-paper-protocol",
     schema_version="webagent-r1.phase-workflow.v1",
@@ -24,5 +24,5 @@ WEBAGENT_R1_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("webagent-r1.phase-transcript", "webagent-r1.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("webagent-r1_trajectory",),
-)
+).compile()
 __all__ = ["WEBAGENT_R1_METHOD_PROGRAM", "WEBAGENT_R1_PHASES"]
