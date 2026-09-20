@@ -11,6 +11,7 @@ from functools import lru_cache
 import importlib
 from typing import Any
 
+from noetrium._api_surface import UNIFIED_API_EXTRA_MODULES
 from noetrium.contracts.discovery import (
     DownstreamCapabilityCatalog,
     DownstreamSystemSurface,
@@ -19,15 +20,7 @@ from noetrium.contracts.discovery import (
     load_downstream_interface_schema,
 )
 
-_EXTRA_MODULES = (
-    "noetrium.contracts.json",
-    "noetrium_platform.platform",
-    "components.api",
-    "orchestration.api",
-    "noetrium_platform.research.experimentation.study.runtime",
-    "noetrium_platform.research.experimentation.workbench.providers",
-    "noetrium_platform.research.experimentation.workbench.runtime",
-)
+_EXTRA_MODULES = UNIFIED_API_EXTRA_MODULES
 
 
 @dataclass(frozen=True, slots=True)
