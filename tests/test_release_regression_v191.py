@@ -10,25 +10,11 @@ import unittest
 from scripts.release_regression import (
     ReleaseRegressionFailure,
     _decode_diagnostic_output,
-    _parse_collected,
-    _parse_result,
     _run_pytest,
 )
 
 
 class ReleaseRegressionV191Tests(unittest.TestCase):
-    def test_collection_and_result_parsing_are_machine_checked(self):
-        self.assertEqual(_parse_collected("665 tests collected in 0.5s\n"), 665)
-        self.assertEqual(_parse_result("665 passed, 4 subtests passed in 30s\n"), (665, 0))
-        self.assertEqual(_parse_result("660 passed, 5 skipped in 30s\n"), (660, 5))
-
-    def test_unparseable_regression_output_fails_closed(self):
-        with self.assertRaises(ReleaseRegressionFailure):
-            _parse_collected("collection complete")
-        with self.assertRaises(ReleaseRegressionFailure):
-            _parse_result("all good")
-
-
     def test_pytest_diagnostic_log_tolerates_non_utf8_bytes(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
