@@ -24,7 +24,7 @@
     {
       "package": "aflow",
       "lineage": "automated_workflow_design",
-      "enforced": false
+      "enforced": true
     },
     {
       "package": "autogen_agentchat",
@@ -74,7 +74,7 @@
     {
       "package": "minedojo",
       "lineage": "minecraft_foundational_multimodal_reward",
-      "enforced": false
+      "enforced": true
     },
     {
       "package": "moviechat_memory",
@@ -200,6 +200,26 @@
       "package": "deps_minecraft",
       "lineage": "minecraft_open_world_multitask_planning",
       "enforced": true
+    },
+    {
+      "package": "drvideo",
+      "lineage": "multimodal_document_retrieval_video_agent",
+      "enforced": true
+    },
+    {
+      "package": "vca_video",
+      "lineage": "multimodal_curiosity_video_agent",
+      "enforced": true
+    },
+    {
+      "package": "optimus1_minecraft",
+      "lineage": "minecraft_hybrid_multimodal_memory_agent",
+      "enforced": false
+    },
+    {
+      "package": "optimus2_minecraft",
+      "lineage": "minecraft_goal_observation_action_policy",
+      "enforced": false
     }
   ],
   "publication_gate": "peer_reviewed_high_quality_only"
