@@ -14787,6 +14787,61 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.identity.ReplayLevel"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.authoring.StudyModel"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.benchmark.BenchmarkTaskSet"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.benchmark.TrialBudget"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.contracts.StudyConcurrencyPolicy"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.design.BenchmarkAssignmentMode"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.design.ResearchRevision"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.design.ResearchStudyDefinition"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.design.StudyFactorSpec"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.measurement.MeasurementDefinition"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.measurement.MeasurementProtocol"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.experimentation.study.api.authoring.Study",
       "target": "noetrium_platform.research.experimentation.binding.ResearchModelRoleRequirement"
     },
@@ -87282,6 +87337,39 @@
     },
     {
       "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "benchmark_ids",
+        "capabilities",
+        "configurations",
+        "measurements",
+        "method_id",
+        "model",
+        "model_role",
+        "participant_kind",
+        "project_id",
+        "study_id",
+        "treatment"
+      ],
+      "kind": "dataclass",
+      "line": 268,
+      "methods": [
+        "__post_init__",
+        "build"
+      ],
+      "module": "noetrium_platform.research.experimentation.study.api.authoring",
+      "name": "AgentStudySpec",
+      "nesting": [
+        "AgentStudySpec"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "system_key": "experimentation/study",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
@@ -96057,6 +96145,16 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.authoring.Study"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.study.api.authoring.AgentStudySpec",
+      "target": "noetrium_platform.research.experimentation.study.api.authoring.StudyParticipant"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.study.api.authoring.Study",
       "target": "noetrium_platform.research.experimentation.binding.ResearchBindingRequirements"
     },
@@ -96217,9 +96315,9 @@
     }
   ],
   "counts": {
-    "association_edges": 3195,
-    "classes": 3155,
-    "constructor_edges": 856,
+    "association_edges": 3206,
+    "classes": 3156,
+    "constructor_edges": 858,
     "inheritance_edges": 138,
     "module_import_edges": 5473,
     "parse_errors": 0,
@@ -143899,7 +143997,7 @@
   "parse_errors": [],
   "registry_sha256": "e4ea173ff1460ed18af96b3de44996a6bb9c859342697cc3084344ee60a52574",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "763c037c38d8dee0d65918d9a9a7ceccf93a5412",
+  "source_git_sha": "be87ffb4dc96907d8ad7c84751703d471da04a5c",
   "system_import_edges": [
     {
       "count": 108,
