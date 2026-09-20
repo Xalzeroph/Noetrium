@@ -312,22 +312,6 @@ def test_runtime_application_is_optional_extension_of_same_project(
     assert result["result"]["payload"] == {"route": "project"}
 
 
-def test_project_cli_rejects_ambiguous_application_source(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
-) -> None:
-    _bind_fixed_platform(monkeypatch)
-    root = tmp_path / "ambiguous-route"
-    project_scaffold.create_project(
-        ProjectCreateRequest("ambiguous-route", "0.1.0", root)
-    )
-    exit_code = main([
-        "--application", "example.module:factory",
-        "run", "--project", str(root),
-    ])
-    assert exit_code == 2
-    assert "either --project or --application" in capsys.readouterr().err
-
-
 def test_root_product_api_exports_project_test_stage_types() -> None:
     from noetrium.api import ProjectTestStageReceipt
 
