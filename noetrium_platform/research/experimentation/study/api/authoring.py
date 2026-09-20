@@ -273,9 +273,9 @@ class AgentStudySpec:
     multi-participant or otherwise non-standard studies use Study directly.
     """
 
-    project_id: str
-    study_id: str
     method_id: str
+    project_id: str | None = None
+    study_id: str | None = None
     model: str | StudyModel | None = None
     measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...] | None = None
     treatment: str = "full"
@@ -286,9 +286,17 @@ class AgentStudySpec:
     model_role: str = "agent_model"
 
     def __post_init__(self) -> None:
-        _text(self.project_id, "agent study project_id")
-        _text(self.study_id, "agent study study_id")
         _text(self.method_id, "agent study method_id")
+        project_id = self.method_id if self.project_id is None else _text(
+            self.project_id, "agent study project_id"
+        )
+        study_id = (
+            f"{self.method_id}.study"
+            if self.study_id is None
+            else _text(self.study_id, "agent study study_id")
+        )
+        object.__setattr__(self, "project_id", project_id)
+        object.__setattr__(self, "study_id", study_id)
         _text(self.treatment, "agent study treatment")
         _text(self.participant_kind, "agent study participant_kind")
         _text(self.model_role, "agent study model_role")
