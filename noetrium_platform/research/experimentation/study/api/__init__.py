@@ -1,4 +1,4 @@
-from .authoring import Study, StudyModel, StudyParticipant
+from .authoring import AgentStudySpec, Study, StudyModel, StudyParticipant
 from .evaluation import PostHocEvaluationDefinition, PostHocEvaluationResult
 from .contracts import (
     StudyConcurrencyPolicy,
@@ -54,6 +54,7 @@ from .plan import (
 )
 
 __all__ = [
+    "AgentStudySpec",
     "Study",
     "BenchmarkAssignmentMode",
     "StudyModel",
