@@ -1,10 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.execution.workflow.api import (
-    AgentPhaseSpec,
-    build_agent_cycle_program,
-    build_agent_phase_program,
-)
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 
 METHOD_ID = "os_symphony_acl2026"
 PAPER_URI = "https://aclanthology.org/2026.acl-long.1021/"
@@ -20,7 +16,7 @@ PHASES = (
     AgentPhaseSpec("reflect", "os_symphony.memory", "Curate/prune visual history and record trajectory-level corrective memory."),
 )
 
-METHOD_PROGRAM = build_agent_cycle_program(
+METHOD_PROGRAM = AgentMethodSpec(
     method_id=METHOD_ID,
     implementation_version="2026-paper-protocol",
     schema_version="os_symphony_acl2026.phase-workflow.v1",
@@ -43,7 +39,7 @@ METHOD_PROGRAM = build_agent_cycle_program(
         METHOD_ID + "_trajectory",
         METHOD_ID + "_experiment_manifest",
     ),
-)
+).compile()
 
 __all__ = [
     "ABLATIONS",
