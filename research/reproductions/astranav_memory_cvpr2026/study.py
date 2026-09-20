@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from research.reproductions.frontier_2026.study import PaperStudySpec
+from research.authoring.frontier_2026.study import PaperStudySpec
 
 from .program import (
     ABLATIONS,
