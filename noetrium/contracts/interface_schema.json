@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "a546f03ff352647a651b33285cd1e9222136d5c963c607c3c21718fc84bac740",
+  "interface_digest": "5b58ce4b521b6dbd59fad6a2a66be1acc0e257eb06644cae77436541f6358331",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -90249,7 +90249,7 @@
               "kind": "class",
               "members": [
                 "PROJECT_SPEC",
-                "AUTHOR_REQUIREMENTS",
+                "REQUIREMENTS",
                 "PROVIDER_BINDINGS",
                 "SCAFFOLD_PLATFORM_PROVENANCE",
                 "TOTAL_CLOSURE"
@@ -90398,7 +90398,7 @@
                 {
                   "annotation": "str",
                   "default": null,
-                  "name": "author_requirements_digest"
+                  "name": "requirements_digest"
                 },
                 {
                   "annotation": "str",
