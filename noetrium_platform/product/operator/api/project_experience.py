@@ -24,7 +24,6 @@ class ProjectCreateRequest:
     project_id: str
     version: str
     destination: Path
-    program_id: str = "standalone"
 
     def __post_init__(self) -> None:
         ProjectIdentity(self.project_id, self.version)
@@ -36,7 +35,6 @@ class ProjectCreateRequest:
 class ProjectCreateReceipt:
     project_id: str
     version: str
-    program_id: str
     destination: str
     template_revision: str
     manifest_path: str
@@ -117,11 +115,9 @@ class ProjectFacade:
         project_id: str,
         version: str,
         destination: Path,
-        *,
-        program_id: str = "standalone",
     ) -> ProjectCreateReceipt:
         return self._experience.create(
-            ProjectCreateRequest(project_id, version, destination, program_id)
+            ProjectCreateRequest(project_id, version, destination)
         )
 
     def doctor(self, project_root: Path) -> ProjectDoctorReport:
