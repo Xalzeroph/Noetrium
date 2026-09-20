@@ -1,8 +1,8 @@
-"""Noetrium: public package root.
+"""Noetrium public package root.
 
-Import contract families from noetrium.contracts and reusable reference
-implementations from components. The root stays inert so importing
-the distribution never constructs a registry, runtime, provider, or process.
+Downstream projects use the single noetrium.api surface. The package root stays
+inert so importing the distribution never constructs a registry, runtime,
+provider, or process.
 """
 
 from importlib.metadata import PackageNotFoundError, version
