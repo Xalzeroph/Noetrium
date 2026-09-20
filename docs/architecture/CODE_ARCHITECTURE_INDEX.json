@@ -96212,7 +96212,7 @@
     "classes": 3153,
     "constructor_edges": 858,
     "inheritance_edges": 138,
-    "module_import_edges": 5473,
+    "module_import_edges": 5472,
     "parse_errors": 0,
     "python_modules": 2529,
     "registry_authorities": 20,
@@ -114067,10 +114067,6 @@
     {
       "source": "noetrium_platform.product.operator.runtime.research_cli",
       "target": "noetrium_platform.product.operator.api.project_experience"
-    },
-    {
-      "source": "noetrium_platform.product.operator.runtime.research_cli",
-      "target": "noetrium_platform.product.operator.runtime.application_loader"
     },
     {
       "source": "noetrium_platform.product.operator.runtime.research_cli",
@@ -139626,7 +139622,6 @@
         "noetrium_platform.product.operator.api",
         "noetrium_platform.product.operator.api.json_rendering",
         "noetrium_platform.product.operator.api.project_experience",
-        "noetrium_platform.product.operator.runtime.application_loader",
         "noetrium_platform.product.operator.runtime.project_application_loader"
       ],
       "module": "noetrium_platform.product.operator.runtime.research_cli",
@@ -143897,7 +143892,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "10eff6937fdcad74329681782908ea43374e64f6",
+  "source_git_sha": "0772ebd0ae1da2963805cbda779a4496cc192794",
   "system_import_edges": [
     {
       "count": 108,
@@ -144200,7 +144195,7 @@
       "target": "observability"
     },
     {
-      "count": 97,
+      "count": 96,
       "source": "operator",
       "target": "operator"
     },
