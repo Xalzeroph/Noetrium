@@ -1266,6 +1266,36 @@
       ]
     },
     {
+      "id": "motus_cvpr2026",
+      "year": 2026,
+      "paper": "Motus: A Unified Latent Action World Model",
+      "paper_id": "CVPR 2026",
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "unified latent-action world-model and VLA convergence",
+      "parents": [
+        {
+          "id": "vima",
+          "edge": "extends multimodal visuomotor policy learning into one model that can switch among action generation, inverse dynamics and joint video-action prediction"
+        },
+        {
+          "id": "rap",
+          "edge": "moves world-model planning pressure from explicit reasoning-state simulation into a learned generative video/action dynamics model for embodied control"
+        }
+      ],
+      "mechanism": [
+        "Mixture-of-Transformers understanding/action/video experts",
+        "UniDiffuser-style mode scheduling",
+        "optical-flow latent actions",
+        "world-model/VLA/inverse-dynamics mode unification",
+        "six-layer heterogeneous data pyramid"
+      ],
+      "benchmarks": [
+        "RoboTwin 2.0",
+        "real-world robotic manipulation"
+      ]
+    },
+    {
       "id": "optimusvla_cvpr2026",
       "year": 2026,
       "paper": "Global Prior Meets Local Consistency: Dual-Memory Augmented Vision-Language-Action Model for Efficient Robotic Manipulation",
@@ -1358,6 +1388,44 @@
       ]
     },
     {
+      "id": "vilomem_cvpr2026",
+      "year": 2026,
+      "paper": "ViLoMem: Agentic Learner with Grow-and-Refine Multimodal Semantic Memory",
+      "paper_id": "CVPR 2026",
+      "venue": "CVPR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "dual-stream semantic-memory lifelong-learning branch",
+      "parents": [
+        {
+          "id": "rewind",
+          "edge": "extends learnable experience memory from reusable task experience toward error-attributed structured semantic schemas that are grown and refined over repeated multimodal problem solving"
+        },
+        {
+          "id": "adacm2",
+          "edge": "continues multimodal memory pressure while separating visual distraction memory from logical reasoning memory instead of compressing both into one shared representation"
+        },
+        {
+          "id": "worldmm",
+          "edge": "shares heterogeneous multimodal memory selection pressure but targets cross-problem semantic learning rather than long-video temporal evidence retrieval"
+        }
+      ],
+      "mechanism": [
+        "dual visual/logical semantic memory",
+        "error attribution",
+        "grow-and-refine schema consolidation",
+        "cross-benchmark memory transfer",
+        "cross-model memory reuse"
+      ],
+      "benchmarks": [
+        "MMMU",
+        "MathVista",
+        "MathVision",
+        "HallusionBench",
+        "MMStar",
+        "RealWorldQA"
+      ]
+    },
+    {
       "id": "worldmm",
       "year": 2026,
       "paper": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
@@ -1418,7 +1486,9 @@
     "long-horizon multimodal memory compression with explicit retrieval/write/compression evidence",
     "post-deployment experience-bank lineage separated from immutable experiment evidence",
     "high-level scheduler/state-tracker participant topology with executor-private context",
-    "visual future-state artifacts as first-class planning evidence without creating a second world-state authority"
+    "visual future-state artifacts as first-class planning evidence without creating a second world-state authority",
+    "semantic memory artifacts with explicit grow/refine ancestry and cross-run transfer provenance",
+    "multi-mode world-model/VLA execution where one model invocation can yield future-video, inverse-action, action or joint video-action artifacts"
   ],
   "execution_mode": {
     "mode": "parallel_peer_reviewed_lineages",
