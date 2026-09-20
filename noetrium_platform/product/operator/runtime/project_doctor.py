@@ -32,9 +32,10 @@ _PACKAGE = re.compile(r"[a-z][a-z0-9_]*")
 _PROVIDER_PROBE_TIMEOUT_S = 30
 _AUTHOR_PROBE_TIMEOUT_S = 30
 _AUTHOR_PROBE_SCRIPT = r'''
-from noetrium.contracts.research import AgentMethodSpec, MethodProgram, ResearchMethodHostPort
+from noetrium.contracts.research import AgentMethodSpec, AgentStudySpec, MethodProgram, ResearchMethodHostPort
 from __PACKAGE__.method import METHOD_PROGRAM, METHOD_SPEC
 from __PACKAGE__.research import METHOD_HOST, compile_study
+from __PACKAGE__.study import STUDY_SPEC, build_study
 
 if not isinstance(METHOD_HOST, ResearchMethodHostPort):
     raise TypeError("author Method Host does not implement ResearchMethodHostPort")
@@ -42,6 +43,10 @@ if not isinstance(METHOD_SPEC, AgentMethodSpec):
     raise TypeError("author method module must export AgentMethodSpec")
 if not isinstance(METHOD_PROGRAM, MethodProgram):
     raise TypeError("author method module must compile MethodProgram")
+if not isinstance(STUDY_SPEC, AgentStudySpec):
+    raise TypeError("author study module must export AgentStudySpec")
+if not callable(build_study):
+    raise TypeError("author study module must export build_study")
 if not callable(compile_study):
     raise TypeError("author research module must export compile_study")
 print("ready")
@@ -442,7 +447,7 @@ def doctor_project(project_root: Path, *, boundary_auditor: RepositoryBoundaryAu
             author_ready, author_detail = False, "author template files are incomplete"
         checks.append(_check(
             "level0_standard_bindings", author_ready,
-            "typed AgentMethodSpec/MethodProgram and Study compilation seam are available",
+            "typed AgentMethodSpec/MethodProgram and AgentStudySpec compilation seams are available",
             "resolve author Method Host readiness: " + author_detail,
         ))
     elif profile is ProjectTemplateProfile.PROVIDER:
