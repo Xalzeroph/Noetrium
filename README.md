@@ -329,8 +329,8 @@ The deployment layer separates immutable software from mutable runtime state; ho
 Minecraft is a first-party reusable environment provider. Task suites and scientific composition remain downstream.
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml run --rm platform-runtime minecraft-doctor
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
