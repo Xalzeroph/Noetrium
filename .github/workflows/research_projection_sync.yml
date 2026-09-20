@@ -64,7 +64,7 @@ jobs:
             python scripts/sync_research_program.py --check
             python scripts/sync_lineage_status.py --check
 
-            if git diff --quiet; then
+            if [[ -z "$(git status --porcelain --untracked-files=all)" ]]; then
               echo "Research workspace projections are current."
               exit 0
             fi
