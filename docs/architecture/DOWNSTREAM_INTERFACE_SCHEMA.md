@@ -1,9 +1,6 @@
 # Downstream interface schemas
 
-Noetrium exposes reusable systems through generated facades under
-noetrium/contracts/systems/. The capability catalog lists ownership, public
-modules and symbols. The interface schema adds the callable contract needed by
-a downstream method without guessing.
+Noetrium exposes one downstream surface: `noetrium.api`. Generated system facades remain internal registry material. The capability catalog and interface schema provide machine-readable ownership and callable contracts behind that single entrypoint.
 
 The generated sidecar is:
 
@@ -18,11 +15,7 @@ Downstream code can inspect it without importing implementation modules:
 
     from noetrium import api
 
-    schema = api.symbol_schema(
-        "environment/minecraft",
-        "noetrium_platform.capabilities.environment.minecraft.api.ports",
-        "MinecraftBridgePort",
-    )
+    schemas = api.describe("MinecraftBridgePort")
 
 The schema describes the public boundary; providers, credentials and runtime
 service lookup remain private. Downstream code uses only `noetrium.api`; generated system facades remain registry-backed implementation material behind that single entrypoint.
