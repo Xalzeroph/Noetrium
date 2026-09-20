@@ -38,7 +38,7 @@ REPRODUCTION = ReproductionDefinition(
     reported_results=(
         ReportedResult(claim_id="lvagent_egoschema_three_round", metric_id="multiple_choice_accuracy_percent", value=82.7, qualifiers={"benchmark": "egoschema", "discussion_rounds": 3, "source": "ICCV-2025 paper Figure 7"}),
         ReportedResult(claim_id="lvagent_longvideobench_three_round", metric_id="multiple_choice_accuracy_percent", value=80, qualifiers={"benchmark": "longvideobench", "discussion_rounds": 3, "source": "ICCV-2025 paper Figure 7"}),
-        ReportedResult(claim_id="lvagent_mlvU_three_round", metric_id="multiple_choice_accuracy_percent", value=83.8, qualifiers={"benchmark": "mlvu", "discussion_rounds": 3, "source": "ICCV-2025 paper Figure 7"}),
+        ReportedResult(claim_id="lvagent_mlvu_three_round", metric_id="multiple_choice_accuracy_percent", value=83.8, qualifiers={"benchmark": "mlvu", "discussion_rounds": 3, "source": "ICCV-2025 paper Figure 7"}),
     ),
     reference_baselines=(
         ReferenceBaseline(baseline_id="lvagent_single_agent_pool", description="Individual MLLM agents before multi-agent collaboration", qualifiers={"longvideobench_best_single_percent": 69, "source": "ICCV-2025 paper agent-combination ablation"}),
