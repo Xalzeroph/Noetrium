@@ -20,7 +20,7 @@ Example:
 
 - Registered systems: 172
 - Public API modules: 352
-- Public symbols: 3046
+- Public symbols: 3042
 - Registry digest: 2e19b6efb53f251f88af2bb61b62fcd528dd89174acfac18a2a1020aab8fc25c
 
 ## Capability domains
@@ -30,7 +30,7 @@ Example:
 | artifact | 7 | 26 | 137 |
 | data | 8 | 19 | 106 |
 | environment | 18 | 27 | 226 |
-| execution | 8 | 34 | 450 |
+| execution | 8 | 34 | 446 |
 | experimentation | 16 | 65 | 655 |
 | governance | 13 | 18 | 130 |
 | model | 16 | 30 | 323 |
@@ -762,8 +762,8 @@ Example:
 
 #### API modules
 
-- noetrium_platform.research.execution.workflow.api ?w^~)?t AgentMethodSpec, AgentPhaseSpec, build_agent_cycle_program, build_agent_phase_program, EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowParticipantRequirementError, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_id, workflow_surface_reuse_scope, AsyncMethodAgentLoopPort, AsyncOperationDispatchPort, MethodAgentLoopPort, MethodAgentRequest, MethodAgentResult, MethodAgentTargetHandler, MethodCapabilityTargetHandler, MethodAgentViewHandler, MethodCheckpoint, MethodCheckpointStorePort, MethodEvidenceStatus, MethodExecutionClass, MethodEvidencePort, MethodEvent, MethodGraph, MethodInterrupt, MethodMachinePort, MethodChildMachinePort, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodObservationPort, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodRunStatus, MethodRuntimeContext
-- noetrium_platform.research.execution.workflow.api.authoring ?w^~)?t AgentMethodSpec, AgentPhaseSpec, build_agent_cycle_program, build_agent_phase_program
+- noetrium_platform.research.execution.workflow.api ?w^~)?t AgentMethodSpec, AgentPhaseSpec, EffectIntentOperationPort, OperationDispatchPort, OperationExecutionPort, TrialCycleExecution, WorkflowGraph, WorkflowGraphError, WorkflowParticipantRequirementError, WorkflowStep, WorkflowSurfaceBindingContext, WorkflowSurfaceFactory, WorkflowSurfaceReuseScope, workflow_surface_id, workflow_surface_reuse_scope, AsyncMethodAgentLoopPort, AsyncOperationDispatchPort, MethodAgentLoopPort, MethodAgentRequest, MethodAgentResult, MethodAgentTargetHandler, MethodCapabilityTargetHandler, MethodAgentViewHandler, MethodCheckpoint, MethodCheckpointStorePort, MethodEvidenceStatus, MethodExecutionClass, MethodEvidencePort, MethodEvent, MethodGraph, MethodInterrupt, MethodMachinePort, MethodChildMachinePort, MethodNodeHandler, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodObservationPort, MethodProgram, MethodProgramBuilder, MethodRunResult, MethodRunStatus, MethodRuntimeContext
+- noetrium_platform.research.execution.workflow.api.authoring ?w^~)?t AgentMethodSpec, AgentPhaseSpec
 - noetrium_platform.research.execution.workflow.api.dispatch ?w^~)?t OperationDispatchPort, OperationExecutionPort
 - noetrium_platform.research.execution.workflow.api.effect_intents ?w^~)?t EffectIntentOperationPort
 - noetrium_platform.research.execution.workflow.api.errors ?w^~)?t WorkflowParticipantRequirementError
