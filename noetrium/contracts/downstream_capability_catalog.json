@@ -1,5 +1,5 @@
 {
-  "catalog_digest": "449a364ee53a49ba301b37f47ae205b8844600024ca402bd707b509385e3e0eb",
+  "catalog_digest": "b1fbc6595c5c3fafb03eb6c5b13cb3a79c4486a04d11f0b93e4253ba440dc9fc",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v2",
   "systems": [
@@ -2136,6 +2136,8 @@
           "module": "noetrium_platform.research.execution.workflow.api",
           "source": "noetrium_platform/research/execution/workflow/api/__init__.py",
           "symbols": [
+            "AgentPhaseSpec",
+            "build_agent_phase_program",
             "EffectIntentOperationPort",
             "OperationDispatchPort",
             "OperationExecutionPort",
@@ -2178,6 +2180,14 @@
             "MethodRunResult",
             "MethodRunStatus",
             "MethodRuntimeContext"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.workflow.api.authoring",
+          "source": "noetrium_platform/research/execution/workflow/api/authoring.py",
+          "symbols": [
+            "AgentPhaseSpec",
+            "build_agent_phase_program"
           ]
         },
         {
@@ -2271,7 +2281,7 @@
       "canonical_authority": "execution",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__workflow",
-      "interface_digest": "8b9cd92490296611deb6a935be32c92279fc3d6ed7305a9dd302ad6e2d77a575",
+      "interface_digest": "20b7b813ae41d718104ea33f5c9f84a3730691f004184787add2f181fdfc43ef",
       "must_not_own": "process supervision",
       "node_kind": "facet",
       "owns": "workflow definitions, universal method-machine orchestration, and resumable control semantics",

@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "71d6f7900aeb3f9ebaeaa3a0e1be00ba1ffacbf0c393cc0ee2a618ec6db19fa7",
+  "interface_digest": "2ed39e3882aea2dfffdd4ada29a3b4756a2a453bfa1a026f7662d62aa20b41da",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -21345,6 +21345,24 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "AgentPhaseSpec",
+              "origin_module": ".authoring",
+              "origin_name": "AgentPhaseSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "build_agent_phase_program",
+              "origin_module": ".authoring",
+              "origin_name": "build_agent_phase_program",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "EffectIntentOperationPort",
               "origin_module": ".effect_intents",
               "origin_name": "EffectIntentOperationPort",
@@ -21722,6 +21740,8 @@
             }
           ],
           "symbols": [
+            "AgentPhaseSpec",
+            "build_agent_phase_program",
             "EffectIntentOperationPort",
             "OperationDispatchPort",
             "OperationExecutionPort",
@@ -21764,6 +21784,148 @@
             "MethodRunResult",
             "MethodRunStatus",
             "MethodRuntimeContext"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.workflow.api.authoring",
+          "source": "noetrium_platform/research/execution/workflow/api/authoring.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "One paper-owned agentic phase compiled into a normal MethodProgram node.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "phase_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "agent_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "instruction"
+                },
+                {
+                  "annotation": "int",
+                  "default": "1",
+                  "name": "max_visits"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "AgentPhaseSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "decorators": [],
+              "doc": "Compile a sequential agentic phase specification into MethodProgram.\n\nThis is an authoring convenience only. Runtime authority, transitions,\nevidence and replay remain owned by the normal MethodProgram/Machine Journal\npath.",
+              "kind": "function",
+              "name": "build_agent_phase_program",
+              "parameters": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "method_id",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "implementation_version",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "schema_version",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "tuple[AgentPhaseSpec, ...]",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "phases",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "JsonObject | None",
+                  "default": "None",
+                  "kind": "keyword_only",
+                  "name": "configuration",
+                  "receiver": false,
+                  "required": false
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "kind": "keyword_only",
+                  "name": "evidence_obligations",
+                  "receiver": false,
+                  "required": false
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "kind": "keyword_only",
+                  "name": "metric_names",
+                  "receiver": false,
+                  "required": false
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "kind": "keyword_only",
+                  "name": "artifact_kinds",
+                  "receiver": false,
+                  "required": false
+                }
+              ],
+              "return_annotation": "MethodProgram",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1",
+              "signature": "def build_agent_phase_program(*, method_id: str, implementation_version: str, schema_version: str, phases: tuple[AgentPhaseSpec, ...], configuration: JsonObject | None=None, evidence_obligations: tuple[str, ...]=(), metric_names: tuple[str, ...]=(), artifact_kinds: tuple[str, ...]=()) -> MethodProgram:"
+            }
+          ],
+          "symbols": [
+            "AgentPhaseSpec",
+            "build_agent_phase_program"
           ]
         },
         {
