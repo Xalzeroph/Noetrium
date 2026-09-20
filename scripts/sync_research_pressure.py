@@ -178,8 +178,7 @@ def _lane_status(
                 if not names.intersection({
                     "MethodProgram",
                     "MethodProgramBuilder",
-                    "build_agent_phase_program",
-                    "build_agent_cycle_program",
+                    "AgentMethodSpec",
                 }):
                     gaps.append("method_program_not_bound_to_umm")
         elif primary_kind == "research_program":
