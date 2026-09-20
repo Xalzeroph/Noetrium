@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolllm_toolbench",
-  "package_digest": "127138175092145cc9b81141248e3fa9c345726d769906c4ed12578629b7e935",
-  "definition_digest": "8449a7c44133655ac5d75dd4e55f7fcbe32db8216db6e8c5feb468eb14e39890",
+  "package_digest": "8dedbdb7cb2384143d359cc0cacc3a321f324955c14f431fb12bac57483c5dd3",
+  "definition_digest": "c35e420eb0d85ed51cc90908c661a3ca499510a7918c87e95331e4090470bf9c",
   "source_registry_digest": "87536d5be60f9ec27323a2924c41fbf0380a3f575e43cc044fc3f39779050898",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -97,8 +97,97 @@
     }
   ],
   "primary_executable": "research/reproductions/toolllm_toolbench/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "toolllama_dfsdt_average_pass",
+      "metric_id": "average_pass_rate_percent",
+      "value": 66.7,
+      "qualifiers": {
+        "benchmark": "toolbench",
+        "model": "toollama",
+        "inference": "dfsdt",
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "claim_digest": "309e17eaed670992f57e2ff40aa815e9df1f0e60047d865fd2ce043a8fb7c551"
+    },
+    {
+      "claim_id": "toolllama_dfsdt_average_win",
+      "metric_id": "average_win_rate_percent",
+      "value": 60.0,
+      "qualifiers": {
+        "benchmark": "toolbench",
+        "model": "toollama",
+        "inference": "dfsdt",
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "claim_digest": "ade9195c826de7ae13c547e28d4645c8f5c663e5ef3fae142282ab218de4c92b"
+    },
+    {
+      "claim_id": "toolllama_dfsdt_retriever_average_pass",
+      "metric_id": "average_pass_rate_percent",
+      "value": 67.3,
+      "qualifiers": {
+        "benchmark": "toolbench",
+        "model": "toollama",
+        "inference": "dfsdt-retriever",
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "claim_digest": "090d106e6341d914fc4909511ac273ed2c2427ab5e7b23ae733f3bc7c6c2ff64"
+    },
+    {
+      "claim_id": "toolllama_dfsdt_retriever_average_win",
+      "metric_id": "average_win_rate_percent",
+      "value": 63.1,
+      "qualifiers": {
+        "benchmark": "toolbench",
+        "model": "toollama",
+        "inference": "dfsdt-retriever",
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "claim_digest": "58e0b6470620c1fb3831349e7f1584034032aa0cc87cf8d112429947a061a1b9"
+    },
+    {
+      "claim_id": "tooleval_pass_human_agreement",
+      "metric_id": "human_agreement_percent",
+      "value": 87.1,
+      "qualifiers": {
+        "evaluation": "pass-rate",
+        "source": "ICLR-2024 paper evaluator analysis"
+      },
+      "claim_digest": "75cffeb0b5c4a4978a5a2e1d97e366edf25ed768b487267f9bfc0384e83f4a33"
+    },
+    {
+      "claim_id": "tooleval_win_human_agreement",
+      "metric_id": "human_agreement_percent",
+      "value": 80.3,
+      "qualifiers": {
+        "evaluation": "win-rate",
+        "source": "ICLR-2024 paper evaluator analysis"
+      },
+      "claim_digest": "ee8fef5b9e809f16ea47be18f9f4a6d29cd88eb9004eb68fb32f15fb23be25cd"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "chatgpt_react_toolbench",
+      "description": "ChatGPT ReAct baseline reported in ToolBench.",
+      "qualifiers": {
+        "average_pass_rate_percent": 40.2,
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "baseline_digest": "0e0946713de14c3afea63498f18d6203cc167ac2cee20ab67b1a4029953b7107"
+    },
+    {
+      "baseline_id": "gpt4_dfsdt_toolbench",
+      "description": "GPT-4 DFSDT comparison reported in ToolBench.",
+      "qualifiers": {
+        "average_pass_rate_percent": 71.1,
+        "average_win_rate_percent": 70.4,
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "baseline_digest": "500e55621efd53971cae26454d3fad72ef8feee96fbf35ea623e2fb2b9fada0a"
+    }
+  ],
   "deltas": [],
   "blockers": [],
   "evidence_refs": [],

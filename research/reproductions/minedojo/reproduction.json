@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "minedojo",
-  "package_digest": "f8d95a1bad017fc5405e5aec08c6b123ede31a09d3399b3d13f0939d11f13ebd",
-  "definition_digest": "3e7981b1749b7b2a564d33533f9f2d17ad11d66e5e9ee2b4610dc494ce4ae961",
+  "package_digest": "a473300fe8761f78bae230b6a655ca5b1233cb66830e071ad7315d806b94e807",
+  "definition_digest": "b739c0693f2b92f1672821cc40241c22fc0f32672ed13048856b381a762940c9",
   "source_registry_digest": "4e2bb1c63f4746aac56e56ee71551b01971ab4476cff7f802b1806783b01b3b1",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -144,8 +144,76 @@
     }
   ],
   "primary_executable": "research/reproductions/minedojo/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "mineclip_attn_find_nether_portal",
+      "metric_id": "reward_model_f1_percent",
+      "value": 98.7,
+      "qualifiers": {
+        "task": "find-nether-portal",
+        "variant": "mineclip-attn",
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "claim_digest": "c3e0bc6a3c14a75cc2d0a995302cafd92fd6caed2bddb9f3a913709a00bac230"
+    },
+    {
+      "claim_id": "mineclip_attn_find_ocean",
+      "metric_id": "reward_model_f1_percent",
+      "value": 100.0,
+      "qualifiers": {
+        "task": "find-ocean",
+        "variant": "mineclip-attn",
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "claim_digest": "dd1ee26d67d12cff20bc60a1c4b483bd1d7c0d3ef4e2c4af765cd076e5f28d04"
+    },
+    {
+      "claim_id": "mineclip_attn_dig_hole",
+      "metric_id": "reward_model_f1_percent",
+      "value": 99.4,
+      "qualifiers": {
+        "task": "dig-hole",
+        "variant": "mineclip-attn",
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "claim_digest": "9d937c804026d7f6837e6062b404da2a2a5cc6c3e6611993cfeed3a3ec33d56c"
+    },
+    {
+      "claim_id": "mineclip_attn_lay_carpet",
+      "metric_id": "reward_model_f1_percent",
+      "value": 97.4,
+      "qualifiers": {
+        "task": "lay-carpet",
+        "variant": "mineclip-attn",
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "claim_digest": "9573a7ea2701efbb6863f38dd0e69c63c4b6edc70aa6a208e5d365ae29aa5ab7"
+    },
+    {
+      "claim_id": "minedojo_benchmark_task_count",
+      "metric_id": "benchmark_task_count",
+      "value": 3142,
+      "qualifiers": {
+        "benchmark": "minedojo",
+        "source": "NeurIPS-2022 paper"
+      },
+      "claim_digest": "a73834573dca2bf33cde7c07026a03ff6482efeb248e13ba62a0149ec15de4da"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "clip_openai_reward_model",
+      "description": "OpenAI CLIP reward-model baseline reported against MineCLIP.",
+      "qualifiers": {
+        "find_nether_portal_f1_percent": 48.7,
+        "find_ocean_f1_percent": 98.4,
+        "dig_hole_f1_percent": 80.6,
+        "lay_carpet_f1_percent": 54.1,
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "baseline_digest": "57edfdc5f5032f06fbc8362c3f8ac23201f95d3aa53d4ad28773253705f682ac"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

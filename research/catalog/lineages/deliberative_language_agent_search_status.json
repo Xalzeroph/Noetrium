@@ -145,7 +145,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "bc272fab05387e645022d830cba1537951f536601f1575ff14a8f0f4cd60e615",
+          "package_digest": "8e470d7edaa57a5b8d965179071e4731490ccaa812596b874ba65ad7320e5e46",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -190,8 +190,8 @@
             "exact ALFWorld dataset/runtime deployment cut must be bound before matched execution"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "b17bf7cb3db9d70b9eb1b6231269fc4feca17da21e2b9560430dbbbe92e45ba6"
+  "projection_digest": "d8c8444c5a1d7f852dad9d99e90a5312497545db69b4b7d8f3b6d057107d5667"
 }
