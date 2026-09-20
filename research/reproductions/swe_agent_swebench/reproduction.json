@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "swe_agent_swebench",
-  "package_digest": "633e8ed34a9323b86ae687eb9ef03ea509c2f5717dc31a4001d9b23a88de87c0",
-  "definition_digest": "a82ac66411df4e2291726e6efe690d63d332894a94b2ac60e8e4225a6bb7d8f5",
+  "package_digest": "8db1911f8aaf5400d8604a84df2ee899350e329566187d457669d0060bf65c1b",
+  "definition_digest": "d6899a777308625ae9a8a58dc21b4a5c440efae4f3f1f4c1a50499d967ab2acc",
   "source_registry_digest": "00d44a186c1cdf9c7c0a7a546005f4f887b308f8096c14115aa63208447f17d3",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -94,8 +94,28 @@
     }
   ],
   "primary_executable": "research/reproductions/swe_agent_swebench/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "swe_agent_swebench_pass_at_1",
+      "metric_id": "pass_at_1_percent",
+      "value": 12.5,
+      "qualifiers": {
+        "benchmark": "SWE-bench",
+        "source": "NeurIPS 2024 abstract"
+      },
+      "claim_digest": "b1e25000c61856e34e14ce9ad6adbf7b15863da5e656860ab102d331215ea7d4"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "noninteractive_swebench_prior_sota",
+      "description": "Previous non-interactive language-model approaches surpassed by SWE-agent on SWE-bench in the NeurIPS 2024 paper.",
+      "qualifiers": {
+        "source": "NeurIPS 2024 paper"
+      },
+      "baseline_digest": "ce0d660aa730f750004b3729cec210163411f2686bc70b55ce9c43f17207f7ed"
+    }
+  ],
   "deltas": [],
   "blockers": [
     "matched execution still requires exact paper-era model/prompt binding plus a deployment-qualified SWE-bench software environment cut"

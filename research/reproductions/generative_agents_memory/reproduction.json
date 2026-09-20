@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "generative_agents_memory",
-  "package_digest": "cc17edcc5cdde26151ced60f08332366f0f206e293460c4b10c5cc36b185fc5a",
-  "definition_digest": "381fed5fb574e180877f26d1d33fb5bd018be78c5ce91e5f5eb3183c90682944",
+  "package_digest": "f477184c2d902cf1d40be751210f68fb2fefc6f70427c18af78026695d5fe429",
+  "definition_digest": "b3f0e8fb71d288a2211be3439e1d36badf9c919c3fef252041888784d1963839",
   "source_registry_digest": "4eee9b9597e3af590b88c8a406bb7366ac2bc8cea07e32f8ca278990086caf7e",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -94,8 +94,34 @@
     }
   ],
   "primary_executable": "research/reproductions/generative_agents_memory/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "generative_agents_full_architecture_believability",
+      "metric_id": "trueskill_mu",
+      "value": 29.89,
+      "qualifiers": {
+        "evaluation": "interview-believability-ranking",
+        "condition": "full-architecture",
+        "participant_count": 100,
+        "source": "UIST 2023 Figure 8"
+      },
+      "claim_digest": "cf5a3eb7148dd4cbdec8a9adceac00da6f165d77d170b2446d05aabb8b5acd44"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "generative_agents_ablations",
+      "description": "UIST 2023 controlled believability ablations used to isolate reflection, planning and memory contributions.",
+      "qualifiers": {
+        "no_reflection_trueskill_mu": 26.88,
+        "no_reflection_or_planning_trueskill_mu": 25.64,
+        "fully_ablated_trueskill_mu": 21.21,
+        "human_crowdworker_trueskill_mu": 22.95,
+        "source": "UIST 2023 Figure 8"
+      },
+      "baseline_digest": "c5c3971afe9008ae02a8fe879302a27226b6dbff70f318725f0bd65a76461ae7"
+    }
+  ],
   "deltas": [],
   "blockers": [
     "Matched UIST social-behavior results still require the exact paper-era Smallville persona/world snapshot, historical hosted model revision, and human believability rater assignment."
