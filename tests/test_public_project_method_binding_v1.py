@@ -8,7 +8,7 @@ from noetrium.contracts.systems.participant__method import (
     MethodIdentity,
     MethodRuntimeIdentity,
 )
-from noetrium.platform import bind_method_endpoint, run_local_command, run_local_shell_command
+from noetrium.api import bind_method_endpoint, run_local_command, run_local_shell_command
 
 
 @dataclass(frozen=True)
