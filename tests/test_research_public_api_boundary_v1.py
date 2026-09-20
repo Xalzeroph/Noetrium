@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 from pathlib import Path
 
 
@@ -9,28 +10,43 @@ DOWNSTREAM_RESEARCH_ROOTS = (
     ROOT / "research" / "benchmarks",
     ROOT / "research" / "reproductions",
 )
-FORBIDDEN_IMPORT_MARKERS = (
-    "from noetrium_platform",
-    "import noetrium_platform",
-    "from noetrium.contracts",
-    "import noetrium.contracts",
-    "from noetrium.platform",
-    "import noetrium.platform",
-    "from components.api",
-    "import components.api",
-    "from orchestration",
-    "import orchestration",
-)
 
 
-def test_research_workspace_uses_one_downstream_api() -> None:
+def _noetrium_import_violations(path: Path) -> tuple[str, ...]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    violations: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "noetrium" or alias.name.startswith(
+                    ("noetrium.", "noetrium_platform", "components", "orchestration")
+                ):
+                    violations.append(f"import {alias.name}")
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            if module == "noetrium":
+                if (
+                    node.level != 0
+                    or len(node.names) != 1
+                    or node.names[0].name != "api"
+                    or node.names[0].asname is not None
+                ):
+                    rendered = ", ".join(alias.name for alias in node.names)
+                    violations.append(f"from noetrium import {rendered}")
+                continue
+            if module.startswith(
+                ("noetrium.", "noetrium_platform", "components", "orchestration")
+            ):
+                violations.append(f"from {module} import ...")
+    return tuple(violations)
+
+
+def test_research_workspace_uses_one_module_style_downstream_api() -> None:
     violations: list[str] = []
     for root in DOWNSTREAM_RESEARCH_ROOTS:
         for path in sorted(root.rglob("*.py")):
-            text = path.read_text(encoding="utf-8")
-            for marker in FORBIDDEN_IMPORT_MARKERS:
-                if marker in text:
-                    violations.append(f"{path.relative_to(ROOT)}: {marker}")
+            for violation in _noetrium_import_violations(path):
+                violations.append(f"{path.relative_to(ROOT)}: {violation}")
     assert violations == []
 
 
