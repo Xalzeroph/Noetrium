@@ -10,7 +10,7 @@ from typing import Protocol
 
 from noetrium_platform.evidence.artifact.catalog.api import ArtifactRegistryPort
 from noetrium_platform.evidence.artifact.reference.api import ArtifactReference, ArtifactReferencePort
-from noetrium_platform.foundation.kernel.kernel import canonical_digest, freeze_json, require_sha256
+from noetrium_platform.foundation.kernel.kernel import JsonObject, canonical_digest, freeze_json, require_sha256
 
 _HEX = frozenset("0123456789abcdef")
 
@@ -380,8 +380,78 @@ class BenchmarkTaskSet:
         return tuple(by_id[task_id] for task_id in matches[0].task_ids)
 
 
+@dataclass(frozen=True, slots=True)
+class BenchmarkCutSpec:
+    """Low-friction compiler for one immutable benchmark cut.
+
+    Authors retain explicit task/package/split and selection semantics. The spec
+    only canonicalizes ordering and compiles the declared scientific identity
+    into BenchmarkTaskSet.
+    """
+
+    benchmark_id: str
+    revision_id: str
+    source_digest: str
+    task_schema_id: str
+    source_reference: ArtifactReference | None = None
+
+    def __post_init__(self) -> None:
+        _text(self.benchmark_id, "benchmark cut benchmark_id")
+        _text(self.revision_id, "benchmark cut revision_id")
+        _sha(self.source_digest, "benchmark cut source_digest")
+        _text(self.task_schema_id, "benchmark cut task_schema_id")
+        if self.source_reference is not None and type(self.source_reference) is not ArtifactReference:
+            raise TypeError("benchmark cut source_reference must be ArtifactReference or None")
+
+    def build(
+        self,
+        tasks: tuple[TaskDefinition, ...],
+        *,
+        splits: tuple[TaskSetSplit, ...] = (),
+        task_graph: TaskGraph | None = None,
+        selection_policy: JsonObject | None = None,
+        selection_policy_digest: str | None = None,
+    ) -> BenchmarkTaskSet:
+        if type(tasks) is not tuple or not tasks or any(
+            type(row) is not TaskDefinition for row in tasks
+        ):
+            raise TypeError("benchmark cut tasks must be a non-empty TaskDefinition tuple")
+        if type(splits) is not tuple or any(type(row) is not TaskSetSplit for row in splits):
+            raise TypeError("benchmark cut splits must contain TaskSetSplit")
+        if task_graph is not None and type(task_graph) is not TaskGraph:
+            raise TypeError("benchmark cut task_graph must be TaskGraph or None")
+        if selection_policy is not None and selection_policy_digest is not None:
+            raise ValueError(
+                "benchmark cut accepts selection_policy or selection_policy_digest, not both"
+            )
+        if selection_policy is not None:
+            frozen_policy = freeze_json(selection_policy)
+            if not isinstance(frozen_policy, Mapping):
+                raise TypeError("benchmark cut selection_policy must be a JSON object")
+            policy_digest = canonical_digest(frozen_policy)
+        elif selection_policy_digest is not None:
+            policy_digest = _sha(
+                selection_policy_digest,
+                "benchmark cut selection_policy_digest",
+            )
+        else:
+            policy_digest = ""
+
+        return BenchmarkTaskSet(
+            benchmark_id=self.benchmark_id,
+            revision_id=self.revision_id,
+            source_digest=self.source_digest,
+            task_schema_id=self.task_schema_id,
+            tasks=tuple(sorted(tasks, key=lambda row: row.task_id)),
+            source_reference=self.source_reference,
+            task_graph=TaskGraph() if task_graph is None else task_graph,
+            splits=tuple(sorted(splits, key=lambda row: row.split_id)),
+            selection_policy_digest=policy_digest,
+        )
+
+
 __all__ = [
-    "BenchmarkTaskSet", "TaskDefinition", "TaskPackageSpec", "TaskArtifactSpec",
+    "BenchmarkCutSpec", "BenchmarkTaskSet", "TaskDefinition", "TaskPackageSpec", "TaskArtifactSpec",
     "TaskVerifierIsolation", "TaskGraph", "TaskGraphEdge",
     "TaskGraphRelation", "TaskSetSplit", "TrialBudget", "BenchmarkSourceKind",
     "BenchmarkSourceSpec", "BenchmarkSourceResolution", "BenchmarkSourcePort",
