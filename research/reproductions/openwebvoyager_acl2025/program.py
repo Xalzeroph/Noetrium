@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import OPENWEBVOYAGER_FIDELITY
 
 OPENWEBVOYAGER_PHASES = (
@@ -10,7 +10,7 @@ OPENWEBVOYAGER_PHASES = (
     AgentPhaseSpec("optimize", "openwebvoyager.optimize", "Update the policy and continue the exploration-feedback-optimization cycle."),
 )
 
-OPENWEBVOYAGER_METHOD_PROGRAM = build_agent_phase_program(
+OPENWEBVOYAGER_METHOD_PROGRAM = AgentMethodSpec(
     method_id="openwebvoyager",
     implementation_version="2025-paper-protocol",
     schema_version="openwebvoyager.phase-workflow.v1",
@@ -24,5 +24,5 @@ OPENWEBVOYAGER_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("openwebvoyager.phase-transcript", "openwebvoyager.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("openwebvoyager_trajectory",),
-)
+).compile()
 __all__ = ["OPENWEBVOYAGER_METHOD_PROGRAM", "OPENWEBVOYAGER_PHASES"]
