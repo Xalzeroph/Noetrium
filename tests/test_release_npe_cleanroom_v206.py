@@ -183,7 +183,7 @@ def test_clean_room_verifies_explicit_downstream_lifecycle_and_fresh_reopen(
         return rows[name]
     monkeypatch.setattr(npe, "_run", fake_run)
     result = npe.verify_npe_cleanroom(artifact)
-        assert result.doctor_ready is True
+    assert result.doctor_ready is True
     assert result.reference_lifecycle_complete is True, result.blocker_codes
     assert result.fresh_process_reopen_passed is True, result.blocker_codes
     assert result.npe_verified is True
