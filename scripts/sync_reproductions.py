@@ -27,9 +27,10 @@ from noetrium_platform.research.reproduction import (
     ReproductionAssetRef,
     ReproductionDefinition,
     ReproductionDelta,
+    ReproductionEvidenceRef,
 )
 
-PROJECTION_SCHEMA = "noetrium.reproduction.projection.v5"
+PROJECTION_SCHEMA = "noetrium.reproduction.projection.v6"
 REPRODUCTION_CATALOG_SCHEMA = "noetrium.reproduction-catalog.projection.v1"
 REPRODUCTION_CATALOG_AUTHORITY = "generated_from_typed_reproduction_definitions"
 _ALLOWED_DEFINITION_IMPORTS = {"__future__", "noetrium_platform.research.reproduction"}
@@ -161,6 +162,21 @@ def _baseline(row: ReferenceBaseline) -> dict[str, Any]:
     }
 
 
+def _evidence(row: ReproductionEvidenceRef) -> dict[str, Any]:
+    return {
+        "evidence_id": row.evidence_id,
+        "kind": row.kind.value,
+        "run_id": row.run_id,
+        "run_manifest_digest": row.run_manifest_digest,
+        "bundle_id": row.bundle_id,
+        "evidence_bundle_digest": row.evidence_bundle_digest,
+        "manifest_ref": row.manifest_ref,
+        "manifest_sha256": row.manifest_sha256,
+        "claim_ids": list(row.claim_ids),
+        "evidence_digest": row.evidence_digest,
+    }
+
+
 def _delta(row: ReproductionDelta) -> dict[str, Any]:
     return {
         "kind": row.kind.value,
@@ -218,7 +234,7 @@ def _projection(
         "reference_baselines": [_baseline(row) for row in definition.reference_baselines],
         "deltas": [_delta(row) for row in definition.deltas],
         "blockers": list(definition.blockers),
-        "evidence_refs": list(definition.evidence_refs),
+        "evidence_refs": [_evidence(row) for row in definition.evidence_refs],
         "scientific_tests": scientific_tests,
     }
 
@@ -293,7 +309,11 @@ def _merge_method_rows(
                     {value for row, _ in group for value in row.catalog.platform_owned}
                 ),
                 "evidence_refs": sorted(
-                    {value for row, _ in group for value in row.evidence_refs}
+                    {
+                        value.evidence_id
+                        for row, _ in group
+                        for value in row.evidence_refs
+                    }
                 ),
             }
         )
