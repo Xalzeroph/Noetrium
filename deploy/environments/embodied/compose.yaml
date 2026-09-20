@@ -1,0 +1,16 @@
+services:
+  platform-runtime:
+    build:
+      context: ..
+      dockerfile: deploy/environments/embodied/Dockerfile
+      args:
+        PLATFORM_BASE_IMAGE: ${PLATFORM_IMAGE:-noetrium:local}
+    image: ${PLATFORM_EMBODIED_IMAGE:-noetrium-env-embodied:local}
+    environment:
+      NOETRIUM_ENVIRONMENT_PROFILE: embodied
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/noetrium-entrypoint", "environment-doctor", "embodied"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 10s
