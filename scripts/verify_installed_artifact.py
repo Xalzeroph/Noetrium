@@ -135,23 +135,36 @@ def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
                 f"installed import escaped verification venv: {module_file}"
             )
 
-        reference_config = work / "reference.json"
-        reference_config.write_text(
-            json.dumps({"state_root": str(work / "reference-state")}),
-            encoding="utf-8",
+        reference_code = (
+            "import json,sys;"
+            "from pathlib import Path;"
+            "from noetrium.api import ResearchFacade;"
+            "from noetrium_platform.product.operator.reference import ReferenceResearchApplication;"
+            "root=Path(sys.argv[1]);action=sys.argv[2];target=sys.argv[3];"
+            "facade=ResearchFacade(ReferenceResearchApplication(root));"
+            "result=getattr(facade,action)(target);"
+            "print(json.dumps({'ok':True,'command':action,'result':"
+            "{'action':result.action.value,'target':result.target,'state':result.state}},"
+            "sort_keys=True))"
         )
-        prefix = [
-            str(noetrium),
-            "--application",
-            "noetrium_platform.product.operator.reference:build_reference_application",
-            "--application-config",
-            str(reference_config),
-        ]
+        reference_state = work / "reference-state"
         for command in ("run", "inspect", "stop", "resume", "reconcile", "evidence"):
-            receipt = _run([*prefix, command, "installed-reference"], cwd=work, env=env)
+            receipt = _run(
+                [
+                    str(python),
+                    "-I",
+                    "-c",
+                    reference_code,
+                    str(reference_state),
+                    command,
+                    "installed-reference",
+                ],
+                cwd=work,
+                env=env,
+            )
             payload = json.loads(receipt.stdout)
             if payload.get("ok") is not True or payload.get("command") != command:
-                raise RuntimeError(f"installed noetrium {command} returned invalid receipt")
+                raise RuntimeError(f"installed API {command} returned invalid receipt")
             commands.append(receipt)
 
         return InstalledArtifactReceipt(
