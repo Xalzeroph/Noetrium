@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ma_lmm_memory",
-  "package_digest": "0facede4fd2eedd2853aea2184a9500da43d7092baadb8ad797927df48cf6924",
-  "definition_digest": "f8f2140525d42d553cd455f53557a5e891618ea7e1fe294d83a511ac7b0af953",
+  "package_digest": "947642276cb8ee48e72f98b883f222ebba9f756006af98f9ca7a4113ac2f01ec",
+  "definition_digest": "9c2f0e4cf9ab3fc9c12fd8ec320e3fc18b5abb5813dc8b785c12382b667e9b3f",
   "source_registry_digest": "5f3d368fdee5eea455e920c9272f4c9bd9feddccd71af306baeaab1137bdff7e",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -129,8 +129,63 @@
     }
   ],
   "primary_executable": "research/reproductions/ma_lmm_memory/memory.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "ma_lmm_lvu_average_top1",
+      "metric_id": "average_top1_accuracy_percent",
+      "value": 63.0,
+      "qualifiers": {
+        "benchmark": "lvu",
+        "tasks": 7,
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "claim_digest": "f73d06a8d7cf8412fb8c73ef0618fd1d320d63a21d6fc4233bd142333bf1c5bd"
+    },
+    {
+      "claim_id": "ma_lmm_lvu_relation",
+      "metric_id": "top1_accuracy_percent",
+      "value": 58.2,
+      "qualifiers": {
+        "benchmark": "lvu",
+        "task": "relationship",
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "claim_digest": "9066c5d6cc491292ce3591505115c625ad925864f1f20dda7602d20631629949"
+    },
+    {
+      "claim_id": "ma_lmm_lvu_scene",
+      "metric_id": "top1_accuracy_percent",
+      "value": 80.3,
+      "qualifiers": {
+        "benchmark": "lvu",
+        "task": "scene",
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "claim_digest": "d7e80a911ee22e6c03f546fc92e0c5dda5a8867599fe1012f2257deb0a8e7d1e"
+    },
+    {
+      "claim_id": "ma_lmm_lvu_director",
+      "metric_id": "top1_accuracy_percent",
+      "value": 74.6,
+      "qualifiers": {
+        "benchmark": "lvu",
+        "task": "director",
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "claim_digest": "fd0bcad3ae8ff88b0730286e2ec00bc717c5ea00576b0121739498f3f35dfdf7"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "s5_lvu",
+      "description": "S5 long-video baseline reported in the MA-LMM LVU comparison.",
+      "qualifiers": {
+        "average_top1_accuracy_percent": 59.2,
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "baseline_digest": "e6e86776ab68c39882daa77d8227aac928c62a010042f9c19d6a3eb48f8bdf1f"
+    }
+  ],
   "deltas": [],
   "blockers": [
     "Full checkpoint-level CVPR result reproduction still requires frozen official model weights and acquisition of the LVU 1.0 video/data bytes into content-addressed artifact authority.",

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimus1_minecraft",
-  "package_digest": "85326b4f172d0b20392162f543d41d74fcf775e22102b2c2fd0f8a3ceee7f8f6",
-  "definition_digest": "fbfa26bf6d0fa41b390c85c7445905b9701edfd39bce7bc6130a54d739c1bcf3",
+  "package_digest": "d7609bbc9582c4ed9bf26d3f7b8c5ffb8c9b33da0df9445277ded567466ed543",
+  "definition_digest": "45567d88668e23d1221e52a3e7830a06b95a741ce1bdbee61fdae071aa40d2b0",
   "source_registry_digest": "a3acfe40764ad2d81394436f3bd10ed392d9c039e7f7dd83810b26b7bffbf7fe",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -123,8 +123,54 @@
     }
   ],
   "primary_executable": "research/reproductions/optimus1_minecraft/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "optimus1_wooden_pickaxe_success",
+      "metric_id": "success_rate_percent",
+      "value": 100.0,
+      "qualifiers": {
+        "task": "craft-wooden-pickaxe",
+        "evaluation_times": 30,
+        "average_steps": 1153.91,
+        "average_time_seconds": 57.7,
+        "source": "NeurIPS-2024 paper appendix"
+      },
+      "claim_digest": "fe46fa6f78bdc6ee1f884df4b4e0a98c3bd7f878587c0f5ec05be28846f2b3c5"
+    },
+    {
+      "claim_id": "optimus1_stone_pickaxe_success",
+      "metric_id": "success_rate_percent",
+      "value": 96.77,
+      "qualifiers": {
+        "task": "craft-stone-pickaxe",
+        "evaluation_times": 31,
+        "average_steps": 2310.09,
+        "average_time_seconds": 115.5,
+        "source": "NeurIPS-2024 paper appendix"
+      },
+      "claim_digest": "b245b5ad17530049e5a900df70165a26618001a44e9acaf2788d4bcf2306281d"
+    },
+    {
+      "claim_id": "optimus1_paper_long_horizon_task_count",
+      "metric_id": "evaluation_task_count",
+      "value": 67,
+      "qualifiers": {
+        "scope": "paper-main-long-horizon-benchmark",
+        "source": "NeurIPS-2024 paper"
+      },
+      "claim_digest": "b5219f3f7317ae232974654bd7dc3eebdffea4a145eecb5e37b9f19e76084e03"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "optimus1_minecraft_agents",
+      "description": "Minecraft embodied-agent baselines used in the NeurIPS 2024 long-horizon task comparison.",
+      "qualifiers": {
+        "source": "NeurIPS-2024 paper evaluation"
+      },
+      "baseline_digest": "de99db203d193f6a16b6f35ef80b5b427f85ea9ec1bc8a2f6d6af712d9398460"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimus2_minecraft",
-  "package_digest": "aac8f775112eb29abc5b5b5991e26d3b62ad4f787cd392d26a35452ec193622c",
-  "definition_digest": "56a9eaddda3834230e267d385aeee80b3ae49ea2249cd0d05c5d913531ee693b",
+  "package_digest": "7b4f12289fc29b8236c660bc517444e3db8ca7dd3bef325a8f5a55739ad13861",
+  "definition_digest": "92ac5e1bc78d3bd946983989ff19f88f7e5502b31b47c0ddad0b806a7d9fc3d1",
   "source_registry_digest": "fc349c4a36d38cb8541352f436038b853fa4237fa54f9f5e475cf987b8603ed0",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -111,8 +111,49 @@
     }
   ],
   "primary_executable": "research/reproductions/optimus2_minecraft/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "optimus2_mgoa_video_count",
+      "metric_id": "dataset_video_count",
+      "value": 25000,
+      "qualifiers": {
+        "dataset": "mgoa",
+        "source": "CVPR-2025 paper"
+      },
+      "claim_digest": "8eb758ee64df550bb433c9ff56e115d41080f7560ade0e69284fffebfac0de22"
+    },
+    {
+      "claim_id": "optimus2_mgoa_atomic_task_count",
+      "metric_id": "dataset_atomic_task_count",
+      "value": 8,
+      "qualifiers": {
+        "dataset": "mgoa",
+        "source": "CVPR-2025 paper"
+      },
+      "claim_digest": "97b6292343e3e8ad7e570927003f5a12490276f7b558a443217e1be1844df2a3"
+    },
+    {
+      "claim_id": "optimus2_mgoa_goa_pair_count",
+      "metric_id": "dataset_goal_observation_action_pair_count",
+      "value": 30000000,
+      "qualifiers": {
+        "dataset": "mgoa",
+        "approximate": true,
+        "source": "CVPR-2025 paper"
+      },
+      "claim_digest": "fa3371e852c59d61465ab58be49c07ebd1d9a8d56a94a5f38385d2f624614ffe"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "optimus2_minecraft_agent_baselines",
+      "description": "Prior Minecraft multimodal and behavior-modeling agents used in the CVPR 2025 evaluation.",
+      "qualifiers": {
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "baseline_digest": "35700db7266e6bb144eb5978da60b583ce045a608346de369579fdc0b931fd25"
+    }
+  ],
   "deltas": [
     {
       "kind": "substitution",

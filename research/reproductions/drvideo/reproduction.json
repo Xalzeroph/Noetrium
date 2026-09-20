@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v5",
   "authority": "generated_from_typed_definition_and_source",
   "package": "drvideo",
-  "package_digest": "5d28f5f01d36a2ceff92ddd45229ae04c951e03fd0d974784aa9e7fb051072fb",
-  "definition_digest": "690965f7ae1acb76bf89d7ff0eb44688b9048353e8a7956d76ac962d57dc0bf4",
+  "package_digest": "3131178908be1e990959034886399a575383ea1da11a904ed5562814b89e43f1",
+  "definition_digest": "c467be4797ee695948ea3a94e2b0bc8ede9df373abe09248e27175ebb6f6c276",
   "source_registry_digest": "7fefca6637ec616d0b9bca8e3d69771815436472b8f69bb31f15efe37cd0d68c",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -124,8 +124,110 @@
     }
   ],
   "primary_executable": "research/reproductions/drvideo/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "drvideo_egoschema_public_gpt4",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 66.4,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "split": "public-500",
+        "model": "gpt-4-1106-preview",
+        "source": "CVPR-2025 paper Table 1"
+      },
+      "claim_digest": "b9147370d54bed4e962f805af08f1743d038b86e46fca29689f5592374e1b829"
+    },
+    {
+      "claim_id": "drvideo_egoschema_full_gpt4",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 61.0,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "split": "full-5031",
+        "model": "gpt-4-1106-preview",
+        "source": "CVPR-2025 paper Table 1"
+      },
+      "claim_digest": "e2954af75b4d292ea90a866ba7307749bef352c9d921b073ef64d766762b6009"
+    },
+    {
+      "claim_id": "drvideo_moviechat_global_accuracy",
+      "metric_id": "open_ended_accuracy_percent",
+      "value": 93.1,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "global",
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "claim_digest": "4b17bff01951e25637be93518330d302948efd1ed129b6a088d41177c863985f"
+    },
+    {
+      "claim_id": "drvideo_moviechat_global_score",
+      "metric_id": "open_ended_quality_score_0_to_5",
+      "value": 4.41,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "global",
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "claim_digest": "d534ba8284a7c3eba2599fcaaf40465e5b97401f72e3c5ebbb8b1d9fc05b8ba4"
+    },
+    {
+      "claim_id": "drvideo_moviechat_breakpoint_accuracy",
+      "metric_id": "open_ended_accuracy_percent",
+      "value": 56.4,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "breakpoint",
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "claim_digest": "42c6a2ee85d97bca151b79146614ad7983d463f9e419f548a534e21d34a649d2"
+    },
+    {
+      "claim_id": "drvideo_moviechat_breakpoint_score",
+      "metric_id": "open_ended_quality_score_0_to_5",
+      "value": 2.75,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "breakpoint",
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "claim_digest": "914ae010871312685ab0ea74e420bd8e33e4da88bf326419b0d80f6e860ea551"
+    },
+    {
+      "claim_id": "drvideo_videomme_long_without_subtitles",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 51.7,
+      "qualifiers": {
+        "benchmark": "video-mme",
+        "duration": "long",
+        "subtitles": false,
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "claim_digest": "bd54db8bef2d574a08a273002e58eabc25817dd6fd50369e74e56e414ed4708b"
+    },
+    {
+      "claim_id": "drvideo_videomme_long_with_subtitles",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 71.7,
+      "qualifiers": {
+        "benchmark": "video-mme",
+        "duration": "long",
+        "subtitles": true,
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "claim_digest": "5c2757de7aa9c112bb7d0d5c5d82842a9189a469fb88177121356599f33032cd"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "drvideo_long_video_baselines",
+      "description": "Long-video retrieval and multimodal-agent baselines used by the CVPR 2025 paper on EgoSchema, MovieChat-1K and Video-MME.",
+      "qualifiers": {
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "baseline_digest": "95cc14a0a3ffb804a5dfd515f62746832b2923a000476fef248e80cd054e809d"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

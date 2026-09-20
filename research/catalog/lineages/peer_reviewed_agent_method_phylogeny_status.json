@@ -1826,7 +1826,7 @@
       "reproductions": [
         {
           "package": "moviechat_memory",
-          "package_digest": "c91ffd7777306457d681a75539a3addf129d884c4fb81ee438e9424ce55b89f8",
+          "package_digest": "e7c2af4bd5c079d18fff90f4a61f8026a0a1432e17b9e3bca1c4b367ce8d55c3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -1887,8 +1887,8 @@
             "The executable source and the paper differ in one direct-LTM pair selection detail; both identities are preserved rather than silently normalizing the implementation to the paper description."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 4,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
@@ -1904,7 +1904,7 @@
       "reproductions": [
         {
           "package": "ma_lmm_memory",
-          "package_digest": "0facede4fd2eedd2853aea2184a9500da43d7092baadb8ad797927df48cf6924",
+          "package_digest": "947642276cb8ee48e72f98b883f222ebba9f756006af98f9ca7a4113ac2f01ec",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -1965,8 +1965,8 @@
             "The current executable pressure target isolates the paper memory algorithm from the surrounding LAVIS/Vicuna tensor stack."
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 4,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
@@ -2988,5 +2988,5 @@
       ]
     }
   ],
-  "projection_digest": "d7af08012eed4e3ff34349ea0ea1f4b2ea19e3970653d2a7a26a8f46b0069e7e"
+  "projection_digest": "5efc58c1e69787eb31e6409202ced10c845248c5a4b9efc22cd04cbbc7976804"
 }
