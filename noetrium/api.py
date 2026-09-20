@@ -58,9 +58,22 @@ def symbol_schema(system_key: str, module: str, symbol: str) -> dict[str, Any]:
     return find_downstream_symbol_schema(system_key, module, symbol)
 
 
+@lru_cache(maxsize=1)
+def _extra_symbol_index() -> dict[str, tuple[str, ...]]:
+    rows: dict[str, list[str]] = {}
+    for module_name in _EXTRA_MODULES:
+        module = importlib.import_module(module_name)
+        for symbol in getattr(module, "__all__", ()):
+            if isinstance(symbol, str) and symbol and not symbol.startswith("_"):
+                rows.setdefault(symbol, []).append(module_name)
+    return {symbol: tuple(module_names) for symbol, module_names in rows.items()}
+
+
 def owners(symbol: str) -> tuple[str, ...]:
-    """Return registered system owners for one public symbol."""
-    return catalog().owners(symbol)
+    """Return every registered or stable-helper owner for one public symbol."""
+    if not isinstance(symbol, str) or not symbol:
+        raise ValueError("symbol must be non-empty text")
+    return tuple(dict.fromkeys((*catalog().owners(symbol), *_extra_symbol_index().get(symbol, ()))))
 
 
 def search(query: str, *, limit: int = 50) -> tuple[ApiSymbolMatch, ...]:
@@ -70,11 +83,17 @@ def search(query: str, *, limit: int = 50) -> tuple[ApiSymbolMatch, ...]:
     if type(limit) is not int or limit < 1:
         raise ValueError("limit must be positive")
     needle = query.casefold()
-    rows = [
-        ApiSymbolMatch(symbol, tuple(system_keys))
+    index: dict[str, tuple[str, ...]] = {
+        symbol: tuple(system_keys)
         for symbol, system_keys in catalog().symbol_index.items()
+    }
+    for symbol, module_names in _extra_symbol_index().items():
+        index[symbol] = tuple(dict.fromkeys((*index.get(symbol, ()), *module_names)))
+    rows = [
+        ApiSymbolMatch(symbol, owner_names)
+        for symbol, owner_names in index.items()
         if needle in symbol.casefold()
-        or any(needle in system_key.casefold() for system_key in system_keys)
+        or any(needle in owner.casefold() for owner in owner_names)
     ]
     rows.sort(key=lambda row: (row.symbol.casefold() != needle, row.symbol.casefold()))
     return tuple(rows[:limit])
@@ -99,6 +118,16 @@ def describe(symbol: str) -> tuple[dict[str, Any], ...]:
                         "module": api_module["module"],
                         "schema": schema,
                     })
+    for module_name in _extra_symbol_index().get(symbol, ()):
+        rows.append({
+            "system_key": None,
+            "module": module_name,
+            "schema": {
+                "name": symbol,
+                "kind": "python_export",
+                "qualified_name": f"{module_name}.{symbol}",
+            },
+        })
     return tuple(rows)
 
 
@@ -125,6 +154,7 @@ def _extra_candidates(symbol: str) -> tuple[tuple[str, Any], ...]:
     return tuple(resolved)
 
 
+@lru_cache(maxsize=None)
 def resolve(symbol: str) -> Any:
     """Resolve one public symbol across the complete unified API.
 
