@@ -453,7 +453,7 @@ def render_convenience_facade(
     lines = [
         f'""" {_MARKER}.',
         f"Convenience facade: {name}",
-        "Sources are selected by canonical registry roots and declared compatibility planes; symbol lists are never hand-maintained.",
+        "Sources are selected from canonical registry-owned public surfaces; symbol lists are never hand-maintained.",
         '"""',
         "from __future__ import annotations",
         "",
