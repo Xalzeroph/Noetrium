@@ -32,13 +32,9 @@ _PACKAGE = re.compile(r"[a-z][a-z0-9_]*")
 _PROVIDER_PROBE_TIMEOUT_S = 30
 _AUTHOR_PROBE_TIMEOUT_S = 30
 _AUTHOR_PROBE_SCRIPT = r'''
-from noetrium.api import AgentMethodSpec, AgentStudySpec, MethodProgram, ResearchMethodHostPort
+from noetrium.api import AgentMethodSpec, AgentStudySpec, MethodProgram, compile_research_method
 from __PACKAGE__.method import METHOD_PROGRAM, METHOD_SPEC
-from __PACKAGE__.research import METHOD_HOST, compile_study
 from __PACKAGE__.study import STUDY_SPEC, build_study
-
-if not isinstance(METHOD_HOST, ResearchMethodHostPort):
-    raise TypeError("author Method Host does not implement ResearchMethodHostPort")
 if not isinstance(METHOD_SPEC, AgentMethodSpec):
     raise TypeError("author method module must export AgentMethodSpec")
 if not isinstance(METHOD_PROGRAM, MethodProgram):
@@ -47,8 +43,8 @@ if not isinstance(STUDY_SPEC, AgentStudySpec):
     raise TypeError("author study module must export AgentStudySpec")
 if not callable(build_study):
     raise TypeError("author study module must export build_study")
-if not callable(compile_study):
-    raise TypeError("author research module must export compile_study")
+if not callable(compile_research_method):
+    raise TypeError("unified API must expose compile_research_method")
 print("ready")
 '''
 _PROVIDER_PROBE_SCRIPT = r'''
@@ -232,9 +228,9 @@ def _author_readiness(root: Path, package: str) -> tuple[bool, str]:
             timeout=_AUTHOR_PROBE_TIMEOUT_S,
         )
     except (OSError, subprocess.TimeoutExpired):
-        return False, "author Method Host probe could not complete"
+        return False, "author compile probe could not complete"
     if completed.returncode != 0 or completed.stdout.strip() != "ready":
-        return False, "author Method Host public contract probe failed closed"
+        return False, "author compile public contract probe failed closed"
     return True, "ready"
 
 
@@ -401,7 +397,6 @@ def doctor_project(project_root: Path, *, boundary_auditor: RepositoryBoundaryAu
     author_files = () if not package else (
         f"src/{package}/method.py",
         f"src/{package}/study.py",
-        f"src/{package}/research.py",
         "tests/test_generated_author_project.py",
     )
     provider_files = () if not package else (
@@ -448,7 +443,7 @@ def doctor_project(project_root: Path, *, boundary_auditor: RepositoryBoundaryAu
         checks.append(_check(
             "level0_standard_bindings", author_ready,
             "typed AgentMethodSpec/MethodProgram and AgentStudySpec compilation seams are available",
-            "resolve author Method Host readiness: " + author_detail,
+            "resolve author compile readiness: " + author_detail,
         ))
     elif profile is ProjectTemplateProfile.PROVIDER:
         if files_ok:
