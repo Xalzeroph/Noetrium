@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium.contracts.systems.participant__capability import (
+from noetrium.api import (
     CapabilityDescriptor,
     CapabilityRequest,
     ExecutionContext,
