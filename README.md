@@ -317,10 +317,8 @@ Downstream code imports stable contracts and reusable components from `noetrium`
 A reusable Linux image and Compose definition are maintained under `deploy/`.
 
 ```bash
-cp deploy/.env.example deploy/.env
-docker compose -f deploy/compose.yaml config
-docker compose -f deploy/compose.yaml build
-docker compose -f deploy/compose.yaml run --rm platform-runtime doctor
+python scripts/build_environment_images.py validate
+python scripts/build_environment_images.py build --profiles text_world
 ```
 
 The deployment layer separates immutable software from mutable runtime state; host-specific paths and secrets stay outside committed composition code.
@@ -330,8 +328,7 @@ The deployment layer separates immutable software from mutable runtime state; ho
 Minecraft is a first-party reusable environment provider. Task suites and scientific composition remain downstream.
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
+python scripts/build_environment_images.py build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
