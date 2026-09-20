@@ -1,4 +1,4 @@
-from research.reproductions.frontier_2026.wave_07_acl2026 import PROGRAMS, REPRODUCTIONS
+from research.authoring.frontier_2026.wave_07_acl2026 import PROGRAMS, REPRODUCTIONS
 
 EXPECTED={"compass_acl2026","octotools_acl2026","bmam_acl2026","clag_acl2026","dcm_agent_acl2026","branch_browse_acl2026","webclipper_acl2026","agentask_acl2026","eti_acl2026","extagents_acl2026"}
 
