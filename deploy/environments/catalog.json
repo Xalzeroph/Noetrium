@@ -1,0 +1,134 @@
+{
+  "schema": "noetrium.environment-container-profiles.v1",
+  "boundary": "Upstream profiles provide reusable execution prerequisites only. Benchmarks, tasks, paper methods, datasets, checkpoints and scientific protocols are downstream-owned.",
+  "base": {
+    "profile_id": "base",
+    "image_env": "PLATFORM_IMAGE",
+    "dockerfile": "deploy/Dockerfile",
+    "compose": "deploy/compose.yaml",
+    "build_mode": "evidence-bound-wheel"
+  },
+  "profiles": [
+    {
+      "profile_id": "minecraft",
+      "category_id": "minecraft",
+      "extends": "base",
+      "image_env": "PLATFORM_MINECRAFT_IMAGE",
+      "dockerfile": "deploy/environments/minecraft/Dockerfile",
+      "compose": "deploy/environments/minecraft/compose.yaml",
+      "provides": [
+        "java21",
+        "node22",
+        "mineflayer-runtime",
+        "minecraft-provider-runtime"
+      ],
+      "excludes": [
+        "minecraft-server-artifact",
+        "benchmark-worlds",
+        "task-manifests",
+        "paper-methods",
+        "checkpoints"
+      ]
+    },
+    {
+      "profile_id": "embodied",
+      "category_id": "embodied",
+      "extends": "base",
+      "image_env": "PLATFORM_EMBODIED_IMAGE",
+      "dockerfile": "deploy/environments/embodied/Dockerfile",
+      "compose": "deploy/environments/embodied/compose.yaml",
+      "provides": [
+        "egl",
+        "opengl",
+        "osmesa",
+        "headless-x"
+      ],
+      "excludes": [
+        "habitat",
+        "maniskill",
+        "libero",
+        "calvin",
+        "robotwin",
+        "benchmark-assets",
+        "paper-methods"
+      ]
+    },
+    {
+      "profile_id": "gui",
+      "category_id": "gui",
+      "extends": "base",
+      "image_env": "PLATFORM_GUI_IMAGE",
+      "dockerfile": "deploy/environments/gui/Dockerfile",
+      "compose": "deploy/environments/gui/compose.yaml",
+      "provides": [
+        "xvfb",
+        "openbox",
+        "xdotool",
+        "screenshot-tools"
+      ],
+      "excludes": [
+        "osworld",
+        "androidworld",
+        "windowsagentarena",
+        "benchmark-images",
+        "paper-methods"
+      ]
+    },
+    {
+      "profile_id": "web",
+      "category_id": "web",
+      "extends": "base",
+      "image_env": "PLATFORM_WEB_IMAGE",
+      "dockerfile": "deploy/environments/web/Dockerfile",
+      "compose": "deploy/environments/web/compose.yaml",
+      "provides": [
+        "chromium",
+        "chromedriver"
+      ],
+      "excludes": [
+        "webarena",
+        "live-app-state",
+        "benchmark-sites",
+        "paper-methods"
+      ]
+    },
+    {
+      "profile_id": "software",
+      "category_id": "software",
+      "extends": "base",
+      "image_env": "PLATFORM_SOFTWARE_IMAGE",
+      "dockerfile": "deploy/environments/software/Dockerfile",
+      "compose": "deploy/environments/software/compose.yaml",
+      "provides": [
+        "compiler-toolchain",
+        "cmake",
+        "ninja",
+        "patch",
+        "rsync",
+        "ssh-client"
+      ],
+      "excludes": [
+        "target-repositories",
+        "swe-bench-images",
+        "task-patches",
+        "paper-methods"
+      ]
+    },
+    {
+      "profile_id": "text_world",
+      "category_id": "text_world",
+      "extends": "base",
+      "build_mode": "base-only",
+      "provides": [
+        "python-runtime"
+      ],
+      "excludes": [
+        "alfworld",
+        "scienceworld",
+        "jericho",
+        "task-corpora",
+        "paper-methods"
+      ]
+    }
+  ]
+}
