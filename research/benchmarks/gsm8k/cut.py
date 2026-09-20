@@ -128,24 +128,23 @@ def build_gsm8k_task_set(
         )
         for split_id in split_ids
     )
-    return api.BenchmarkTaskSet(
+    return api.BenchmarkCutSpec(
         benchmark_id=GSM8K_BENCHMARK_ID,
         revision_id=revision,
         source_digest=dataset_content_sha256,
         task_schema_id=GSM8K_TASK_SCHEMA_ID,
-        tasks=tasks,
+    ).build(
+        tasks,
         splits=splits,
-        selection_policy_digest=api.canonical_digest(
-            {
-                "repository": GSM8K_REPOSITORY,
-                "release_commit": GSM8K_RELEASE_COMMIT,
-                "archived_commit": GSM8K_ARCHIVED_COMMIT,
-                "dataset_content_sha256": dataset_content_sha256,
-                "splits": tuple((row.split_id, row.task_ids) for row in splits),
-                "answer_marker": GSM8K_FINAL_ANSWER_MARKER,
-                "verifier_isolation": api.TaskVerifierIsolation.SEPARATE.value,
-            }
-        ),
+        selection_policy={
+            "repository": GSM8K_REPOSITORY,
+            "release_commit": GSM8K_RELEASE_COMMIT,
+            "archived_commit": GSM8K_ARCHIVED_COMMIT,
+            "dataset_content_sha256": dataset_content_sha256,
+            "splits": tuple((row.split_id, row.task_ids) for row in splits),
+            "answer_marker": GSM8K_FINAL_ANSWER_MARKER,
+            "verifier_isolation": api.TaskVerifierIsolation.SEPARATE.value,
+        },
     )
 
 
