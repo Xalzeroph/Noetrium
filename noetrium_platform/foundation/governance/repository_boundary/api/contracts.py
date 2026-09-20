@@ -30,10 +30,9 @@ class RepositoryBoundaryAuditor(Protocol):
 
 
 class DownstreamImportKind(StrEnum):
+    NOETRIUM_API = "noetrium_api"
     EXTERNAL = "external"
-    COMMON_PLATFORM_API = "common_platform_api"
-    PROVIDER_DEVELOPMENT_API = "provider_development_api"
-    FORBIDDEN_PRIVATE_IMPLEMENTATION = "forbidden_private_implementation"
+    FORBIDDEN_INTERNAL = "forbidden_internal"
 
 
 @dataclass(frozen=True, slots=True, order=True)
