@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium.platform import complete_project_model, invoke_multimodal_model
+from noetrium.api import complete_project_model, invoke_multimodal_model
 from noetrium_platform.capabilities.model.api import (
     ModelProviderProfile,
     MultimodalPart,
