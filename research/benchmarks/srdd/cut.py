@@ -153,17 +153,18 @@ def build_srdd_task_set(
         )
         for category in sorted(category_counts)
     )
-    return api.BenchmarkTaskSet(
+    return api.BenchmarkCutSpec(
         benchmark_id=SRDD_BENCHMARK_ID,
         revision_id=revision,
         source_digest=SRDD_SOURCE_CONTENT_DIGEST,
         task_schema_id=SRDD_TASK_SCHEMA_ID,
-        tasks=tasks,
+    ).build(
+        tasks,
         splits=(
             api.TaskSetSplit(SRDD_SPLIT_ID, task_ids),
             *category_splits,
         ),
-        selection_policy_digest=api.canonical_digest({
+        selection_policy={
             "dataset_commit": SRDD_DATASET_COMMIT,
             "dataset_path": SRDD_DATASET_PATH,
             "dataset_git_blob_sha1": SRDD_DATASET_GIT_BLOB_SHA1,
@@ -175,7 +176,7 @@ def build_srdd_task_set(
                 "consistency",
                 "quality",
             ),
-        }),
+        },
     )
 
 
