@@ -45,12 +45,13 @@ Read wheel/evidence digests from the generated release evidence, then build `dep
 | `software` | compiler/build/SSH workspace prerequisites | benchmark images, target repositories, task patches |
 | `text_world` | base image only | benchmark runtimes and task corpora |
 
-Build and diagnose one environment profile by composing the base service with one overlay:
+Use the single environment entrypoint for discovery, validation, build/reuse, provenance verification, and profile doctors:
 
-    export PLATFORM_IMAGE="noetrium:<exact-source-sha>"
-    docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
-    docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
+    python scripts/build_environment_images.py list
+    python scripts/build_environment_images.py show minecraft
+    python scripts/build_environment_images.py validate
+    python scripts/build_environment_images.py build --profiles minecraft embodied gui web software text_world
 
-The same pattern applies to `embodied`, `gui`, `web`, and `software`. `text_world` intentionally uses the base image directly.
+The build command creates the evidence-bound base image only when the exact source-SHA image is missing (or `--rebuild` is requested). On a cache hit it re-verifies the embedded wheel and installed wheel RECORD, then reuses the image. Each missing environment image is built independently and every requested profile is doctor-checked. Build scratch state is isolated from the reusable runtime-state root, so repeated deployments do not wipe environment state. `text_world` maps directly to the verified base image and does not create a redundant image.
 
 Environment profiles are reusable deployment capabilities. A downstream research repository may inherit or compose them, but Noetrium must never grow a benchmark layer or paper/reproduction layer beneath them.
