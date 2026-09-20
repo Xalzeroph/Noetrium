@@ -1,11 +1,13 @@
 import pytest
 
 from noetrium_platform.research.experimentation.study.api import (
+    BenchmarkCutSpec,
     BenchmarkSourceKind,
     BenchmarkSourceSpec,
     BenchmarkTaskSet,
     InMemoryBenchmarkSource,
     TaskDefinition,
+    TaskSetSplit,
 )
 
 
@@ -53,3 +55,43 @@ def test_source_revision_or_content_drift_is_rejected() -> None:
             "benchmark-source", BenchmarkSourceKind.CUSTOM, "revision-2",
             "adapter://benchmark", SHA,
         ))
+
+
+def test_benchmark_cut_spec_canonicalizes_author_input_order() -> None:
+    spec = BenchmarkCutSpec("benchmark", "revision-1", SHA, "task.v1")
+    task_a = TaskDefinition("task-a", "revision-1", "generic", "task.v1", SHA)
+    task_b = TaskDefinition("task-b", "revision-1", "generic", "task.v1", "b" * 64)
+
+    left = spec.build(
+        (task_b, task_a),
+        splits=(
+            TaskSetSplit("z", ("task-b",)),
+            TaskSetSplit("a", ("task-a",)),
+        ),
+        selection_policy={"selection": "explicit"},
+    )
+    right = spec.build(
+        (task_a, task_b),
+        splits=(
+            TaskSetSplit("a", ("task-a",)),
+            TaskSetSplit("z", ("task-b",)),
+        ),
+        selection_policy={"selection": "explicit"},
+    )
+
+    assert tuple(row.task_id for row in left.tasks) == ("task-a", "task-b")
+    assert tuple(row.split_id for row in left.splits) == ("a", "z")
+    assert left == right
+    assert left.cut_digest == right.cut_digest
+
+
+def test_benchmark_cut_spec_keeps_selection_identity_explicit() -> None:
+    spec = BenchmarkCutSpec("benchmark", "revision-1", SHA, "task.v1")
+    tasks = (TaskDefinition("task-a", "revision-1", "generic", "task.v1", SHA),)
+
+    with pytest.raises(ValueError, match="selection_policy or selection_policy_digest"):
+        spec.build(
+            tasks,
+            selection_policy={"selection": "explicit"},
+            selection_policy_digest="c" * 64,
+        )
