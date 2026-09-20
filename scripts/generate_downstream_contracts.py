@@ -581,7 +581,6 @@ def render_unified_api_stub(
         "search",
         "describe",
         "interface_schema",
-        "symbol_schema",
     }
     selected: dict[str, str] = {}
     all_symbols = set(registry_sources) | set(extra_sources)
@@ -624,7 +623,6 @@ def render_unified_api_stub(
         "def search(query: str, *, limit: int = 50) -> tuple[ApiSymbolMatch, ...]: ...",
         "def describe(symbol: str) -> tuple[dict[str, Any], ...]: ...",
         "def interface_schema() -> dict[str, Any]: ...",
-        "def symbol_schema(system_key: str, module: str, symbol: str) -> dict[str, Any]: ...",
         "",
     ]
     for module in sorted(by_module):
