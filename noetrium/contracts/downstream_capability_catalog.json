@@ -1,7 +1,4952 @@
 {
-  "catalog_digest": "0540d2f7e6980b3df7f9b34ce67d21ff587eaff0b8adeb59b8faf59afba461a7",
+  "catalog_digest": "c990dd13e50799cbf7a54ea106a8b2f308f7ec8deff469689d9a68ffd07f8323",
+  "entrypoint": "noetrium.api",
   "generator": "scripts/generate_downstream_contracts.py",
-  "schema": "noetrium-downstream-contracts.v2",
+  "schema": "noetrium-downstream-contracts.v3",
+  "symbol_index": {
+    "AUTHORITY": [
+      "artifact/lineage/relation",
+      "artifact/reference",
+      "artifact/retention",
+      "data/query/cross"
+    ],
+    "ActionIdentityViolation": [
+      "environment"
+    ],
+    "ActionKind": [
+      "environment/embodied"
+    ],
+    "ActionNotApplied": [
+      "environment"
+    ],
+    "ActionReconciliationDisposition": [
+      "environment"
+    ],
+    "ActionReconciliationResult": [
+      "environment"
+    ],
+    "ActionRecoveryRequired": [
+      "environment"
+    ],
+    "ActionRequest": [
+      "environment"
+    ],
+    "ActionResult": [
+      "environment"
+    ],
+    "ActionSafetyCapabilityMissing": [
+      "environment"
+    ],
+    "ActionScientificCommitContradiction": [
+      "environment"
+    ],
+    "ActionSemanticIdentity": [
+      "environment"
+    ],
+    "ActionSpec": [
+      "environment/embodied"
+    ],
+    "ActivePromptEvidenceReadPort": [
+      "model/request/prompt"
+    ],
+    "ActivePromptVerificationEvidence": [
+      "model/request/prompt"
+    ],
+    "ActiveReleasePin": [
+      "governance/release"
+    ],
+    "ActiveReleasePinned": [
+      "governance/release"
+    ],
+    "AdmissionBudget": [
+      "execution/admission"
+    ],
+    "AdmissionIdentity": [
+      "execution/admission"
+    ],
+    "AdmissionIntent": [
+      "execution/admission"
+    ],
+    "AdmissionMode": [
+      "execution/admission"
+    ],
+    "AdmissionRejected": [
+      "execution/admission"
+    ],
+    "AdmissionSchedulingPolicyPort": [
+      "execution/scheduling"
+    ],
+    "AdmissionTopologySnapshot": [
+      "execution/admission"
+    ],
+    "AgentActionExecutorPort": [
+      "participant/agent"
+    ],
+    "AgentActionSequence": [
+      "participant/agent"
+    ],
+    "AgentActionStep": [
+      "participant/agent"
+    ],
+    "AgentActionSummary": [
+      "participant/agent"
+    ],
+    "AgentCognitionError": [
+      "participant/agent"
+    ],
+    "AgentCompletionDecision": [
+      "participant/agent"
+    ],
+    "AgentCompletionDisposition": [
+      "participant/agent"
+    ],
+    "AgentCompletionPort": [
+      "participant/agent"
+    ],
+    "AgentDiagnosticsPort": [
+      "participant/agent"
+    ],
+    "AgentEvidencePort": [
+      "participant/agent"
+    ],
+    "AgentGoal": [
+      "participant/agent"
+    ],
+    "AgentIdentity": [
+      "participant",
+      "participant/agent"
+    ],
+    "AgentImplementation": [
+      "participant",
+      "participant/agent"
+    ],
+    "AgentLoopCheckpoint": [
+      "participant/agent"
+    ],
+    "AgentLoopResult": [
+      "participant/agent"
+    ],
+    "AgentLoopTerminationReason": [
+      "participant/agent"
+    ],
+    "AgentMemoryContext": [
+      "participant/agent"
+    ],
+    "AgentMemoryPort": [
+      "participant/agent"
+    ],
+    "AgentMethodSpec": [
+      "execution/workflow"
+    ],
+    "AgentModeDecision": [
+      "participant/agent"
+    ],
+    "AgentModeDisposition": [
+      "participant/agent"
+    ],
+    "AgentObservation": [
+      "participant/agent"
+    ],
+    "AgentObservationPort": [
+      "participant/agent"
+    ],
+    "AgentPhaseSpec": [
+      "execution/workflow"
+    ],
+    "AgentPlannerPort": [
+      "participant/agent"
+    ],
+    "AgentPlanningRequest": [
+      "participant/agent"
+    ],
+    "AgentProgressPort": [
+      "participant/agent"
+    ],
+    "AgentProjectDefinition": [
+      "participant"
+    ],
+    "AgentReactiveModePort": [
+      "participant/agent"
+    ],
+    "AgentReceiptCheckpoint": [
+      "participant/agent"
+    ],
+    "AgentSafetyDecision": [
+      "participant/agent"
+    ],
+    "AgentSafetyDisposition": [
+      "participant/agent"
+    ],
+    "AgentSafetySupervisorPort": [
+      "participant/agent"
+    ],
+    "AgentSession": [
+      "participant",
+      "participant/agent"
+    ],
+    "AgentSkillCatalogPort": [
+      "participant/agent"
+    ],
+    "AgentSkillDescription": [
+      "participant/agent"
+    ],
+    "AgentSkillRecord": [
+      "participant/agent"
+    ],
+    "AgentSkillSelection": [
+      "participant/agent"
+    ],
+    "AgentSnapshot": [
+      "participant",
+      "participant/agent"
+    ],
+    "AgentStepReceipt": [
+      "participant/agent"
+    ],
+    "AgentStudySpec": [
+      "experimentation/study"
+    ],
+    "AgentTurnRequest": [
+      "participant",
+      "participant/agent"
+    ],
+    "AgentTurnResult": [
+      "participant",
+      "participant/agent"
+    ],
+    "AggregateValue": [
+      "data/state"
+    ],
+    "AggregationFunction": [
+      "experimentation/workbench"
+    ],
+    "AggregationSpec": [
+      "experimentation/workbench"
+    ],
+    "AnalysisDefinition": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "AnalysisPlan": [
+      "experimentation/experiment"
+    ],
+    "AnalysisResult": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "ArchitectureChangeKind": [
+      "participant"
+    ],
+    "ArchiveMaterializationError": [
+      "artifact/content"
+    ],
+    "ArchiveMaterializationPort": [
+      "artifact/content"
+    ],
+    "ArchiveMaterializationRequest": [
+      "artifact/content"
+    ],
+    "ArchiveMaterializationResult": [
+      "artifact/content"
+    ],
+    "ArtifactAcquisitionError": [
+      "artifact/content"
+    ],
+    "ArtifactAcquisitionPort": [
+      "artifact/content"
+    ],
+    "ArtifactAcquisitionRequest": [
+      "artifact/content"
+    ],
+    "ArtifactAcquisitionResult": [
+      "artifact/content"
+    ],
+    "ArtifactBlobRef": [
+      "artifact/content"
+    ],
+    "ArtifactBlobStoreError": [
+      "artifact/content"
+    ],
+    "ArtifactBlobStorePort": [
+      "artifact/content"
+    ],
+    "ArtifactContentIdentity": [
+      "artifact"
+    ],
+    "ArtifactContentIdentityResolverPort": [
+      "artifact/content"
+    ],
+    "ArtifactContentIdentityVerificationError": [
+      "artifact/content"
+    ],
+    "ArtifactHttpOpener": [
+      "artifact/content"
+    ],
+    "ArtifactHttpResponse": [
+      "artifact/content"
+    ],
+    "ArtifactKind": [
+      "artifact/catalog"
+    ],
+    "ArtifactLineageConflict": [
+      "artifact/lineage/relation"
+    ],
+    "ArtifactLineageCorruptionError": [
+      "artifact/lineage/relation"
+    ],
+    "ArtifactLineageCycle": [
+      "artifact/lineage/relation"
+    ],
+    "ArtifactLineageEdge": [
+      "artifact/lineage/relation"
+    ],
+    "ArtifactLineageRelationPort": [
+      "artifact/lineage/relation"
+    ],
+    "ArtifactNotFound": [
+      "artifact/catalog"
+    ],
+    "ArtifactQuery": [
+      "artifact/catalog"
+    ],
+    "ArtifactRecord": [
+      "artifact/catalog"
+    ],
+    "ArtifactReference": [
+      "artifact/reference"
+    ],
+    "ArtifactReferenceConflict": [
+      "artifact/reference"
+    ],
+    "ArtifactReferenceCorruptionError": [
+      "artifact/reference"
+    ],
+    "ArtifactReferenceNotFound": [
+      "artifact/reference"
+    ],
+    "ArtifactReferencePort": [
+      "artifact/reference"
+    ],
+    "ArtifactRegistryConflict": [
+      "artifact/catalog"
+    ],
+    "ArtifactRegistryCorruptionError": [
+      "artifact/catalog"
+    ],
+    "ArtifactRegistryPort": [
+      "artifact/catalog"
+    ],
+    "ArtifactRetention": [
+      "artifact/catalog"
+    ],
+    "ArtifactRetentionConflict": [
+      "artifact/retention"
+    ],
+    "ArtifactRetentionCorruptionError": [
+      "artifact/retention"
+    ],
+    "ArtifactRetentionNotFound": [
+      "artifact/retention"
+    ],
+    "ArtifactRetentionPort": [
+      "artifact/retention"
+    ],
+    "ArtifactRetentionState": [
+      "artifact/retention"
+    ],
+    "ArtifactStorageBinding": [
+      "artifact/content"
+    ],
+    "ArtifactStorageBindingConflict": [
+      "artifact/content"
+    ],
+    "ArtifactStorageBindingCorruptionError": [
+      "artifact/content"
+    ],
+    "ArtifactStorageBindingNotFound": [
+      "artifact/content"
+    ],
+    "ArtifactStorageBindingPort": [
+      "artifact/content"
+    ],
+    "ArtifactStoragePlacementVerifierPort": [
+      "artifact/content"
+    ],
+    "ArtifactStorageVerificationError": [
+      "artifact/content"
+    ],
+    "AsyncMethodAgentLoopPort": [
+      "execution/workflow"
+    ],
+    "AsyncOperationDispatchPort": [
+      "execution/workflow"
+    ],
+    "AtomicEndpointReservationPort": [
+      "resource/allocation"
+    ],
+    "AtomicMutation": [
+      "data/state"
+    ],
+    "AtomicStateStorePort": [
+      "data/state"
+    ],
+    "AuthorityDescriptor": [
+      "governance/system_registry"
+    ],
+    "BackendCandidatePlan": [
+      "model/qualification"
+    ],
+    "BaselineRegistryPort": [
+      "experimentation/workbench"
+    ],
+    "BaselineSpec": [
+      "experimentation/workbench"
+    ],
+    "BatchCapableRegisteredChildResearchMachineExecutor": [
+      "execution/research_program"
+    ],
+    "BenchmarkAssignmentMode": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "BenchmarkSourceKind": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "BenchmarkSourcePort": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "BenchmarkSourceResolution": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "BenchmarkSourceSpec": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "BenchmarkTaskSet": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "BoundParticipant": [
+      "participant/core"
+    ],
+    "BoundParticipants": [
+      "participant/core"
+    ],
+    "BoundStudyExecutionPort": [
+      "experimentation/study"
+    ],
+    "BranchReceipt": [
+      "experimentation/evaluation"
+    ],
+    "ByteSegment": [
+      "runtime/process"
+    ],
+    "CONTRACT": [
+      "artifact/lineage/relation",
+      "artifact/reference",
+      "artifact/retention",
+      "execution/admission",
+      "execution/command",
+      "execution/operation",
+      "execution/scheduling",
+      "model/catalog/revision"
+    ],
+    "CancellationTokenPort": [
+      "execution/admission",
+      "platform/concurrency"
+    ],
+    "CandidateDecision": [
+      "model/qualification"
+    ],
+    "CandidateProgramExecutionPort": [
+      "experimentation/workbench"
+    ],
+    "CandidateProgramExecutionReceipt": [
+      "experimentation/workbench"
+    ],
+    "CandidateProgramExecutionRequest": [
+      "experimentation/workbench"
+    ],
+    "CandidateProgramExecutionStatus": [
+      "experimentation/workbench"
+    ],
+    "CandidateProgramIdentity": [
+      "experimentation/workbench"
+    ],
+    "CandidateProgramMeasurementProjection": [
+      "experimentation/workbench"
+    ],
+    "CandidateProgramMeasurementProjectionPort": [
+      "experimentation/workbench"
+    ],
+    "CandidateProgramSourcePublicationPort": [
+      "experimentation/workbench"
+    ],
+    "CapabilityApprovalDenied": [
+      "participant/capability"
+    ],
+    "CapabilityApprovalPort": [
+      "participant/capability"
+    ],
+    "CapabilityCarrierTransportPort": [
+      "participant/capability"
+    ],
+    "CapabilityDescriptor": [
+      "participant/capability"
+    ],
+    "CapabilityEffectReconciliationResult": [
+      "participant/capability"
+    ],
+    "CapabilityExportSession": [
+      "participant/capability"
+    ],
+    "CapabilityGuardPort": [
+      "participant/capability"
+    ],
+    "CapabilityInputCarrier": [
+      "participant/capability"
+    ],
+    "CapabilityInvocationPipelineFactoryPort": [
+      "execution/capability"
+    ],
+    "CapabilityInvocationPipelinePort": [
+      "execution/capability"
+    ],
+    "CapabilityLifetime": [
+      "execution/capability"
+    ],
+    "CapabilityMediationDenied": [
+      "execution/research_program"
+    ],
+    "CapabilityMediationRequest": [
+      "execution/research_program"
+    ],
+    "CapabilityMediationResult": [
+      "execution/research_program"
+    ],
+    "CapabilityMediationStage": [
+      "execution/research_program"
+    ],
+    "CapabilityMediationVerdict": [
+      "execution/research_program"
+    ],
+    "CapabilityMediator": [
+      "execution/research_program"
+    ],
+    "CapabilityMediatorRegistry": [
+      "execution/research_program"
+    ],
+    "CapabilityMediatorRegistryPort": [
+      "execution/research_program"
+    ],
+    "CapabilityOutputCarrier": [
+      "participant/capability"
+    ],
+    "CapabilityPolicyDenied": [
+      "participant/capability"
+    ],
+    "CapabilityPolicySet": [
+      "participant/capability"
+    ],
+    "CapabilityPort": [
+      "participant/agent",
+      "participant/capability"
+    ],
+    "CapabilityPostPolicyPort": [
+      "participant/capability"
+    ],
+    "CapabilityPostPolicyViolation": [
+      "participant/capability"
+    ],
+    "CapabilityProgram": [
+      "execution/research_program"
+    ],
+    "CapabilityProviderIdentity": [
+      "participant/capability"
+    ],
+    "CapabilityProviderImplementation": [
+      "participant/capability"
+    ],
+    "CapabilityProviderSession": [
+      "participant/capability"
+    ],
+    "CapabilityRegistration": [
+      "execution/capability"
+    ],
+    "CapabilityRequest": [
+      "participant/capability"
+    ],
+    "CapabilityResult": [
+      "participant/capability"
+    ],
+    "CapabilityRuleProgram": [
+      "execution/research_program"
+    ],
+    "CapabilityRuntimeBinding": [
+      "execution/research_program"
+    ],
+    "CapabilitySelectionReference": [
+      "participant/capability"
+    ],
+    "CapabilitySelectionView": [
+      "participant/capability"
+    ],
+    "CapabilityTypeMismatch": [
+      "execution/capability"
+    ],
+    "CaptureIntegrityError": [
+      "runtime/process"
+    ],
+    "CaptureManifest": [
+      "runtime/process"
+    ],
+    "CaptureRotationReceipt": [
+      "runtime/process"
+    ],
+    "CaptureSyncReceipt": [
+      "runtime/process"
+    ],
+    "CaptureWriterState": [
+      "runtime/process"
+    ],
+    "CheckpointCapturePolicy": [
+      "experimentation/checkpoint"
+    ],
+    "CheckpointTrigger": [
+      "experimentation/checkpoint"
+    ],
+    "CheckpointTriggerKind": [
+      "experimentation/checkpoint"
+    ],
+    "ChildBatchExecutionMode": [
+      "execution/research_program"
+    ],
+    "ChildFailurePolicy": [
+      "execution/research_program"
+    ],
+    "ChildResearchBindingFactory": [
+      "execution/research_program"
+    ],
+    "ChildResearchHostRegistry": [
+      "execution/research_program"
+    ],
+    "ChildResearchHostRegistryPort": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineBatchExecution": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineBatchExecutor": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineBatchItem": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineBatchMechanicsPort": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineBatchMechanicsResult": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineBatchPort": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineBatchRequest": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineExecution": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineExecutor": [
+      "execution/research_program"
+    ],
+    "ChildResearchMachineRequest": [
+      "execution/research_program"
+    ],
+    "ClassifiedOperationFailure": [
+      "reliability/failure"
+    ],
+    "CommandConflict": [
+      "execution/command"
+    ],
+    "CommandCorruption": [
+      "execution/command"
+    ],
+    "CommandDeduplicationKey": [
+      "execution/command"
+    ],
+    "CommandId": [
+      "execution/command"
+    ],
+    "CommandIntentPort": [
+      "execution/command"
+    ],
+    "CommandStorePort": [
+      "execution/command"
+    ],
+    "CommunicationRuntimeSpec": [
+      "execution/research_program"
+    ],
+    "ComparabilityProof": [
+      "experimentation/evaluation"
+    ],
+    "CompiledExperimentProgram": [
+      "experimentation"
+    ],
+    "CompiledExperimentShardPlan": [
+      "experimentation"
+    ],
+    "CompiledResearchCampaign": [
+      "experimentation"
+    ],
+    "CompiledResearchCampaignLane": [
+      "experimentation"
+    ],
+    "CompiledResearchPlan": [
+      "experimentation"
+    ],
+    "CompiledTrialExperimentProgram": [
+      "experimentation"
+    ],
+    "CompositionPlanReference": [
+      "experimentation/run/manifest"
+    ],
+    "ComputeAllocation": [
+      "resource/compute"
+    ],
+    "ComputeCandidatePort": [
+      "resource/compute"
+    ],
+    "ComputeCluster": [
+      "resource/compute"
+    ],
+    "ComputeDemand": [
+      "experimentation/resource"
+    ],
+    "ComputeGPU": [
+      "resource/compute"
+    ],
+    "ComputeHost": [
+      "resource/compute"
+    ],
+    "ComputeInventoryPort": [
+      "resource/compute"
+    ],
+    "ComputeLeaseGuardFactoryPort": [
+      "resource/compute"
+    ],
+    "ComputeLeaseGuardPort": [
+      "resource/compute"
+    ],
+    "ComputeLeasePolicy": [
+      "resource/compute"
+    ],
+    "ComputeRequirement": [
+      "resource/compute"
+    ],
+    "ComputeSchedulerPort": [
+      "resource/compute"
+    ],
+    "ConcurrencyBudget": [
+      "platform/concurrency"
+    ],
+    "ConcurrencyTopologySnapshot": [
+      "platform/concurrency"
+    ],
+    "ContextBlockProgram": [
+      "execution/research_program"
+    ],
+    "ContextBudgetExceeded": [
+      "execution/research_program"
+    ],
+    "ContextProgram": [
+      "execution/research_program"
+    ],
+    "ContextProjection": [
+      "execution/research_program"
+    ],
+    "ContextRenderRequest": [
+      "execution/research_program"
+    ],
+    "ContextRenderResult": [
+      "execution/research_program"
+    ],
+    "ContextRenderer": [
+      "execution/research_program"
+    ],
+    "ContextRendererRegistry": [
+      "execution/research_program"
+    ],
+    "ContextRendererRegistryPort": [
+      "execution/research_program"
+    ],
+    "ContextRuntimeBinding": [
+      "execution/research_program"
+    ],
+    "CpuWorkerPoolProviderPort": [
+      "platform/concurrency"
+    ],
+    "CudaFacts": [
+      "model/qualification"
+    ],
+    "DEFAULT_COMPUTE_LEASE_POLICY": [
+      "resource/compute"
+    ],
+    "DEFAULT_DEPLOYMENT_PROBE_TIMEOUT_SECONDS": [
+      "model/qualification"
+    ],
+    "DEFAULT_ENDPOINT_LEASE_POLICY": [
+      "resource/allocation"
+    ],
+    "DEFAULT_FAILURE_CATALOG": [
+      "reliability/failure"
+    ],
+    "DEFAULT_PACKAGE_INDEX_URL": [
+      "model/qualification"
+    ],
+    "DataColumn": [
+      "experimentation/workbench"
+    ],
+    "DataTable": [
+      "experimentation/workbench"
+    ],
+    "DatasetIdentity": [
+      "data/dataset"
+    ],
+    "DatasetNotFound": [
+      "data/dataset"
+    ],
+    "DatasetQuery": [
+      "data/dataset"
+    ],
+    "DatasetRegistryConflict": [
+      "data/dataset"
+    ],
+    "DatasetRegistryCorruptionError": [
+      "data/dataset"
+    ],
+    "DatasetRegistryPort": [
+      "data/dataset"
+    ],
+    "DatasetVersion": [
+      "data/dataset"
+    ],
+    "DatasetVersionProjection": [
+      "experimentation/study"
+    ],
+    "Deadline": [
+      "execution/admission",
+      "platform/concurrency"
+    ],
+    "DecisionCycleRuntimePort": [
+      "experimentation/run"
+    ],
+    "DeploymentCapabilityFacts": [
+      "model/qualification"
+    ],
+    "DeploymentCapabilityProbePort": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationApplicationPort": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationApplicationReceipt": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationApplicationRequest": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationApplicationStorePort": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationEvidenceRecord": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationEvidenceStorePort": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationPlan": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationPort": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationRequest": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationRuntimePort": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationRuntimeReceipt": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationRuntimeRequest": [
+      "model/qualification"
+    ],
+    "DeploymentQualificationRuntimeStorePort": [
+      "model/qualification"
+    ],
+    "DeploymentRuntimeQualificationStatus": [
+      "model/qualification"
+    ],
+    "DeploymentStatusIdentity": [
+      "execution"
+    ],
+    "DerivedEvidenceArtifact": [
+      "experimentation/run/manifest"
+    ],
+    "DirectoryCleanupCandidate": [
+      "resource/directory"
+    ],
+    "DirectoryCleanupPort": [
+      "resource/directory"
+    ],
+    "DirectoryContentStats": [
+      "resource/directory"
+    ],
+    "DirectoryEntryStats": [
+      "resource/directory"
+    ],
+    "DirectoryInspectionPort": [
+      "resource/directory"
+    ],
+    "DirectoryLayout": [
+      "resource/directory"
+    ],
+    "DirectoryLayoutPort": [
+      "resource/directory"
+    ],
+    "DirectoryManagementAuthorities": [
+      "resource/directory"
+    ],
+    "DirectoryOverview": [
+      "resource/directory"
+    ],
+    "DirectoryUsage": [
+      "resource/directory"
+    ],
+    "DiscoveryReport": [
+      "governance/evolution"
+    ],
+    "DoctorFinding": [
+      "experimentation/experiment"
+    ],
+    "DomainProgramBuilder": [
+      "execution/research_program"
+    ],
+    "DownstreamSurfaceMode": [
+      "governance/system_registry"
+    ],
+    "DriftKind": [
+      "governance/evolution"
+    ],
+    "DurableFact": [
+      "data/fact"
+    ],
+    "DurableFactConflict": [
+      "data/fact"
+    ],
+    "DurableFactCorruptionError": [
+      "data/fact"
+    ],
+    "DurableFactNotFound": [
+      "data/fact"
+    ],
+    "DurableFactReceipt": [
+      "data/fact"
+    ],
+    "DurableFactSinkPort": [
+      "data/fact"
+    ],
+    "DurableFactStorePort": [
+      "data/fact"
+    ],
+    "DurablePreparedActionSession": [
+      "environment"
+    ],
+    "DurablePreparedCapabilitySession": [
+      "participant/capability"
+    ],
+    "EVIDENCE_BUNDLE_SCHEMA_VERSION": [
+      "experimentation/run/manifest"
+    ],
+    "EffectAlreadyConsumed": [
+      "reliability/effect"
+    ],
+    "EffectCertainty": [
+      "environment"
+    ],
+    "EffectClass": [
+      "environment",
+      "participant/capability"
+    ],
+    "EffectCompletionEvidence": [
+      "reliability/effect"
+    ],
+    "EffectId": [
+      "execution/operation"
+    ],
+    "EffectIntent": [
+      "reliability/effect"
+    ],
+    "EffectIntentConflict": [
+      "reliability/effect"
+    ],
+    "EffectIntentJournal": [
+      "reliability/effect"
+    ],
+    "EffectIntentOperationPort": [
+      "execution/workflow"
+    ],
+    "EffectIntentPhase": [
+      "reliability/effect"
+    ],
+    "EffectIntentPrepareResult": [
+      "reliability/effect"
+    ],
+    "EffectIntentRecord": [
+      "reliability/effect"
+    ],
+    "EffectJournalIntegrityError": [
+      "reliability/effect"
+    ],
+    "EffectReceipt": [
+      "environment",
+      "participant/capability"
+    ],
+    "EffectReconciliationDisposition": [
+      "participant/capability",
+      "reliability/effect"
+    ],
+    "EffectReconciliationOutcome": [
+      "execution/operation"
+    ],
+    "EffectReconciliationProof": [
+      "reliability/effect"
+    ],
+    "EffectReconciliationVerdict": [
+      "execution/operation"
+    ],
+    "EffectRecoveryAnchorMissing": [
+      "reliability/effect"
+    ],
+    "EffectRecoveryRequired": [
+      "reliability/effect"
+    ],
+    "EmbeddingInput": [
+      "model"
+    ],
+    "EmbeddingOutput": [
+      "model"
+    ],
+    "EmbeddingVector": [
+      "model"
+    ],
+    "EmbodiedActionCommand": [
+      "environment/embodied"
+    ],
+    "EmbodiedCapabilityPort": [
+      "environment/embodied"
+    ],
+    "EmbodiedCaptureReceipt": [
+      "environment/embodied"
+    ],
+    "EmbodiedCheckpointPort": [
+      "environment/embodied"
+    ],
+    "EmbodiedEnvironmentPort": [
+      "environment/embodied"
+    ],
+    "EmbodiedEvent": [
+      "environment/embodied"
+    ],
+    "EmbodiedEventKind": [
+      "environment/embodied"
+    ],
+    "EmbodiedQueryPort": [
+      "environment/embodied"
+    ],
+    "EmbodiedTrajectorySinkPort": [
+      "environment/embodied"
+    ],
+    "EmbodimentKind": [
+      "environment/embodied"
+    ],
+    "EmbodimentSpec": [
+      "environment/embodied"
+    ],
+    "EndpointAllocation": [
+      "resource/allocation"
+    ],
+    "EndpointAllocationPort": [
+      "resource/allocation"
+    ],
+    "EndpointAllocationRequest": [
+      "resource/allocation"
+    ],
+    "EndpointAllocationState": [
+      "resource/allocation"
+    ],
+    "EndpointBindingProof": [
+      "resource/allocation"
+    ],
+    "EndpointLeaseGuardFactoryPort": [
+      "resource/allocation"
+    ],
+    "EndpointLeaseGuardPort": [
+      "resource/allocation"
+    ],
+    "EndpointLeasePolicy": [
+      "resource/allocation"
+    ],
+    "EndpointProbePort": [
+      "resource/allocation"
+    ],
+    "EndpointProbeResult": [
+      "resource/allocation"
+    ],
+    "EndpointProtocol": [
+      "resource/allocation"
+    ],
+    "EndpointReservationResult": [
+      "resource/allocation"
+    ],
+    "EndpointReservationStatus": [
+      "resource/allocation"
+    ],
+    "EnvironmentActionLifecycle": [
+      "environment"
+    ],
+    "EnvironmentActionPhase": [
+      "environment"
+    ],
+    "EnvironmentAssignment": [
+      "environment/catalog"
+    ],
+    "EnvironmentAssignmentIdentity": [
+      "environment"
+    ],
+    "EnvironmentAssignmentIsolationPort": [
+      "environment"
+    ],
+    "EnvironmentAssignmentIsolationReceipt": [
+      "environment"
+    ],
+    "EnvironmentBinding": [
+      "environment/catalog"
+    ],
+    "EnvironmentBranchState": [
+      "environment"
+    ],
+    "EnvironmentBranchStateMismatch": [
+      "environment"
+    ],
+    "EnvironmentBranchStatePort": [
+      "environment"
+    ],
+    "EnvironmentCapability": [
+      "environment"
+    ],
+    "EnvironmentCapabilityDescriptor": [
+      "environment"
+    ],
+    "EnvironmentCapabilityUnsupported": [
+      "environment"
+    ],
+    "EnvironmentCategoryCatalogPort": [
+      "environment/category"
+    ],
+    "EnvironmentCategoryDescriptor": [
+      "environment/category"
+    ],
+    "EnvironmentCategoryId": [
+      "environment/category"
+    ],
+    "EnvironmentCategoryStatus": [
+      "environment/category"
+    ],
+    "EnvironmentConcern": [
+      "execution/research_program"
+    ],
+    "EnvironmentConformanceProbe": [
+      "environment"
+    ],
+    "EnvironmentCoordinationPort": [
+      "environment"
+    ],
+    "EnvironmentCoordinationReceipt": [
+      "environment"
+    ],
+    "EnvironmentCoordinationRequest": [
+      "environment"
+    ],
+    "EnvironmentDiagnosticsPort": [
+      "environment"
+    ],
+    "EnvironmentIdentity": [
+      "environment"
+    ],
+    "EnvironmentImplementation": [
+      "environment"
+    ],
+    "EnvironmentImplementationDescriptor": [
+      "environment/category"
+    ],
+    "EnvironmentInstance": [
+      "environment/catalog"
+    ],
+    "EnvironmentMachineSpec": [
+      "execution/research_program"
+    ],
+    "EnvironmentOverlay": [
+      "environment/catalog"
+    ],
+    "EnvironmentProgramBuilder": [
+      "execution/research_program"
+    ],
+    "EnvironmentProviderCapabilities": [
+      "environment"
+    ],
+    "EnvironmentProviderConformanceReceipt": [
+      "environment"
+    ],
+    "EnvironmentProviderPort": [
+      "environment"
+    ],
+    "EnvironmentQuery": [
+      "environment"
+    ],
+    "EnvironmentQueryKind": [
+      "environment"
+    ],
+    "EnvironmentQueryPort": [
+      "environment"
+    ],
+    "EnvironmentQueryResult": [
+      "environment"
+    ],
+    "EnvironmentRawEventReceipt": [
+      "environment"
+    ],
+    "EnvironmentRawEventRecord": [
+      "environment"
+    ],
+    "EnvironmentRawRecordSinkPort": [
+      "environment"
+    ],
+    "EnvironmentRecoverySession": [
+      "environment"
+    ],
+    "EnvironmentResetPort": [
+      "environment"
+    ],
+    "EnvironmentSession": [
+      "environment"
+    ],
+    "EnvironmentSessionDiagnostics": [
+      "environment"
+    ],
+    "EnvironmentSessionServices": [
+      "environment"
+    ],
+    "EnvironmentSpec": [
+      "environment/catalog"
+    ],
+    "EnvironmentTemplate": [
+      "environment/catalog"
+    ],
+    "EpisodeSpec": [
+      "environment/embodied"
+    ],
+    "EvaluationConcern": [
+      "execution/research_program"
+    ],
+    "EvaluationContext": [
+      "experimentation/workbench"
+    ],
+    "EvaluationProgramBuilder": [
+      "execution/research_program"
+    ],
+    "EvaluationStage": [
+      "experimentation/workbench"
+    ],
+    "EvidenceBundleManifest": [
+      "experimentation/run/manifest"
+    ],
+    "EvidenceBundlePublisherPort": [
+      "experimentation/run/manifest"
+    ],
+    "EvidenceBundleReceipt": [
+      "experimentation/run/manifest"
+    ],
+    "EvidenceBundleStatus": [
+      "experimentation/run/manifest"
+    ],
+    "EvidenceManifestProjection": [
+      "experimentation/study"
+    ],
+    "EvidenceStreamDescriptor": [
+      "experimentation/run/manifest"
+    ],
+    "EvolutionAssessment": [
+      "governance/evolution"
+    ],
+    "EvolutionProposal": [
+      "governance/evolution"
+    ],
+    "EvolutionStage": [
+      "governance/evolution"
+    ],
+    "EvolutionStateStorePort": [
+      "governance/evolution"
+    ],
+    "EvolutionTransition": [
+      "governance/evolution"
+    ],
+    "ExactServiceRuntimePort": [
+      "runtime/service"
+    ],
+    "ExecutableProgramIdentity": [
+      "execution"
+    ],
+    "ExecutableProgramSourcePublicationPort": [
+      "execution"
+    ],
+    "ExecutionAdmissionPort": [
+      "execution/admission"
+    ],
+    "ExecutionAuthorityProviderPort": [
+      "platform/concurrency"
+    ],
+    "ExecutionCommand": [
+      "execution/command"
+    ],
+    "ExecutionContext": [
+      "environment",
+      "model/request",
+      "participant/agent",
+      "participant/capability",
+      "participant/method",
+      "reliability/failure"
+    ],
+    "ExecutionEnvironmentCatalogPort": [
+      "environment/catalog"
+    ],
+    "ExecutionEnvironmentKind": [
+      "environment/catalog"
+    ],
+    "ExecutionIntentPort": [
+      "execution"
+    ],
+    "ExecutionIntentReceipt": [
+      "execution"
+    ],
+    "ExecutionLaneKind": [
+      "execution/admission",
+      "platform/concurrency"
+    ],
+    "ExecutionMode": [
+      "experimentation/experiment"
+    ],
+    "ExecutionOperationIntent": [
+      "execution"
+    ],
+    "ExecutionPermitLeasePort": [
+      "execution/admission",
+      "platform/concurrency"
+    ],
+    "ExecutionPermitPort": [
+      "platform/concurrency"
+    ],
+    "ExecutionPermitRejected": [
+      "execution/admission",
+      "platform/concurrency"
+    ],
+    "ExecutionPriority": [
+      "execution/admission",
+      "execution/scheduling"
+    ],
+    "ExecutionRecordPlane": [
+      "data/record"
+    ],
+    "ExecutionSpec": [
+      "platform/concurrency"
+    ],
+    "ExecutorPort": [
+      "platform/concurrency"
+    ],
+    "ExecutorProviderPort": [
+      "platform/concurrency"
+    ],
+    "ExperimentBatch": [
+      "experimentation"
+    ],
+    "ExperimentBatchKind": [
+      "experimentation"
+    ],
+    "ExperimentBatchPlacement": [
+      "experimentation"
+    ],
+    "ExperimentComponentBindingPort": [
+      "experimentation/experiment"
+    ],
+    "ExperimentConcern": [
+      "execution/research_program"
+    ],
+    "ExperimentDefinition": [
+      "experimentation/experiment"
+    ],
+    "ExperimentDoctorPort": [
+      "experimentation/experiment"
+    ],
+    "ExperimentLifecycleState": [
+      "experimentation/experiment"
+    ],
+    "ExperimentModePort": [
+      "experimentation/experiment"
+    ],
+    "ExperimentModelRoleSpec": [
+      "experimentation/experiment"
+    ],
+    "ExperimentParticipantSpec": [
+      "experimentation/experiment"
+    ],
+    "ExperimentParticipantTopology": [
+      "experimentation/experiment"
+    ],
+    "ExperimentPlan": [
+      "experimentation/experiment",
+      "experimentation/study"
+    ],
+    "ExperimentProgramBinding": [
+      "experimentation"
+    ],
+    "ExperimentProgramBuilder": [
+      "execution/research_program"
+    ],
+    "ExperimentResourceBinderPort": [
+      "experimentation/resource"
+    ],
+    "ExperimentRunExecutionPort": [
+      "experimentation/run"
+    ],
+    "ExperimentRunReport": [
+      "experimentation/experiment"
+    ],
+    "ExperimentRunResult": [
+      "experimentation/run"
+    ],
+    "ExperimentRunSpec": [
+      "experimentation/run"
+    ],
+    "ExperimentShard": [
+      "experimentation"
+    ],
+    "ExperimentSpec": [
+      "experimentation/experiment"
+    ],
+    "ExperimentTaskSpec": [
+      "experimentation/experiment"
+    ],
+    "ExperimentTransition": [
+      "experimentation/experiment"
+    ],
+    "ExperimentTrialCycleExecutorPort": [
+      "experimentation/experiment"
+    ],
+    "ExperimentTrialProtocolIdentity": [
+      "experimentation/experiment"
+    ],
+    "ExperimentTrialProtocolIdentityMismatch": [
+      "experimentation/experiment"
+    ],
+    "ExperimentUnit": [
+      "experimentation/experiment"
+    ],
+    "ExperimentUnitExecutorPort": [
+      "experimentation/experiment"
+    ],
+    "ExperimentUnitKind": [
+      "experimentation/experiment"
+    ],
+    "ExperimentUnitPlannerPort": [
+      "experimentation/experiment"
+    ],
+    "ExperimentWorkloadFailure": [
+      "experimentation/experiment"
+    ],
+    "FactCriticality": [
+      "data/fact"
+    ],
+    "FactDecoderPort": [
+      "data/fact"
+    ],
+    "FactSchema": [
+      "data/fact"
+    ],
+    "FactorLevelSpec": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "FactorSelection": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "FailureCatalog": [
+      "reliability/failure"
+    ],
+    "FailureCorrelationSource": [
+      "reliability/failure"
+    ],
+    "FailureEnvelope": [
+      "reliability/failure"
+    ],
+    "FailureFingerprint": [
+      "reliability/failure"
+    ],
+    "FailureLedgerPort": [
+      "reliability/failure"
+    ],
+    "FailureScope": [
+      "experimentation/experiment"
+    ],
+    "FailureScopeRank": [
+      "experimentation/experiment"
+    ],
+    "FailureSpec": [
+      "reliability/failure"
+    ],
+    "FigureCategory": [
+      "experimentation/workbench"
+    ],
+    "FigureCell": [
+      "experimentation/workbench"
+    ],
+    "FigureKind": [
+      "experimentation/workbench"
+    ],
+    "FigureOutputFormat": [
+      "experimentation/workbench"
+    ],
+    "FigurePoint": [
+      "experimentation/workbench"
+    ],
+    "FigureRendererPort": [
+      "experimentation/workbench"
+    ],
+    "FigureSeries": [
+      "experimentation/workbench"
+    ],
+    "FigureSpec": [
+      "experimentation/workbench"
+    ],
+    "FigureStyle": [
+      "experimentation/workbench"
+    ],
+    "FileDigest": [
+      "governance/release"
+    ],
+    "FindingSeverity": [
+      "experimentation/experiment"
+    ],
+    "FunctionalModelInvocationRequestFactory": [
+      "execution/research_program"
+    ],
+    "GateCompositionPort": [
+      "governance/gate"
+    ],
+    "GateFinding": [
+      "governance/gate"
+    ],
+    "GatePort": [
+      "governance/gate"
+    ],
+    "GateReport": [
+      "governance/gate"
+    ],
+    "GateRequest": [
+      "governance/gate"
+    ],
+    "GateSeverity": [
+      "governance/gate"
+    ],
+    "GovernanceBaselineApproval": [
+      "governance"
+    ],
+    "GovernanceBaselineApprovalSet": [
+      "governance"
+    ],
+    "GovernanceBaselineLane": [
+      "governance"
+    ],
+    "GpuCapabilityFacts": [
+      "model/qualification"
+    ],
+    "GpuDeviceStatus": [
+      "resource/compute"
+    ],
+    "GpuFabricFacts": [
+      "model/qualification"
+    ],
+    "GpuProcessStatus": [
+      "resource/compute"
+    ],
+    "GpuRuntimeObserverPort": [
+      "resource/compute"
+    ],
+    "GpuRuntimeSnapshot": [
+      "resource/compute"
+    ],
+    "GpuSharingMode": [
+      "resource/compute"
+    ],
+    "GroupAdmissionSnapshot": [
+      "execution/admission"
+    ],
+    "GroupComparison": [
+      "experimentation/workbench"
+    ],
+    "GuardDecision": [
+      "participant/capability"
+    ],
+    "GuardVerdict": [
+      "participant/capability"
+    ],
+    "HeartbeatSchedulerPort": [
+      "platform/concurrency"
+    ],
+    "HeartbeatSpec": [
+      "platform/concurrency"
+    ],
+    "HeartbeatTopologySnapshot": [
+      "platform/concurrency"
+    ],
+    "HostExecutionFacts": [
+      "model/qualification"
+    ],
+    "HostOperatingSystem": [
+      "runtime/host"
+    ],
+    "HostRuntimeObserverPort": [
+      "resource/compute"
+    ],
+    "HostRuntimeSnapshot": [
+      "resource/compute"
+    ],
+    "HostRuntimeStatus": [
+      "resource/compute"
+    ],
+    "IdempotentTaskCompletionSession": [
+      "participant/method"
+    ],
+    "IllegalOperationTransition": [
+      "execution/operation"
+    ],
+    "ImmutableModelIdentity": [
+      "model/request"
+    ],
+    "ImprovementSignal": [
+      "governance/evolution"
+    ],
+    "InMemoryBenchmarkSource": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "InferenceResult": [
+      "experimentation/workbench"
+    ],
+    "InstallPackage": [
+      "model/qualification"
+    ],
+    "InterventionDecider": [
+      "execution/research_program"
+    ],
+    "InterventionDeciderRegistry": [
+      "execution/research_program"
+    ],
+    "InterventionDeciderRegistryPort": [
+      "execution/research_program"
+    ],
+    "InterventionDecision": [
+      "execution/research_program"
+    ],
+    "InterventionKind": [
+      "execution/research_program"
+    ],
+    "InterventionPolicyRequest": [
+      "execution/research_program"
+    ],
+    "InterventionProgram": [
+      "execution/research_program"
+    ],
+    "InterventionResponse": [
+      "execution/research_program"
+    ],
+    "InterventionRuntimeBinding": [
+      "execution/research_program"
+    ],
+    "InterventionTrigger": [
+      "execution/research_program"
+    ],
+    "JsonInput": [
+      "environment",
+      "participant/agent"
+    ],
+    "JsonMutableValue": [
+      "environment"
+    ],
+    "JsonObject": [
+      "participant/agent",
+      "participant/capability"
+    ],
+    "JsonScalar": [
+      "environment"
+    ],
+    "JsonValue": [
+      "environment",
+      "participant/agent",
+      "participant/capability",
+      "participant/method"
+    ],
+    "LaneAdmissionSnapshot": [
+      "execution/admission"
+    ],
+    "LeaseState": [
+      "resource/lease"
+    ],
+    "LifecycleComponent": [
+      "runtime"
+    ],
+    "LifecycleEvidence": [
+      "runtime"
+    ],
+    "LifecyclePhase": [
+      "runtime"
+    ],
+    "LifecycleSpec": [
+      "runtime"
+    ],
+    "LocalCommandExecutionError": [
+      "runtime/process"
+    ],
+    "LocalCommandResult": [
+      "runtime/process"
+    ],
+    "LocalCommandRunnerPort": [
+      "runtime/process"
+    ],
+    "LocalCommandStartError": [
+      "runtime/process"
+    ],
+    "LocalCommandTimeoutError": [
+      "runtime/process"
+    ],
+    "LogicalSchedulingCandidate": [
+      "execution/research_program"
+    ],
+    "LogicalSchedulingProgram": [
+      "execution/research_program"
+    ],
+    "LogicalSchedulingRequest": [
+      "execution/research_program"
+    ],
+    "LogicalSchedulingRuntimeBinding": [
+      "execution/research_program"
+    ],
+    "LogicalSchedulingSelection": [
+      "execution/research_program"
+    ],
+    "LogicalSchedulingSelector": [
+      "execution/research_program"
+    ],
+    "LogicalSchedulingSelectorRegistry": [
+      "execution/research_program"
+    ],
+    "LogicalSchedulingSelectorRegistryPort": [
+      "execution/research_program"
+    ],
+    "MUST_NOT_OWN": [
+      "artifact/lineage/relation",
+      "artifact/reference",
+      "artifact/retention",
+      "data/query/cross"
+    ],
+    "MachineCut": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "MachineEvent": [
+      "execution/research_program"
+    ],
+    "ManagedDirectoryKind": [
+      "resource/directory"
+    ],
+    "ManagedModelAsset": [
+      "model/asset"
+    ],
+    "MaterializedTaskVerifierArchive": [
+      "experimentation/study"
+    ],
+    "MaterializedTreeInspection": [
+      "artifact/content"
+    ],
+    "MaterializedTreeInspectionPort": [
+      "artifact/content"
+    ],
+    "MeasurementContentReference": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "MeasurementCut": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "MeasurementDefinition": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "MeasurementProtocol": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "MeasurementRecord": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "MeasurementRecordTableAdapter": [
+      "experimentation/workbench"
+    ],
+    "MeasurementValue": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "MeasurementValueKind": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "MemoryConcern": [
+      "execution/research_program"
+    ],
+    "MemoryPresetSpec": [
+      "execution/research_program"
+    ],
+    "MemoryProgramBuilder": [
+      "execution/research_program"
+    ],
+    "MemoryRecord": [
+      "execution/research_program"
+    ],
+    "MethodAgentLoopPort": [
+      "execution/workflow"
+    ],
+    "MethodAgentRequest": [
+      "execution/workflow"
+    ],
+    "MethodAgentResult": [
+      "execution/workflow"
+    ],
+    "MethodAgentTargetHandler": [
+      "execution/workflow"
+    ],
+    "MethodAgentViewHandler": [
+      "execution/workflow"
+    ],
+    "MethodAuthoritativeState": [
+      "execution/workflow"
+    ],
+    "MethodCapabilityTargetHandler": [
+      "execution/workflow"
+    ],
+    "MethodCheckpoint": [
+      "execution/workflow"
+    ],
+    "MethodCheckpointStorePort": [
+      "execution/workflow"
+    ],
+    "MethodChildMachinePort": [
+      "execution/workflow"
+    ],
+    "MethodCompositionPorts": [
+      "participant/method"
+    ],
+    "MethodControlRecord": [
+      "execution/workflow"
+    ],
+    "MethodEndpointFactoryPort": [
+      "participant/method"
+    ],
+    "MethodEndpointPort": [
+      "participant/method"
+    ],
+    "MethodEvent": [
+      "execution/workflow"
+    ],
+    "MethodEvidencePort": [
+      "execution/workflow"
+    ],
+    "MethodEvidenceStatus": [
+      "execution/workflow"
+    ],
+    "MethodExecutionClass": [
+      "execution/workflow"
+    ],
+    "MethodGraph": [
+      "execution/workflow"
+    ],
+    "MethodIdentity": [
+      "participant/method"
+    ],
+    "MethodImplementation": [
+      "participant/method"
+    ],
+    "MethodInterrupt": [
+      "execution/workflow"
+    ],
+    "MethodMachinePort": [
+      "execution/workflow"
+    ],
+    "MethodNodeHandler": [
+      "execution/workflow"
+    ],
+    "MethodNodeKind": [
+      "execution/workflow"
+    ],
+    "MethodNodeRequest": [
+      "execution/workflow"
+    ],
+    "MethodNodeResult": [
+      "execution/workflow"
+    ],
+    "MethodNodeSpec": [
+      "execution/workflow"
+    ],
+    "MethodObservation": [
+      "participant/method"
+    ],
+    "MethodObservationDeliveryError": [
+      "participant/method"
+    ],
+    "MethodObservationOutboxFactoryPort": [
+      "participant/method"
+    ],
+    "MethodObservationOutboxPort": [
+      "participant/method"
+    ],
+    "MethodObservationPort": [
+      "execution/workflow"
+    ],
+    "MethodObservationSink": [
+      "participant/method"
+    ],
+    "MethodProgram": [
+      "execution/workflow"
+    ],
+    "MethodProgramBuilder": [
+      "execution/workflow"
+    ],
+    "MethodProgramIdentity": [
+      "participant/method"
+    ],
+    "MethodProgramIdentityMismatch": [
+      "participant/method"
+    ],
+    "MethodProjectDefinition": [
+      "participant"
+    ],
+    "MethodRunResult": [
+      "execution/workflow"
+    ],
+    "MethodRunStatus": [
+      "execution/workflow"
+    ],
+    "MethodRuntimeBinding": [
+      "participant/method"
+    ],
+    "MethodRuntimeContext": [
+      "execution/workflow"
+    ],
+    "MethodRuntimeIdentity": [
+      "participant/method"
+    ],
+    "MethodSchemaPort": [
+      "execution/workflow"
+    ],
+    "MethodServices": [
+      "participant/method"
+    ],
+    "MethodSession": [
+      "participant/method"
+    ],
+    "MethodSessionRuntime": [
+      "participant/method"
+    ],
+    "MethodSnapshot": [
+      "participant/method"
+    ],
+    "MethodSystemBinding": [
+      "participant/method"
+    ],
+    "MethodTaskCompletionReceipt": [
+      "participant/method"
+    ],
+    "MethodTaskOutcome": [
+      "participant/method"
+    ],
+    "MethodTransitionAuthorityPort": [
+      "execution/workflow"
+    ],
+    "MethodTransitionRecord": [
+      "execution/workflow"
+    ],
+    "MetricAggregation": [
+      "experimentation/experiment"
+    ],
+    "MetricDefinition": [
+      "experimentation/experiment"
+    ],
+    "MetricMissingPolicy": [
+      "experimentation/experiment"
+    ],
+    "MetricPredicate": [
+      "experimentation/experiment"
+    ],
+    "MetricReport": [
+      "experimentation/experiment"
+    ],
+    "MetricSummary": [
+      "experimentation/workbench"
+    ],
+    "MetricValue": [
+      "experimentation/experiment"
+    ],
+    "MissingValuePolicy": [
+      "experimentation/workbench"
+    ],
+    "ModelAcquisitionReceipt": [
+      "model/asset"
+    ],
+    "ModelArtifactClosure": [
+      "model/stack"
+    ],
+    "ModelArtifactFacts": [
+      "model/qualification"
+    ],
+    "ModelAssetLookupPort": [
+      "model/asset"
+    ],
+    "ModelAssetManagementPort": [
+      "model/asset"
+    ],
+    "ModelAssetMode": [
+      "model/asset"
+    ],
+    "ModelAssetOrigin": [
+      "model/asset"
+    ],
+    "ModelAssetStats": [
+      "model/asset"
+    ],
+    "ModelAssetStoragePort": [
+      "model/asset"
+    ],
+    "ModelAssetUsage": [
+      "model/asset"
+    ],
+    "ModelAssetUsagePort": [
+      "model/asset"
+    ],
+    "ModelAssignment": [
+      "model/assignment"
+    ],
+    "ModelAssignmentPort": [
+      "model/assignment"
+    ],
+    "ModelAuthorities": [
+      "model"
+    ],
+    "ModelBindingDiagnostic": [
+      "model"
+    ],
+    "ModelBindingDiagnosticCode": [
+      "model"
+    ],
+    "ModelBindingDiagnosticSeverity": [
+      "model"
+    ],
+    "ModelBindingSelectionReceipt": [
+      "model"
+    ],
+    "ModelCapabilityInput": [
+      "model"
+    ],
+    "ModelCapabilityInvocation": [
+      "model"
+    ],
+    "ModelCapabilityOutput": [
+      "model"
+    ],
+    "ModelCapabilityRequirement": [
+      "model"
+    ],
+    "ModelCapabilityResponse": [
+      "model"
+    ],
+    "ModelCapabilityStreamChunk": [
+      "model"
+    ],
+    "ModelCapabilityStreamDisposition": [
+      "model"
+    ],
+    "ModelCapabilityStreamSession": [
+      "model"
+    ],
+    "ModelCapabilityStreamTerminal": [
+      "model"
+    ],
+    "ModelCapacityMode": [
+      "experimentation/resource"
+    ],
+    "ModelConfigSummary": [
+      "model/asset"
+    ],
+    "ModelControlSnapshot": [
+      "model/deployment"
+    ],
+    "ModelControllerPhase": [
+      "model/deployment"
+    ],
+    "ModelControllerState": [
+      "model/deployment"
+    ],
+    "ModelControllerStatePort": [
+      "model/deployment"
+    ],
+    "ModelControllerStopPort": [
+      "model/deployment"
+    ],
+    "ModelDeploymentCatalogPort": [
+      "model/deployment"
+    ],
+    "ModelDeploymentLogPort": [
+      "model/deployment"
+    ],
+    "ModelDeploymentLogs": [
+      "model/deployment"
+    ],
+    "ModelDeploymentRuntimePort": [
+      "model/deployment"
+    ],
+    "ModelDeploymentSelector": [
+      "model/deployment"
+    ],
+    "ModelDeploymentSpec": [
+      "model/deployment"
+    ],
+    "ModelDeploymentStatus": [
+      "model/deployment"
+    ],
+    "ModelDesiredState": [
+      "model/deployment"
+    ],
+    "ModelEnvironmentUsage": [
+      "model/deployment"
+    ],
+    "ModelFleetRuntimePort": [
+      "model/deployment"
+    ],
+    "ModelGpuAllocation": [
+      "model/deployment"
+    ],
+    "ModelGpuConflict": [
+      "model/deployment"
+    ],
+    "ModelGpuProcessBinding": [
+      "model/deployment"
+    ],
+    "ModelInvocationCandidate": [
+      "execution/research_program"
+    ],
+    "ModelInvocationMode": [
+      "execution/research_program"
+    ],
+    "ModelInvocationOutcome": [
+      "execution/research_program"
+    ],
+    "ModelInvocationProgram": [
+      "execution/research_program"
+    ],
+    "ModelInvocationRequestFactoryPort": [
+      "execution/research_program"
+    ],
+    "ModelInvocationRuntime": [
+      "execution/research_program"
+    ],
+    "ModelInvocationRuntimeBinding": [
+      "execution/research_program"
+    ],
+    "ModelLogTail": [
+      "model/deployment"
+    ],
+    "ModelProjectBindingError": [
+      "model"
+    ],
+    "ModelProjectDefinition": [
+      "model"
+    ],
+    "ModelPromotionDecision": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelPromotionDisposition": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelPromotionReceipt": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelProviderProfile": [
+      "model"
+    ],
+    "ModelReconcileControllerPort": [
+      "model/deployment"
+    ],
+    "ModelReconcileCycle": [
+      "model/deployment"
+    ],
+    "ModelRequestContextExceeded": [
+      "model"
+    ],
+    "ModelRequestEnvelope": [
+      "model/request"
+    ],
+    "ModelRequestLedgerPort": [
+      "model/request"
+    ],
+    "ModelRequestRecorderPort": [
+      "model/request"
+    ],
+    "ModelRequestTokenBudget": [
+      "model"
+    ],
+    "ModelRequestTokenizationIdentity": [
+      "model"
+    ],
+    "ModelRequestTokenizationPort": [
+      "model"
+    ],
+    "ModelRequestTokenizationProviderPort": [
+      "model"
+    ],
+    "ModelRequirementContribution": [
+      "model"
+    ],
+    "ModelResourceViewPort": [
+      "model/deployment"
+    ],
+    "ModelResponseSelector": [
+      "execution/research_program"
+    ],
+    "ModelResponseSelectorRegistry": [
+      "execution/research_program"
+    ],
+    "ModelResponseSelectorRegistryPort": [
+      "execution/research_program"
+    ],
+    "ModelRevisionAuthorityPort": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRevisionAuthoritySnapshot": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRevisionCommit": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRevisionConflictError": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRevisionEvidence": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRevisionEvidenceKind": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRevisionIdentity": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRevisionIntegrityError": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRevisionStateError": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRoleUsage": [
+      "experimentation"
+    ],
+    "ModelRollbackReceipt": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelRuntimeState": [
+      "model/deployment"
+    ],
+    "ModelSelectionRequest": [
+      "execution/research_program"
+    ],
+    "ModelServiceRuntimeFactoryPort": [
+      "model/deployment"
+    ],
+    "ModelSourceBackend": [
+      "model/asset"
+    ],
+    "ModelSourceSpec": [
+      "model/asset"
+    ],
+    "ModelStackSpec": [
+      "model/stack"
+    ],
+    "ModelStoragePoolStatus": [
+      "model/asset"
+    ],
+    "ModelUpdateBuildEvidence": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelUpdateBuildReceipt": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelUpdatePlan": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelUpdateProducerPort": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelUpdateProposal": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "ModelUpdateSource": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "MultimodalContent": [
+      "model"
+    ],
+    "MultimodalInferenceInput": [
+      "model"
+    ],
+    "MultimodalInferenceOutput": [
+      "model"
+    ],
+    "MultimodalMethodSpec": [
+      "model"
+    ],
+    "MultimodalPart": [
+      "model"
+    ],
+    "MultimodalRequest": [
+      "model"
+    ],
+    "MultimodalRequestCodecPort": [
+      "model"
+    ],
+    "MultimodalResponse": [
+      "model"
+    ],
+    "MultipleComparisonMethod": [
+      "experimentation/workbench"
+    ],
+    "MultipleComparisonResult": [
+      "experimentation/workbench"
+    ],
+    "NODE": [
+      "artifact/lineage/relation",
+      "artifact/reference",
+      "artifact/retention",
+      "data/query/cross"
+    ],
+    "NamedScalar": [
+      "model"
+    ],
+    "NetworkEndpoint": [
+      "resource/allocation"
+    ],
+    "OWNS": [
+      "artifact/lineage/relation",
+      "artifact/reference",
+      "artifact/retention",
+      "data/query/cross"
+    ],
+    "ObjectiveDirection": [
+      "execution/research_program"
+    ],
+    "Observation": [
+      "environment"
+    ],
+    "ObservationEnvelope": [
+      "experimentation/experiment"
+    ],
+    "ObservationKind": [
+      "experimentation/experiment"
+    ],
+    "ObservationOutcome": [
+      "governance/evolution"
+    ],
+    "ObservationSinkPort": [
+      "experimentation/experiment"
+    ],
+    "OperatingSystemFacts": [
+      "model/qualification"
+    ],
+    "OperatingSystemFamily": [
+      "runtime/host"
+    ],
+    "OperatingSystemRoute": [
+      "runtime/host"
+    ],
+    "OperationAdmissionPort": [
+      "execution/operation"
+    ],
+    "OperationConflict": [
+      "execution/operation"
+    ],
+    "OperationCorruption": [
+      "execution/operation"
+    ],
+    "OperationDispatchPort": [
+      "execution/workflow"
+    ],
+    "OperationEffectCertainty": [
+      "execution/operation"
+    ],
+    "OperationEffectProfile": [
+      "execution/operation"
+    ],
+    "OperationExecutionPort": [
+      "execution/workflow"
+    ],
+    "OperationFailure": [
+      "execution/operation"
+    ],
+    "OperationFailureKind": [
+      "execution/operation"
+    ],
+    "OperationFailureReferenceProjection": [
+      "reliability/failure"
+    ],
+    "OperationFailureReferenceProjector": [
+      "reliability/failure"
+    ],
+    "OperationId": [
+      "execution/operation"
+    ],
+    "OperationLifecyclePort": [
+      "execution/operation"
+    ],
+    "OperationRecoveryPort": [
+      "execution/operation"
+    ],
+    "OperationSnapshot": [
+      "execution/operation"
+    ],
+    "OperationState": [
+      "execution/operation"
+    ],
+    "OperationStorePort": [
+      "execution/operation"
+    ],
+    "OperationSubmissionPort": [
+      "execution/operation"
+    ],
+    "OptimizationConcern": [
+      "execution/research_program"
+    ],
+    "OptimizationObjective": [
+      "execution/research_program"
+    ],
+    "OptimizationPresetSpec": [
+      "execution/research_program"
+    ],
+    "OptimizationProgramBuilder": [
+      "execution/research_program"
+    ],
+    "PARTICIPANT_OPERATION_VERBS": [
+      "participant/core"
+    ],
+    "PARTICIPANT_TURN_FACT_KINDS": [
+      "execution/research_program"
+    ],
+    "PARTICIPANT_TURN_FACT_WIRE_SCHEMA": [
+      "execution/research_program"
+    ],
+    "PLATFORM_SCOPE": [
+      "scope"
+    ],
+    "PROJECT_MANIFEST_SCHEMA": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "PackageArtifactFacts": [
+      "model/qualification"
+    ],
+    "PackageDependencyNodeFacts": [
+      "model/qualification"
+    ],
+    "PackageIndexFacts": [
+      "model/qualification"
+    ],
+    "PairedComparison": [
+      "experimentation/workbench"
+    ],
+    "PairedEvaluationResult": [
+      "experimentation/evaluation"
+    ],
+    "PartialOperationFailureClassifier": [
+      "reliability/failure"
+    ],
+    "ParticipantArchitectureChange": [
+      "participant"
+    ],
+    "ParticipantArchitectureComponent": [
+      "participant"
+    ],
+    "ParticipantArchitectureRevision": [
+      "participant"
+    ],
+    "ParticipantArchitectureTransition": [
+      "participant"
+    ],
+    "ParticipantBindingDiagnostic": [
+      "participant"
+    ],
+    "ParticipantBindingDiagnosticCode": [
+      "participant"
+    ],
+    "ParticipantBindingDiagnosticSeverity": [
+      "participant"
+    ],
+    "ParticipantBindingResolverPort": [
+      "participant/binding"
+    ],
+    "ParticipantCheckpoint": [
+      "participant/core"
+    ],
+    "ParticipantCheckpointIdentityMismatch": [
+      "participant/core"
+    ],
+    "ParticipantCheckpointOperationsPort": [
+      "participant/core"
+    ],
+    "ParticipantCheckpointRef": [
+      "participant/core"
+    ],
+    "ParticipantCheckpointRuntimePort": [
+      "participant/core",
+      "participant/session"
+    ],
+    "ParticipantConcern": [
+      "execution/research_program"
+    ],
+    "ParticipantConfigurationArtifact": [
+      "participant/core",
+      "participant/definition"
+    ],
+    "ParticipantConfigurationCatalogPort": [
+      "participant/binding"
+    ],
+    "ParticipantIdentityMismatch": [
+      "participant/core"
+    ],
+    "ParticipantImplementationCatalogPort": [
+      "participant/binding",
+      "participant/definition"
+    ],
+    "ParticipantImplementationFactory": [
+      "participant/definition"
+    ],
+    "ParticipantImplementationIdentity": [
+      "participant/core",
+      "participant/definition"
+    ],
+    "ParticipantImplementationInventory": [
+      "participant/core"
+    ],
+    "ParticipantImplementationRegistration": [
+      "participant/binding"
+    ],
+    "ParticipantLifecycleAdapter": [
+      "participant/core"
+    ],
+    "ParticipantLifecycleAdapterRegistry": [
+      "participant/core"
+    ],
+    "ParticipantMessageKind": [
+      "execution/research_program"
+    ],
+    "ParticipantMessageSchedule": [
+      "participant"
+    ],
+    "ParticipantMessageScheduleEntry": [
+      "participant"
+    ],
+    "ParticipantOperationContractError": [
+      "participant/core"
+    ],
+    "ParticipantProgramBuilder": [
+      "execution/research_program"
+    ],
+    "ParticipantProjectBindingError": [
+      "participant"
+    ],
+    "ParticipantProviderProfile": [
+      "participant"
+    ],
+    "ParticipantRequirement": [
+      "participant"
+    ],
+    "ParticipantRequirementContribution": [
+      "participant"
+    ],
+    "ParticipantResolutionPort": [
+      "participant/core"
+    ],
+    "ParticipantResolverPort": [
+      "participant/core"
+    ],
+    "ParticipantRevisionAuthorityPort": [
+      "participant"
+    ],
+    "ParticipantRevisionAuthoritySnapshot": [
+      "participant"
+    ],
+    "ParticipantRevisionCommit": [
+      "participant"
+    ],
+    "ParticipantRevisionConflictError": [
+      "participant"
+    ],
+    "ParticipantRevisionEvidence": [
+      "participant"
+    ],
+    "ParticipantRevisionEvidenceKind": [
+      "participant"
+    ],
+    "ParticipantRevisionIntegrityError": [
+      "participant"
+    ],
+    "ParticipantRevisionProposal": [
+      "participant"
+    ],
+    "ParticipantRevisionStateError": [
+      "participant"
+    ],
+    "ParticipantRevisionValue": [
+      "participant"
+    ],
+    "ParticipantRuntimeBinding": [
+      "participant/core"
+    ],
+    "ParticipantRuntimeBindingManifest": [
+      "participant/core"
+    ],
+    "ParticipantRuntimeEndpoint": [
+      "participant/core",
+      "participant/session"
+    ],
+    "ParticipantRuntimeEndpointFactory": [
+      "participant/binding"
+    ],
+    "ParticipantRuntimeHandle": [
+      "participant/core"
+    ],
+    "ParticipantRuntimeInventory": [
+      "participant/core"
+    ],
+    "ParticipantSchedule": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "ParticipantSessionBinding": [
+      "participant/core"
+    ],
+    "ParticipantSessionLifecyclePort": [
+      "participant/core",
+      "participant/session"
+    ],
+    "ParticipantSessionRuntime": [
+      "participant/core",
+      "participant/session"
+    ],
+    "ParticipantSessionRuntimeCatalogPort": [
+      "participant/binding",
+      "participant/session"
+    ],
+    "ParticipantSessionRuntimeFactory": [
+      "participant/session"
+    ],
+    "ParticipantSessionRuntimeIdentity": [
+      "participant/core",
+      "participant/session"
+    ],
+    "ParticipantSessionRuntimeRegistration": [
+      "participant/binding"
+    ],
+    "ParticipantStateCompatibility": [
+      "participant"
+    ],
+    "ParticipantStateRevision": [
+      "participant"
+    ],
+    "ParticipantStateTransition": [
+      "participant"
+    ],
+    "ParticipantTopology": [
+      "participant"
+    ],
+    "ParticipantTopologyChange": [
+      "participant"
+    ],
+    "ParticipantTopologyMember": [
+      "participant"
+    ],
+    "ParticipantTopologyTransition": [
+      "participant"
+    ],
+    "ParticipantTransitionValue": [
+      "participant"
+    ],
+    "PathFlavor": [
+      "scope/path"
+    ],
+    "PendingEffectRecoveryRequired": [
+      "reliability/effect"
+    ],
+    "PersistentSessionBackendConfig": [
+      "runtime/session"
+    ],
+    "PersistentSessionBinding": [
+      "runtime/session"
+    ],
+    "PersistentSessionBindingStorePort": [
+      "runtime/session"
+    ],
+    "PersistentSessionControlPort": [
+      "runtime/session"
+    ],
+    "PersistentSessionDrift": [
+      "runtime/session"
+    ],
+    "PersistentSessionEffectUncertain": [
+      "runtime/session"
+    ],
+    "PersistentSessionHostPort": [
+      "runtime/session"
+    ],
+    "PersistentSessionLaunchManifestPort": [
+      "runtime/session"
+    ],
+    "PersistentSessionObservation": [
+      "runtime/session"
+    ],
+    "PersistentSessionObservationState": [
+      "runtime/session"
+    ],
+    "PersistentSessionReasonCode": [
+      "runtime/session"
+    ],
+    "PersistentSessionReport": [
+      "runtime/session"
+    ],
+    "PersistentSessionRuntimePort": [
+      "runtime/session"
+    ],
+    "PersistentSessionSnapshot": [
+      "runtime/session"
+    ],
+    "PersistentSessionSpec": [
+      "runtime/session"
+    ],
+    "PersistentSessionStatusConfig": [
+      "runtime/session"
+    ],
+    "PersistentSessionStatusProbePort": [
+      "runtime/session"
+    ],
+    "PlatformIdentity": [
+      "platform"
+    ],
+    "PlatformManifest": [
+      "platform"
+    ],
+    "PlatformSystemCatalogPort": [
+      "platform"
+    ],
+    "PolicyActionProbability": [
+      "model"
+    ],
+    "PolicyInferenceInput": [
+      "model"
+    ],
+    "PolicyInferenceOutput": [
+      "model"
+    ],
+    "PortfolioCatalogPort": [
+      "portfolio"
+    ],
+    "PostHocEvaluationDefinition": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "PostHocEvaluationResult": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "PreparedEffectHandle": [
+      "environment",
+      "participant/capability",
+      "reliability/effect"
+    ],
+    "PreparedModelRevision": [
+      "model",
+      "model/catalog/revision"
+    ],
+    "PreparedParticipantRevision": [
+      "participant"
+    ],
+    "ProcessByteCapturePort": [
+      "runtime/process"
+    ],
+    "ProgramExecutionPort": [
+      "execution"
+    ],
+    "ProgramExecutionReceipt": [
+      "execution"
+    ],
+    "ProgramExecutionReconciliationDisposition": [
+      "execution"
+    ],
+    "ProgramExecutionReconciliationResult": [
+      "execution"
+    ],
+    "ProgramExecutionRecoveryPort": [
+      "execution"
+    ],
+    "ProgramExecutionRequest": [
+      "execution"
+    ],
+    "ProgramExecutionStatus": [
+      "execution"
+    ],
+    "ProgramHandlerRegistry": [
+      "execution/research_program"
+    ],
+    "ProgramHandlerRegistryPort": [
+      "execution/research_program"
+    ],
+    "ProgramNode": [
+      "execution/research_program"
+    ],
+    "ProgramNodeRequest": [
+      "execution/research_program"
+    ],
+    "ProgramNodeResult": [
+      "execution/research_program"
+    ],
+    "ProgramOperationHandler": [
+      "execution/research_program"
+    ],
+    "ProgramRule": [
+      "execution/research_program"
+    ],
+    "ProgramRuleSet": [
+      "execution/research_program"
+    ],
+    "ProgramSpec": [
+      "portfolio"
+    ],
+    "ProjectCapabilityRequirement": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectConfigurationReference": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectIdentity": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectIdentityProjection": [
+      "experimentation"
+    ],
+    "ProjectManifest": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectManifestDecodeError": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectManifestFacet": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectManifestFacetChange": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectManifestFacetDiff": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectManifestIdentityFacets": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectManifestProjection": [
+      "experimentation"
+    ],
+    "ProjectMethodRequirement": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectModelBinding": [
+      "model"
+    ],
+    "ProjectModelBindingSet": [
+      "model"
+    ],
+    "ProjectModelCapabilityClientPort": [
+      "model"
+    ],
+    "ProjectModelCapabilityProviderPort": [
+      "model"
+    ],
+    "ProjectModelClientPort": [
+      "model"
+    ],
+    "ProjectModelProviderPort": [
+      "model"
+    ],
+    "ProjectModelRequest": [
+      "model"
+    ],
+    "ProjectModelResponse": [
+      "model"
+    ],
+    "ProjectModelStreamingCapabilityClientPort": [
+      "model"
+    ],
+    "ProjectModelStreamingCapabilityProviderPort": [
+      "model"
+    ],
+    "ProjectParticipantBinding": [
+      "participant"
+    ],
+    "ProjectParticipantProviderPort": [
+      "participant"
+    ],
+    "ProjectProviderBinding": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectRequirementCardinality": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectRunDefinition": [
+      "experimentation"
+    ],
+    "ProjectSpec": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "ProjectToolProvenance": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "PromptBodyContext": [
+      "model/request/prompt"
+    ],
+    "PromptBoundRequest": [
+      "model/request/prompt"
+    ],
+    "PromptDynamicBlock": [
+      "model/request/prompt"
+    ],
+    "PromptRequestBindingPort": [
+      "model/request/prompt"
+    ],
+    "PromptRequestBodyBuilder": [
+      "model/request/prompt"
+    ],
+    "PromptSelectionIdentity": [
+      "model/request/prompt"
+    ],
+    "PromptSelectionPort": [
+      "model/request/prompt"
+    ],
+    "PromptTraceDescriptor": [
+      "model/request/prompt"
+    ],
+    "PromptTraceObserverFailure": [
+      "model/request/prompt"
+    ],
+    "PromptTraceObserverFailureSink": [
+      "model/request/prompt"
+    ],
+    "PromptTraceObserverPort": [
+      "model/request/prompt"
+    ],
+    "PromptTracePoint": [
+      "model/request/prompt"
+    ],
+    "PromptTraceStage": [
+      "model/request/prompt"
+    ],
+    "PromptTraceSummary": [
+      "model/request/prompt"
+    ],
+    "PromptVerificationIntegrityError": [
+      "model/request/prompt"
+    ],
+    "PublishedExecutableProgramSource": [
+      "execution"
+    ],
+    "PythonRuntimeFacts": [
+      "model/qualification"
+    ],
+    "QualificationCommandReceipt": [
+      "model/qualification"
+    ],
+    "QualificationMaterializationStatus": [
+      "model/qualification"
+    ],
+    "QualificationPackageInstallerPort": [
+      "model/qualification"
+    ],
+    "QualificationRuntimeProbePort": [
+      "model/qualification"
+    ],
+    "RankedCandidate": [
+      "model"
+    ],
+    "RankingCandidate": [
+      "model"
+    ],
+    "RankingInput": [
+      "model"
+    ],
+    "RankingOutput": [
+      "model"
+    ],
+    "RawRecord": [
+      "experimentation/experiment"
+    ],
+    "RawRecordStorePort": [
+      "experimentation/experiment"
+    ],
+    "RecallRequest": [
+      "participant/method"
+    ],
+    "RecallResult": [
+      "participant/method"
+    ],
+    "ReconstructedModelRequest": [
+      "model/request"
+    ],
+    "RecordPlaneTagged": [
+      "data/record"
+    ],
+    "RecoveryAction": [
+      "execution/research_program",
+      "reliability/failure"
+    ],
+    "RecoveryDecider": [
+      "execution/research_program"
+    ],
+    "RecoveryDeciderRegistry": [
+      "execution/research_program"
+    ],
+    "RecoveryDeciderRegistryPort": [
+      "execution/research_program"
+    ],
+    "RecoveryDecision": [
+      "execution/research_program"
+    ],
+    "RecoveryProgram": [
+      "execution/research_program"
+    ],
+    "RecoveryRequest": [
+      "execution/research_program"
+    ],
+    "RecoveryRuntimeBinding": [
+      "execution/research_program"
+    ],
+    "RecoverySignal": [
+      "execution/research_program"
+    ],
+    "RegisteredChildResearchHost": [
+      "execution/research_program"
+    ],
+    "RegisteredChildResearchMachineExecutor": [
+      "execution/research_program"
+    ],
+    "RegisteredParticipantImplementation": [
+      "participant/definition"
+    ],
+    "RegisteredParticipantSessionRuntime": [
+      "participant/session"
+    ],
+    "RegisteredSerialChildResearchBatchMechanics": [
+      "execution/research_program"
+    ],
+    "RegistrationConflict": [
+      "execution/capability"
+    ],
+    "RegistrationHandlePort": [
+      "execution/capability"
+    ],
+    "RegistrationKey": [
+      "execution/capability"
+    ],
+    "RegistrationLeasePort": [
+      "execution/capability"
+    ],
+    "RegistrationScopeFactoryPort": [
+      "execution/capability"
+    ],
+    "RegistrationScopePort": [
+      "execution/capability"
+    ],
+    "ReleaseConsumerQuiescence": [
+      "governance/release"
+    ],
+    "ReleaseConsumerQuiescenceProbe": [
+      "governance/release"
+    ],
+    "ReleaseManifest": [
+      "governance/release"
+    ],
+    "ReleasePinStorePort": [
+      "governance/release"
+    ],
+    "ReleaseQualityEvidence": [
+      "governance/release"
+    ],
+    "ReleaseQualityEvidencePort": [
+      "governance/release"
+    ],
+    "ReleaseQuiescenceProof": [
+      "governance/release"
+    ],
+    "ReleaseQuiescenceProofProvider": [
+      "governance/release"
+    ],
+    "ReleaseRegressionEvidence": [
+      "governance/release"
+    ],
+    "ReleaseRegressionPort": [
+      "governance/release"
+    ],
+    "ReleaseVerificationEvidence": [
+      "governance/release"
+    ],
+    "ReleaseVerificationEvidencePort": [
+      "governance/release"
+    ],
+    "ReleaseVerificationIntegrityError": [
+      "governance/release"
+    ],
+    "ReleaseVerificationReport": [
+      "governance/release"
+    ],
+    "ReleaseVerifierPort": [
+      "governance/release"
+    ],
+    "RenderedResearchPackage": [
+      "experimentation/workbench"
+    ],
+    "ReplayLevel": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "ReportTableRendererPort": [
+      "experimentation/workbench"
+    ],
+    "RepositorySourceBlob": [
+      "governance"
+    ],
+    "RepositorySourceFailure": [
+      "governance"
+    ],
+    "RepositorySourceFailureKind": [
+      "governance"
+    ],
+    "RepositorySourceIncompleteError": [
+      "governance"
+    ],
+    "RepositorySourceIndexPort": [
+      "governance"
+    ],
+    "RepositorySourcePort": [
+      "governance"
+    ],
+    "RepositorySourceSnapshot": [
+      "governance"
+    ],
+    "ResearchBindingContribution": [
+      "experimentation"
+    ],
+    "ResearchBindingRequirements": [
+      "experimentation"
+    ],
+    "ResearchCampaignCompilationUnit": [
+      "experimentation"
+    ],
+    "ResearchCampaignExecutionPort": [
+      "experimentation"
+    ],
+    "ResearchCampaignExecutionReport": [
+      "experimentation"
+    ],
+    "ResearchCampaignLaneResult": [
+      "experimentation"
+    ],
+    "ResearchCampaignLaneState": [
+      "experimentation"
+    ],
+    "ResearchCampaignPlan": [
+      "experimentation"
+    ],
+    "ResearchCampaignStudy": [
+      "experimentation"
+    ],
+    "ResearchCampaignStudyBinding": [
+      "experimentation"
+    ],
+    "ResearchCapabilityBinding": [
+      "experimentation"
+    ],
+    "ResearchDimension": [
+      "data/query"
+    ],
+    "ResearchDimensionKind": [
+      "data/query"
+    ],
+    "ResearchEvaluation": [
+      "experimentation/workbench"
+    ],
+    "ResearchFigureFactoryPort": [
+      "experimentation/workbench"
+    ],
+    "ResearchHostBindingRestorer": [
+      "execution/research_program"
+    ],
+    "ResearchHostExecution": [
+      "execution/research_program"
+    ],
+    "ResearchHostHandler": [
+      "execution/research_program"
+    ],
+    "ResearchHostOperation": [
+      "execution/research_program"
+    ],
+    "ResearchLifecyclePort": [
+      "experimentation/workbench"
+    ],
+    "ResearchMethodHost": [
+      "experimentation"
+    ],
+    "ResearchMethodHostPort": [
+      "experimentation"
+    ],
+    "ResearchModelRoleBinding": [
+      "experimentation"
+    ],
+    "ResearchModelRoleRequirement": [
+      "experimentation"
+    ],
+    "ResearchParticipantBinding": [
+      "experimentation"
+    ],
+    "ResearchParticipantRequirement": [
+      "experimentation"
+    ],
+    "ResearchPlanDiff": [
+      "experimentation"
+    ],
+    "ResearchProgram": [
+      "execution/research_program"
+    ],
+    "ResearchProgramBuilder": [
+      "execution/research_program"
+    ],
+    "ResearchProgramHost": [
+      "execution/research_program"
+    ],
+    "ResearchQueryGap": [
+      "data/query"
+    ],
+    "ResearchQueryGapKind": [
+      "data/query"
+    ],
+    "ResearchQuerySourceError": [
+      "data/query"
+    ],
+    "ResearchReport": [
+      "experimentation/workbench"
+    ],
+    "ResearchRequirementResolution": [
+      "experimentation"
+    ],
+    "ResearchResultKind": [
+      "data/query"
+    ],
+    "ResearchResultPage": [
+      "data/query"
+    ],
+    "ResearchResultQuery": [
+      "data/query"
+    ],
+    "ResearchResultQueryPort": [
+      "data/query",
+      "data/query/cross"
+    ],
+    "ResearchResultRecord": [
+      "data/query"
+    ],
+    "ResearchResultReference": [
+      "data/query"
+    ],
+    "ResearchResultSourcePort": [
+      "data/query",
+      "data/query/cross"
+    ],
+    "ResearchRevision": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "ResearchRunProgramBuilder": [
+      "execution/research_program"
+    ],
+    "ResearchSourceCut": [
+      "data/query"
+    ],
+    "ResearchSourceDisposition": [
+      "data/query"
+    ],
+    "ResearchSourceSnapshot": [
+      "data/query"
+    ],
+    "ResearchSourceStatus": [
+      "data/query"
+    ],
+    "ResearchStatisticsPort": [
+      "experimentation/workbench"
+    ],
+    "ResearchStudyDefinition": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "ResearchTablePipelinePort": [
+      "experimentation/workbench"
+    ],
+    "ResolvedEnvironmentSpec": [
+      "environment/catalog"
+    ],
+    "ResolvedModelAssignment": [
+      "model/assignment"
+    ],
+    "ResolvedResourceBinding": [
+      "resource/resolution"
+    ],
+    "ResourceAdmissionSnapshot": [
+      "execution/admission"
+    ],
+    "ResourceAllocationLeasePort": [
+      "experimentation/resource"
+    ],
+    "ResourceAllocationReceipt": [
+      "experimentation/resource"
+    ],
+    "ResourceIdentity": [
+      "resource/lease"
+    ],
+    "ResourceKind": [
+      "resource/lease"
+    ],
+    "ResourceLease": [
+      "resource/lease"
+    ],
+    "ResourceLeaseConflict": [
+      "resource/lease"
+    ],
+    "ResourceLeaseExpired": [
+      "resource/lease"
+    ],
+    "ResourceLeasePort": [
+      "resource/lease"
+    ],
+    "ResourceOwner": [
+      "resource/lease"
+    ],
+    "ResourceOwnership": [
+      "resource/lease"
+    ],
+    "ResourceOwnershipConflict": [
+      "resource/lease"
+    ],
+    "ResourceOwnershipPort": [
+      "resource/lease"
+    ],
+    "ResourcePolicy": [
+      "experimentation/resource"
+    ],
+    "ResourceResolutionPort": [
+      "resource/resolution"
+    ],
+    "ResourceResolutionRequest": [
+      "resource/resolution"
+    ],
+    "RiskLevel": [
+      "reliability/failure"
+    ],
+    "RuleDispatchMode": [
+      "execution/research_program"
+    ],
+    "RunArtifactFinalizationError": [
+      "experimentation/run"
+    ],
+    "RunArtifactFinalizationPort": [
+      "experimentation/run"
+    ],
+    "RunArtifactKind": [
+      "experimentation/run"
+    ],
+    "RunArtifactSealedError": [
+      "experimentation/run"
+    ],
+    "RunArtifactSnapshotReceipt": [
+      "experimentation/run"
+    ],
+    "RunArtifactStorePort": [
+      "experimentation/run"
+    ],
+    "RunArtifactVerificationError": [
+      "experimentation/run"
+    ],
+    "RunArtifactVerificationPort": [
+      "experimentation/run"
+    ],
+    "RunArtifactWriteActorPort": [
+      "experimentation/run"
+    ],
+    "RunCheckpointBundle": [
+      "experimentation/checkpoint"
+    ],
+    "RunCheckpointConflict": [
+      "experimentation/checkpoint"
+    ],
+    "RunCheckpointCoordinatorPort": [
+      "experimentation/checkpoint"
+    ],
+    "RunCheckpointIntegrityError": [
+      "experimentation/checkpoint"
+    ],
+    "RunCheckpointManifest": [
+      "experimentation/checkpoint"
+    ],
+    "RunCheckpointResult": [
+      "experimentation/checkpoint"
+    ],
+    "RunCheckpointStore": [
+      "experimentation/checkpoint"
+    ],
+    "RunCleanupFailure": [
+      "experimentation/run/lifecycle"
+    ],
+    "RunCleanupReport": [
+      "experimentation/run/lifecycle"
+    ],
+    "RunClosed": [
+      "experimentation/run/lifecycle"
+    ],
+    "RunConcern": [
+      "execution/research_program"
+    ],
+    "RunControlAction": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunControlActionFailure": [
+      "experimentation/run/control"
+    ],
+    "RunControlCheckpointBundlePort": [
+      "experimentation/run/control"
+    ],
+    "RunControlCheckpointStorePort": [
+      "experimentation/run/control"
+    ],
+    "RunControlConflict": [
+      "experimentation/run/control"
+    ],
+    "RunControlError": [
+      "experimentation/run/control"
+    ],
+    "RunControlEvidencePort": [
+      "experimentation/run/control"
+    ],
+    "RunControlIntegrityError": [
+      "experimentation/run/control"
+    ],
+    "RunControlLifecyclePort": [
+      "experimentation/run/control"
+    ],
+    "RunControlNotFound": [
+      "experimentation/run/control"
+    ],
+    "RunControlPhase": [
+      "experimentation/run/control"
+    ],
+    "RunControlPort": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunControlPreparedOperation": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunControlReceipt": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunControlReconciliationPort": [
+      "experimentation/run/control"
+    ],
+    "RunControlRequest": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunControlStaleRevision": [
+      "experimentation/run/control"
+    ],
+    "RunControlTarget": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunControlTransitionOutcome": [
+      "experimentation/run/control"
+    ],
+    "RunCycleExecutionPort": [
+      "experimentation/run/lifecycle"
+    ],
+    "RunCycleExecutorPort": [
+      "experimentation/run/lifecycle"
+    ],
+    "RunDiagnosticsPort": [
+      "experimentation/run"
+    ],
+    "RunEvidenceValidity": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunExecutionOutcome": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunIdentity": [
+      "experimentation/run/control",
+      "experimentation/run/identity"
+    ],
+    "RunIdentityProvider": [
+      "experimentation/run/identity"
+    ],
+    "RunLaunchManifest": [
+      "experimentation/run/control",
+      "experimentation/run/manifest"
+    ],
+    "RunLifetimePort": [
+      "experimentation/run/lifecycle"
+    ],
+    "RunOutcomeProjection": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunParticipantPayload": [
+      "experimentation/checkpoint"
+    ],
+    "RunParticipantSnapshotRef": [
+      "experimentation/checkpoint"
+    ],
+    "RunRecoveryRequired": [
+      "experimentation/run/lifecycle"
+    ],
+    "RunResearchSemanticsReference": [
+      "experimentation/run/manifest"
+    ],
+    "RunRestoreResult": [
+      "experimentation/checkpoint"
+    ],
+    "RunRuntimePort": [
+      "experimentation/run"
+    ],
+    "RunScientificValidity": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RunSessionPort": [
+      "experimentation/run",
+      "experimentation/run/lifecycle"
+    ],
+    "RunTaskOutcome": [
+      "experimentation",
+      "experimentation/run/control"
+    ],
+    "RuntimeBuildIdentity": [
+      "model/stack"
+    ],
+    "RuntimeCheckReceipt": [
+      "model/qualification"
+    ],
+    "RuntimeConcern": [
+      "execution/research_program"
+    ],
+    "RuntimeControllerCommand": [
+      "runtime/session"
+    ],
+    "RuntimeModule": [
+      "execution/research_program"
+    ],
+    "RuntimeModuleBuilder": [
+      "execution/research_program"
+    ],
+    "RuntimeModuleLink": [
+      "execution/research_program"
+    ],
+    "RuntimeModuleNode": [
+      "execution/research_program"
+    ],
+    "RuntimeProgramBuilder": [
+      "execution/research_program"
+    ],
+    "RuntimeProgramComposer": [
+      "execution/research_program"
+    ],
+    "STANDARD_SYSTEM_SHAPE": [
+      "governance/system_registry"
+    ],
+    "SYSTEM": [
+      "artifact/lineage/relation",
+      "artifact/reference",
+      "artifact/retention",
+      "data/query/cross"
+    ],
+    "SYSTEM_CATALOG": [
+      "governance/system_registry"
+    ],
+    "ScheduledTaskHandlePort": [
+      "platform/concurrency"
+    ],
+    "ScheduledTaskSpec": [
+      "platform/concurrency"
+    ],
+    "SchedulingCandidate": [
+      "execution/scheduling"
+    ],
+    "ScopeDisposed": [
+      "execution/capability"
+    ],
+    "ScopeIdentity": [
+      "scope"
+    ],
+    "ScopeKind": [
+      "scope"
+    ],
+    "ScopeLink": [
+      "scope"
+    ],
+    "ScopePathPort": [
+      "scope/path"
+    ],
+    "ScopeRegistryPort": [
+      "scope"
+    ],
+    "ScoredCandidate": [
+      "model"
+    ],
+    "ScoringCandidate": [
+      "model"
+    ],
+    "ScoringInput": [
+      "model"
+    ],
+    "ScoringOutput": [
+      "model"
+    ],
+    "SemanticSimilarityMatch": [
+      "data/query"
+    ],
+    "SemanticSimilarityMetric": [
+      "data/query"
+    ],
+    "SemanticSimilarityQuery": [
+      "data/query"
+    ],
+    "SemanticSimilarityQueryPort": [
+      "data/query"
+    ],
+    "SemanticSimilarityResult": [
+      "data/query"
+    ],
+    "SensorModality": [
+      "environment/embodied"
+    ],
+    "SensorSpec": [
+      "environment/embodied"
+    ],
+    "SerialActorPort": [
+      "platform/concurrency"
+    ],
+    "SerialExecutionLaneFactoryProviderPort": [
+      "platform/concurrency"
+    ],
+    "SerialExecutionLaneProviderPort": [
+      "platform/concurrency"
+    ],
+    "SerialLaneTopologySnapshot": [
+      "platform/concurrency"
+    ],
+    "SerialMailboxPolicy": [
+      "platform/concurrency"
+    ],
+    "SerialMailboxRejected": [
+      "platform/concurrency"
+    ],
+    "ServerAuthenticationUnavailable": [
+      "runtime/server/identity"
+    ],
+    "ServerBootstrapBlocked": [
+      "runtime/server/bootstrap"
+    ],
+    "ServerBootstrapIdentityConflict": [
+      "runtime/server/bootstrap"
+    ],
+    "ServerBootstrapPhase": [
+      "runtime/server/bootstrap"
+    ],
+    "ServerBootstrapState": [
+      "runtime/server/bootstrap"
+    ],
+    "ServerBootstrapStateConflict": [
+      "runtime/server/bootstrap"
+    ],
+    "ServerBootstrapStatePort": [
+      "runtime/server/bootstrap"
+    ],
+    "ServerBootstrapTransactionPort": [
+      "runtime/server/bootstrap"
+    ],
+    "ServerBootstrapTransactionReport": [
+      "runtime/server/bootstrap"
+    ],
+    "ServerCommandResult": [
+      "runtime/server/identity"
+    ],
+    "ServerConnectionFactoryPort": [
+      "runtime/server/identity"
+    ],
+    "ServerConnectionPort": [
+      "runtime/server/identity"
+    ],
+    "ServerConnectionProfile": [
+      "runtime/server/identity"
+    ],
+    "ServerDiagnosticIssue": [
+      "runtime/server/health"
+    ],
+    "ServerDiagnosticProjectorPort": [
+      "runtime/server/health"
+    ],
+    "ServerDiagnosticReport": [
+      "runtime/server/health"
+    ],
+    "ServerDiagnosticSeverity": [
+      "runtime/server/health"
+    ],
+    "ServerDiagnosticStatus": [
+      "runtime/server/health"
+    ],
+    "ServerFileTransferFactoryPort": [
+      "runtime/server/identity"
+    ],
+    "ServerFileTransferPort": [
+      "runtime/server/identity"
+    ],
+    "ServerFileTransferResult": [
+      "runtime/server/identity"
+    ],
+    "ServerHealthProbePort": [
+      "runtime/server/health"
+    ],
+    "ServerHealthReport": [
+      "runtime/server/health"
+    ],
+    "ServerIdentityConfigurationError": [
+      "runtime/server/identity"
+    ],
+    "ServerMutationBusy": [
+      "runtime/server"
+    ],
+    "ServerOperationEffect": [
+      "runtime/server"
+    ],
+    "ServerOperationFinished": [
+      "runtime/server"
+    ],
+    "ServerOperationJournalPort": [
+      "runtime/server"
+    ],
+    "ServerOperationKind": [
+      "runtime/server"
+    ],
+    "ServerOperationReconciliationRequired": [
+      "runtime/server"
+    ],
+    "ServerOperationRecord": [
+      "runtime/server"
+    ],
+    "ServerOperationResolution": [
+      "runtime/server"
+    ],
+    "ServerOperationResolved": [
+      "runtime/server"
+    ],
+    "ServerOperationStarted": [
+      "runtime/server"
+    ],
+    "ServerOperationState": [
+      "runtime/server"
+    ],
+    "ServerOperationTransitionConflict": [
+      "runtime/server"
+    ],
+    "ServerProfileCatalog": [
+      "runtime/server/identity"
+    ],
+    "ServerProfileCatalogEntry": [
+      "runtime/server/identity"
+    ],
+    "ServerProfileCatalogError": [
+      "runtime/server/identity"
+    ],
+    "ServerReleaseDeploymentError": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerReleaseDeploymentPort": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerReleaseDeploymentReceipt": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerReleaseDeploymentRequest": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerReleaseDirectoryPort": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerReleaseLayout": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerReleaseLayoutError": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRemoteProfile": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRepositoryCommandPort": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRepositoryCommandReceipt": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRepositoryCommandRequest": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRepositoryStatus": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRepositorySyncError": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRepositorySyncPort": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRepositorySyncReceipt": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRepositorySyncRequest": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRuntimeHealthSpec": [
+      "runtime/server/health"
+    ],
+    "ServerRuntimeLaunchManifestMismatch": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerRuntimeLaunchManifestPort": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerSessionDiagnostic": [
+      "runtime/server/health"
+    ],
+    "ServerSessionPolicy": [
+      "runtime/session"
+    ],
+    "ServerSessionPolicyMismatch": [
+      "runtime/server/lifecycle"
+    ],
+    "ServerTransportBusy": [
+      "runtime/server"
+    ],
+    "ServerTransportFailureKind": [
+      "runtime/server/identity"
+    ],
+    "ServiceContractDrift": [
+      "runtime/service"
+    ],
+    "ServiceEnvironmentPort": [
+      "runtime/service"
+    ],
+    "ServiceLaunchContract": [
+      "runtime/service"
+    ],
+    "ServiceLaunchPreflightPort": [
+      "runtime/service"
+    ],
+    "ServiceLaunchPreflightReport": [
+      "runtime/service"
+    ],
+    "ServiceProcessIdentity": [
+      "runtime/service"
+    ],
+    "ServiceReadyObservation": [
+      "runtime/service"
+    ],
+    "ServiceReconcileObservation": [
+      "runtime/service"
+    ],
+    "ServiceStartOutcome": [
+      "runtime/service"
+    ],
+    "ServiceStopOutcome": [
+      "runtime/service"
+    ],
+    "SignalKind": [
+      "governance/evolution"
+    ],
+    "SplitStrategy": [
+      "experimentation/workbench"
+    ],
+    "StateBootstrapConflict": [
+      "data/state"
+    ],
+    "StateCorruptionError": [
+      "data/state"
+    ],
+    "StateMachineDynamicsIdentity": [
+      "environment"
+    ],
+    "StateMachineDynamicsPort": [
+      "environment"
+    ],
+    "StateMachineEnvironmentSpec": [
+      "environment"
+    ],
+    "StateTransition": [
+      "environment"
+    ],
+    "StateVersionConflict": [
+      "data/state"
+    ],
+    "StorageCapabilityFacts": [
+      "model/qualification"
+    ],
+    "StructuredConcurrencyRuntimePort": [
+      "platform/concurrency"
+    ],
+    "StructuredGenerationDecoderPort": [
+      "model"
+    ],
+    "StructuredGenerationInput": [
+      "model"
+    ],
+    "StructuredGenerationOutput": [
+      "model"
+    ],
+    "Study": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "StudyArtifactPublicationPort": [
+      "experimentation/study"
+    ],
+    "StudyAssignment": [
+      "experimentation/study"
+    ],
+    "StudyAssignmentPort": [
+      "experimentation/study"
+    ],
+    "StudyConcurrencyPolicy": [
+      "experimentation/study"
+    ],
+    "StudyExecutionPolicy": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "StudyExecutionUnit": [
+      "experimentation/study"
+    ],
+    "StudyFactorSpec": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "StudyIntervention": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "StudyMatrixExecutionReport": [
+      "experimentation/study"
+    ],
+    "StudyMetricAggregate": [
+      "experimentation/study"
+    ],
+    "StudyMetricAggregationPort": [
+      "experimentation/study"
+    ],
+    "StudyMetricObservation": [
+      "experimentation/study"
+    ],
+    "StudyModel": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "StudyObservationTableAdapter": [
+      "experimentation/workbench"
+    ],
+    "StudyParticipant": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "StudyProtocol": [
+      "experimentation/study"
+    ],
+    "StudyResearchReadPort": [
+      "experimentation/study"
+    ],
+    "StudyResearchReadSnapshot": [
+      "experimentation/study"
+    ],
+    "StudyVariantSpec": [
+      "experimentation/study"
+    ],
+    "SynchronizationAction": [
+      "execution/research_program"
+    ],
+    "SynchronizationDecider": [
+      "execution/research_program"
+    ],
+    "SynchronizationDeciderRegistry": [
+      "execution/research_program"
+    ],
+    "SynchronizationDeciderRegistryPort": [
+      "execution/research_program"
+    ],
+    "SynchronizationDecision": [
+      "execution/research_program"
+    ],
+    "SynchronizationMode": [
+      "execution/research_program"
+    ],
+    "SynchronizationPoint": [
+      "execution/research_program"
+    ],
+    "SynchronizationPresetSpec": [
+      "execution/research_program"
+    ],
+    "SynchronizationProgram": [
+      "execution/research_program"
+    ],
+    "SynchronizationRequest": [
+      "execution/research_program"
+    ],
+    "SynchronizationRuntimeBinding": [
+      "execution/research_program"
+    ],
+    "SystemDescriptor": [
+      "governance/system_registry"
+    ],
+    "SystemEvolutionPort": [
+      "governance/evolution"
+    ],
+    "SystemIdentity": [
+      "artifact",
+      "environment",
+      "governance/system_registry",
+      "runtime"
+    ],
+    "SystemLayer": [
+      "governance/system_registry"
+    ],
+    "SystemLeafContract": [
+      "artifact/lineage/relation",
+      "artifact/reference",
+      "artifact/retention",
+      "environment/binding",
+      "environment/instance/identity",
+      "environment/instance/readiness",
+      "environment/specification/digest",
+      "environment/specification/schema",
+      "execution/admission",
+      "execution/command",
+      "execution/operation",
+      "execution/scheduling",
+      "experimentation/branch",
+      "experimentation/variant",
+      "governance/schema",
+      "governance/security",
+      "model/catalog/family",
+      "model/catalog/revision",
+      "model/deployment/closure",
+      "model/request/input",
+      "model/request/output",
+      "platform/configuration",
+      "platform/identity",
+      "platform/lifecycle",
+      "portfolio/membership",
+      "portfolio/program",
+      "portfolio/workspace",
+      "scope/hierarchy",
+      "scope/identity",
+      "scope/membership",
+      "scope/ownership",
+      "scope/resolution"
+    ],
+    "SystemNodeKind": [
+      "governance/system_registry"
+    ],
+    "SystemPort": [
+      "artifact",
+      "environment",
+      "runtime"
+    ],
+    "SystemRegistryChange": [
+      "governance/system_registry"
+    ],
+    "SystemRegistryObserver": [
+      "governance/system_registry"
+    ],
+    "SystemRegistryPort": [
+      "governance/system_registry"
+    ],
+    "SystemSpec": [
+      "artifact",
+      "environment",
+      "runtime"
+    ],
+    "TERMINAL_OPERATION_STATES": [
+      "execution/operation"
+    ],
+    "TableAggregateStep": [
+      "experimentation/workbench"
+    ],
+    "TableAnalysisPort": [
+      "experimentation/workbench"
+    ],
+    "TableDeriveStep": [
+      "experimentation/workbench"
+    ],
+    "TableExecutionReceipt": [
+      "experimentation/workbench"
+    ],
+    "TableExecutionResult": [
+      "experimentation/workbench"
+    ],
+    "TableExpression": [
+      "experimentation/workbench"
+    ],
+    "TableExpressionKind": [
+      "experimentation/workbench"
+    ],
+    "TableFilterStep": [
+      "experimentation/workbench"
+    ],
+    "TableJoinStep": [
+      "experimentation/workbench"
+    ],
+    "TableProgram": [
+      "experimentation/workbench"
+    ],
+    "TableProgramExecutionPort": [
+      "experimentation/workbench"
+    ],
+    "TableProgramStep": [
+      "experimentation/workbench"
+    ],
+    "TableProjectStep": [
+      "experimentation/workbench"
+    ],
+    "TableReaderPort": [
+      "experimentation/workbench"
+    ],
+    "TableStepKind": [
+      "experimentation/workbench"
+    ],
+    "TableTransformPort": [
+      "experimentation/workbench"
+    ],
+    "TaskArtifactSpec": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskCancelled": [
+      "platform/concurrency"
+    ],
+    "TaskCompletionReconciliationSession": [
+      "participant/method"
+    ],
+    "TaskCompletionSafetyCapabilityMissing": [
+      "participant/method"
+    ],
+    "TaskContextPort": [
+      "platform/concurrency"
+    ],
+    "TaskDeadlineExceeded": [
+      "platform/concurrency"
+    ],
+    "TaskDefinition": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskFailurePolicy": [
+      "platform/concurrency"
+    ],
+    "TaskFailureScope": [
+      "platform/concurrency"
+    ],
+    "TaskGraph": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskGraphEdge": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskGraphRelation": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskGroupPort": [
+      "platform/concurrency"
+    ],
+    "TaskGroupTopologySnapshot": [
+      "platform/concurrency"
+    ],
+    "TaskHandlePort": [
+      "platform/concurrency"
+    ],
+    "TaskPackageSpec": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskSetSplit": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskState": [
+      "platform/concurrency"
+    ],
+    "TaskTopologySnapshot": [
+      "platform/concurrency"
+    ],
+    "TaskVerifierArchiveMaterializationPort": [
+      "experimentation/study"
+    ],
+    "TaskVerifierArtifact": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskVerifierIsolation": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskVerifierPort": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskVerifierReceipt": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TaskVerifierRequest": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TenantAdmissionSnapshot": [
+      "execution/admission"
+    ],
+    "TensorContentRef": [
+      "artifact/content"
+    ],
+    "TensorContentStorePort": [
+      "artifact/content"
+    ],
+    "ThreadPoolChildResearchBatchMechanics": [
+      "execution/research_program"
+    ],
+    "TimerSchedulerProviderPort": [
+      "platform/concurrency"
+    ],
+    "TopologyChangeKind": [
+      "participant"
+    ],
+    "TopologyDrift": [
+      "governance/evolution"
+    ],
+    "TopologyObservation": [
+      "governance/evolution"
+    ],
+    "TopologySourceAudit": [
+      "governance/system_registry"
+    ],
+    "TrialBudget": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TrialCycleExecution": [
+      "execution/workflow"
+    ],
+    "TrialExecutionReceipt": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TrialExecutionRequest": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TrialExecutionStageReceipt": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TrialExperimentProgramBinding": [
+      "experimentation"
+    ],
+    "TrialMatrixExecutionReport": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TrialProviderPort": [
+      "experimentation",
+      "experimentation/study"
+    ],
+    "TypedCapabilityCarrierCodec": [
+      "participant/capability"
+    ],
+    "TypedCarrierReference": [
+      "participant/capability"
+    ],
+    "UnhandledEventPolicy": [
+      "execution/research_program"
+    ],
+    "UnitOutcome": [
+      "experimentation/experiment"
+    ],
+    "UnitOutcomeState": [
+      "experimentation/experiment"
+    ],
+    "UnknownRequiredFact": [
+      "data/fact"
+    ],
+    "ValueInferenceInput": [
+      "model"
+    ],
+    "ValueInferenceOutput": [
+      "model"
+    ],
+    "VariantBinding": [
+      "experimentation/study"
+    ],
+    "VariantExecutionProvider": [
+      "experimentation/study"
+    ],
+    "VariantExecutionRequest": [
+      "experimentation/study"
+    ],
+    "VariantKind": [
+      "experimentation/study"
+    ],
+    "VerifiedArtifactStoragePlacement": [
+      "artifact/content"
+    ],
+    "VisibilityDecider": [
+      "execution/research_program"
+    ],
+    "VisibilityDeciderRegistry": [
+      "execution/research_program"
+    ],
+    "VisibilityDeciderRegistryPort": [
+      "execution/research_program"
+    ],
+    "VisibilityDecision": [
+      "execution/research_program"
+    ],
+    "VisibilityDisposition": [
+      "execution/research_program"
+    ],
+    "VisibilityProgram": [
+      "execution/research_program"
+    ],
+    "VisibilityRequest": [
+      "execution/research_program"
+    ],
+    "VisibilityResource": [
+      "execution/research_program"
+    ],
+    "VisibilityRuntimeBinding": [
+      "execution/research_program"
+    ],
+    "VisibilitySubject": [
+      "execution/research_program"
+    ],
+    "WorkflowGraph": [
+      "execution/workflow"
+    ],
+    "WorkflowGraphError": [
+      "execution/workflow"
+    ],
+    "WorkflowParticipantRequirementError": [
+      "execution/workflow"
+    ],
+    "WorkflowStep": [
+      "execution/workflow"
+    ],
+    "WorkflowSurfaceBindingContext": [
+      "execution/workflow"
+    ],
+    "WorkflowSurfaceFactory": [
+      "execution/workflow"
+    ],
+    "WorkflowSurfaceReuseScope": [
+      "execution/workflow"
+    ],
+    "WorkloadCheckpointBindingPort": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadCheckpointBundle": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadCheckpointComponentPort": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadCheckpointComponentRef": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadCheckpointCoordinatorPort": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadCheckpointManifest": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadCheckpointPayload": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadCheckpointPublicationPort": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadCheckpointRestoreError": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadCheckpointStore": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadExecutionCut": [
+      "experimentation/checkpoint"
+    ],
+    "WorkloadRestoreStateCertainty": [
+      "experimentation/checkpoint"
+    ],
+    "WorkspaceAllocation": [
+      "resource/directory"
+    ],
+    "WorkspaceManagementPort": [
+      "resource/directory"
+    ],
+    "WorkspaceMetadataError": [
+      "resource/directory"
+    ],
+    "WorkspaceMetadataFailureCode": [
+      "resource/directory"
+    ],
+    "WorkspaceSpec": [
+      "portfolio"
+    ],
+    "action_request_digest": [
+      "environment"
+    ],
+    "action_result_from_payload": [
+      "environment"
+    ],
+    "action_result_payload": [
+      "environment"
+    ],
+    "action_summary_payload": [
+      "participant/agent"
+    ],
+    "attach_cleanup_note": [
+      "experimentation/run/lifecycle"
+    ],
+    "audit_system_topology_source": [
+      "governance/system_registry"
+    ],
+    "build_comparability_proof": [
+      "experimentation/evaluation"
+    ],
+    "build_failure": [
+      "reliability/failure"
+    ],
+    "build_failure_from_spec": [
+      "reliability/failure"
+    ],
+    "build_rule_handlers": [
+      "execution/research_program"
+    ],
+    "build_workload_checkpoint_manifest": [
+      "experimentation/checkpoint"
+    ],
+    "canonical_bytes": [
+      "participant/method"
+    ],
+    "canonical_digest": [
+      "environment",
+      "participant/capability",
+      "participant/method"
+    ],
+    "capability_effect_request_id": [
+      "participant/capability"
+    ],
+    "capability_mediator_binding_digest": [
+      "execution/research_program"
+    ],
+    "capability_program_from_policy": [
+      "execution/research_program"
+    ],
+    "capability_request_digest": [
+      "participant/capability"
+    ],
+    "capability_runtime_module": [
+      "execution/research_program"
+    ],
+    "communication_initial_data": [
+      "execution/research_program"
+    ],
+    "communication_rule_set": [
+      "execution/research_program"
+    ],
+    "compile_communication_runtime_program": [
+      "execution/research_program"
+    ],
+    "compile_context": [
+      "execution/research_program"
+    ],
+    "compile_environment_program": [
+      "execution/research_program"
+    ],
+    "compile_experiment_program": [
+      "experimentation"
+    ],
+    "compile_experiment_shard_plan": [
+      "experimentation"
+    ],
+    "compile_memory_program": [
+      "execution/research_program"
+    ],
+    "compile_optimization_program": [
+      "execution/research_program"
+    ],
+    "compile_research_campaign": [
+      "experimentation"
+    ],
+    "compile_research_plan": [
+      "experimentation"
+    ],
+    "compile_rule_program": [
+      "execution/research_program"
+    ],
+    "compile_trial_experiment_program": [
+      "experimentation"
+    ],
+    "consumed_transition": [
+      "reliability/effect"
+    ],
+    "consumption_digest": [
+      "reliability/effect"
+    ],
+    "context_projection_payload": [
+      "execution/research_program"
+    ],
+    "context_renderer_binding_digest": [
+      "execution/research_program"
+    ],
+    "context_runtime_module": [
+      "execution/research_program"
+    ],
+    "context_runtime_operation": [
+      "execution/research_program"
+    ],
+    "contract": [
+      "artifact/lineage/relation",
+      "artifact/reference",
+      "artifact/retention",
+      "environment/binding",
+      "environment/instance/identity",
+      "environment/instance/readiness",
+      "environment/specification/digest",
+      "environment/specification/schema",
+      "execution/admission",
+      "execution/command",
+      "execution/operation",
+      "execution/scheduling",
+      "experimentation/branch",
+      "experimentation/variant",
+      "governance/schema",
+      "governance/security",
+      "model/catalog/family",
+      "model/catalog/revision",
+      "model/deployment/closure",
+      "model/request/input",
+      "model/request/output",
+      "platform/configuration",
+      "platform/identity",
+      "platform/lifecycle",
+      "portfolio/membership",
+      "portfolio/program",
+      "portfolio/workspace",
+      "scope/hierarchy",
+      "scope/identity",
+      "scope/membership",
+      "scope/ownership",
+      "scope/resolution"
+    ],
+    "decode_project_manifest_bytes": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "decode_project_manifest_document": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "decode_typed_capability_input": [
+      "participant/capability"
+    ],
+    "decode_typed_capability_result": [
+      "participant/capability"
+    ],
+    "diff_project_manifest_facets": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "diff_research_plans": [
+      "experimentation"
+    ],
+    "effect_digest": [
+      "reliability/effect"
+    ],
+    "effect_receipt_from_payload": [
+      "environment"
+    ],
+    "effect_receipt_payload": [
+      "environment"
+    ],
+    "effect_transition": [
+      "reliability/effect"
+    ],
+    "encode_project_manifest": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "environment_initial_data": [
+      "execution/research_program"
+    ],
+    "environment_rule_set": [
+      "execution/research_program"
+    ],
+    "exception_correlation_refs": [
+      "reliability/failure"
+    ],
+    "execution_context_from_payload": [
+      "execution/research_program"
+    ],
+    "execution_context_payload": [
+      "execution/research_program"
+    ],
+    "experiment_report_from_data": [
+      "experimentation"
+    ],
+    "failure_from_dict": [
+      "reliability/failure"
+    ],
+    "failure_scope_rank": [
+      "experimentation/experiment"
+    ],
+    "fingerprint_failure": [
+      "reliability/failure"
+    ],
+    "freeze_json": [
+      "participant/agent",
+      "participant/capability",
+      "participant/method"
+    ],
+    "freeze_json_mapping": [
+      "environment"
+    ],
+    "governance_baseline_semantic_digest": [
+      "governance"
+    ],
+    "input_cut_digest": [
+      "data/query"
+    ],
+    "intervention_initial_data": [
+      "execution/research_program"
+    ],
+    "intervention_runtime_module": [
+      "execution/research_program"
+    ],
+    "is_absolute_target_path": [
+      "scope/path"
+    ],
+    "is_authoritatively_resolved": [
+      "reliability/effect"
+    ],
+    "logical_scheduling_initial_data": [
+      "execution/research_program"
+    ],
+    "logical_scheduling_runtime_module": [
+      "execution/research_program"
+    ],
+    "make_typed_capability_request": [
+      "participant/capability"
+    ],
+    "make_typed_capability_result": [
+      "participant/capability"
+    ],
+    "materialize_capability_selection_view": [
+      "participant/capability"
+    ],
+    "memory_initial_data": [
+      "execution/research_program"
+    ],
+    "memory_rule_set": [
+      "execution/research_program"
+    ],
+    "method_program_identity_for_requirement": [
+      "participant"
+    ],
+    "method_program_identity_for_runtime_binding": [
+      "participant"
+    ],
+    "model_invocation_runtime_module": [
+      "execution/research_program"
+    ],
+    "native_cuda_runtime_package_names": [
+      "model/qualification"
+    ],
+    "not_applied_transition": [
+      "reliability/effect"
+    ],
+    "observation_from_payload": [
+      "environment"
+    ],
+    "observation_payload": [
+      "environment"
+    ],
+    "optimization_initial_data": [
+      "execution/research_program"
+    ],
+    "optimization_rule_set": [
+      "execution/research_program"
+    ],
+    "participant_operation_type": [
+      "participant/core"
+    ],
+    "participant_operation_verb": [
+      "participant/core"
+    ],
+    "participant_turn_initial_data": [
+      "execution/research_program"
+    ],
+    "participant_turn_program": [
+      "execution/research_program"
+    ],
+    "prepare_transition": [
+      "reliability/effect"
+    ],
+    "process_environment_digest": [
+      "runtime/session"
+    ],
+    "program_handler_binding_digest": [
+      "execution/research_program"
+    ],
+    "project_effect_reconciliation": [
+      "execution/operation"
+    ],
+    "project_manifest_document": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "project_manifest_identity_facets": [
+      "portfolio",
+      "portfolio/project"
+    ],
+    "query_document": [
+      "data/query"
+    ],
+    "record_document": [
+      "data/query"
+    ],
+    "recovery_initial_data": [
+      "execution/research_program"
+    ],
+    "recovery_runtime_module": [
+      "execution/research_program"
+    ],
+    "repository_source_scope_digest": [
+      "governance"
+    ],
+    "repository_source_scope_text_digest": [
+      "governance"
+    ],
+    "require_absolute_target_path": [
+      "scope/path"
+    ],
+    "require_action_recovery_handle_identity": [
+      "environment"
+    ],
+    "require_action_result_identity": [
+      "environment"
+    ],
+    "require_consumable_effect": [
+      "reliability/effect"
+    ],
+    "require_effect_receipt_digest": [
+      "environment"
+    ],
+    "require_effect_receipt_request_digest": [
+      "reliability/effect"
+    ],
+    "require_method_program_runtime_binding": [
+      "participant"
+    ],
+    "require_not_applied_compatible": [
+      "reliability/effect"
+    ],
+    "require_pure_typed_descriptor": [
+      "participant/capability"
+    ],
+    "require_reconciliation_identity": [
+      "environment"
+    ],
+    "require_recovery_handle_reconciliation_identity": [
+      "environment"
+    ],
+    "require_sha256": [
+      "participant/agent",
+      "participant/method"
+    ],
+    "research_query_digest": [
+      "data/query"
+    ],
+    "resolve_research_requirements": [
+      "experimentation"
+    ],
+    "revise_operation": [
+      "execution/operation"
+    ],
+    "scope_from_data": [
+      "scope"
+    ],
+    "scope_to_data": [
+      "scope"
+    ],
+    "server_environment_prefix": [
+      "runtime/server/identity"
+    ],
+    "source_cut": [
+      "data/query"
+    ],
+    "standard_synchronization_decider": [
+      "execution/research_program"
+    ],
+    "synchronization_initial_data": [
+      "execution/research_program"
+    ],
+    "synchronization_program_from_preset": [
+      "execution/research_program"
+    ],
+    "synchronization_runtime_module": [
+      "execution/research_program"
+    ],
+    "system_catalog": [
+      "governance/system_registry"
+    ],
+    "thaw_json": [
+      "environment"
+    ],
+    "thaw_json_mapping": [
+      "environment"
+    ],
+    "transition_operation": [
+      "execution/operation"
+    ],
+    "trial_report_from_data": [
+      "experimentation"
+    ],
+    "validate_participant_kind": [
+      "participant/core"
+    ],
+    "validate_task_graph": [
+      "experimentation/experiment"
+    ],
+    "verify_environment_provider_conformance": [
+      "environment"
+    ],
+    "visibility_initial_data": [
+      "execution/research_program"
+    ],
+    "visibility_runtime_module": [
+      "execution/research_program"
+    ],
+    "workflow_surface_id": [
+      "execution/workflow"
+    ],
+    "workflow_surface_reuse_scope": [
+      "execution/workflow"
+    ]
+  },
   "systems": [
     {
       "api_modules": [
