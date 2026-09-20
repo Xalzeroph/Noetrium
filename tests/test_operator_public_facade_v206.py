@@ -68,8 +68,8 @@ def test_research_parser_has_one_project_lifecycle_surface():
     for command in ("run", "inspect", "stop", "resume", "reconcile", "evidence"):
         args = parser.parse_args([command, "run-1", "--project", "."])
         assert args.action.value == command
-        assert args.route == "application"
-        assert args.application_project == Path(".")
+        assert args.route == "project"
+        assert args.project_root == Path(".")
 
 
 def test_lifecycle_cli_routes_only_through_project_binding(capsys):
