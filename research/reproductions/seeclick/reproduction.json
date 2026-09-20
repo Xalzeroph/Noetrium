@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "seeclick",
-  "package_digest": "da2b3f9563221a642a3ccfea34a9296a61778df95f5b5228650ae2f43300337d",
-  "definition_digest": "e4753beafefe5d9980ac1b0611dcab278b791c996b8342329aee611579e50e75",
+  "package_digest": "3aa02ab95e2b1d89cb79da7603649da5ab20e46f8364abf3c4db7567bdb35619",
+  "definition_digest": "20fb963f045cf739bf856aa82fddc7bd89dde769afff001452f1c6aea8471b30",
   "source_registry_digest": "703701aa516e21be3cdc470ed08bd842843e88a39dbdeba1a063fc280cf96439",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -102,6 +102,72 @@
         "model": "SeeClick"
       },
       "claim_digest": "3af3b0d5812c7f90b08d45e6b421b129dc5b9a08578f3f035656454b0a42734f"
+    },
+    {
+      "claim_id": "seeclick_screenspot_mobile_text",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 78.0,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "mobile",
+        "element": "text"
+      },
+      "claim_digest": "a664bb5ca1410b87981761f5f0a6a0c6c53d9030591bf8d48dee46822965e0f4"
+    },
+    {
+      "claim_id": "seeclick_screenspot_mobile_icon",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 52.0,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "mobile",
+        "element": "icon-widget"
+      },
+      "claim_digest": "9631e674802e0df3fcefb67052c04c4f61534c37dfebe565980a93cb1cbdb969"
+    },
+    {
+      "claim_id": "seeclick_screenspot_desktop_text",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 72.2,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "desktop",
+        "element": "text"
+      },
+      "claim_digest": "d3d63f623a5eeba8680d480baaf57b5ec4b30f7409fef441e89ed0eef3ea9c74"
+    },
+    {
+      "claim_id": "seeclick_screenspot_desktop_icon",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 30.0,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "desktop",
+        "element": "icon-widget"
+      },
+      "claim_digest": "255f853f372d324ae869ad569975a55af5d8b912f78d626776a6c3118b1142b7"
+    },
+    {
+      "claim_id": "seeclick_screenspot_web_text",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 55.7,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "web",
+        "element": "text"
+      },
+      "claim_digest": "0237393fb0d73d17d2a2db2591cc2af5d743ae4ac363ba4c21c09bff6997ffc9"
+    },
+    {
+      "claim_id": "seeclick_screenspot_web_icon",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 32.5,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "web",
+        "element": "icon-widget"
+      },
+      "claim_digest": "30885966e9174a9ba4ffb6df674f0a4e1baccab7557758549a732b2cd1e57ec9"
     }
   ],
   "reference_baselines": [

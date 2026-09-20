@@ -4,8 +4,8 @@
   "suite_updated_at": "2026-09-20",
   "lane_count": 48,
   "ready_count": 48,
-  "enforced_count": 41,
-  "enforced_ready_count": 41,
+  "enforced_count": 44,
+  "enforced_ready_count": 44,
   "claim_ready_count": 0,
   "enforced_claim_ready_count": 0,
   "lanes": [
@@ -176,7 +176,7 @@
     {
       "package": "chain_of_thought_gsm8k",
       "lineage": "reasoning_root",
-      "enforced": false,
+      "enforced": true,
       "lifecycle": "protocol_bound",
       "asset_kinds": [
         "fidelity",
@@ -303,7 +303,7 @@
     {
       "package": "hugginggpt",
       "lineage": "tool_orchestration",
-      "enforced": false,
+      "enforced": true,
       "lifecycle": "protocol_bound",
       "asset_kinds": [
         "fidelity",
@@ -325,8 +325,8 @@
         "hugginggpt_paper_tasks"
       ],
       "scientific_test_count": 2,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 5,
+      "reference_baseline_count": 2,
       "evidence_ref_count": 0,
       "pilot_evidence_count": 0,
       "matched_evidence_count": 0,
@@ -336,7 +336,6 @@
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers",
         "unresolved_fidelity_delta"
       ],
@@ -623,8 +622,8 @@
         "rap_blocksworld"
       ],
       "scientific_test_count": 2,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 1,
+      "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "pilot_evidence_count": 0,
       "matched_evidence_count": 0,
@@ -634,7 +633,6 @@
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers",
         "unresolved_fidelity_delta"
       ],
@@ -774,7 +772,7 @@
     {
       "package": "self_consistency_gsm8k",
       "lineage": "reasoning_path_aggregation",
-      "enforced": false,
+      "enforced": true,
       "lifecycle": "protocol_bound",
       "asset_kinds": [
         "fidelity",
@@ -836,7 +834,7 @@
         "commongen"
       ],
       "scientific_test_count": 4,
-      "reported_result_count": 0,
+      "reported_result_count": 1,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "pilot_evidence_count": 0,
@@ -847,7 +845,6 @@
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers"
       ],
       "ready": true,
@@ -1002,8 +999,8 @@
         "game24"
       ],
       "scientific_test_count": 2,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 1,
+      "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "pilot_evidence_count": 0,
       "matched_evidence_count": 0,
@@ -1013,7 +1010,6 @@
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers",
         "unresolved_fidelity_delta"
       ],
@@ -1913,8 +1909,8 @@
         "mind2web"
       ],
       "scientific_test_count": 1,
-      "reported_result_count": 0,
-      "reference_baseline_count": 0,
+      "reported_result_count": 4,
+      "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "pilot_evidence_count": 0,
       "matched_evidence_count": 0,
@@ -1924,7 +1920,6 @@
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
         "missing_execution_evidence",
-        "missing_reported_results",
         "unresolved_blockers",
         "unresolved_fidelity_delta"
       ],
@@ -1999,7 +1994,7 @@
         "screenspot"
       ],
       "scientific_test_count": 1,
-      "reported_result_count": 1,
+      "reported_result_count": 7,
       "reference_baseline_count": 1,
       "evidence_ref_count": 0,
       "pilot_evidence_count": 0,

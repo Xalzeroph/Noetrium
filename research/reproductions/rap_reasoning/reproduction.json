@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rap_reasoning",
-  "package_digest": "105d03d89e4a2133352e117cdb397e51f5ac7a6a064773f319e680818f5957fc",
-  "definition_digest": "13f6a61afdd115a9593497fad22f6836b078c3ea9777f098b414c2ef18287485",
+  "package_digest": "f5dd9f1acb7fcac0106a9529a3c4b36a723d50afb0d04d1c49a98ef4df55f1ab",
+  "definition_digest": "f58198941a817385b78c646778221978096ca460b26bb477ac3e69ef0f157ed1",
   "source_registry_digest": "ced15295ec849f883db78704fb7a1e4351e59bd9ff1229c652b243f23abfdff2",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -93,8 +93,30 @@
     }
   ],
   "primary_executable": "research/reproductions/rap_reasoning/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "rap_llama33b_plan_generation_relative_gain",
+      "metric_id": "relative_improvement_percent",
+      "value": 33.0,
+      "qualifiers": {
+        "task": "plan generation",
+        "model": "LLaMA-33B",
+        "comparison": "CoT on GPT-4",
+        "source": "EMNLP 2023 abstract"
+      },
+      "claim_digest": "f0d4691b3c7e3f5191b38bfe01146ed5bd2634a053e6e6b38720f2280ea869ef"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "cot_gpt4_plan_generation",
+      "description": "GPT-4 chain-of-thought plan-generation baseline used by the RAP paper for the reported relative improvement comparison.",
+      "qualifiers": {
+        "source": "EMNLP 2023 paper"
+      },
+      "baseline_digest": "0abd6a88daf4b9df08fa4be39dead5374cb5af0c2ee4f0b8d9b21e0699688de7"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

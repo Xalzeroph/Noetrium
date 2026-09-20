@@ -551,7 +551,7 @@
       "reproductions": [
         {
           "package": "hugginggpt",
-          "package_digest": "6044d7dd0baa76cdaf738366bf7705c4bde8b8050d3e369be292f9e4205edc48",
+          "package_digest": "bf6fbfaeda2a7c8624c0d0c44c53076a6d4b372fc75349df1338c5f9c606e6b9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hugginggpt-paper-tasks"
@@ -592,8 +592,8 @@
             "physical concurrent dispatch of one dependency-ready set is not yet expressed by MethodProgram"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 5,
+          "reference_baseline_count": 2,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -613,7 +613,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "105d03d89e4a2133352e117cdb397e51f5ac7a6a064773f319e680818f5957fc",
+          "package_digest": "f5dd9f1acb7fcac0106a9529a3c4b36a723d50afb0d04d1c49a98ef4df55f1ab",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -652,8 +652,8 @@
             "exact historical LLaMA checkpoint/deployment identity is not yet rebound"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -874,7 +874,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "7588c1d74a091d02ec6d6a41e5160ab3d99e8a325cb6aa4021bf03d0fef26ebb",
+          "package_digest": "3dce5a521ebbaec09e67446ef8689a630aceb89c24a7683adf8e27536b4628f7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -909,7 +909,7 @@
             "paper-era spaCy/NLTK lexical feedback post-processing artifacts remain to be content-addressed for exact historical replay"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
+          "reported_claim_count": 1,
           "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
@@ -1000,7 +1000,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "593943b404679d72b25eb3f56addcdbd5eabe7416b61088c865d810ec465edf9",
+          "package_digest": "43c9d14d996cfc914f4e3870507afa72d3332581ec7ee239e9e910535e43dcf7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -1039,8 +1039,8 @@
             "exact historical GPT-4 serving snapshot is not available as an immutable public model artifact"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -1370,7 +1370,7 @@
       "reproductions": [
         {
           "package": "cogagent",
-          "package_digest": "648d46d59b922eda6ea3214d9d0858ac29dd21f84c1fd658d906d773b00f8326",
+          "package_digest": "26f83b3db13dbe5ffb955d78c978c4aef507df8f1955435cfe5ca8a298f07a2a",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mind2web"
@@ -1410,8 +1410,8 @@
             "no matched CVPR execution evidence has yet been produced"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 4,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -1564,7 +1564,7 @@
       "reproductions": [
         {
           "package": "seeclick",
-          "package_digest": "da2b3f9563221a642a3ccfea34a9296a61778df95f5b5228650ae2f43300337d",
+          "package_digest": "3aa02ab95e2b1d89cb79da7603649da5ab20e46f8364abf3c4db7567bdb35619",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "screenspot"
@@ -1609,7 +1609,7 @@
             "matched downstream Mind2Web/AITW/MiniWob agent evaluation has not yet been bound"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 1,
+          "reported_claim_count": 7,
           "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
@@ -3005,5 +3005,5 @@
       ]
     }
   ],
-  "projection_digest": "d5b7e4bf9b2c497c64980b0d04d9e880b224904da315f2416de2d9804f383923"
+  "projection_digest": "3a14bb37d64a236327f018739385a2f843393c85f61f1f7ea41be176465248ce"
 }

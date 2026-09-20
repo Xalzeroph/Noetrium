@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "self_refine",
-  "package_digest": "7588c1d74a091d02ec6d6a41e5160ab3d99e8a325cb6aa4021bf03d0fef26ebb",
-  "definition_digest": "703e76e38fc4c0609f8bc2cc31cffec5b23cc5b3498a7f28ba1dfad284c0329f",
+  "package_digest": "3dce5a521ebbaec09e67446ef8689a630aceb89c24a7683adf8e27536b4628f7",
+  "definition_digest": "1804a75237eda58be3895069f44ab1905167aef8ea4ede3db429ec97bf13790a",
   "source_registry_digest": "b3badf805b90ccd708fe9510374f12a0ea4bc3c0df3f1230667c5035820c2ba2",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -80,7 +80,25 @@
     }
   ],
   "primary_executable": "research/reproductions/self_refine/program.py",
-  "reported_results": [],
+  "reported_results": [
+    {
+      "claim_id": "self_refine_average_absolute_gain",
+      "metric_id": "average_absolute_improvement_points",
+      "value": 20.0,
+      "qualifiers": {
+        "scope": "seven evaluated tasks",
+        "approximate": true,
+        "models": [
+          "GPT-3.5",
+          "ChatGPT",
+          "GPT-4"
+        ],
+        "comparison": "same-model one-step generation",
+        "source": "NeurIPS 2023 abstract"
+      },
+      "claim_digest": "32b6c90191e74cbf0ec7319e7de3eed8a487fb6f3330a85ec225520403226a47"
+    }
+  ],
   "reference_baselines": [
     {
       "baseline_id": "direct_generation",
