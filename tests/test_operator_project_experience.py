@@ -206,7 +206,7 @@ def test_project_doctor_projects_typed_provider_diagnostics(
     assert rows["application_binding"].disposition is ProjectDoctorDisposition.BLOCKED
 
 def test_root_product_api_exports_project_test_stage_types() -> None:
-    from noetrium_platform.api import ProjectTestStage, ProjectTestStageReceipt
+    from noetrium.api import ProjectTestStage, ProjectTestStageReceipt
 
     receipt = ProjectTestStageReceipt(ProjectTestStage.BUILD_INSTALL, ("python",), 0)
     assert receipt.stage is ProjectTestStage.BUILD_INSTALL
@@ -316,7 +316,7 @@ def test_project_cli_loads_explicit_project_application_and_defaults_target(
     ))
     application = root / "src" / "project_route" / "application.py"
     application.write_text(
-        "from noetrium_platform.api import ResearchResult\n\n"
+        "from noetrium.api import ResearchResult\n\n"
         "class Application:\n"
         "    def execute(self, request):\n"
         "        return ResearchResult(request.action, request.target, 'accepted', {'route': 'project'})\n\n"
