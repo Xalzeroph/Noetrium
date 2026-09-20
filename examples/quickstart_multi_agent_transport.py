@@ -7,15 +7,12 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from noetrium.api import (
-    CommunicationEdge, CommunicationTopology, MultiAgentMessage,
-    TransportBackedMultiAgentRuntime,
-)
+from noetrium import api
 
 class Transport:
     def send(self, message):
         if message.recipient == "worker":
-            return (MultiAgentMessage(
+            return (api.MultiAgentMessage(
                 "worker", "manager", "done", message.turn + 1,
                 causal_parent_ids=(message.message_id,),
             ),)
@@ -25,13 +22,13 @@ class Members:
     def members(self):
         return ("manager", "worker")
 
-topology = CommunicationTopology((
+topology = api.CommunicationTopology((
     "manager", "worker",
 ), (
-    CommunicationEdge("manager", "worker"),
-    CommunicationEdge("worker", "manager"),
+    api.CommunicationEdge("manager", "worker"),
+    api.CommunicationEdge("worker", "manager"),
 ))
-result = TransportBackedMultiAgentRuntime(
+result = api.TransportBackedMultiAgentRuntime(
     topology, Transport(), membership=Members(),
-).run(MultiAgentMessage("manager", "worker", "task", 0))
+).run(api.MultiAgentMessage("manager", "worker", "task", 0))
 print(result.status.value, len(result.receipts))
