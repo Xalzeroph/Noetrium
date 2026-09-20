@@ -6,7 +6,7 @@ A researcher defines a typed `MethodProgram`; the platform supplies the reusable
 
 ## The shortest path
 
-1. Import method contracts from `noetrium.contracts.systems.execution__workflow`.
+1. Import method contracts from the single `noetrium.api` surface.
 2. Create a `MethodProgramIdentity` and build a method with `MethodProgramBuilder`.
 3. Construct the normal `ExecutionContext` and `MethodRuntimeContext` for the run.
 4. Bind method transition truth to the Machine executor through the platform composition path. The high-level platform run path does this automatically when the runtime has no pre-bound transition authority.
@@ -37,7 +37,7 @@ program = (
     .build()
 )
 
-machine = platform.bind_universal_method_machine()
+machine = api.bind_universal_method_machine()
 result = machine.run(program, runtime=runtime_context)
 ```
 
