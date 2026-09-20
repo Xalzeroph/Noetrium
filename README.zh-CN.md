@@ -274,7 +274,7 @@ noetrium-architecture-gate
 python scripts/check_readme_i18n.py
 ```
 
-下游代码从 `noetrium` 导入稳定 contract 与可复用 component；不要把 `noetrium_platform` 当作项目 extension API。若要生成 author-first 项目骨架，可使用 `noetrium project create <project-id> <destination> --version <version>`，再运行 `noetrium project doctor --project <destination>` 与 `noetrium project test --project <destination>`，然后添加项目自有 provider 或 method。
+下游代码从 `noetrium` 导入稳定 contract 与可复用 component；不要把 `noetrium_platform` 当作项目 extension API。若要生成 author-first 项目骨架，可使用 `noetrium project create <project-id>`，再运行 `noetrium project doctor --project <destination>` 与 `noetrium project test --project <destination>`，然后添加项目自有 provider 或 method。
 
 <!-- readme-section:containers -->
 
