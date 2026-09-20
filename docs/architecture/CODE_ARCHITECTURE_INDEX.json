@@ -11572,16 +11572,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.product.operator.api.project_experience.ProjectCreateReceipt",
-      "target": "noetrium_platform.product.operator.api.project_experience.ProjectTemplateProfile"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.product.operator.api.project_experience.ProjectCreateRequest",
-      "target": "noetrium_platform.product.operator.api.project_experience.ProjectTemplateProfile"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.product.operator.api.project_experience.ProjectDoctorCheck",
       "target": "noetrium_platform.product.operator.api.project_experience.ProjectDoctorDisposition"
     },
@@ -11589,11 +11579,6 @@
       "kind": "references",
       "source": "noetrium_platform.product.operator.api.project_experience.ProjectDoctorReport",
       "target": "noetrium_platform.product.operator.api.project_experience.ProjectDoctorCheck"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.product.operator.api.project_experience.ProjectDoctorReport",
-      "target": "noetrium_platform.product.operator.api.project_experience.ProjectTemplateProfile"
     },
     {
       "kind": "references",
@@ -11629,11 +11614,6 @@
       "kind": "references",
       "source": "noetrium_platform.product.operator.api.project_experience.ProjectFacade",
       "target": "noetrium_platform.product.operator.api.project_experience.ProjectExperiencePort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.product.operator.api.project_experience.ProjectFacade",
-      "target": "noetrium_platform.product.operator.api.project_experience.ProjectTemplateProfile"
     },
     {
       "kind": "references",
@@ -72628,12 +72608,11 @@
         "manifest_semantic_digest",
         "program_id",
         "project_id",
-        "template_profile",
         "template_revision",
         "version"
       ],
       "kind": "dataclass",
-      "line": 50,
+      "line": 36,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectCreateReceipt",
@@ -72653,11 +72632,10 @@
         "destination",
         "program_id",
         "project_id",
-        "template_profile",
         "version"
       ],
       "kind": "dataclass",
-      "line": 34,
+      "line": 23,
       "methods": [
         "__post_init__"
       ],
@@ -72682,7 +72660,7 @@
         "summary"
       ],
       "kind": "dataclass",
-      "line": 63,
+      "line": 48,
       "methods": [
         "__post_init__"
       ],
@@ -72705,7 +72683,7 @@
         "PASS"
       ],
       "kind": "enum",
-      "line": 28,
+      "line": 17,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectDoctorDisposition",
@@ -72724,11 +72702,10 @@
       "fields": [
         "checks",
         "project_root",
-        "template_profile",
         "template_revision"
       ],
       "kind": "dataclass",
-      "line": 77,
+      "line": 62,
       "methods": [
         "ready"
       ],
@@ -72748,7 +72725,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 116,
+      "line": 100,
       "methods": [
         "create",
         "doctor",
@@ -72768,7 +72745,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 126,
+      "line": 106,
       "methods": [
         "__init__",
         "create",
@@ -72785,27 +72762,6 @@
       "top_system": "operator"
     },
     {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "AUTHOR",
-        "PROVIDER"
-      ],
-      "kind": "enum",
-      "line": 14,
-      "methods": [],
-      "module": "noetrium_platform.product.operator.api.project_experience",
-      "name": "ProjectTemplateProfile",
-      "nesting": [
-        "ProjectTemplateProfile"
-      ],
-      "qualname": "noetrium_platform.product.operator.api.project_experience.ProjectTemplateProfile",
-      "system_key": "operator",
-      "top_system": "operator"
-    },
-    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -72815,7 +72771,7 @@
         "stages"
       ],
       "kind": "dataclass",
-      "line": 107,
+      "line": 91,
       "methods": [
         "passed"
       ],
@@ -72838,7 +72794,7 @@
         "CONTRACT_TEST"
       ],
       "kind": "enum",
-      "line": 90,
+      "line": 74,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectTestStage",
@@ -72860,7 +72816,7 @@
         "stage"
       ],
       "kind": "dataclass",
-      "line": 96,
+      "line": 80,
       "methods": [
         "passed"
       ],
@@ -96254,8 +96210,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3202,
-    "classes": 3154,
+    "association_edges": 3198,
+    "classes": 3153,
     "constructor_edges": 858,
     "inheritance_edges": 138,
     "module_import_edges": 5473,
@@ -143943,7 +143899,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "8e54f0d756c2c6316dd79b45b2c1de64f6fb43a7",
+  "source_git_sha": "57df03bdca3d88d8ec82470051da56d863376fbe",
   "system_import_edges": [
     {
       "count": 108,
