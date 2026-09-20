@@ -33,6 +33,8 @@ The canonical host entrypoint is therefore:
 
 `NOETRIUM_BOOTSTRAP_IMAGE` may select the local control-plane image tag. `NOETRIUM_DOCKER_CLI_IMAGE` may select an organization-approved Docker CLI source or registry mirror without changing platform source. `NOETRIUM_BUILD_WORK_ROOT` selects the writable build/runtime evidence root. Registry policy belongs to deployment configuration; benchmark or paper identity never belongs here.
 
+The bootstrap resolves the daemon endpoint from `DOCKER_HOST` or the active Docker context rather than assuming a rootful `/var/run/docker.sock`. Unix-socket endpoints, including rootless Docker sockets, are mounted at their existing absolute path; non-TLS TCP endpoints are forwarded without a host socket mount. TLS/SSH daemon transports remain explicit deployment integrations because the bootstrap must not silently copy host credentials into its control-plane container.
+
 The bootstrap mounts the checkout read-only and preserves its absolute host path inside the control-plane container. This is required because the control plane talks to the host Docker daemon: daemon-side build contexts and Compose bind mounts must resolve the same paths. Only the dedicated build/runtime root is writable.
 
 ## Base image
