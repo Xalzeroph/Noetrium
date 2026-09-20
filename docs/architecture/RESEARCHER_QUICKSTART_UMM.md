@@ -16,8 +16,8 @@ A researcher defines a typed `MethodProgram`; the platform supplies the reusable
 The public UMM binding remains available:
 
 ```python
-from noetrium import platform
-from noetrium.contracts.systems.execution__workflow import (
+from noetrium import api
+from noetrium.api import (
     MethodIdentity,
     MethodNodeResult,
     MethodProgramBuilder,
