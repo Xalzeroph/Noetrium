@@ -82,6 +82,12 @@ class ReproductionEvidenceKind(StrEnum):
     MATCHED_RESULT = "matched_result"
 
 
+class ReproductionMatchCriterionStatus(StrEnum):
+    SATISFIED = "satisfied"
+    NOT_APPLICABLE = "not_applicable"
+    UNRESOLVED = "unresolved"
+
+
 @dataclass(frozen=True, slots=True)
 class ReproductionIdentity:
     method_id: str
@@ -257,6 +263,145 @@ class ReproductionDelta:
 
 
 @dataclass(frozen=True, slots=True)
+class ReproductionMatchCriterion:
+    criterion_id: str
+    status: ReproductionMatchCriterionStatus
+    authority_digest: str
+    detail: str
+    criterion_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _token(self.criterion_id, "reproduction match criterion_id")
+        if not isinstance(self.status, ReproductionMatchCriterionStatus):
+            raise TypeError(
+                "reproduction match criterion status must be "
+                "ReproductionMatchCriterionStatus"
+            )
+        _sha256(
+            self.authority_digest,
+            "reproduction match criterion authority_digest",
+        )
+        _text(self.detail, "reproduction match criterion detail")
+        object.__setattr__(
+            self,
+            "criterion_digest",
+            canonical_digest(
+                {
+                    "criterion_id": self.criterion_id,
+                    "status": self.status.value,
+                    "authority_digest": self.authority_digest,
+                    "detail": self.detail,
+                }
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionEvidenceQualification:
+    qualification_id: str
+    decision: ReproductionEvidenceKind
+    run_id: str
+    run_manifest_digest: str
+    evidence_bundle_digest: str
+    claim_ids: tuple[str, ...]
+    criteria: tuple[ReproductionMatchCriterion, ...]
+    qualification_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _token(
+            self.qualification_id,
+            "reproduction evidence qualification_id",
+        )
+        if not isinstance(self.decision, ReproductionEvidenceKind):
+            raise TypeError(
+                "reproduction evidence qualification decision must be "
+                "ReproductionEvidenceKind"
+            )
+        _text(self.run_id, "reproduction evidence qualification run_id")
+        _sha256(
+            self.run_manifest_digest,
+            "reproduction evidence qualification run_manifest_digest",
+        )
+        _sha256(
+            self.evidence_bundle_digest,
+            "reproduction evidence qualification bundle digest",
+        )
+        claim_ids = tuple(
+            sorted(
+                _strings(
+                    self.claim_ids,
+                    "reproduction evidence qualification claim_ids",
+                    non_empty=(
+                        self.decision
+                        is ReproductionEvidenceKind.MATCHED_RESULT
+                    ),
+                )
+            )
+        )
+        for claim_id in claim_ids:
+            _token(
+                claim_id,
+                "reproduction evidence qualification claim_id",
+            )
+        criteria = self.criteria
+        if type(criteria) is not tuple or not criteria or any(
+            type(row) is not ReproductionMatchCriterion
+            for row in criteria
+        ):
+            raise TypeError(
+                "reproduction evidence qualification criteria must contain "
+                "at least one ReproductionMatchCriterion"
+            )
+        criteria = tuple(
+            sorted(criteria, key=lambda row: row.criterion_id)
+        )
+        criterion_ids = tuple(row.criterion_id for row in criteria)
+        if len(criterion_ids) != len(set(criterion_ids)):
+            raise ValueError(
+                "reproduction evidence qualification criteria must be unique"
+            )
+        if self.decision is ReproductionEvidenceKind.MATCHED_RESULT:
+            unresolved = tuple(
+                row.criterion_id
+                for row in criteria
+                if row.status
+                is ReproductionMatchCriterionStatus.UNRESOLVED
+            )
+            if unresolved:
+                raise ValueError(
+                    "matched-result qualification has unresolved criteria: "
+                    + ", ".join(unresolved)
+                )
+            if not any(
+                row.status
+                is ReproductionMatchCriterionStatus.SATISFIED
+                for row in criteria
+            ):
+                raise ValueError(
+                    "matched-result qualification requires a satisfied criterion"
+                )
+        object.__setattr__(self, "claim_ids", claim_ids)
+        object.__setattr__(self, "criteria", criteria)
+        object.__setattr__(
+            self,
+            "qualification_digest",
+            canonical_digest(
+                {
+                    "qualification_id": self.qualification_id,
+                    "decision": self.decision.value,
+                    "run_id": self.run_id,
+                    "run_manifest_digest": self.run_manifest_digest,
+                    "evidence_bundle_digest": self.evidence_bundle_digest,
+                    "claim_ids": claim_ids,
+                    "criteria": tuple(
+                        row.criterion_digest for row in criteria
+                    ),
+                }
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ReproductionEvidenceRef:
     """Immutable link from one reproduction to a finalized run EvidenceBundle."""
 
@@ -269,6 +414,7 @@ class ReproductionEvidenceRef:
     manifest_ref: str
     manifest_sha256: str
     claim_ids: tuple[str, ...] = ()
+    qualification: ReproductionEvidenceQualification | None = None
     evidence_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -313,6 +459,42 @@ class ReproductionEvidenceRef:
         for claim_id in claim_ids:
             _token(claim_id, "reproduction evidence claim_id")
         object.__setattr__(self, "claim_ids", claim_ids)
+        qualification = self.qualification
+        if qualification is not None:
+            if type(qualification) is not ReproductionEvidenceQualification:
+                raise TypeError(
+                    "reproduction evidence qualification must be typed"
+                )
+            if qualification.decision is not self.kind:
+                raise ValueError(
+                    "reproduction evidence qualification decision drifted"
+                )
+            if qualification.run_id != self.run_id:
+                raise ValueError(
+                    "reproduction evidence qualification run identity drifted"
+                )
+            if qualification.run_manifest_digest != self.run_manifest_digest:
+                raise ValueError(
+                    "reproduction evidence qualification manifest drifted"
+                )
+            if (
+                qualification.evidence_bundle_digest
+                != self.evidence_bundle_digest
+            ):
+                raise ValueError(
+                    "reproduction evidence qualification bundle drifted"
+                )
+            if qualification.claim_ids != claim_ids:
+                raise ValueError(
+                    "reproduction evidence qualification claim set drifted"
+                )
+        if (
+            self.kind is ReproductionEvidenceKind.MATCHED_RESULT
+            and qualification is None
+        ):
+            raise ValueError(
+                "matched-result evidence requires typed qualification"
+            )
         object.__setattr__(
             self,
             "evidence_digest",
@@ -327,6 +509,11 @@ class ReproductionEvidenceRef:
                     "manifest_ref": manifest_ref,
                     "manifest_sha256": self.manifest_sha256,
                     "claim_ids": claim_ids,
+                    "qualification": (
+                        None
+                        if qualification is None
+                        else qualification.qualification_digest
+                    ),
                 }
             ),
         )
@@ -513,7 +700,10 @@ __all__ = [
     "ReproductionDelta",
     "ReproductionDeltaKind",
     "ReproductionEvidenceKind",
+    "ReproductionEvidenceQualification",
     "ReproductionEvidenceRef",
+    "ReproductionMatchCriterion",
+    "ReproductionMatchCriterionStatus",
     "ReproductionIdentity",
     "ReproductionLifecycle",
 ]

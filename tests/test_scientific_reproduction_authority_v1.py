@@ -14,7 +14,10 @@ from noetrium_platform.research.reproduction import (
     ReproductionCatalog,
     ReproductionDefinition,
     ReproductionEvidenceKind,
+    ReproductionEvidenceQualification,
     ReproductionEvidenceRef,
+    ReproductionMatchCriterion,
+    ReproductionMatchCriterionStatus,
     ReproductionIdentity,
     ReproductionLifecycle,
 )
@@ -30,7 +33,7 @@ def test_every_reproduction_has_typed_authorities_and_generated_projection() -> 
         assert (package / "definition.py").is_file()
         assert (package / "source.py").is_file()
         document = json.loads((package / "reproduction.json").read_text(encoding="utf-8"))
-        assert document["schema"] == "noetrium.reproduction.projection.v6"
+        assert document["schema"] == "noetrium.reproduction.projection.v7"
         assert document["authority"] == "generated_from_typed_definition_and_source"
         assert document["package"] == package.name
         assert "scientific_contract" not in document
@@ -67,16 +70,46 @@ def test_artifact_only_reproduction_never_invents_executable_source() -> None:
 
 
 def _matched_evidence(*claim_ids: str) -> ReproductionEvidenceRef:
+    run_manifest_digest = canonical_digest({"run": "fixture"})
+    evidence_bundle_digest = canonical_digest({"bundle": "fixture"})
+    claims = tuple(claim_ids)
+    qualification = ReproductionEvidenceQualification(
+        qualification_id="matched-fixture-qualification",
+        decision=ReproductionEvidenceKind.MATCHED_RESULT,
+        run_id="run-fixture",
+        run_manifest_digest=run_manifest_digest,
+        evidence_bundle_digest=evidence_bundle_digest,
+        claim_ids=claims,
+        criteria=(
+            ReproductionMatchCriterion(
+                criterion_id="benchmark-cut",
+                status=ReproductionMatchCriterionStatus.SATISFIED,
+                authority_digest=canonical_digest(
+                    {"benchmark": "fixture-bench"}
+                ),
+                detail="Exact benchmark cut is content-addressed.",
+            ),
+            ReproductionMatchCriterion(
+                criterion_id="environment",
+                status=ReproductionMatchCriterionStatus.NOT_APPLICABLE,
+                authority_digest=canonical_digest(
+                    {"environment": "not-applicable"}
+                ),
+                detail="Fixture claim has no external environment dependency.",
+            ),
+        ),
+    )
     return ReproductionEvidenceRef(
         evidence_id="matched-fixture",
         kind=ReproductionEvidenceKind.MATCHED_RESULT,
         run_id="run-fixture",
-        run_manifest_digest=canonical_digest({"run": "fixture"}),
+        run_manifest_digest=run_manifest_digest,
         bundle_id="bundle-fixture",
-        evidence_bundle_digest=canonical_digest({"bundle": "fixture"}),
+        evidence_bundle_digest=evidence_bundle_digest,
         manifest_ref="evidence/bundle-fixture/manifest.json",
         manifest_sha256=canonical_digest({"manifest": "fixture"}),
-        claim_ids=tuple(claim_ids),
+        claim_ids=claims,
+        qualification=qualification,
     )
 
 
@@ -137,3 +170,75 @@ def test_matched_evidence_cannot_claim_unknown_result() -> None:
     evidence = _matched_evidence("unknown_claim")
     with pytest.raises(ValueError, match="unknown claims"):
         _matched_definition(evidence_refs=(evidence,))
+
+
+
+def test_matched_evidence_requires_independent_qualification() -> None:
+    with pytest.raises(ValueError, match="typed qualification"):
+        ReproductionEvidenceRef(
+            evidence_id="unqualified-match",
+            kind=ReproductionEvidenceKind.MATCHED_RESULT,
+            run_id="run-fixture",
+            run_manifest_digest=canonical_digest({"run": "fixture"}),
+            bundle_id="bundle-fixture",
+            evidence_bundle_digest=canonical_digest({"bundle": "fixture"}),
+            manifest_ref="evidence/bundle-fixture/manifest.json",
+            manifest_sha256=canonical_digest({"manifest": "fixture"}),
+            claim_ids=("fixture_claim",),
+        )
+
+
+def test_matched_qualification_rejects_unresolved_criterion() -> None:
+    with pytest.raises(ValueError, match="unresolved criteria"):
+        ReproductionEvidenceQualification(
+            qualification_id="unresolved-match",
+            decision=ReproductionEvidenceKind.MATCHED_RESULT,
+            run_id="run-fixture",
+            run_manifest_digest=canonical_digest({"run": "fixture"}),
+            evidence_bundle_digest=canonical_digest({"bundle": "fixture"}),
+            claim_ids=("fixture_claim",),
+            criteria=(
+                ReproductionMatchCriterion(
+                    criterion_id="model-identity",
+                    status=ReproductionMatchCriterionStatus.UNRESOLVED,
+                    authority_digest=canonical_digest(
+                        {"model": "unresolved"}
+                    ),
+                    detail="Historical model service identity is unresolved.",
+                ),
+            ),
+        )
+
+
+def test_evidence_qualification_must_bind_same_bundle() -> None:
+    run_manifest_digest = canonical_digest({"run": "fixture"})
+    qualification = ReproductionEvidenceQualification(
+        qualification_id="pilot-qualification",
+        decision=ReproductionEvidenceKind.PILOT,
+        run_id="run-fixture",
+        run_manifest_digest=run_manifest_digest,
+        evidence_bundle_digest=canonical_digest({"bundle": "other"}),
+        claim_ids=(),
+        criteria=(
+            ReproductionMatchCriterion(
+                criterion_id="model-identity",
+                status=ReproductionMatchCriterionStatus.UNRESOLVED,
+                authority_digest=canonical_digest(
+                    {"model": "pilot-substitution"}
+                ),
+                detail="Pilot uses a substitute model.",
+            ),
+        ),
+    )
+    with pytest.raises(ValueError, match="bundle drifted"):
+        ReproductionEvidenceRef(
+            evidence_id="pilot-fixture",
+            kind=ReproductionEvidenceKind.PILOT,
+            run_id="run-fixture",
+            run_manifest_digest=run_manifest_digest,
+            bundle_id="bundle-fixture",
+            evidence_bundle_digest=canonical_digest({"bundle": "fixture"}),
+            manifest_ref="evidence/bundle-fixture/manifest.json",
+            manifest_sha256=canonical_digest({"manifest": "fixture"}),
+            qualification=qualification,
+        )
