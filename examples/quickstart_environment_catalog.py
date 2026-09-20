@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import json
 
-from noetrium.api import bind_environment_category_catalog
+from noetrium import api
 
 
 def main() -> None:
-    catalog = bind_environment_category_catalog()
+    catalog = api.bind_environment_category_catalog()
     document = {
         "categories": [
             {
