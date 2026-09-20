@@ -241,8 +241,8 @@ A camada de deployment separa software imutável de runtime state mutável; path
 Minecraft é um Provider de ambiente reutilizável de primeira parte. Task suites e composição científica permanecem downstream.
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml run --rm platform-runtime minecraft-doctor
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
