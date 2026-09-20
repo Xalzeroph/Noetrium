@@ -74,7 +74,7 @@ These are extension points, not reasons to duplicate lifecycle, lineage, metrics
 - Every transformation that changes research data requires an explicit operation and configuration digest.
 - Numeric output uses finite-value validation and explicit missing-value policy.
 - Figure and table formats are output concerns; downstream methods do not import plotting libraries.
-- Public downstream authors may import the stable noetrium.contracts.research surface without learning internal package paths.
+- Public downstream authors may import the stable noetrium.api surface without learning internal package paths.
 
 ## Audit conclusion
 
