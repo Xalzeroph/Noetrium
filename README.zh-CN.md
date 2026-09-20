@@ -283,10 +283,8 @@ python scripts/check_readme_i18n.py
 `deploy/` 下维护可复用 Linux 镜像与 Compose 定义。
 
 ```bash
-cp deploy/.env.example deploy/.env
-docker compose -f deploy/compose.yaml config
-docker compose -f deploy/compose.yaml build
-docker compose -f deploy/compose.yaml run --rm platform-runtime doctor
+python scripts/build_environment_images.py validate
+python scripts/build_environment_images.py build --profiles text_world
 ```
 
 部署层把不可变软件与可变 runtime state 分离；主机路径和 secret 不进入已提交的 composition 代码。
@@ -296,8 +294,7 @@ docker compose -f deploy/compose.yaml run --rm platform-runtime doctor
 Minecraft 是第一方可复用环境 Provider；任务集和科学组合继续留在下游。
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
+python scripts/build_environment_images.py build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
