@@ -54,6 +54,14 @@ SUPPORTED_BENCHMARKS = frozenset(
         "aitz",
         "amex",
         "foreact-real11",
+        "mmmu",
+        "mathvista",
+        "mathvision",
+        "hallusionbench",
+        "mmstar",
+        "realworldqa",
+        "robotwin2",
+        "motus-realworld",
     }
 )
 
