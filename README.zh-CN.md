@@ -92,7 +92,7 @@ Noetrium 刻意比 Agent workflow library 更宽：实验设计、模型/环境 
 
 ## 核心能力
 
-- 公共 authoring surface — `noetrium.contracts` 与 `noetrium.platform` 暴露稳定的 identity、port、specification 和项目接口。
+- 公共 authoring surface — `noetrium.api` 是唯一的下游入口，统一暴露稳定 identity、port、specification、composition helper、可复用 component 与 orchestration 能力。
 - Study 编译 — `ExperimentRunSpec`、`ResearchStudyDefinition` 与 `CompiledResearchPlan` 让实验意图在运行前明确化。
 - Run authority — `ExperimentRunApplication` 负责 lifecycle 决策；checkpoint、resume、reconcile 与 evidence 路径都显式且可检查。
 - 可复用 method 层 — `components` 提供 reference single-agent building blocks，`orchestration` 提供更高层的 multi-agent topology 与 delivery policy。
@@ -134,8 +134,9 @@ Noetrium is a general-purpose research-systems platform for long-running agents,
 Discover and use every capability through the same API:
 
     from noetrium import api
-    MinecraftBridgePort = api.system("environment/minecraft").MinecraftBridgePort
-    AgentMemoryPort = api.system("participant/agent").AgentMemoryPort
+    MinecraftBridgePort = api.MinecraftBridgePort
+    AgentMemoryPort = api.AgentMemoryPort
+    matches = api.search("memory")
 
 After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
 <!-- noetrium-interface-catalog:end -->
@@ -228,7 +229,7 @@ noetrium
 | Provider 或 integration | typed model、environment、resource、process 或 server provider | port contract、composition、readiness 与 recovery 语义 |
 | Multi-agent 行为 | topology、node policy、message delivery 与 coordination rule | orchestration primitive 与 run authority |
 
-使用 `noetrium.contracts`、`noetrium.platform`、`components` 与 `orchestration` 作为项目接口。`noetrium_platform` 是内部 semantic-plane implementation namespace，不是下游 extension API。平台不能反向 import 下游项目来决定科学语义或部署策略。
+下游项目只使用 `noetrium.api`。contract generation、reference component、orchestration 与 platform composition 都是该入口背后的内部聚合层；`noetrium_platform` 是内部 semantic-plane implementation namespace，不是下游 extension API。平台不能反向 import 下游项目来决定科学语义或部署策略。
 
 <!-- readme-section:quick-start -->
 
