@@ -136,8 +136,8 @@ class AgentMethodSpec:
             "artifact_kinds": self.artifact_kinds,
         }
         if self.max_cycles is None:
-            return build_agent_phase_program(**common)
-        return build_agent_cycle_program(max_cycles=self.max_cycles, **common)
+            return _compile_agent_phase_program(**common)
+        return _compile_agent_cycle_program(max_cycles=self.max_cycles, **common)
 
 
 def _phase_view(phase: AgentPhaseSpec):
@@ -164,7 +164,7 @@ def _return_view(method_id: str, phase_ids: tuple[str, ...]):
     return handler
 
 
-def build_agent_phase_program(
+def _compile_agent_phase_program(
     *,
     method_id: str,
     implementation_version: str,
@@ -259,7 +259,7 @@ def _cycle_route(first_phase_id: str, max_cycles: int):
     return handler
 
 
-def build_agent_cycle_program(
+def _compile_agent_cycle_program(
     *,
     method_id: str,
     implementation_version: str,
@@ -346,6 +346,4 @@ def build_agent_cycle_program(
 __all__ = [
     "AgentMethodSpec",
     "AgentPhaseSpec",
-    "build_agent_cycle_program",
-    "build_agent_phase_program",
 ]
