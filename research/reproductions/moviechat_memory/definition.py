@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -86,8 +88,63 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/moviechat_memory/source.py",
         ),
     ),
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="moviechat_global_accuracy",
+            metric_id="open_ended_accuracy_percent",
+            value=67.8,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "mode": "global",
+                "evaluator": "gpt-3.5",
+                "source": "CVPR-2024 supplementary Table H5",
+            },
+        ),
+        ReportedResult(
+            claim_id="moviechat_global_score",
+            metric_id="open_ended_quality_score_0_to_5",
+            value=3.81,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "mode": "global",
+                "evaluator": "gpt-3.5",
+                "source": "CVPR-2024 supplementary Table H5",
+            },
+        ),
+        ReportedResult(
+            claim_id="moviechat_breakpoint_accuracy",
+            metric_id="open_ended_accuracy_percent",
+            value=50.4,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "mode": "breakpoint",
+                "evaluator": "gpt-3.5",
+                "source": "CVPR-2024 supplementary Table H5",
+            },
+        ),
+        ReportedResult(
+            claim_id="moviechat_breakpoint_score",
+            metric_id="open_ended_quality_score_0_to_5",
+            value=2.96,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "mode": "breakpoint",
+                "evaluator": "gpt-3.5",
+                "source": "CVPR-2024 supplementary Table H5",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="videochat_moviechat1k",
+            description="VideoChat baseline reported in the MovieChat-1K comparison.",
+            qualifiers={
+                "global_accuracy_percent": 61.0,
+                "global_score_0_to_5": 3.34,
+                "source": "CVPR-2024 supplementary evaluation",
+            },
+        ),
+    ),
     deltas=(),
     blockers=(
         "Full result reproduction requires acquisition of the official "

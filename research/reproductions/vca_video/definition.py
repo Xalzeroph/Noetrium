@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -75,8 +77,80 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/vca_video/program.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="vca_egoschema_accuracy",
+            metric_id="multiple_choice_accuracy_percent",
+            value=73.6,
+            qualifiers={
+                "benchmark": "egoschema",
+                "average_frames": 7.2,
+                "source": "ICCV-2025 paper evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="vca_egoschema_average_frames",
+            metric_id="average_selected_frame_count",
+            value=7.2,
+            qualifiers={
+                "benchmark": "egoschema",
+                "accuracy_percent": 73.6,
+                "source": "ICCV-2025 paper evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="vca_lvbench_accuracy",
+            metric_id="multiple_choice_accuracy_percent",
+            value=41.3,
+            qualifiers={
+                "benchmark": "lvbench",
+                "average_frames": 20.0,
+                "source": "ICCV-2025 paper evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="vca_lvbench_average_frames",
+            metric_id="average_selected_frame_count",
+            value=20.0,
+            qualifiers={
+                "benchmark": "lvbench",
+                "accuracy_percent": 41.3,
+                "source": "ICCV-2025 paper evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="vca_egoschema_uniform_gain",
+            metric_id="accuracy_gain_points",
+            value=3.2,
+            qualifiers={
+                "benchmark": "egoschema",
+                "comparison": "uniform-frame-gpt-4o",
+                "frame_budget": "less-than-30-percent",
+                "source": "ICCV-2025 paper analysis",
+            },
+        ),
+        ReportedResult(
+            claim_id="vca_lvbench_uniform_gain",
+            metric_id="accuracy_gain_points",
+            value=6.6,
+            qualifiers={
+                "benchmark": "lvbench",
+                "comparison": "uniform-frame-gpt-4o",
+                "frame_budget": "less-than-30-percent",
+                "source": "ICCV-2025 paper analysis",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="vca_uniform_frame_gpt4o",
+            description=(
+                "Uniform-frame GPT-4o baseline used to measure the gain from "
+                "curiosity-driven active video exploration."
+            ),
+            qualifiers={"source": "ICCV-2025 paper evaluation"},
+        ),
+    ),
     deltas=(),
     blockers=(
         "LVBench, MMBench-Video and Video-MME benchmark cuts remain to be "

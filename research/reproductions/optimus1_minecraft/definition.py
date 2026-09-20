@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -95,8 +97,51 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/optimus1_minecraft/program.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="optimus1_wooden_pickaxe_success",
+            metric_id="success_rate_percent",
+            value=100.0,
+            qualifiers={
+                "task": "craft-wooden-pickaxe",
+                "evaluation_times": 30,
+                "average_steps": 1153.91,
+                "average_time_seconds": 57.70,
+                "source": "NeurIPS-2024 paper appendix",
+            },
+        ),
+        ReportedResult(
+            claim_id="optimus1_stone_pickaxe_success",
+            metric_id="success_rate_percent",
+            value=96.77,
+            qualifiers={
+                "task": "craft-stone-pickaxe",
+                "evaluation_times": 31,
+                "average_steps": 2310.09,
+                "average_time_seconds": 115.50,
+                "source": "NeurIPS-2024 paper appendix",
+            },
+        ),
+        ReportedResult(
+            claim_id="optimus1_paper_long_horizon_task_count",
+            metric_id="evaluation_task_count",
+            value=67,
+            qualifiers={
+                "scope": "paper-main-long-horizon-benchmark",
+                "source": "NeurIPS-2024 paper",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="optimus1_minecraft_agents",
+            description=(
+                "Minecraft embodied-agent baselines used in the NeurIPS 2024 "
+                "long-horizon task comparison."
+            ),
+            qualifiers={"source": "NeurIPS-2024 paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("unresolved"),
