@@ -35,7 +35,7 @@ REPRODUCTION = ReproductionDefinition(
     assets=(
         ReproductionAssetRef(
             kind=ReproductionAssetKind('support'),
-            path='research/reproductions/pi05_openpi/compatibility.py',
+            path='research/reproductions/pi05_openpi/binding.py',
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
