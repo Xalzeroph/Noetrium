@@ -54,7 +54,7 @@ def _doctor(*, ready: bool, blocked: tuple[str, ...] = ()) -> dict:
         "result": {
             "project_root": "project",
             "template_profile": "author",
-            "template_revision": "noetrium.project-template.author.v2",
+            "template_revision": "noetrium.project-template.author.v3",
             "checks": checks,
         },
     }
@@ -70,7 +70,7 @@ def test_doctor_facts_preserve_public_boundary_and_blocker_ids() -> None:
     assert ready is False
     assert public_boundary is True
     assert profile == "author"
-    assert template == "noetrium.project-template.author.v2"
+    assert template == "noetrium.project-template.author.v3"
     assert blockers == ("participant_provider_readiness", "application_binding")
 
 
