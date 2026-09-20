@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "hugginggpt",
-  "package_digest": "6044d7dd0baa76cdaf738366bf7705c4bde8b8050d3e369be292f9e4205edc48",
-  "definition_digest": "a21ba2036ff72cb34e9771b71d7a41c36ed1fa9acd3d192352d1f51188b2f43d",
+  "package_digest": "bf6fbfaeda2a7c8624c0d0c44c53076a6d4b372fc75349df1338c5f9c606e6b9",
+  "definition_digest": "71d31b8f9e4c47070c2ae5ce9768da058d859c3546aa779e4df2501825d6d36c",
   "source_registry_digest": "694e1acf36f5bdc067e93ab86f80e49a41f98113ac5297bc5380a4dc00ad4428",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -94,8 +94,95 @@
     }
   ],
   "primary_executable": "research/reproductions/hugginggpt/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "hugginggpt_gpt35_task_planning_passing",
+      "metric_id": "human_evaluation_percent",
+      "value": 91.22,
+      "qualifiers": {
+        "stage": "task-planning",
+        "measure": "passing-rate",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "79a748f96720b8c536f57e166ac3ac8070ec9c635ca4b5f0824419d41db2d87f"
+    },
+    {
+      "claim_id": "hugginggpt_gpt35_task_planning_rationality",
+      "metric_id": "human_evaluation_percent",
+      "value": 78.47,
+      "qualifiers": {
+        "stage": "task-planning",
+        "measure": "rationality",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "07f596fed97be32ba29bb2d4b8bdbed20ac1d2b091106a8c21c67dd1dd43a353"
+    },
+    {
+      "claim_id": "hugginggpt_gpt35_model_selection_passing",
+      "metric_id": "human_evaluation_percent",
+      "value": 93.89,
+      "qualifiers": {
+        "stage": "model-selection",
+        "measure": "passing-rate",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "0b3b3d5abe16d6e6a640f2518bc0eaaa06a4a47deb1c09e85b26c875f8a95cfe"
+    },
+    {
+      "claim_id": "hugginggpt_gpt35_model_selection_rationality",
+      "metric_id": "human_evaluation_percent",
+      "value": 84.29,
+      "qualifiers": {
+        "stage": "model-selection",
+        "measure": "rationality",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "c9a7975b2ab919e6f7c5abfb3e906e4ae8406da6969c16f51d9e12ea19a3c083"
+    },
+    {
+      "claim_id": "hugginggpt_gpt35_response_success",
+      "metric_id": "human_evaluation_percent",
+      "value": 63.08,
+      "qualifiers": {
+        "stage": "response",
+        "measure": "success-rate",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "d19e7d916db27ae0e63abcd82ed1e050b9bb55abf82bcc2399899403ca6169ba"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "alpaca13b_human_eval",
+      "description": "Alpaca-13B human-evaluation baseline reported in HuggingGPT Table 8.",
+      "qualifiers": {
+        "task_planning_passing_percent": 51.04,
+        "task_planning_rationality_percent": 32.17,
+        "response_success_percent": 6.92
+      },
+      "baseline_digest": "a87afe11bddd9298eb4591d63fe6377f36a66d843c9b5c4db5d45ff0821dce45"
+    },
+    {
+      "baseline_id": "vicuna13b_human_eval",
+      "description": "Vicuna-13B human-evaluation baseline reported in HuggingGPT Table 8.",
+      "qualifiers": {
+        "task_planning_passing_percent": 79.41,
+        "task_planning_rationality_percent": 58.41,
+        "response_success_percent": 15.64
+      },
+      "baseline_digest": "76fdbabe2a705c1482c59cc4642eef4d6ec54fed1874d260792f1c58cf5ac13e"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",

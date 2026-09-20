@@ -81,7 +81,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "7588c1d74a091d02ec6d6a41e5160ab3d99e8a325cb6aa4021bf03d0fef26ebb",
+          "package_digest": "3dce5a521ebbaec09e67446ef8689a630aceb89c24a7683adf8e27536b4628f7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -116,7 +116,7 @@
             "paper-era spaCy/NLTK lexical feedback post-processing artifacts remain to be content-addressed for exact historical replay"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
+          "reported_claim_count": 1,
           "reference_baseline_count": 1,
           "fidelity_delta_count": 0,
           "scientific_tests": [
@@ -215,7 +215,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "593943b404679d72b25eb3f56addcdbd5eabe7416b61088c865d810ec465edf9",
+          "package_digest": "43c9d14d996cfc914f4e3870507afa72d3332581ec7ee239e9e910535e43dcf7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -254,8 +254,8 @@
             "exact historical GPT-4 serving snapshot is not available as an immutable public model artifact"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -275,7 +275,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "105d03d89e4a2133352e117cdb397e51f5ac7a6a064773f319e680818f5957fc",
+          "package_digest": "f5dd9f1acb7fcac0106a9529a3c4b36a723d50afb0d04d1c49a98ef4df55f1ab",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -314,8 +314,8 @@
             "exact historical LLaMA checkpoint/deployment identity is not yet rebound"
           ],
           "evidence_refs": [],
-          "reported_claim_count": 0,
-          "reference_baseline_count": 0,
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "d8c8444c5a1d7f852dad9d99e90a5312497545db69b4b7d8f3b6d057107d5667"
+  "projection_digest": "8aed48ecbe9fa22b1b79d026bcce3a2b4d468a3b7b3acb78836ba640ee87639d"
 }

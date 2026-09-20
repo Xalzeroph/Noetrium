@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "tree_of_thoughts",
-  "package_digest": "593943b404679d72b25eb3f56addcdbd5eabe7416b61088c865d810ec465edf9",
-  "definition_digest": "688efe6772a9621839c8b156d2fd7d5ff522cfede8a2a1ae01a9fed88cea11df",
+  "package_digest": "43c9d14d996cfc914f4e3870507afa72d3332581ec7ee239e9e910535e43dcf7",
+  "definition_digest": "d7c8826e6cdc512c230ae225e83fdcdda02cd1a28a7c49cea7ccd6168085b6ca",
   "source_registry_digest": "f9293be77907acc25ce02bd3835acf300ca060aec59d9e4b22dd2d6803a08876",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -90,8 +90,32 @@
     }
   ],
   "primary_executable": "research/reproductions/tree_of_thoughts/program.py",
-  "reported_results": [],
-  "reference_baselines": [],
+  "reported_results": [
+    {
+      "claim_id": "tot_gpt4_game24",
+      "metric_id": "success_rate_percent",
+      "value": 74.0,
+      "qualifiers": {
+        "benchmark": "Game of 24",
+        "model": "GPT-4",
+        "method": "Tree of Thoughts",
+        "source": "NeurIPS 2023 abstract and Game of 24 evaluation"
+      },
+      "claim_digest": "1ad27ecaf56335bd96d17d88bfddc37736a4f5bc3b23eb9abc109cb9af2727d9"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "cot_gpt4_game24",
+      "description": "GPT-4 chain-of-thought prompting on the same Game of 24 evaluation reported by the Tree of Thoughts paper.",
+      "qualifiers": {
+        "success_rate_percent": 4.0,
+        "benchmark": "Game of 24",
+        "model": "GPT-4"
+      },
+      "baseline_digest": "a9eeaa2b84d325ee49835f99a972b9abafaf8cfe8aee77d0a90cf3fc52ed25be"
+    }
+  ],
   "deltas": [
     {
       "kind": "unresolved",
