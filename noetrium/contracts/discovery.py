@@ -45,8 +45,10 @@ class DownstreamSystemSurface:
 @dataclass(frozen=True, slots=True)
 class DownstreamCapabilityCatalog:
     schema: str
+    entrypoint: str
     topology_digest: str
     catalog_digest: str
+    symbol_index: dict[str, tuple[str, ...]]
     systems: tuple[DownstreamSystemSurface, ...]
 
     def system(self, system_key: str) -> DownstreamSystemSurface:
@@ -54,6 +56,11 @@ class DownstreamCapabilityCatalog:
             if surface.system_key == system_key:
                 return surface
         raise KeyError(f"unknown downstream system surface: {system_key}")
+
+    def owners(self, symbol: str) -> tuple[str, ...]:
+        if not isinstance(symbol, str) or not symbol:
+            raise ValueError("symbol must be a non-empty string")
+        return self.symbol_index.get(symbol, ())
 
     def providers(self, capability: str) -> tuple[DownstreamSystemSurface, ...]:
         """Return registered providers for a capability, without resolving one."""
@@ -300,11 +307,13 @@ def _registry_document() -> dict[str, Any]:
 
 def _validate_catalog_header(
     document: Mapping[str, Any],
-) -> tuple[dict[str, Any], str, str, list[Any]]:
+) -> tuple[dict[str, Any], str, str, Mapping[str, Any], list[Any]]:
     required_keys = {
         "schema",
         "generator",
+        "entrypoint",
         "topology_digest",
+        "symbol_index",
         "systems",
         "catalog_digest",
     }
@@ -312,8 +321,10 @@ def _validate_catalog_header(
         raise DownstreamCatalogIntegrityError(
             "generated downstream capability catalog has an invalid shape"
         )
-    if document["schema"] != "noetrium-downstream-contracts.v2":
+    if document["schema"] != "noetrium-downstream-contracts.v3":
         raise DownstreamCatalogIntegrityError("invalid generated downstream capability catalog schema")
+    if document["entrypoint"] != "noetrium.api":
+        raise DownstreamCatalogIntegrityError("invalid unified downstream entrypoint")
     if document["generator"] != "scripts/generate_downstream_contracts.py":
         raise DownstreamCatalogIntegrityError("unexpected downstream catalog generator")
     registry = _registry_document()
@@ -327,10 +338,13 @@ def _validate_catalog_header(
     unsigned_document.pop("catalog_digest")
     if catalog_digest != _digest(unsigned_document):
         raise DownstreamCatalogIntegrityError("downstream capability catalog digest mismatch")
+    symbol_index = document["symbol_index"]
+    if not isinstance(symbol_index, Mapping):
+        raise DownstreamCatalogIntegrityError("catalog symbol_index must be an object")
     rows = document["systems"]
     if not isinstance(rows, list):
         raise DownstreamCatalogIntegrityError("catalog systems must be a list")
-    return registry, topology_digest, catalog_digest, rows
+    return registry, topology_digest, catalog_digest, symbol_index, rows
 
 
 def _validate_catalog_surface(
@@ -456,7 +470,7 @@ def validate_downstream_capability_catalog(
     This is a data validation boundary. It never imports a provider and never
     selects a runtime authority.
     """
-    registry, topology_digest, catalog_digest, rows = _validate_catalog_header(document)
+    registry, topology_digest, catalog_digest, raw_symbol_index, rows = _validate_catalog_header(document)
     surfaces: list[DownstreamSystemSurface] = []
     seen_keys: set[str] = set()
     for row in rows:
@@ -471,10 +485,43 @@ def validate_downstream_capability_catalog(
         raise DownstreamCatalogIntegrityError(
             "downstream capability catalog does not cover the canonical registry exactly"
         )
+    expected_index: dict[str, list[str]] = {}
+    for surface in surfaces:
+        for api in surface.api_modules:
+            for symbol in api.symbols:
+                owners = expected_index.setdefault(symbol, [])
+                if surface.system_key not in owners:
+                    owners.append(surface.system_key)
+    expected_index = {
+        symbol: sorted(owners)
+        for symbol, owners in sorted(expected_index.items())
+    }
+    normalized_index: dict[str, list[str]] = {}
+    for symbol, owners in raw_symbol_index.items():
+        if not isinstance(symbol, str) or not symbol:
+            raise DownstreamCatalogIntegrityError("catalog symbol_index keys must be non-empty strings")
+        if not isinstance(owners, list) or any(
+            not isinstance(owner, str) or not owner for owner in owners
+        ):
+            raise DownstreamCatalogIntegrityError(
+                f"catalog symbol_index owners must be string lists: {symbol}"
+            )
+        if len(owners) != len(set(owners)):
+            raise DownstreamCatalogIntegrityError(
+                f"catalog symbol_index contains duplicate owners: {symbol}"
+            )
+        normalized_index[symbol] = sorted(owners)
+    if normalized_index != expected_index:
+        raise DownstreamCatalogIntegrityError(
+            "catalog symbol_index does not match generated system surfaces"
+        )
+
     return DownstreamCapabilityCatalog(
         schema=document["schema"],
+        entrypoint=document["entrypoint"],
         topology_digest=topology_digest,
         catalog_digest=catalog_digest,
+        symbol_index={symbol: tuple(owners) for symbol, owners in expected_index.items()},
         systems=tuple(surfaces),
     )
 
