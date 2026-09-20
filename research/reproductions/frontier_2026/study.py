@@ -1,9 +1,7 @@
 """Low-friction Study compiler for source-bound paper reproductions.
 
-The compiler is intentionally registry-independent.  A reproduction package can
-construct PaperStudySpec locally and compile experiments without editing a
-central frontier registry.  The wave registry remains a compatibility/discovery
-surface for the first frontier batch only.
+Each reproduction owns its local PaperStudySpec. Study compilation is
+registry-independent and never resolves a method through a central wave table.
 """
 
 from __future__ import annotations
@@ -25,8 +23,6 @@ from noetrium_platform.research.experimentation.study.api import (
     StudyParticipant,
     TrialBudget,
 )
-
-from .wave_01 import Frontier2026Reproduction, by_id
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,24 +81,6 @@ class PaperStudySpec:
                 }
             ),
         )
-
-
-def spec_from_reproduction(
-    reproduction: Frontier2026Reproduction,
-) -> PaperStudySpec:
-    if not isinstance(reproduction, Frontier2026Reproduction):
-        raise TypeError("reproduction must be Frontier2026Reproduction")
-    return PaperStudySpec(
-        method_id=reproduction.method_id,
-        title=reproduction.title,
-        venue=reproduction.venue,
-        paper_uri=reproduction.paper_uri,
-        benchmark_ids=tuple(row.benchmark_id for row in reproduction.benchmarks),
-        protocol=reproduction.protocol,
-        metrics=reproduction.metrics,
-        ablations=reproduction.ablations,
-        scientific_digest=reproduction.reproduction_digest,
-    )
 
 
 def _measurement(metric: str, *, domain: str) -> MeasurementDefinition:
@@ -321,74 +299,10 @@ def build_ablation_matrix_from_spec(
     )
 
 
-def trial_protocol(
-    reproduction: Frontier2026Reproduction,
-    benchmark: BenchmarkTaskSet,
-    *,
-    benchmark_split_id: str,
-    treatment: str,
-    model_binding: str,
-) -> ExperimentTrialProtocolIdentity:
-    return trial_protocol_from_spec(
-        spec_from_reproduction(reproduction),
-        benchmark,
-        benchmark_split_id=benchmark_split_id,
-        treatment=treatment,
-        model_binding=model_binding,
-    )
-
-
-def build_study(
-    method_id: str,
-    benchmark: BenchmarkTaskSet,
-    *,
-    benchmark_split_id: str,
-    treatment: str = "full",
-    model_binding: str = "model.paper-authoritative",
-    repetitions: int = 1,
-    max_parallel_assignments: int = 8,
-    max_steps: int = 4096,
-    max_model_calls: int = 4096,
-    max_working_seconds: float = 14400.0,
-) -> ResearchStudyDefinition:
-    return build_study_from_spec(
-        spec_from_reproduction(by_id(method_id)),
-        benchmark,
-        benchmark_split_id=benchmark_split_id,
-        treatment=treatment,
-        model_binding=model_binding,
-        repetitions=repetitions,
-        max_parallel_assignments=max_parallel_assignments,
-        max_steps=max_steps,
-        max_model_calls=max_model_calls,
-        max_working_seconds=max_working_seconds,
-    )
-
-
-def build_ablation_matrix(
-    method_id: str,
-    benchmark: BenchmarkTaskSet,
-    *,
-    benchmark_split_id: str,
-    model_binding: str = "model.paper-authoritative",
-    repetitions: int = 1,
-) -> tuple[ResearchStudyDefinition, ...]:
-    return build_ablation_matrix_from_spec(
-        spec_from_reproduction(by_id(method_id)),
-        benchmark,
-        benchmark_split_id=benchmark_split_id,
-        model_binding=model_binding,
-        repetitions=repetitions,
-    )
-
 
 __all__ = [
     "PaperStudySpec",
-    "build_ablation_matrix",
     "build_ablation_matrix_from_spec",
-    "build_study",
     "build_study_from_spec",
-    "spec_from_reproduction",
-    "trial_protocol",
     "trial_protocol_from_spec",
 ]
