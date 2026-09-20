@@ -282,7 +282,7 @@ class ReferenceResearchApplication:
 
 def build_reference_application(config_path: Path | None) -> ReferenceResearchApplication:
     if config_path is None:
-        raise ValueError("reference application requires --application-config")
+        raise ValueError("reference application requires an explicit config path")
     data = json.loads(Path(config_path).read_text(encoding="utf-8"))
     if not isinstance(data, dict) or set(data) != {"state_root"}:
         raise ValueError("reference application config must contain only state_root")
