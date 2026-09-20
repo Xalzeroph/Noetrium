@@ -3,7 +3,7 @@
 The common product boundary is intentionally small:
 
 - Python contracts: `noetrium.api`; product composition: `noetrium.api`
-- CLI: `research`
+- CLI: `noetrium`
 - lifecycle intents: `run`, `inspect`, `stop`, `resume`, `reconcile`, `evidence`
 - existing forensic tools: `research diagnose ...`
 - existing management tools: `research manage ...`
@@ -23,19 +23,29 @@ result = facade.inspect("run-123")
 
 The request payload is recursively frozen at the facade boundary so callers cannot mutate an in-flight intent after dispatch.
 
-## CLI application binding
+## CLI project binding
 
-Lifecycle commands require an explicit application factory:
+Lifecycle commands resolve one downstream project. The project root defaults to
+the current directory, and the target defaults to the project identity:
 
 ```bash
-noetrium --application my_project.operator:build_application run run-123
-noetrium --application my_project.operator:build_application inspect run-123
-noetrium --application my_project.operator:build_application evidence run-123
+noetrium run
+noetrium inspect
+noetrium evidence
+noetrium run run-123 --project ./my-project
+noetrium run --project ./my-project --config ./runtime.json
 ```
 
-Factories receive the optional `--application-config` path. Downstream projects use that hook to compose their own ROLE 03/04/05 bindings without exposing internal topology to users.
+If lifecycle execution is required, the project adds
+`src/<package>/application.py` with
+`build_application(config_path)`. The optional `--config` path is passed to
+that project-owned factory. There is no module-factory CLI, ambient service
+locator, or second application authority source.
 
-The bundled `noetrium_platform.product.operator.reference` application exists only to qualify the facade, persistence and installed distribution lifecycle. It is deterministic and checksummed, but it is **not** a substitute for a production run/effect authority and its `reconcile` action does not certify external effect certainty.
+The bundled `noetrium_platform.product.operator.reference` application exists
+only as an internal qualification fixture. It is deterministic and checksummed,
+but it is not a product entrypoint and it is **not** a substitute for
+RunMachine/effect authority.
 
 ## Failure rules
 
@@ -73,9 +83,7 @@ ROLE06 also waits for the ROLE01 PSC-03 neutral diagnostic metadata envelope ins
 
 ## Downstream project experience
 
-`noetrium project create <project-id> <destination> --version <version>` creates one
-project shape. There are no author/provider template profiles and no `--template`
-selector.
+`noetrium project create <project-id>` creates one project shape in `./<project-id>` at version `0.1.0`. Destination and `--version` remain optional explicit overrides. There are no author/provider template profiles and no `--template` selector.
 
 The generated project contains the canonical manifest plus only the common
 scientific authoring surface:
@@ -89,12 +97,7 @@ scaffold does not generate a duplicate `project.py`. It also does not generate
 provider stubs, `research.py`, or a runtime application. All platform contracts
 are imported through `noetrium.api`.
 
-Provider/runtime/application code is an optional extension of the same project,
-not a second project type. If lifecycle execution is needed, the project may add
-`application.py` with `build_application(config_path)`; `noetrium run
---project ...` loads it explicitly. A project without that optional module remains
-fully valid for method/study compilation and fails lifecycle execution with a
-clear "no runtime application" error.
+Provider/runtime/application code is an optional extension of the same project, not a second project type. If lifecycle execution is needed, the project adds `application.py` with `build_application(config_path)`; `noetrium run --project ... [--config ...]` loads it explicitly. A project without that optional module remains fully valid for method/study compilation and fails lifecycle execution with a clear "no runtime application" error.
 
 `noetrium project doctor --project .` verifies the single template revision,
 manifest identity/provenance, exact generated scientific files, the
@@ -103,12 +106,9 @@ manifest identity/provenance, exact generated scientific files, the
 into an isolated temporary site-packages before running its generated contract
 suite. Source-tree-only success is not accepted.
 
-`--project` and `--application` remain mutually exclusive application authority
-sources. This is a runtime selection rule, not a project-category distinction.
-
 ## NPE reference authority
 
-The historical `noetrium_platform.product.operator.reference` workload remains a narrow CLI/distribution smoke fixture only. It persists synthetic smoke state and therefore is **not** authoritative RunMachine lifecycle evidence.
+The historical `noetrium_platform.product.operator.reference` workload remains a narrow internal distribution smoke fixture only. It persists synthetic smoke state and therefore is **not** authoritative RunMachine lifecycle evidence.
 
 Claim-grade NPE reference acceptance composes producer-owned contracts through a downstream-owned binding: the project supplies a typed ROLE03 `RunControlPort`, while the public ROLE06 adapter translates its receipts. The verifier exercises the public research compiler, the explicit binding seam, and the complete revision-fenced `run -> inspect -> stop -> resume -> reconcile -> evidence` lifecycle in separate fresh processes. The historical Operator smoke workload remains excluded.
 
