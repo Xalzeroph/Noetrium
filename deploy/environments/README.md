@@ -20,17 +20,34 @@ Downstream research owns benchmark packages/data, task/world/site/repository cut
 
 `deploy/environments/catalog.json` is the deployment-profile authority. A profile must not name or embed a downstream benchmark implementation.
 
+## Host contract
+
+The deployment host requires Docker (including Compose) and access to its Docker daemon. Host Python is deliberately **not** part of the deployment contract. Release qualification, provenance verification, and environment-image orchestration execute in the disposable control-plane image defined by `deploy/bootstrap/Dockerfile`.
+
+The canonical host entrypoint is therefore:
+
+    ./deploy/build-environments.sh list
+    ./deploy/build-environments.sh show minecraft
+    ./deploy/build-environments.sh validate
+    ./deploy/build-environments.sh build --profiles minecraft embodied gui web software text_world
+
+`NOETRIUM_BOOTSTRAP_IMAGE` may select the local control-plane image tag. `NOETRIUM_DOCKER_CLI_IMAGE` may select an organization-approved Docker CLI source or registry mirror without changing platform source. `NOETRIUM_BUILD_WORK_ROOT` selects the writable build/runtime evidence root. Registry policy belongs to deployment configuration; benchmark or paper identity never belongs here.
+
+The bootstrap mounts the checkout read-only and preserves its absolute host path inside the control-plane container. This is required because the control plane talks to the host Docker daemon: daemon-side build contexts and Compose bind mounts must resolve the same paths. Only the dedicated build/runtime root is writable.
+
 ## Base image
 
-The base image is distribution-bound and must not be rebuilt directly from the mutable checkout. Follow `docs/release/DISTRIBUTION_QUALIFICATION.md`:
+The base image is distribution-bound and must not be rebuilt directly from the mutable checkout. The canonical Docker-only entrypoint above performs the qualification path in the control-plane container:
 
-    GIT_SHA="$(git rev-parse HEAD)"
-    python scripts/release_distribution.py /tmp/noetrium-distribution
-    python scripts/prepare_container_context.py \
-      /tmp/noetrium-distribution /tmp/noetrium-container \
-      --expected-source-sha "$GIT_SHA"
+release source
+→ qualified wheel + distribution evidence
+→ exact container context
+→ evidence-bound base image
+→ provenance verification
+→ reusable environment images
+→ profile doctors
 
-Read wheel/evidence digests from the generated release evidence, then build `deploy/Dockerfile` from `/tmp/noetrium-container` and tag it with the exact source revision. Production deployments should prefer an immutable image digest.
+`scripts/build_environment_images.py` remains the Python implementation behind that control-plane boundary. It is not a host-Python contract.
 
 `deploy/compose.yaml` consumes an already-qualified `PLATFORM_IMAGE`; it does not build the base image from checkout source.
 
@@ -44,13 +61,6 @@ Read wheel/evidence digests from the generated release evidence, then build `dep
 | `web` | Chromium and chromedriver | benchmark websites, application state, task manifests |
 | `software` | compiler/build/SSH workspace prerequisites | benchmark images, target repositories, task patches |
 | `text_world` | base image only | benchmark runtimes and task corpora |
-
-Use the single environment entrypoint for discovery, validation, build/reuse, provenance verification, and profile doctors:
-
-    python scripts/build_environment_images.py list
-    python scripts/build_environment_images.py show minecraft
-    python scripts/build_environment_images.py validate
-    python scripts/build_environment_images.py build --profiles minecraft embodied gui web software text_world
 
 The build command creates the evidence-bound base image only when the exact source-SHA image is missing (or `--rebuild` is requested). On a cache hit it re-verifies the embedded wheel and installed wheel RECORD, then reuses the image. Each missing environment image is built independently and every requested profile is doctor-checked. Build scratch state is isolated from the reusable runtime-state root, so repeated deployments do not wipe environment state. `text_world` maps directly to the verified base image and does not create a redundant image.
 
