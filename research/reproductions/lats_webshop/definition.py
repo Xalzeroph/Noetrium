@@ -59,8 +59,30 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="lats_webshop_average_score",
+            metric_id="average_score",
+            value=75.9,
+            qualifiers={
+                "benchmark": "WebShop",
+                "model": "GPT-3.5",
+                "method": "LATS",
+                "source": "ICML 2024 WebShop evaluation",
+            },
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="react_webshop",
+            description=(
+                "ReAct prompting baseline on the same WebShop evaluation."
+            ),
+            qualifiers={
+                "average_score": 53.8,
+                "success_rate_percent": 28.0,
+                "source": "ICML 2024 WebShop evaluation",
+            },
+        ),
     ),
     deltas=(
         ReproductionDelta(

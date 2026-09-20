@@ -51,12 +51,50 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="qlass_alfworld_seen_reward",
+            metric_id="average_reward",
+            value=77.9,
+            qualifiers={
+                "benchmark": "ALFWorld",
+                "split": "seen",
+                "base_model": "Llama-2-7B-Chat",
+                "source": "ICML 2025 Table 2",
+            },
+        ),
+        ReportedResult(
+            claim_id="qlass_alfworld_unseen_reward",
+            metric_id="average_reward",
+            value=82.8,
+            qualifiers={
+                "benchmark": "ALFWorld",
+                "split": "unseen",
+                "base_model": "Llama-2-7B-Chat",
+                "source": "ICML 2025 Table 2",
+            },
+        ),
     ),
     reference_baselines=(
         ReferenceBaseline(
             baseline_id='sft_policy',
             description='SFT policy inference without Q-guided stepwise candidate selection',
-            qualifiers={},
+            qualifiers={
+                "alfworld_seen_average_reward": 60.0,
+                "alfworld_unseen_average_reward": 67.2,
+                "source": "ICML 2025 Table 2",
+            },
+        ),
+        ReferenceBaseline(
+            baseline_id="eto_policy",
+            description=(
+                "ETO trajectory-level preference optimization baseline on "
+                "the same ALFWorld evaluation."
+            ),
+            qualifiers={
+                "alfworld_seen_average_reward": 68.6,
+                "alfworld_unseen_average_reward": 72.4,
+                "source": "ICML 2025 Table 2",
+            },
         ),
     ),
     deltas=(

@@ -49,7 +49,7 @@
     {
       "package": "generative_agents_memory",
       "lineage": "agent_memory",
-      "enforced": false
+      "enforced": true
     },
     {
       "package": "hugginggpt",
@@ -119,7 +119,7 @@
     {
       "package": "storm_wiki",
       "lineage": "research_agent",
-      "enforced": false
+      "enforced": true
     },
     {
       "package": "swe_agent_swebench",

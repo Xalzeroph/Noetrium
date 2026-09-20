@@ -51,8 +51,33 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="generative_agents_full_architecture_believability",
+            metric_id="trueskill_mu",
+            value=29.89,
+            qualifiers={
+                "evaluation": "interview-believability-ranking",
+                "condition": "full-architecture",
+                "participant_count": 100,
+                "source": "UIST 2023 Figure 8",
+            },
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="generative_agents_ablations",
+            description=(
+                "UIST 2023 controlled believability ablations used to isolate "
+                "reflection, planning and memory contributions."
+            ),
+            qualifiers={
+                "no_reflection_trueskill_mu": 26.88,
+                "no_reflection_or_planning_trueskill_mu": 25.64,
+                "fully_ablated_trueskill_mu": 21.21,
+                "human_crowdworker_trueskill_mu": 22.95,
+                "source": "UIST 2023 Figure 8",
+            },
+        ),
     ),
     deltas=(
     ),

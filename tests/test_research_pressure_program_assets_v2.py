@@ -173,3 +173,21 @@ def test_third_ten_paper_classic_wave_is_claim_bound() -> None:
         "camel_role_playing": 4,
         "react_alfworld": 8,
     })
+
+
+
+def test_fourth_ten_paper_systems_wave_is_claim_bound() -> None:
+    """Lock software, search, research-agent, memory and agent-design lineages."""
+    status = project()
+    _assert_paper_wave(status, {
+        "agentless_swebench": 2,
+        "agentsquare": 7,
+        "flow_modularized_agentic_workflow": 5,
+        "storm_wiki": 2,
+        "lats_webshop": 1,
+        "qlass_alfworld": 2,
+        "swe_agent_swebench": 1,
+        "toolformer": 3,
+        "generative_agents_memory": 1,
+        "adas_meta_agent_search": 1,
+    })
