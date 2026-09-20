@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v6",
+  "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "swe_agent_swebench",
   "package_digest": "633e8ed34a9323b86ae687eb9ef03ea509c2f5717dc31a4001d9b23a88de87c0",

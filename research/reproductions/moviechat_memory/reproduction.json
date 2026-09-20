@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v6",
+  "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "moviechat_memory",
   "package_digest": "e7c2af4bd5c079d18fff90f4a61f8026a0a1432e17b9e3bca1c4b367ce8d55c3",

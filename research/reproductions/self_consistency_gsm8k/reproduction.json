@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v6",
+  "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "self_consistency_gsm8k",
   "package_digest": "69a7a336dec76d0d0905ec23152ae435c73a7a75a69654886bdc99628c0f55dd",

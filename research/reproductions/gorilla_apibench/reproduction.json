@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v6",
+  "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "gorilla_apibench",
   "package_digest": "d1746ba2e618423159bcd19b3135edc06e0cff67944f93cd8dc0ec0f73176f8a",

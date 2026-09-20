@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.reproduction.projection.v6",
+  "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ma_lmm_memory",
   "package_digest": "947642276cb8ee48e72f98b883f222ebba9f756006af98f9ca7a4113ac2f01ec",
