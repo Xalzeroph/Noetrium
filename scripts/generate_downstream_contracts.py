@@ -556,12 +556,26 @@ def _unified_resolution_sources(
     root: Path,
     surfaces: tuple[SystemSurface, ...],
 ) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]:
-    direct, _ambiguous = _unified_resolution_sources(root, surfaces)
+    registry_sources: dict[str, set[str]] = {}
+    for surface in surfaces:
+        for api in surface.api_modules:
+            for symbol in api.symbols:
+                if symbol.isidentifier():
+                    registry_sources.setdefault(symbol, set()).add(api.module)
+
+    extra_sources: dict[str, set[str]] = {}
+    for module in UNIFIED_API_EXTRA_MODULES:
+        symbols = downstream_symbols(_public_symbols(_module_source(root, module)))
+        for symbol in symbols:
+            if symbol.isidentifier():
+                extra_sources.setdefault(symbol, set()).add(module)
 
     direct: dict[str, str] = {}
     ambiguous: dict[str, tuple[str, ...]] = {}
     for symbol in sorted(set(registry_sources) | set(extra_sources)):
-        modules = set(registry_sources.get(symbol, ())) | set(extra_sources.get(symbol, ()))
+        modules = set(registry_sources.get(symbol, ())) | set(
+            extra_sources.get(symbol, ())
+        )
         if len(modules) == 1:
             direct[symbol] = next(iter(modules))
             continue
@@ -577,19 +591,7 @@ def render_unified_api_stub(
     root: Path,
     surfaces: tuple[SystemSurface, ...],
 ) -> tuple[str, int]:
-    registry_sources: dict[str, set[str]] = {}
-    for surface in surfaces:
-        for api in surface.api_modules:
-            for symbol in api.symbols:
-                if symbol.isidentifier():
-                    registry_sources.setdefault(symbol, set()).add(api.module)
-
-    extra_sources: dict[str, set[str]] = {}
-    for module in UNIFIED_API_EXTRA_MODULES:
-        symbols = downstream_symbols(_public_symbols(_module_source(root, module)))
-        for symbol in symbols:
-            if symbol.isidentifier():
-                extra_sources.setdefault(symbol, set()).add(module)
+    direct, _ambiguous = _unified_resolution_sources(root, surfaces)
 
     reserved = {
         "ApiSymbolMatch",
