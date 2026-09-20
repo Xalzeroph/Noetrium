@@ -27,11 +27,21 @@ docker build \
 # Git metadata is mounted read-only because exact source identity and a clean
 # checkout are scientific provenance inputs. Source is mounted read-only; only
 # the dedicated build/runtime root is writable.
+if [ "${1:-}" = "build" ]; then
+  exec docker run --rm \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v "$ROOT:/workspace:ro" \
+    -v "$WORK_ROOT:/work" \
+    -w /workspace \
+    "$BOOTSTRAP_IMAGE" \
+    "$@" \
+    --work-root /work \
+    --output /work/environment-image-build.json
+fi
+
 exec docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "$ROOT:/workspace:ro" \
-  -v "$WORK_ROOT:/work" \
   -w /workspace \
   "$BOOTSTRAP_IMAGE" \
-  "$@" \
-  --work-root /work
+  "$@"
