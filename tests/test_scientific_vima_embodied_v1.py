@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from noetrium.platform import run_method_program
+from noetrium.api import run_method_program
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
