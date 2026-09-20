@@ -15942,8 +15942,28 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.reproduction.ReproductionEvidenceQualification",
+      "target": "noetrium_platform.research.reproduction.ReproductionEvidenceKind"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.reproduction.ReproductionEvidenceQualification",
+      "target": "noetrium_platform.research.reproduction.ReproductionMatchCriterion"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.reproduction.ReproductionEvidenceRef",
       "target": "noetrium_platform.research.reproduction.ReproductionEvidenceKind"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.reproduction.ReproductionEvidenceRef",
+      "target": "noetrium_platform.research.reproduction.ReproductionEvidenceQualification"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.reproduction.ReproductionMatchCriterion",
+      "target": "noetrium_platform.research.reproduction.ReproductionMatchCriterionStatus"
     }
   ],
   "classes": [
@@ -91465,7 +91485,7 @@
         "qualifiers"
       ],
       "kind": "dataclass",
-      "line": 216,
+      "line": 222,
       "methods": [
         "__post_init__"
       ],
@@ -91491,7 +91511,7 @@
         "value"
       ],
       "kind": "dataclass",
-      "line": 185,
+      "line": 191,
       "methods": [
         "__post_init__"
       ],
@@ -91541,7 +91561,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 166,
+      "line": 172,
       "methods": [
         "__post_init__"
       ],
@@ -91570,7 +91590,7 @@
         "priority"
       ],
       "kind": "dataclass",
-      "line": 120,
+      "line": 126,
       "methods": [
         "__post_init__"
       ],
@@ -91604,7 +91624,7 @@
         "scientific_tests"
       ],
       "kind": "dataclass",
-      "line": 336,
+      "line": 523,
       "methods": [
         "__post_init__"
       ],
@@ -91628,7 +91648,7 @@
         "kind"
       ],
       "kind": "dataclass",
-      "line": 243,
+      "line": 249,
       "methods": [
         "__post_init__"
       ],
@@ -91689,6 +91709,35 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "claim_ids",
+        "criteria",
+        "decision",
+        "evidence_bundle_digest",
+        "qualification_digest",
+        "qualification_id",
+        "run_id",
+        "run_manifest_digest"
+      ],
+      "kind": "dataclass",
+      "line": 300,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.reproduction",
+      "name": "ReproductionEvidenceQualification",
+      "nesting": [
+        "ReproductionEvidenceQualification"
+      ],
+      "qualname": "noetrium_platform.research.reproduction.ReproductionEvidenceQualification",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "bundle_id",
         "claim_ids",
         "evidence_bundle_digest",
@@ -91697,11 +91746,12 @@
         "kind",
         "manifest_ref",
         "manifest_sha256",
+        "qualification",
         "run_id",
         "run_manifest_digest"
       ],
       "kind": "dataclass",
-      "line": 260,
+      "line": 405,
       "methods": [
         "__post_init__"
       ],
@@ -91728,7 +91778,7 @@
         "year"
       ],
       "kind": "dataclass",
-      "line": 86,
+      "line": 92,
       "methods": [
         "__post_init__"
       ],
@@ -91765,6 +91815,54 @@
         "ReproductionLifecycle"
       ],
       "qualname": "noetrium_platform.research.reproduction.ReproductionLifecycle",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "authority_digest",
+        "criterion_digest",
+        "criterion_id",
+        "detail",
+        "status"
+      ],
+      "kind": "dataclass",
+      "line": 266,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.reproduction",
+      "name": "ReproductionMatchCriterion",
+      "nesting": [
+        "ReproductionMatchCriterion"
+      ],
+      "qualname": "noetrium_platform.research.reproduction.ReproductionMatchCriterion",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "NOT_APPLICABLE",
+        "SATISFIED",
+        "UNRESOLVED"
+      ],
+      "kind": "enum",
+      "line": 85,
+      "methods": [],
+      "module": "noetrium_platform.research.reproduction",
+      "name": "ReproductionMatchCriterionStatus",
+      "nesting": [
+        "ReproductionMatchCriterionStatus"
+      ],
+      "qualname": "noetrium_platform.research.reproduction.ReproductionMatchCriterionStatus",
       "system_key": null,
       "top_system": null
     }
@@ -96052,8 +96150,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3189,
-    "classes": 3150,
+    "association_edges": 3193,
+    "classes": 3153,
     "constructor_edges": 856,
     "inheritance_edges": 138,
     "module_import_edges": 5469,
@@ -143706,7 +143804,7 @@
   "parse_errors": [],
   "registry_sha256": "e4ea173ff1460ed18af96b3de44996a6bb9c859342697cc3084344ee60a52574",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "63742d2d0afe8c6e054d829ef870c3be76d12591",
+  "source_git_sha": "d914de6188c332b7413a184f900a07977479caa0",
   "system_import_edges": [
     {
       "count": 108,
