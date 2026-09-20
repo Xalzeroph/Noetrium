@@ -1,0 +1,16 @@
+services:
+  platform-runtime:
+    build:
+      context: ..
+      dockerfile: deploy/environments/web/Dockerfile
+      args:
+        PLATFORM_BASE_IMAGE: ${PLATFORM_IMAGE:-noetrium:local}
+    image: ${PLATFORM_WEB_IMAGE:-noetrium-env-web:local}
+    environment:
+      NOETRIUM_ENVIRONMENT_PROFILE: web
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/noetrium-entrypoint", "environment-doctor", "web"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 10s
