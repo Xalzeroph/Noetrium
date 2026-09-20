@@ -319,7 +319,15 @@ def _registry_document() -> dict[str, Any]:
 
 def _validate_catalog_header(
     document: Mapping[str, Any],
-) -> tuple[dict[str, Any], str, str, Mapping[str, Any], list[Any]]:
+) -> tuple[
+    dict[str, Any],
+    str,
+    str,
+    Mapping[str, Any],
+    Mapping[str, Any],
+    Mapping[str, Any],
+    list[Any],
+]:
     required_keys = {
         "schema",
         "generator",
