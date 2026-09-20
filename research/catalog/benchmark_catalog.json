@@ -353,6 +353,18 @@
       ]
     },
     {
+      "benchmark_id": "robocodegen-37",
+      "title": "RoboCodeGen 37",
+      "source_uri": "https://arxiv.org/abs/2209.07753",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
       "benchmark_id": "saycan-101",
       "title": "SayCan 101-Task Evaluation",
       "source_uri": "https://github.com/say-can/say-can.github.io",

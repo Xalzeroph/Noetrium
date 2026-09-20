@@ -2,10 +2,10 @@
   "schema": "noetrium.research-pressure-status.v3",
   "authority": "generated_from_pressure_suite_reproduction_and_benchmark_projections",
   "suite_updated_at": "2026-09-20",
-  "lane_count": 41,
-  "ready_count": 41,
-  "enforced_count": 34,
-  "enforced_ready_count": 34,
+  "lane_count": 48,
+  "ready_count": 48,
+  "enforced_count": 41,
+  "enforced_ready_count": 41,
   "claim_ready_count": 0,
   "enforced_claim_ready_count": 0,
   "lanes": [
@@ -1745,6 +1745,309 @@
       "matched_evidence_count": 0,
       "matched_evidence_claim_count": 0,
       "blocker_count": 4,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "agentless_swebench",
+      "lineage": "software_agent_agentless_repair",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/agentless_swebench/program.py"
+      },
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "benchmark_packages": [
+        "swe_bench"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 2,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "agentsquare",
+      "lineage": "automated_modular_agent_search",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "research_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "research_program",
+        "path": "research/reproductions/agentsquare/program.py"
+      },
+      "benchmark_ids": [
+        "agentboard-pddl",
+        "alfworld",
+        "m3tooleval",
+        "scienceworld",
+        "travelplanner",
+        "webshop"
+      ],
+      "benchmark_packages": [
+        "agentboard_pddl",
+        "alfworld",
+        "m3tooleval",
+        "scienceworld",
+        "travelplanner",
+        "webshop"
+      ],
+      "scientific_test_count": 3,
+      "reported_result_count": 7,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 5,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "code_as_policies",
+      "lineage": "embodied_language_model_programs",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "benchmark",
+        "fidelity",
+        "method_program",
+        "semantics",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/code_as_policies/program.py"
+      },
+      "benchmark_ids": [
+        "robocodegen-37"
+      ],
+      "benchmark_packages": [
+        "robocodegen_37"
+      ],
+      "scientific_test_count": 2,
+      "reported_result_count": 4,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 4,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "cogagent",
+      "lineage": "multimodal_gui_agent",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/cogagent/program.py"
+      },
+      "benchmark_ids": [
+        "mind2web"
+      ],
+      "benchmark_packages": [
+        "mind2web"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 0,
+      "reference_baseline_count": 0,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "missing_reported_results",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "flow_modularized_agentic_workflow",
+      "lineage": "modular_dynamic_agentic_workflow",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "research_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program",
+        "research_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/flow_modularized_agentic_workflow/program.py"
+      },
+      "benchmark_ids": [
+        "flow-practical-tasks"
+      ],
+      "benchmark_packages": [
+        "flow_practical_tasks"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 5,
+      "reference_baseline_count": 3,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 5,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "seeclick",
+      "lineage": "multimodal_gui_grounding_agent",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/seeclick/program.py"
+      },
+      "benchmark_ids": [
+        "screenspot"
+      ],
+      "benchmark_packages": [
+        "screenspot"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 1,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 3,
+      "claim_ready": false,
+      "claim_gaps": [
+        "lifecycle_not_matched_reproduction",
+        "missing_execution_evidence",
+        "unresolved_blockers",
+        "unresolved_fidelity_delta"
+      ],
+      "ready": true,
+      "gaps": []
+    },
+    {
+      "package": "toolformer",
+      "lineage": "self_supervised_tool_use",
+      "enforced": true,
+      "lifecycle": "protocol_bound",
+      "asset_kinds": [
+        "fidelity",
+        "method_program",
+        "study",
+        "support"
+      ],
+      "executable_asset_kinds": [
+        "method_program"
+      ],
+      "primary_executable": {
+        "kind": "method_program",
+        "path": "research/reproductions/toolformer/program.py"
+      },
+      "benchmark_ids": [
+        "toolformer-eval"
+      ],
+      "benchmark_packages": [
+        "toolformer_eval"
+      ],
+      "scientific_test_count": 1,
+      "reported_result_count": 3,
+      "reference_baseline_count": 1,
+      "evidence_ref_count": 0,
+      "pilot_evidence_count": 0,
+      "matched_evidence_count": 0,
+      "matched_evidence_claim_count": 0,
+      "blocker_count": 3,
       "claim_ready": false,
       "claim_gaps": [
         "lifecycle_not_matched_reproduction",
