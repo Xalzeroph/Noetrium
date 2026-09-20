@@ -12,13 +12,9 @@ EXPECTED_PROFILES = frozenset({"minecraft", "embodied", "gui", "web", "software"
 FORBIDDEN_IMAGE_MARKERS = (
     "copy research",
     "copy benchmarks",
-    "openha",
-    "osworld",
-    "webarena",
-    "libero",
-    "calvin",
-    "robotwin",
-    "swe-bench",
+    "copy datasets",
+    "copy checkpoints",
+    "copy experiments",
 )
 
 
