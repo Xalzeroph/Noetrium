@@ -295,8 +295,8 @@ docker compose -f deploy/compose.yaml run --rm platform-runtime doctor
 Minecraft 是第一方可复用环境 Provider；任务集和科学组合继续留在下游。
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/compose.minecraft.yaml run --rm platform-runtime minecraft-doctor
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
+docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
