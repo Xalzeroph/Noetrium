@@ -229,10 +229,8 @@ Le code downstream importe les contracts stables et les components réutilisable
 Une image Linux réutilisable et une définition Compose sont maintenues sous `deploy/`.
 
 ```bash
-cp deploy/.env.example deploy/.env
-docker compose -f deploy/compose.yaml config
-docker compose -f deploy/compose.yaml build
-docker compose -f deploy/compose.yaml run --rm platform-runtime doctor
+python scripts/build_environment_images.py validate
+python scripts/build_environment_images.py build --profiles text_world
 ```
 
 La couche de deployment sépare le logiciel immuable du runtime state mutable ; paths hôte et secrets restent hors du composition code versionné.
@@ -242,8 +240,7 @@ La couche de deployment sépare le logiciel immuable du runtime state mutable ; 
 Minecraft est un Provider d'environnement réutilisable first-party. Task suites et composition scientifique restent downstream.
 
 ```bash
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml build platform-runtime
-docker compose -f deploy/compose.yaml -f deploy/environments/minecraft/compose.yaml run --rm platform-runtime environment-doctor minecraft
+python scripts/build_environment_images.py build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
