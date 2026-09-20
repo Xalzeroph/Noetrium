@@ -58,9 +58,9 @@ Project code should not require edits to `noetrium_platform/` merely to register
 Allowed:
 
 ```text
-downstream project -> noetrium_platform.<system>.api
-downstream composition -> public platform composition ports
-downstream provider -> platform protocol it implements
+downstream project -> noetrium.api
+downstream composition -> contracts resolved through noetrium.api
+downstream provider -> protocol resolved through noetrium.api
 ```
 
 Forbidden:
@@ -68,7 +68,7 @@ Forbidden:
 ```text
 noetrium_platform -> downstream project package
 platform runtime -> project-specific registry or service locator
-downstream project -> platform-private implementation when a public contract exists
+downstream project -> noetrium_platform.*, noetrium.contracts.*, components.*, or orchestration.* directly
 ```
 
 ## Upstream purity gates
@@ -120,18 +120,24 @@ A project identity is a composition subject, not a system-registry node. Creatin
 
 ## Machine-verifiable downstream import policy
 
-`noetrium_platform.foundation.governance.repository_boundary.audit_downstream_project_imports(root)` classifies every Python import in an independent downstream root as one of:
+`audit_downstream_project_imports(root)` enforces the product model directly. Every
+Python import in an independent downstream root is classified as one of:
 
-1. `common_platform_api` ? stable common path such as `noetrium_platform.foundation.portfolio.api` or another top-level `<system>.api`;
-2. `provider_development_api` ? advanced/leaf contract path such as `noetrium_platform.capabilities.environment.catalog.api` or `noetrium_platform.foundation.governance.architecture.api`;
-3. `forbidden_private_implementation` ? Platform imports outside an explicit API package, including Runtime/Provider/Composition implementation paths;
-4. `external` ? non-Platform dependencies.
+1. `noetrium_api` — only `noetrium` / `noetrium.api`;
+2. `external` — third-party or standard-library dependencies;
+3. `forbidden_internal` — any direct `noetrium_platform.*`,
+   `noetrium.contracts.*`, `components.*`, or `orchestration.*` import.
 
-A downstream root that vendors its own `noetrium_platform/` directory is also rejected. Source parse failures are blocking rather than silently omitted. This audit is intended for ROLE 06 `project doctor` / generated-project conformance and for the ROLE 00 clean-room NPE gate.
+There is no separate provider-development import surface. Advanced providers,
+environments, models, methods, and orchestration code obtain the same typed
+contracts through `noetrium.api`. A downstream root that vendors its own
+`noetrium_platform/` directory is rejected, and source parse failures remain
+blocking.
+
 
 ## ROLE 06 producer handoff
 
-ROLE 06 project creation/doctor must consume the exact Portfolio types/codecs above rather than duplicating manifest parsing or project identity. For advanced composition, the public typed composition contracts are exported from `noetrium_platform.foundation.governance.architecture.api`; generated common-path project code should normally remain on `noetrium_platform.foundation.portfolio.api` plus the producer-owned domain APIs it actually implements/consumes.
+ROLE 06 project creation/doctor must consume the exact Portfolio types/codecs above rather than duplicating manifest parsing or project identity. Advanced composition uses the same `noetrium.api` entrypoint. Generated common-path project code and provider implementations must not bypass it to reach internal package paths.
 
 
 Method source provenance is deliberately not a Study facet. Repository/commit
