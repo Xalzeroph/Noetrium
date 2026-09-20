@@ -73,16 +73,25 @@ __all__ = ["METHOD_PROGRAM", "METHOD_SPEC"]
 
 
 def _author_study_module() -> str:
-    return '''"""Paper experiment declarations.
+    return '''"""Paper experiment declaration.
 
-Keep benchmark task identity, measurements, baselines, treatments and Study
-construction here. Provider/runtime/checkpoint/evidence implementation remains
-outside the author project.
+The reusable authoring spec owns common single-method Study plumbing only.
+Benchmark, model, measurement, trial protocol and budget remain explicit inputs
+when the scientific experiment is constructed.
 """
+from noetrium.contracts.research import AgentStudySpec
 
-from .method import METHOD_PROGRAM
+from .method import METHOD_SPEC
 
-__all__ = ["METHOD_PROGRAM"]
+STUDY_SPEC = AgentStudySpec(
+    project_id=METHOD_SPEC.method_id,
+    study_id=f"{METHOD_SPEC.method_id}.study",
+    method_id=METHOD_SPEC.method_id,
+)
+
+build_study = STUDY_SPEC.build
+
+__all__ = ["STUDY_SPEC", "build_study"]
 '''
 
 
@@ -146,11 +155,11 @@ def _author_test_module(package: str) -> str:
 from pathlib import Path
 
 from noetrium.contracts.project import ProjectIdentity, decode_project_manifest_bytes
-from noetrium.contracts.research import AgentMethodSpec, MethodProgram
+from noetrium.contracts.research import AgentMethodSpec, AgentStudySpec, MethodProgram
 from {package}.method import METHOD_PROGRAM, METHOD_SPEC
 from {package}.project import PROJECT_IDENTITY
 from {package}.research import METHOD_HOST, compile_study
-import {package}.study
+from {package}.study import STUDY_SPEC, build_study
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -164,6 +173,8 @@ class GeneratedAuthorProjectTests(unittest.TestCase):
     def test_method_spec_compiles_through_public_contracts(self):
         self.assertIsInstance(METHOD_SPEC, AgentMethodSpec)
         self.assertIsInstance(METHOD_PROGRAM, MethodProgram)
+        self.assertIsInstance(STUDY_SPEC, AgentStudySpec)
+        self.assertTrue(callable(build_study))
         self.assertTrue(callable(compile_study))
 
     def test_author_modules_import_without_provider_plumbing(self):
@@ -184,7 +195,7 @@ def _provider_test_module(package: str) -> str:
 
 def _readme(project_id: str, profile: ProjectTemplateProfile) -> str:
     if profile is ProjectTemplateProfile.AUTHOR:
-        return f'''# {project_id}\n\nThis is the paper-author scaffold.\n\nStart in `method.py`: edit the generated `AgentMethodSpec` phases/configuration and compile it to the canonical `MethodProgram`. Put benchmark identity, measurements, baselines, treatments and `Study` construction in `study.py`. Use `research.py` only for the public Method Host compilation seam. Provider, runtime, checkpoint, resource and evidence authorities remain outside the author project.\n\nRun `noetrium project doctor --project .` and `noetrium project test --project .`.\n'''
+        return f'''# {project_id}\n\nThis is the paper-author scaffold.\n\nStart in `method.py`: edit the generated `AgentMethodSpec` phases/configuration. `study.py` exposes an `AgentStudySpec`; pass the paper's benchmark, model requirement, measurements, trial identity and budget when building the experiment. Use `research.py` only for the public Method Host compilation seam. Provider, runtime, checkpoint, resource and evidence authorities remain outside the author project.\n\nRun `noetrium project doctor --project .` and `noetrium project test --project .`.\n'''
     return f'''# {project_id}\n\nThis is the explicit Level-2 provider-author scaffold.\n\nIt exposes Participant/Model/Environment provider stubs and direct RunControl application binding through public Platform contracts. Every stub fails closed until implemented.\n\nNormal paper authors should use the default `author` template instead.\n'''
 
 
