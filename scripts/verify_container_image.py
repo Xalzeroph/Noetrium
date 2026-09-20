@@ -144,15 +144,29 @@ python - "$work" <<'PY'
 import json
 import sys
 from pathlib import Path
+from noetrium.api import ResearchFacade
+from noetrium_platform.product.operator.reference import ReferenceResearchApplication
+
 root = Path(sys.argv[1])
-(root / "reference.json").write_text(
-    json.dumps({"state_root": str(root / "state")}), encoding="utf-8"
-)
+facade = ResearchFacade(ReferenceResearchApplication(root / "state"))
+for action in ("run", "inspect", "stop", "resume", "reconcile", "evidence"):
+    result = getattr(facade, action)("container-reference")
+    (root / f"{action}.json").write_text(
+        json.dumps(
+            {
+                "ok": True,
+                "command": action,
+                "result": {
+                    "action": result.action.value,
+                    "target": result.target,
+                    "state": result.state,
+                },
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
 PY
-for action in run inspect stop resume reconcile evidence; do
-  noetrium --application noetrium_platform.product.operator.reference:build_reference_application \
-    --application-config "$work/reference.json" "$action" container-reference > "$work/$action.json"
-done
 python - "$work" <<'PY'
 import importlib.metadata
 import json
