@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import os
 import sys
 
-from noetrium.contracts.systems.participant__method import (
+from noetrium.api import (
     MethodIdentity,
     MethodRuntimeIdentity,
 )
