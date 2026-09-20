@@ -2,7 +2,7 @@
 
 The common product boundary is intentionally small:
 
-- Python contracts: `noetrium.contracts`; product composition: `noetrium.platform`
+- Python contracts: `noetrium.api`; product composition: `noetrium.api`
 - CLI: `research`
 - lifecycle intents: `run`, `inspect`, `stop`, `resume`, `reconcile`, `evidence`
 - existing forensic tools: `research diagnose ...`
@@ -15,7 +15,7 @@ There is deliberately no ambient service locator and no implicit default product
 ## Python
 
 ```python
-from noetrium.platform import ResearchFacade
+from noetrium.api import ResearchFacade
 
 facade = ResearchFacade(my_application)
 result = facade.inspect("run-123")
@@ -53,7 +53,7 @@ The bundled `noetrium_platform.product.operator.reference` application exists on
 
 ## ROLE 03 run-control binding
 
-`noetrium.platform.bind_run_control_application(...)` is the canonical product adapter for `RunControlPort`. RunControl coordinates external lifecycle effects, reconciliation, checkpoint verification, and evidence, but the authoritative lifecycle state is the shared journal-backed `RunMachine`. Product code never persists a second run-state projection.
+`noetrium.api.bind_run_control_application(...)` is the canonical product adapter for `RunControlPort`. RunControl coordinates external lifecycle effects, reconciliation, checkpoint verification, and evidence, but the authoritative lifecycle state is the shared journal-backed `RunMachine`. Product code never persists a second run-state projection.
 
 The binding requires one explicit `run_id`, its exact `run_manifest_digest`, and an injected `RunControlPort`. Payloads are exact and revision-fenced:
 
@@ -94,4 +94,4 @@ The historical `noetrium_platform.product.operator.reference` workload remains a
 
 Claim-grade NPE reference acceptance composes producer-owned contracts through a downstream-owned binding: the project supplies a typed ROLE03 `RunControlPort`, while the public ROLE06 adapter translates its receipts. The verifier exercises the public Method Host, the explicit binding seam, and the complete revision-fenced `run -> inspect -> stop -> resume -> reconcile -> evidence` lifecycle in separate fresh processes. The historical Operator smoke workload remains excluded.
 
-The clean-room driver is deliberately materialized inside the generated downstream project and imports only `noetrium.contracts`, `noetrium.platform`, and the Python standard library. It owns no Platform authority; it is a deterministic qualification binding whose state is stored at an explicit run-local path and reopened by a fresh process. Missing, malformed or non-finalized lifecycle receipts remain fail-closed.
+The clean-room driver is deliberately materialized inside the generated downstream project and imports only `noetrium.api`, `noetrium.api`, and the Python standard library. It owns no Platform authority; it is a deterministic qualification binding whose state is stored at an explicit run-local path and reopened by a fresh process. Missing, malformed or non-finalized lifecycle receipts remain fail-closed.
