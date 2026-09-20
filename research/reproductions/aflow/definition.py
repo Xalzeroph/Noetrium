@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -73,8 +75,36 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/aflow/study.py",
         ),
     ),
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="aflow_average_sota_gain",
+            metric_id="average_improvement_percent",
+            value=5.7,
+            qualifiers={"scope": "six-benchmark-average", "comparison": "state-of-the-art-baselines", "source": "ICLR-2025 paper"},
+        ),
+        ReportedResult(
+            claim_id="aflow_automated_method_gain",
+            metric_id="average_improvement_percent",
+            value=19.5,
+            qualifiers={"comparison": "existing-automated-workflow-methods", "source": "ICLR-2025 paper"},
+        ),
+        ReportedResult(
+            claim_id="aflow_small_model_cost_fraction",
+            metric_id="relative_inference_cost_percent",
+            value=4.55,
+            qualifiers={"comparison": "gpt-4o", "result": "smaller-model-workflow-can-outperform-gpt-4o", "source": "ICLR-2025 paper"},
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="aflow_sota_agentic_workflows",
+            description=(
+                "State-of-the-art hand-designed and automated agentic workflow "
+                "baselines used across the six AFlow benchmarks."
+            ),
+            qualifiers={"source": "ICLR-2025 paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("substitution"),

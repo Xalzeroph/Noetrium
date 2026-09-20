@@ -55,8 +55,54 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     reported_results=(
+        ReportedResult(
+            claim_id="toolllama_dfsdt_average_pass",
+            metric_id="average_pass_rate_percent",
+            value=66.7,
+            qualifiers={"benchmark": "toolbench", "model": "toollama", "inference": "dfsdt", "source": "ICLR-2024 paper Table 4"},
+        ),
+        ReportedResult(
+            claim_id="toolllama_dfsdt_average_win",
+            metric_id="average_win_rate_percent",
+            value=60.0,
+            qualifiers={"benchmark": "toolbench", "model": "toollama", "inference": "dfsdt", "source": "ICLR-2024 paper Table 4"},
+        ),
+        ReportedResult(
+            claim_id="toolllama_dfsdt_retriever_average_pass",
+            metric_id="average_pass_rate_percent",
+            value=67.3,
+            qualifiers={"benchmark": "toolbench", "model": "toollama", "inference": "dfsdt-retriever", "source": "ICLR-2024 paper Table 4"},
+        ),
+        ReportedResult(
+            claim_id="toolllama_dfsdt_retriever_average_win",
+            metric_id="average_win_rate_percent",
+            value=63.1,
+            qualifiers={"benchmark": "toolbench", "model": "toollama", "inference": "dfsdt-retriever", "source": "ICLR-2024 paper Table 4"},
+        ),
+        ReportedResult(
+            claim_id="tooleval_pass_human_agreement",
+            metric_id="human_agreement_percent",
+            value=87.1,
+            qualifiers={"evaluation": "pass-rate", "source": "ICLR-2024 paper evaluator analysis"},
+        ),
+        ReportedResult(
+            claim_id="tooleval_win_human_agreement",
+            metric_id="human_agreement_percent",
+            value=80.3,
+            qualifiers={"evaluation": "win-rate", "source": "ICLR-2024 paper evaluator analysis"},
+        ),
     ),
     reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="chatgpt_react_toolbench",
+            description="ChatGPT ReAct baseline reported in ToolBench.",
+            qualifiers={"average_pass_rate_percent": 40.2, "source": "ICLR-2024 paper Table 4"},
+        ),
+        ReferenceBaseline(
+            baseline_id="gpt4_dfsdt_toolbench",
+            description="GPT-4 DFSDT comparison reported in ToolBench.",
+            qualifiers={"average_pass_rate_percent": 71.1, "average_win_rate_percent": 70.4, "source": "ICLR-2024 paper Table 4"},
+        ),
     ),
     deltas=(
     ),
