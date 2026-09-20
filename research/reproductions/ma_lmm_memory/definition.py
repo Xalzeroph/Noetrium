@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -83,8 +85,46 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/ma_lmm_memory/source.py",
         ),
     ),
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="ma_lmm_lvu_average_top1",
+            metric_id="average_top1_accuracy_percent",
+            value=63.0,
+            qualifiers={
+                "benchmark": "lvu",
+                "tasks": 7,
+                "source": "CVPR-2024 paper Table 1",
+            },
+        ),
+        ReportedResult(
+            claim_id="ma_lmm_lvu_relation",
+            metric_id="top1_accuracy_percent",
+            value=58.2,
+            qualifiers={"benchmark": "lvu", "task": "relationship", "source": "CVPR-2024 paper Table 1"},
+        ),
+        ReportedResult(
+            claim_id="ma_lmm_lvu_scene",
+            metric_id="top1_accuracy_percent",
+            value=80.3,
+            qualifiers={"benchmark": "lvu", "task": "scene", "source": "CVPR-2024 paper Table 1"},
+        ),
+        ReportedResult(
+            claim_id="ma_lmm_lvu_director",
+            metric_id="top1_accuracy_percent",
+            value=74.6,
+            qualifiers={"benchmark": "lvu", "task": "director", "source": "CVPR-2024 paper Table 1"},
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="s5_lvu",
+            description="S5 long-video baseline reported in the MA-LMM LVU comparison.",
+            qualifiers={
+                "average_top1_accuracy_percent": 59.2,
+                "source": "CVPR-2024 paper Table 1",
+            },
+        ),
+    ),
     deltas=(),
     blockers=(
         "Full checkpoint-level CVPR result reproduction still requires frozen "

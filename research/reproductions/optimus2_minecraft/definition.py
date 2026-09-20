@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -89,8 +91,46 @@ REPRODUCTION = ReproductionDefinition(
     primary_executable=(
         "research/reproductions/optimus2_minecraft/program.py"
     ),
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="optimus2_mgoa_video_count",
+            metric_id="dataset_video_count",
+            value=25000,
+            qualifiers={
+                "dataset": "mgoa",
+                "source": "CVPR-2025 paper",
+            },
+        ),
+        ReportedResult(
+            claim_id="optimus2_mgoa_atomic_task_count",
+            metric_id="dataset_atomic_task_count",
+            value=8,
+            qualifiers={
+                "dataset": "mgoa",
+                "source": "CVPR-2025 paper",
+            },
+        ),
+        ReportedResult(
+            claim_id="optimus2_mgoa_goa_pair_count",
+            metric_id="dataset_goal_observation_action_pair_count",
+            value=30000000,
+            qualifiers={
+                "dataset": "mgoa",
+                "approximate": True,
+                "source": "CVPR-2025 paper",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="optimus2_minecraft_agent_baselines",
+            description=(
+                "Prior Minecraft multimodal and behavior-modeling agents used "
+                "in the CVPR 2025 evaluation."
+            ),
+            qualifiers={"source": "CVPR-2025 paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("substitution"),

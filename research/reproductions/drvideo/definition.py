@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.research.reproduction import (
+    ReferenceBaseline,
+    ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionCatalog,
@@ -84,8 +86,102 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     primary_executable="research/reproductions/drvideo/program.py",
-    reported_results=(),
-    reference_baselines=(),
+    reported_results=(
+        ReportedResult(
+            claim_id="drvideo_egoschema_public_gpt4",
+            metric_id="multiple_choice_accuracy_percent",
+            value=66.4,
+            qualifiers={
+                "benchmark": "egoschema",
+                "split": "public-500",
+                "model": "gpt-4-1106-preview",
+                "source": "CVPR-2025 paper Table 1",
+            },
+        ),
+        ReportedResult(
+            claim_id="drvideo_egoschema_full_gpt4",
+            metric_id="multiple_choice_accuracy_percent",
+            value=61.0,
+            qualifiers={
+                "benchmark": "egoschema",
+                "split": "full-5031",
+                "model": "gpt-4-1106-preview",
+                "source": "CVPR-2025 paper Table 1",
+            },
+        ),
+        ReportedResult(
+            claim_id="drvideo_moviechat_global_accuracy",
+            metric_id="open_ended_accuracy_percent",
+            value=93.1,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "mode": "global",
+                "source": "CVPR-2025 paper evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="drvideo_moviechat_global_score",
+            metric_id="open_ended_quality_score_0_to_5",
+            value=4.41,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "mode": "global",
+                "source": "CVPR-2025 paper evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="drvideo_moviechat_breakpoint_accuracy",
+            metric_id="open_ended_accuracy_percent",
+            value=56.4,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "mode": "breakpoint",
+                "source": "CVPR-2025 paper evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="drvideo_moviechat_breakpoint_score",
+            metric_id="open_ended_quality_score_0_to_5",
+            value=2.75,
+            qualifiers={
+                "benchmark": "moviechat-1k",
+                "mode": "breakpoint",
+                "source": "CVPR-2025 paper evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="drvideo_videomme_long_without_subtitles",
+            metric_id="multiple_choice_accuracy_percent",
+            value=51.7,
+            qualifiers={
+                "benchmark": "video-mme",
+                "duration": "long",
+                "subtitles": False,
+                "source": "CVPR-2025 paper evaluation",
+            },
+        ),
+        ReportedResult(
+            claim_id="drvideo_videomme_long_with_subtitles",
+            metric_id="multiple_choice_accuracy_percent",
+            value=71.7,
+            qualifiers={
+                "benchmark": "video-mme",
+                "duration": "long",
+                "subtitles": True,
+                "source": "CVPR-2025 paper evaluation",
+            },
+        ),
+    ),
+    reference_baselines=(
+        ReferenceBaseline(
+            baseline_id="drvideo_long_video_baselines",
+            description=(
+                "Long-video retrieval and multimodal-agent baselines used by "
+                "the CVPR 2025 paper on EgoSchema, MovieChat-1K and Video-MME."
+            ),
+            qualifiers={"source": "CVPR-2025 paper evaluation"},
+        ),
+    ),
     deltas=(
         ReproductionDelta(
             kind=ReproductionDeltaKind("unresolved"),
