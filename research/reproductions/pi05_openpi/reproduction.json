@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "pi05_openpi",
-  "package_digest": "36e91043eac045ccb61bd7e6c918afc0cb67b0e5375e0c7b44c87236ff22688b",
+  "package_digest": "264ccedb22999881ff68e578ab295bd019ee27de09da7e36bb7a2d8bb823c177",
   "definition_digest": "5305fdd3fc18b9ca981df4b40f49a93d7ca06e5120cd25aa14ea69b1d2447e30",
   "source_registry_digest": "6fd9550e5e62e26d5d5b30a198b91082ca51daf1f7f6619ca09c0115dcdf8f04",
   "lifecycle": "catalogued",
@@ -72,7 +72,7 @@
       "kind": "support",
       "path": "research/reproductions/pi05_openpi/binding.py",
       "declaration_digest": "cf5dc6285a1803c633df64a75dc6672fb57c703c7f2b8532df8ab2ea126111be",
-      "content_sha256": "30e02532d22a9535970819e987f7df8728830793e3ab3150ca672530f8c642b7"
+      "content_sha256": "14e1188a2da5a14328cf1c1e90a5b7c31dcc7b0dcf5a4c3aa6176f6232007d62"
     }
   ],
   "primary_executable": null,
