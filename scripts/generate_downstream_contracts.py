@@ -31,7 +31,7 @@ _CONVENIENCE_FACADES: dict[str, tuple[tuple[str, bool], ...]] = {
     "model": (("model", False),),
     "participant": (("participant", False), ("participant/method", False)),
     "project": (("portfolio", False),),
-    "research": (("experimentation", True),),
+    "research": (("experimentation", True), ("execution/workflow", False)),
     "server": (("runtime/server", True), ("runtime/session", False)),
     "session": (("runtime/session", False),),
 }
