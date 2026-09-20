@@ -13,9 +13,8 @@ from dataclasses import dataclass, field
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.workflow.api.authoring import (
+    AgentMethodSpec,
     AgentPhaseSpec,
-    build_agent_cycle_program,
-    build_agent_phase_program,
 )
 from noetrium_platform.research.execution.workflow.api.method_machine import MethodProgram
 
@@ -137,11 +136,12 @@ class Frontier2026Reproduction:
             "reproduction_digest": self.reproduction_digest,
             "paper_private_semantics": True,
         }
-        kwargs = dict(
+        return AgentMethodSpec(
             method_id=self.method_id,
             implementation_version="paper-semantic-v1",
             schema_version="noetrium.frontier-2026-reproduction.v1",
             phases=self.phases,
+            max_cycles=self.max_cycles if self.cyclic else None,
             configuration=configuration,
             metric_names=self.metrics,
             artifact_kinds=(
@@ -151,10 +151,7 @@ class Frontier2026Reproduction:
                 "machine_journal_receipts",
                 "evidence_bundle",
             ),
-        )
-        if self.cyclic:
-            return build_agent_cycle_program(max_cycles=self.max_cycles, **kwargs)
-        return build_agent_phase_program(**kwargs)
+        ).compile()
 
 
 def _b(
