@@ -23,6 +23,37 @@ _SAFE = re.compile(r"[^A-Za-z0-9_.-]+")
 README_BLOCK_START = "<!-- noetrium-interface-catalog:start -->"
 README_BLOCK_END = "<!-- noetrium-interface-catalog:end -->"
 
+# Internal architecture metadata and canonical JSON helpers are not domain API.
+# They remain available from their single owning/internal surfaces and must not
+# multiply through generated system facades or the unified symbol index.
+_DOWNSTREAM_EXCLUDED_SYMBOLS = frozenset({
+    "AUTHORITY",
+    "CONTRACT",
+    "MUST_NOT_OWN",
+    "NODE",
+    "OWNS",
+    "SYSTEM",
+    "SystemLeafContract",
+    "contract",
+    "JsonDocument",
+    "JsonInput",
+    "JsonMutableValue",
+    "JsonObject",
+    "JsonScalar",
+    "JsonValue",
+    "Sha256Digest",
+    "canonical_bytes",
+    "canonical_digest",
+    "canonical_text",
+    "freeze_json",
+    "require_sha256",
+    "strict_finite_json_bytes",
+    "strict_finite_json_digest",
+    "strict_finite_json_text",
+    "strict_json_loads",
+    "thaw_json",
+})
+
 # Downstream has one product entrypoint: noetrium.api.
 # Generated system facades remain registry material used by discovery.
 _RETIRED_CONVENIENCE_FACADES = (
@@ -308,7 +339,11 @@ def _api_modules(root: Path, package_prefix: str) -> tuple[ApiModuleSurface, ...
         if module in seen:
             continue
         seen.add(module)
-        symbols = _public_symbols(path)
+        symbols = tuple(
+            name
+            for name in _public_symbols(path)
+            if name not in _DOWNSTREAM_EXCLUDED_SYMBOLS
+        )
         if symbols:
             rows.append(ApiModuleSurface(module, path.relative_to(root).as_posix(), symbols))
     return tuple(rows)
