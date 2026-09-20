@@ -78,7 +78,9 @@ def test_optimus1_and_optimus2_share_exact_long_horizon_cut() -> None:
     )
     assert s1.trial_protocol_identity == p1
     assert s2.trial_protocol_identity == p2
-    assert s1.benchmark_cut_digest == s2.benchmark_cut_digest
+    assert s1.benchmark is benchmark
+    assert s2.benchmark is benchmark
+    assert s1.benchmark.cut_digest == s2.benchmark.cut_digest
     assert {
         row.measurement_id for row in s1.measurement_protocol.definitions
     } == {"environment_steps", "task_success", "wall_time_seconds"}
