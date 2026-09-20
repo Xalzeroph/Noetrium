@@ -12797,6 +12797,16 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.execution.workflow.api.authoring.AgentMethodSpec",
+      "target": "noetrium_platform.research.execution.workflow.api.authoring.AgentPhaseSpec"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.workflow.api.authoring.AgentMethodSpec",
+      "target": "noetrium_platform.research.execution.workflow.api.method_machine.MethodProgram"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.execution.workflow.api.graph.WorkflowGraph",
       "target": "noetrium_platform.research.execution.workflow.api.graph.WorkflowStep"
     },
@@ -78929,13 +78939,45 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "artifact_kinds",
+        "configuration",
+        "evidence_obligations",
+        "implementation_version",
+        "max_cycles",
+        "method_id",
+        "metric_names",
+        "phases",
+        "schema_version"
+      ],
+      "kind": "dataclass",
+      "line": 57,
+      "methods": [
+        "__post_init__",
+        "cyclic",
+        "compile"
+      ],
+      "module": "noetrium_platform.research.execution.workflow.api.authoring",
+      "name": "AgentMethodSpec",
+      "nesting": [
+        "AgentMethodSpec"
+      ],
+      "qualname": "noetrium_platform.research.execution.workflow.api.authoring.AgentMethodSpec",
+      "system_key": "execution/workflow",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "agent_id",
         "instruction",
         "max_visits",
         "phase_id"
       ],
       "kind": "dataclass",
-      "line": 22,
+      "line": 23,
       "methods": [
         "__post_init__"
       ],
@@ -96175,8 +96217,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3193,
-    "classes": 3154,
+    "association_edges": 3195,
+    "classes": 3155,
     "constructor_edges": 856,
     "inheritance_edges": 138,
     "module_import_edges": 5473,
@@ -143857,7 +143899,7 @@
   "parse_errors": [],
   "registry_sha256": "e4ea173ff1460ed18af96b3de44996a6bb9c859342697cc3084344ee60a52574",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "505c95a72b6bbde8a4088f38a7a65b05f557308a",
+  "source_git_sha": "763c037c38d8dee0d65918d9a9a7ceccf93a5412",
   "system_import_edges": [
     {
       "count": 108,
