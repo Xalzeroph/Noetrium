@@ -1,19 +1,23 @@
 from __future__ import annotations
 
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_cycle_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from research.reproductions.frontier_2026.study import PaperStudySpec
 
 
 def _paper(method_id, title, venue, uri, benchmarks, phases, metrics, ablations, protocol):
     spec = PaperStudySpec(method_id=method_id, title=title, venue=venue, paper_uri=uri, benchmark_ids=benchmarks, protocol=protocol, metrics=metrics, ablations=ablations)
-    program = build_agent_cycle_program(
-        method_id=method_id, implementation_version="2026-paper-protocol", schema_version=f"{method_id}.phase-workflow.v1",
-        phases=tuple(AgentPhaseSpec(*row) for row in phases), max_cycles=128,
+    method = AgentMethodSpec(
+        method_id=method_id,
+        implementation_version="2026-paper-protocol",
+        schema_version=f"{method_id}.phase-workflow.v1",
+        phases=tuple(AgentPhaseSpec(*row) for row in phases),
+        max_cycles=128,
         configuration={"paper_uri": uri, "venue": venue, "benchmark_ids": benchmarks, "protocol": protocol, "ablations": ablations},
         evidence_obligations=(f"{method_id}.phase-transcript", f"{method_id}.model-tool-receipts", f"{method_id}.metric-artifacts"),
-        metric_names=metrics, artifact_kinds=(f"{method_id}_trajectory", f"{method_id}_experiment_manifest"),
+        metric_names=metrics,
+        artifact_kinds=(f"{method_id}_trajectory", f"{method_id}_experiment_manifest"),
     )
-    return program, spec
+    return method.compile(), spec
 
 
 PAPERS = {}
