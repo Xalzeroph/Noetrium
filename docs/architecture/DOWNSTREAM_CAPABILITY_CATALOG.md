@@ -19,7 +19,7 @@ Example:
 
 - Registered systems: 172
 - Public API modules: 319
-- Public symbols: 2911
+- Public symbols: 2912
 - Registry digest: c4da8a78a00c12312ca68a1810040ec6762e8bd5a251a21a9fabb94d74ef93dd
 
 ## Capability domains
@@ -30,7 +30,7 @@ Example:
 | data | 8 | 18 | 101 |
 | environment | 18 | 22 | 203 |
 | execution | 8 | 30 | 430 |
-| experimentation | 16 | 63 | 651 |
+| experimentation | 16 | 63 | 652 |
 | governance | 13 | 16 | 126 |
 | model | 16 | 25 | 311 |
 | observability | 27 | 0 | 0 |
@@ -992,7 +992,7 @@ Example:
 - noetrium_platform.research.experimentation.study.api ?w^~)?t AgentStudySpec, Study, BenchmarkAssignmentMode, StudyModel, StudyParticipant, PostHocEvaluationDefinition, PostHocEvaluationResult, TaskVerifierArtifact, TaskVerifierPort, TaskVerifierReceipt, TaskVerifierRequest, TrialProviderPort, StudyResearchReadPort, StudyResearchReadSnapshot, TrialMatrixExecutionReport, TrialExecutionRequest, TrialExecutionReceipt, TrialExecutionStageReceipt, ReplayLevel, AnalysisDefinition, AnalysisResult, MeasurementCut, BenchmarkTaskSet, BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution, BenchmarkSourceSpec, InMemoryBenchmarkSource, TaskArtifactSpec, TaskDefinition, TaskPackageSpec, TaskVerifierIsolation, TaskGraph, TaskGraphEdge, TaskGraphRelation, TaskSetSplit, TrialBudget, StudyIntervention, StudyFactorSpec, ResearchStudyDefinition, StudyExecutionPolicy, ResearchRevision, ParticipantSchedule, FactorSelection, FactorLevelSpec, StudyConcurrencyPolicy, MeasurementContentReference, MeasurementDefinition, MeasurementProtocol, MeasurementRecord, MeasurementValue, MeasurementValueKind, StudyAssignment, StudyExecutionUnit, StudyArtifactPublicationPort, StudyAssignmentPort, StudyMetricAggregate, StudyMatrixExecutionReport, StudyMetricAggregationPort, StudyMetricObservation, StudyProtocol, StudyVariantSpec, VariantKind, ExperimentPlan, VariantBinding, VariantExecutionProvider, VariantExecutionRequest, BoundStudyExecutionPort
 - noetrium_platform.research.experimentation.study.api.analysis ?w^~)?t AnalysisDefinition, AnalysisResult, DatasetVersionProjection, EvidenceManifestProjection, MeasurementCut
 - noetrium_platform.research.experimentation.study.api.authoring ?w^~)?t AgentStudySpec, Study, StudyModel, StudyParticipant
-- noetrium_platform.research.experimentation.study.api.benchmark ?w^~)?t BenchmarkTaskSet, TaskDefinition, TaskPackageSpec, TaskArtifactSpec, TaskVerifierIsolation, TaskGraph, TaskGraphEdge, TaskGraphRelation, TaskSetSplit, TrialBudget, BenchmarkSourceKind, BenchmarkSourceSpec, BenchmarkSourceResolution, BenchmarkSourcePort, InMemoryBenchmarkSource
+- noetrium_platform.research.experimentation.study.api.benchmark ?w^~)?t BenchmarkCutSpec, BenchmarkTaskSet, TaskDefinition, TaskPackageSpec, TaskArtifactSpec, TaskVerifierIsolation, TaskGraph, TaskGraphEdge, TaskGraphRelation, TaskSetSplit, TrialBudget, BenchmarkSourceKind, BenchmarkSourceSpec, BenchmarkSourceResolution, BenchmarkSourcePort, InMemoryBenchmarkSource
 - noetrium_platform.research.experimentation.study.api.contracts ?w^~)?t StudyConcurrencyPolicy, StudyAssignment, StudyExecutionUnit, StudyMatrixExecutionReport, StudyMetricAggregate, StudyMetricObservation, StudyProtocol, StudyVariantSpec, VariantKind
 - noetrium_platform.research.experimentation.study.api.design ?w^~)?t BenchmarkAssignmentMode, FactorLevelSpec, FactorSelection, ParticipantSchedule, ResearchRevision, ResearchStudyDefinition, StudyExecutionPolicy, StudyFactorSpec, StudyIntervention
 - noetrium_platform.research.experimentation.study.api.evaluation ?w^~)?t PostHocEvaluationDefinition, PostHocEvaluationResult

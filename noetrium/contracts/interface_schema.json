@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "5b58ce4b521b6dbd59fad6a2a66be1acc0e257eb06644cae77436541f6358331",
+  "interface_digest": "d25ee785960af163e5bfcbb3f22911d3de8a522e2a6b6ecc0894397d0c726566",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -40189,17 +40189,17 @@
                 {
                   "annotation": "str",
                   "default": null,
+                  "name": "method_id"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
                   "name": "project_id"
                 },
                 {
-                  "annotation": "str",
-                  "default": null,
+                  "annotation": "str | None",
+                  "default": "None",
                   "name": "study_id"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "method_id"
                 },
                 {
                   "annotation": "str | StudyModel | None",
@@ -40861,6 +40861,127 @@
           "module": "noetrium_platform.research.experimentation.study.api.benchmark",
           "source": "noetrium_platform/research/experimentation/study/api/benchmark.py",
           "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Low-friction compiler for one immutable benchmark cut.\n\nAuthors retain explicit task/package/split and selection semantics. The spec\nonly canonicalizes ordering and compiles the declared scientific identity\ninto BenchmarkTaskSet.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "benchmark_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "revision_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "source_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "task_schema_id"
+                },
+                {
+                  "annotation": "ArtifactReference | None",
+                  "default": "None",
+                  "name": "source_reference"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "build",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "tuple[TaskDefinition, ...]",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "tasks",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "tuple[TaskSetSplit, ...]",
+                      "default": "()",
+                      "kind": "keyword_only",
+                      "name": "splits",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "TaskGraph | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "task_graph",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "JsonObject | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "selection_policy",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "selection_policy_digest",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "BenchmarkTaskSet",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def build(self, tasks: tuple[TaskDefinition, ...], *, splits: tuple[TaskSetSplit, ...]=(), task_graph: TaskGraph | None=None, selection_policy: JsonObject | None=None, selection_policy_digest: str | None=None) -> BenchmarkTaskSet:"
+                }
+              ],
+              "name": "BenchmarkCutSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
             {
               "bases": [],
               "decorators": [
@@ -41847,6 +41968,7 @@
             }
           ],
           "symbols": [
+            "BenchmarkCutSpec",
             "BenchmarkTaskSet",
             "TaskDefinition",
             "TaskPackageSpec",
