@@ -1,0 +1,16 @@
+services:
+  platform-runtime:
+    build:
+      context: ..
+      dockerfile: deploy/environments/gui/Dockerfile
+      args:
+        PLATFORM_BASE_IMAGE: ${PLATFORM_IMAGE:-noetrium:local}
+    image: ${PLATFORM_GUI_IMAGE:-noetrium-env-gui:local}
+    environment:
+      NOETRIUM_ENVIRONMENT_PROFILE: gui
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/noetrium-entrypoint", "environment-doctor", "gui"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 10s
