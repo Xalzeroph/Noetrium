@@ -1,5 +1,5 @@
 {
-  "catalog_digest": "fe33e2a85bbf43e7efa36aa0f3fbc916cabcb5dcbe698f35c8ac2aaca7400859",
+  "catalog_digest": "0540d2f7e6980b3df7f9b34ce67d21ff587eaff0b8adeb59b8faf59afba461a7",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v2",
   "systems": [
@@ -3224,6 +3224,7 @@
           "module": "noetrium_platform.research.experimentation.study.api",
           "source": "noetrium_platform/research/experimentation/study/api/__init__.py",
           "symbols": [
+            "AgentStudySpec",
             "Study",
             "BenchmarkAssignmentMode",
             "StudyModel",
@@ -3308,6 +3309,7 @@
           "module": "noetrium_platform.research.experimentation.study.api.authoring",
           "source": "noetrium_platform/research/experimentation/study/api/authoring.py",
           "symbols": [
+            "AgentStudySpec",
             "Study",
             "StudyModel",
             "StudyParticipant"
@@ -3440,7 +3442,7 @@
       "canonical_authority": "experimentation",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__study",
-      "interface_digest": "2370266b93ca1ebd1f33cbf89e973b784e22a01e86b68f7f5e4b91357f7855c1",
+      "interface_digest": "38fe83bc12c29a1bac174b2741277c12093473b87d36ffd55e655b91af587a07",
       "must_not_own": "method implementation internals",
       "node_kind": "facet",
       "owns": "study definitions, hypotheses and study lifecycle",

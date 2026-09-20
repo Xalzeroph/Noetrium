@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "85a1338b25ff8ef7eb7e7a31ed8d9f3aff4101511c6917bc7d5f00804cbd1a2b",
+  "interface_digest": "b3816ceb160f42274d25b59b3559074a6d67b794a529985c327c88f6a21cff4e",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -40122,6 +40122,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "AgentStudySpec",
+              "origin_module": ".authoring",
+              "origin_name": "AgentStudySpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "Study",
               "origin_module": ".authoring",
               "origin_name": "Study",
@@ -40724,6 +40733,7 @@
             }
           ],
           "symbols": [
+            "AgentStudySpec",
             "Study",
             "BenchmarkAssignmentMode",
             "StudyModel",
@@ -41149,6 +41159,253 @@
           "symbol_schemas": [
             {
               "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Common-path authoring for one method-program study.\n\nThis removes participant/model/seed boilerplate without hiding scientific\nidentities. Authors still supply the benchmark, trial protocol and budget;\nmulti-participant or otherwise non-standard studies use Study directly.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "project_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "study_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "method_id"
+                },
+                {
+                  "annotation": "str | StudyModel | None",
+                  "default": "None",
+                  "name": "model"
+                },
+                {
+                  "annotation": "MeasurementProtocol | tuple[MeasurementDefinition, ...] | None",
+                  "default": "None",
+                  "name": "measurements"
+                },
+                {
+                  "annotation": "str",
+                  "default": "'full'",
+                  "name": "treatment"
+                },
+                {
+                  "annotation": "str",
+                  "default": "'paper_method_program'",
+                  "name": "participant_kind"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "benchmark_ids"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "capabilities"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "configurations"
+                },
+                {
+                  "annotation": "str",
+                  "default": "'agent_model'",
+                  "name": "model_role"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "build",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "BenchmarkTaskSet",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "benchmark",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "ExperimentTrialProtocolIdentity",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "trial",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "TrialBudget",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "limits",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str | StudyModel | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "model",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "MeasurementProtocol | tuple[MeasurementDefinition, ...] | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "measurements",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "benchmark_split_id",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "int",
+                      "default": "1",
+                      "kind": "keyword_only",
+                      "name": "repetitions",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "tuple[str, ...] | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "seeds",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "BenchmarkAssignmentMode",
+                      "default": "BenchmarkAssignmentMode.TASK",
+                      "kind": "keyword_only",
+                      "name": "benchmark_assignment_mode",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "experiment_id",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'method-program'",
+                      "kind": "keyword_only",
+                      "name": "workload_id",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'trial.method-program'",
+                      "kind": "keyword_only",
+                      "name": "trial_provider_requirement_id",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ReplayLevel",
+                      "default": "ReplayLevel.OBSERVATIONAL",
+                      "kind": "keyword_only",
+                      "name": "replay_level",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "float",
+                      "default": "3600.0",
+                      "kind": "keyword_only",
+                      "name": "repetition_timeout_seconds",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "StudyConcurrencyPolicy | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "concurrency_policy",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "tuple[StudyFactorSpec, ...]",
+                      "default": "()",
+                      "kind": "keyword_only",
+                      "name": "factors",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ResearchRevision | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "revision",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "ResearchStudyDefinition",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def build(self, benchmark: BenchmarkTaskSet, *, trial: ExperimentTrialProtocolIdentity, limits: TrialBudget, model: str | StudyModel | None=None, measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...] | None=None, benchmark_split_id: str | None=None, repetitions: int=1, seeds: tuple[str, ...] | None=None, benchmark_assignment_mode: BenchmarkAssignmentMode=BenchmarkAssignmentMode.TASK, experiment_id: str | None=None, workload_id: str='method-program', trial_provider_requirement_id: str='trial.method-program', replay_level: ReplayLevel=ReplayLevel.OBSERVATIONAL, repetition_timeout_seconds: float=3600.0, concurrency_policy: StudyConcurrencyPolicy | None=None, factors: tuple[StudyFactorSpec, ...]=(), revision: ResearchRevision | None=None) -> ResearchStudyDefinition:"
+                }
+              ],
+              "name": "AgentStudySpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
               "decorators": [],
               "doc": "Compact declaration compiled to the canonical typed research protocol.\n\nCommon-path authors declare benchmark, participants, model responsibilities,\nmeasurements, repetitions and limits. Provider bindings, runtime identities,\nproof objects and execution plans are deliberately absent from this surface.",
               "fields": [],
@@ -41572,6 +41829,7 @@
             }
           ],
           "symbols": [
+            "AgentStudySpec",
             "Study",
             "StudyModel",
             "StudyParticipant"
