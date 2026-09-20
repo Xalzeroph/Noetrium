@@ -281,6 +281,21 @@ def test_project_cli_has_no_template_selector_and_emits_single_project_shape(
     assert checks["standard_bindings"] == "pass"
 
 
+def test_project_create_cli_defaults_destination_and_version(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    _bind_fixed_platform(monkeypatch)
+    monkeypatch.chdir(tmp_path)
+
+    assert main(["project", "create", "default-project"]) == 0
+    created = json.loads(capsys.readouterr().out)
+    root = tmp_path / "default-project"
+    assert Path(created["result"]["destination"]) == root
+    manifest = decode_project_manifest_bytes((root / "project.manifest.json").read_bytes())
+    assert manifest.project.identity.project_id == "default-project"
+    assert manifest.project.identity.version == "0.1.0"
+
+
 def test_runtime_application_is_optional_extension_of_same_project(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
 ) -> None:
@@ -298,18 +313,25 @@ def test_runtime_application_is_optional_extension_of_same_project(
     application.write_text(
         "from noetrium.api import ResearchResult\n\n"
         "class Application:\n"
+        "    def __init__(self, config_path):\n"
+        "        self.config_path = config_path\n"
         "    def execute(self, request):\n"
-        "        return ResearchResult(request.action, request.target, 'accepted', {'route': 'project'})\n\n"
+        "        return ResearchResult(request.action, request.target, 'accepted', "
+        "{'route': 'project', 'config': None if self.config_path is None else str(self.config_path)})\n\n"
         "def build_application(config_path):\n"
-        "    del config_path\n"
-        "    return Application()\n",
+        "    return Application(config_path)\n",
         encoding="utf-8",
     )
-    assert main(["run", "--project", str(root)]) == 0
+    config = root / "runtime.json"
+    config.write_text("{}", encoding="utf-8")
+    assert main(["run", "--project", str(root), "--config", str(config)]) == 0
     result = json.loads(capsys.readouterr().out)
     assert result["result"]["target"] == "project-route"
     assert result["result"]["state"] == "accepted"
-    assert result["result"]["payload"] == {"route": "project"}
+    assert result["result"]["payload"] == {
+        "route": "project",
+        "config": str(config),
+    }
 
 
 def test_root_product_api_exports_project_test_stage_types() -> None:
