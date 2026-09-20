@@ -62,7 +62,7 @@ remain Noetrium-owned.
 | Long-term episodes | EpisodicMemoryStore | retrieval policy or durable adapter |
 | Embedding retrieval | VectorMemoryStore | embedder or indexed store |
 | Tool use | ToolRegistry | typed definitions and handlers |
-| Debate/group/hierarchy | orchestration.multi_agent | node implementations and topology |
+| Debate/group/hierarchy | `noetrium.api` multi-agent contracts | node implementations and topology |
 
 A whole-method paper can implement ReferenceAgentDecisionPort and run unchanged through
 the same public host, or replace the full loop without editing Platform source.
