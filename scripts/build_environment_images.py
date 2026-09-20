@@ -135,7 +135,14 @@ def build_environment_images(
     distribution = work_root / "distribution"
     context = work_root / "container-context"
     tooling_venv = work_root / "tooling-venv"
+    runtime_root = work_root / "runtime"
     work_root.mkdir(parents=True)
+    for state_dir in (
+        runtime_root / "platform-state",
+        runtime_root / "minecraft",
+    ):
+        state_dir.mkdir(parents=True, exist_ok=True)
+        state_dir.chmod(0o777)
 
     _run((sys.executable, "-m", "venv", str(tooling_venv)))
     tool_python = (
@@ -229,6 +236,7 @@ def build_environment_images(
         env[image_env] = tag
         env["JAVA_RUNTIME_IMAGE"] = java_runtime_image
         env["NODE_VERSION"] = node_version
+        env["PLATFORM_HOST_DATA_ROOT"] = str(runtime_root)
         _run(
             (
                 "docker",
