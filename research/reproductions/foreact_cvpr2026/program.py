@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_cycle_program, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="foreact_cvpr2026"
 TITLE="ForeAct: Steering Your VLA with Efficient Visual Foresight Planning"
 VENUE="CVPR 2026"
@@ -16,11 +16,11 @@ PHASES=(
     AgentPhaseSpec("act", "foreact.vla", "Produce and execute the next visuo-motor action chunk."),
     AgentPhaseSpec("recede_or_continue", "foreact.planner", "Use the resulting observation to refresh foresight planning for the next step."),
 )
-METHOD_PROGRAM=build_agent_cycle_program(
+METHOD_PROGRAM=AgentMethodSpec(
     method_id=METHOD_ID,implementation_version="2026-paper-protocol",schema_version="foreact_cvpr2026.phase-workflow.v1",phases=PHASES,
     max_cycles=128,
     configuration={"paper_uri":PAPER_URI,"venue":VENUE,"benchmark_ids":BENCHMARK_IDS,"protocol":PROTOCOL,"ablations":ABLATIONS},
     evidence_obligations=(METHOD_ID+".phase-transcript",METHOD_ID+".model-tool-receipts",METHOD_ID+".metric-artifacts"),
     metric_names=METRICS,artifact_kinds=(METHOD_ID+"_trajectory",METHOD_ID+"_experiment_manifest"),
-)
+).compile()
 __all__=["ABLATIONS","BENCHMARK_IDS","METHOD_ID","METHOD_PROGRAM","METRICS","PAPER_URI","PHASES","PROTOCOL","TITLE","VENUE"]
