@@ -13,6 +13,17 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "deploy" / "environments" / "catalog.json"
+EXPECTED_PROFILES = frozenset({"minecraft", "embodied", "gui", "web", "software", "text_world"})
+FORBIDDEN_IMAGE_MARKERS = (
+    "copy research",
+    "copy benchmarks",
+    "copy datasets",
+    "copy checkpoints",
+    "copy experiments",
+)
+WHEEL_LABEL = "org.opencontainers.image.noetrium.wheel.sha256"
+DISTRIBUTION_LABEL = "org.opencontainers.image.noetrium.distribution-evidence.sha256"
+REVISION_LABEL = "org.opencontainers.image.revision"
 
 
 def _run(
@@ -75,6 +86,101 @@ def _profile_map(data: dict) -> dict[str, dict]:
     return result
 
 
+def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
+    errors: list[str] = []
+    if set(profiles) != EXPECTED_PROFILES:
+        errors.append(
+            "profile set drift: "
+            f"expected={sorted(EXPECTED_PROFILES)!r} observed={sorted(profiles)!r}"
+        )
+
+    base = data.get("base")
+    if not isinstance(base, dict):
+        errors.append("base image authority must be an object")
+    else:
+        if base.get("build_mode") != "evidence-bound-wheel":
+            errors.append("base image must remain evidence-bound-wheel")
+        for field in ("dockerfile", "compose"):
+            value = base.get(field)
+            if not isinstance(value, str) or not value:
+                errors.append(f"base {field} must be non-empty")
+            elif not (ROOT / value).is_file():
+                errors.append(f"base {field} does not exist: {value}")
+
+    for profile_id, row in sorted(profiles.items()):
+        if row.get("category_id") != profile_id:
+            errors.append(f"{profile_id}: category_id must match canonical environment category")
+        if row.get("extends") != "base":
+            errors.append(f"{profile_id}: environment profile must extend base")
+        if profile_id == "text_world":
+            if row.get("build_mode") != "base-only":
+                errors.append("text_world must remain base-only")
+            continue
+
+        dockerfile_text = ""
+        compose_text = ""
+        for field in ("dockerfile", "compose"):
+            value = row.get(field)
+            if not isinstance(value, str) or not value:
+                errors.append(f"{profile_id}: {field} must be non-empty")
+                continue
+            path = ROOT / value
+            if not path.is_file():
+                errors.append(f"{profile_id}: missing {field}: {value}")
+                continue
+            if field == "dockerfile":
+                dockerfile_text = path.read_text(encoding="utf-8")
+            else:
+                compose_text = path.read_text(encoding="utf-8")
+
+        if dockerfile_text:
+            lowered = dockerfile_text.lower()
+            if "arg platform_base_image" not in lowered:
+                errors.append(f"{profile_id}: Dockerfile must declare PLATFORM_BASE_IMAGE")
+            if "from ${platform_base_image}" not in lowered:
+                errors.append(f"{profile_id}: Dockerfile must consume PLATFORM_BASE_IMAGE")
+            for marker in FORBIDDEN_IMAGE_MARKERS:
+                if marker in lowered:
+                    errors.append(f"{profile_id}: downstream/scientific marker leaked into image: {marker}")
+        if compose_text:
+            if "environment-doctor" not in compose_text:
+                errors.append(f"{profile_id}: compose overlay lacks environment doctor")
+            if profile_id not in compose_text:
+                errors.append(f"{profile_id}: compose overlay lacks profile identity")
+
+    if errors:
+        raise RuntimeError("; ".join(errors))
+    return {
+        "schema": "noetrium.environment-profile-validation.v1",
+        "status": "pass",
+        "profile_count": len(profiles),
+        "image_profile_count": sum(
+            1 for row in profiles.values() if row.get("build_mode") != "base-only"
+        ),
+        "base_build_mode": data["base"]["build_mode"],
+    }
+
+
+def _digest_label(labels: dict, key: str) -> str:
+    value = labels.get(key)
+    if (
+        not isinstance(value, str)
+        or len(value) != 64
+        or any(ch not in "0123456789abcdef" for ch in value)
+    ):
+        raise RuntimeError(f"cached base image has invalid provenance label: {key}")
+    return value
+
+
+def _cached_base_provenance(identity: dict, source_sha: str) -> tuple[str, str]:
+    labels = identity.get("labels")
+    if not isinstance(labels, dict):
+        raise RuntimeError("cached base image labels are invalid")
+    if labels.get(REVISION_LABEL) != source_sha:
+        raise RuntimeError("cached base image source revision does not match checkout")
+    return _digest_label(labels, WHEEL_LABEL), _digest_label(labels, DISTRIBUTION_LABEL)
+
+
 def _image_exists(tag: str) -> bool:
     completed = subprocess.run(
         ("docker", "image", "inspect", tag),
@@ -127,79 +233,77 @@ def build_environment_images(
     unknown = tuple(sorted(set(profiles) - set(by_id)))
     if unknown:
         raise RuntimeError(f"unknown environment profiles: {unknown!r}")
-    base_only = tuple(
-        profile_id
-        for profile_id in profiles
-        if by_id[profile_id].get("build_mode") == "base-only"
-    )
-    if base_only:
-        raise RuntimeError(
-            f"base-only profiles do not build an image: {base_only!r}"
-        )
+    validate_catalog(catalog, by_id)
 
-    _run((sys.executable, "scripts/environment_profiles.py", "validate"))
     _run(("docker", "--version"))
     _run(("docker", "compose", "version"))
 
     work_root = work_root.resolve()
-    if work_root.exists():
-        shutil.rmtree(work_root)
-    distribution = work_root / "distribution"
-    context = work_root / "container-context"
-    tooling_venv = work_root / "tooling-venv"
+    scratch_root = work_root / "build"
     runtime_root = work_root / "runtime"
-    work_root.mkdir(parents=True)
-    for state_dir in (
-        runtime_root / "platform-state",
-        runtime_root / "minecraft",
-    ):
+    runtime_root.mkdir(parents=True, exist_ok=True)
+    for state_name in ("platform-state", *profiles):
+        state_dir = runtime_root / state_name
         state_dir.mkdir(parents=True, exist_ok=True)
         state_dir.chmod(0o777)
 
-    _run((sys.executable, "-m", "venv", str(tooling_venv)))
-    tool_python = (
-        tooling_venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-    )
-    _run(
-        (
-            str(tool_python),
-            "-m",
-            "pip",
-            "install",
-            "--upgrade",
-            "pip",
-            "build>=1.2,<2",
-        )
-    )
-
-    _run(
-        (
-            str(tool_python),
-            "scripts/release_distribution.py",
-            str(distribution),
-        )
-    )
-    _run(
-        (
-            str(tool_python),
-            "scripts/prepare_container_context.py",
-            str(distribution),
-            str(context),
-            "--expected-source-sha",
-            source_sha,
-        )
-    )
-    context_receipt = json.loads(
-        (context / "CONTAINER_CONTEXT.json").read_text(encoding="utf-8")
-    )
-    wheel_sha256 = context_receipt["wheel_sha256"]
-    distribution_evidence_sha256 = context_receipt[
-        "distribution_evidence_sha256"
-    ]
-
     base_tag = f"noetrium:{source_sha}"
     reused_base = _image_exists(base_tag) and not rebuild
-    if not reused_base:
+    build_mode = "reused-verified-base" if reused_base else "qualified-distribution-build"
+
+    if reused_base:
+        scratch_root.mkdir(parents=True, exist_ok=True)
+        base_identity = _image_identity(base_tag)
+        wheel_sha256, distribution_evidence_sha256 = _cached_base_provenance(
+            base_identity, source_sha
+        )
+    else:
+        if scratch_root.exists():
+            shutil.rmtree(scratch_root)
+        distribution = scratch_root / "distribution"
+        context = scratch_root / "container-context"
+        tooling_venv = scratch_root / "tooling-venv"
+        scratch_root.mkdir(parents=True, exist_ok=True)
+
+        _run((sys.executable, "-m", "venv", str(tooling_venv)))
+        tool_python = (
+            tooling_venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+        )
+        _run(
+            (
+                str(tool_python),
+                "-m",
+                "pip",
+                "install",
+                "--upgrade",
+                "pip",
+                "build>=1.2,<2",
+            )
+        )
+        _run(
+            (
+                str(tool_python),
+                "scripts/release_distribution.py",
+                str(distribution),
+            )
+        )
+        _run(
+            (
+                str(tool_python),
+                "scripts/prepare_container_context.py",
+                str(distribution),
+                str(context),
+                "--expected-source-sha",
+                source_sha,
+            )
+        )
+        context_receipt = json.loads(
+            (context / "CONTAINER_CONTEXT.json").read_text(encoding="utf-8")
+        )
+        wheel_sha256 = context_receipt["wheel_sha256"]
+        distribution_evidence_sha256 = context_receipt[
+            "distribution_evidence_sha256"
+        ]
         _run(
             (
                 "docker",
@@ -218,10 +322,12 @@ def build_environment_images(
                 str(context),
             )
         )
-    base_verification = work_root / "base-container-verification.json"
+        base_identity = _image_identity(base_tag)
+
+    base_verification = scratch_root / "base-container-verification.json"
     _run(
         (
-            str(tool_python),
+            sys.executable,
             "scripts/verify_container_image.py",
             base_tag,
             "--expected-source-sha",
@@ -235,11 +341,28 @@ def build_environment_images(
         )
     )
 
-    base_identity = _image_identity(base_tag)
     base_identity["reused"] = reused_base
     images: dict[str, dict] = {"base": base_identity}
     for profile_id in profiles:
         row = by_id[profile_id]
+        if row.get("build_mode") == "base-only":
+            _run(
+                (
+                    "docker",
+                    "run",
+                    "--rm",
+                    base_tag,
+                    "environment-doctor",
+                    profile_id,
+                )
+            )
+            profile_identity = dict(base_identity)
+            profile_identity["profile_id"] = profile_id
+            profile_identity["base_only"] = True
+            profile_identity["reused"] = True
+            images[profile_id] = profile_identity
+            continue
+
         compose = row.get("compose")
         image_env = row.get("image_env")
         if not isinstance(compose, str) or not compose:
@@ -299,6 +422,8 @@ def build_environment_images(
         "node_version": node_version,
         "profiles": list(profiles),
         "rebuild": rebuild,
+        "build_mode": build_mode,
+        "runtime_root": str(runtime_root),
         "images": images,
         "base_verification": json.loads(
             base_verification.read_text(encoding="utf-8")
@@ -314,40 +439,82 @@ def build_environment_images(
     return receipt
 
 
+def _print_json(value: object) -> None:
+    print(json.dumps(value, indent=2, sort_keys=True))
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
+    parser = argparse.ArgumentParser(
+        description="Canonical environment-profile and image-build entrypoint."
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("list", help="list reusable environment profiles")
+    sub.add_parser("validate", help="validate the environment-profile authority")
+    show = sub.add_parser("show", help="show one environment profile")
+    show.add_argument("profile_id")
+
+    build = sub.add_parser("build", help="build or reuse exact-SHA environment images")
+    build.add_argument(
         "--profiles",
         nargs="+",
-        default=["minecraft", "embodied", "gui", "web", "software"],
+        default=sorted(EXPECTED_PROFILES),
     )
-    parser.add_argument(
+    build.add_argument(
         "--work-root",
         type=Path,
         default=Path(tempfile.gettempdir()) / "noetrium-environment-images",
     )
-    parser.add_argument(
+    build.add_argument(
         "--output",
         type=Path,
         default=Path("environment-image-build.json"),
     )
-    parser.add_argument(
+    build.add_argument(
         "--java-runtime-image",
         default=os.environ.get(
             "JAVA_RUNTIME_IMAGE", "eclipse-temurin:21-jre-jammy"
         ),
     )
-    parser.add_argument(
+    build.add_argument(
         "--node-version",
         default=os.environ.get("NODE_VERSION", "22.22.2"),
     )
-    parser.add_argument(
+    build.add_argument(
         "--rebuild",
         action="store_true",
         help="Ignore exact-SHA image cache and rebuild base/profile images.",
     )
     args = parser.parse_args(argv)
+
     try:
+        data = _load_catalog()
+        profiles = _profile_map(data)
+        if args.command == "validate":
+            _print_json(validate_catalog(data, profiles))
+            return 0
+        if args.command == "list":
+            for profile_id in sorted(profiles):
+                row = profiles[profile_id]
+                print(
+                    json.dumps(
+                        {
+                            "profile_id": profile_id,
+                            "category_id": row["category_id"],
+                            "build_mode": row.get("build_mode", "environment-image"),
+                            "compose": row.get("compose"),
+                        },
+                        sort_keys=True,
+                    )
+                )
+            return 0
+        if args.command == "show":
+            try:
+                _print_json(profiles[args.profile_id])
+            except KeyError:
+                print(f"unknown environment profile: {args.profile_id}", file=sys.stderr)
+                return 2
+            return 0
+
         build_environment_images(
             profiles=tuple(args.profiles),
             work_root=args.work_root,
@@ -358,7 +525,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     except Exception as exc:
         print(
-            f"ENVIRONMENT_IMAGE_BUILD_FAIL {type(exc).__qualname__}: {exc}",
+            f"ENVIRONMENT_IMAGE_FAIL {type(exc).__qualname__}: {exc}",
             file=sys.stderr,
         )
         return 1
