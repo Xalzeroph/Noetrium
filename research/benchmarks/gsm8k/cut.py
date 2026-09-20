@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium.api import canonical_digest, require_sha256
+from noetrium.api import (
     BenchmarkSourceKind,
     BenchmarkSourceSpec,
     BenchmarkTaskSet,
