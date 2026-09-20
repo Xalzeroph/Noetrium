@@ -19,18 +19,18 @@ Noetrium is intentionally split into three dependency tiers:
 
 The dependency direction is one-way:
 
-downstream project -> components / orchestration
-                   -> noetrium.contracts
+downstream project -> noetrium.api
+                   -> internal component/orchestration aggregation boundaries
                    -> explicit injected noetrium_platform implementation
 
 noetrium_platform never imports root extensions, and no root extension owns a
 global registry. Composition constructs each registry/topology and injects it
-into a method. The root packages are the only canonical extension paths.
+into a method. The internal component/orchestration packages remain composition layers; `noetrium.api` is the only downstream product entrypoint.
 
 ## High-level Agent Research Kit boundary
 
 The stable product facade also exposes
-\`noetrium.platform.bind_agent_research_runtime\`. It composes the existing
+\`noetrium.api.bind_agent_research_runtime\`. It composes the existing
 environment-neutral \`AgentCognitionLoop\` from typed observation, planner,
 skill, action, memory, safety, completion, evidence, progress, and optional
 diagnostic ports. The paper chooses the policies and providers; Noetrium
@@ -44,7 +44,7 @@ and source-reference metadata. The adapter does not assume a vendor or a
 finite list of modalities.
 
 Model calls use the same public composition boundary:
-noetrium.platform.complete_project_model records and fences a qualified
+noetrium.api.complete_project_model records and fences a qualified
 generation request, while invoke_multimodal_model passes arbitrary multimodal
 parts through a provider-owned codec and content store. The model body,
 modality interpretation, and response decoding remain method/provider owned;
