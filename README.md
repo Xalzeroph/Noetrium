@@ -95,10 +95,10 @@ Noetrium is deliberately broader than an agent workflow library: experiment desi
 
 ## Core capabilities
 
-- Public authoring surface — `noetrium.contracts` and `noetrium.platform` expose stable identities, ports, specifications, and project-facing operations.
+- Public authoring surface — `noetrium.api` is the single downstream entrypoint for stable identities, ports, specifications, composition helpers, reusable reference components, orchestration, and project-facing operations.
 - Study compilation — `ExperimentRunSpec`, `ResearchStudyDefinition`, and `CompiledResearchPlan` make experiment intent explicit before any run starts.
 - Run authority — `ExperimentRunApplication` owns lifecycle decisions; checkpoint, resume, reconcile, and evidence paths remain explicit and inspectable.
-- Reusable method layers — `components` provides reference single-agent building blocks, while `orchestration` provides higher-level multi-agent topology and delivery policy.
+- Reusable method layers — reference single-agent building blocks and multi-agent orchestration remain internally layered but are consumed downstream through the same `noetrium.api` entrypoint.
 - Provider seams — models, environments, resources, processes, servers, and toolchains bind through typed ports instead of hidden global discovery.
 - Durable artifacts — `RunArtifactStore` records manifests, sequence, digests, lineage, raw facts, retention, and replayable evidence.
 - Effect-safe recovery — external effects carry receipts and certainty; an unresolved effect stays `UNKNOWN` until reconciliation proves the outcome.
