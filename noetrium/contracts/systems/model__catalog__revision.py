@@ -9,8 +9,6 @@ This module is regenerated from the canonical registry and API exports.
 """
 
 from noetrium_platform.capabilities.model.catalog.revision.api import (
-    CONTRACT,
-    contract,
     ModelPromotionDecision,
     ModelPromotionDisposition,
     ModelPromotionReceipt,
@@ -31,11 +29,6 @@ from noetrium_platform.capabilities.model.catalog.revision.api import (
     ModelUpdatePlan,
     ModelUpdateProducerPort,
     ModelUpdateSource,
-)
-
-from noetrium_platform.capabilities.model.catalog.revision.api.boundary import (
-    SystemLeafContract,
-    contract as boundary__contract,
 )
 
 from noetrium_platform.capabilities.model.catalog.revision.api.contracts import (
@@ -66,4 +59,4 @@ from noetrium_platform.capabilities.model.catalog.revision.api.update import (
 
 SYSTEM_KEY = 'model/catalog/revision'
 PACKAGE_PREFIX = 'noetrium_platform.capabilities.model.catalog.revision'
-__all__ = ('CONTRACT', 'contract', 'ModelPromotionDecision', 'ModelPromotionDisposition', 'ModelPromotionReceipt', 'ModelRevisionAuthorityPort', 'ModelRevisionAuthoritySnapshot', 'ModelRevisionCommit', 'ModelRevisionConflictError', 'ModelRevisionEvidence', 'ModelRevisionEvidenceKind', 'ModelRevisionIdentity', 'ModelRevisionIntegrityError', 'ModelRevisionStateError', 'ModelRollbackReceipt', 'ModelUpdateProposal', 'PreparedModelRevision', 'ModelUpdateBuildEvidence', 'ModelUpdateBuildReceipt', 'ModelUpdatePlan', 'ModelUpdateProducerPort', 'ModelUpdateSource', 'SystemLeafContract', 'boundary__contract', 'contracts__ModelPromotionDecision', 'contracts__ModelPromotionDisposition', 'contracts__ModelPromotionReceipt', 'contracts__ModelRevisionAuthorityPort', 'contracts__ModelRevisionAuthoritySnapshot', 'contracts__ModelRevisionCommit', 'contracts__ModelRevisionConflictError', 'contracts__ModelRevisionEvidence', 'contracts__ModelRevisionEvidenceKind', 'contracts__ModelRevisionIdentity', 'contracts__ModelRevisionIntegrityError', 'contracts__ModelRevisionStateError', 'contracts__ModelRollbackReceipt', 'contracts__ModelUpdateProposal', 'contracts__PreparedModelRevision', 'update__ModelUpdateBuildEvidence', 'update__ModelUpdateBuildReceipt', 'update__ModelUpdatePlan', 'update__ModelUpdateProducerPort', 'update__ModelUpdateSource')
+__all__ = ('ModelPromotionDecision', 'ModelPromotionDisposition', 'ModelPromotionReceipt', 'ModelRevisionAuthorityPort', 'ModelRevisionAuthoritySnapshot', 'ModelRevisionCommit', 'ModelRevisionConflictError', 'ModelRevisionEvidence', 'ModelRevisionEvidenceKind', 'ModelRevisionIdentity', 'ModelRevisionIntegrityError', 'ModelRevisionStateError', 'ModelRollbackReceipt', 'ModelUpdateProposal', 'PreparedModelRevision', 'ModelUpdateBuildEvidence', 'ModelUpdateBuildReceipt', 'ModelUpdatePlan', 'ModelUpdateProducerPort', 'ModelUpdateSource', 'contracts__ModelPromotionDecision', 'contracts__ModelPromotionDisposition', 'contracts__ModelPromotionReceipt', 'contracts__ModelRevisionAuthorityPort', 'contracts__ModelRevisionAuthoritySnapshot', 'contracts__ModelRevisionCommit', 'contracts__ModelRevisionConflictError', 'contracts__ModelRevisionEvidence', 'contracts__ModelRevisionEvidenceKind', 'contracts__ModelRevisionIdentity', 'contracts__ModelRevisionIntegrityError', 'contracts__ModelRevisionStateError', 'contracts__ModelRollbackReceipt', 'contracts__ModelUpdateProposal', 'contracts__PreparedModelRevision', 'update__ModelUpdateBuildEvidence', 'update__ModelUpdateBuildReceipt', 'update__ModelUpdatePlan', 'update__ModelUpdateProducerPort', 'update__ModelUpdateSource')

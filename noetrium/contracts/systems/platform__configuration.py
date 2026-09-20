@@ -3,16 +3,11 @@ System: platform/configuration
 Authority: None
 Canonical authority: platform
 Node kind: facet
-Downstream surface: public
-API exports: available
+Downstream surface: metadata_only
+API exports: none (metadata-only facade)
 This module is regenerated from the canonical registry and API exports.
 """
 
-from noetrium_platform.foundation.kernel.configuration.api.boundary import (
-    SystemLeafContract,
-    contract,
-)
-
 SYSTEM_KEY = 'platform/configuration'
 PACKAGE_PREFIX = 'noetrium_platform.foundation.kernel.configuration'
-__all__ = ('SystemLeafContract', 'contract')
+__all__ = ()

@@ -1,15 +1,9 @@
 {
-  "catalog_digest": "c990dd13e50799cbf7a54ea106a8b2f308f7ec8deff469689d9a68ffd07f8323",
+  "catalog_digest": "9fe17d05ed7fa76685aecf45540a53167b80426214dd3b35726d130e9544d95b",
   "entrypoint": "noetrium.api",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v3",
   "symbol_index": {
-    "AUTHORITY": [
-      "artifact/lineage/relation",
-      "artifact/reference",
-      "artifact/retention",
-      "data/query/cross"
-    ],
     "ActionIdentityViolation": [
       "environment"
     ],
@@ -443,16 +437,6 @@
     ],
     "ByteSegment": [
       "runtime/process"
-    ],
-    "CONTRACT": [
-      "artifact/lineage/relation",
-      "artifact/reference",
-      "artifact/retention",
-      "execution/admission",
-      "execution/command",
-      "execution/operation",
-      "execution/scheduling",
-      "model/catalog/revision"
     ],
     "CancellationTokenPort": [
       "execution/admission",
@@ -1691,26 +1675,6 @@
     "InterventionTrigger": [
       "execution/research_program"
     ],
-    "JsonInput": [
-      "environment",
-      "participant/agent"
-    ],
-    "JsonMutableValue": [
-      "environment"
-    ],
-    "JsonObject": [
-      "participant/agent",
-      "participant/capability"
-    ],
-    "JsonScalar": [
-      "environment"
-    ],
-    "JsonValue": [
-      "environment",
-      "participant/agent",
-      "participant/capability",
-      "participant/method"
-    ],
     "LaneAdmissionSnapshot": [
       "execution/admission"
     ],
@@ -1767,12 +1731,6 @@
     ],
     "LogicalSchedulingSelectorRegistryPort": [
       "execution/research_program"
-    ],
-    "MUST_NOT_OWN": [
-      "artifact/lineage/relation",
-      "artifact/reference",
-      "artifact/retention",
-      "data/query/cross"
     ],
     "MachineCut": [
       "experimentation",
@@ -2374,23 +2332,11 @@
     "MultipleComparisonResult": [
       "experimentation/workbench"
     ],
-    "NODE": [
-      "artifact/lineage/relation",
-      "artifact/reference",
-      "artifact/retention",
-      "data/query/cross"
-    ],
     "NamedScalar": [
       "model"
     ],
     "NetworkEndpoint": [
       "resource/allocation"
-    ],
-    "OWNS": [
-      "artifact/lineage/relation",
-      "artifact/reference",
-      "artifact/retention",
-      "data/query/cross"
     ],
     "ObjectiveDirection": [
       "execution/research_program"
@@ -3651,12 +3597,6 @@
     "STANDARD_SYSTEM_SHAPE": [
       "governance/system_registry"
     ],
-    "SYSTEM": [
-      "artifact/lineage/relation",
-      "artifact/reference",
-      "artifact/retention",
-      "data/query/cross"
-    ],
     "SYSTEM_CATALOG": [
       "governance/system_registry"
     ],
@@ -4113,40 +4053,6 @@
     "SystemLayer": [
       "governance/system_registry"
     ],
-    "SystemLeafContract": [
-      "artifact/lineage/relation",
-      "artifact/reference",
-      "artifact/retention",
-      "environment/binding",
-      "environment/instance/identity",
-      "environment/instance/readiness",
-      "environment/specification/digest",
-      "environment/specification/schema",
-      "execution/admission",
-      "execution/command",
-      "execution/operation",
-      "execution/scheduling",
-      "experimentation/branch",
-      "experimentation/variant",
-      "governance/schema",
-      "governance/security",
-      "model/catalog/family",
-      "model/catalog/revision",
-      "model/deployment/closure",
-      "model/request/input",
-      "model/request/output",
-      "platform/configuration",
-      "platform/identity",
-      "platform/lifecycle",
-      "portfolio/membership",
-      "portfolio/program",
-      "portfolio/workspace",
-      "scope/hierarchy",
-      "scope/identity",
-      "scope/membership",
-      "scope/ownership",
-      "scope/resolution"
-    ],
     "SystemNodeKind": [
       "governance/system_registry"
     ],
@@ -4538,14 +4444,6 @@
     "build_workload_checkpoint_manifest": [
       "experimentation/checkpoint"
     ],
-    "canonical_bytes": [
-      "participant/method"
-    ],
-    "canonical_digest": [
-      "environment",
-      "participant/capability",
-      "participant/method"
-    ],
     "capability_effect_request_id": [
       "participant/capability"
     ],
@@ -4618,40 +4516,6 @@
     "context_runtime_operation": [
       "execution/research_program"
     ],
-    "contract": [
-      "artifact/lineage/relation",
-      "artifact/reference",
-      "artifact/retention",
-      "environment/binding",
-      "environment/instance/identity",
-      "environment/instance/readiness",
-      "environment/specification/digest",
-      "environment/specification/schema",
-      "execution/admission",
-      "execution/command",
-      "execution/operation",
-      "execution/scheduling",
-      "experimentation/branch",
-      "experimentation/variant",
-      "governance/schema",
-      "governance/security",
-      "model/catalog/family",
-      "model/catalog/revision",
-      "model/deployment/closure",
-      "model/request/input",
-      "model/request/output",
-      "platform/configuration",
-      "platform/identity",
-      "platform/lifecycle",
-      "portfolio/membership",
-      "portfolio/program",
-      "portfolio/workspace",
-      "scope/hierarchy",
-      "scope/identity",
-      "scope/membership",
-      "scope/ownership",
-      "scope/resolution"
-    ],
     "decode_project_manifest_bytes": [
       "portfolio",
       "portfolio/project"
@@ -4715,11 +4579,6 @@
     ],
     "fingerprint_failure": [
       "reliability/failure"
-    ],
-    "freeze_json": [
-      "participant/agent",
-      "participant/capability",
-      "participant/method"
     ],
     "freeze_json_mapping": [
       "environment"
@@ -4873,10 +4732,6 @@
     "require_recovery_handle_reconciliation_identity": [
       "environment"
     ],
-    "require_sha256": [
-      "participant/agent",
-      "participant/method"
-    ],
     "research_query_digest": [
       "data/query"
     ],
@@ -4912,9 +4767,6 @@
     ],
     "system_catalog": [
       "governance/system_registry"
-    ],
-    "thaw_json": [
-      "environment"
     ],
     "thaw_json_mapping": [
       "environment"
@@ -5186,26 +5038,11 @@
           "module": "noetrium_platform.evidence.artifact.lineage.relation.api",
           "source": "noetrium_platform/evidence/artifact/lineage/relation/api/__init__.py",
           "symbols": [
-            "AUTHORITY",
-            "CONTRACT",
-            "MUST_NOT_OWN",
-            "NODE",
-            "OWNS",
-            "SYSTEM",
-            "contract",
             "ArtifactLineageConflict",
             "ArtifactLineageCorruptionError",
             "ArtifactLineageCycle",
             "ArtifactLineageEdge",
             "ArtifactLineageRelationPort"
-          ]
-        },
-        {
-          "module": "noetrium_platform.evidence.artifact.lineage.relation.api.boundary",
-          "source": "noetrium_platform/evidence/artifact/lineage/relation/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -5230,7 +5067,7 @@
       "canonical_authority": "artifact",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact__lineage__relation",
-      "interface_digest": "107c6162789ef9e2a8342e8b6b0521eae2a13e9c131b31ffae8772664cbd73e3",
+      "interface_digest": "73e6cc17899b79e34de05f4e9aa2ef7b06db4f1d900f124b5ba7ae3a395ad9d5",
       "must_not_own": "scientific result semantics",
       "node_kind": "facet",
       "owns": "immutable artifact lineage edge identity",
@@ -5245,26 +5082,11 @@
           "module": "noetrium_platform.evidence.artifact.reference.api",
           "source": "noetrium_platform/evidence/artifact/reference/api/__init__.py",
           "symbols": [
-            "AUTHORITY",
-            "CONTRACT",
-            "MUST_NOT_OWN",
-            "NODE",
-            "OWNS",
-            "SYSTEM",
-            "contract",
             "ArtifactReference",
             "ArtifactReferenceConflict",
             "ArtifactReferenceCorruptionError",
             "ArtifactReferenceNotFound",
             "ArtifactReferencePort"
-          ]
-        },
-        {
-          "module": "noetrium_platform.evidence.artifact.reference.api.boundary",
-          "source": "noetrium_platform/evidence/artifact/reference/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -5289,7 +5111,7 @@
       "canonical_authority": "artifact",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact__reference",
-      "interface_digest": "45f5a17669128bc32ba82d60ad54f6588a80026fa2af97bc77060fdaf5a8ef60",
+      "interface_digest": "c27e1e05ebd23551ae99e3c4d08209b78c4a02c96573ce37fcc52ba79ef85266",
       "must_not_own": "content mutation",
       "node_kind": "facet",
       "owns": "references, aliases and cross-system artifact pointers",
@@ -5304,26 +5126,11 @@
           "module": "noetrium_platform.evidence.artifact.retention.api",
           "source": "noetrium_platform/evidence/artifact/retention/api/__init__.py",
           "symbols": [
-            "AUTHORITY",
-            "CONTRACT",
-            "MUST_NOT_OWN",
-            "NODE",
-            "OWNS",
-            "SYSTEM",
-            "contract",
             "ArtifactRetentionConflict",
             "ArtifactRetentionCorruptionError",
             "ArtifactRetentionNotFound",
             "ArtifactRetentionPort",
             "ArtifactRetentionState"
-          ]
-        },
-        {
-          "module": "noetrium_platform.evidence.artifact.retention.api.boundary",
-          "source": "noetrium_platform/evidence/artifact/retention/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -5348,7 +5155,7 @@
       "canonical_authority": "artifact",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.artifact__retention",
-      "interface_digest": "7d087dee3252270158e4de2aeb25d34b6dbb4654bd6bf95057d44424cb4a4849",
+      "interface_digest": "33bb8a4f777a596e4027f12ab2502534cdd95681bf60830ed3e7b2d5826daddb",
       "must_not_own": "business state semantics",
       "node_kind": "facet",
       "owns": "retention, pinning and garbage-collection policy",
@@ -5603,24 +5410,13 @@
             "ResearchResultQueryPort",
             "ResearchResultSourcePort"
           ]
-        },
-        {
-          "module": "noetrium_platform.evidence.data.query.cross.api.boundary",
-          "source": "noetrium_platform/evidence/data/query/cross/api/boundary.py",
-          "symbols": [
-            "AUTHORITY",
-            "MUST_NOT_OWN",
-            "NODE",
-            "OWNS",
-            "SYSTEM"
-          ]
         }
       ],
       "authority": null,
       "canonical_authority": "data",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.data__query__cross",
-      "interface_digest": "e8a0a73518b53c67c3b60adaa0b1510c1481e79b08820ec7b22c30bd1ea6d29e",
+      "interface_digest": "768cc71f9f03de6507dcc818f4875a76ee16b5889383ca27ae976f646900b23d",
       "must_not_own": "writes and authority mutation",
       "node_kind": "projection",
       "owns": "cross-authority read composition and query federation",
@@ -5790,16 +5586,11 @@
             "require_effect_receipt_digest",
             "require_reconciliation_identity",
             "require_recovery_handle_reconciliation_identity",
-            "JsonScalar",
-            "JsonInput",
-            "JsonMutableValue",
-            "JsonValue",
             "StateMachineDynamicsIdentity",
             "StateMachineDynamicsPort",
             "StateMachineEnvironmentSpec",
             "StateTransition",
             "freeze_json_mapping",
-            "thaw_json",
             "thaw_json_mapping"
           ]
         },
@@ -5851,12 +5642,9 @@
           "source": "noetrium_platform/capabilities/environment/api/contracts.py",
           "symbols": [
             "ExecutionContext",
-            "JsonInput",
-            "JsonValue",
             "SystemIdentity",
             "SystemPort",
             "SystemSpec",
-            "canonical_digest",
             "EffectReceipt",
             "PreparedEffectHandle",
             "EnvironmentIdentity",
@@ -5942,16 +5730,11 @@
           "module": "noetrium_platform.capabilities.environment.api.state_machine",
           "source": "noetrium_platform/capabilities/environment/api/state_machine.py",
           "symbols": [
-            "JsonScalar",
-            "JsonInput",
-            "JsonMutableValue",
-            "JsonValue",
             "StateMachineDynamicsIdentity",
             "StateMachineDynamicsPort",
             "StateMachineEnvironmentSpec",
             "StateTransition",
             "freeze_json_mapping",
-            "thaw_json",
             "thaw_json_mapping"
           ]
         }
@@ -5960,7 +5743,7 @@
       "canonical_authority": "environment",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.environment",
-      "interface_digest": "d927299b8f0e6189a06a582dbfbe60ae1266f9daa3edd9009d4656e910643d93",
+      "interface_digest": "6b33b0527d3b6e8dbd64302694fc7eebf483f274a4ee0a5bb8f03bb1e88a971f",
       "must_not_own": "project semantics and model serving",
       "node_kind": "authority",
       "owns": "environment specs, bindings, resolution and instances",
@@ -6024,21 +5807,12 @@
       "system_key": "environment/category"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.binding.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/binding/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "environment",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.environment__binding",
-      "interface_digest": "117966b27e63ef6a180b95a9f2846ede10a1f7e83561cc624ded7ac28f2b2bb7",
+      "interface_digest": "9c070a3e2f24ead5d677916f1c39b2cd440cd30fdd42df1e6d4572d891e7ef0e",
       "must_not_own": "artifact storage",
       "node_kind": "facet",
       "owns": "binding environment specs to scopes/runs/participants",
@@ -6117,21 +5891,12 @@
       "system_key": "environment/instance"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.instance.identity.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/instance/identity/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "environment",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.environment__instance__identity",
-      "interface_digest": "366f569842f9bd061ce5620526e7ed662ab2e1d0cec078590c7e0a81c8065e8b",
+      "interface_digest": "596c7b3e54f31d0218b83f1ca7035419446bebb2be7dcdbd86365c35997d4b15",
       "must_not_own": "host process lifecycle",
       "node_kind": "facet",
       "owns": "environment instance identity and provenance",
@@ -6141,21 +5906,12 @@
       "system_key": "environment/instance/identity"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.instance.readiness.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/instance/readiness/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "environment",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.environment__instance__readiness",
-      "interface_digest": "eaa7962108963f4a8e54f1c32eca6593732275d8c00fa4b649044fd11c5c7745",
+      "interface_digest": "49a1d96ef621bf507f8b22e1bec05940e4d2f471b72004e47b1ab8d0fa484ed9",
       "must_not_own": "authoritative process health",
       "node_kind": "facet",
       "owns": "environment readiness observations/contract",
@@ -6387,21 +6143,12 @@
       "system_key": "environment/specification"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.specification.digest.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/specification/digest/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "environment",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.environment__specification__digest",
-      "interface_digest": "e4232f5e38078141298c437c3b90411f13b694f29279ec3c7f9ea58ad5f187a2",
+      "interface_digest": "7e08bdf94a7c7e00f0ac1081da3c20c9dc3935f12f2bd4affe929b126193e8e6",
       "must_not_own": "resource resolution",
       "node_kind": "facet",
       "owns": "exact environment specification identity and digest",
@@ -6411,21 +6158,12 @@
       "system_key": "environment/specification/digest"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.specification.schema.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/specification/schema/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "environment",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.environment__specification__schema",
-      "interface_digest": "e87a641c5965877a601c1ab9cd401a6c5d0b7d7b817477204e4ac823ff96b67d",
+      "interface_digest": "45b495ddd7918631177596c547d1bf41f5a021c2639782f78b933bb004ca3762",
       "must_not_own": "environment instance lifecycle",
       "node_kind": "facet",
       "owns": "environment requirement schema and canonical forms",
@@ -6524,21 +6262,11 @@
             "AdmissionMode",
             "AdmissionRejected",
             "AdmissionTopologySnapshot",
-            "CONTRACT",
             "ExecutionAdmissionPort",
             "GroupAdmissionSnapshot",
             "LaneAdmissionSnapshot",
             "ResourceAdmissionSnapshot",
-            "TenantAdmissionSnapshot",
-            "contract"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.execution.admission.api.boundary",
-          "source": "noetrium_platform/research/execution/admission/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
+            "TenantAdmissionSnapshot"
           ]
         },
         {
@@ -6579,7 +6307,7 @@
       "canonical_authority": "execution",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__admission",
-      "interface_digest": "2a9367df947caf7a1a42927f366214a2b2e27fdf54b5c3a7e0290ff1a63d2ce9",
+      "interface_digest": "752401e50fc68f8e1406a863530f30fda6990d3d92850302119d04d1515f4522",
       "must_not_own": "scheduling order/fairness, executor lifecycle or model/environment truth",
       "node_kind": "policy",
       "owns": "hierarchical execution quotas, identity-aware admission decisions and lease accounting",
@@ -6655,23 +6383,13 @@
           "module": "noetrium_platform.research.execution.command.api",
           "source": "noetrium_platform/research/execution/command/api/__init__.py",
           "symbols": [
-            "CONTRACT",
             "CommandConflict",
             "CommandCorruption",
             "CommandDeduplicationKey",
             "CommandId",
             "CommandIntentPort",
             "CommandStorePort",
-            "ExecutionCommand",
-            "contract"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.execution.command.api.boundary",
-          "source": "noetrium_platform/research/execution/command/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
+            "ExecutionCommand"
           ]
         },
         {
@@ -6698,7 +6416,7 @@
       "canonical_authority": "execution",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__command",
-      "interface_digest": "1638f89eb67bc489e6def7e9a75b0f8a875ef65506f100d7dda1e1421f72e0d4",
+      "interface_digest": "75cdcd72be17b5f4f49d775659192f81672956e6f89779a7cd854539e883b375",
       "must_not_own": "durable execution truth, operation lifecycle, Machine state or provider effects",
       "node_kind": "facet",
       "owns": "immutable typed command intent and routing contracts evaluated by Execution",
@@ -6713,7 +6431,6 @@
           "module": "noetrium_platform.research.execution.operation.api",
           "source": "noetrium_platform/research/execution/operation/api/__init__.py",
           "symbols": [
-            "CONTRACT",
             "EffectId",
             "IllegalOperationTransition",
             "OperationAdmissionPort",
@@ -6734,17 +6451,8 @@
             "EffectReconciliationVerdict",
             "project_effect_reconciliation",
             "TERMINAL_OPERATION_STATES",
-            "contract",
             "revise_operation",
             "transition_operation"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.execution.operation.api.boundary",
-          "source": "noetrium_platform/research/execution/operation/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -6792,7 +6500,7 @@
       "canonical_authority": "execution/operation",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__operation",
-      "interface_digest": "d6638210839d17c5b1591f91efd5be5b61448196dc6e92de7a9d49820aab002b",
+      "interface_digest": "4270b8087f6366a1dd293dd381472c338ee3eefe59350f9f002fc2d7d7dacd93",
       "must_not_own": "failure taxonomy and recovery authority",
       "node_kind": "authority",
       "owns": "operation identity, lifecycle and result envelopes",
@@ -7031,18 +6739,8 @@
           "source": "noetrium_platform/research/execution/scheduling/api/__init__.py",
           "symbols": [
             "AdmissionSchedulingPolicyPort",
-            "CONTRACT",
             "ExecutionPriority",
-            "SchedulingCandidate",
-            "contract"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.execution.scheduling.api.boundary",
-          "source": "noetrium_platform/research/execution/scheduling/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
+            "SchedulingCandidate"
           ]
         },
         {
@@ -7066,7 +6764,7 @@
       "canonical_authority": "execution",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__scheduling",
-      "interface_digest": "338b749f270a42bb8f750ac63a4efd46bb6534e53ae2b03b83a377708a3783c9",
+      "interface_digest": "576c8c0777526f1480937dadc3a09c909b87b149f4cc66671006a347f77aff22",
       "must_not_own": "live resource/admission state, quotas or executor lifecycle",
       "node_kind": "policy",
       "owns": "priority, aging, fairness and deterministic scheduling order",
@@ -7447,21 +7145,12 @@
       "system_key": "experimentation"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.branch.api.boundary",
-          "source": "noetrium_platform/research/experimentation/branch/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "experimentation",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.experimentation__branch",
-      "interface_digest": "77057f1b9fcfdfa1b67e6308d836eb46c529d95ff9960d29a411a83af86b8792",
+      "interface_digest": "9f551aadec655d4e0cd413ea79ff3ccbb8a8f19ef65ece65e3916bc14e72c7b0",
       "must_not_own": "generic artifact lineage",
       "node_kind": "facet",
       "owns": "run branching and branch lineage",
@@ -8401,21 +8090,12 @@
       "system_key": "experimentation/study"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.variant.api.boundary",
-          "source": "noetrium_platform/research/experimentation/variant/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "experimentation",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.experimentation__variant",
-      "interface_digest": "5c3dc7b3045ae0195bce8862e26864e0d8b57e7c4acfcdc782aff7c1ff63e22f",
+      "interface_digest": "15ca482bfd90f442a0dc8f9e1536d011fef1fb34b7d0f7e941cd1be64d1ee456",
       "must_not_own": "model deployment internals",
       "node_kind": "facet",
       "owns": "experiment variants, assignments and comparison semantics",
@@ -8878,21 +8558,12 @@
       "system_key": "governance/repository_boundary"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.governance.schema.api.boundary",
-          "source": "noetrium_platform/foundation/governance/schema/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": null,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.governance__schema",
-      "interface_digest": "25e61a1426200ffe17a1ecb5787e8c9df95215b10f9aa5d5b887d162572a30dd",
+      "interface_digest": "08bac3e47dbe02aa84055956903f3c55fb3ff241b7941b5356822a13c3e81a9d",
       "must_not_own": "domain state mutation",
       "node_kind": "policy",
       "owns": "schema/version declarations for contracts and records",
@@ -8902,21 +8573,12 @@
       "system_key": "governance/schema"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.governance.security.api.boundary",
-          "source": "noetrium_platform/foundation/governance/security/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": null,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.governance__security",
-      "interface_digest": "58bb2c8b131a4ed010dd3a250ef520584e5e50bc0a9b6990c06bb301073d07a6",
+      "interface_digest": "b7686a1f8db85b77ea6572a05913384f7116b6961ff61a377dc48457f04690d0",
       "must_not_own": "scientific method semantics",
       "node_kind": "policy",
       "owns": "security/redaction/classification policy",
@@ -9352,21 +9014,12 @@
       "system_key": "model/catalog"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.model.catalog.family.api.boundary",
-          "source": "noetrium_platform/capabilities/model/catalog/family/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "model",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.model__catalog__family",
-      "interface_digest": "e28da522963e85cc21c64101db3bcbf8ce57ae28bbdd0cfe78aa89c117652439",
+      "interface_digest": "f77a342add69b4dc092d08cd3cc46fa7961acfbba5ce3986ce280c6aef9930d4",
       "must_not_own": "revision deployment state",
       "node_kind": "facet",
       "owns": "model family identity and metadata",
@@ -9381,8 +9034,6 @@
           "module": "noetrium_platform.capabilities.model.catalog.revision.api",
           "source": "noetrium_platform/capabilities/model/catalog/revision/api/__init__.py",
           "symbols": [
-            "CONTRACT",
-            "contract",
             "ModelPromotionDecision",
             "ModelPromotionDisposition",
             "ModelPromotionReceipt",
@@ -9403,14 +9054,6 @@
             "ModelUpdatePlan",
             "ModelUpdateProducerPort",
             "ModelUpdateSource"
-          ]
-        },
-        {
-          "module": "noetrium_platform.capabilities.model.catalog.revision.api.boundary",
-          "source": "noetrium_platform/capabilities/model/catalog/revision/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -9450,7 +9093,7 @@
       "canonical_authority": "model",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.model__catalog__revision",
-      "interface_digest": "ea24387451c92c6761d9ee64894fafd70c5857d23359782202d0af0718bfdec5",
+      "interface_digest": "efb4d99ebf1031488358d1a7bb689f9edb8c887433d0f80dabc07d43f316a9c6",
       "must_not_own": "mutable serving state",
       "node_kind": "facet",
       "owns": "versioned model revision identity",
@@ -9515,21 +9158,12 @@
       "system_key": "model/deployment"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.model.deployment.closure.api.boundary",
-          "source": "noetrium_platform/capabilities/model/deployment/closure/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "model",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.model__deployment__closure",
-      "interface_digest": "27b07687c12b349f38036d93841a7d231d05524f99d6a8455c0378d21a7a8cce",
+      "interface_digest": "bf9f8e1730882cdea7ea4b4899617437e3401f1510109928e4ee5c0596fe85ea",
       "must_not_own": "server runtime health",
       "node_kind": "facet",
       "owns": "exact deployment closure across model, stack, runtime and artifact identities",
@@ -9639,21 +9273,12 @@
       "system_key": "model/request"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.model.request.input.api.boundary",
-          "source": "noetrium_platform/capabilities/model/request/input/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "model",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.model__request__input",
-      "interface_digest": "44bc1d6ec38435fe8527de125cc46e4e5b1544fed5ce342f2a44c0c87277221f",
+      "interface_digest": "c80ff1ca379223d370017ce4bcb984cf2bab5a7b9d003d803ce286bf733bb7c4",
       "must_not_own": "serving process lifecycle",
       "node_kind": "facet",
       "owns": "exact request input identity and canonicalization",
@@ -9663,21 +9288,12 @@
       "system_key": "model/request/input"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.model.request.output.api.boundary",
-          "source": "noetrium_platform/capabilities/model/request/output/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "model",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.model__request__output",
-      "interface_digest": "b00abc743a84c91116ca00c90ca3e65486927edbe58dda307b31637c4469bcc8",
+      "interface_digest": "5fc6d5d4f68c4796ef04faf6807e4c8f19f612c8fcb746750ded21bb409951de",
       "must_not_own": "business metric semantics",
       "node_kind": "facet",
       "owns": "response envelope and response artifact references",
@@ -10668,9 +10284,7 @@
             "AgentSkillRecord",
             "AgentSkillSelection",
             "AgentStepReceipt",
-            "action_summary_payload",
-            "JsonObject",
-            "JsonValue"
+            "action_summary_payload"
           ]
         },
         {
@@ -10697,9 +10311,7 @@
             "AgentSkillRecord",
             "AgentSkillSelection",
             "AgentStepReceipt",
-            "action_summary_payload",
-            "JsonObject",
-            "JsonValue"
+            "action_summary_payload"
           ]
         },
         {
@@ -10733,10 +10345,6 @@
           "symbols": [
             "CapabilityPort",
             "ExecutionContext",
-            "JsonInput",
-            "JsonValue",
-            "freeze_json",
-            "require_sha256",
             "AgentIdentity",
             "AgentSnapshot",
             "AgentTurnRequest",
@@ -10750,7 +10358,7 @@
       "canonical_authority": "participant",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__agent",
-      "interface_digest": "c5d0c2ee162b88b7a81662db77ab12826360b7a6429b2b8c44a88ee021e6343f",
+      "interface_digest": "98c94333b19629a18385b4bc230de98196421ffa20bd85b16f5eeefe76525a4b",
       "must_not_own": "model serving lifecycle",
       "node_kind": "facet",
       "owns": "agent participant contracts, provider-independent agent identity and bounded cognition-loop orchestration",
@@ -10843,10 +10451,6 @@
             "EffectClass",
             "EffectReceipt",
             "ExecutionContext",
-            "JsonObject",
-            "JsonValue",
-            "canonical_digest",
-            "freeze_json",
             "CapabilityProviderIdentity",
             "CapabilityDescriptor",
             "CapabilityRequest",
@@ -10906,7 +10510,7 @@
       "canonical_authority": "participant",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__capability",
-      "interface_digest": "4232071e76356023b3b0f96c21079b7e7dc7f7ac2818674ae6420fa0be33e348",
+      "interface_digest": "0d2cbc9074a8d1fad1a2502fb879f7b7d054e4bd0d1a70a0281f68bd2c89e13a",
       "must_not_own": "execution capability implementation",
       "node_kind": "facet",
       "owns": "participant capability declarations and exposure",
@@ -11007,9 +10611,6 @@
           "source": "noetrium_platform/capabilities/participant/method/api/contracts.py",
           "symbols": [
             "ExecutionContext",
-            "JsonValue",
-            "canonical_digest",
-            "require_sha256",
             "MethodIdentity",
             "MethodProgramIdentity",
             "MethodProgramIdentityMismatch",
@@ -11035,9 +10636,6 @@
           "source": "noetrium_platform/capabilities/participant/method/api/observability.py",
           "symbols": [
             "ExecutionContext",
-            "JsonValue",
-            "canonical_bytes",
-            "freeze_json",
             "MethodObservation",
             "MethodObservationDeliveryError",
             "MethodObservationSink",
@@ -11064,7 +10662,7 @@
       "canonical_authority": "participant",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant__method",
-      "interface_digest": "fe1a88cddcc583d1e66584c44f2a3b0c90593e747efda6c95dabce55c19918b4",
+      "interface_digest": "e53ed90ec0fc11b89de86b098616341ced4ee116b81d63655e0a4568d705e246",
       "must_not_own": "method implementation itself",
       "node_kind": "facet",
       "owns": "method participant binding contracts",
@@ -11277,21 +10875,12 @@
       "system_key": "platform/concurrency"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.kernel.configuration.api.boundary",
-          "source": "noetrium_platform/foundation/kernel/configuration/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "platform",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.platform__configuration",
-      "interface_digest": "db7d4cc42900058e79148087c9841eac24257c0b7f4b3ceac1a2814ca2582b7c",
+      "interface_digest": "d01a53e96a86b1bb20a2f567c523140543366e3490f83fb9fe21f641de6efc62",
       "must_not_own": "domain configuration semantics",
       "node_kind": "facet",
       "owns": "platform configuration sources and frozen configuration snapshots",
@@ -11301,21 +10890,12 @@
       "system_key": "platform/configuration"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.kernel.identity.api.boundary",
-          "source": "noetrium_platform/foundation/kernel/identity/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "platform",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.platform__identity",
-      "interface_digest": "1bb7e71972bc0aeccdc9f64ece36c5d70d5d7fff6cd96be95134c3f275ab797c",
+      "interface_digest": "1b7f33514752659c880dfb502a45ede0e03f27a959af4582a32613ebf485ab01",
       "must_not_own": "workspace/project/run identity",
       "node_kind": "facet",
       "owns": "platform identity and immutable platform metadata",
@@ -11325,21 +10905,12 @@
       "system_key": "platform/identity"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.kernel.lifecycle.api.boundary",
-          "source": "noetrium_platform/foundation/kernel/lifecycle/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "platform",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.platform__lifecycle",
-      "interface_digest": "7b1f9bef290b33841673be03293fd8d7c68290a5ec65bfdf6e11180a92326a61",
+      "interface_digest": "cbf22b826621f2db4d13f23081d2ef98e0d14e41d2ac902ac38694c322bbb737",
       "must_not_own": "service/process lifecycle",
       "node_kind": "facet",
       "owns": "platform startup/shutdown/readiness semantics",
@@ -11434,21 +11005,12 @@
       "system_key": "portfolio"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.portfolio.membership.api.boundary",
-          "source": "noetrium_platform/foundation/portfolio/membership/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "portfolio",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.portfolio__membership",
-      "interface_digest": "1a8896eea57c185edc2935086873252b72e1169ebb1a7cf8fd787688d533be05",
+      "interface_digest": "fa67927630fbff40bbccaf0767f9b3f9273ab801368717ab3a58d683dac9a96a",
       "must_not_own": "runtime participant sessions",
       "node_kind": "facet",
       "owns": "portfolio-level ownership and membership records",
@@ -11458,21 +11020,12 @@
       "system_key": "portfolio/membership"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.portfolio.program.api.boundary",
-          "source": "noetrium_platform/foundation/portfolio/program/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "portfolio",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.portfolio__program",
-      "interface_digest": "70af5089d6a3f8a8063d231e42e811c6a42dc4b35449f4f0e13be4aa34ccf919",
+      "interface_digest": "b551c0ea7481c0cb7ca5cc7c6fbd9052cf7661e83c7ecb1f71bcf1425898b622",
       "must_not_own": "study semantics",
       "node_kind": "facet",
       "owns": "research program metadata and project grouping",
@@ -11525,21 +11078,12 @@
       "system_key": "portfolio/project"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.portfolio.workspace.api.boundary",
-          "source": "noetrium_platform/foundation/portfolio/workspace/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "portfolio",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.portfolio__workspace",
-      "interface_digest": "734296ab861914ec1cf9721bff2b2ade707fa914a150924d700544b826091ad4",
+      "interface_digest": "a66e0694799f938048bb9511c9a60f89eabe505d1f525db4129b55f33b6b981b",
       "must_not_own": "generic scope tree authority",
       "node_kind": "facet",
       "owns": "workspace metadata and lifecycle",
@@ -12955,21 +12499,12 @@
       "system_key": "scope"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.hierarchy.api.boundary",
-          "source": "noetrium_platform/foundation/scope/hierarchy/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "scope",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.scope__hierarchy",
-      "interface_digest": "e40d2eae20bdd73b9cd5596c230d9ab54fa6579e19a8101388eb3ea26d9d55eb",
+      "interface_digest": "dabddc28147c4ae33c704f8dc38724eecc53593138f936a388b7cd5efd4a633f",
       "must_not_own": "project business fields",
       "node_kind": "facet",
       "owns": "parent/child relationships, ancestry, descendants",
@@ -12979,21 +12514,12 @@
       "system_key": "scope/hierarchy"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.identity.api.boundary",
-          "source": "noetrium_platform/foundation/scope/identity/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "scope",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.scope__identity",
-      "interface_digest": "521c666e75ea6ddd14924d525dda3482ad0ea767fd1a21f24a4c29890e161ef8",
+      "interface_digest": "12dfce3ff035053fe450c66e97db93f5798c5f6eee94dfd5a3544f35732340a8",
       "must_not_own": "portfolio metadata",
       "node_kind": "facet",
       "owns": "stable scope identities and typed scope kinds",
@@ -13003,21 +12529,12 @@
       "system_key": "scope/identity"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.membership.api.boundary",
-          "source": "noetrium_platform/foundation/scope/membership/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "scope",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.scope__membership",
-      "interface_digest": "16297cc6764324119645f4bd378808a55ee8c8ff239b617b584e990ba195346e",
+      "interface_digest": "7945371ab9e9f59a118831f54b0ac4b3173e083744a34324118a537c04717809",
       "must_not_own": "participant sessions",
       "node_kind": "facet",
       "owns": "membership of entities in scopes",
@@ -13027,21 +12544,12 @@
       "system_key": "scope/membership"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.ownership.api.boundary",
-          "source": "noetrium_platform/foundation/scope/ownership/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "scope",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.scope__ownership",
-      "interface_digest": "829754a269598b418dc6ffbbf60a11efdb391e894b2dbbb1184bc7c9a9a684dd",
+      "interface_digest": "fb6a8a5d8eafc14db07916b48fdcf1702c6a056d149be7a06179bb7de1471c28",
       "must_not_own": "portfolio business metadata",
       "node_kind": "facet",
       "owns": "generic owner links and owner-path rules",
@@ -13093,21 +12601,12 @@
       "system_key": "scope/path"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.resolution.api.boundary",
-          "source": "noetrium_platform/foundation/scope/resolution/api/boundary.py",
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "authority": null,
       "canonical_authority": "scope",
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.scope__resolution",
-      "interface_digest": "d883169f967d6423295628a6dd324d1aab418690c91fe770738f5964725650b2",
+      "interface_digest": "20f96be36192d3241e26bc1e371b0fd76d3fa29f469a1123d0d54b579e723634",
       "must_not_own": "domain-specific lookup semantics",
       "node_kind": "facet",
       "owns": "resolve a scope reference to canonical scope path",
@@ -13117,5 +12616,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "2e19b6efb53f251f88af2bb61b62fcd528dd89174acfac18a2a1020aab8fc25c"
+  "topology_digest": "c4da8a78a00c12312ca68a1810040ec6762e8bd5a251a21a9fabb94d74ef93dd"
 }

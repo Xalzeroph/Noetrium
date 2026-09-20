@@ -13,14 +13,6 @@ from noetrium_platform.evidence.data.query.cross.api import (
     ResearchResultSourcePort,
 )
 
-from noetrium_platform.evidence.data.query.cross.api.boundary import (
-    AUTHORITY,
-    MUST_NOT_OWN,
-    NODE,
-    OWNS,
-    SYSTEM,
-)
-
 SYSTEM_KEY = 'data/query/cross'
 PACKAGE_PREFIX = 'noetrium_platform.evidence.data.query.cross'
-__all__ = ('ResearchResultQueryPort', 'ResearchResultSourcePort', 'AUTHORITY', 'MUST_NOT_OWN', 'NODE', 'OWNS', 'SYSTEM')
+__all__ = ('ResearchResultQueryPort', 'ResearchResultSourcePort')

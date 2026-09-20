@@ -9,7 +9,6 @@ This module is regenerated from the canonical registry and API exports.
 """
 
 from noetrium_platform.research.execution.command.api import (
-    CONTRACT,
     CommandConflict,
     CommandCorruption,
     CommandDeduplicationKey,
@@ -17,12 +16,6 @@ from noetrium_platform.research.execution.command.api import (
     CommandIntentPort,
     CommandStorePort,
     ExecutionCommand,
-    contract,
-)
-
-from noetrium_platform.research.execution.command.api.boundary import (
-    SystemLeafContract,
-    contract as boundary__contract,
 )
 
 from noetrium_platform.research.execution.command.api.contracts import (
@@ -40,4 +33,4 @@ from noetrium_platform.research.execution.command.api.ports import (
 
 SYSTEM_KEY = 'execution/command'
 PACKAGE_PREFIX = 'noetrium_platform.research.execution.command'
-__all__ = ('CONTRACT', 'CommandConflict', 'CommandCorruption', 'CommandDeduplicationKey', 'CommandId', 'CommandIntentPort', 'CommandStorePort', 'ExecutionCommand', 'contract', 'SystemLeafContract', 'boundary__contract', 'contracts__CommandDeduplicationKey', 'contracts__CommandId', 'contracts__ExecutionCommand', 'ports__CommandConflict', 'ports__CommandCorruption', 'ports__CommandIntentPort', 'ports__CommandStorePort')
+__all__ = ('CommandConflict', 'CommandCorruption', 'CommandDeduplicationKey', 'CommandId', 'CommandIntentPort', 'CommandStorePort', 'ExecutionCommand', 'contracts__CommandDeduplicationKey', 'contracts__CommandId', 'contracts__ExecutionCommand', 'ports__CommandConflict', 'ports__CommandCorruption', 'ports__CommandIntentPort', 'ports__CommandStorePort')

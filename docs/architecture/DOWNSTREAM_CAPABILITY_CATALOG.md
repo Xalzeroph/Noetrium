@@ -18,30 +18,30 @@ Example:
     MinecraftBridgePort = api.system("environment/minecraft").MinecraftBridgePort
 
 - Registered systems: 172
-- Public API modules: 352
-- Public symbols: 3044
-- Registry digest: 2e19b6efb53f251f88af2bb61b62fcd528dd89174acfac18a2a1020aab8fc25c
+- Public API modules: 319
+- Public symbols: 2913
+- Registry digest: c4da8a78a00c12312ca68a1810040ec6762e8bd5a251a21a9fabb94d74ef93dd
 
 ## Capability domains
 
 | Domain | Systems | API modules | Symbols |
 | --- | ---: | ---: | ---: |
-| artifact | 7 | 26 | 137 |
-| data | 8 | 19 | 106 |
-| environment | 18 | 27 | 226 |
-| execution | 8 | 34 | 446 |
-| experimentation | 16 | 65 | 657 |
-| governance | 13 | 18 | 130 |
-| model | 16 | 30 | 323 |
+| artifact | 7 | 23 | 110 |
+| data | 8 | 18 | 101 |
+| environment | 18 | 22 | 203 |
+| execution | 8 | 30 | 430 |
+| experimentation | 16 | 63 | 653 |
+| governance | 13 | 16 | 126 |
+| model | 16 | 25 | 311 |
 | observability | 27 | 0 | 0 |
 | operator | 8 | 0 | 0 |
-| participant | 8 | 36 | 373 |
-| platform | 5 | 9 | 89 |
-| portfolio | 5 | 7 | 75 |
+| participant | 8 | 36 | 355 |
+| platform | 5 | 6 | 83 |
+| portfolio | 5 | 4 | 69 |
 | reliability | 7 | 15 | 87 |
 | resource | 6 | 17 | 130 |
 | runtime | 13 | 37 | 233 |
-| scope | 7 | 12 | 32 |
+| scope | 7 | 7 | 22 |
 
 ## System surfaces
 
@@ -135,8 +135,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.evidence.artifact.lineage.relation.api ?w^~)?t AUTHORITY, CONTRACT, MUST_NOT_OWN, NODE, OWNS, SYSTEM, contract, ArtifactLineageConflict, ArtifactLineageCorruptionError, ArtifactLineageCycle, ArtifactLineageEdge, ArtifactLineageRelationPort
-- noetrium_platform.evidence.artifact.lineage.relation.api.boundary ?w^~)?t SystemLeafContract, contract
+- noetrium_platform.evidence.artifact.lineage.relation.api ?w^~)?t ArtifactLineageConflict, ArtifactLineageCorruptionError, ArtifactLineageCycle, ArtifactLineageEdge, ArtifactLineageRelationPort
 - noetrium_platform.evidence.artifact.lineage.relation.api.contracts ?w^~)?t ArtifactLineageConflict, ArtifactLineageCorruptionError, ArtifactLineageCycle, ArtifactLineageEdge
 - noetrium_platform.evidence.artifact.lineage.relation.api.ports ?w^~)?t ArtifactLineageRelationPort
 
@@ -155,8 +154,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.evidence.artifact.reference.api ?w^~)?t AUTHORITY, CONTRACT, MUST_NOT_OWN, NODE, OWNS, SYSTEM, contract, ArtifactReference, ArtifactReferenceConflict, ArtifactReferenceCorruptionError, ArtifactReferenceNotFound, ArtifactReferencePort
-- noetrium_platform.evidence.artifact.reference.api.boundary ?w^~)?t SystemLeafContract, contract
+- noetrium_platform.evidence.artifact.reference.api ?w^~)?t ArtifactReference, ArtifactReferenceConflict, ArtifactReferenceCorruptionError, ArtifactReferenceNotFound, ArtifactReferencePort
 - noetrium_platform.evidence.artifact.reference.api.contracts ?w^~)?t ArtifactReference, ArtifactReferenceConflict, ArtifactReferenceCorruptionError, ArtifactReferenceNotFound
 - noetrium_platform.evidence.artifact.reference.api.ports ?w^~)?t ArtifactReferencePort
 
@@ -175,8 +173,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.evidence.artifact.retention.api ?w^~)?t AUTHORITY, CONTRACT, MUST_NOT_OWN, NODE, OWNS, SYSTEM, contract, ArtifactRetentionConflict, ArtifactRetentionCorruptionError, ArtifactRetentionNotFound, ArtifactRetentionPort, ArtifactRetentionState
-- noetrium_platform.evidence.artifact.retention.api.boundary ?w^~)?t SystemLeafContract, contract
+- noetrium_platform.evidence.artifact.retention.api ?w^~)?t ArtifactRetentionConflict, ArtifactRetentionCorruptionError, ArtifactRetentionNotFound, ArtifactRetentionPort, ArtifactRetentionState
 - noetrium_platform.evidence.artifact.retention.api.contracts ?w^~)?t ArtifactRetentionConflict, ArtifactRetentionCorruptionError, ArtifactRetentionNotFound, ArtifactRetentionState
 - noetrium_platform.evidence.artifact.retention.api.ports ?w^~)?t ArtifactRetentionPort
 
@@ -281,7 +278,6 @@ Example:
 #### API modules
 
 - noetrium_platform.evidence.data.query.cross.api ?w^~)?t ResearchResultQueryPort, ResearchResultSourcePort
-- noetrium_platform.evidence.data.query.cross.api.boundary ?w^~)?t AUTHORITY, MUST_NOT_OWN, NODE, OWNS, SYSTEM
 
 ### data/record
 
@@ -336,19 +332,19 @@ Example:
 
 #### API modules
 
-- noetrium_platform.capabilities.environment.api ?w^~)?t observation_payload, observation_from_payload, effect_receipt_payload, effect_receipt_from_payload, action_result_payload, action_result_from_payload, SystemIdentity, SystemSpec, SystemPort, ExecutionContext, EffectClass, EffectCertainty, EffectReceipt, ActionIdentityViolation, ActionNotApplied, ActionRecoveryRequired, ActionReconciliationDisposition, ActionReconciliationResult, ActionRequest, ActionResult, ActionSafetyCapabilityMissing, ActionScientificCommitContradiction, ActionSemanticIdentity, EnvironmentBranchState, EnvironmentBranchStateMismatch, EnvironmentBranchStatePort, EnvironmentRecoverySession, EnvironmentResetPort, EnvironmentAssignmentIdentity, EnvironmentAssignmentIsolationPort, EnvironmentAssignmentIsolationReceipt, EnvironmentCapabilityUnsupported, EnvironmentCapability, EnvironmentConformanceProbe, EnvironmentProviderConformanceReceipt, verify_environment_provider_conformance, EnvironmentDiagnosticsPort, EnvironmentProviderCapabilities, EnvironmentProviderPort, EnvironmentSessionDiagnostics, EnvironmentSessionServices, EnvironmentActionLifecycle, EnvironmentActionPhase, EnvironmentCapabilityDescriptor, EnvironmentCoordinationPort, EnvironmentCoordinationReceipt, EnvironmentCoordinationRequest, EnvironmentQuery, EnvironmentQueryKind, EnvironmentQueryPort, EnvironmentQueryResult, EnvironmentRawEventReceipt, EnvironmentRawEventRecord, EnvironmentRawRecordSinkPort, DurablePreparedActionSession, EnvironmentIdentity, EnvironmentImplementation, EnvironmentSession, Observation, action_request_digest, require_action_recovery_handle_identity, require_action_result_identity, require_effect_receipt_digest, require_reconciliation_identity, require_recovery_handle_reconciliation_identity, JsonScalar, JsonInput, JsonMutableValue, JsonValue, StateMachineDynamicsIdentity, StateMachineDynamicsPort, StateMachineEnvironmentSpec, StateTransition, freeze_json_mapping, thaw_json, thaw_json_mapping
+- noetrium_platform.capabilities.environment.api ?w^~)?t observation_payload, observation_from_payload, effect_receipt_payload, effect_receipt_from_payload, action_result_payload, action_result_from_payload, SystemIdentity, SystemSpec, SystemPort, ExecutionContext, EffectClass, EffectCertainty, EffectReceipt, ActionIdentityViolation, ActionNotApplied, ActionRecoveryRequired, ActionReconciliationDisposition, ActionReconciliationResult, ActionRequest, ActionResult, ActionSafetyCapabilityMissing, ActionScientificCommitContradiction, ActionSemanticIdentity, EnvironmentBranchState, EnvironmentBranchStateMismatch, EnvironmentBranchStatePort, EnvironmentRecoverySession, EnvironmentResetPort, EnvironmentAssignmentIdentity, EnvironmentAssignmentIsolationPort, EnvironmentAssignmentIsolationReceipt, EnvironmentCapabilityUnsupported, EnvironmentCapability, EnvironmentConformanceProbe, EnvironmentProviderConformanceReceipt, verify_environment_provider_conformance, EnvironmentDiagnosticsPort, EnvironmentProviderCapabilities, EnvironmentProviderPort, EnvironmentSessionDiagnostics, EnvironmentSessionServices, EnvironmentActionLifecycle, EnvironmentActionPhase, EnvironmentCapabilityDescriptor, EnvironmentCoordinationPort, EnvironmentCoordinationReceipt, EnvironmentCoordinationRequest, EnvironmentQuery, EnvironmentQueryKind, EnvironmentQueryPort, EnvironmentQueryResult, EnvironmentRawEventReceipt, EnvironmentRawEventRecord, EnvironmentRawRecordSinkPort, DurablePreparedActionSession, EnvironmentIdentity, EnvironmentImplementation, EnvironmentSession, Observation, action_request_digest, require_action_recovery_handle_identity, require_action_result_identity, require_effect_receipt_digest, require_reconciliation_identity, require_recovery_handle_reconciliation_identity, StateMachineDynamicsIdentity, StateMachineDynamicsPort, StateMachineEnvironmentSpec, StateTransition, freeze_json_mapping, thaw_json_mapping
 - noetrium_platform.capabilities.environment.api.action_identity ?w^~)?t ActionIdentityViolation, ActionSemanticIdentity, require_action_result_identity, require_effect_receipt_digest, require_reconciliation_identity, require_action_recovery_handle_identity, require_recovery_handle_reconciliation_identity
 - noetrium_platform.capabilities.environment.api.branch_state ?w^~)?t EnvironmentBranchState, EnvironmentBranchStateMismatch, EnvironmentBranchStatePort
 - noetrium_platform.capabilities.environment.api.codec ?w^~)?t action_result_from_payload, action_result_payload, effect_receipt_from_payload, effect_receipt_payload, observation_from_payload, observation_payload
 - noetrium_platform.capabilities.environment.api.conformance ?w^~)?t EnvironmentConformanceProbe, EnvironmentProviderConformanceReceipt, verify_environment_provider_conformance
-- noetrium_platform.capabilities.environment.api.contracts ?w^~)?t ExecutionContext, JsonInput, JsonValue, SystemIdentity, SystemPort, SystemSpec, canonical_digest, EffectReceipt, PreparedEffectHandle, EnvironmentIdentity, EnvironmentAssignmentIdentity, EnvironmentAssignmentIsolationReceipt, EnvironmentAssignmentIsolationPort, Observation, ActionRequest, action_request_digest, ActionResult, ActionReconciliationDisposition, ActionReconciliationResult, DurablePreparedActionSession, EnvironmentSession, EnvironmentImplementation
+- noetrium_platform.capabilities.environment.api.contracts ?w^~)?t ExecutionContext, SystemIdentity, SystemPort, SystemSpec, EffectReceipt, PreparedEffectHandle, EnvironmentIdentity, EnvironmentAssignmentIdentity, EnvironmentAssignmentIsolationReceipt, EnvironmentAssignmentIsolationPort, Observation, ActionRequest, action_request_digest, ActionResult, ActionReconciliationDisposition, ActionReconciliationResult, DurablePreparedActionSession, EnvironmentSession, EnvironmentImplementation
 - noetrium_platform.capabilities.environment.api.errors ?w^~)?t ActionNotApplied, ActionRecoveryRequired, ActionSafetyCapabilityMissing, ActionScientificCommitContradiction, EnvironmentCapabilityUnsupported
 - noetrium_platform.capabilities.environment.api.interaction ?w^~)?t EnvironmentActionLifecycle, EnvironmentActionPhase, EnvironmentCapabilityDescriptor, EnvironmentCoordinationPort, EnvironmentCoordinationReceipt, EnvironmentCoordinationRequest, EnvironmentQuery, EnvironmentQueryKind, EnvironmentQueryPort, EnvironmentQueryResult, EnvironmentRawEventReceipt, EnvironmentRawEventRecord, EnvironmentRawRecordSinkPort
 - noetrium_platform.capabilities.environment.api.ports ?w^~)?t SystemPort, SystemSpec
 - noetrium_platform.capabilities.environment.api.provider ?w^~)?t EnvironmentCapability, EnvironmentDiagnosticsPort, EnvironmentProviderCapabilities, EnvironmentProviderPort, EnvironmentSessionDiagnostics, EnvironmentSessionServices
 - noetrium_platform.capabilities.environment.api.recovery ?w^~)?t EnvironmentRecoverySession
 - noetrium_platform.capabilities.environment.api.reset ?w^~)?t EnvironmentResetPort
-- noetrium_platform.capabilities.environment.api.state_machine ?w^~)?t JsonScalar, JsonInput, JsonMutableValue, JsonValue, StateMachineDynamicsIdentity, StateMachineDynamicsPort, StateMachineEnvironmentSpec, StateTransition, freeze_json_mapping, thaw_json, thaw_json_mapping
+- noetrium_platform.capabilities.environment.api.state_machine ?w^~)?t StateMachineDynamicsIdentity, StateMachineDynamicsPort, StateMachineEnvironmentSpec, StateTransition, freeze_json_mapping, thaw_json_mapping
 
 ### environment/category
 
@@ -379,12 +375,8 @@ Example:
 - Must not own: artifact storage
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.environment__binding
-
-#### API modules
-
-- noetrium_platform.capabilities.environment.binding.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### environment/catalog
 
@@ -428,12 +420,8 @@ Example:
 - Must not own: host process lifecycle
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.environment__instance__identity
-
-#### API modules
-
-- noetrium_platform.capabilities.environment.instance.identity.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### environment/instance/readiness
 
@@ -445,12 +433,8 @@ Example:
 - Must not own: authoritative process health
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.environment__instance__readiness
-
-#### API modules
-
-- noetrium_platform.capabilities.environment.instance.readiness.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### environment/minecraft
 
@@ -585,12 +569,8 @@ Example:
 - Must not own: resource resolution
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.environment__specification__digest
-
-#### API modules
-
-- noetrium_platform.capabilities.environment.specification.digest.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### environment/specification/schema
 
@@ -602,12 +582,8 @@ Example:
 - Must not own: environment instance lifecycle
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.environment__specification__schema
-
-#### API modules
-
-- noetrium_platform.capabilities.environment.specification.schema.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### execution
 
@@ -644,8 +620,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.research.execution.admission.api ?w^~)?t AdmissionBudget, AdmissionIdentity, AdmissionIntent, AdmissionMode, AdmissionRejected, AdmissionTopologySnapshot, CONTRACT, ExecutionAdmissionPort, GroupAdmissionSnapshot, LaneAdmissionSnapshot, ResourceAdmissionSnapshot, TenantAdmissionSnapshot, contract
-- noetrium_platform.research.execution.admission.api.boundary ?w^~)?t SystemLeafContract, contract
+- noetrium_platform.research.execution.admission.api ?w^~)?t AdmissionBudget, AdmissionIdentity, AdmissionIntent, AdmissionMode, AdmissionRejected, AdmissionTopologySnapshot, ExecutionAdmissionPort, GroupAdmissionSnapshot, LaneAdmissionSnapshot, ResourceAdmissionSnapshot, TenantAdmissionSnapshot
 - noetrium_platform.research.execution.admission.api.contracts ?w^~)?t ExecutionPriority, ExecutionLaneKind, ExecutionPermitRejected, AdmissionMode, AdmissionRejected, AdmissionBudget, AdmissionIdentity, AdmissionIntent, GroupAdmissionSnapshot, TenantAdmissionSnapshot, ResourceAdmissionSnapshot, LaneAdmissionSnapshot, AdmissionTopologySnapshot
 - noetrium_platform.research.execution.admission.api.ports ?w^~)?t CancellationTokenPort, Deadline, ExecutionLaneKind, ExecutionPermitLeasePort, AdmissionIdentity, AdmissionIntent, AdmissionTopologySnapshot, ExecutionAdmissionPort
 
@@ -683,8 +658,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.research.execution.command.api ?w^~)?t CONTRACT, CommandConflict, CommandCorruption, CommandDeduplicationKey, CommandId, CommandIntentPort, CommandStorePort, ExecutionCommand, contract
-- noetrium_platform.research.execution.command.api.boundary ?w^~)?t SystemLeafContract, contract
+- noetrium_platform.research.execution.command.api ?w^~)?t CommandConflict, CommandCorruption, CommandDeduplicationKey, CommandId, CommandIntentPort, CommandStorePort, ExecutionCommand
 - noetrium_platform.research.execution.command.api.contracts ?w^~)?t CommandDeduplicationKey, CommandId, ExecutionCommand
 - noetrium_platform.research.execution.command.api.ports ?w^~)?t CommandConflict, CommandCorruption, CommandIntentPort, CommandStorePort
 
@@ -703,8 +677,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.research.execution.operation.api ?w^~)?t CONTRACT, EffectId, IllegalOperationTransition, OperationAdmissionPort, OperationConflict, OperationCorruption, OperationEffectCertainty, OperationEffectProfile, OperationFailure, OperationFailureKind, OperationId, OperationLifecyclePort, OperationRecoveryPort, OperationSnapshot, OperationState, OperationStorePort, OperationSubmissionPort, EffectReconciliationOutcome, EffectReconciliationVerdict, project_effect_reconciliation, TERMINAL_OPERATION_STATES, contract, revise_operation, transition_operation
-- noetrium_platform.research.execution.operation.api.boundary ?w^~)?t SystemLeafContract, contract
+- noetrium_platform.research.execution.operation.api ?w^~)?t EffectId, IllegalOperationTransition, OperationAdmissionPort, OperationConflict, OperationCorruption, OperationEffectCertainty, OperationEffectProfile, OperationFailure, OperationFailureKind, OperationId, OperationLifecyclePort, OperationRecoveryPort, OperationSnapshot, OperationState, OperationStorePort, OperationSubmissionPort, EffectReconciliationOutcome, EffectReconciliationVerdict, project_effect_reconciliation, TERMINAL_OPERATION_STATES, revise_operation, transition_operation
 - noetrium_platform.research.execution.operation.api.contracts ?w^~)?t EffectId, IllegalOperationTransition, OperationEffectCertainty, OperationEffectProfile, OperationFailure, OperationFailureKind, OperationId, OperationSnapshot, OperationState, TERMINAL_OPERATION_STATES, revise_operation, transition_operation
 - noetrium_platform.research.execution.operation.api.ports ?w^~)?t OperationAdmissionPort, OperationConflict, OperationCorruption, OperationLifecyclePort, OperationRecoveryPort, OperationStorePort, OperationSubmissionPort
 - noetrium_platform.research.execution.operation.api.reconciliation ?w^~)?t EffectReconciliationOutcome, EffectReconciliationVerdict, project_effect_reconciliation
@@ -741,8 +714,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.research.execution.scheduling.api ?w^~)?t AdmissionSchedulingPolicyPort, CONTRACT, ExecutionPriority, SchedulingCandidate, contract
-- noetrium_platform.research.execution.scheduling.api.boundary ?w^~)?t SystemLeafContract, contract
+- noetrium_platform.research.execution.scheduling.api ?w^~)?t AdmissionSchedulingPolicyPort, ExecutionPriority, SchedulingCandidate
 - noetrium_platform.research.execution.scheduling.api.contracts ?w^~)?t ExecutionPriority, SchedulingCandidate
 - noetrium_platform.research.execution.scheduling.api.ports ?w^~)?t SchedulingCandidate, AdmissionSchedulingPolicyPort
 
@@ -804,12 +776,8 @@ Example:
 - Must not own: generic artifact lineage
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.experimentation__branch
-
-#### API modules
-
-- noetrium_platform.research.experimentation.branch.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### experimentation/catalog
 
@@ -1045,12 +1013,8 @@ Example:
 - Must not own: model deployment internals
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.experimentation__variant
-
-#### API modules
-
-- noetrium_platform.research.experimentation.variant.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### experimentation/workbench
 
@@ -1231,12 +1195,8 @@ Example:
 - Must not own: domain state mutation
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.governance__schema
-
-#### API modules
-
-- noetrium_platform.foundation.governance.schema.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### governance/security
 
@@ -1248,12 +1208,8 @@ Example:
 - Must not own: scientific method semantics
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.governance__security
-
-#### API modules
-
-- noetrium_platform.foundation.governance.security.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### governance/system_registry
 
@@ -1375,12 +1331,8 @@ Example:
 - Must not own: revision deployment state
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.model__catalog__family
-
-#### API modules
-
-- noetrium_platform.capabilities.model.catalog.family.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### model/catalog/revision
 
@@ -1397,8 +1349,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.capabilities.model.catalog.revision.api ?w^~)?t CONTRACT, contract, ModelPromotionDecision, ModelPromotionDisposition, ModelPromotionReceipt, ModelRevisionAuthorityPort, ModelRevisionAuthoritySnapshot, ModelRevisionCommit, ModelRevisionConflictError, ModelRevisionEvidence, ModelRevisionEvidenceKind, ModelRevisionIdentity, ModelRevisionIntegrityError, ModelRevisionStateError, ModelRollbackReceipt, ModelUpdateProposal, PreparedModelRevision, ModelUpdateBuildEvidence, ModelUpdateBuildReceipt, ModelUpdatePlan, ModelUpdateProducerPort, ModelUpdateSource
-- noetrium_platform.capabilities.model.catalog.revision.api.boundary ?w^~)?t SystemLeafContract, contract
+- noetrium_platform.capabilities.model.catalog.revision.api ?w^~)?t ModelPromotionDecision, ModelPromotionDisposition, ModelPromotionReceipt, ModelRevisionAuthorityPort, ModelRevisionAuthoritySnapshot, ModelRevisionCommit, ModelRevisionConflictError, ModelRevisionEvidence, ModelRevisionEvidenceKind, ModelRevisionIdentity, ModelRevisionIntegrityError, ModelRevisionStateError, ModelRollbackReceipt, ModelUpdateProposal, PreparedModelRevision, ModelUpdateBuildEvidence, ModelUpdateBuildReceipt, ModelUpdatePlan, ModelUpdateProducerPort, ModelUpdateSource
 - noetrium_platform.capabilities.model.catalog.revision.api.contracts ?w^~)?t ModelPromotionDecision, ModelPromotionDisposition, ModelPromotionReceipt, ModelRevisionAuthorityPort, ModelRevisionAuthoritySnapshot, ModelRevisionCommit, ModelRevisionConflictError, ModelRevisionEvidence, ModelRevisionEvidenceKind, ModelRevisionIdentity, ModelRevisionIntegrityError, ModelRevisionStateError, ModelRollbackReceipt, ModelUpdateProposal, PreparedModelRevision
 - noetrium_platform.capabilities.model.catalog.revision.api.update ?w^~)?t ModelUpdateBuildEvidence, ModelUpdateBuildReceipt, ModelUpdatePlan, ModelUpdateProducerPort, ModelUpdateSource
 
@@ -1430,12 +1381,8 @@ Example:
 - Must not own: server runtime health
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.model__deployment__closure
-
-#### API modules
-
-- noetrium_platform.capabilities.model.deployment.closure.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### model/qualification
 
@@ -1482,12 +1429,8 @@ Example:
 - Must not own: serving process lifecycle
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.model__request__input
-
-#### API modules
-
-- noetrium_platform.capabilities.model.request.input.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### model/request/output
 
@@ -1499,12 +1442,8 @@ Example:
 - Must not own: business metric semantics
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.model__request__output
-
-#### API modules
-
-- noetrium_platform.capabilities.model.request.output.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### model/request/prompt
 
@@ -2086,11 +2025,11 @@ Example:
 
 #### API modules
 
-- noetrium_platform.capabilities.participant.agent.api ?w^~)?t AgentIdentity, AgentSession, AgentSnapshot, AgentTurnRequest, AgentTurnResult, AgentImplementation, AgentActionExecutorPort, AgentActionSequence, AgentActionStep, AgentActionSummary, AgentCognitionError, AgentCompletionDecision, AgentCompletionDisposition, AgentCompletionPort, AgentDiagnosticsPort, AgentEvidencePort, AgentGoal, AgentLoopCheckpoint, AgentLoopResult, AgentLoopTerminationReason, AgentMemoryContext, AgentModeDecision, AgentModeDisposition, AgentMemoryPort, AgentObservation, AgentObservationPort, AgentPlannerPort, AgentPlanningRequest, AgentProgressPort, AgentReactiveModePort, AgentReceiptCheckpoint, AgentSafetyDecision, AgentSafetyDisposition, AgentSafetySupervisorPort, AgentSkillCatalogPort, AgentSkillDescription, AgentSkillRecord, AgentSkillSelection, AgentStepReceipt, action_summary_payload, JsonObject, JsonValue
-- noetrium_platform.capabilities.participant.agent.api.cognition ?w^~)?t AgentActionSequence, AgentActionStep, AgentActionSummary, AgentCognitionError, AgentGoal, AgentLoopCheckpoint, AgentLoopResult, AgentLoopTerminationReason, AgentMemoryContext, AgentModeDecision, AgentModeDisposition, AgentObservation, AgentPlanningRequest, AgentReceiptCheckpoint, AgentSafetyDecision, AgentSafetyDisposition, AgentSkillDescription, AgentSkillRecord, AgentSkillSelection, AgentStepReceipt, action_summary_payload, JsonObject, JsonValue
+- noetrium_platform.capabilities.participant.agent.api ?w^~)?t AgentIdentity, AgentSession, AgentSnapshot, AgentTurnRequest, AgentTurnResult, AgentImplementation, AgentActionExecutorPort, AgentActionSequence, AgentActionStep, AgentActionSummary, AgentCognitionError, AgentCompletionDecision, AgentCompletionDisposition, AgentCompletionPort, AgentDiagnosticsPort, AgentEvidencePort, AgentGoal, AgentLoopCheckpoint, AgentLoopResult, AgentLoopTerminationReason, AgentMemoryContext, AgentModeDecision, AgentModeDisposition, AgentMemoryPort, AgentObservation, AgentObservationPort, AgentPlannerPort, AgentPlanningRequest, AgentProgressPort, AgentReactiveModePort, AgentReceiptCheckpoint, AgentSafetyDecision, AgentSafetyDisposition, AgentSafetySupervisorPort, AgentSkillCatalogPort, AgentSkillDescription, AgentSkillRecord, AgentSkillSelection, AgentStepReceipt, action_summary_payload
+- noetrium_platform.capabilities.participant.agent.api.cognition ?w^~)?t AgentActionSequence, AgentActionStep, AgentActionSummary, AgentCognitionError, AgentGoal, AgentLoopCheckpoint, AgentLoopResult, AgentLoopTerminationReason, AgentMemoryContext, AgentModeDecision, AgentModeDisposition, AgentObservation, AgentPlanningRequest, AgentReceiptCheckpoint, AgentSafetyDecision, AgentSafetyDisposition, AgentSkillDescription, AgentSkillRecord, AgentSkillSelection, AgentStepReceipt, action_summary_payload
 - noetrium_platform.capabilities.participant.agent.api.cognition_ports ?w^~)?t AgentActionExecutorPort, AgentCompletionPort, AgentDiagnosticsPort, AgentEvidencePort, AgentMemoryPort, AgentObservationPort, AgentPlannerPort, AgentProgressPort, AgentReactiveModePort, AgentSafetySupervisorPort, AgentSkillCatalogPort
 - noetrium_platform.capabilities.participant.agent.api.completion ?w^~)?t AgentCompletionDecision, AgentCompletionDisposition
-- noetrium_platform.capabilities.participant.agent.api.contracts ?w^~)?t CapabilityPort, ExecutionContext, JsonInput, JsonValue, freeze_json, require_sha256, AgentIdentity, AgentSnapshot, AgentTurnRequest, AgentTurnResult, AgentSession, AgentImplementation
+- noetrium_platform.capabilities.participant.agent.api.contracts ?w^~)?t CapabilityPort, ExecutionContext, AgentIdentity, AgentSnapshot, AgentTurnRequest, AgentTurnResult, AgentSession, AgentImplementation
 
 ### participant/binding
 
@@ -2125,7 +2064,7 @@ Example:
 #### API modules
 
 - noetrium_platform.capabilities.participant.capability.api ?w^~)?t CapabilityApprovalDenied, CapabilityApprovalPort, CapabilityCarrierTransportPort, CapabilityDescriptor, CapabilityEffectReconciliationResult, CapabilityExportSession, CapabilityGuardPort, CapabilityInputCarrier, CapabilityOutputCarrier, CapabilityPolicyDenied, CapabilityPolicySet, CapabilityPort, CapabilityPostPolicyPort, CapabilityPostPolicyViolation, CapabilityProviderImplementation, CapabilityProviderIdentity, CapabilityProviderSession, CapabilityRequest, CapabilityResult, CapabilitySelectionReference, CapabilitySelectionView, DurablePreparedCapabilitySession, GuardDecision, GuardVerdict, TypedCapabilityCarrierCodec, TypedCarrierReference, capability_effect_request_id, capability_request_digest, decode_typed_capability_input, decode_typed_capability_result, make_typed_capability_request, make_typed_capability_result, materialize_capability_selection_view, require_pure_typed_descriptor
-- noetrium_platform.capabilities.participant.capability.api.contracts ?w^~)?t EffectReconciliationDisposition, PreparedEffectHandle, EffectClass, EffectReceipt, ExecutionContext, JsonObject, JsonValue, canonical_digest, freeze_json, CapabilityProviderIdentity, CapabilityDescriptor, CapabilityRequest, capability_effect_request_id, capability_request_digest, CapabilityResult, CapabilityEffectReconciliationResult, DurablePreparedCapabilitySession, CapabilityPort, CapabilityExportSession, CapabilityProviderSession, CapabilityProviderImplementation
+- noetrium_platform.capabilities.participant.capability.api.contracts ?w^~)?t EffectReconciliationDisposition, PreparedEffectHandle, EffectClass, EffectReceipt, ExecutionContext, CapabilityProviderIdentity, CapabilityDescriptor, CapabilityRequest, capability_effect_request_id, capability_request_digest, CapabilityResult, CapabilityEffectReconciliationResult, DurablePreparedCapabilitySession, CapabilityPort, CapabilityExportSession, CapabilityProviderSession, CapabilityProviderImplementation
 - noetrium_platform.capabilities.participant.capability.api.policy ?w^~)?t CapabilityApprovalDenied, CapabilityApprovalPort, CapabilityGuardPort, CapabilityPolicyDenied, CapabilityPolicySet, CapabilityPostPolicyPort, CapabilityPostPolicyViolation, GuardDecision, GuardVerdict
 - noetrium_platform.capabilities.participant.capability.api.selection ?w^~)?t CapabilitySelectionReference, CapabilitySelectionView, materialize_capability_selection_view
 - noetrium_platform.capabilities.participant.capability.api.typed ?w^~)?t CapabilityCarrierTransportPort, CapabilityInputCarrier, CapabilityOutputCarrier, TypedCapabilityCarrierCodec, TypedCarrierReference, decode_typed_capability_input, decode_typed_capability_result, make_typed_capability_request, make_typed_capability_result, require_pure_typed_descriptor
@@ -2166,9 +2105,9 @@ Example:
 
 - noetrium_platform.capabilities.participant.method.api ?w^~)?t IdempotentTaskCompletionSession, MethodIdentity, MethodCompositionPorts, MethodEndpointFactoryPort, MethodEndpointPort, MethodImplementation, MethodObservation, MethodProgramIdentity, MethodProgramIdentityMismatch, MethodObservationDeliveryError, MethodObservationOutboxFactoryPort, MethodObservationOutboxPort, MethodObservationSink, MethodRuntimeBinding, MethodRuntimeIdentity, MethodServices, MethodSession, MethodSessionRuntime, MethodSystemBinding, MethodSnapshot, MethodTaskCompletionReceipt, MethodTaskOutcome, RecallRequest, RecallResult, TaskCompletionReconciliationSession, TaskCompletionSafetyCapabilityMissing
 - noetrium_platform.capabilities.participant.method.api.binding ?w^~)?t MethodSystemBinding
-- noetrium_platform.capabilities.participant.method.api.contracts ?w^~)?t ExecutionContext, JsonValue, canonical_digest, require_sha256, MethodIdentity, MethodProgramIdentity, MethodProgramIdentityMismatch, MethodSnapshot, RecallRequest, RecallResult, MethodTaskOutcome, MethodTaskCompletionReceipt, IdempotentTaskCompletionSession, TaskCompletionReconciliationSession, MethodSession
+- noetrium_platform.capabilities.participant.method.api.contracts ?w^~)?t ExecutionContext, MethodIdentity, MethodProgramIdentity, MethodProgramIdentityMismatch, MethodSnapshot, RecallRequest, RecallResult, MethodTaskOutcome, MethodTaskCompletionReceipt, IdempotentTaskCompletionSession, TaskCompletionReconciliationSession, MethodSession
 - noetrium_platform.capabilities.participant.method.api.errors ?w^~)?t TaskCompletionSafetyCapabilityMissing
-- noetrium_platform.capabilities.participant.method.api.observability ?w^~)?t ExecutionContext, JsonValue, canonical_bytes, freeze_json, MethodObservation, MethodObservationDeliveryError, MethodObservationSink, MethodObservationOutboxPort, MethodObservationOutboxFactoryPort, MethodServices
+- noetrium_platform.capabilities.participant.method.api.observability ?w^~)?t ExecutionContext, MethodObservation, MethodObservationDeliveryError, MethodObservationSink, MethodObservationOutboxPort, MethodObservationOutboxFactoryPort, MethodServices
 - noetrium_platform.capabilities.participant.method.api.ports ?w^~)?t MethodCompositionPorts, MethodEndpointFactoryPort, MethodEndpointPort, MethodImplementation, MethodRuntimeBinding, MethodRuntimeIdentity, MethodSessionRuntime
 
 ### participant/session
@@ -2238,12 +2177,8 @@ Example:
 - Must not own: domain configuration semantics
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.platform__configuration
-
-#### API modules
-
-- noetrium_platform.foundation.kernel.configuration.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### platform/identity
 
@@ -2255,12 +2190,8 @@ Example:
 - Must not own: workspace/project/run identity
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.platform__identity
-
-#### API modules
-
-- noetrium_platform.foundation.kernel.identity.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### platform/lifecycle
 
@@ -2272,12 +2203,8 @@ Example:
 - Must not own: service/process lifecycle
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.platform__lifecycle
-
-#### API modules
-
-- noetrium_platform.foundation.kernel.lifecycle.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### portfolio
 
@@ -2308,12 +2235,8 @@ Example:
 - Must not own: runtime participant sessions
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.portfolio__membership
-
-#### API modules
-
-- noetrium_platform.foundation.portfolio.membership.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### portfolio/program
 
@@ -2325,12 +2248,8 @@ Example:
 - Must not own: study semantics
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.portfolio__program
-
-#### API modules
-
-- noetrium_platform.foundation.portfolio.program.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### portfolio/project
 
@@ -2359,12 +2278,8 @@ Example:
 - Must not own: generic scope tree authority
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.portfolio__workspace
-
-#### API modules
-
-- noetrium_platform.foundation.portfolio.workspace.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### reliability
 
@@ -2854,12 +2769,8 @@ Example:
 - Must not own: project business fields
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.scope__hierarchy
-
-#### API modules
-
-- noetrium_platform.foundation.scope.hierarchy.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### scope/identity
 
@@ -2871,12 +2782,8 @@ Example:
 - Must not own: portfolio metadata
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.scope__identity
-
-#### API modules
-
-- noetrium_platform.foundation.scope.identity.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### scope/membership
 
@@ -2888,12 +2795,8 @@ Example:
 - Must not own: participant sessions
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.scope__membership
-
-#### API modules
-
-- noetrium_platform.foundation.scope.membership.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### scope/ownership
 
@@ -2905,12 +2808,8 @@ Example:
 - Must not own: portfolio business metadata
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.scope__ownership
-
-#### API modules
-
-- noetrium_platform.foundation.scope.ownership.api.boundary ?w^~)?t SystemLeafContract, contract
 
 ### scope/path
 
@@ -2941,10 +2840,6 @@ Example:
 - Must not own: domain-specific lookup semantics
 - Requires: none
 - Provides: none
-- Downstream surface: public
+- Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.scope__resolution
-
-#### API modules
-
-- noetrium_platform.foundation.scope.resolution.api.boundary ?w^~)?t SystemLeafContract, contract
 

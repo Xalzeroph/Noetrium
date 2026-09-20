@@ -177,7 +177,7 @@
     "canonical_authority": "environment",
     "reason": "binding environment specs to scopes/runs/participants",
     "migration_target": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "environment/catalog",
@@ -207,7 +207,7 @@
     "canonical_authority": "environment",
     "reason": "environment instance identity and provenance",
     "migration_target": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "environment/instance/readiness",
@@ -217,7 +217,7 @@
     "canonical_authority": "environment",
     "reason": "environment readiness observations/contract",
     "migration_target": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "environment/minecraft",
@@ -317,7 +317,7 @@
     "canonical_authority": "environment",
     "reason": "exact environment specification identity and digest",
     "migration_target": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "environment/specification/schema",
@@ -327,7 +327,7 @@
     "canonical_authority": "environment",
     "reason": "environment requirement schema and canonical forms",
     "migration_target": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "execution",
@@ -427,7 +427,7 @@
     "canonical_authority": "experimentation",
     "reason": "run branching and branch lineage",
     "migration_target": "experimentation",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "experimentation/catalog",
@@ -547,7 +547,7 @@
     "canonical_authority": "experimentation",
     "reason": "experiment variants, assignments and comparison semantics",
     "migration_target": "experimentation",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "experimentation/workbench",
@@ -667,7 +667,7 @@
     "canonical_authority": null,
     "reason": "schema/version declarations for contracts and records",
     "migration_target": "outside_runtime_authority_graph",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "governance/security",
@@ -677,7 +677,7 @@
     "canonical_authority": null,
     "reason": "security/redaction/classification policy",
     "migration_target": "outside_runtime_authority_graph",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "governance/system_registry",
@@ -747,7 +747,7 @@
     "canonical_authority": "model",
     "reason": "model family identity and metadata",
     "migration_target": "model",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "model/catalog/revision",
@@ -777,7 +777,7 @@
     "canonical_authority": "model",
     "reason": "exact deployment closure across model, stack, runtime and artifact identities",
     "migration_target": "model",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "model/qualification",
@@ -807,7 +807,7 @@
     "canonical_authority": "model",
     "reason": "exact request input identity and canonicalization",
     "migration_target": "model",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "model/request/output",
@@ -817,7 +817,7 @@
     "canonical_authority": "model",
     "reason": "response envelope and response artifact references",
     "migration_target": "model",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "model/request/prompt",
@@ -1317,7 +1317,7 @@
     "canonical_authority": "platform",
     "reason": "platform configuration sources and frozen configuration snapshots",
     "migration_target": "platform",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "platform/identity",
@@ -1327,7 +1327,7 @@
     "canonical_authority": "platform",
     "reason": "platform identity and immutable platform metadata",
     "migration_target": "platform",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "platform/lifecycle",
@@ -1337,7 +1337,7 @@
     "canonical_authority": "platform",
     "reason": "platform startup/shutdown/readiness semantics",
     "migration_target": "platform",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "portfolio",
@@ -1357,7 +1357,7 @@
     "canonical_authority": "portfolio",
     "reason": "portfolio-level ownership and membership records",
     "migration_target": "portfolio",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "portfolio/program",
@@ -1367,7 +1367,7 @@
     "canonical_authority": "portfolio",
     "reason": "research program metadata and project grouping",
     "migration_target": "portfolio",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "portfolio/project",
@@ -1387,7 +1387,7 @@
     "canonical_authority": "portfolio",
     "reason": "workspace metadata and lifecycle",
     "migration_target": "portfolio",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "reliability",
@@ -1667,7 +1667,7 @@
     "canonical_authority": "scope",
     "reason": "parent/child relationships, ancestry, descendants",
     "migration_target": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "scope/identity",
@@ -1677,7 +1677,7 @@
     "canonical_authority": "scope",
     "reason": "stable scope identities and typed scope kinds",
     "migration_target": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "scope/membership",
@@ -1687,7 +1687,7 @@
     "canonical_authority": "scope",
     "reason": "membership of entities in scopes",
     "migration_target": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "scope/ownership",
@@ -1697,7 +1697,7 @@
     "canonical_authority": "scope",
     "reason": "generic owner links and owner-path rules",
     "migration_target": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   {
     "path": "scope/path",
@@ -1717,6 +1717,6 @@
     "canonical_authority": "scope",
     "reason": "resolve a scope reference to canonical scope path",
     "migration_target": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   }
 ]

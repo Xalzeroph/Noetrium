@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "b3816ceb160f42274d25b59b3559074a6d67b794a529985c327c88f6a21cff4e",
+  "interface_digest": "c5b3052503f9eb713209e05a7c4aeb7ba456f0d741d0482769c076f7f508e2a4",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -2656,69 +2656,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "AUTHORITY",
-              "origin_module": ".boundary",
-              "origin_name": "AUTHORITY",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "CONTRACT",
-              "origin_module": ".boundary",
-              "origin_name": "CONTRACT",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "MUST_NOT_OWN",
-              "origin_module": ".boundary",
-              "origin_name": "MUST_NOT_OWN",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "NODE",
-              "origin_module": ".boundary",
-              "origin_name": "NODE",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "OWNS",
-              "origin_module": ".boundary",
-              "origin_name": "OWNS",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SYSTEM",
-              "origin_module": ".boundary",
-              "origin_name": "SYSTEM",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "contract",
-              "origin_module": ".boundary",
-              "origin_name": "contract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "ArtifactLineageConflict",
               "origin_module": ".contracts",
               "origin_name": "ArtifactLineageConflict",
@@ -2763,48 +2700,11 @@
             }
           ],
           "symbols": [
-            "AUTHORITY",
-            "CONTRACT",
-            "MUST_NOT_OWN",
-            "NODE",
-            "OWNS",
-            "SYSTEM",
-            "contract",
             "ArtifactLineageConflict",
             "ArtifactLineageCorruptionError",
             "ArtifactLineageCycle",
             "ArtifactLineageEdge",
             "ArtifactLineageRelationPort"
-          ]
-        },
-        {
-          "module": "noetrium_platform.evidence.artifact.lineage.relation.api.boundary",
-          "source": "noetrium_platform/evidence/artifact/lineage/relation/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -3063,69 +2963,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "AUTHORITY",
-              "origin_module": ".boundary",
-              "origin_name": "AUTHORITY",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "CONTRACT",
-              "origin_module": ".boundary",
-              "origin_name": "CONTRACT",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "MUST_NOT_OWN",
-              "origin_module": ".boundary",
-              "origin_name": "MUST_NOT_OWN",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "NODE",
-              "origin_module": ".boundary",
-              "origin_name": "NODE",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "OWNS",
-              "origin_module": ".boundary",
-              "origin_name": "OWNS",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SYSTEM",
-              "origin_module": ".boundary",
-              "origin_name": "SYSTEM",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "contract",
-              "origin_module": ".boundary",
-              "origin_name": "contract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "ArtifactReference",
               "origin_module": ".contracts",
               "origin_name": "ArtifactReference",
@@ -3170,48 +3007,11 @@
             }
           ],
           "symbols": [
-            "AUTHORITY",
-            "CONTRACT",
-            "MUST_NOT_OWN",
-            "NODE",
-            "OWNS",
-            "SYSTEM",
-            "contract",
             "ArtifactReference",
             "ArtifactReferenceConflict",
             "ArtifactReferenceCorruptionError",
             "ArtifactReferenceNotFound",
             "ArtifactReferencePort"
-          ]
-        },
-        {
-          "module": "noetrium_platform.evidence.artifact.reference.api.boundary",
-          "source": "noetrium_platform/evidence/artifact/reference/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -3452,69 +3252,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "AUTHORITY",
-              "origin_module": ".boundary",
-              "origin_name": "AUTHORITY",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "CONTRACT",
-              "origin_module": ".boundary",
-              "origin_name": "CONTRACT",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "MUST_NOT_OWN",
-              "origin_module": ".boundary",
-              "origin_name": "MUST_NOT_OWN",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "NODE",
-              "origin_module": ".boundary",
-              "origin_name": "NODE",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "OWNS",
-              "origin_module": ".boundary",
-              "origin_name": "OWNS",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SYSTEM",
-              "origin_module": ".boundary",
-              "origin_name": "SYSTEM",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "contract",
-              "origin_module": ".boundary",
-              "origin_name": "contract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "ArtifactRetentionConflict",
               "origin_module": ".contracts",
               "origin_name": "ArtifactRetentionConflict",
@@ -3559,48 +3296,11 @@
             }
           ],
           "symbols": [
-            "AUTHORITY",
-            "CONTRACT",
-            "MUST_NOT_OWN",
-            "NODE",
-            "OWNS",
-            "SYSTEM",
-            "contract",
             "ArtifactRetentionConflict",
             "ArtifactRetentionCorruptionError",
             "ArtifactRetentionNotFound",
             "ArtifactRetentionPort",
             "ArtifactRetentionState"
-          ]
-        },
-        {
-          "module": "noetrium_platform.evidence.artifact.retention.api.boundary",
-          "source": "noetrium_platform/evidence/artifact/retention/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -6384,64 +6084,6 @@
             "ResearchResultQueryPort",
             "ResearchResultSourcePort"
           ]
-        },
-        {
-          "module": "noetrium_platform.evidence.data.query.cross.api.boundary",
-          "source": "noetrium_platform/evidence/data/query/cross/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "annotation": null,
-              "doc": null,
-              "kind": "value",
-              "name": "AUTHORITY",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "'cross_query'"
-            },
-            {
-              "annotation": null,
-              "doc": null,
-              "kind": "value",
-              "name": "MUST_NOT_OWN",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "'writes, durable state, and authority mutation'"
-            },
-            {
-              "annotation": null,
-              "doc": null,
-              "kind": "value",
-              "name": "NODE",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "'data/query/cross'"
-            },
-            {
-              "annotation": null,
-              "doc": null,
-              "kind": "value",
-              "name": "OWNS",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "'cross-authority read composition and query federation'"
-            },
-            {
-              "annotation": null,
-              "doc": null,
-              "kind": "value",
-              "name": "SYSTEM",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "'data'"
-            }
-          ],
-          "symbols": [
-            "AUTHORITY",
-            "MUST_NOT_OWN",
-            "NODE",
-            "OWNS",
-            "SYSTEM"
-          ]
         }
       ],
       "facade_module": "noetrium.contracts.systems.data__query__cross",
@@ -7491,42 +7133,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "JsonScalar",
-              "origin_module": ".state_machine",
-              "origin_name": "JsonScalar",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonInput",
-              "origin_module": ".state_machine",
-              "origin_name": "JsonInput",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonMutableValue",
-              "origin_module": ".state_machine",
-              "origin_name": "JsonMutableValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonValue",
-              "origin_module": ".state_machine",
-              "origin_name": "JsonValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "StateMachineDynamicsIdentity",
               "origin_module": ".state_machine",
               "origin_name": "StateMachineDynamicsIdentity",
@@ -7566,15 +7172,6 @@
               "name": "freeze_json_mapping",
               "origin_module": ".state_machine",
               "origin_name": "freeze_json_mapping",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "thaw_json",
-              "origin_module": ".state_machine",
-              "origin_name": "thaw_json",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -7654,16 +7251,11 @@
             "require_effect_receipt_digest",
             "require_reconciliation_identity",
             "require_recovery_handle_reconciliation_identity",
-            "JsonScalar",
-            "JsonInput",
-            "JsonMutableValue",
-            "JsonValue",
             "StateMachineDynamicsIdentity",
             "StateMachineDynamicsPort",
             "StateMachineEnvironmentSpec",
             "StateTransition",
             "freeze_json_mapping",
-            "thaw_json",
             "thaw_json_mapping"
           ]
         },
@@ -8643,24 +8235,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "JsonInput",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonInput",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonValue",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "SystemIdentity",
               "origin_module": "noetrium_platform.foundation.kernel.kernel",
               "origin_name": "SystemIdentity",
@@ -8682,15 +8256,6 @@
               "name": "SystemSpec",
               "origin_module": "noetrium_platform.foundation.kernel.kernel",
               "origin_name": "SystemSpec",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "canonical_digest",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "canonical_digest",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -9478,12 +9043,9 @@
           ],
           "symbols": [
             "ExecutionContext",
-            "JsonInput",
-            "JsonValue",
             "SystemIdentity",
             "SystemPort",
             "SystemSpec",
-            "canonical_digest",
             "EffectReceipt",
             "PreparedEffectHandle",
             "EnvironmentIdentity",
@@ -10892,42 +10454,6 @@
           "source": "noetrium_platform/capabilities/environment/api/state_machine.py",
           "symbol_schemas": [
             {
-              "annotation": "TypeAlias",
-              "doc": null,
-              "kind": "value",
-              "name": "JsonScalar",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "str | int | float | bool | None"
-            },
-            {
-              "annotation": "TypeAlias",
-              "doc": null,
-              "kind": "value",
-              "name": "JsonInput",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "JsonScalar | list['JsonInput'] | tuple['JsonInput', ...] | Mapping[str, 'JsonInput']"
-            },
-            {
-              "annotation": "TypeAlias",
-              "doc": null,
-              "kind": "value",
-              "name": "JsonMutableValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "JsonScalar | list['JsonMutableValue'] | dict[str, 'JsonMutableValue']"
-            },
-            {
-              "annotation": "TypeAlias",
-              "doc": null,
-              "kind": "value",
-              "name": "JsonValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "value": "JsonScalar | tuple['JsonValue', ...] | Mapping[str, 'JsonValue']"
-            },
-            {
               "bases": [],
               "decorators": [
                 "dataclass(frozen=True, slots=True)"
@@ -11240,26 +10766,6 @@
               "decorators": [],
               "doc": null,
               "kind": "function",
-              "name": "thaw_json",
-              "parameters": [
-                {
-                  "annotation": "JsonValue",
-                  "default": null,
-                  "kind": "positional_or_keyword",
-                  "name": "value",
-                  "receiver": false,
-                  "required": true
-                }
-              ],
-              "return_annotation": "JsonMutableValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def thaw_json(value: JsonValue) -> JsonMutableValue:"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
               "name": "thaw_json_mapping",
               "parameters": [
                 {
@@ -11278,16 +10784,11 @@
             }
           ],
           "symbols": [
-            "JsonScalar",
-            "JsonInput",
-            "JsonMutableValue",
-            "JsonValue",
             "StateMachineDynamicsIdentity",
             "StateMachineDynamicsPort",
             "StateMachineEnvironmentSpec",
             "StateTransition",
             "freeze_json_mapping",
-            "thaw_json",
             "thaw_json_mapping"
           ]
         }
@@ -11815,38 +11316,7 @@
       "system_key": "environment/category"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.binding.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/binding/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.environment__binding",
       "package_prefix": "noetrium_platform.capabilities.environment.binding",
       "system_key": "environment/binding"
@@ -12565,75 +12035,13 @@
       "system_key": "environment/instance"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.instance.identity.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/instance/identity/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.environment__instance__identity",
       "package_prefix": "noetrium_platform.capabilities.environment.instance.identity",
       "system_key": "environment/instance/identity"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.instance.readiness.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/instance/readiness/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.environment__instance__readiness",
       "package_prefix": "noetrium_platform.capabilities.environment.instance.readiness",
       "system_key": "environment/instance/readiness"
@@ -14113,75 +13521,13 @@
       "system_key": "environment/specification"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.specification.digest.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/specification/digest/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.environment__specification__digest",
       "package_prefix": "noetrium_platform.capabilities.environment.specification.digest",
       "system_key": "environment/specification/digest"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.environment.specification.schema.api.boundary",
-          "source": "noetrium_platform/capabilities/environment/specification/schema/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.environment__specification__schema",
       "package_prefix": "noetrium_platform.capabilities.environment.specification.schema",
       "system_key": "environment/specification/schema"
@@ -15176,15 +14522,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "CONTRACT",
-              "origin_module": ".boundary",
-              "origin_name": "CONTRACT",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "ExecutionAdmissionPort",
               "origin_module": ".ports",
               "origin_name": "ExecutionAdmissionPort",
@@ -15226,15 +14563,6 @@
               "origin_name": "TenantAdmissionSnapshot",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "contract",
-              "origin_module": ".boundary",
-              "origin_name": "contract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -15244,43 +14572,11 @@
             "AdmissionMode",
             "AdmissionRejected",
             "AdmissionTopologySnapshot",
-            "CONTRACT",
             "ExecutionAdmissionPort",
             "GroupAdmissionSnapshot",
             "LaneAdmissionSnapshot",
             "ResourceAdmissionSnapshot",
-            "TenantAdmissionSnapshot",
-            "contract"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.execution.admission.api.boundary",
-          "source": "noetrium_platform/research/execution/admission/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
+            "TenantAdmissionSnapshot"
           ]
         },
         {
@@ -16862,15 +16158,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "CONTRACT",
-              "origin_module": ".boundary",
-              "origin_name": "CONTRACT",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "CommandConflict",
               "origin_module": ".ports",
               "origin_name": "CommandConflict",
@@ -16930,57 +16217,16 @@
               "origin_name": "ExecutionCommand",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "contract",
-              "origin_module": ".boundary",
-              "origin_name": "contract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
             }
           ],
           "symbols": [
-            "CONTRACT",
             "CommandConflict",
             "CommandCorruption",
             "CommandDeduplicationKey",
             "CommandId",
             "CommandIntentPort",
             "CommandStorePort",
-            "ExecutionCommand",
-            "contract"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.execution.command.api.boundary",
-          "source": "noetrium_platform/research/execution/command/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
+            "ExecutionCommand"
           ]
         },
         {
@@ -17499,15 +16745,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "CONTRACT",
-              "origin_module": ".boundary",
-              "origin_name": "CONTRACT",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "EffectId",
               "origin_module": ".contracts",
               "origin_name": "EffectId",
@@ -17688,15 +16925,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "contract",
-              "origin_module": ".boundary",
-              "origin_name": "contract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "revise_operation",
               "origin_module": ".contracts",
               "origin_name": "revise_operation",
@@ -17714,7 +16942,6 @@
             }
           ],
           "symbols": [
-            "CONTRACT",
             "EffectId",
             "IllegalOperationTransition",
             "OperationAdmissionPort",
@@ -17735,39 +16962,8 @@
             "EffectReconciliationVerdict",
             "project_effect_reconciliation",
             "TERMINAL_OPERATION_STATES",
-            "contract",
             "revise_operation",
             "transition_operation"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.execution.operation.api.boundary",
-          "source": "noetrium_platform/research/execution/operation/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -21096,15 +20292,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "CONTRACT",
-              "origin_module": ".boundary",
-              "origin_name": "CONTRACT",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "ExecutionPriority",
               "origin_module": ".contracts",
               "origin_name": "ExecutionPriority",
@@ -21119,53 +20306,12 @@
               "origin_name": "SchedulingCandidate",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "contract",
-              "origin_module": ".boundary",
-              "origin_name": "contract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
             }
           ],
           "symbols": [
             "AdmissionSchedulingPolicyPort",
-            "CONTRACT",
             "ExecutionPriority",
-            "SchedulingCandidate",
-            "contract"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.execution.scheduling.api.boundary",
-          "source": "noetrium_platform/research/execution/scheduling/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
+            "SchedulingCandidate"
           ]
         },
         {
@@ -29483,38 +28629,7 @@
       "system_key": "experimentation"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.branch.api.boundary",
-          "source": "noetrium_platform/research/experimentation/branch/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.experimentation__branch",
       "package_prefix": "noetrium_platform.research.experimentation.branch",
       "system_key": "experimentation/branch"
@@ -46660,38 +45775,7 @@
       "system_key": "experimentation/study"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.variant.api.boundary",
-          "source": "noetrium_platform/research/experimentation/variant/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.experimentation__variant",
       "package_prefix": "noetrium_platform.research.experimentation.variant",
       "system_key": "experimentation/variant"
@@ -54780,75 +53864,13 @@
       "system_key": "governance/repository_boundary"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.governance.schema.api.boundary",
-          "source": "noetrium_platform/foundation/governance/schema/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.governance__schema",
       "package_prefix": "noetrium_platform.foundation.governance.schema",
       "system_key": "governance/schema"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.governance.security.api.boundary",
-          "source": "noetrium_platform/foundation/governance/security/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.governance__security",
       "package_prefix": "noetrium_platform.foundation.governance.security",
       "system_key": "governance/security"
@@ -64125,38 +63147,7 @@
       "system_key": "model/catalog"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.model.catalog.family.api.boundary",
-          "source": "noetrium_platform/capabilities/model/catalog/family/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.model__catalog__family",
       "package_prefix": "noetrium_platform.capabilities.model.catalog.family",
       "system_key": "model/catalog/family"
@@ -64167,24 +63158,6 @@
           "module": "noetrium_platform.capabilities.model.catalog.revision.api",
           "source": "noetrium_platform/capabilities/model/catalog/revision/api/__init__.py",
           "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "CONTRACT",
-              "origin_module": ".boundary",
-              "origin_name": "CONTRACT",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "contract",
-              "origin_module": ".boundary",
-              "origin_name": "contract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
             {
               "doc": null,
               "kind": "reexport",
@@ -64367,8 +63340,6 @@
             }
           ],
           "symbols": [
-            "CONTRACT",
-            "contract",
             "ModelPromotionDecision",
             "ModelPromotionDisposition",
             "ModelPromotionReceipt",
@@ -64389,36 +63360,6 @@
             "ModelUpdatePlan",
             "ModelUpdateProducerPort",
             "ModelUpdateSource"
-          ]
-        },
-        {
-          "module": "noetrium_platform.capabilities.model.catalog.revision.api.boundary",
-          "source": "noetrium_platform/capabilities/model/catalog/revision/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
           ]
         },
         {
@@ -67969,38 +66910,7 @@
       "system_key": "model/deployment"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.model.deployment.closure.api.boundary",
-          "source": "noetrium_platform/capabilities/model/deployment/closure/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.model__deployment__closure",
       "package_prefix": "noetrium_platform.capabilities.model.deployment.closure",
       "system_key": "model/deployment/closure"
@@ -70781,75 +69691,13 @@
       "system_key": "model/request"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.model.request.input.api.boundary",
-          "source": "noetrium_platform/capabilities/model/request/input/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.model__request__input",
       "package_prefix": "noetrium_platform.capabilities.model.request.input",
       "system_key": "model/request/input"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.capabilities.model.request.output.api.boundary",
-          "source": "noetrium_platform/capabilities/model/request/output/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.model__request__output",
       "package_prefix": "noetrium_platform.capabilities.model.request.output",
       "system_key": "model/request/output"
@@ -78768,24 +77616,6 @@
               "origin_name": "action_summary_payload",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonObject",
-              "origin_module": ".cognition",
-              "origin_name": "JsonObject",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonValue",
-              "origin_module": ".cognition",
-              "origin_name": "JsonValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -78828,9 +77658,7 @@
             "AgentSkillRecord",
             "AgentSkillSelection",
             "AgentStepReceipt",
-            "action_summary_payload",
-            "JsonObject",
-            "JsonValue"
+            "action_summary_payload"
           ]
         },
         {
@@ -80245,24 +79073,6 @@
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1",
               "signature": "def action_summary_payload(summary: AgentActionSummary) -> dict[str, JsonValue]:"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonObject",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonObject",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonValue",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -80286,9 +79096,7 @@
             "AgentSkillRecord",
             "AgentSkillSelection",
             "AgentStepReceipt",
-            "action_summary_payload",
-            "JsonObject",
-            "JsonValue"
+            "action_summary_payload"
           ]
         },
         {
@@ -81323,42 +80131,6 @@
               "schema_version": "1"
             },
             {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonInput",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonInput",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonValue",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "freeze_json",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "freeze_json",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "require_sha256",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "require_sha256",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
               "bases": [],
               "decorators": [
                 "dataclass(frozen=True, slots=True)"
@@ -81755,10 +80527,6 @@
           "symbols": [
             "CapabilityPort",
             "ExecutionContext",
-            "JsonInput",
-            "JsonValue",
-            "freeze_json",
-            "require_sha256",
             "AgentIdentity",
             "AgentSnapshot",
             "AgentTurnRequest",
@@ -82421,42 +81189,6 @@
               "name": "ExecutionContext",
               "origin_module": "noetrium_platform.foundation.kernel.kernel",
               "origin_name": "ExecutionContext",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonObject",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonObject",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonValue",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "canonical_digest",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "canonical_digest",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "freeze_json",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "freeze_json",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -83270,10 +82002,6 @@
             "EffectClass",
             "EffectReceipt",
             "ExecutionContext",
-            "JsonObject",
-            "JsonValue",
-            "canonical_digest",
-            "freeze_json",
             "CapabilityProviderIdentity",
             "CapabilityDescriptor",
             "CapabilityRequest",
@@ -85238,33 +83966,6 @@
               "schema_version": "1"
             },
             {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonValue",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "canonical_digest",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "canonical_digest",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "require_sha256",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "require_sha256",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
               "bases": [],
               "decorators": [
                 "dataclass(frozen=True, slots=True)"
@@ -85954,9 +84655,6 @@
           ],
           "symbols": [
             "ExecutionContext",
-            "JsonValue",
-            "canonical_digest",
-            "require_sha256",
             "MethodIdentity",
             "MethodProgramIdentity",
             "MethodProgramIdentityMismatch",
@@ -86003,33 +84701,6 @@
               "name": "ExecutionContext",
               "origin_module": "noetrium_platform.foundation.kernel.kernel",
               "origin_name": "ExecutionContext",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "JsonValue",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "JsonValue",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "canonical_bytes",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "canonical_bytes",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "freeze_json",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "freeze_json",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -86458,9 +85129,6 @@
           ],
           "symbols": [
             "ExecutionContext",
-            "JsonValue",
-            "canonical_bytes",
-            "freeze_json",
             "MethodObservation",
             "MethodObservationDeliveryError",
             "MethodObservationSink",
@@ -90894,112 +89562,19 @@
       "system_key": "platform/concurrency"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.kernel.configuration.api.boundary",
-          "source": "noetrium_platform/foundation/kernel/configuration/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.platform__configuration",
       "package_prefix": "noetrium_platform.foundation.kernel.configuration",
       "system_key": "platform/configuration"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.kernel.identity.api.boundary",
-          "source": "noetrium_platform/foundation/kernel/identity/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.platform__identity",
       "package_prefix": "noetrium_platform.foundation.kernel.identity",
       "system_key": "platform/identity"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.kernel.lifecycle.api.boundary",
-          "source": "noetrium_platform/foundation/kernel/lifecycle/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.platform__lifecycle",
       "package_prefix": "noetrium_platform.foundation.kernel.lifecycle",
       "system_key": "platform/lifecycle"
@@ -92731,75 +91306,13 @@
       "system_key": "portfolio"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.portfolio.membership.api.boundary",
-          "source": "noetrium_platform/foundation/portfolio/membership/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.portfolio__membership",
       "package_prefix": "noetrium_platform.foundation.portfolio.membership",
       "system_key": "portfolio/membership"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.portfolio.program.api.boundary",
-          "source": "noetrium_platform/foundation/portfolio/program/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.portfolio__program",
       "package_prefix": "noetrium_platform.foundation.portfolio.program",
       "system_key": "portfolio/program"
@@ -93030,38 +91543,7 @@
       "system_key": "portfolio/project"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.portfolio.workspace.api.boundary",
-          "source": "noetrium_platform/foundation/portfolio/workspace/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.portfolio__workspace",
       "package_prefix": "noetrium_platform.foundation.portfolio.workspace",
       "system_key": "portfolio/workspace"
@@ -110797,149 +109279,25 @@
       "system_key": "scope"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.hierarchy.api.boundary",
-          "source": "noetrium_platform/foundation/scope/hierarchy/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.scope__hierarchy",
       "package_prefix": "noetrium_platform.foundation.scope.hierarchy",
       "system_key": "scope/hierarchy"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.identity.api.boundary",
-          "source": "noetrium_platform/foundation/scope/identity/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.scope__identity",
       "package_prefix": "noetrium_platform.foundation.scope.identity",
       "system_key": "scope/identity"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.membership.api.boundary",
-          "source": "noetrium_platform/foundation/scope/membership/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.scope__membership",
       "package_prefix": "noetrium_platform.foundation.scope.membership",
       "system_key": "scope/membership"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.ownership.api.boundary",
-          "source": "noetrium_platform/foundation/scope/ownership/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.scope__ownership",
       "package_prefix": "noetrium_platform.foundation.scope.ownership",
       "system_key": "scope/ownership"
@@ -111201,42 +109559,11 @@
       "system_key": "scope/path"
     },
     {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.foundation.scope.resolution.api.boundary",
-          "source": "noetrium_platform/foundation/scope/resolution/api/boundary.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "SystemLeafContract",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-              "origin_name": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "decorators": [],
-              "doc": null,
-              "kind": "function",
-              "name": "contract",
-              "parameters": [],
-              "return_annotation": "SystemLeafContract",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def contract() -> SystemLeafContract:"
-            }
-          ],
-          "symbols": [
-            "SystemLeafContract",
-            "contract"
-          ]
-        }
-      ],
+      "api_modules": [],
       "facade_module": "noetrium.contracts.systems.scope__resolution",
       "package_prefix": "noetrium_platform.foundation.scope.resolution",
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "2e19b6efb53f251f88af2bb61b62fcd528dd89174acfac18a2a1020aab8fc25c"
+  "topology_digest": "c4da8a78a00c12312ca68a1810040ec6762e8bd5a251a21a9fabb94d74ef93dd"
 }

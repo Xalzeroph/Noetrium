@@ -96321,7 +96321,7 @@
     "inheritance_edges": 138,
     "module_import_edges": 5473,
     "parse_errors": 0,
-    "python_modules": 2528,
+    "python_modules": 2529,
     "registry_authorities": 20,
     "registry_nodes": 172,
     "top_level_systems": 16
@@ -129987,6 +129987,13 @@
       "top_system": "governance"
     },
     {
+      "imports": [],
+      "module": "noetrium_platform.foundation.governance.architecture.downstream_surface_policy",
+      "path": "noetrium_platform/foundation/governance/architecture/downstream_surface_policy.py",
+      "system_key": "governance/architecture",
+      "top_system": "governance"
+    },
+    {
       "imports": [
         "noetrium_platform.foundation.governance.architecture.source_index",
         "noetrium_platform.foundation.governance.architecture.source_scan"
@@ -143995,9 +144002,9 @@
     }
   ],
   "parse_errors": [],
-  "registry_sha256": "e4ea173ff1460ed18af96b3de44996a6bb9c859342697cc3084344ee60a52574",
+  "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "be87ffb4dc96907d8ad7c84751703d471da04a5c",
+  "source_git_sha": "e4595834a3554e526166e785f815c1ef19e0ccd6",
   "system_import_edges": [
     {
       "count": 108,

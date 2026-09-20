@@ -9,23 +9,11 @@ This module is regenerated from the canonical registry and API exports.
 """
 
 from noetrium_platform.evidence.artifact.reference.api import (
-    AUTHORITY,
-    CONTRACT,
-    MUST_NOT_OWN,
-    NODE,
-    OWNS,
-    SYSTEM,
-    contract,
     ArtifactReference,
     ArtifactReferenceConflict,
     ArtifactReferenceCorruptionError,
     ArtifactReferenceNotFound,
     ArtifactReferencePort,
-)
-
-from noetrium_platform.evidence.artifact.reference.api.boundary import (
-    SystemLeafContract,
-    contract as boundary__contract,
 )
 
 from noetrium_platform.evidence.artifact.reference.api.contracts import (
@@ -41,4 +29,4 @@ from noetrium_platform.evidence.artifact.reference.api.ports import (
 
 SYSTEM_KEY = 'artifact/reference'
 PACKAGE_PREFIX = 'noetrium_platform.evidence.artifact.reference'
-__all__ = ('AUTHORITY', 'CONTRACT', 'MUST_NOT_OWN', 'NODE', 'OWNS', 'SYSTEM', 'contract', 'ArtifactReference', 'ArtifactReferenceConflict', 'ArtifactReferenceCorruptionError', 'ArtifactReferenceNotFound', 'ArtifactReferencePort', 'SystemLeafContract', 'boundary__contract', 'contracts__ArtifactReference', 'contracts__ArtifactReferenceConflict', 'contracts__ArtifactReferenceCorruptionError', 'contracts__ArtifactReferenceNotFound', 'ports__ArtifactReferencePort')
+__all__ = ('ArtifactReference', 'ArtifactReferenceConflict', 'ArtifactReferenceCorruptionError', 'ArtifactReferenceNotFound', 'ArtifactReferencePort', 'contracts__ArtifactReference', 'contracts__ArtifactReferenceConflict', 'contracts__ArtifactReferenceCorruptionError', 'contracts__ArtifactReferenceNotFound', 'ports__ArtifactReferencePort')
