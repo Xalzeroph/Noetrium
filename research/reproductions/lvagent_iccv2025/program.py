@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import LVAGENT_FIDELITY
 
 LVAGENT_PHASES = (
@@ -10,7 +10,7 @@ LVAGENT_PHASES = (
     AgentPhaseSpec("consensus", "lvagent.consensus", "Aggregate the final answer after multi-round collaboration."),
 )
 
-LVAGENT_METHOD_PROGRAM = build_agent_phase_program(
+LVAGENT_METHOD_PROGRAM = AgentMethodSpec(
     method_id="lvagent",
     implementation_version="2025-paper-protocol",
     schema_version="lvagent.phase-workflow.v1",
@@ -24,5 +24,5 @@ LVAGENT_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("lvagent.phase-transcript", "lvagent.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("lvagent_trajectory",),
-)
+).compile()
 __all__ = ["LVAGENT_METHOD_PROGRAM", "LVAGENT_PHASES"]
