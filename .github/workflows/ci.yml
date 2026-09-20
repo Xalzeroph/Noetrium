@@ -142,6 +142,26 @@ jobs:
             --expected-distribution-evidence-sha256 "${ROLE06_DISTRIBUTION_EVIDENCE_SHA256}" \
             --output "$RUNNER_TEMP/container-verification.json"
 
+      - name: Validate environment profile authority
+        run: python scripts/environment_profiles.py validate
+
+      - name: Build and doctor reusable environment profiles
+        env:
+          PLATFORM_IMAGE: noetrium:${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for profile in minecraft embodied gui web software; do
+            echo "building environment profile: ${profile}"
+            docker compose \
+              -f deploy/compose.yaml \
+              -f "deploy/environments/${profile}/compose.yaml" \
+              build platform-runtime
+            docker compose \
+              -f deploy/compose.yaml \
+              -f "deploy/environments/${profile}/compose.yaml" \
+              run --rm platform-runtime environment-doctor "${profile}"
+          done
+
       - name: Upload assurance evidence
         if: always()
         uses: actions/upload-artifact@v4
