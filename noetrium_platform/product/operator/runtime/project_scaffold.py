@@ -147,7 +147,7 @@ def _environment_provider_module(request: ProjectCreateRequest) -> str:
 
 
 def _application_module() -> str:
-    return '''from pathlib import Path\n\nfrom noetrium.platform import ResearchApplicationPort, bind_run_control_application\nfrom noetrium.api import RunControlPort\n\n\ndef build_application(config_path: Path | None) -> ResearchApplicationPort:\n    del config_path\n    raise NotImplementedError("bind the project RunControlPort explicitly")\n\n\ndef bind_control(control: RunControlPort, *, run_id: str, run_manifest_digest: str) -> ResearchApplicationPort:\n    return bind_run_control_application(control, run_id=run_id, run_manifest_digest=run_manifest_digest)\n'''
+    return '''from pathlib import Path\n\nfrom noetrium.api import ResearchApplicationPort, bind_run_control_application\nfrom noetrium.api import RunControlPort\n\n\ndef build_application(config_path: Path | None) -> ResearchApplicationPort:\n    del config_path\n    raise NotImplementedError("bind the project RunControlPort explicitly")\n\n\ndef bind_control(control: RunControlPort, *, run_id: str, run_manifest_digest: str) -> ResearchApplicationPort:\n    return bind_run_control_application(control, run_id=run_id, run_manifest_digest=run_manifest_digest)\n'''
 
 
 def _author_test_module(package: str) -> str:
