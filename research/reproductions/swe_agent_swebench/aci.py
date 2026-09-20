@@ -4,7 +4,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
-from noetrium.contracts.systems.participant__capability import (
+from noetrium.api import (
     CapabilityDescriptor,
     CapabilityRequest,
     GuardDecision,
