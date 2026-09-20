@@ -14287,6 +14287,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.experimentation.run.composition.evidence.ExperimentRunEvidenceFinalizer",
+      "target": "noetrium_platform.research.experimentation.api.construction.ProjectRunDefinition"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.experimentation.run.control.api.contracts.RunControlActionFailure",
       "target": "noetrium_platform.research.experimentation.run.control.api.contracts.RunControlReceipt"
     },
@@ -85316,6 +85321,28 @@
       "top_system": "experimentation"
     },
     {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 26,
+      "methods": [
+        "__init__",
+        "_jsonl",
+        "_seal_stream",
+        "_validate_run",
+        "finalize"
+      ],
+      "module": "noetrium_platform.research.experimentation.run.composition.evidence",
+      "name": "ExperimentRunEvidenceFinalizer",
+      "nesting": [
+        "ExperimentRunEvidenceFinalizer"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.run.composition.evidence.ExperimentRunEvidenceFinalizer",
+      "system_key": "experimentation/run",
+      "top_system": "experimentation"
+    },
+    {
       "bases": [
         "StrEnum"
       ],
@@ -96025,13 +96052,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3188,
-    "classes": 3149,
+    "association_edges": 3189,
+    "classes": 3150,
     "constructor_edges": 856,
     "inheritance_edges": 138,
-    "module_import_edges": 5463,
+    "module_import_edges": 5469,
     "parse_errors": 0,
-    "python_modules": 2526,
+    "python_modules": 2527,
     "registry_authorities": 20,
     "registry_nodes": 172,
     "top_level_systems": 16
@@ -117186,6 +117213,10 @@
       "target": "noetrium_platform.research.experimentation.run.artifacts"
     },
     {
+      "source": "noetrium_platform.research.experimentation.run.composition",
+      "target": "noetrium_platform.research.experimentation.run.evidence"
+    },
+    {
       "source": "noetrium_platform.research.experimentation.run.composition.application",
       "target": "noetrium_platform.research.experimentation.run.api"
     },
@@ -117220,6 +117251,26 @@
     {
       "source": "noetrium_platform.research.experimentation.run.composition.artifacts",
       "target": "noetrium_platform.research.experimentation.run.runtime.artifacts"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.run.composition.evidence",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.run.composition.evidence",
+      "target": "noetrium_platform.research.experimentation.api.construction"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.run.composition.evidence",
+      "target": "noetrium_platform.research.experimentation.run.api"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.run.composition.evidence",
+      "target": "noetrium_platform.research.experimentation.run.manifest.api"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.run.composition.evidence",
+      "target": "noetrium_platform.research.experimentation.run.manifest.runtime"
     },
     {
       "source": "noetrium_platform.research.experimentation.run.control.api",
@@ -142356,7 +142407,8 @@
       "imports": [
         "noetrium_platform.research.experimentation.run.application",
         "noetrium_platform.research.experimentation.run.artifact_capability",
-        "noetrium_platform.research.experimentation.run.artifacts"
+        "noetrium_platform.research.experimentation.run.artifacts",
+        "noetrium_platform.research.experimentation.run.evidence"
       ],
       "module": "noetrium_platform.research.experimentation.run.composition",
       "path": "noetrium_platform/research/experimentation/run/composition/__init__.py",
@@ -142393,6 +142445,19 @@
       ],
       "module": "noetrium_platform.research.experimentation.run.composition.artifacts",
       "path": "noetrium_platform/research/experimentation/run/composition/artifacts.py",
+      "system_key": "experimentation/run",
+      "top_system": "experimentation"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.research.experimentation.api.construction",
+        "noetrium_platform.research.experimentation.run.api",
+        "noetrium_platform.research.experimentation.run.manifest.api",
+        "noetrium_platform.research.experimentation.run.manifest.runtime"
+      ],
+      "module": "noetrium_platform.research.experimentation.run.composition.evidence",
+      "path": "noetrium_platform/research/experimentation/run/composition/evidence.py",
       "system_key": "experimentation/run",
       "top_system": "experimentation"
     },
@@ -143641,7 +143706,7 @@
   "parse_errors": [],
   "registry_sha256": "e4ea173ff1460ed18af96b3de44996a6bb9c859342697cc3084344ee60a52574",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "07b8311cc389914661378d8c9ee2e85ce5d6faec",
+  "source_git_sha": "63742d2d0afe8c6e054d829ef870c3be76d12591",
   "system_import_edges": [
     {
       "count": 108,
@@ -143799,7 +143864,7 @@
       "target": "execution"
     },
     {
-      "count": 382,
+      "count": 387,
       "source": "experimentation",
       "target": "experimentation"
     },
@@ -143819,7 +143884,7 @@
       "target": "participant"
     },
     {
-      "count": 102,
+      "count": 103,
       "source": "experimentation",
       "target": "platform"
     },
