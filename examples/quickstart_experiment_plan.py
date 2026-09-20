@@ -9,7 +9,7 @@ from noetrium.api import (
     VariantKind,
     StudyAssignment,
 )
-from noetrium.contracts import canonical_digest
+from noetrium.api import canonical_digest
 
 
 def build_plan() -> ExperimentPlan:
