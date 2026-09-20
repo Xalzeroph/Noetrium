@@ -88,6 +88,15 @@ class ReproductionMatchCriterionStatus(StrEnum):
     UNRESOLVED = "unresolved"
 
 
+REPRODUCTION_MATCH_REQUIRED_CRITERIA = (
+    "benchmark-cut",
+    "method-semantics",
+    "model-identity",
+    "environment",
+    "evaluation-protocol",
+)
+
+
 @dataclass(frozen=True, slots=True)
 class ReproductionIdentity:
     method_id: str
@@ -361,6 +370,16 @@ class ReproductionEvidenceQualification:
                 "reproduction evidence qualification criteria must be unique"
             )
         if self.decision is ReproductionEvidenceKind.MATCHED_RESULT:
+            missing = tuple(
+                criterion_id
+                for criterion_id in REPRODUCTION_MATCH_REQUIRED_CRITERIA
+                if criterion_id not in criterion_ids
+            )
+            if missing:
+                raise ValueError(
+                    "matched-result qualification is missing required criteria: "
+                    + ", ".join(missing)
+                )
             unresolved = tuple(
                 row.criterion_id
                 for row in criteria
@@ -704,6 +723,7 @@ __all__ = [
     "ReproductionEvidenceRef",
     "ReproductionMatchCriterion",
     "ReproductionMatchCriterionStatus",
+    "REPRODUCTION_MATCH_REQUIRED_CRITERIA",
     "ReproductionIdentity",
     "ReproductionLifecycle",
 ]

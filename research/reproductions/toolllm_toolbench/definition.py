@@ -105,8 +105,24 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     deltas=(
+        ReproductionDelta(
+            kind=ReproductionDeltaKind("unresolved"),
+            description=(
+                "Paper Table 4 combines ToolLLaMA checkpoint identity, "
+                "paper-era RapidAPI availability and ToolEval model judging. "
+                "Those external identities are not fully content-addressed by "
+                "the current executable Study."
+            ),
+        ),
     ),
-    blockers=(),
+    blockers=(
+        "the exact paper-era ToolLLaMA checkpoint used for Table 4 must be "
+        "materialized under immutable model identity",
+        "the paper-era RapidAPI inventory, availability and response behavior "
+        "must be frozen before matched ToolBench execution",
+        "ToolEval pass/win claims require the historical evaluator model and "
+        "prompt/service revisions under immutable authority",
+    ),
     evidence_refs=(),
     scientific_tests=('tests/test_scientific_toolllm_dfsdt_v1.py', 'tests/test_scientific_toolllm_toolbench_v1.py', 'tests/test_scientific_toolllm_method_program_v1.py', 'tests/test_scientific_toolbench_cut_v1.py', 'tests/test_scientific_toolllm_study_v1.py'),
 )

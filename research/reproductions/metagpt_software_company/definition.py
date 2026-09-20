@@ -69,8 +69,22 @@ REPRODUCTION = ReproductionDefinition(
         ),
     ),
     deltas=(
+        ReproductionDelta(
+            kind=ReproductionDeltaKind("unresolved"),
+            description=(
+                "The typed executable Study currently binds the 164-task "
+                "HumanEval cut, while the recorded paper claim is the MBPP "
+                "executive-feedback ablation. HumanEval execution evidence "
+                "must not be used to qualify the MBPP claim."
+            ),
+        ),
     ),
-    blockers=(),
+    blockers=(
+        "the paper MBPP executive-feedback benchmark cut and evaluator are not "
+        "yet bound as an executable Study",
+        "the exact paper-era hosted model service revisions used for the MBPP "
+        "ablation are not immutable public model artifacts",
+    ),
     evidence_refs=(),
     scientific_tests=('tests/test_scientific_metagpt_fidelity_v1.py', 'tests/test_scientific_metagpt_method_program_v1.py', 'tests/test_scientific_metagpt_humaneval_study_v1.py', 'tests/test_scientific_humaneval_cut_v1.py'),
 )
