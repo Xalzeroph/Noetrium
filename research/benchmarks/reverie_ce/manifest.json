@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "reverie_ce",
+  "benchmark": {
+    "benchmark_id": "reverie-ce",
+    "title": "REVERIE-CE",
+    "source_uri": "https://github.com/YicongHong/Recurrent-VLN-BERT",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

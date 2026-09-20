@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "mmmu",
+  "benchmark": {
+    "benchmark_id": "mmmu",
+    "title": "MMMU",
+    "source_uri": "https://mmmu-benchmark.github.io/",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

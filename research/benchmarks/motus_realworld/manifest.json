@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "motus_realworld",
+  "benchmark": {
+    "benchmark_id": "motus-realworld",
+    "title": "Motus Real-World Benchmark",
+    "source_uri": "https://github.com/thu-ml/Motus",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "robot_state"
+    ]
+  }
+}
