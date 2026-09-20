@@ -138,7 +138,7 @@ class ProjectManifestFacet(StrEnum):
     """Explicit ProjectManifest identity/equality dimensions; none is Run/scientific validity."""
 
     PROJECT_SPEC = "project_spec"
-    AUTHOR_REQUIREMENTS = "author_requirements"
+    REQUIREMENTS = "requirements"
     PROVIDER_BINDINGS = "provider_bindings"
     SCAFFOLD_PLATFORM_PROVENANCE = "scaffold_platform_provenance"
     TOTAL_CLOSURE = "total_closure"
@@ -147,7 +147,7 @@ class ProjectManifestFacet(StrEnum):
 @dataclass(frozen=True, slots=True)
 class ProjectManifestIdentityFacets:
     project_spec_digest: str
-    author_requirements_digest: str
+    requirements_digest: str
     provider_bindings_digest: str
     scaffold_platform_provenance_digest: str
     total_closure_digest: str
@@ -155,7 +155,7 @@ class ProjectManifestIdentityFacets:
     def __post_init__(self) -> None:
         for field, value in (
             ("project_spec_digest", self.project_spec_digest),
-            ("author_requirements_digest", self.author_requirements_digest),
+            ("requirements_digest", self.requirements_digest),
             ("provider_bindings_digest", self.provider_bindings_digest),
             ("scaffold_platform_provenance_digest", self.scaffold_platform_provenance_digest),
             ("total_closure_digest", self.total_closure_digest),
@@ -165,8 +165,8 @@ class ProjectManifestIdentityFacets:
     def digest_for(self, facet: ProjectManifestFacet) -> str:
         if facet is ProjectManifestFacet.PROJECT_SPEC:
             return self.project_spec_digest
-        if facet is ProjectManifestFacet.AUTHOR_REQUIREMENTS:
-            return self.author_requirements_digest
+        if facet is ProjectManifestFacet.REQUIREMENTS:
+            return self.requirements_digest
         if facet is ProjectManifestFacet.PROVIDER_BINDINGS:
             return self.provider_bindings_digest
         if facet is ProjectManifestFacet.SCAFFOLD_PLATFORM_PROVENANCE:
@@ -382,7 +382,7 @@ def _project_spec_payload(manifest: ProjectManifest) -> dict[str, JsonInput]:
     }
 
 
-def _author_requirements_payload(manifest: ProjectManifest) -> dict[str, JsonInput]:
+def _requirements_payload(manifest: ProjectManifest) -> dict[str, JsonInput]:
     return {
         "capability_requirements": tuple(
             {
@@ -439,7 +439,7 @@ def _project_manifest_payload(manifest: ProjectManifest) -> dict[str, JsonInput]
     return {
         **_scaffold_platform_provenance_payload(manifest),
         "project": _project_spec_payload(manifest),
-        **_author_requirements_payload(manifest),
+        **_requirements_payload(manifest),
         **_provider_bindings_payload(manifest),
     }
 
@@ -447,7 +447,7 @@ def _project_manifest_payload(manifest: ProjectManifest) -> dict[str, JsonInput]
 def project_manifest_identity_facets(manifest: ProjectManifest) -> ProjectManifestIdentityFacets:
     return ProjectManifestIdentityFacets(
         project_spec_digest=strict_finite_json_digest(_project_spec_payload(manifest)),
-        author_requirements_digest=strict_finite_json_digest(_author_requirements_payload(manifest)),
+        requirements_digest=strict_finite_json_digest(_requirements_payload(manifest)),
         provider_bindings_digest=strict_finite_json_digest(_provider_bindings_payload(manifest)),
         scaffold_platform_provenance_digest=strict_finite_json_digest(
             _scaffold_platform_provenance_payload(manifest)
