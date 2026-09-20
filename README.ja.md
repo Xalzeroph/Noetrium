@@ -248,7 +248,7 @@ noetrium-architecture-gate
 python scripts/check_readme_i18n.py
 ```
 
-下流コードは `noetrium` から安定した contract と再利用可能な component を import します。`noetrium_platform` はプロジェクト拡張 API として扱わないでください。author-first のプロジェクト骨格を生成するには `noetrium project create <project-id> <destination> --version <version>` を使い、その後 `noetrium project doctor --project <destination>` と `noetrium project test --project <destination>` を実行してから、プロジェクト固有の provider や method を追加します。
+下流コードは `noetrium` から安定した contract と再利用可能な component を import します。`noetrium_platform` はプロジェクト拡張 API として扱わないでください。author-first のプロジェクト骨格を生成するには `noetrium project create <project-id>` を使い、その後 `noetrium project doctor --project <destination>` と `noetrium project test --project <destination>` を実行してから、プロジェクト固有の provider や method を追加します。
 
 <!-- readme-section:containers -->
 
