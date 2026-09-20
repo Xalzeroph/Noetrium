@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from noetrium.platform import bind_environment_category_catalog
+from noetrium.api import bind_environment_category_catalog
 
 
 def main() -> None:
