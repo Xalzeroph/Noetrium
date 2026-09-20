@@ -348,7 +348,7 @@ def test_author_project_lifecycle_route_is_compiler_blocked_not_application_driv
     assert main(["run", "--project", str(root)]) == 2
     error = json.loads(capsys.readouterr().err)
     assert error["ok"] is False
-    assert "Research Method Host" in error["error"]
+    assert "research compilation" in error["error"].lower()
     assert "BindingContribution" in error["error"]
 
 
@@ -378,8 +378,9 @@ def test_default_project_template_is_author_first(
     )
     assert receipt.template_profile is ProjectTemplateProfile.AUTHOR
     generated = set(receipt.generated_files)
-    for name in ("method.py", "study.py", "research.py"):
+    for name in ("method.py", "study.py"):
         assert f"src/author_first/{name}" in generated
+    assert "src/author_first/research.py" not in generated
     assert "src/author_first/methods.py" not in generated
     assert "src/author_first/tasks.py" not in generated
     assert "src/author_first/measurements.py" not in generated
