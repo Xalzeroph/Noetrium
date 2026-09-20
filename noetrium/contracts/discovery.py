@@ -49,6 +49,8 @@ class DownstreamCapabilityCatalog:
     topology_digest: str
     catalog_digest: str
     symbol_index: dict[str, tuple[str, ...]]
+    direct_symbol_sources: dict[str, str]
+    ambiguous_symbol_sources: dict[str, tuple[str, ...]]
     systems: tuple[DownstreamSystemSurface, ...]
 
     def system(self, system_key: str) -> DownstreamSystemSurface:
@@ -61,6 +63,16 @@ class DownstreamCapabilityCatalog:
         if not isinstance(symbol, str) or not symbol:
             raise ValueError("symbol must be a non-empty string")
         return self.symbol_index.get(symbol, ())
+
+    def direct_source(self, symbol: str) -> str | None:
+        if not isinstance(symbol, str) or not symbol:
+            raise ValueError("symbol must be a non-empty string")
+        return self.direct_symbol_sources.get(symbol)
+
+    def ambiguous_sources(self, symbol: str) -> tuple[str, ...]:
+        if not isinstance(symbol, str) or not symbol:
+            raise ValueError("symbol must be a non-empty string")
+        return self.ambiguous_symbol_sources.get(symbol, ())
 
     def providers(self, capability: str) -> tuple[DownstreamSystemSurface, ...]:
         """Return registered providers for a capability, without resolving one."""
@@ -314,6 +326,8 @@ def _validate_catalog_header(
         "entrypoint",
         "topology_digest",
         "symbol_index",
+        "direct_symbol_sources",
+        "ambiguous_symbol_sources",
         "systems",
         "catalog_digest",
     }
@@ -321,7 +335,7 @@ def _validate_catalog_header(
         raise DownstreamCatalogIntegrityError(
             "generated downstream capability catalog has an invalid shape"
         )
-    if document["schema"] != "noetrium-downstream-contracts.v3":
+    if document["schema"] != "noetrium-downstream-contracts.v4":
         raise DownstreamCatalogIntegrityError("invalid generated downstream capability catalog schema")
     if document["entrypoint"] != "noetrium.api":
         raise DownstreamCatalogIntegrityError("invalid unified downstream entrypoint")
@@ -341,10 +355,28 @@ def _validate_catalog_header(
     symbol_index = document["symbol_index"]
     if not isinstance(symbol_index, Mapping):
         raise DownstreamCatalogIntegrityError("catalog symbol_index must be an object")
+    direct_symbol_sources = document["direct_symbol_sources"]
+    ambiguous_symbol_sources = document["ambiguous_symbol_sources"]
+    if not isinstance(direct_symbol_sources, Mapping):
+        raise DownstreamCatalogIntegrityError(
+            "catalog direct_symbol_sources must be an object"
+        )
+    if not isinstance(ambiguous_symbol_sources, Mapping):
+        raise DownstreamCatalogIntegrityError(
+            "catalog ambiguous_symbol_sources must be an object"
+        )
     rows = document["systems"]
     if not isinstance(rows, list):
         raise DownstreamCatalogIntegrityError("catalog systems must be a list")
-    return registry, topology_digest, catalog_digest, symbol_index, rows
+    return (
+        registry,
+        topology_digest,
+        catalog_digest,
+        symbol_index,
+        direct_symbol_sources,
+        ambiguous_symbol_sources,
+        rows,
+    )
 
 
 def _validate_catalog_surface(
@@ -470,7 +502,15 @@ def validate_downstream_capability_catalog(
     This is a data validation boundary. It never imports a provider and never
     selects a runtime authority.
     """
-    registry, topology_digest, catalog_digest, raw_symbol_index, rows = _validate_catalog_header(document)
+    (
+        registry,
+        topology_digest,
+        catalog_digest,
+        raw_symbol_index,
+        raw_direct_sources,
+        raw_ambiguous_sources,
+        rows,
+    ) = _validate_catalog_header(document)
     surfaces: list[DownstreamSystemSurface] = []
     seen_keys: set[str] = set()
     for row in rows:
@@ -516,12 +556,56 @@ def validate_downstream_capability_catalog(
             "catalog symbol_index does not match generated system surfaces"
         )
 
+    direct_sources: dict[str, str] = {}
+    for symbol, module in raw_direct_sources.items():
+        if (
+            not isinstance(symbol, str)
+            or not symbol
+            or not isinstance(module, str)
+            or not module
+        ):
+            raise DownstreamCatalogIntegrityError(
+                "catalog direct_symbol_sources must map non-empty strings"
+            )
+        direct_sources[symbol] = module
+
+    ambiguous_sources: dict[str, tuple[str, ...]] = {}
+    for symbol, modules in raw_ambiguous_sources.items():
+        if not isinstance(symbol, str) or not symbol:
+            raise DownstreamCatalogIntegrityError(
+                "catalog ambiguous_symbol_sources keys must be non-empty strings"
+            )
+        values = _require_string_tuple(
+            modules, f"ambiguous_symbol_sources.{symbol}"
+        )
+        if len(values) < 2:
+            raise DownstreamCatalogIntegrityError(
+                f"ambiguous symbol must have at least two sources: {symbol}"
+            )
+        ambiguous_sources[symbol] = values
+
+    overlap = set(direct_sources) & set(ambiguous_sources)
+    if overlap:
+        raise DownstreamCatalogIntegrityError(
+            f"symbol cannot be both direct and ambiguous: {sorted(overlap)!r}"
+        )
+    unresolved_registered = set(expected_index) - (
+        set(direct_sources) | set(ambiguous_sources)
+    )
+    if unresolved_registered:
+        raise DownstreamCatalogIntegrityError(
+            "registered symbols missing unified resolution: "
+            f"{sorted(unresolved_registered)!r}"
+        )
+
     return DownstreamCapabilityCatalog(
         schema=document["schema"],
         entrypoint=document["entrypoint"],
         topology_digest=topology_digest,
         catalog_digest=catalog_digest,
         symbol_index={symbol: tuple(owners) for symbol, owners in expected_index.items()},
+        direct_symbol_sources=dict(sorted(direct_sources.items())),
+        ambiguous_symbol_sources=dict(sorted(ambiguous_sources.items())),
         systems=tuple(surfaces),
     )
 
