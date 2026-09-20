@@ -1,19 +1,10 @@
 from __future__ import annotations
 
+from noetrium import api
+
 from collections import Counter
 from dataclasses import dataclass
 
-from noetrium.api import canonical_digest, require_sha256
-from noetrium.api import (
-    BenchmarkSourceKind,
-    BenchmarkSourceSpec,
-    BenchmarkTaskSet,
-    TaskArtifactSpec,
-    TaskDefinition,
-    TaskPackageSpec,
-    TaskSetSplit,
-    TaskVerifierIsolation,
-)
 
 
 SRDD_BENCHMARK_ID = "srdd"
@@ -28,7 +19,7 @@ SRDD_SUBCATEGORY_COUNT = 40
 SRDD_TASKS_PER_SUBCATEGORY = 30
 SRDD_MAIN_AREAS = ("Education", "Work", "Life", "Game", "Creation")
 SRDD_SPLIT_ID = "all"
-SRDD_SOURCE_CONTENT_DIGEST = canonical_digest({
+SRDD_SOURCE_CONTENT_DIGEST = api.canonical_digest({
     "repository": SRDD_REPOSITORY,
     "commit": SRDD_DATASET_COMMIT,
     "path": SRDD_DATASET_PATH,
@@ -50,7 +41,7 @@ class SrddTaskRecord:
             value = getattr(self, field_name)
             if type(value) is not str or not value.strip():
                 raise ValueError(f"SRDD {field_name} must be non-empty")
-        require_sha256(self.content_digest, "SRDD task content_digest")
+        api.require_sha256(self.content_digest, "SRDD task content_digest")
 
     @property
     def task_id(self) -> str:
@@ -64,10 +55,10 @@ def srdd_revision() -> str:
     )
 
 
-def build_srdd_source() -> BenchmarkSourceSpec:
-    return BenchmarkSourceSpec(
+def build_srdd_source() -> api.BenchmarkSourceSpec:
+    return api.BenchmarkSourceSpec(
         source_id=SRDD_BENCHMARK_ID,
-        kind=BenchmarkSourceKind.CUSTOM,
+        kind=api.BenchmarkSourceKind.CUSTOM,
         revision_id=srdd_revision(),
         locator=SRDD_REPOSITORY,
         content_digest=SRDD_SOURCE_CONTENT_DIGEST,
@@ -89,7 +80,7 @@ def build_srdd_source() -> BenchmarkSourceSpec:
 
 def build_srdd_task_set(
     records: tuple[SrddTaskRecord, ...],
-) -> BenchmarkTaskSet:
+) -> api.BenchmarkTaskSet:
     """Freeze the official 1,200-task SRDD cut used by ChatDev evaluation."""
 
     if type(records) is not tuple or any(
@@ -118,7 +109,7 @@ def build_srdd_task_set(
 
     revision = srdd_revision()
     tasks = tuple(
-        TaskDefinition(
+        api.TaskDefinition(
             task_id=row.task_id,
             revision_id=revision,
             family=row.category,
@@ -129,7 +120,7 @@ def build_srdd_task_set(
                 f"software-name:{row.software_name}",
                 f"subcategory:{row.category}",
             ),
-            package=TaskPackageSpec(
+            package=api.TaskPackageSpec(
                 package_schema_id="srdd.software-project-package.v1",
                 instruction_digest=row.content_digest,
                 environment_requirement_id=(
@@ -138,9 +129,9 @@ def build_srdd_task_set(
                 verifier_requirement_id=(
                     "benchmark.srdd.chatdev-paper-metrics.verifier"
                 ),
-                verifier_isolation=TaskVerifierIsolation.SEPARATE,
+                verifier_isolation=api.TaskVerifierIsolation.SEPARATE,
                 artifacts=(
-                    TaskArtifactSpec(
+                    api.TaskArtifactSpec(
                         "generated_software_repository",
                         "workspace.tar.gz",
                         True,
@@ -152,7 +143,7 @@ def build_srdd_task_set(
     )
     task_ids = tuple(row.task_id for row in ordered)
     category_splits = tuple(
-        TaskSetSplit(
+        api.TaskSetSplit(
             f"category:{category}",
             tuple(
                 row.task_id
@@ -162,17 +153,17 @@ def build_srdd_task_set(
         )
         for category in sorted(category_counts)
     )
-    return BenchmarkTaskSet(
+    return api.BenchmarkTaskSet(
         benchmark_id=SRDD_BENCHMARK_ID,
         revision_id=revision,
         source_digest=SRDD_SOURCE_CONTENT_DIGEST,
         task_schema_id=SRDD_TASK_SCHEMA_ID,
         tasks=tasks,
         splits=(
-            TaskSetSplit(SRDD_SPLIT_ID, task_ids),
+            api.TaskSetSplit(SRDD_SPLIT_ID, task_ids),
             *category_splits,
         ),
-        selection_policy_digest=canonical_digest({
+        selection_policy_digest=api.canonical_digest({
             "dataset_commit": SRDD_DATASET_COMMIT,
             "dataset_path": SRDD_DATASET_PATH,
             "dataset_git_blob_sha1": SRDD_DATASET_GIT_BLOB_SHA1,
