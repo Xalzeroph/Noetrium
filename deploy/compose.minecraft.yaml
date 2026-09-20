@@ -1,20 +1,24 @@
+# Compatibility compose overlay. The environment-profile authority lives at
+# deploy/environments/minecraft/compose.yaml and catalog.json.
 services:
   platform-runtime:
     build:
       context: ..
-      dockerfile: deploy/Dockerfile.minecraft
+      dockerfile: deploy/environments/minecraft/Dockerfile
       args:
+        PLATFORM_BASE_IMAGE: ${PLATFORM_IMAGE:-noetrium:local}
+        JAVA_RUNTIME_IMAGE: ${JAVA_RUNTIME_IMAGE:-eclipse-temurin:21-jre-jammy}
         NODE_VERSION: ${NODE_VERSION:-22.22.2}
-    image: ${PLATFORM_MINECRAFT_IMAGE:-noetrium-minecraft:local}
+    image: ${PLATFORM_MINECRAFT_IMAGE:-noetrium-env-minecraft:local}
     environment:
+      NOETRIUM_ENVIRONMENT_PROFILE: minecraft
       MC_DATA_DIR: /var/lib/minecraft
-      MC_BRIDGE_DIR: /opt/noetrium/noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge
     volumes:
       - type: bind
         source: ${PLATFORM_HOST_DATA_ROOT:-./.runtime}/minecraft
         target: /var/lib/minecraft
     healthcheck:
-      test: ["CMD", "/opt/noetrium/deploy/container-entrypoint.sh", "minecraft-doctor"]
+      test: ["CMD", "/usr/local/bin/noetrium-entrypoint", "environment-doctor", "minecraft"]
       interval: 30s
       timeout: 15s
       retries: 3
