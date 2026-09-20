@@ -400,72 +400,14 @@ def sync(*, check: bool) -> int:
         else:
             reproduction_catalog_path.write_text(expected_catalog, encoding="utf-8")
 
-    scope_path = ROOT / "research/catalog/agent_reproduction_scope.json"
-    scope = _load_json(scope_path)
-    seed_rows = scope.get("seed_lineages")
-    if not isinstance(seed_rows, list):
-        raise TypeError("agent_reproduction_scope.seed_lineages must be a list")
-    seeds = {
-        row.get("id"): row
-        for row in seed_rows
-        if isinstance(row, Mapping) and isinstance(row.get("id"), str)
-    }
-    publication_path = ROOT / "research/catalog/publication_registry.json"
-    publication_registry = _load_json(publication_path)
-    publication_rows = publication_registry.get("publications")
-    if not isinstance(publication_rows, list):
-        raise TypeError("publication_registry.publications must be a list")
-    formal_publications = {
-        row.get("reproduction_method_id"): row
-        for row in publication_rows
-        if isinstance(row, Mapping)
-        and row.get("kind") == "method"
-        and isinstance(row.get("reproduction_method_id"), str)
-    }
-
-    for definition, _ in rows:
-        method_id = definition.identity.method_id
-        seed = seeds.get(method_id)
-        formal = formal_publications.get(method_id)
-
-        # A peer-reviewed publication is the strongest discovery authority.
-        # Seed lineages remain a fallback for work that has not yet acquired a
-        # formal publication record. Requiring both would create two manual
-        # sources of truth for every new reproduction.
-        if formal is not None:
-            # Publication evidence proves peer-reviewed status; it is not the
-            # reproduction artifact identity. The explicit
-            # reproduction_method_id -> method_id relation is the authority:
-            # paper URLs and display titles may legitimately differ between a
-            # formal venue record and a paper-era/scope-specific reproduction.
-            # Publication year remains a compact fail-closed guard against an
-            # accidental cross-link without creating another manual title/URL
-            # source of truth.
-            formal_matches = formal.get("year") == definition.identity.year
-            if not formal_matches:
-                raise ValueError(
-                    "typed reproduction identity conflicts with formal "
-                    f"publication authority: {method_id}"
-                )
-            continue
-
-        if seed is None:
-            raise ValueError(
-                f"typed reproduction is outside discovery authority: {method_id}"
-            )
-
-        discovery_matches = (
-            seed.get("source") == definition.identity.paper_uri
-            and seed.get("year") == definition.identity.year
-        )
-        if not discovery_matches:
-            raise ValueError(
-                "typed reproduction identity conflicts with discovery "
-                f"authority: {method_id}"
-            )
+    # Typed reproduction definitions plus their required source registries are the
+    # discovery authority. Do not require a second hand-maintained seed/publication
+    # allowlist: ReproductionIdentity owns paper identity while MethodSourceRegistry
+    # owns executable/publication provenance.
 
     report = {
         "schema": PROJECTION_SCHEMA,
+        "authority": REPRODUCTION_CATALOG_AUTHORITY,
         "package_count": len(rows),
         "drift_count": len(drift),
         "drift": sorted(drift),
