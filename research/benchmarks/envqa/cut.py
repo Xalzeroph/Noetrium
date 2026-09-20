@@ -5,10 +5,6 @@ from noetrium import api
 from collections import defaultdict
 from dataclasses import dataclass
 
-    api.BenchmarkSourceKind, api.BenchmarkSourceSpec, api.BenchmarkTaskSet,
-    api.TaskDefinition, api.TaskSetSplit,
-)
-
 BENCHMARK_ID = "envqa"
 OFFICIAL_REPOSITORY = "https://github.com/maybelu9/env-qa"
 SOURCE_COMMIT = "3e6018fe2eaa941529f955c64c8116ba42f986c4"
