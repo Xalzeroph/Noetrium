@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentPhaseSpec, build_agent_phase_program
+from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
 from .fidelity import WATCH_AND_LEARN_FIDELITY
 
 WATCH_AND_LEARN_PHASES = (
@@ -10,7 +10,7 @@ WATCH_AND_LEARN_PHASES = (
     AgentPhaseSpec("execute", "watch_learn.execute", "Run the computer-use agent on the target task."),
 )
 
-WATCH_AND_LEARN_METHOD_PROGRAM = build_agent_phase_program(
+WATCH_AND_LEARN_METHOD_PROGRAM = AgentMethodSpec(
     method_id="watch-and-learn",
     implementation_version="2026-paper-protocol",
     schema_version="watch-and-learn.phase-workflow.v1",
@@ -24,5 +24,5 @@ WATCH_AND_LEARN_METHOD_PROGRAM = build_agent_phase_program(
     evidence_obligations=("watch-and-learn.phase-transcript", "watch-and-learn.model-receipts"),
     metric_names=("task_success", "agent_phase_count"),
     artifact_kinds=("watch-and-learn_trajectory",),
-)
+).compile()
 __all__ = ["WATCH_AND_LEARN_METHOD_PROGRAM", "WATCH_AND_LEARN_PHASES"]
