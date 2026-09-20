@@ -13577,26 +13577,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.research.experimentation.api.method_host.ResearchMethodHost",
-      "target": "noetrium_platform.research.experimentation.api.research_compiler.CompiledResearchPlan"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.api.method_host.ResearchMethodHost",
-      "target": "noetrium_platform.research.experimentation.binding.ResearchBindingContribution"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.api.method_host.ResearchMethodHostPort",
-      "target": "noetrium_platform.research.experimentation.api.research_compiler.CompiledResearchPlan"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.api.method_host.ResearchMethodHostPort",
-      "target": "noetrium_platform.research.experimentation.binding.ResearchBindingContribution"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.research.experimentation.api.program.CompiledExperimentProgram",
       "target": "noetrium_platform.research.experimentation.api.program.ExperimentBatch"
     },
@@ -81950,46 +81930,6 @@
     },
     {
       "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 31,
-      "methods": [
-        "compile_method"
-      ],
-      "module": "noetrium_platform.research.experimentation.api.method_host",
-      "name": "ResearchMethodHost",
-      "nesting": [
-        "ResearchMethodHost"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.api.method_host.ResearchMethodHost",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [
-        "runtime_checkable"
-      ],
-      "fields": [],
-      "kind": "protocol",
-      "line": 22,
-      "methods": [
-        "compile_method"
-      ],
-      "module": "noetrium_platform.research.experimentation.api.method_host",
-      "name": "ResearchMethodHostPort",
-      "nesting": [
-        "ResearchMethodHostPort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.api.method_host.ResearchMethodHostPort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
       ],
@@ -96315,8 +96255,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3206,
-    "classes": 3156,
+    "association_edges": 3202,
+    "classes": 3154,
     "constructor_edges": 858,
     "inheritance_edges": 138,
     "module_import_edges": 5473,
@@ -144004,7 +143944,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "e4595834a3554e526166e785f815c1ef19e0ccd6",
+  "source_git_sha": "6f230fcc7d7eeffc51a8659b4701b01861a563ae",
   "system_import_edges": [
     {
       "count": 108,

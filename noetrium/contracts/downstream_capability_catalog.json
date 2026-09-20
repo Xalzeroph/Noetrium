@@ -1,5 +1,5 @@
 {
-  "catalog_digest": "9fe17d05ed7fa76685aecf45540a53167b80426214dd3b35726d130e9544d95b",
+  "catalog_digest": "26e07192a88a87a9d1da291ae8f85cb716272ff3d4bfffde829ee4caf1b502f6",
   "entrypoint": "noetrium.api",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v3",
@@ -3216,12 +3216,6 @@
     "ResearchLifecyclePort": [
       "experimentation/workbench"
     ],
-    "ResearchMethodHost": [
-      "experimentation"
-    ],
-    "ResearchMethodHostPort": [
-      "experimentation"
-    ],
     "ResearchModelRoleBinding": [
       "experimentation"
     ],
@@ -4487,6 +4481,9 @@
       "execution/research_program"
     ],
     "compile_research_campaign": [
+      "experimentation"
+    ],
+    "compile_research_method": [
       "experimentation"
     ],
     "compile_research_plan": [
@@ -6998,8 +6995,7 @@
             "compile_research_plan",
             "ResearchPlanDiff",
             "CompiledResearchPlan",
-            "ResearchMethodHost",
-            "ResearchMethodHostPort",
+            "compile_research_method",
             "CompiledExperimentShardPlan",
             "ExperimentBatchPlacement",
             "ExperimentShard",
@@ -7084,8 +7080,7 @@
           "module": "noetrium_platform.research.experimentation.api.method_host",
           "source": "noetrium_platform/research/experimentation/api/method_host.py",
           "symbols": [
-            "ResearchMethodHost",
-            "ResearchMethodHostPort"
+            "compile_research_method"
           ]
         },
         {
@@ -7126,7 +7121,7 @@
       "canonical_authority": "experimentation",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation",
-      "interface_digest": "63f4e91358e8283671f4ae7e935abb36b31c2910a0c720da02e1fd32dbb82393",
+      "interface_digest": "e99d0f7123c85f56a9d0b288063c5d9fc3c2ed5a0d3b0f23ef9fb69c890c0575",
       "must_not_own": "server/process control and model serving",
       "node_kind": "authority",
       "owns": "study, experiment, run, branch and checkpoint semantics",
