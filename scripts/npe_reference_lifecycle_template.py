@@ -26,7 +26,7 @@ from noetrium.api import (
     RunScientificValidity,
     RunTaskOutcome,
 )
-from noetrium.platform import (
+from noetrium.api import (
     ResearchAction,
     ResearchFacade,
     bind_run_control_application,
