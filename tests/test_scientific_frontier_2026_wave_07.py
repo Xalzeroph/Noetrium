@@ -17,7 +17,7 @@ def test_each_reproduction_has_method_benchmark_protocol_baseline_metrics_and_ab
         assert len(r.metrics) >= 5
         assert len(r.ablations) >= 3
         p=PROGRAMS[r.method_id]
-        assert p.program_id == r.method_id
+        assert p.program_identity.implementation.method_id == r.method_id
 
 def test_programs_require_replayable_scientific_artifacts():
     for r in REPRODUCTIONS:
