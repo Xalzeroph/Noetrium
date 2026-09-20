@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "643ee45918bfdc4c52a4fcd8ba81de8f48e6b58d84833a453e24df3bbe6014d1",
+  "interface_digest": "e8aa99c6ae3d474e4e82173c719cd646400c2173d54bd7dc495121e10e185e78",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -21345,6 +21345,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "AgentMethodSpec",
+              "origin_module": ".authoring",
+              "origin_name": "AgentMethodSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "AgentPhaseSpec",
               "origin_module": ".authoring",
               "origin_name": "AgentPhaseSpec",
@@ -21749,6 +21758,7 @@
             }
           ],
           "symbols": [
+            "AgentMethodSpec",
             "AgentPhaseSpec",
             "build_agent_cycle_program",
             "build_agent_phase_program",
@@ -21800,6 +21810,129 @@
           "module": "noetrium_platform.research.execution.workflow.api.authoring",
           "source": "noetrium_platform/research/execution/workflow/api/authoring.py",
           "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Canonical low-friction declaration for phase-based agent methods.\n\nDownstream authors declare method-owned phases and scientific surfaces once.\nCompilation owns MethodProgram identity, canonical configuration, bounded\ncycle wiring, default evidence obligations, and artifact/metric attachment.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "method_id"
+                },
+                {
+                  "annotation": "tuple[AgentPhaseSpec, ...]",
+                  "default": null,
+                  "name": "phases"
+                },
+                {
+                  "annotation": "str",
+                  "default": "'paper-method-v1'",
+                  "name": "implementation_version"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "schema_version"
+                },
+                {
+                  "annotation": "int | None",
+                  "default": "None",
+                  "name": "max_cycles"
+                },
+                {
+                  "annotation": "JsonObject | None",
+                  "default": "None",
+                  "name": "configuration"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "evidence_obligations"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "metric_names"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "artifact_kinds"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "cyclic",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "bool",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "compile",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "MethodProgram",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def compile(self) -> MethodProgram:"
+                }
+              ],
+              "name": "AgentMethodSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
             {
               "bases": [],
               "decorators": [
@@ -22018,6 +22151,7 @@
             }
           ],
           "symbols": [
+            "AgentMethodSpec",
             "AgentPhaseSpec",
             "build_agent_cycle_program",
             "build_agent_phase_program"
