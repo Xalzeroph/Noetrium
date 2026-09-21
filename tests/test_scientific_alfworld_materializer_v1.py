@@ -111,3 +111,15 @@ def test_materializer_rejects_provider_gamefile_outside_eval_cut(tmp_path: Path)
     order = (str(outside), *paths[1:])
     with pytest.raises(ValueError, match="escapes frozen ALFWorld dataset root"):
         _materialize(root, order)
+
+
+def test_text_runtime_authority_freezes_historical_dependency_commits() -> None:
+    from research.benchmarks.alfworld import (
+        ALFWORLD_FAST_DOWNWARD_COMMIT,
+        ALFWORLD_TEXTWORLD_COMMIT,
+        ALFWORLD_TEXT_RUNTIME_AUTHORITY_DIGEST,
+    )
+
+    assert ALFWORLD_TEXTWORLD_COMMIT == "634f9f91fec732a79dd9e7623675301a53f06623"
+    assert ALFWORLD_FAST_DOWNWARD_COMMIT == "84769171b9d965bf5739eaa7cf6604b0d9697534"
+    assert len(ALFWORLD_TEXT_RUNTIME_AUTHORITY_DIGEST) == 64
