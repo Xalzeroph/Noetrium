@@ -131,3 +131,10 @@ def test_managed_runtime_rejects_controller_restart_after_close() -> None:
         assert "closed" in str(exc)
     else:
         raise AssertionError("closed managed runtime accepted controller start")
+
+
+def test_managed_research_runtime_is_available_from_public_platform_facade() -> None:
+    from noetrium_platform import platform
+
+    assert platform.ManagedResearchRuntime is ManagedResearchRuntime
+    assert callable(platform.bind_local_managed_research_runtime)
