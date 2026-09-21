@@ -107,7 +107,8 @@ def canonical_environment_categories() -> tuple[EnvironmentCategoryDescriptor, .
             ("text", "code", "structured"),
             ("terminal", "filesystem", "repository", "test_runner"),
             ("persistent_state", "deterministic_or_stochastic", "artifact_producing"),
-            planned=("software.repository", "software.terminal"),
+            implementations=("software.repository",),
+            planned=("software.terminal",),
         ),
         _category(
             EnvironmentCategoryId.TEXT_WORLD,
