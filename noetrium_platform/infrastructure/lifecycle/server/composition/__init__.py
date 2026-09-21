@@ -20,6 +20,16 @@ from noetrium_platform.infrastructure.lifecycle.server.providers import (
     ProfileBoundServerConnection,
 )
 from noetrium_platform.infrastructure.lifecycle.server.runtime import JsonlServerOperationJournal
+from noetrium_platform.infrastructure.lifecycle.server.health.api import (
+    ServerDiagnosticProjectorPort,
+    ServerHealthProbePort,
+    ServerRuntimeHealthSpec,
+)
+from noetrium_platform.infrastructure.lifecycle.server.health.composition import (
+    compose_server_diagnostic_projector,
+    compose_server_runtime_health_spec,
+    compose_ssh_server_health,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,6 +49,9 @@ class ServerManagementComposition:
     connection: ServerConnectionPort
     file_transfer: ServerFileTransferPort
     operation_journal: JsonlServerOperationJournal
+    health_probe: ServerHealthProbePort
+    health_spec: ServerRuntimeHealthSpec
+    diagnostic_projector: ServerDiagnosticProjectorPort
 
 
 def compose_environment_server(
@@ -123,9 +136,20 @@ def compose_environment_server(
         profile_digest,
         connection.profile,
         remote_profile,
-        ObservedServerConnection(profile_bound_connection, journal, profile_digest=profile_digest),
-        ObservedServerFileTransfer(file_transfer, journal, profile_digest=profile_digest),
+        ObservedServerConnection(
+            profile_bound_connection,
+            journal,
+            profile_digest=profile_digest,
+        ),
+        ObservedServerFileTransfer(
+            file_transfer,
+            journal,
+            profile_digest=profile_digest,
+        ),
         journal,
+        compose_ssh_server_health(),
+        compose_server_runtime_health_spec(remote_profile),
+        compose_server_diagnostic_projector(),
     )
 
 

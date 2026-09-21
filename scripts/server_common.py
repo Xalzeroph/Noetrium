@@ -15,7 +15,6 @@ from noetrium_platform.infrastructure.lifecycle.server.composition import (
     load_server_management_environment,
 )
 from noetrium_platform.infrastructure.lifecycle.server.health.api import ServerRuntimeHealthSpec
-from noetrium_platform.infrastructure.lifecycle.server.health.composition import compose_server_runtime_health_spec
 from noetrium_platform.infrastructure.lifecycle.server.identity.composition import compose_environment_server_identity
 from noetrium_platform.infrastructure.lifecycle.server.identity.api import ServerProfileCatalog
 from noetrium_platform.infrastructure.lifecycle.server.identity.providers import (
@@ -121,7 +120,7 @@ def compose_script_server_catalog(
 
 
 def server_health_spec(server: ServerManagementComposition) -> ServerRuntimeHealthSpec:
-    return compose_server_runtime_health_spec(server.remote_profile)
+    return server.health_spec
 
 
 def compose_server_operator_session(

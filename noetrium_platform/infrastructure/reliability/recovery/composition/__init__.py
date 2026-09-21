@@ -1,4 +1,4 @@
-from .lease_binding import compose_sqlite_recovery_lease
+from .lease_binding import compose_resource_recovery_lease, compose_sqlite_recovery_lease
 from .status_events import (
     RecoveryLeaseStatusEventProjection,
     RecoveryLeaseStatusEventPublisher,
@@ -6,6 +6,7 @@ from .status_events import (
 )
 
 __all__ = [
+    "compose_resource_recovery_lease",
     "compose_sqlite_recovery_lease",
     "RecoveryLeaseStatusEventProjection",
     "RecoveryLeaseStatusEventPublisher",

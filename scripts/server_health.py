@@ -23,7 +23,6 @@ if sys.version_info < (3, 11):
     raise SystemExit(2)
 
 from scripts.server_common import compose_script_server, server_cli_concurrency_scope, server_health_spec
-from noetrium_platform.infrastructure.lifecycle.server.health.composition import compose_ssh_server_health
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 
 
@@ -47,7 +46,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.server_id, profile_file=args.profile_file, task_group=task_group
             )
             connection = server.connection
-            report = compose_ssh_server_health().probe(
+            report = server.health_probe.probe(
                 connection,
                 interactive=False,
                 specification=server_health_spec(server),

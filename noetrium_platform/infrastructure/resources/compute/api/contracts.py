@@ -69,6 +69,16 @@ class ComputeLeasePolicy:
 
 DEFAULT_COMPUTE_LEASE_POLICY = ComputeLeasePolicy()
 
+
+class ComputePlacementUnavailable(RuntimeError):
+    """Expected capacity exhaustion for one exact compute placement request."""
+
+    def __init__(self, requirement: "ComputeRequirement") -> None:
+        if not isinstance(requirement, ComputeRequirement):
+            raise TypeError("compute placement failure requires ComputeRequirement")
+        self.requirement = requirement
+        super().__init__("no compute host satisfies requirement")
+
 class GpuSharingMode(StrEnum):
     IDLE_ONLY = "idle-only"
     PREFER_IDLE_ALLOW_SHARED = "prefer-idle-allow-shared"
@@ -151,4 +161,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]

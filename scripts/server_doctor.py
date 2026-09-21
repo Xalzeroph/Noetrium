@@ -34,10 +34,6 @@ from scripts.server_common import (
     server_health_spec,
     server_cli_concurrency_scope,
 )
-from noetrium_platform.infrastructure.lifecycle.server.health.composition import (
-    compose_server_diagnostic_projector,
-    compose_ssh_server_health,
-)
 from noetrium_platform.infrastructure.lifecycle.server.health.api import ServerSessionDiagnostic
 
 
@@ -155,7 +151,7 @@ def _inspect(args) -> int:
             environ=catalog.environment_for(args.server_id),
             task_group=task_group,
         )
-        health = compose_ssh_server_health().probe(
+        health = server.health_probe.probe(
             server.connection,
             interactive=False,
             specification=server_health_spec(server),
@@ -185,7 +181,7 @@ def _inspect(args) -> int:
             args.recent_limit,
             server_id=server.server_id,
         )
-        report = compose_server_diagnostic_projector().project(
+        report = server.diagnostic_projector.project(
             server_id=server.server_id,
             profile_digest=server.profile_digest,
             operation_log=str(server.operation_journal.path),

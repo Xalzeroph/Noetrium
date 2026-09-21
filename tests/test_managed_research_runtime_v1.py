@@ -84,13 +84,29 @@ class Management:
     models: Models
 
 
+class Observability:
+    def __init__(self):
+        self.closed = False
+
+    def close(self):
+        self.closed = True
+
+
+class RecoveryExecution:
+    def execution(self, owner_id, manifest_digest, *, ttl_seconds):
+        raise AssertionError("fake recovery execution is not invoked in lifecycle tests")
+
+
 def runtime():
     pool = Pool()
     group = Group()
     controller = Controller()
+    observability = Observability()
     managed = ManagedResearchRuntime(
         execution_pool=pool,
         management=Management(Models(controller)),
+        observability=observability,
+        recovery_execution=RecoveryExecution(),
         _orchestration_group=group,
         _stop=Event(),
     )
@@ -111,6 +127,7 @@ def test_managed_runtime_owns_background_controller_lifecycle() -> None:
     assert pool.group_closed is True
     assert pool.closed is True
     assert group.closed is True
+    assert managed.observability.closed is True
     assert controller.cycles >= 1
 
 

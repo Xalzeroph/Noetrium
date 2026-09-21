@@ -21,6 +21,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeGPU,
     ComputeHost,
     ComputeLeasePolicy,
+    ComputePlacementUnavailable,
     ComputeRequirement,
 )
 
@@ -103,7 +104,7 @@ class Scheduler:
         now=None,
     ):
         if self.next >= 2:
-            raise RuntimeError("no compute host satisfies requirement")
+            raise ComputePlacementUnavailable(requirement)
         gpu = self.host.gpus[self.next]
         self.next += 1
         return ComputeAllocation(
@@ -253,3 +254,47 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
     assert len(endpoints.released) == 2
     assert compute_guards.created[0].closed
     assert endpoint_guards.created[0].closed
+
+
+def test_auto_model_replica_pool_does_not_mask_scheduler_failure(tmp_path) -> None:
+    class BrokenScheduler(Scheduler):
+        def allocate(self, *args, **kwargs):
+            if self.next >= 1:
+                raise RuntimeError("scheduler database corrupted")
+            return super().allocate(*args, **kwargs)
+
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = BrokenScheduler()
+    endpoints = Endpoints()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+
+    try:
+        pool.ensure(
+            ModelReplicaPoolRequest(
+                pool_id="qwen",
+                scope=PLATFORM_SCOPE,
+                model_id="qwen3-8b",
+                engine="vllm",
+                python_environment_id="vllm",
+                cwd=Path(tmp_path),
+                compute=ComputeRequirement(
+                    cpu_cores=2,
+                    memory_bytes=1024,
+                    gpu_count=1,
+                    minimum_gpu_memory_bytes=40 * 1024**3,
+                ),
+            )
+        )
+    except RuntimeError as exc:
+        assert str(exc) == "scheduler database corrupted"
+    else:
+        raise AssertionError("unexpected scheduler failures must not be treated as exhaustion")

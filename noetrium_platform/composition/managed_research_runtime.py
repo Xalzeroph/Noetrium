@@ -16,7 +16,17 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 from noetrium_platform.research.execution.admission.api import AdmissionBudget
 from noetrium_platform.research.execution.scheduling.api import ExecutionPriority
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
+from noetrium_platform.infrastructure.reliability.recovery.api import (
+    RecoveryExecutionFactoryPort,
+)
+from noetrium_platform.infrastructure.reliability.recovery.composition import (
+    compose_resource_recovery_lease,
+)
+from noetrium_platform.infrastructure.reliability.recovery.execution.composition import (
+    compose_file_locked_recovery_execution,
+)
 
+from .managed_observability import ManagedObservability, build_managed_observability
 from .model_management import (
     ManagementPlaneAuthorities,
     bind_local_model_replica_pool,
@@ -45,6 +55,8 @@ class ManagedResearchRuntime:
 
     execution_pool: ResearchExecutionPool
     management: ManagementPlaneAuthorities
+    observability: ManagedObservability
+    recovery_execution: RecoveryExecutionFactoryPort
     _orchestration_group: object
     _stop: Event
     model_replica_pool: LocalModelReplicaPoolRuntime | None = None
@@ -98,6 +110,10 @@ class ManagedResearchRuntime:
                 controller.result(timeout=30.0)
             except BaseException as exc:
                 errors.append(exc)
+        try:
+            self.observability.close()
+        except BaseException as exc:
+            errors.append(exc)
         try:
             self.execution_pool.close_orchestration_group(
                 self._orchestration_group,
@@ -167,9 +183,26 @@ def build_local_managed_research_runtime(
         except BaseException:
             pool.close_orchestration_group(group, cancel_pending=True)
             raise
+        observability = build_managed_observability(
+            layout.state / "observability",
+            task_group=group,
+            systems=management.platform_meta.systems,
+            planner=management.platform_meta.capability_composition,
+        )
+        recovery_lease = compose_resource_recovery_lease(
+            management.platform_meta.resource_ownership,
+            management.platform_meta.resource_leases,
+            evidence_refs=("managed-research-runtime",),
+        )
+        recovery_execution = compose_file_locked_recovery_execution(
+            recovery_lease,
+            lock_path=layout.locks / "recovery.execution.lock",
+        )
         runtime = ManagedResearchRuntime(
             execution_pool=pool,
             management=management,
+            observability=observability,
+            recovery_execution=recovery_execution,
             _orchestration_group=group,
             _stop=Event(),
             model_replica_pool=model_replica_pool,

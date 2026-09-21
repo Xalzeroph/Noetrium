@@ -9,8 +9,9 @@ from threading import RLock
 from time import time
 
 from noetrium_platform.infrastructure.resources.compute.api import (
-    ComputeAllocation, ComputeHost, ComputeRequirement, GpuRuntimeObserverPort,
-    GpuRuntimeSnapshot, GpuSharingMode, HostRuntimeObserverPort, HostRuntimeSnapshot,
+    ComputeAllocation, ComputeHost, ComputePlacementUnavailable, ComputeRequirement,
+    GpuRuntimeObserverPort, GpuRuntimeSnapshot, GpuSharingMode,
+    HostRuntimeObserverPort, HostRuntimeSnapshot,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
@@ -398,7 +399,7 @@ class InMemoryComputeScheduler:
                 host_runtime_snapshot=host_runtime_snapshot,
             )
             if not placements:
-                raise RuntimeError("no compute host satisfies requirement")
+                raise ComputePlacementUnavailable(requirement)
             _score, host, gpu_ids = placements[0]
             resource = _allocation_resource(allocation_id)
             self._ownership.register_owner(
@@ -750,7 +751,7 @@ class SQLiteComputeScheduler:
                     host_runtime_snapshot,
                 )
                 if not placements:
-                    raise RuntimeError("no compute host satisfies requirement")
+                    raise ComputePlacementUnavailable(requirement)
                 _score, host, gpu_ids = placements[0]
                 resource = _allocation_resource(allocation_id)
                 ensure_resource_owner(
