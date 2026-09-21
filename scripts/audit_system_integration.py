@@ -151,6 +151,7 @@ def build_report() -> dict:
     inbound: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
     composition_inbound: dict[str, set[str]] = defaultdict(set)
     direct_concrete: dict[str, set[str]] = defaultdict(set)
+    dynamic_environment_consumers: set[str] = set()
 
     for scan_root in (
         ROOT / "noetrium_platform",
@@ -164,7 +165,14 @@ def build_report() -> dict:
                 continue
             source_owner = owner_for_module(module, owners)
             channel = channel_for_path(path)
-            for imported in imports_for_path(path):
+            imported_modules = imports_for_path(path)
+            if (
+                channel == "production"
+                and "noetrium_platform.capabilities.environment.category.composition"
+                in imported_modules
+            ):
+                dynamic_environment_consumers.add(module)
+            for imported in imported_modules:
                 target_owner = owner_for_module(imported, owners)
                 if target_owner is None or target_owner == source_owner:
                     continue
@@ -175,6 +183,28 @@ def build_report() -> dict:
                     ".runtime" in imported or ".providers" in imported
                 ):
                     direct_concrete[target_owner].add(module)
+
+    # Environment categories are intentionally discovered through the canonical
+    # system registry rather than hard-importing every family package. A
+    # production consumer of environment.category.composition therefore
+    # consumes every registered environment family contract dynamically.
+    if dynamic_environment_consumers:
+        for key, spec in catalog.items():
+            if spec.get("parent") != "environment":
+                continue
+            provides = spec.get("provides", ())
+            if any(
+                isinstance(value, str)
+                and value.startswith("environment.")
+                and value.endswith(".contract")
+                for value in provides
+            ):
+                inbound[str(key)]["production"].update(
+                    dynamic_environment_consumers
+                )
+                composition_inbound[str(key)].update(
+                    dynamic_environment_consumers
+                )
 
     rows: list[SystemIntegrationRow] = []
     for key, spec in sorted(catalog.items()):

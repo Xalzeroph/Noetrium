@@ -107,6 +107,7 @@ def runtime():
         management=Management(Models(controller)),
         observability=observability,
         recovery_execution=RecoveryExecution(),
+        services=object(),
         _orchestration_group=group,
         _stop=Event(),
     )

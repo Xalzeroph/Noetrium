@@ -27,6 +27,10 @@ from noetrium_platform.infrastructure.reliability.recovery.execution.composition
 )
 
 from .managed_observability import ManagedObservability, build_managed_observability
+from .managed_research_services import (
+    ManagedResearchServices,
+    build_managed_research_services,
+)
 from .model_management import (
     ManagementPlaneAuthorities,
     bind_local_model_replica_pool,
@@ -57,6 +61,7 @@ class ManagedResearchRuntime:
     management: ManagementPlaneAuthorities
     observability: ManagedObservability
     recovery_execution: RecoveryExecutionFactoryPort
+    services: ManagedResearchServices
     _orchestration_group: object
     _stop: Event
     model_replica_pool: LocalModelReplicaPoolRuntime | None = None
@@ -189,6 +194,10 @@ def build_local_managed_research_runtime(
             systems=management.platform_meta.systems,
             planner=management.platform_meta.capability_composition,
         )
+        services = build_managed_research_services(
+            layout.state / "research-services",
+            meta=management.platform_meta,
+        )
         recovery_lease = compose_resource_recovery_lease(
             management.platform_meta.resource_ownership,
             management.platform_meta.resource_leases,
@@ -203,6 +212,7 @@ def build_local_managed_research_runtime(
             management=management,
             observability=observability,
             recovery_execution=recovery_execution,
+            services=services,
             _orchestration_group=group,
             _stop=Event(),
             model_replica_pool=model_replica_pool,
