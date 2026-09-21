@@ -22,7 +22,6 @@ from noetrium_platform.foundation.kernel.concurrency.composition import (
 )
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
-    ImmutableModelIdentity,
     canonical_bytes,
     canonical_digest,
 )
@@ -42,6 +41,8 @@ from noetrium_platform.research.execution.workflow.providers import (
 )
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 
+from research.runtime.external_substitute import load_external_substitute_model_deployment
+
 from research.benchmarks.gsm8k import (
     materialize_archived_gsm8k_test,
     verify_gsm8k_completion,
@@ -57,14 +58,6 @@ from .prompt import (
 
 
 _SHA40 = re.compile(r"[0-9a-f]{40}\Z")
-_SHA64 = re.compile(r"[0-9a-f]{64}\Z")
-
-
-def _load_json(path: Path) -> dict:
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise TypeError(f"{path}: expected JSON object")
-    return value
 
 
 def _require_source_sha(value: str) -> str:
@@ -88,34 +81,12 @@ def _event(event) -> dict:
     return {"kind": event.kind, "payload": _jsonable(event.payload)}
 
 
-def _model_identity(document: dict) -> ImmutableModelIdentity:
-    model = document.get("model")
-    if not isinstance(model, dict):
-        raise ValueError("model identity receipt has no model object")
-    revision = str(model["revision"])
-    tokenizer_revision = str(model["tokenizer_revision"])
-    if _SHA64.fullmatch(revision) is None or _SHA64.fullmatch(tokenizer_revision) is None:
-        raise ValueError("model identity receipt revisions must be SHA-256")
-    return ImmutableModelIdentity(
-        logical_name=str(model["logical_name"]),
-        model_id=str(model["model_id"]),
-        revision=revision,
-        engine=str(model["engine"]),
-        engine_version=str(model["engine_version"]),
-        dtype=str(model["dtype"]),
-        quantization=model.get("quantization"),
-        context_length=int(model["context_length"]),
-        tokenizer_revision=tokenizer_revision,
-    )
-
-
 def run_external_qwen_substitute(
     *,
     benchmark_path: Path,
     model_identity_path: Path,
     output_root: Path,
     source_sha: str,
-    endpoint_base_url: str,
     start: int,
     count: int,
     max_tokens: int,
@@ -135,26 +106,13 @@ def run_external_qwen_substitute(
     if len(selected) != count:
         raise ValueError("requested task range exceeds GSM8K test cut")
 
-    identity_doc = _load_json(model_identity_path)
-    if identity_doc.get("lane") != "platform-substitute":
-        raise ValueError("external Qwen run requires platform-substitute identity")
-    if identity_doc.get("matched_reproduction") is not False:
-        raise ValueError("substitute lane must explicitly reject matched-reproduction status")
-    model = _model_identity(identity_doc)
-    deployment_id = str(identity_doc["deployment_id"])
-    deployment_generation = str(identity_doc["deployment_generation"])
-    identity_document_digest = str(identity_doc["identity_digest"])
-    if (
-        _SHA64.fullmatch(deployment_generation) is None
-        or _SHA64.fullmatch(identity_document_digest) is None
-    ):
-        raise ValueError("deployment/identity digests must be SHA-256")
-    identity_payload = dict(identity_doc)
-    identity_payload.pop("identity_digest", None)
-    expected_identity_document_digest = canonical_digest(identity_payload)
-    if identity_document_digest != expected_identity_document_digest:
-        raise ValueError("external model identity document digest mismatch")
-    model_identity_digest = canonical_digest(model)
+    deployment = load_external_substitute_model_deployment(model_identity_path)
+    model = deployment.model
+    deployment_id = deployment.deployment_id
+    deployment_generation = deployment.deployment_generation
+    endpoint_base_url = deployment.endpoint_base_url
+    identity_document_digest = deployment.identity_document_digest
+    model_identity_digest = deployment.model_identity_digest
 
     generation_options: dict[str, object] = {
         "temperature": 0,
@@ -401,7 +359,6 @@ def main() -> int:
     parser.add_argument("--model-identity", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--source-sha", required=True)
-    parser.add_argument("--endpoint-base-url", default="http://127.0.0.1:8001")
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--count", type=int, default=1)
     parser.add_argument("--max-tokens", type=int, default=512)
@@ -413,7 +370,6 @@ def main() -> int:
         model_identity_path=args.model_identity,
         output_root=args.output_root,
         source_sha=args.source_sha,
-        endpoint_base_url=args.endpoint_base_url,
         start=args.start,
         count=args.count,
         max_tokens=args.max_tokens,

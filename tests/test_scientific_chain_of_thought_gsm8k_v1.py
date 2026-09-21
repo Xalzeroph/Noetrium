@@ -14,7 +14,7 @@ from research.reproductions.chain_of_thought_gsm8k import (
     build_chain_of_thought_gsm8k_study,
     chain_of_thought_gsm8k_initial_state,
 )
-from research.reproductions.chain_of_thought_gsm8k.runtime import _model_identity
+from research.runtime.external_substitute import _model_identity
 
 
 class _Reasoner:
