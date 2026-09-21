@@ -32,6 +32,7 @@ from noetrium_platform.infrastructure.resources.allocation.composition import (
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeAllocation,
     ComputeLeaseGuardFactoryPort,
+    ComputePlacementUnavailable,
     ComputeRequirement,
     ComputeSchedulerPort,
 )
@@ -268,7 +269,7 @@ class LocalModelReplicaPoolRuntime:
                         placement_scope=request.scope,
                         ttl_seconds=self._compute_lease_guards.policy.ttl_seconds,
                     )
-                except RuntimeError:
+                except ComputePlacementUnavailable:
                     if request.replica_count is None and compute_rows:
                         break
                     raise
