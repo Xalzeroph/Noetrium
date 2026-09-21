@@ -22,16 +22,16 @@ from noetrium_platform.foundation.kernel.kernel import (
 from noetrium_platform.foundation.portfolio.project.api import ProjectIdentity
 from noetrium_platform.research.execution.machines import ResearchProgramHost
 from noetrium_platform.research.execution.workflow.api import MethodMachinePort
-from noetrium_platform.research.experimentation.evaluation.runtime import (
-    paired_evaluation_host,
+from noetrium_platform.research.experimentation.evaluation.composition import (
+    bind_paired_evaluation_host,
 )
 from noetrium_platform.research.experimentation.workload.api import (
     WorkloadMethodCompilerPort,
     WorkloadMethodResultAdapterPort,
     WorkloadTaskExecutionPort,
 )
-from noetrium_platform.research.experimentation.workload.runtime import (
-    WorkloadMethodBinding,
+from noetrium_platform.research.experimentation.workload.composition import (
+    bind_method_workload,
 )
 
 from .platform_meta import PlatformMetaAuthorities
@@ -56,7 +56,7 @@ class ManagedResearchServices:
         compiler: WorkloadMethodCompilerPort,
         result_adapter: WorkloadMethodResultAdapterPort,
     ) -> WorkloadTaskExecutionPort:
-        return WorkloadMethodBinding(
+        return bind_method_workload(
             machine=machine,
             compiler=compiler,
             result_adapter=result_adapter,
@@ -68,7 +68,7 @@ class ManagedResearchServices:
         journal: MachineJournalPort,
         snapshot_store: MachineSnapshotStorePort | None = None,
     ) -> ResearchProgramHost:
-        return paired_evaluation_host(
+        return bind_paired_evaluation_host(
             journal=journal,
             snapshot_store=snapshot_store,
         )

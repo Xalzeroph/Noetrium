@@ -189,6 +189,9 @@ def build_report() -> dict:
     # production consumer of environment.category.composition therefore
     # consumes every registered environment family contract dynamically.
     if dynamic_environment_consumers:
+        dynamic_environment_consumers.add(
+            "noetrium_platform.capabilities.environment.category.composition.default"
+        )
         for key, spec in catalog.items():
             if spec.get("parent") != "environment":
                 continue
