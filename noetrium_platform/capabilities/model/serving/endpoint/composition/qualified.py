@@ -7,6 +7,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointPort,
     ModelEndpointRoute,
     QualifiedModelEndpointBinding,
+    ModelEndpointReplicaSelectionPolicyPort,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
@@ -67,6 +68,7 @@ def build_adaptive_operational_endpoint_pool(
     task_group: TaskGroupPort,
     admission_registry: ModelAdmissionRegistryPort,
     observers: tuple[object, ...] = (),
+    selection_policy: ModelEndpointReplicaSelectionPolicyPort | None = None,
 ) -> AdaptiveOperationalModelEndpointPool:
     """Bind exact live routes without asserting qualification equivalence."""
 
@@ -88,7 +90,9 @@ def build_adaptive_operational_endpoint_pool(
             observers=observers,
         )
 
-    return AdaptiveOperationalModelEndpointPool(replica_set, factory)
+    return AdaptiveOperationalModelEndpointPool(
+        replica_set, factory, selection_policy=selection_policy
+    )
 
 
 
@@ -100,6 +104,7 @@ def build_adaptive_qualified_endpoint_pool(
     task_group: TaskGroupPort,
     admission_registry: ModelAdmissionRegistryPort,
     observers: tuple[object, ...] = (),
+    selection_policy: ModelEndpointReplicaSelectionPolicyPort | None = None,
 ) -> AdaptiveQualifiedModelEndpointPool:
     """Bind all qualified replicas to one adaptive operational dispatcher."""
 
@@ -113,4 +118,6 @@ def build_adaptive_qualified_endpoint_pool(
             observers=observers,
         )
 
-    return AdaptiveQualifiedModelEndpointPool(replica_set, factory)
+    return AdaptiveQualifiedModelEndpointPool(
+        replica_set, factory, selection_policy=selection_policy
+    )

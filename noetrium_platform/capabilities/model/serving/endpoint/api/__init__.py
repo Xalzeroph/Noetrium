@@ -7,11 +7,14 @@ from .contracts import (
     ModelEndpointRoute,
 )
 from .ports import AsyncJsonHttpTransportPort, ModelEndpointFactoryPort, ModelEndpointPort
+from .operational_inventory import OperationalModelServingInventory
 from .replica import (
     AdaptiveModelEndpointPoolPort,
     ModelEndpointDispatchPoolPort,
     ModelEndpointDispatchResult,
     ModelEndpointPoolSnapshot,
+    ModelEndpointReplicaSelectionCandidate,
+    ModelEndpointReplicaSelectionPolicyPort,
     ModelEndpointReplicaSnapshot,
     OperationalModelEndpointReplica,
     OperationalModelEndpointReplicaSet,
@@ -26,8 +29,10 @@ __all__ = [
     "ModelEndpointObserverPort", "ModelEndpointFactoryPort", "ModelEndpointPort", "ModelEndpointRequest",
     "ModelEndpointResponse", "ModelEndpointRoute", "QualifiedModelClosurePublication",
     "AdaptiveModelEndpointPoolPort", "ModelEndpointDispatchPoolPort", "ModelEndpointDispatchResult",
-    "ModelEndpointPoolSnapshot", "ModelEndpointReplicaSnapshot",
+    "ModelEndpointPoolSnapshot", "ModelEndpointReplicaSelectionCandidate",
+    "ModelEndpointReplicaSelectionPolicyPort", "ModelEndpointReplicaSnapshot",
     "OperationalModelEndpointReplica", "OperationalModelEndpointReplicaSet",
+    "OperationalModelServingInventory",
     "QualifiedModelEndpointReplicaBindingPort",
     "QualifiedModelEndpointReplicaSet",
     "QualifiedModelClosurePublicationReceipt", "QualifiedModelEndpointBinding",

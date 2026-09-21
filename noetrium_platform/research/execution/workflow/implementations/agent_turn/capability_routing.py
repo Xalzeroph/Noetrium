@@ -17,7 +17,7 @@ from noetrium_platform.research.execution.capability.api import (
     RegistrationKey,
     RegistrationScopePort,
 )
-from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectClass, JsonValue, OperationResult
+from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectClass, JsonValue, OperationResult, canonical_digest
 
 from .capability_effects import CapabilityEffectExecutor
 from .capability_operations import CapabilityOperationAdapter
@@ -77,9 +77,25 @@ class StudyCapabilityRouter(CapabilityPort):
         self._scope = scope
         self._route_contracts: dict[str, CapabilityRegistration[CapabilityRoute]] = {}
         self._register_routes(bindings)
+        self._identity_digest = canonical_digest({
+            "router": "study-capability-router.v1",
+            "routes": tuple(sorted(
+                (
+                    descriptor.capability_id,
+                    binding.component,
+                    descriptor,
+                )
+                for binding in bindings
+                for descriptor in tuple(getattr(binding.session, "capabilities"))
+            )),
+        })
         self._pipeline = pipeline
         self._invocation_counts: dict[str, int] = {}
         self._state_lock = RLock()
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
 
     def _register_routes(self, bindings: tuple[CapabilitySessionBinding, ...]) -> None:
         seen: set[str] = set()

@@ -121,11 +121,20 @@ class _DispatchPool:
             output_tokens=5,
         )
         return ModelEndpointDispatchResult(
-            physical, response, "e" * 64, index + 1
+            request=physical,
+            response=response,
+            replica_set_digest="e" * 64,
+            selection_policy_digest="f" * 64,
+            selection_sequence=index + 1,
         )
 
     def snapshot(self):
-        return ModelEndpointPoolSnapshot("e" * 64, self.calls, ())
+        return ModelEndpointPoolSnapshot(
+            replica_set_digest="e" * 64,
+            selection_policy_digest="f" * 64,
+            selection_sequence=self.calls,
+            replicas=(),
+        )
 
 
 def test_episode_helper_executes_full_40_path_runtime_and_evidence(tmp_path) -> None:

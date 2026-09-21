@@ -1,12 +1,21 @@
-from .runtime import AdaptiveOperationalModelEndpointPool, AdaptiveQualifiedModelEndpointPool, ModelEndpointPoolUnavailable
+from .runtime import (
+    AdaptiveLeastPressureReplicaSelectionPolicy,
+    AdaptiveOperationalModelEndpointPool,
+    AdaptiveQualifiedModelEndpointPool,
+    ModelEndpointPoolUnavailable,
+    PinnedReplicaSelectionPolicy,
+)
 from .api import (
     AdaptiveModelEndpointPoolPort,
     ModelEndpointDispatchPoolPort,
     ModelEndpointDispatchResult,
     ModelEndpointPoolSnapshot,
+    ModelEndpointReplicaSelectionCandidate,
+    ModelEndpointReplicaSelectionPolicyPort,
     ModelEndpointReplicaSnapshot,
     OperationalModelEndpointReplica,
     OperationalModelEndpointReplicaSet,
+    OperationalModelServingInventory,
     QualifiedModelEndpointReplicaBindingPort,
     QualifiedModelEndpointReplicaSet,
     AsyncJsonHttpTransportPort,
@@ -24,16 +33,20 @@ from .api import (
 )
 
 __all__ = [
+    "AdaptiveLeastPressureReplicaSelectionPolicy",
     "AdaptiveModelEndpointPoolPort", "AdaptiveOperationalModelEndpointPool", "AdaptiveQualifiedModelEndpointPool",
     "ModelEndpointDispatchPoolPort",
     "AsyncJsonHttpTransportPort", "JsonHttpResponse", "ModelEndpointDispatchResult",
     "ModelEndpointError", "ModelEndpointPoolSnapshot", "ModelEndpointPoolUnavailable",
+    "ModelEndpointReplicaSelectionCandidate", "ModelEndpointReplicaSelectionPolicyPort",
     "ModelEndpointReplicaSnapshot", "OperationalModelEndpointReplica",
-    "OperationalModelEndpointReplicaSet", "QualifiedModelEndpointReplicaBindingPort",
+    "OperationalModelEndpointReplicaSet", "OperationalModelServingInventory",
+    "QualifiedModelEndpointReplicaBindingPort",
     "QualifiedModelEndpointReplicaSet",
     "ModelEndpointFactoryPort", "ModelEndpointPort", "ModelEndpointRequest",
     "ModelEndpointResponse", "ModelEndpointRoute", "QualifiedModelClosurePublication",
     "AdaptiveQualifiedModelEndpointPool", "ModelEndpointPoolUnavailable",
     "QualifiedModelClosurePublicationReceipt", "QualifiedModelEndpointBinding",
     "QualifiedModelEndpointBindingPort",
+    "PinnedReplicaSelectionPolicy",
 ]

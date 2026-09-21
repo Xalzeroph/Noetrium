@@ -20,11 +20,16 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodObservationPort,
     MethodProgram,
     MethodRuntimeContext,
+    MethodRuntimePort,
     MethodSchemaPort,
     analyze_method_runtime_requirements,
 )
 from noetrium_platform.research.execution.workflow.api.dispatch import OperationDispatchPort
-from noetrium_platform.research.execution.workflow.composition import bind_machine_method_runtime
+from noetrium_platform.research.execution.workflow.composition import (
+    MethodRuntimePortInventory,
+    bind_machine_method_runtime,
+    plan_method_runtime_binding,
+)
 from noetrium_platform.research.execution.workflow.providers import DirectoryEventMethodEvidence
 from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
 
@@ -198,6 +203,58 @@ class MethodRuntimeBindings:
         )
 
 
+def compose_method_runtime_bindings(
+    program: MethodProgram,
+    inventory: MethodRuntimePortInventory,
+    *,
+    state_root: str | Path | None = None,
+    dispatcher: OperationDispatchPort | None = None,
+    observation: MethodObservationPort | None = None,
+    async_dispatcher: AsyncOperationDispatchPort | None = None,
+) -> MethodRuntimeBindings:
+    """Resolve a MethodProgram runtime closure from one explicit shared inventory.
+
+    Only ports required by the program are attached. Missing identities or
+    capability/agent closure mismatches fail before any task is executed.
+    """
+
+    if not isinstance(program, MethodProgram):
+        raise TypeError("runtime auto-composition requires MethodProgram")
+    if not isinstance(inventory, MethodRuntimePortInventory):
+        raise TypeError("runtime auto-composition requires MethodRuntimePortInventory")
+    plan = plan_method_runtime_binding(program, inventory)
+    plan.require_complete()
+    requirements = analyze_method_runtime_requirements(program)
+    ports = set(requirements.ports)
+    return MethodRuntimeBindings(
+        capabilities=(
+            inventory.capabilities
+            if MethodRuntimePort.CAPABILITIES in ports
+            else None
+        ),
+        dispatcher=dispatcher,
+        observation=observation,
+        agent_loop=(
+            inventory.agent_loop
+            if MethodRuntimePort.AGENT_LOOP in ports
+            else None
+        ),
+        schemas=(
+            inventory.schemas
+            if MethodRuntimePort.SCHEMAS in ports
+            else None
+        ),
+        child_machines=(
+            inventory.child_machines
+            if MethodRuntimePort.CHILD_MACHINES in ports
+            else None
+        ),
+        async_dispatcher=async_dispatcher,
+        state_root=None if state_root is None else Path(state_root),
+        runtime_binding_digest=plan.digest,
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class DeclarativeWorkloadMethodCompiler:
     """Compile standard tasks into Method invocations without paper runner classes."""
@@ -256,6 +313,7 @@ class DeclarativeWorkloadMethodCompiler:
 
 __all__ = [
     "DeclarativeWorkloadMethodCompiler",
+    "compose_method_runtime_bindings",
     "MethodRuntimeBindings",
     "TaskFieldProjection",
 ]

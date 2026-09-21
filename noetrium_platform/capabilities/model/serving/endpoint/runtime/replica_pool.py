@@ -15,10 +15,14 @@ from noetrium_platform.capabilities.model.serving.endpoint.api.ports import Mode
 from noetrium_platform.capabilities.model.serving.endpoint.api.replica import (
     ModelEndpointDispatchResult,
     ModelEndpointPoolSnapshot,
+    ModelEndpointReplicaSelectionCandidate,
+    ModelEndpointReplicaSelectionPolicyPort,
     ModelEndpointReplicaSnapshot,
     OperationalModelEndpointReplicaSet,
     QualifiedModelEndpointReplicaSet,
 )
+from .selection_policy import AdaptiveLeastPressureReplicaSelectionPolicy
+
 
 
 class ModelEndpointPoolUnavailable(RuntimeError):
@@ -48,6 +52,7 @@ class _AdaptiveModelEndpointPoolCore:
         replica_set_digest: str,
         endpoint_factory: Callable[[object], ModelEndpointPort],
         *,
+        selection_policy: ModelEndpointReplicaSelectionPolicyPort | None = None,
         ewma_alpha: float = 0.2,
         failure_cooldown_seconds: float = 2.0,
         max_failure_cooldown_seconds: float = 30.0,
@@ -77,6 +82,20 @@ class _AdaptiveModelEndpointPoolCore:
         if max_failure_cooldown_seconds < failure_cooldown_seconds:
             raise ValueError("endpoint pool max cooldown cannot be shorter than base cooldown")
         self._replica_set_digest = replica_set_digest
+        self._selection_policy = (
+            AdaptiveLeastPressureReplicaSelectionPolicy()
+            if selection_policy is None
+            else selection_policy
+        )
+        if not isinstance(self._selection_policy, ModelEndpointReplicaSelectionPolicyPort):
+            raise TypeError("model endpoint selection_policy has invalid port type")
+        self._selection_policy_digest = self._selection_policy.identity_digest
+        if (
+            type(self._selection_policy_digest) is not str
+            or len(self._selection_policy_digest) != 64
+            or any(char not in "0123456789abcdef" for char in self._selection_policy_digest)
+        ):
+            raise ValueError("model endpoint selection policy identity must be SHA-256")
         self._clock = clock
         self._ewma_alpha = float(ewma_alpha)
         self._failure_cooldown = float(failure_cooldown_seconds)
@@ -111,24 +130,30 @@ class _AdaptiveModelEndpointPoolCore:
                     "all model endpoint replicas are cooling down after failures"
                 )
 
-            def score(row):
-                binding, runtime = row
-                saturated = 1 if runtime.in_flight >= runtime.capacity else 0
-                normalized_load = runtime.in_flight / runtime.capacity
-                latency = runtime.ewma_latency_seconds
-                # Unmeasured replicas are intentionally preferred over already
-                # measured replicas at equal pressure so cold replicas receive work.
-                latency_rank = -1.0 if latency is None else latency
-                return (
-                    saturated,
-                    normalized_load,
-                    runtime.consecutive_failures,
-                    latency_rank,
-                    runtime.last_selected_sequence,
-                    binding.deployment_id,
+            candidates = tuple(
+                ModelEndpointReplicaSelectionCandidate(
+                    deployment_id=binding.deployment_id,
+                    capacity=runtime.capacity,
+                    in_flight=runtime.in_flight,
+                    completed=runtime.completed,
+                    failures=runtime.failures,
+                    selections=runtime.selections,
+                    consecutive_failures=runtime.consecutive_failures,
+                    ewma_latency_seconds=runtime.ewma_latency_seconds,
+                    last_selected_sequence=runtime.last_selected_sequence,
                 )
-
-            binding, runtime = min(available, key=score)
+                for binding, runtime in available
+            )
+            selected_id = self._selection_policy.select(candidates)
+            selected = tuple(
+                row for row in available if row[0].deployment_id == selected_id
+            )
+            if len(selected) != 1:
+                raise ModelEndpointPoolUnavailable(
+                    "model endpoint selection policy chose an unavailable replica: "
+                    f"{selected_id!r}"
+                )
+            binding, runtime = selected[0]
             self._selection_sequence += 1
             sequence = self._selection_sequence
             runtime.in_flight += 1
@@ -204,6 +229,7 @@ class _AdaptiveModelEndpointPoolCore:
             request=physical_request,
             response=response,
             replica_set_digest=self._replica_set_digest,
+            selection_policy_digest=self._selection_policy_digest,
             selection_sequence=sequence,
         )
 
@@ -227,6 +253,7 @@ class _AdaptiveModelEndpointPoolCore:
             )
             return ModelEndpointPoolSnapshot(
                 replica_set_digest=self._replica_set_digest,
+                selection_policy_digest=self._selection_policy_digest,
                 selection_sequence=self._selection_sequence,
                 replicas=rows,
             )

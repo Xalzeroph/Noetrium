@@ -17,6 +17,7 @@ from noetrium_platform.research.execution.workflow.api import (
 )
 from noetrium_platform.research.execution.workflow.composition import (
     MethodAgentLoopRouter,
+    MethodRuntimePortInventory,
     StructuredViewChatRequestFactory,
 )
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
@@ -26,6 +27,7 @@ from noetrium_platform.research.experimentation.workload.composition import (
     DeclarativeWorkloadMethodCompiler,
     MethodRuntimeBindings,
     TaskFieldProjection,
+    compose_method_runtime_bindings,
     bind_method_workload,
 )
 
@@ -145,3 +147,45 @@ def test_declarative_compiler_creates_isolated_machine_and_evidence_per_task(tmp
     assert all(any((root / "machine" / "journal").rglob("*")) for root in roots)
     assert all(list((root / "evidence" / "results").glob("*.json")) for root in roots)
     assert len(compiler.digest) == 64
+
+
+def test_auto_composed_declarative_runtime_attaches_only_required_ports(tmp_path: Path) -> None:
+    identity = MethodProgramIdentity(MethodIdentity("declarative.agent", "1", "1", "1"))
+
+    def view(request):
+        return {"instruction": "return the task id", "input": request.input_value}
+
+    def finish(request):
+        return MethodNodeResult(value=request.previous_value)
+
+    program = (
+        MethodProgramBuilder(identity, entrypoint="agent")
+        .agent("agent", "declarative.agent", "agent-a", ("finish",), view_handler=view)
+        .return_node("finish", "declarative.finish", finish)
+        .build()
+    )
+    loop = _Loop("auto")
+    router = MethodAgentLoopRouter({"agent-a": loop})
+    runtime = compose_method_runtime_bindings(
+        program,
+        MethodRuntimePortInventory(agent_loop=router),
+        state_root=tmp_path / "auto-state",
+    )
+    assert runtime.agent_loop is router
+    assert runtime.capabilities is None
+    assert runtime.child_machines is None
+    assert runtime.schemas is None
+    assert runtime.runtime_binding_digest is not None
+
+    compiler = DeclarativeWorkloadMethodCompiler(program=program, runtime=runtime)
+    invocation = compiler.compile(
+        ExperimentTaskSpec("task-auto", "f", "do it"),
+        ExecutionContext("auto-run", "trace", "root"),
+    )
+    result = UniversalMethodMachine(max_steps=8).run(
+        invocation.program,
+        runtime=invocation.runtime,
+        input_value=invocation.input_value,
+    )
+    assert result.value == {"agent": "auto"}
+    assert loop.calls == ["agent-a"]

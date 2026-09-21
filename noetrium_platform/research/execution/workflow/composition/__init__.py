@@ -2,6 +2,7 @@
 
 from .machine_binding import bind_machine_method_runtime
 from .model_agent import (
+    DispatchPoolBackedMethodAgentLoop,
     EndpointBackedMethodAgentLoop,
     MethodAgentLoopRouter,
     MethodAgentRequestFactoryPort,
@@ -11,6 +12,7 @@ from .model_agent import (
 )
 
 __all__ = [
+    "DispatchPoolBackedMethodAgentLoop",
     "EndpointBackedMethodAgentLoop",
     "MethodAgentLoopRouter",
     "MethodAgentRequestFactoryPort",
@@ -18,4 +20,13 @@ __all__ = [
     "PromptViewChatRequestFactory",
     "StructuredViewChatRequestFactory",
     "bind_machine_method_runtime",
+    "MethodRuntimeBindingPlan",
+    "MethodRuntimePortInventory",
+    "plan_method_runtime_binding",
 ]
+
+from .runtime_binding import (
+    MethodRuntimeBindingPlan,
+    MethodRuntimePortInventory,
+    plan_method_runtime_binding,
+)

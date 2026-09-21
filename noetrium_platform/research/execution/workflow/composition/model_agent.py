@@ -7,6 +7,7 @@ from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.model.request.api import ModelRequestRecorderPort
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    ModelEndpointDispatchPoolPort,
     ModelEndpointPort,
     ModelEndpointRequest,
 )
@@ -300,6 +301,129 @@ class EndpointBackedMethodAgentLoop:
         )
 
 
+class DispatchPoolBackedMethodAgentLoop:
+    """Paper-agnostic MethodAgentLoop backed by a shared replica dispatch pool.
+
+    The logical request is recorded exactly once before dispatch. The pool then
+    selects one frozen physical deployment. No failed request is replayed onto a
+    second replica, preserving the same fail-closed external-effect semantics as
+    the endpoint pool itself.
+    """
+
+    def __init__(
+        self,
+        *,
+        binding: MethodModelEndpointBinding,
+        pool: ModelEndpointDispatchPoolPort,
+        recorder: ModelRequestRecorderPort,
+        request_factory: MethodAgentRequestFactoryPort,
+    ) -> None:
+        if not isinstance(binding, MethodModelEndpointBinding):
+            raise TypeError("binding must be MethodModelEndpointBinding")
+        if not isinstance(pool, ModelEndpointDispatchPoolPort):
+            raise TypeError("pool must satisfy ModelEndpointDispatchPoolPort")
+        if not isinstance(recorder, ModelRequestRecorderPort):
+            raise TypeError("recorder must satisfy ModelRequestRecorderPort")
+        if not isinstance(request_factory, MethodAgentRequestFactoryPort):
+            raise TypeError("request_factory must satisfy MethodAgentRequestFactoryPort")
+        if binding.request_factory_digest != request_factory.digest:
+            raise ValueError("method model request factory identity drift")
+        snapshot = pool.snapshot()
+        require_sha256(snapshot.replica_set_digest, "method model replica_set_digest")
+        self.binding = binding
+        self.pool = pool
+        self.recorder = recorder
+        self.request_factory = request_factory
+        self._replica_set_digest = snapshot.replica_set_digest
+        self._selection_policy_digest = snapshot.selection_policy_digest
+        require_sha256(
+            self._selection_policy_digest,
+            "method model selection_policy_digest",
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return canonical_digest({
+            "binding_digest": self.binding.digest,
+            "replica_set_digest": self._replica_set_digest,
+            "selection_policy_digest": self._selection_policy_digest,
+            "request_factory_digest": self.request_factory.digest,
+        })
+
+    def run(self, request: MethodAgentRequest) -> MethodAgentResult:
+        if not isinstance(request, MethodAgentRequest):
+            raise TypeError("method model agent requires MethodAgentRequest")
+        if request.agent_id != self.binding.agent_id:
+            raise ValueError("method model agent target identity drift")
+        operation_id = request.context.operation_id
+        if not isinstance(operation_id, str) or not operation_id.strip():
+            raise ValueError("method model invocation requires operation_id")
+        body = self.request_factory.build(request)
+        request_id = (
+            "method-model-pool:"
+            + canonical_digest({
+                "operation_id": operation_id,
+                "binding_digest": self.binding.digest,
+                "replica_set_digest": self._replica_set_digest,
+                "body": body,
+            })
+        )
+        compiled_prompt_text = self.request_factory.compiled_prompt_text(request)
+        envelope = self.recorder.record(
+            request_id=request_id,
+            context=request.context,
+            role=self.binding.role,
+            model=self.binding.model,
+            prompt_generation_id=self.binding.prompt_generation_id,
+            prompt_id=self.binding.prompt_id,
+            prompt_digest=self.binding.prompt_digest,
+            request_body=body,
+            compiled_prompt_text=compiled_prompt_text,
+        )
+        self.recorder.verify_visible_request(envelope, body)
+        dispatch = self.pool.complete(envelope, body)
+        if dispatch.replica_set_digest != self._replica_set_digest:
+            raise RuntimeError("method model replica-set identity drift during dispatch")
+        if dispatch.selection_policy_digest != self._selection_policy_digest:
+            raise RuntimeError("method model selection-policy identity drift during dispatch")
+        response = dispatch.response
+        receipt = EffectReceipt(
+            effect_id=f"model-response:{response.response_digest}",
+            request_digest=dispatch.request.digest(),
+            effect_class=EffectClass.RECONCILABLE,
+            certainty=EffectCertainty.EFFECT_CONFIRMED,
+            provider_instance_id=response.deployment_id,
+            verification_required=False,
+            provider_receipt=response.response_digest,
+        )
+        event = MethodEvent(
+            "model.invocation",
+            {
+                "request_id": envelope.request_id,
+                "request_digest": dispatch.request.digest(),
+                "response_digest": response.response_digest,
+                "deployment_id": response.deployment_id,
+                "deployment_generation": dispatch.request.deployment_generation,
+                "replica_set_digest": dispatch.replica_set_digest,
+                "selection_policy_digest": dispatch.selection_policy_digest,
+                "selection_sequence": dispatch.selection_sequence,
+                "model_id": self.binding.model.model_id,
+                "model_revision": self.binding.model.revision,
+                "engine": self.binding.model.engine,
+                "engine_version": self.binding.model.engine_version,
+                "finish_reason": response.finish_reason,
+                "input_tokens": response.input_tokens,
+                "output_tokens": response.output_tokens,
+                "usage": response.usage,
+            },
+        )
+        return MethodAgentResult(
+            value=response.text,
+            events=(event,),
+            effect_receipts=(receipt,),
+        )
+
+
 class MethodAgentLoopRouter:
     """Fail-closed router from Method agent identities to bound agent loops."""
 
@@ -348,6 +472,7 @@ class MethodAgentLoopRouter:
 
 
 __all__ = [
+    "DispatchPoolBackedMethodAgentLoop",
     "EndpointBackedMethodAgentLoop",
     "MethodAgentLoopRouter",
     "MethodAgentRequestFactoryPort",

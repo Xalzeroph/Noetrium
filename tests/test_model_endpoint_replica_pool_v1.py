@@ -23,6 +23,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
 from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
     AdaptiveOperationalModelEndpointPool,
     AdaptiveQualifiedModelEndpointPool,
+    PinnedReplicaSelectionPolicy,
 )
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
 from noetrium_platform.foundation.kernel.kernel import (
@@ -358,3 +359,34 @@ def test_operational_pool_does_not_replay_uncertain_failure() -> None:
     assert endpoints["operational-1"].calls == 0
     result = pool.complete(_envelope(91), {"model": "qwen"})
     assert result.response.deployment_id == "operational-1"
+
+
+def test_explicit_pinned_replica_policy_never_falls_back() -> None:
+    replica_set = OperationalModelEndpointReplicaSet(
+        tuple(_operational(index, capacity=1) for index in range(2))
+    )
+    endpoints = {}
+
+    def factory(replica):
+        endpoint = _FailingEndpoint(replica, fail=replica.deployment_id == "operational-1")
+        endpoints[replica.deployment_id] = endpoint
+        return endpoint
+
+    pool = AdaptiveOperationalModelEndpointPool(
+        replica_set,
+        factory,
+        selection_policy=PinnedReplicaSelectionPolicy("operational-1"),
+        failure_cooldown_seconds=60,
+        max_failure_cooldown_seconds=60,
+    )
+    with pytest.raises(RuntimeError, match="replica failed"):
+        pool.complete(_envelope(92), {"model": "qwen"})
+    assert endpoints["operational-1"].calls == 1
+    assert endpoints["operational-0"].calls == 0
+    with pytest.raises(RuntimeError, match="unavailable replica"):
+        pool.complete(_envelope(93), {"model": "qwen"})
+    assert endpoints["operational-0"].calls == 0
+    snapshot = pool.snapshot()
+    assert snapshot.selection_policy_digest == PinnedReplicaSelectionPolicy(
+        "operational-1"
+    ).identity_digest

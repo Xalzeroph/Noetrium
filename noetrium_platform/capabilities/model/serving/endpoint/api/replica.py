@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Mapping, Protocol
+from typing import Mapping, Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, JsonInput
@@ -128,6 +128,45 @@ class QualifiedModelEndpointReplicaSet:
 
 
 @dataclass(frozen=True, slots=True)
+class ModelEndpointReplicaSelectionCandidate:
+    deployment_id: str
+    capacity: int
+    in_flight: int
+    completed: int
+    failures: int
+    selections: int
+    consecutive_failures: int
+    ewma_latency_seconds: float | None
+    last_selected_sequence: int
+
+    def __post_init__(self) -> None:
+        if type(self.deployment_id) is not str or not self.deployment_id.strip():
+            raise ValueError("model endpoint selection candidate deployment_id is required")
+        if type(self.capacity) is not int or self.capacity <= 0:
+            raise ValueError("model endpoint selection candidate capacity must be positive")
+        for name in (
+            "in_flight", "completed", "failures", "selections",
+            "consecutive_failures", "last_selected_sequence",
+        ):
+            value = getattr(self, name)
+            if type(value) is not int or value < 0:
+                raise ValueError(f"model endpoint selection candidate {name} must be non-negative")
+        if self.ewma_latency_seconds is not None and self.ewma_latency_seconds < 0:
+            raise ValueError("model endpoint selection candidate latency must be non-negative")
+
+
+@runtime_checkable
+class ModelEndpointReplicaSelectionPolicyPort(Protocol):
+    @property
+    def identity_digest(self) -> str: ...
+
+    def select(
+        self,
+        candidates: tuple[ModelEndpointReplicaSelectionCandidate, ...],
+    ) -> str: ...
+
+
+@dataclass(frozen=True, slots=True)
 class ModelEndpointReplicaSnapshot:
     deployment_id: str
     deployment_generation: str
@@ -144,6 +183,7 @@ class ModelEndpointReplicaSnapshot:
 @dataclass(frozen=True, slots=True)
 class ModelEndpointPoolSnapshot:
     replica_set_digest: str
+    selection_policy_digest: str
     selection_sequence: int
     replicas: tuple[ModelEndpointReplicaSnapshot, ...]
 
@@ -153,12 +193,21 @@ class ModelEndpointDispatchResult:
     request: ModelEndpointRequest
     response: ModelEndpointResponse
     replica_set_digest: str
+    selection_policy_digest: str
     selection_sequence: int
     dispatch_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         if self.response.deployment_id != self.request.deployment_id:
             raise ValueError("model endpoint dispatch response deployment drift")
+        for name in ("replica_set_digest", "selection_policy_digest"):
+            value = getattr(self, name)
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(char not in "0123456789abcdef" for char in value)
+            ):
+                raise ValueError(f"model endpoint dispatch {name} must be lowercase SHA-256")
         object.__setattr__(
             self,
             "dispatch_digest",
@@ -167,6 +216,7 @@ class ModelEndpointDispatchResult:
                     "request_digest": self.request.digest(),
                     "response_digest": self.response.response_digest,
                     "replica_set_digest": self.replica_set_digest,
+                    "selection_policy_digest": self.selection_policy_digest,
                     "selection_sequence": self.selection_sequence,
                 }
             ),
@@ -179,6 +229,7 @@ class QualifiedModelEndpointReplicaBindingPort(Protocol):
     ) -> QualifiedModelEndpointReplicaSet: ...
 
 
+@runtime_checkable
 class ModelEndpointDispatchPoolPort(Protocol):
     """Minimal dispatch contract shared by operational and qualified pools."""
 
@@ -209,6 +260,8 @@ __all__ = [
     "ModelEndpointDispatchPoolPort",
     "ModelEndpointDispatchResult",
     "ModelEndpointPoolSnapshot",
+    "ModelEndpointReplicaSelectionCandidate",
+    "ModelEndpointReplicaSelectionPolicyPort",
     "ModelEndpointReplicaSnapshot",
     "OperationalModelEndpointReplica",
     "OperationalModelEndpointReplicaSet",
