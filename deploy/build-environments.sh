@@ -62,8 +62,10 @@ docker build \
 # The bootstrap talks to the host Docker daemon. Preserve host absolute paths
 # inside the control-plane container so daemon-side build contexts and Compose
 # bind mounts resolve to the same files. Source stays read-only; only the
-# dedicated build/runtime root is writable.
-COMMON_ARGS="$DAEMON_ARGS -v $ROOT:$ROOT:ro -w $ROOT"
+# dedicated build/runtime root is writable. Git's safe-directory exception is
+# scoped to this exact read-only checkout; it is needed because the disposable
+# container's uid can differ from the checkout owner on CI or rootless hosts.
+COMMON_ARGS="$DAEMON_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$ROOT"
 
 if [ "${1:-}" = "build" ]; then
   # shellcheck disable=SC2086
