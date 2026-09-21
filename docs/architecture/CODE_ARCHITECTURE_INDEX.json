@@ -37424,7 +37424,7 @@
         "management"
       ],
       "kind": "dataclass",
-      "line": 31,
+      "line": 32,
       "methods": [
         "start_background_controllers",
         "assert_healthy",
@@ -37446,7 +37446,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 22,
+      "line": 23,
       "methods": [
         "__init__",
         "wait"
@@ -144412,7 +144412,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "3a85a7c08da841d10c1b73e2ffb2f432c29306a6",
+  "source_git_sha": "15b90af4f10f93560ffd642be7866932910a7c43",
   "system_import_edges": [
     {
       "count": 108,
