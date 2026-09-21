@@ -15,6 +15,7 @@ from .runtime import (
     SelfConsistencyGSM8KEpisodeResult,
     SelfConsistencyGSM8KModelBinding,
     SelfConsistencyInvocation,
+    run_external_qwen_substitute_pool,
     run_self_consistency_gsm8k_episode,
 )
 from .study import (
@@ -23,6 +24,7 @@ from .study import (
 )
 
 __all__ = [
+    "run_external_qwen_substitute_pool",
     "run_self_consistency_gsm8k_episode",
     "SelfConsistencyInvocation",
     "SelfConsistencyGSM8KModelBinding",
