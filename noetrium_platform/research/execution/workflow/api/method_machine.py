@@ -64,6 +64,15 @@ class MethodEvidenceStatus(StrEnum):
     UNKNOWN = "unknown"
 
 
+class MethodRuntimePort(StrEnum):
+    """Semantic runtime dependencies visible in the immutable MethodProgram ABI."""
+
+    AGENT_LOOP = "agent_loop"
+    CAPABILITIES = "capabilities"
+    CHILD_MACHINES = "child_machines"
+    SCHEMAS = "schemas"
+
+
 @dataclass(frozen=True, slots=True)
 class MethodEvent:
     kind: str
@@ -590,6 +599,7 @@ class MethodProgram:
     input_schema: str = "json"
     output_schema: str = "json"
     required_capabilities: tuple[str, ...] = ()
+    required_runtime_ports: tuple[MethodRuntimePort, ...] = ()
     execution_class: MethodExecutionClass = MethodExecutionClass.EFFECT_RECORDED
     evidence_obligations: tuple[str, ...] = ()
     metric_names: tuple[str, ...] = ()
@@ -611,6 +621,16 @@ class MethodProgram:
             not isinstance(value, str) or not value.strip() for value in self.required_capabilities
         ) or len(set(self.required_capabilities)) != len(self.required_capabilities):
             raise ValueError("method program required_capabilities must be unique non-empty text")
+        if type(self.required_runtime_ports) is not tuple or any(
+            not isinstance(value, MethodRuntimePort) for value in self.required_runtime_ports
+        ):
+            raise TypeError(
+                "method program required_runtime_ports must be a tuple of MethodRuntimePort"
+            )
+        if len(set(self.required_runtime_ports)) != len(self.required_runtime_ports):
+            raise ValueError("method program required_runtime_ports must be unique")
+        if tuple(sorted(self.required_runtime_ports, key=lambda value: value.value)) != self.required_runtime_ports:
+            raise ValueError("method program required_runtime_ports must be canonically sorted")
         if not isinstance(self.execution_class, MethodExecutionClass):
             raise TypeError("method program execution_class must be MethodExecutionClass")
         for name, values in (
@@ -634,6 +654,9 @@ class MethodProgram:
                 "input_schema": self.input_schema,
                 "output_schema": self.output_schema,
                 "required_capabilities": self.required_capabilities,
+                "required_runtime_ports": tuple(
+                    value.value for value in self.required_runtime_ports
+                ),
                 "execution_class": self.execution_class.value,
                 "evidence_obligations": self.evidence_obligations,
                 "metric_names": self.metric_names,
@@ -843,6 +866,7 @@ class MethodProgramBuilder:
         input_schema: str = "json",
         output_schema: str = "json",
         required_capabilities: tuple[str, ...] = (),
+        required_runtime_ports: tuple[MethodRuntimePort, ...] = (),
         execution_class: MethodExecutionClass = MethodExecutionClass.EFFECT_RECORDED,
         evidence_obligations: tuple[str, ...] = (),
         metric_names: tuple[str, ...] = (),
@@ -856,6 +880,7 @@ class MethodProgramBuilder:
             input_schema,
             output_schema,
             required_capabilities,
+            required_runtime_ports,
             execution_class,
             evidence_obligations,
             metric_names,
@@ -1094,6 +1119,6 @@ __all__ = [
     "MethodExecutionClass", "MethodGraph", "MethodInterrupt", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest",
     "MethodNodeResult", "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder",
     "MethodChildMachinePort",
-    "MethodRunResult", "MethodMachinePort", "MethodRunStatus", "MethodRuntimeContext", "MethodSchemaPort",
+    "MethodRunResult", "MethodMachinePort", "MethodRunStatus", "MethodRuntimeContext", "MethodRuntimePort", "MethodSchemaPort",
     "MethodAuthoritativeState", "MethodControlRecord", "MethodTransitionAuthorityPort", "MethodTransitionRecord",
 ]

@@ -22,6 +22,9 @@ from ..runtime import MachineMethodTransitionAuthority
 def _program_ref(program: MethodProgram, runtime: MethodRuntimeContext) -> MachineProgramRef:
     dependency_digest = runtime.effective_runtime_binding_digest or canonical_digest({
         "required_capabilities": program.required_capabilities,
+        "required_runtime_ports": tuple(
+            value.value for value in program.required_runtime_ports
+        ),
         "program_identity": program.program_identity.digest(),
     })
     schema_digest = runtime.schema_digest or canonical_digest({

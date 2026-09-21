@@ -41,7 +41,14 @@ from .method_machine import (
     MethodRunResult,
     MethodRunStatus,
     MethodRuntimeContext,
+    MethodRuntimePort,
     MethodSchemaPort,
+)
+
+
+from .runtime_requirements import (
+    MethodRuntimeRequirements,
+    analyze_method_runtime_requirements,
 )
 
 __all__ = [
@@ -52,5 +59,6 @@ __all__ = [
     "AsyncMethodAgentLoopPort", "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult", "MethodAgentTargetHandler", "MethodCapabilityTargetHandler", "MethodAgentViewHandler", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidenceStatus", "MethodExecutionClass", "MethodEvidencePort", "MethodEvent", "MethodGraph",
     "MethodInterrupt", "MethodMachinePort", "MethodChildMachinePort", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest", "MethodNodeResult",
     "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder", "MethodRunResult", "MethodRunStatus",
-    "MethodRuntimeContext",
+    "MethodRuntimeContext", "MethodRuntimePort", "MethodRuntimeRequirements",
+    "MethodSchemaPort", "analyze_method_runtime_requirements",
 ]

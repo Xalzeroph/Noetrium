@@ -21,6 +21,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodProgram,
     MethodRuntimeContext,
     MethodSchemaPort,
+    analyze_method_runtime_requirements,
 )
 from noetrium_platform.research.execution.workflow.api.dispatch import OperationDispatchPort
 from noetrium_platform.research.execution.workflow.composition import bind_machine_method_runtime
@@ -243,6 +244,7 @@ class DeclarativeWorkloadMethodCompiler:
             context=context,
             binding_plan_digest=self.digest,
         )
+        analyze_method_runtime_requirements(self.program).require(runtime)
         return WorkloadMethodInvocation(
             program=self.program,
             runtime=runtime,
