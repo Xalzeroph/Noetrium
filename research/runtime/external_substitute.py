@@ -32,6 +32,7 @@ class ExternalSubstituteModelDeployment:
     deployment_id: str
     deployment_generation: str
     endpoint_base_url: str
+    served_model_name: str
     identity_document_digest: str
 
     @property
@@ -113,6 +114,15 @@ def load_external_substitute_model_deployment(
     endpoint = observation.get("endpoint")
     if not isinstance(endpoint, str) or not endpoint.strip():
         raise ValueError("external substitute deployment endpoint is required")
+    command = observation.get("command")
+    if not isinstance(command, list) or any(not isinstance(item, str) for item in command):
+        raise ValueError("external substitute deployment command is required")
+    positions = [index for index, item in enumerate(command) if item == "--served-model-name"]
+    if len(positions) != 1 or positions[0] + 1 >= len(command):
+        raise ValueError("external substitute served model name is not uniquely frozen")
+    served_model_name = command[positions[0] + 1]
+    if not served_model_name.strip():
+        raise ValueError("external substitute served model name is empty")
 
     model = _model_identity(document)
     observed_model_manifest = observation.get("model_manifest_digest")
@@ -131,6 +141,7 @@ def load_external_substitute_model_deployment(
         deployment_id=deployment_id,
         deployment_generation=deployment_generation,
         endpoint_base_url=endpoint,
+        served_model_name=served_model_name,
         identity_document_digest=identity_document_digest,
     )
 

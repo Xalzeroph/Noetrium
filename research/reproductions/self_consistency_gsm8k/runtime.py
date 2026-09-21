@@ -249,11 +249,19 @@ def run_self_consistency_gsm8k_episode(
     binding: SelfConsistencyGSM8KModelBinding,
     run_id: str,
     state_root: str | Path,
-    evidence: MethodEvidencePort | None = None,
-    runtime_binding_digest: str | None = None,
+    evidence: MethodEvidencePort,
+    runtime_binding_digest: str,
 ) -> SelfConsistencyGSM8KEpisodeResult:
     if not isinstance(task, GSM8KMaterializedTask):
         raise TypeError("Self-Consistency task must be GSM8KMaterializedTask")
+    if not isinstance(evidence, MethodEvidencePort):
+        raise TypeError("Self-Consistency episode requires MethodEvidencePort")
+    if (
+        type(runtime_binding_digest) is not str
+        or len(runtime_binding_digest) != 64
+        or any(char not in "0123456789abcdef" for char in runtime_binding_digest)
+    ):
+        raise ValueError("Self-Consistency runtime_binding_digest must be SHA-256")
     reasoner = PooledSelfConsistencyReasoner(endpoint_pool, binding)
     execution = ExecutionContext(
         run_id,
@@ -340,6 +348,7 @@ def _run_substitute_task(
     *,
     endpoint_pool: ModelEndpointDispatchPoolPort,
     model: ImmutableModelIdentity,
+    served_model_name: str,
     output_root: Path,
     runtime_binding_digest: str,
     max_tokens: int,
@@ -352,7 +361,7 @@ def _run_substitute_task(
     started = time.time()
     run_id = f"self-consistency-qwen3-8b-substitute:{task.record.task_id}"
     binding = SelfConsistencyGSM8KModelBinding(
-        served_model_name="qwen",
+        served_model_name=served_model_name,
         model=model,
         prompt_generation_id=COT_GSM8K_PROMPT_BUNDLE_ID,
         max_tokens=max_tokens,
@@ -479,6 +488,10 @@ def run_external_qwen_substitute_pool(
         raise ValueError("requested task range exceeds GSM8K test cut")
     deployments = _load_substitute_deployments(model_identity_paths)
     model = deployments[0].model
+    served_model_names = {row.served_model_name for row in deployments}
+    if len(served_model_names) != 1:
+        raise ValueError("Self-Consistency substitute replicas have served-model-name drift")
+    served_model_name = next(iter(served_model_names))
     replicas = OperationalModelEndpointReplicaSet(
         tuple(
             deployment.operational_replica(
@@ -534,6 +547,7 @@ def run_external_qwen_substitute_pool(
             "deployment_generation": row.deployment_generation,
             "endpoint_base_url": row.endpoint_base_url,
             "identity_document_digest": row.identity_document_digest,
+            "served_model_name": row.served_model_name,
         } for row in deployments),
         "sampling": {
             "reasoning_path_count": SELF_CONSISTENCY_GSM8K_FIDELITY.reasoning_path_count,
@@ -543,6 +557,7 @@ def run_external_qwen_substitute_pool(
             "base_seed": base_seed,
             "task_seed_stride": 1000,
             "disable_thinking": disable_thinking,
+            "served_model_name": served_model_name,
         },
         "task_start": start,
         "task_count": count,
@@ -577,6 +592,7 @@ def run_external_qwen_substitute_pool(
                     task,
                     endpoint_pool=pool,
                     model=model,
+                    served_model_name=served_model_name,
                     output_root=output_root,
                     runtime_binding_digest=runtime_binding_digest,
                     max_tokens=max_tokens,
