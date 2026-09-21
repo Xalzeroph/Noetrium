@@ -96602,7 +96602,7 @@
     "classes": 3164,
     "constructor_edges": 864,
     "inheritance_edges": 138,
-    "module_import_edges": 5526,
+    "module_import_edges": 5527,
     "parse_errors": 0,
     "python_modules": 2534,
     "registry_authorities": 20,
@@ -102561,6 +102561,10 @@
     {
       "source": "noetrium_platform.composition.experiment_runtime",
       "target": "noetrium_platform.research.experimentation.checkpoint.api.contracts"
+    },
+    {
+      "source": "noetrium_platform.composition.experiment_runtime",
+      "target": "noetrium_platform.research.experimentation.checkpoint.composition"
     },
     {
       "source": "noetrium_platform.composition.experiment_runtime",
@@ -125377,6 +125381,7 @@
         "noetrium_platform.research.execution.workflow.runtime",
         "noetrium_platform.research.execution.workflow.runtime.program_trial",
         "noetrium_platform.research.experimentation.checkpoint.api.contracts",
+        "noetrium_platform.research.experimentation.checkpoint.composition",
         "noetrium_platform.research.experimentation.checkpoint.runtime.coordination",
         "noetrium_platform.research.experimentation.experiment.runtime",
         "noetrium_platform.research.experimentation.run.identity.api",
@@ -144595,7 +144600,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "2a245abdee2332cda8fc69ba67a4a6d17c995cfa",
+  "source_git_sha": "340ba4ff254e90cb7a04f409bd2d076a11a8cc1c",
   "system_import_edges": [
     {
       "count": 108,
