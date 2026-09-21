@@ -4753,6 +4753,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
+      "target": "noetrium_platform.composition.managed_research_services.ManagedResearchServices"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
       "target": "noetrium_platform.composition.model_management.ManagementPlaneAuthorities"
     },
     {
@@ -17838,7 +17843,7 @@
         "_implementations"
       ],
       "kind": "dataclass",
-      "line": 19,
+      "line": 47,
       "methods": [
         "__post_init__",
         "categories",
@@ -37791,10 +37796,11 @@
         "management",
         "model_replica_pool",
         "observability",
-        "recovery_execution"
+        "recovery_execution",
+        "services"
       ],
       "kind": "dataclass",
-      "line": 47,
+      "line": 51,
       "methods": [
         "start_background_controllers",
         "assert_healthy",
@@ -37816,7 +37822,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 38,
+      "line": 42,
       "methods": [
         "__init__",
         "wait"
@@ -37827,6 +37833,32 @@
         "_EventStop"
       ],
       "qualname": "noetrium_platform.composition.managed_research_runtime._EventStop",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "environment_categories",
+        "facts",
+        "research_results"
+      ],
+      "kind": "dataclass",
+      "line": 41,
+      "methods": [
+        "bind_workload",
+        "paired_evaluation",
+        "project_identity"
+      ],
+      "module": "noetrium_platform.composition.managed_research_services",
+      "name": "ManagedResearchServices",
+      "nesting": [
+        "ManagedResearchServices"
+      ],
+      "qualname": "noetrium_platform.composition.managed_research_services.ManagedResearchServices",
       "system_key": null,
       "top_system": null
     },
@@ -97000,13 +97032,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3231,
-    "classes": 3175,
+    "association_edges": 3232,
+    "classes": 3176,
     "constructor_edges": 873,
     "inheritance_edges": 138,
-    "module_import_edges": 5550,
+    "module_import_edges": 5577,
     "parse_errors": 0,
-    "python_modules": 2537,
+    "python_modules": 2540,
     "registry_authorities": 20,
     "registry_nodes": 172,
     "top_level_systems": 16
@@ -97979,6 +98011,10 @@
     {
       "source": "noetrium_platform.capabilities.environment.category.composition.default",
       "target": "noetrium_platform.capabilities.environment.category.runtime.catalog"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.category.composition.default",
+      "target": "noetrium_platform.foundation.governance.system_registry.api"
     },
     {
       "source": "noetrium_platform.capabilities.environment.category.composition.default",
@@ -102693,6 +102729,10 @@
       "target": "noetrium_platform.managed_research_runtime"
     },
     {
+      "source": "noetrium_platform.composition",
+      "target": "noetrium_platform.managed_research_services"
+    },
+    {
       "source": "noetrium_platform.composition.agent_turn",
       "target": "noetrium_platform.capabilities.participant.core.api.lifecycle"
     },
@@ -103114,6 +103154,10 @@
     },
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.composition.managed_research_services"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
       "target": "noetrium_platform.composition.model_management"
     },
     {
@@ -103147,6 +103191,62 @@
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
       "target": "noetrium_platform.research.execution.scheduling.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.capabilities.environment.category.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.capabilities.environment.category.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.composition.platform_meta"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.evidence.data.fact.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.evidence.data.fact.providers"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.evidence.data.query.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.evidence.data.query.cross.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.foundation.portfolio.project.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.research.execution.machines"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.research.execution.workflow.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.research.experimentation.evaluation.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.research.experimentation.workload.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_services",
+      "target": "noetrium_platform.research.experimentation.workload.composition"
     },
     {
       "source": "noetrium_platform.composition.method_telemetry_sink",
@@ -115050,7 +115150,7 @@
     },
     {
       "source": "noetrium_platform.product.operator.runtime.project_application_loader",
-      "target": "noetrium_platform.foundation.portfolio.api"
+      "target": "noetrium_platform.foundation.portfolio.project.api"
     },
     {
       "source": "noetrium_platform.product.operator.runtime.project_application_loader",
@@ -118078,7 +118178,15 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.composition",
+      "target": "noetrium_platform.research.experimentation.evaluation.composition"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.composition",
       "target": "noetrium_platform.research.experimentation.model_replica_sharding"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.composition",
+      "target": "noetrium_platform.research.experimentation.workload.composition"
     },
     {
       "source": "noetrium_platform.research.experimentation.composition.model_replica_sharding",
@@ -118103,6 +118211,22 @@
     {
       "source": "noetrium_platform.research.experimentation.evaluation.api",
       "target": "noetrium_platform.research.experimentation.evaluation.contracts"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.evaluation.composition",
+      "target": "noetrium_platform.research.experimentation.evaluation.default"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.evaluation.composition.default",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.evaluation.composition.default",
+      "target": "noetrium_platform.research.execution.machines"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.evaluation.composition.default",
+      "target": "noetrium_platform.research.experimentation.evaluation.runtime"
     },
     {
       "source": "noetrium_platform.research.experimentation.evaluation.runtime",
@@ -119865,6 +119989,22 @@
       "target": "noetrium_platform.research.experimentation.workload.api.contracts"
     },
     {
+      "source": "noetrium_platform.research.experimentation.workload.composition",
+      "target": "noetrium_platform.research.experimentation.workload.default"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.workload.composition.default",
+      "target": "noetrium_platform.research.execution.workflow.api"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.workload.composition.default",
+      "target": "noetrium_platform.research.experimentation.workload.api"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.workload.composition.default",
+      "target": "noetrium_platform.research.experimentation.workload.runtime"
+    },
+    {
       "source": "noetrium_platform.research.experimentation.workload.runtime",
       "target": "noetrium_platform.research.experimentation.workload.operation"
     },
@@ -120286,6 +120426,7 @@
       "imports": [
         "noetrium_platform.capabilities.environment.category.api.contracts",
         "noetrium_platform.capabilities.environment.category.runtime.catalog",
+        "noetrium_platform.foundation.governance.system_registry.api",
         "noetrium_platform.foundation.kernel.kernel"
       ],
       "module": "noetrium_platform.capabilities.environment.category.composition.default",
@@ -125719,7 +125860,8 @@
     {
       "imports": [
         "noetrium_platform.managed_observability",
-        "noetrium_platform.managed_research_runtime"
+        "noetrium_platform.managed_research_runtime",
+        "noetrium_platform.managed_research_services"
       ],
       "module": "noetrium_platform.composition",
       "path": "noetrium_platform/composition/__init__.py",
@@ -125953,6 +126095,7 @@
       "imports": [
         "noetrium_platform.capabilities.model.deployment.composition",
         "noetrium_platform.composition.managed_observability",
+        "noetrium_platform.composition.managed_research_services",
         "noetrium_platform.composition.model_management",
         "noetrium_platform.composition.research_execution_pool",
         "noetrium_platform.foundation.kernel.concurrency.api",
@@ -125965,6 +126108,28 @@
       ],
       "module": "noetrium_platform.composition.managed_research_runtime",
       "path": "noetrium_platform/composition/managed_research_runtime.py",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "imports": [
+        "noetrium_platform.capabilities.environment.category.api",
+        "noetrium_platform.capabilities.environment.category.composition",
+        "noetrium_platform.composition.platform_meta",
+        "noetrium_platform.evidence.data.fact.api",
+        "noetrium_platform.evidence.data.fact.providers",
+        "noetrium_platform.evidence.data.query.api",
+        "noetrium_platform.evidence.data.query.cross.composition",
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.portfolio.project.api",
+        "noetrium_platform.research.execution.machines",
+        "noetrium_platform.research.execution.workflow.api",
+        "noetrium_platform.research.experimentation.evaluation.composition",
+        "noetrium_platform.research.experimentation.workload.api",
+        "noetrium_platform.research.experimentation.workload.composition"
+      ],
+      "module": "noetrium_platform.composition.managed_research_services",
+      "path": "noetrium_platform/composition/managed_research_services.py",
       "system_key": null,
       "top_system": null
     },
@@ -140772,7 +140937,7 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.portfolio.api",
+        "noetrium_platform.foundation.portfolio.project.api",
         "noetrium_platform.product.operator.api",
         "noetrium_platform.product.operator.runtime.project_layout"
       ],
@@ -143363,7 +143528,9 @@
     {
       "imports": [
         "noetrium_platform.research.experimentation.api",
-        "noetrium_platform.research.experimentation.model_replica_sharding"
+        "noetrium_platform.research.experimentation.evaluation.composition",
+        "noetrium_platform.research.experimentation.model_replica_sharding",
+        "noetrium_platform.research.experimentation.workload.composition"
       ],
       "module": "noetrium_platform.research.experimentation.composition",
       "path": "noetrium_platform/research/experimentation/composition/__init__.py",
@@ -143408,9 +143575,22 @@
       "top_system": "experimentation"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.research.experimentation.evaluation.default"
+      ],
       "module": "noetrium_platform.research.experimentation.evaluation.composition",
       "path": "noetrium_platform/research/experimentation/evaluation/composition/__init__.py",
+      "system_key": "experimentation/evaluation",
+      "top_system": "experimentation"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.research.execution.machines",
+        "noetrium_platform.research.experimentation.evaluation.runtime"
+      ],
+      "module": "noetrium_platform.research.experimentation.evaluation.composition.default",
+      "path": "noetrium_platform/research/experimentation/evaluation/composition/default.py",
       "system_key": "experimentation/evaluation",
       "top_system": "experimentation"
     },
@@ -145076,9 +145256,22 @@
       "top_system": "experimentation"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.research.experimentation.workload.default"
+      ],
       "module": "noetrium_platform.research.experimentation.workload.composition",
       "path": "noetrium_platform/research/experimentation/workload/composition/__init__.py",
+      "system_key": "experimentation/workload",
+      "top_system": "experimentation"
+    },
+    {
+      "imports": [
+        "noetrium_platform.research.execution.workflow.api",
+        "noetrium_platform.research.experimentation.workload.api",
+        "noetrium_platform.research.experimentation.workload.runtime"
+      ],
+      "module": "noetrium_platform.research.experimentation.workload.composition.default",
+      "path": "noetrium_platform/research/experimentation/workload/composition/default.py",
       "system_key": "experimentation/workload",
       "top_system": "experimentation"
     },
@@ -145143,7 +145336,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "d5b27b967ca8137e4d9e1ca31d0c061942911ae5",
+  "source_git_sha": "26043b540a76dc1e376cd972ce11478599248dd5",
   "system_import_edges": [
     {
       "count": 108,
@@ -145201,7 +145394,7 @@
       "target": "execution"
     },
     {
-      "count": 2,
+      "count": 3,
       "source": "environment",
       "target": "governance"
     },
@@ -145296,12 +145489,12 @@
       "target": "data"
     },
     {
-      "count": 45,
+      "count": 47,
       "source": "experimentation",
       "target": "execution"
     },
     {
-      "count": 389,
+      "count": 396,
       "source": "experimentation",
       "target": "experimentation"
     },
@@ -145321,7 +145514,7 @@
       "target": "participant"
     },
     {
-      "count": 104,
+      "count": 105,
       "source": "experimentation",
       "target": "platform"
     },
