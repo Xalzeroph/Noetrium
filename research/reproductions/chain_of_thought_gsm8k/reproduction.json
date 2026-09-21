@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chain_of_thought_gsm8k",
-  "package_digest": "dbd2803c9e84ee454e4cc42c1ede2391c3a165e76a820b83f8bad6a6a351b2d6",
+  "package_digest": "4f458a56e71c85c66f6bb15d48a807b25581c89d39b9976d15e16fb3e2a23a06",
   "definition_digest": "4b050c215ba40a6e8ad4cee49eef3b248572a0a69b600979631a139b487ce82a",
   "source_registry_digest": "fc74cb2f69f422446062876d3fb62441e1e3d08543aa287d805a02c23927870d",
   "lifecycle": "protocol_bound",
@@ -75,7 +75,7 @@
       "kind": "method_program",
       "path": "research/reproductions/chain_of_thought_gsm8k/program.py",
       "declaration_digest": "37dda7a88dd2dece6b315bf038ba39c308db2f60a7e9d7bbfbd14b1a8538a4bd",
-      "content_sha256": "fd638092b8aee198c6fb251e60dce73b419e71e9784fa5018528a795c05d7869"
+      "content_sha256": "74f255793d2110e5ef49b3471035aed6ed01c6661f0f13357a2cd174aee5f665"
     },
     {
       "kind": "study",

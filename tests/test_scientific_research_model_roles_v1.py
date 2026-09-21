@@ -117,8 +117,15 @@ def _model_binding(
     stack_digit: str,
     deployment_digit: str,
 ) -> ResearchModelRoleBinding:
+    prompt_generation_id = f"fixture-{role}-prompt-generation"
+    prompt_id = f"fixture-{role}-prompt"
+    prompt_digest = canonical_digest({"role": role, "prompt": prompt_id})
+    tokenization_digest = canonical_digest({"role": role, "tokenization": "fixture-v1"})
     domain_requirement = ModelCapabilityRequirement(
         role=role,
+        prompt_generation_id=prompt_generation_id,
+        prompt_id=prompt_id,
+        prompt_digest=prompt_digest,
         capability_id="generation",
         input_schema_id="model.generation.input.v1",
         output_schema_id="model.generation.output.v1",
@@ -135,8 +142,9 @@ def _model_binding(
         deployment_id=f"deployment-{role}", deployment_generation=deployment_digit * 64,
         model_stack_digest=stack_digit * 64, qualification_certificate_digest="9" * 64,
         runtime_qualification_digest="a" * 64, host_identity_digest="b" * 64,
-        prompt_generation_id=None, prompt_id=None, prompt_digest=None,
+        prompt_generation_id=prompt_generation_id, prompt_id=prompt_id, prompt_digest=prompt_digest,
         capabilities=profile.capabilities, runtime_canary_evidence_digests=("c" * 64,),
+        request_tokenization_digest=tokenization_digest,
         capability_id="generation", input_schema_id="model.generation.input.v1",
         output_schema_id="model.generation.output.v1",
     )

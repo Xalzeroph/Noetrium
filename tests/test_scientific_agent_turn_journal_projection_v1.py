@@ -91,8 +91,11 @@ def test_projection_fails_closed_when_journaled_domain_fact_digest_is_tampered()
 
     commits = list(journal.commits("agent-turn:1"))
     record = commits[-1]
-    event = thaw_json(record.event_payloads[0])
-    assert isinstance(event, dict)
+    events = tuple(thaw_json(row) for row in record.event_payloads)
+    event = next(
+        row for row in events
+        if isinstance(row, dict) and row.get("type") == "agent_turn_fact"
+    )
     fact = event["fact"]
     assert isinstance(fact, dict)
     fact["fact_digest"] = _digest("0")
