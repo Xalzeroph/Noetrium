@@ -20,13 +20,6 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 
 
-class _TokenCounter:
-    counter_digest = "c" * 64
-
-    def count(self, text: str) -> int:
-        return len(text)
-
-
 def _binding() -> ProjectModelBinding:
     profile = ModelProviderProfile("test-model", ("generation",))
     model = ImmutableModelIdentity(
@@ -56,6 +49,7 @@ def _binding() -> ProjectModelBinding:
         prompt_digest="7" * 64,
         capabilities=profile.capabilities,
         runtime_canary_evidence_digests=("8" * 64,),
+        request_tokenization_digest="9" * 64,
     )
 
 
@@ -122,7 +116,6 @@ def test_complete_project_model_centralizes_request_provenance(tmp_path) -> None
         request_id="request-1",
         context=_context(),
         request_body={"messages": [{"role": "user", "content": "hello"}]},
-        input_token_counter=_TokenCounter(),
         compiled_prompt_text="hello",
     )
     assert isinstance(client, ProjectModelClientPort)
@@ -156,7 +149,6 @@ def test_invoke_multimodal_model_keeps_codec_and_content_store_provider_owned(tm
         request_id="request-mm-1",
         context=_context(),
         request=request,
-        input_token_counter=_TokenCounter(),
     )
     assert response.text == "ok"
     assert client.requests[0].body["part_count"] == 1
