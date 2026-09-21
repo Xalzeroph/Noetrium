@@ -352,47 +352,16 @@ def _read_metadata(artifact, metadata_cache):
     return deps, error
 
 
-def _read_metadata_with_fallback(
-    artifact,
-    package,
-    version,
-    metadata_cache,
-    page_cache,
-    target_tags,
-    fallback_index,
-):
-    """Use a verified public-index metadata twin when a mirror omits PEP 658."""
-    # A mirror without a PEP 658 digest does not advertise a metadata
-    # endpoint.  Do not first issue a guaranteed .metadata request that can
-    # consume the full network timeout for every root/dependency candidate;
-    # go directly to the verified same-version public-index twin below.
-    if artifact.get("_index_url") != fallback_index and not artifact.get("metadata_sha256"):
-        deps, error = (), "mirror does not expose PEP 658 metadata"
-    else:
-        deps, error = _read_metadata(artifact, metadata_cache)
-    if error is None or artifact.get("_index_url") == fallback_index:
-        return deps, error
-    try:
-        exact = SpecifierSet("==" + str(version))
-        fallback_version, fallback_artifacts, fallback_error = _select(
-            fallback_index,
-            package,
-            exact,
-            (version,),
-            page_cache,
-            target_tags,
-        )
-    except Exception as exc:
-        return deps, error + "; fallback metadata selection failed: " + type(exc).__name__
-    if fallback_error or fallback_version != str(version) or not fallback_artifacts:
-        return deps, error + "; fallback metadata artifact unavailable"
-    fallback_deps, fallback_metadata_error = _read_metadata(
-        fallback_artifacts[0], metadata_cache
-    )
-    if fallback_metadata_error is not None:
-        return deps, error + "; fallback metadata request failed: " + fallback_metadata_error
-    artifact["dependency_requirements"] = list(fallback_deps)
-    return fallback_deps, None
+def _read_metadata_strict(artifact, metadata_cache):
+    """Read dependency metadata only from the artifact's authoritative index.
+
+    Qualification is fail-closed: missing verified PEP 658 metadata is an
+    incomplete observation, never a reason to query another index.
+    """
+    if not artifact.get("metadata_sha256"):
+        artifact["dependency_requirements"] = []
+        return (), "package index does not expose verified PEP 658 metadata"
+    return _read_metadata(artifact, metadata_cache)
 
 
 def _public_artifact(item):
@@ -408,7 +377,6 @@ def _screen_root_candidate(
     page_cache,
     metadata_cache,
     target_tags,
-    fallback_index,
 ):
     selected_version, artifacts, selection_error = _select(
         index_url,
@@ -426,14 +394,9 @@ def _screen_root_candidate(
         }
     artifact = artifacts[0]
     artifact["_index_url"] = index_url
-    dependencies, metadata_error = _read_metadata_with_fallback(
+    dependencies, metadata_error = _read_metadata_strict(
         artifact,
-        package,
-        selected_version,
         metadata_cache,
-        page_cache,
-        target_tags,
-        fallback_index,
     )
     if metadata_error:
         return {"version": str(version), "compatible": False, "error": metadata_error}
@@ -518,7 +481,6 @@ def _resolve_constrained_package(
     *,
     selected,
     root_name,
-    fallback_index,
     preferred_versions,
     page_cache,
     target_tags,
@@ -540,32 +502,21 @@ def _resolve_constrained_package(
             return normalized, existing, False, None
         if normalized == root_name:
             return normalized, None, True, "dependency closure constraints conflict with root package " + normalized
-    candidate = None
     selected_index = index_hint
-    indexes = [index_hint]
-    if fallback_index not in indexes:
-        indexes.append(fallback_index)
-    for dependency_index in indexes:
-        selection_specifier = combined
-        preferred = preferred_versions.get(normalized)
-        if preferred:
-            selection_specifier = SpecifierSet(
-                (specifier_text + "," if specifier_text else "") + "==" + str(preferred)
-            )
-        observed = _select(
-            dependency_index,
-            normalized,
-            selection_specifier,
-            (),
-            page_cache,
-            target_tags,
+    selection_specifier = combined
+    preferred = preferred_versions.get(normalized)
+    if preferred:
+        selection_specifier = SpecifierSet(
+            (specifier_text + "," if specifier_text else "") + "==" + str(preferred)
         )
-        if observed[0] is not None and observed[1]:
-            candidate = observed
-            selected_index = dependency_index
-            break
-    if candidate is None:
-        candidate = (None, (), None)
+    candidate = _select(
+        selected_index,
+        normalized,
+        selection_specifier,
+        (),
+        page_cache,
+        target_tags,
+    )
     if candidate[0] is None or not candidate[1]:
         return (
             normalized,
@@ -580,14 +531,9 @@ def _resolve_constrained_package(
         return normalized, None, True, dependency_error + ": " + normalized
     dependency_artifact = dependency_artifacts[0]
     dependency_artifact["_index_url"] = selected_index
-    dependency_deps, dependency_metadata_error = _read_metadata_with_fallback(
+    dependency_deps, dependency_metadata_error = _read_metadata_strict(
         dependency_artifact,
-        normalized,
-        dependency_version,
         metadata_cache,
-        page_cache,
-        target_tags,
-        fallback_index,
     )
     if dependency_metadata_error:
         return normalized, None, True, dependency_metadata_error + ": " + normalized
@@ -633,7 +579,6 @@ def _resolve_dependency_closure(
     root_artifact,
     root_deps,
     index_url,
-    fallback_index,
     preferred_versions,
     page_cache,
     metadata_cache,
@@ -684,7 +629,6 @@ def _resolve_dependency_closure(
                 entry,
                 selected=selected,
                 root_name=root_name,
-                fallback_index=fallback_index,
                 preferred_versions=preferred_versions,
                 page_cache=page_cache,
                 target_tags=target_tags,
@@ -726,11 +670,11 @@ def _emit_root_error(root_error):
 def main(argv=None):
     global CACHE_ROOT
     argv = sys.argv if argv is None else argv
-    index_url, package, raw_versions, fallback_index = argv[1], argv[2], json.loads(argv[3]), argv[4]
-    preferred_versions = json.loads(argv[5])
-    root_version_hint = argv[6] if len(argv) > 6 and argv[6] else None
-    root_candidate_versions = json.loads(argv[7]) if len(argv) > 7 and argv[7] else []
-    CACHE_ROOT = argv[8] if len(argv) > 8 and argv[8] else ""
+    index_url, package, raw_versions = argv[1], argv[2], json.loads(argv[3])
+    preferred_versions = json.loads(argv[4])
+    root_version_hint = argv[5] if len(argv) > 5 and argv[5] else None
+    root_candidate_versions = json.loads(argv[6]) if len(argv) > 6 and argv[6] else []
+    CACHE_ROOT = argv[7] if len(argv) > 7 and argv[7] else ""
     page_cache = {}
     metadata_cache = {}
     target_tags = {str(tag) for tag in sys_tags()}
@@ -746,7 +690,6 @@ def main(argv=None):
                 page_cache=page_cache,
                 metadata_cache=metadata_cache,
                 target_tags=target_tags,
-                fallback_index=fallback_index,
             ),
             root_candidate_versions,
         )
@@ -767,14 +710,9 @@ def main(argv=None):
 
     root_artifact = root_artifacts[0]
     root_artifact["_index_url"] = index_url
-    root_deps, root_metadata_error = _read_metadata_with_fallback(
+    root_deps, root_metadata_error = _read_metadata_strict(
         root_artifact,
-        package,
-        root_version,
         metadata_cache,
-        page_cache,
-        target_tags,
-        fallback_index,
     )
     preferred_error = _preferred_dependency_error(root_deps, preferred_versions)
     root_name = package.lower().replace("_", "-")
@@ -784,7 +722,6 @@ def main(argv=None):
         root_artifact=root_artifact,
         root_deps=root_deps,
         index_url=index_url,
-        fallback_index=fallback_index,
         preferred_versions=preferred_versions,
         page_cache=page_cache,
         metadata_cache=metadata_cache,

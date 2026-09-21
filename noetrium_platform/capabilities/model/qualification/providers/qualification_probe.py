@@ -348,7 +348,6 @@ class LocalDeploymentCapabilityProbe(DeploymentCapabilityProbePort):
             index_url,
             available_versions,
             timeout,
-            fallback_index=PYPI_SIMPLE,
             preferred_versions=preferred_versions,
             root_version=root_version,
             root_candidates=root_candidates,

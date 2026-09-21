@@ -1,13 +1,11 @@
 """Portable repository submission controller.
 
-The controller prefers the repository configured remote, but can recover from
-missing SSH clients by switching to HTTPS or producing a bundle for transfer.
-It deliberately keeps transport concerns outside research code.
+The controller uses the repository configured remote exactly as declared.
+Transport failures fail closed; bundles are created only when explicitly requested.
 """
 from __future__ import annotations
 
 import argparse
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -26,13 +24,6 @@ def git(*args: str, check: bool = True):
 def remote_url() -> str:
     return git("remote", "get-url", "origin").stdout.strip()
 
-
-def normalize_https(url: str) -> str | None:
-    if url.startswith("git@github.com:"):
-        return "https://github.com/" + url.split(":", 1)[1]
-    if url.startswith("ssh://git@github.com/"):
-        return "https://github.com/" + url.split("github.com/", 1)[1]
-    return None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -54,20 +45,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"BUNDLE={bundle}")
             return 0
 
-        ssh_missing = shutil.which("ssh") is None and url.startswith(("git@", "ssh://"))
-        if ssh_missing:
-            https = normalize_https(url)
-            if https:
-                git("remote", "set-url", "origin", https)
-                url = https
-                print("TRANSPORT=HTTPS_FALLBACK")
-
         result = git("push", "origin", args.branch, check=False)
         if result.returncode != 0:
-            bundle = ROOT / "release_submission.bundle"
-            git("bundle", "create", str(bundle), "--all")
-            print("PUSH_FAILED_BUNDLE_CREATED")
-            print(f"BUNDLE={bundle}")
+            print("PUSH_FAILED")
             print(result.stderr.strip())
             return 2
         print("SUBMIT_OK")

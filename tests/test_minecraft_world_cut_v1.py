@@ -129,28 +129,28 @@ def test_reflink_copier_requires_reflink_and_never_silently_falls_back(tmp_path)
     assert "--reflink=auto" not in calls[0][0]
 
 
-def test_reflink_copier_uses_only_explicit_fallback_and_reports_capability_failure(tmp_path) -> None:
+def test_reflink_copier_capability_failure_is_fail_closed(tmp_path) -> None:
     source = tmp_path / "source"
     source.mkdir()
     (source / "world.dat").write_bytes(b"world")
-    reasons: list[str] = []
 
     def runner(command, **kwargs):
         del kwargs
+        destination = Path(command[-1])
+        destination.mkdir(parents=True)
+        (destination / "partial.dat").write_bytes(b"partial")
         return subprocess.CompletedProcess(command, 1, "", "Operation not supported")
 
     copier = ReflinkMinecraftWorldCopier(
         cp_executable="cp",
         runner=runner,
         platform_name="posix",
-        fallback_copier=FilesystemMinecraftWorldCopier(),
-        fallback_reporter=reasons.append,
     )
     destination = tmp_path / "destination"
-    copier.copy(source, destination)
+    with pytest.raises(MinecraftWorldCutError, match="REFLINK_COPY_FAILED"):
+        copier.copy(source, destination)
 
-    assert (destination / "world.dat").read_bytes() == b"world"
-    assert reasons == ["Operation not supported"]
+    assert not destination.exists()
 
 
 def test_reflink_copier_rejects_non_posix_target_explicitly(tmp_path) -> None:

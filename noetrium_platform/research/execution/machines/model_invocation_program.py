@@ -2,7 +2,7 @@
 
 Model identity, qualification, request construction, endpoint routing and raw
 provider I/O remain owned by the model subsystem. This module owns only
-paper-variable invocation semantics: admitted member order, fallback/fanout,
+paper-variable invocation semantics: admitted member order and explicit fanout,
 failure continuation and response selection.
 
 Each provider attempt is one Machine transition. Large responses are persisted
@@ -50,7 +50,6 @@ from .runtime_module import RuntimeModule, RuntimeModuleBuilder, RuntimeProgramC
 
 class ModelInvocationMode(StrEnum):
     SINGLE = "single"
-    FALLBACK = "fallback"
     PANEL = "panel"
 
 
@@ -108,16 +107,17 @@ class ModelInvocationProgram:
             raise ValueError("model invocation minimum_successes must be positive")
         if self.minimum_successes > len(self.candidates):
             raise ValueError("model invocation minimum_successes exceeds candidates")
-        if self.mode is not ModelInvocationMode.PANEL and self.minimum_successes != 1:
-            raise ValueError(
-                "minimum_successes is only configurable for panel invocation"
-            )
         if self.mode is ModelInvocationMode.PANEL:
+            if self.minimum_successes != len(self.candidates):
+                raise ValueError("panel invocation is fail-closed and requires every candidate to succeed")
             if type(self.selector) is not str or not self.selector.strip():
                 raise ValueError("panel model invocation requires selector")
             object.__setattr__(self, "selector", self.selector.strip())
-        elif self.selector is not None:
-            raise ValueError("single/fallback invocation must not declare selector")
+        else:
+            if self.minimum_successes != 1:
+                raise ValueError("single invocation requires minimum_successes=1")
+            if self.selector is not None:
+                raise ValueError("single invocation must not declare selector")
 
         object.__setattr__(
             self,
@@ -650,28 +650,9 @@ def _attempt(
         row["failure_type"] = failure_type
         row["failure_digest"] = failure_digest
         rows.append(row)
-        has_more = attempt_index < len(binding.program.candidates)
-        prior_successes = len(_successful_responses(binding, rows[:-1]))
-        if binding.program.mode is ModelInvocationMode.PANEL:
-            if has_more:
-                can_continue = True
-                status = None
-                next_node = "attempt"
-            elif prior_successes >= binding.program.minimum_successes:
-                can_continue = True
-                status = None
-                next_node = "select"
-            else:
-                can_continue = False
-                status = MachineStatus.FAILED
-                next_node = None
-        else:
-            can_continue = (
-                binding.program.mode is ModelInvocationMode.FALLBACK
-                and has_more
-            )
-            status = None if can_continue else MachineStatus.FAILED
-            next_node = "attempt" if can_continue else None
+        can_continue = False
+        status = MachineStatus.FAILED
+        next_node = None
         return ProgramNodeResult(
             value={
                 "attempt_index": attempt_index,
@@ -715,10 +696,7 @@ def _attempt(
     row["response_ref"] = _blob_ref_payload(ref)
     rows.append(row)
 
-    if binding.program.mode in {
-        ModelInvocationMode.SINGLE,
-        ModelInvocationMode.FALLBACK,
-    }:
+    if binding.program.mode is ModelInvocationMode.SINGLE:
         next_node = "select"
     else:
         next_node = (
@@ -775,10 +753,7 @@ def _select(
             },),
         )
 
-    if binding.program.mode in {
-        ModelInvocationMode.SINGLE,
-        ModelInvocationMode.FALLBACK,
-    }:
+    if binding.program.mode is ModelInvocationMode.SINGLE:
         selected = responses[0]
     else:
         if binding.selectors is None or binding.program.selector is None:
@@ -998,7 +973,7 @@ class ModelInvocationRuntime:
         if execution.status is MachineStatus.FAILED:
             if binding.last_error is not None:
                 raise RuntimeError(
-                    "model invocation exhausted admitted candidates"
+                    "model invocation failed closed after provider failure"
                 ) from binding.last_error
             raise RuntimeError(
                 "model invocation RuntimeProgram entered FAILED state"

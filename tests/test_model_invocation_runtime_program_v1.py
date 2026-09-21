@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+
+import pytest
 
 from noetrium_platform.capabilities.model.api import (
     ProjectModelBinding,
@@ -169,47 +172,49 @@ def _machine_id(
     return f"runtime-model:{run_id}:{digest[:24]}"
 
 
-def test_fallback_attempts_are_separate_machine_transitions(
+def test_panel_fails_closed_on_first_provider_failure(
     tmp_path: Path,
 ) -> None:
-    primary = _binding("primary", "3")
-    fallback = _binding("fallback", "b")
-    admitted = ProjectModelBindingSet((primary, fallback))
-    primary_client = _Client(primary, "unused", fail=True)
-    fallback_client = _Client(fallback, "fallback answer")
+    first = _binding("first", "3")
+    second = _binding("second", "b")
+    admitted = ProjectModelBindingSet((first, second))
+    first_client = _Client(first, "unused", fail=True)
+    second_client = _Client(second, "must-not-run")
+    selectors = ModelResponseSelectorRegistry()
+    selectors.register(
+        "first",
+        lambda request: request.responses[0],
+        implementation_digest="e" * 64,
+    )
     program = ModelInvocationProgram(
-        "paper.model-fallback",
+        "paper.model-panel-fail-closed",
         "1",
-        ModelInvocationMode.FALLBACK,
+        ModelInvocationMode.PANEL,
         (
-            ModelInvocationCandidate(primary.digest(), "primary"),
-            ModelInvocationCandidate(fallback.digest(), "provider-failure"),
+            ModelInvocationCandidate(first.digest(), "panel-member"),
+            ModelInvocationCandidate(second.digest(), "panel-member"),
         ),
+        selector="first",
+        minimum_successes=2,
     )
     journal = InMemoryMachineJournal()
-    run_id = "run:model-fallback"
+    run_id = "run:model-panel-fail-closed"
     invocation_id = "decision:model"
     input_digest = canonical_digest({"semantic_input": "same task"})
-    outcome = _runtime(tmp_path, program, journal).invoke(
-        run_id=run_id,
-        invocation_id=invocation_id,
-        binding_set=admitted,
-        clients=(primary_client, fallback_client),
-        input_digest=input_digest,
-        request_factory=_request_factory(tmp_path, run_id=run_id),
-    )
 
-    assert outcome.selected.text == "fallback answer"
-    assert outcome.failed_binding_digests == (primary.digest(),)
-    assert primary_client.calls == 1
-    assert fallback_client.calls == 1
-    assert outcome.selected.selection_receipt is not None
-    assert outcome.selected.selection_receipt.attempt_index == 2
-    assert (
-        outcome.selected.selection_receipt.previous_selection_receipt_digest
-        is not None
-    )
+    with pytest.raises(RuntimeError, match="failed closed"):
+        _runtime(tmp_path, program, journal).invoke(
+            run_id=run_id,
+            invocation_id=invocation_id,
+            binding_set=admitted,
+            clients=(first_client, second_client),
+            input_digest=input_digest,
+            request_factory=_request_factory(tmp_path, run_id=run_id),
+            selectors=selectors,
+        )
 
+    assert first_client.calls == 1
+    assert second_client.calls == 0
     machine_id = _machine_id(
         run_id=run_id,
         invocation_id=invocation_id,
@@ -217,17 +222,15 @@ def test_fallback_attempts_are_separate_machine_transitions(
         program=program,
         binding_set=admitted,
     )
-    commits = journal.commits(machine_id)
-    assert len(commits) == 4
     event_types = tuple(
         event["type"]
-        for commit in commits
+        for commit in journal.commits(machine_id)
         for event in commit.event_payloads
-        if isinstance(event, dict) and "type" in event
+        if isinstance(event, Mapping) and "type" in event
     )
     assert "runtime_model_attempt_failed" in event_types
-    assert "runtime_model_attempt_completed" in event_types
-    assert "runtime_model_invocation_selected" in event_types
+    assert "runtime_model_attempt_completed" not in event_types
+    assert "runtime_model_invocation_selected" not in event_types
 
 
 def test_panel_selector_is_programmable_runtime_semantics(
@@ -277,49 +280,21 @@ def test_panel_selector_is_programmable_runtime_semantics(
     assert tuple(client.calls for client in clients) == (1, 1)
 
 
-def test_panel_can_select_after_final_member_failure_when_minimum_is_met(
-    tmp_path: Path,
-) -> None:
+def test_panel_rejects_partial_success_threshold() -> None:
     good = _binding("good", "3")
     failing = _binding("failing", "b")
-    admitted = ProjectModelBindingSet((good, failing))
-    clients = (
-        _Client(good, "usable"),
-        _Client(failing, "unused", fail=True),
-    )
-    selectors = ModelResponseSelectorRegistry()
-    selectors.register(
-        "first",
-        lambda request: request.responses[0],
-        implementation_digest="d" * 64,
-    )
-    program = ModelInvocationProgram(
-        "paper.partial-panel",
-        "1",
-        ModelInvocationMode.PANEL,
-        (
-            ModelInvocationCandidate(good.digest(), "panel-member"),
-            ModelInvocationCandidate(failing.digest(), "panel-member"),
-        ),
-        selector="first",
-        minimum_successes=1,
-    )
-    run_id = "run:partial-panel"
-    outcome = _runtime(
-        tmp_path,
-        program,
-        InMemoryMachineJournal(),
-    ).invoke(
-        run_id=run_id,
-        invocation_id="panel:partial",
-        binding_set=admitted,
-        clients=clients,
-        input_digest=canonical_digest({"question": "partial"}),
-        request_factory=_request_factory(tmp_path, run_id=run_id),
-        selectors=selectors,
-    )
-    assert outcome.selected.text == "usable"
-    assert outcome.failed_binding_digests == (failing.digest(),)
+    with pytest.raises(ValueError, match="fail-closed"):
+        ModelInvocationProgram(
+            "paper.partial-panel",
+            "1",
+            ModelInvocationMode.PANEL,
+            (
+                ModelInvocationCandidate(good.digest(), "panel-member"),
+                ModelInvocationCandidate(failing.digest(), "panel-member"),
+            ),
+            selector="first",
+            minimum_successes=1,
+        )
 
 
 def test_completed_model_invocation_reopens_without_provider_reexecution(

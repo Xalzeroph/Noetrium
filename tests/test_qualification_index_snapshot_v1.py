@@ -27,7 +27,6 @@ def test_snapshot_probe_executes_standalone_target_worker() -> None:
         "https://pypi.org/simple",
         ("1.2.3",),
         3.0,
-        fallback_index="https://pypi.org/simple",
         root_candidates=("1.2.3",),
     )
 
