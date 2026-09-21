@@ -57,6 +57,7 @@ def test_qualified_project_model_binding_rejects_invalid_timeout_before_composit
             profile,
             closure_path=tmp_path / "closure.json",
             request_root=tmp_path / "requests",
+            tokenization_provider=FixedModelRequestTokenizationProvider(),
             timeout_s=0,
         )
     except ValueError as exc:

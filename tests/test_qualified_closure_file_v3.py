@@ -50,6 +50,7 @@ class QualifiedClosureFileTests(unittest.TestCase):
             "bf16",
             None,
             8192,
+            "tokenizer-revision",
         )
         stack = ModelStackSpec(
             identity,

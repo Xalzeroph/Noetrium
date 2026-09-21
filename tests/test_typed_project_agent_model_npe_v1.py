@@ -398,7 +398,7 @@ def test_model_doctor_reports_capability_and_context_failures_without_endpoint_m
     )
     assert missing.diagnose(_requirement())[0].code is ModelBindingDiagnosticCode.CAPABILITY_MISSING
     short = _provider(_qualified_binding(model=ImmutableModelIdentity(
-        "short", "short", "rev", "engine", "1", "bf16", None, 1024, None
+        "short", "short", "rev", "engine", "1", "bf16", None, 1024, "tok-1"
     )))
     assert short.diagnose(_requirement())[0].code is ModelBindingDiagnosticCode.CONTEXT_INSUFFICIENT
 
