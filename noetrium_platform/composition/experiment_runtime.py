@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntentJournal
 from noetrium_platform.foundation.kernel.kernel import (
+    DirectoryMachineJournal,
+    DirectoryMachineSnapshotStore,
     InMemoryMachineJournal,
     MachineJournalPort,
     MachineSnapshotStorePort,
@@ -22,6 +26,7 @@ from noetrium_platform.research.execution.participants import (
     ParticipantSessionLifecycle,
 )
 from noetrium_platform.research.experimentation.checkpoint.api.contracts import RunCheckpointStore
+from noetrium_platform.research.experimentation.checkpoint.composition import build_project_run_checkpoint_store
 from noetrium_platform.research.experimentation.checkpoint.runtime.coordination import RunCheckpointCoordinator
 from noetrium_platform.research.experimentation.run.runtime.decision_runtime import DecisionCycleRuntime
 from noetrium_platform.research.experimentation.run.identity.api import RunIdentityProvider
@@ -44,12 +49,18 @@ def build_experiment_runtime_components(
     checkpoint_store: RunCheckpointStore | None = None,
     machine_journal: MachineJournalPort | None = None,
     machine_snapshot_store: MachineSnapshotStorePort | None = None,
+    state_root: str | Path | None = None,
 ) -> ExperimentRuntimeComponents:
-    shared_machine_journal = (
-        machine_journal
-        if machine_journal is not None
-        else InMemoryMachineJournal()
-    )
+    if state_root is not None:
+        root = Path(state_root)
+        root.mkdir(parents=True, exist_ok=True)
+        if machine_journal is None:
+            machine_journal = DirectoryMachineJournal(root / "machine-journal")
+        if machine_snapshot_store is None:
+            machine_snapshot_store = DirectoryMachineSnapshotStore(root / "machine-snapshots")
+        if checkpoint_store is None:
+            checkpoint_store = build_project_run_checkpoint_store(root / "run-checkpoints")
+    shared_machine_journal = machine_journal if machine_journal is not None else InMemoryMachineJournal()
     dispatcher = KernelOperationDispatcher(operation_executor or OperationExecutor(), caller=WORKFLOW_RUNTIME_IDENTITY)
     adapters = ParticipantLifecycleAdapterRegistry(participant_adapters)
     participant_resolution = ParticipantResolutionOperations(dispatcher, adapters)
@@ -65,11 +76,7 @@ def build_experiment_runtime_components(
         machine_journal=shared_machine_journal,
         machine_snapshot_store=machine_snapshot_store,
     )
-    checkpoint = (
-        RunCheckpointCoordinator(dispatcher, checkpoint_store, participant_checkpoints)
-        if checkpoint_store is not None
-        else None
-    )
+    checkpoint = RunCheckpointCoordinator(dispatcher, checkpoint_store, participant_checkpoints) if checkpoint_store is not None else None
     return ExperimentRuntimeComponents(
         trial_protocol_identity(trial_protocol),
         DecisionCycleRuntime(
@@ -103,6 +110,7 @@ def build_experiment_runtime(
     checkpoint_store: RunCheckpointStore | None = None,
     machine_journal: MachineJournalPort | None = None,
     machine_snapshot_store: MachineSnapshotStorePort | None = None,
+    state_root: str | Path | None = None,
 ) -> ExperimentRuntime:
     components = build_experiment_runtime_components(
         participant_adapters=participant_adapters,
@@ -114,6 +122,7 @@ def build_experiment_runtime(
         checkpoint_store=checkpoint_store,
         machine_journal=machine_journal,
         machine_snapshot_store=machine_snapshot_store,
+        state_root=state_root,
     )
     return ExperimentRuntime(
         components,
