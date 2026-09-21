@@ -62,6 +62,10 @@ class AgentTurnMachineFactSink(AgentTurnFactSink):
                 ),
                 command_id=f"{turn_id}:start",
             )
+            self._machine.step(
+                {"action": "announce_start"},
+                command_id=f"{turn_id}:announce-start",
+            )
             self._count = 0
             self._head: str | None = None
             self._last_kind: str | None = None

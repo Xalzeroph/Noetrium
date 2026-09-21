@@ -146,7 +146,12 @@ class AgentTurnJournalProjection:
                     finish_head = event_head
                     continue
 
-                raise ValueError(f"unsupported agent turn journal event type: {event_type!r}")
+                if isinstance(event_type, str) and event_type.startswith("agent_turn_"):
+                    raise ValueError(f"unsupported agent turn journal event type: {event_type!r}")
+                # The Kernel Journal is intentionally shared by generic Machine
+                # events and domain projections.  Agent Turn consumes only its
+                # own event namespace and must not reinterpret unrelated facts.
+                continue
 
         if not started:
             raise ValueError("agent turn journal has no start event")

@@ -58,8 +58,8 @@ def _optional_digest(value: object, field: str) -> str | None:
     return text
 
 
-def _fact(value: object) -> dict[str, object]:
-    if not isinstance(value, dict) or frozenset(value) != _FACT_FIELDS:
+def _fact(value: object) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or frozenset(value) != _FACT_FIELDS:
         raise ValueError("participant turn fact fields mismatch")
     if value["schema_version"] != PARTICIPANT_TURN_FACT_WIRE_SCHEMA:
         raise ValueError("unsupported participant turn fact schema")
@@ -76,7 +76,7 @@ def _fact(value: object) -> dict[str, object]:
         item = value[field]
         if item is not None:
             _text(item, f"participant turn fact {field}")
-    if not isinstance(value["payload"], dict):
+    if not isinstance(value["payload"], Mapping):
         raise ValueError("participant turn fact payload must be an object")
     refs = value["artifact_refs"]
     if isinstance(refs, (str, bytes, bytearray)) or not isinstance(refs, Sequence):
@@ -125,9 +125,24 @@ def participant_turn_handlers() -> ProgramHandlerRegistry:
         if request.data.get("status") != "active":
             raise ValueError("participant turn requires active status")
 
+        if action == "announce_start":
+            if request.data.get("announced", False):
+                raise ValueError("participant turn start was already announced")
+            return ProgramNodeResult(
+                value={"turn_id": turn_id, "session_id": session_id},
+                state_update={"announced": True},
+                status=MachineStatus.RUNNABLE,
+                events=({
+                    "type": "agent_turn_started",
+                    "turn_id": turn_id,
+                    "session_id": session_id,
+                    "goal_digest": request.data.get("goal_digest"),
+                },),
+            )
+
         if action == "record_fact":
             fact_value = payload.get("fact")
-            if not isinstance(fact_value, dict):
+            if not isinstance(fact_value, Mapping):
                 raise TypeError("record_fact requires a fact object")
             fact = _fact(fact_value)
             if fact["session_id"] != session_id:
@@ -212,6 +227,7 @@ def participant_turn_initial_data(*, turn_id: str, session_id: str,
         "session_id": _text(session_id, "session_id"),
         "status": "active",
         "goal_digest": _optional_digest(goal_digest, "goal_digest"),
+        "announced": False,
         "fact_count": 0,
         "fact_head_digest": None,
         "last_fact_kind": None,
