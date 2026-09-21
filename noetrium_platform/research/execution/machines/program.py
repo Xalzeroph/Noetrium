@@ -332,11 +332,13 @@ def program_handler_binding_digest(
     })
 
 
-def _core_program_handler_digest(operation: str) -> str:
+def _core_program_handler_digest(operation: str, *, revision: int = 1) -> str:
+    if type(revision) is not int or revision < 1:
+        raise ValueError("core program handler revision must be positive")
     return canonical_digest({
         "handler_family": "core-program",
         "operation": operation,
-        "implementation_revision": 1,
+        "implementation_revision": revision,
     })
 
 
@@ -375,7 +377,13 @@ def core_program_handlers() -> ProgramHandlerRegistry:
 
     def finish(request: ProgramNodeRequest) -> ProgramNodeResult:
         config = _mapping(request.node.configuration, "return configuration")
-        return ProgramNodeResult(value=config.get("value", request.payload), status=MachineStatus.COMPLETED)
+        if "value" in config:
+            value = config["value"]
+        elif request.payload is not None:
+            value = request.payload
+        else:
+            value = request.previous_value
+        return ProgramNodeResult(value=value, status=MachineStatus.COMPLETED)
 
     registry.register(
         "core.assign",
@@ -400,7 +408,7 @@ def core_program_handlers() -> ProgramHandlerRegistry:
     registry.register(
         "core.return",
         finish,
-        implementation_digest=_core_program_handler_digest("core.return"),
+        implementation_digest=_core_program_handler_digest("core.return", revision=2),
     )
     return registry
 
