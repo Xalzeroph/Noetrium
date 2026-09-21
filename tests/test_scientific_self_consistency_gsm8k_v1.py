@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    ModelEndpointDispatchResult,
+    ModelEndpointRequest,
+    ModelEndpointResponse,
+    ModelEndpointPoolSnapshot,
+)
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentRequest,
     MethodAgentResult,
@@ -11,11 +17,17 @@ from noetrium_platform.research.execution.workflow.api import (
 )
 from noetrium_platform.research.execution.workflow.providers import DirectoryEventMethodEvidence
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
-from research.benchmarks.gsm8k import GSM8KTaskRecord, build_gsm8k_task_set
+from research.benchmarks.gsm8k import (
+    GSM8KMaterializedTask,
+    GSM8KTaskRecord,
+    build_gsm8k_task_set,
+)
 from research.reproductions.self_consistency_gsm8k import (
     SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM,
     build_self_consistency_gsm8k_study,
     extract_gsm8k_sample_answer,
+    SelfConsistencyGSM8KModelBinding,
+    run_self_consistency_gsm8k_episode,
     self_consistency_gsm8k_initial_state,
 )
 
@@ -82,3 +94,66 @@ def test_self_consistency_study_freezes_paper_sampling_repetitions() -> None:
     assert {
         row.measurement_id for row in study.measurement_protocol.definitions
     } == {"model_call_count", "selected_vote_count", "task_success"}
+
+
+class _DispatchPool:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def complete(self, request, body):
+        index = self.calls
+        self.calls += 1
+        physical = ModelEndpointRequest(
+            request=request,
+            deployment_id="test-replica",
+            deployment_generation="d" * 64,
+            body=body,
+        )
+        response = ModelEndpointResponse(
+            request_id=request.request_id,
+            deployment_id="test-replica",
+            text=f"Reasoning path {index}. The answer is 9.",
+            finish_reason="stop",
+            input_tokens=10,
+            output_tokens=5,
+        )
+        return ModelEndpointDispatchResult(
+            physical, response, "e" * 64, index + 1
+        )
+
+    def snapshot(self):
+        return ModelEndpointPoolSnapshot("e" * 64, self.calls, ())
+
+
+def test_episode_helper_executes_full_40_path_runtime_and_evidence(tmp_path) -> None:
+    task = GSM8KMaterializedTask(
+        GSM8KTaskRecord(
+            "test", 0, "1" * 64, "2" * 64, "3" * 64
+        ),
+        "Janet's ducks lay 16 eggs...",
+        "reasoning #### 9",
+        "9",
+    )
+    pool = _DispatchPool()
+    binding = SelfConsistencyGSM8KModelBinding(
+        served_model_name="qwen",
+        model=ImmutableModelIdentity(
+            "test", "test/model", "a" * 64, "vllm", "0.8.5",
+            "bfloat16", None, 8192, "b" * 64,
+        ),
+        prompt_generation_id="cot.gsm8k.neurips2022.appendix-table20",
+    )
+    episode = run_self_consistency_gsm8k_episode(
+        task,
+        endpoint_pool=pool,
+        binding=binding,
+        run_id="episode-helper-test",
+        state_root=tmp_path / "machine",
+        evidence=DirectoryEventMethodEvidence(tmp_path / "evidence"),
+        runtime_binding_digest="f" * 64,
+    )
+    assert pool.calls == 40
+    assert len(episode.invocations) == 40
+    assert episode.method_result.status is MethodRunStatus.SUCCEEDED
+    assert episode.method_result.evidence_status is MethodEvidenceStatus.COMPLETE
+    assert episode.method_result.value["selected_answer"] == "9"

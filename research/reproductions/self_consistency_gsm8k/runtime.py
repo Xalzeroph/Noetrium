@@ -141,7 +141,7 @@ class PooledSelfConsistencyReasoner:
             raise ValueError("Self-Consistency prompt authority drift")
         if type(sample_index) is not int or sample_index < 0:
             raise ValueError("Self-Consistency sample_index is invalid")
-        if not isinstance(sampling, dict):
+        if not isinstance(sampling, Mapping):
             raise TypeError("Self-Consistency sampling view must be a mapping")
         temperature = sampling.get("temperature")
         top_k = sampling.get("top_k")
@@ -258,8 +258,8 @@ def run_self_consistency_gsm8k_episode(
     execution = ExecutionContext(
         run_id,
         f"trace:{run_id}",
-        f"span:{task.task_id}",
-        task_id=task.task_id,
+        f"span:{task.record.task_id}",
+        task_id=task.record.task_id,
     )
     runtime = bind_machine_method_runtime(
         SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM,
@@ -270,17 +270,17 @@ def run_self_consistency_gsm8k_episode(
             runtime_binding_digest=runtime_binding_digest,
         ),
         state_root=Path(state_root),
-        machine_id=f"method:{run_id}:{task.task_id}",
+        machine_id=f"method:{run_id}:{task.record.task_id}",
     )
     result = UniversalMethodMachine(max_steps=128).run(
         SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM,
         runtime=runtime,
         input_value={
-            "task_id": task.task_id,
+            "task_id": task.record.task_id,
             "question_digest": task.record.question_digest,
         },
         initial_state=self_consistency_gsm8k_initial_state(
-            task_id=task.task_id,
+            task_id=task.record.task_id,
             question=task.question,
         ),
     )
