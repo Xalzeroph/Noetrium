@@ -114,12 +114,15 @@ def test_dynamic_agent_selects_from_frozen_participant_closure() -> None:
 
 
 def test_dynamic_agent_rejects_target_outside_frozen_closure() -> None:
-    with pytest.raises(ValueError, match="undeclared participant"):
-        UniversalMethodMachine().run(
-            _program(("a", "b")),
-            runtime=MethodRuntimeContext(_context(), agent_loop=_AgentLoop()),
-            initial_state={"speaker": "c", "count": 0},
-        )
+    loop = _AgentLoop()
+    result = UniversalMethodMachine().run(
+        _program(("a", "b")),
+        runtime=MethodRuntimeContext(_context(), agent_loop=loop),
+        initial_state={"speaker": "c", "count": 0},
+    )
+    assert result.status is MethodRunStatus.FAILED
+    assert "undeclared participant" in (result.failure or "")
+    assert loop.agent_ids == []
 
 
 def test_dynamic_agent_target_closure_changes_graph_identity() -> None:
