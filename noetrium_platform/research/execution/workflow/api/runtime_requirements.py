@@ -88,6 +88,8 @@ def analyze_method_runtime_requirements(
     ports = set(program.required_runtime_ports)
     agent_ids: set[str] = set()
     capability_ids = set(program.required_capabilities)
+    if capability_ids:
+        ports.add(MethodRuntimePort.CAPABILITIES)
     schema_required = any(
         schema != "json"
         for schema in (

@@ -57,6 +57,17 @@ def test_hidden_child_machine_requirement_is_explicit_and_fail_fast() -> None:
         requirements.require(runtime)
 
 
+def test_declared_capabilities_require_capability_port_without_capability_node() -> None:
+    program = (
+        MethodProgramBuilder(_identity("requirements.declared-capability"), entrypoint="return")
+        .return_node("return", "return", _finish)
+        .build(required_capabilities=("model.generate",))
+    )
+    requirements = analyze_method_runtime_requirements(program)
+    assert requirements.ports == (MethodRuntimePort.CAPABILITIES,)
+    assert requirements.capability_ids == ("model.generate",)
+
+
 def test_non_default_schema_requires_schema_port() -> None:
     program = (
         MethodProgramBuilder(_identity("requirements.schema"), entrypoint="return")
