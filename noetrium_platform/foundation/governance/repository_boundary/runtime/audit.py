@@ -13,12 +13,13 @@ from ..api import (
 )
 
 
-_SCHEMA = "platform-repository-boundary.v1"
+_SCHEMA = "platform-repository-boundary.v2"
 _FORBIDDEN_ROOTS = (
     "projects",
     "docs/projects",
-    "docs/research",
 )
+_CORE_PACKAGE_ROOTS = ("noetrium_platform", "noetrium", "components", "orchestration")
+_WORKSPACE_IMPORT_ROOTS = frozenset({"projects", "research", "benchmarks"})
 
 _FRAMEWORK_ENVIRONMENT_DIRS = frozenset({"api", "binding", "catalog", "category", "composition", "instance", "providers", "resolution", "runtime", "specification"})
 _BUNDLED_ENVIRONMENT_PROVIDERS = frozenset({"minecraft", "embodied", "gui", "web", "software", "text_world"})
@@ -37,25 +38,34 @@ def _audit_forbidden_roots(root: Path) -> list[RepositoryBoundaryViolation]:
 
 def _audit_core_imports(root: Path) -> list[RepositoryBoundaryViolation]:
     rows: list[RepositoryBoundaryViolation] = []
-    package_root = root / "noetrium_platform"
-    for path in package_root.rglob("*.py") if package_root.exists() else ():
-        try:
-            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        except (OSError, SyntaxError, UnicodeError) as exc:
-            rows.append(_violation("SOURCE_PARSE_FAILED", str(path.relative_to(root)), str(exc)))
-            continue
-        for node in ast.walk(tree):
-            names: tuple[str, ...] = ()
-            if isinstance(node, ast.Import):
-                names = tuple(alias.name for alias in node.names)
-            elif isinstance(node, ast.ImportFrom) and node.module:
-                names = (node.module,)
-            if any(name == "projects" or name.startswith("projects.") for name in names):
-                rows.append(_violation(
-                    "CORE_IMPORTS_DOWNSTREAM",
-                    str(path.relative_to(root)),
-                    f"line {getattr(node, 'lineno', 0)} imports downstream namespace",
-                ))
+    for package_name in _CORE_PACKAGE_ROOTS:
+        package_root = root / package_name
+        for path in package_root.rglob("*.py") if package_root.exists() else ():
+            try:
+                tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            except (OSError, SyntaxError, UnicodeError) as exc:
+                rows.append(_violation("SOURCE_PARSE_FAILED", str(path.relative_to(root)), str(exc)))
+                continue
+            for node in ast.walk(tree):
+                names: tuple[str, ...] = ()
+                if isinstance(node, ast.Import):
+                    names = tuple(alias.name for alias in node.names)
+                elif isinstance(node, ast.ImportFrom) and node.module:
+                    names = (node.module,)
+                for name in names:
+                    root_name = name.split(".", 1)[0]
+                    if root_name not in _WORKSPACE_IMPORT_ROOTS:
+                        continue
+                    code = (
+                        "CORE_IMPORTS_DOWNSTREAM"
+                        if root_name == "projects"
+                        else "CORE_IMPORTS_RESEARCH_WORKSPACE"
+                    )
+                    rows.append(_violation(
+                        code,
+                        str(path.relative_to(root)),
+                        f"line {getattr(node, 'lineno', 0)} imports workspace namespace {root_name}",
+                    ))
     return rows
 
 
@@ -111,14 +121,18 @@ def _audit_metadata(root: Path) -> list[RepositoryBoundaryViolation]:
     pyproject = root / "pyproject.toml"
     if pyproject.is_file():
         text = pyproject.read_text(encoding="utf-8")
-        if 'projects*' in text or 'projects.' in text:
-            rows.append(_violation("PACKAGE_INCLUDES_DOWNSTREAM", "pyproject.toml", "package discovery includes downstream code"))
+        for namespace in ("projects", "research", "benchmarks"):
+            if f'{namespace}*' in text or f'{namespace}.' in text:
+                code = "PACKAGE_INCLUDES_DOWNSTREAM" if namespace == "projects" else "PACKAGE_INCLUDES_RESEARCH_WORKSPACE"
+                rows.append(_violation(code, "pyproject.toml", f"package discovery includes workspace namespace {namespace}"))
 
     dockerfile = root / "deploy" / "Dockerfile"
     if dockerfile.is_file():
         text = dockerfile.read_text(encoding="utf-8").lower()
-        if "copy projects" in text:
-            rows.append(_violation("IMAGE_COPIES_DOWNSTREAM", "deploy/Dockerfile", "generic image copies downstream project source"))
+        for namespace in ("projects", "research", "benchmarks"):
+            if f"copy {namespace}" in text:
+                code = "IMAGE_COPIES_DOWNSTREAM" if namespace == "projects" else "IMAGE_COPIES_RESEARCH_WORKSPACE"
+                rows.append(_violation(code, "deploy/Dockerfile", f"generic image copies workspace namespace {namespace}"))
     return rows
 
 
@@ -131,7 +145,7 @@ def _audit_release_manifest(root: Path) -> list[RepositoryBoundaryViolation]:
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         return [_violation("RELEASE_MANIFEST_INVALID", "RELEASE_MANIFEST.json", str(exc))]
     text = json.dumps(payload, sort_keys=True)
-    forbidden = ("projects/", "docs/projects/", "docs/research/")
+    forbidden = ("projects/", "research/", "benchmarks/", "docs/projects/", "docs/research/")
     if any(token in text for token in forbidden):
         return [_violation("RELEASE_INCLUDES_DOWNSTREAM", "RELEASE_MANIFEST.json", "release inventory contains downstream-owned paths")]
     return []

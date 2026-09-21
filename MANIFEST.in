@@ -16,3 +16,4 @@ exclude scripts/sync_publication_priority.py
 exclude scripts/sync_research_pressure.py
 exclude scripts/sync_research_program.py
 exclude scripts/sync_lineage_status.py
+exclude scripts/run_reproduction_fleet.py

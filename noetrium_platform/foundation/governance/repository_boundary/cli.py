@@ -11,8 +11,15 @@ from .runtime import audit_repository_boundary
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Audit the reusable upstream repository boundary.")
     parser.add_argument("root", nargs="?", default=".")
+    parser.add_argument(
+        "--skip-release-manifest",
+        action="store_true",
+        help="audit live source boundaries without consulting a checked-in derived release manifest",
+    )
     args = parser.parse_args(argv)
-    report = audit_repository_boundary(Path(args.root))
+    report = audit_repository_boundary(
+        Path(args.root), include_release_manifest=not args.skip_release_manifest
+    )
     print(json.dumps({
         "schema": report.schema,
         "passed": report.passed,

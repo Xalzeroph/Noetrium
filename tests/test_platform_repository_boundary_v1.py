@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.release_distribution import _project_platform_source
+
 from noetrium_platform.foundation.governance.repository_boundary.api import DownstreamImportKind
 from noetrium_platform.foundation.governance.repository_boundary.runtime import (
     audit_downstream_project_imports,
@@ -40,19 +42,67 @@ def test_downstream_directory_and_core_import_fail_closed(tmp_path: Path) -> Non
     assert "CORE_IMPORTS_DOWNSTREAM" in codes
 
 
+def test_core_cannot_import_research_workspace(tmp_path: Path) -> None:
+    root = _minimal_root(tmp_path)
+    (root / "noetrium_platform" / "core" / "bad_research.py").write_text(
+        "from research.reproductions.demo import method\n", encoding="utf-8"
+    )
+    (root / "noetrium" / "api").mkdir(parents=True)
+    (root / "noetrium" / "api" / "bad_benchmark.py").write_text(
+        "import benchmarks.private_cut\n", encoding="utf-8"
+    )
+    report = audit_repository_boundary(root)
+    violations = [row for row in report.violations if row.code == "CORE_IMPORTS_RESEARCH_WORKSPACE"]
+    assert len(violations) == 2
+    assert {row.path for row in violations} == {
+        "noetrium_platform/core/bad_research.py",
+        "noetrium/api/bad_benchmark.py",
+    }
+
+
+def test_platform_source_projection_physically_removes_paper_workspace(tmp_path: Path) -> None:
+    root = tmp_path / "source"
+    (root / "research" / "reproductions" / "paper").mkdir(parents=True)
+    (root / "research" / "reproductions" / "paper" / "program.py").write_text("X = 1\n")
+    (root / "benchmarks" / "paper").mkdir(parents=True)
+    (root / "benchmarks" / "paper" / "cut.py").write_text("X = 1\n")
+    (root / "docs" / "research").mkdir(parents=True)
+    (root / "docs" / "research" / "paper.md").write_text("paper\n")
+    (root / "noetrium_platform" / "research").mkdir(parents=True)
+    (root / "noetrium_platform" / "research" / "__init__.py").write_text("PLATFORM = True\n")
+    (root / "noetrium" ).mkdir(parents=True)
+    (root / "noetrium" / "__init__.py").write_text("CORE = True\n")
+
+    receipt = _project_platform_source(root)
+
+    assert receipt["workspace_material_physically_removed"] is True
+    assert receipt["removed_file_count"] == 3
+    assert not (root / "research").exists()
+    assert not (root / "benchmarks").exists()
+    assert not (root / "docs" / "research").exists()
+    assert (root / "noetrium_platform" / "research" / "__init__.py").is_file()
+    assert (root / "noetrium" / "__init__.py").is_file()
+
+
 def test_packaging_and_image_cannot_embed_downstream(tmp_path: Path) -> None:
     root = _minimal_root(tmp_path)
-    (root / "pyproject.toml").write_text('include = ["noetrium_platform*", "projects*"]\n', encoding="utf-8")
-    (root / "deploy" / "Dockerfile").write_text("COPY projects ./projects\n", encoding="utf-8")
+    (root / "pyproject.toml").write_text(
+        'include = ["noetrium_platform*", "projects*", "research*"]\n', encoding="utf-8"
+    )
+    (root / "deploy" / "Dockerfile").write_text(
+        "COPY projects ./projects\nCOPY research ./research\n", encoding="utf-8"
+    )
     codes = {row.code for row in audit_repository_boundary(root).violations}
     assert "PACKAGE_INCLUDES_DOWNSTREAM" in codes
+    assert "PACKAGE_INCLUDES_RESEARCH_WORKSPACE" in codes
     assert "IMAGE_COPIES_DOWNSTREAM" in codes
+    assert "IMAGE_COPIES_RESEARCH_WORKSPACE" in codes
 
 
 def test_release_manifest_cannot_publish_downstream_paths(tmp_path: Path) -> None:
     root = _minimal_root(tmp_path)
     (root / "RELEASE_MANIFEST.json").write_text(
-        json.dumps({"files": [{"path": "projects/demo/app.py"}]}), encoding="utf-8"
+        json.dumps({"files": [{"path": "research/reproductions/demo/program.py"}]}), encoding="utf-8"
     )
     report = audit_repository_boundary(root)
     assert any(row.code == "RELEASE_INCLUDES_DOWNSTREAM" for row in report.violations)

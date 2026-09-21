@@ -49,6 +49,7 @@ _WORKSPACE_ONLY_EXACT = frozenset({
     "scripts/sync_research_pressure.py",
     "scripts/sync_research_program.py",
     "scripts/sync_lineage_status.py",
+    "scripts/run_reproduction_fleet.py",
 })
 _WORKSPACE_ONLY_TEST_PREFIXES = (
     "tests/test_scientific_",
@@ -66,6 +67,37 @@ def _workspace_only_path(relative: str) -> bool:
         or normalized in _WORKSPACE_ONLY_EXACT
         or any(normalized.startswith(prefix) for prefix in _WORKSPACE_ONLY_TEST_PREFIXES)
     )
+
+
+def _project_platform_source(source_root: Path) -> dict[str, object]:
+    """Physically remove research-workspace-only material before packaging.
+
+    The repository may carry an internal paper-reproduction workspace for platform
+    stress testing, but formal platform artifacts are built from a source projection
+    in which that workspace does not exist.  This makes release independence a
+    filesystem fact rather than a setuptools convention.
+    """
+
+    removed: list[str] = []
+    files = tuple(sorted((path for path in source_root.rglob("*") if path.is_file()), key=lambda row: row.as_posix()))
+    for path in files:
+        relative = path.relative_to(source_root).as_posix()
+        if not _workspace_only_path(relative):
+            continue
+        removed.append(relative)
+        path.unlink()
+    for path in sorted((row for row in source_root.rglob("*") if row.is_dir()), key=lambda row: len(row.parts), reverse=True):
+        try:
+            path.rmdir()
+        except OSError:
+            pass
+    raw = "\n".join(removed).encode("utf-8")
+    return {
+        "schema": "noetrium.platform-source-projection.v1",
+        "workspace_material_physically_removed": True,
+        "removed_file_count": len(removed),
+        "removed_paths_sha256": hashlib.sha256(raw).hexdigest(),
+    }
 
 
 def _verify_workspace_exclusion(wheel: Path, sdist: Path) -> dict[str, object]:
@@ -313,6 +345,7 @@ def _build_distributions(
         source_materialization_sha256, source_file_count = _materialize_exact_source(
             sha, source_root
         )
+        platform_projection = _project_platform_source(source_root)
         manifest = build_release_manifest(source_root)
         argv = [sys.executable, "-m", "build", "--wheel", "--sdist", "--outdir", str(output)]
         completed = subprocess.run(argv, cwd=source_root, text=True, capture_output=True, check=False)
@@ -323,6 +356,7 @@ def _build_distributions(
             "source_materialization_schema": _MATERIALIZATION_SCHEMA,
             "source_materialization_sha256": source_materialization_sha256,
             "source_materialization_file_count": source_file_count,
+            "platform_source_projection": platform_projection,
             "returncode": completed.returncode,
             "stdout_sha256": hashlib.sha256(completed.stdout.encode()).hexdigest(),
             "stderr_sha256": hashlib.sha256(completed.stderr.encode()).hexdigest(),
