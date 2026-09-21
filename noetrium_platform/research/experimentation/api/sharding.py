@@ -330,6 +330,7 @@ def compile_experiment_shard_plan(
     shard_count: int,
     assignment_cost_units: Mapping[str, int] | None = None,
     shard_capacity_units: tuple[int, ...] | None = None,
+    worker_scope_ids: tuple[str, ...] | None = None,
 ) -> CompiledExperimentShardPlan:
     """Compile deterministic worker placement without changing batch semantics.
 
@@ -351,6 +352,26 @@ def compile_experiment_shard_plan(
         )
     compiled.plan.assert_consistent()
     shard_count = _positive_int(shard_count, "experiment shard_count")
+    if worker_scope_ids is None:
+        scope_prefix = f"experiment-shard:{compiled.batch_plan_digest[:16]}"
+        worker_scopes = tuple(
+            f"{scope_prefix}:{index}" for index in range(shard_count)
+        )
+        worker_scope_kind = "generated-worker-scope-v1"
+    else:
+        if type(worker_scope_ids) is not tuple:
+            raise TypeError("worker_scope_ids must be a tuple")
+        if len(worker_scope_ids) != shard_count:
+            raise ValueError(
+                "worker_scope_ids must contain exactly shard_count entries"
+            )
+        if any(type(value) is not str or not value.strip() for value in worker_scope_ids):
+            raise ValueError("worker_scope_ids must contain non-empty strings")
+        if len(set(worker_scope_ids)) != len(worker_scope_ids):
+            raise ValueError("worker_scope_ids must be unique")
+        worker_scopes = tuple(value.strip() for value in worker_scope_ids)
+        worker_scope_kind = "explicit-worker-scope-v1"
+
     if shard_capacity_units is None:
         capacities = tuple(1 for _ in range(shard_count))
         capacity_model_kind = "uniform-worker-capacity-v1"
@@ -400,6 +421,8 @@ def compile_experiment_shard_plan(
             ),
             "worker_capacity_kind": capacity_model_kind,
             "shard_capacity_units": capacities,
+            "worker_scope_kind": worker_scope_kind,
+            "worker_scope_ids": worker_scopes,
         }
     )
 
@@ -429,13 +452,10 @@ def compile_experiment_shard_plan(
         shard_costs[target] += assignment_cost
         assignment_to_shard[digest] = target
 
-    scope_prefix = (
-        f"experiment-shard:{compiled.batch_plan_digest[:16]}"
-    )
     shards = tuple(
         ExperimentShard(
             shard_index=index,
-            worker_scope_id=f"{scope_prefix}:{index}",
+            worker_scope_id=worker_scopes[index],
             assignment_digests=tuple(shard_rows[index]),
             estimated_cost_units=shard_costs[index],
             capacity_units=capacities[index],
