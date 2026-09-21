@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_digest
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentRequest,
     MethodAgentResult,
@@ -14,6 +14,7 @@ from research.reproductions.chain_of_thought_gsm8k import (
     build_chain_of_thought_gsm8k_study,
     chain_of_thought_gsm8k_initial_state,
 )
+from research.reproductions.chain_of_thought_gsm8k.runtime import _model_identity
 
 
 class _Reasoner:
@@ -70,3 +71,34 @@ def test_chain_of_thought_study_requires_full_gsm8k_test_cut() -> None:
     assert {
         row.measurement_id for row in study.measurement_protocol.definitions
     } == {"task_success", "model_call_count"}
+
+
+def test_substitute_document_identity_is_distinct_from_immutable_model_identity() -> None:
+    model = {
+        "logical_name": "qwen3-8b-substitute",
+        "model_id": "Qwen3-8B",
+        "revision": "a" * 64,
+        "engine": "vllm",
+        "engine_version": "0.8.5",
+        "dtype": "bfloat16",
+        "quantization": None,
+        "context_length": 8192,
+        "tokenizer_revision": "b" * 64,
+    }
+    first = {
+        "schema": "noetrium.external-model-identity.v2",
+        "lane": "platform-substitute",
+        "matched_reproduction": False,
+        "deployment_id": "gpu3",
+        "deployment_generation": "3" * 64,
+        "deployment_observation": {"gpu_index": 3},
+        "model": model,
+    }
+    second = {
+        **first,
+        "deployment_id": "gpu5",
+        "deployment_generation": "5" * 64,
+        "deployment_observation": {"gpu_index": 5},
+    }
+    assert canonical_digest(first) != canonical_digest(second)
+    assert canonical_digest(_model_identity(first)) == canonical_digest(_model_identity(second))

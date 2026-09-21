@@ -143,14 +143,18 @@ def run_external_qwen_substitute(
     model = _model_identity(identity_doc)
     deployment_id = str(identity_doc["deployment_id"])
     deployment_generation = str(identity_doc["deployment_generation"])
-    identity_digest = str(identity_doc["identity_digest"])
-    if _SHA64.fullmatch(deployment_generation) is None or _SHA64.fullmatch(identity_digest) is None:
+    identity_document_digest = str(identity_doc["identity_digest"])
+    if (
+        _SHA64.fullmatch(deployment_generation) is None
+        or _SHA64.fullmatch(identity_document_digest) is None
+    ):
         raise ValueError("deployment/identity digests must be SHA-256")
     identity_payload = dict(identity_doc)
     identity_payload.pop("identity_digest", None)
-    expected_identity_digest = canonical_digest(identity_payload)
-    if identity_digest != expected_identity_digest:
-        raise ValueError("external model identity digest mismatch")
+    expected_identity_document_digest = canonical_digest(identity_payload)
+    if identity_document_digest != expected_identity_document_digest:
+        raise ValueError("external model identity document digest mismatch")
+    model_identity_digest = canonical_digest(model)
 
     generation_options: dict[str, object] = {
         "temperature": 0,
@@ -171,7 +175,8 @@ def run_external_qwen_substitute(
     runtime_binding_digest = canonical_digest(
         {
             "lane": "platform-substitute",
-            "model_identity_digest": identity_digest,
+            "model_identity_digest": model_identity_digest,
+            "identity_document_digest": identity_document_digest,
             "deployment_generation": deployment_generation,
             "request_factory_digest": request_factory.digest,
             "method_program_digest": CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM.program_digest,
@@ -180,7 +185,7 @@ def run_external_qwen_substitute(
 
     output_root.mkdir(parents=True, exist_ok=True)
     manifest = {
-        "schema": "noetrium.experiment-manifest.v1",
+        "schema": "noetrium.experiment-manifest.v2",
         "experiment_id": "cot-gsm8k-qwen3-8b-substitute",
         "lane": "platform-substitute",
         "matched_reproduction": False,
@@ -195,7 +200,8 @@ def run_external_qwen_substitute(
         "benchmark_revision": materialized.cut.revision_id,
         "benchmark_file_sha256": materialized.file_sha256,
         "benchmark_git_blob_sha1": materialized.git_blob_sha1,
-        "model_identity_digest": identity_digest,
+        "model_identity_digest": model_identity_digest,
+        "identity_document_digest": identity_document_digest,
         "model": asdict(model),
         "deployment_id": deployment_id,
         "deployment_generation": deployment_generation,
