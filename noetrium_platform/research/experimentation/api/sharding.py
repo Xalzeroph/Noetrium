@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from fractions import Fraction
 
 from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
@@ -38,6 +39,7 @@ class ExperimentShard:
     worker_scope_id: str
     assignment_digests: tuple[str, ...]
     estimated_cost_units: int
+    capacity_units: int = 1
     shard_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -55,6 +57,7 @@ class ExperimentShard:
             raise ValueError(
                 "experiment shard estimated_cost_units must be non-negative"
             )
+        _positive_int(self.capacity_units, "experiment shard capacity_units")
         object.__setattr__(
             self,
             "shard_digest",
@@ -64,6 +67,7 @@ class ExperimentShard:
                     "worker_scope_id": self.worker_scope_id,
                     "assignment_digests": self.assignment_digests,
                     "estimated_cost_units": self.estimated_cost_units,
+                    "capacity_units": self.capacity_units,
                 }
             ),
         )
@@ -325,6 +329,7 @@ def compile_experiment_shard_plan(
     *,
     shard_count: int,
     assignment_cost_units: Mapping[str, int] | None = None,
+    shard_capacity_units: tuple[int, ...] | None = None,
 ) -> CompiledExperimentShardPlan:
     """Compile deterministic worker placement without changing batch semantics.
 
@@ -333,8 +338,11 @@ def compile_experiment_shard_plan(
     A server coordinator must dispatch batch_placements in the existing batch
     order; shards are routing destinations, not independent schedulers.
 
-    Cost hints are deployment metadata only. A supplied mapping must exactly
-    cover all authoritative assignments so workers cannot silently disagree.
+    Cost and worker-capacity hints are deployment metadata only. A supplied
+    assignment mapping must exactly cover all authoritative assignments. Worker
+    capacities are positive integer throughput units and must exactly match the
+    requested shard count. They never change scientific batching or assignment
+    identity; they only minimize projected deployment makespan.
     """
 
     if type(compiled) is not CompiledExperimentProgram:
@@ -343,6 +351,21 @@ def compile_experiment_shard_plan(
         )
     compiled.plan.assert_consistent()
     shard_count = _positive_int(shard_count, "experiment shard_count")
+    if shard_capacity_units is None:
+        capacities = tuple(1 for _ in range(shard_count))
+        capacity_model_kind = "uniform-worker-capacity-v1"
+    else:
+        if type(shard_capacity_units) is not tuple:
+            raise TypeError("shard_capacity_units must be a tuple")
+        if len(shard_capacity_units) != shard_count:
+            raise ValueError(
+                "shard_capacity_units must contain exactly shard_count entries"
+            )
+        capacities = tuple(
+            _positive_int(value, f"shard capacity for index {index}")
+            for index, value in enumerate(shard_capacity_units)
+        )
+        capacity_model_kind = "explicit-integer-worker-capacity-v1"
 
     expected = {
         row.assignment_digest for row in compiled.plan.assignments
@@ -375,6 +398,8 @@ def compile_experiment_shard_plan(
             "assignment_cost_units": tuple(
                 (digest, costs[digest]) for digest in sorted(costs)
             ),
+            "worker_capacity_kind": capacity_model_kind,
+            "shard_capacity_units": capacities,
         }
     )
 
@@ -390,13 +415,18 @@ def compile_experiment_shard_plan(
     assignment_to_shard: dict[str, int] = {}
 
     for assignment in assignment_rows:
+        digest = assignment.assignment_digest
+        assignment_cost = costs[digest]
         target = min(
             range(shard_count),
-            key=lambda index: (shard_costs[index], index),
+            key=lambda index: (
+                Fraction(shard_costs[index] + assignment_cost, capacities[index]),
+                Fraction(shard_costs[index], capacities[index]),
+                index,
+            ),
         )
-        digest = assignment.assignment_digest
         shard_rows[target].append(digest)
-        shard_costs[target] += costs[digest]
+        shard_costs[target] += assignment_cost
         assignment_to_shard[digest] = target
 
     scope_prefix = (
@@ -408,6 +438,7 @@ def compile_experiment_shard_plan(
             worker_scope_id=f"{scope_prefix}:{index}",
             assignment_digests=tuple(shard_rows[index]),
             estimated_cost_units=shard_costs[index],
+            capacity_units=capacities[index],
         )
         for index in range(shard_count)
     )
