@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "4527b73ac839050b260bcacf62fe70cf31b353946338b3fb7a596f0e8c273186",
+  "interface_digest": "f2331a06e0b61880154520002f5c34116d4835850dd4cacf824acc9d36230e6c",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -28453,6 +28453,11 @@
                   "name": "estimated_cost_units"
                 },
                 {
+                  "annotation": "int",
+                  "default": "1",
+                  "name": "capacity_units"
+                },
+                {
                   "annotation": "str",
                   "default": "field(init=False)",
                   "name": "shard_digest"
@@ -28488,7 +28493,7 @@
             },
             {
               "decorators": [],
-              "doc": "Compile deterministic worker placement without changing batch semantics.\n\nAssignments are globally placed with deterministic LPT balancing. Every\nauthoritative ExperimentBatch is then projected through that fixed mapping.\nA server coordinator must dispatch batch_placements in the existing batch\norder; shards are routing destinations, not independent schedulers.\n\nCost hints are deployment metadata only. A supplied mapping must exactly\ncover all authoritative assignments so workers cannot silently disagree.",
+              "doc": "Compile deterministic worker placement without changing batch semantics.\n\nAssignments are globally placed with deterministic LPT balancing. Every\nauthoritative ExperimentBatch is then projected through that fixed mapping.\nA server coordinator must dispatch batch_placements in the existing batch\norder; shards are routing destinations, not independent schedulers.\n\nCost and worker-capacity hints are deployment metadata only. A supplied\nassignment mapping must exactly cover all authoritative assignments. Worker\ncapacities are positive integer throughput units and must exactly match the\nrequested shard count. They never change scientific batching or assignment\nidentity; they only minimize projected deployment makespan.",
               "kind": "function",
               "name": "compile_experiment_shard_plan",
               "parameters": [
@@ -28515,12 +28520,20 @@
                   "name": "assignment_cost_units",
                   "receiver": false,
                   "required": false
+                },
+                {
+                  "annotation": "tuple[int, ...] | None",
+                  "default": "None",
+                  "kind": "keyword_only",
+                  "name": "shard_capacity_units",
+                  "receiver": false,
+                  "required": false
                 }
               ],
               "return_annotation": "CompiledExperimentShardPlan",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1",
-              "signature": "def compile_experiment_shard_plan(compiled: CompiledExperimentProgram, *, shard_count: int, assignment_cost_units: Mapping[str, int] | None=None) -> CompiledExperimentShardPlan:"
+              "signature": "def compile_experiment_shard_plan(compiled: CompiledExperimentProgram, *, shard_count: int, assignment_cost_units: Mapping[str, int] | None=None, shard_capacity_units: tuple[int, ...] | None=None) -> CompiledExperimentShardPlan:"
             }
           ],
           "symbols": [

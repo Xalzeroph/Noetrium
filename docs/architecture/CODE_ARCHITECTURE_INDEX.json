@@ -82060,7 +82060,7 @@
         "shards"
       ],
       "kind": "dataclass",
-      "line": 126,
+      "line": 130,
       "methods": [
         "__post_init__",
         "assignment_digests",
@@ -82090,7 +82090,7 @@
         "shard_assignments"
       ],
       "kind": "dataclass",
-      "line": 73,
+      "line": 77,
       "methods": [
         "__post_init__",
         "assignment_digests"
@@ -82111,13 +82111,14 @@
       ],
       "fields": [
         "assignment_digests",
+        "capacity_units",
         "estimated_cost_units",
         "shard_digest",
         "shard_index",
         "worker_scope_id"
       ],
       "kind": "dataclass",
-      "line": 34,
+      "line": 35,
       "methods": [
         "__post_init__"
       ],
@@ -143913,7 +143914,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "3dd02e11c01f67114dd95e879769a20c3a41819a",
+  "source_git_sha": "36b3a76db0b8876362f08708ca335371d6f36e1c",
   "system_import_edges": [
     {
       "count": 108,
