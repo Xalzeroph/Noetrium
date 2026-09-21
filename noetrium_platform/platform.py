@@ -111,6 +111,10 @@ from noetrium_platform.research.execution.admission.api import AdmissionBudget
 from noetrium_platform.research.execution.scheduling.api import ExecutionPriority
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_campaign import ResearchCampaignBinding
+from noetrium_platform.composition.managed_research_runtime import (
+    ManagedResearchRuntime,
+    build_local_managed_research_runtime as _build_local_managed_research_runtime,
+)
 from noetrium_platform.research.experimentation.api.campaign import (
     ResearchCampaignPlan,
     ResearchCampaignStudyBinding,
@@ -149,6 +153,7 @@ from noetrium_platform.research.experimentation.resource.api import (
 from noetrium_platform.research.experimentation.resource.composition import (
     build_experiment_resource_binder as _build_experiment_resource_binder,
 )
+from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeLeasePolicy,
     ComputeSchedulerPort,
@@ -555,6 +560,45 @@ class ExperimentBinding:
 
     def __exit__(self, exc_type, exc, traceback) -> None:
         self.close()
+
+
+def bind_local_managed_research_runtime(
+    layout: DirectoryLayout,
+    *,
+    base_service_environment: tuple[tuple[str, str], ...] = (),
+    model_source_environment: tuple[tuple[str, str], ...] = (),
+    huggingface_cli: str = "hf",
+    model_storage_pools: Mapping[str, Path] | None = None,
+    orchestration_concurrency_budget: ConcurrencyBudget | None = None,
+    orchestration_admission_budget: AdmissionBudget | None = None,
+    experiment_concurrency_budget: ConcurrencyBudget | None = None,
+    experiment_admission_budget: AdmissionBudget | None = None,
+    model_io_concurrency_budget: ConcurrencyBudget | None = None,
+    model_io_admission_budget: AdmissionBudget | None = None,
+    start_background_controllers: bool = True,
+    model_reconcile_interval_seconds: float = 10.0,
+) -> ManagedResearchRuntime:
+    """Build the platform-owned local runtime for long-lived research execution.
+
+    This is the application composition seam. Paper/method code should not
+    allocate GPUs, ports, leases, worker pools, or model-controller processes.
+    """
+
+    return _build_local_managed_research_runtime(
+        layout,
+        base_service_environment=base_service_environment,
+        model_source_environment=model_source_environment,
+        huggingface_cli=huggingface_cli,
+        model_storage_pools=model_storage_pools,
+        orchestration_concurrency_budget=orchestration_concurrency_budget,
+        orchestration_admission_budget=orchestration_admission_budget,
+        experiment_concurrency_budget=experiment_concurrency_budget,
+        experiment_admission_budget=experiment_admission_budget,
+        model_io_concurrency_budget=model_io_concurrency_budget,
+        model_io_admission_budget=model_io_admission_budget,
+        start_background_controllers=start_background_controllers,
+        model_reconcile_interval_seconds=model_reconcile_interval_seconds,
+    )
 
 
 def bind_research_execution_pool(
@@ -1216,6 +1260,7 @@ __all__ = [
     "DirectoryRunArtifactBinding",
     "MinecraftEnvironmentBinding",
     "QualifiedProjectModelBinding",
+    "ManagedResearchRuntime",
     "ResearchCampaignBinding",
     "ResearchCampaignPlan",
     "ResearchCampaignStudyBinding",
@@ -1232,7 +1277,7 @@ __all__ = [
     "complete_project_model", "invoke_multimodal_model",
     "bind_universal_method_machine", "bind_method_checkpoint_store", "run_method_program", "run_method_program_async",
     "bind_method_endpoint", "run_local_command", "run_local_shell_command",
-    "bind_research_campaign", "bind_research_execution_pool", "bind_research_workbench", "bind_run_control_application",
+    "bind_local_managed_research_runtime", "bind_research_campaign", "bind_research_execution_pool", "bind_research_workbench", "bind_run_control_application",
     "bind_experiment_execution", "build_basic_study_metric_aggregation",
     "build_project_run_checkpoint_store",
     "build_deterministic_study_assignment",
