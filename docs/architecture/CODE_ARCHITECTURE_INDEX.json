@@ -4658,6 +4658,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
+      "target": "noetrium_platform.composition.managed_observability.ManagedObservability"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
       "target": "noetrium_platform.composition.model_management.ManagementPlaneAuthorities"
     },
     {
@@ -25704,7 +25709,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 184,
+      "line": 185,
       "methods": [
         "__init__",
         "_target_count",
@@ -25734,7 +25739,7 @@
         "status"
       ],
       "kind": "dataclass",
-      "line": 81,
+      "line": 82,
       "methods": [
         "placement_digest"
       ],
@@ -25752,7 +25757,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 117,
+      "line": 118,
       "methods": [
         "__init__",
         "assert_healthy",
@@ -25780,7 +25785,7 @@
         "request_digest"
       ],
       "kind": "dataclass",
-      "line": 95,
+      "line": 96,
       "methods": [
         "__post_init__"
       ],
@@ -25813,7 +25818,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 42,
+      "line": 43,
       "methods": [
         "__post_init__"
       ],
@@ -37417,15 +37422,45 @@
       ],
       "fields": [
         "_closed",
+        "_telemetry_backend",
+        "logging",
+        "raw",
+        "telemetry"
+      ],
+      "kind": "dataclass",
+      "line": 44,
+      "methods": [
+        "close",
+        "__enter__",
+        "__exit__"
+      ],
+      "module": "noetrium_platform.composition.managed_observability",
+      "name": "ManagedObservability",
+      "nesting": [
+        "ManagedObservability"
+      ],
+      "qualname": "noetrium_platform.composition.managed_observability.ManagedObservability",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(slots=True)"
+      ],
+      "fields": [
+        "_closed",
         "_model_controller",
         "_orchestration_group",
         "_stop",
         "execution_pool",
         "management",
-        "model_replica_pool"
+        "model_replica_pool",
+        "observability",
+        "recovery_execution"
       ],
       "kind": "dataclass",
-      "line": 37,
+      "line": 47,
       "methods": [
         "start_background_controllers",
         "assert_healthy",
@@ -37447,7 +37482,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 28,
+      "line": 38,
       "methods": [
         "__init__",
         "wait"
@@ -61093,14 +61128,17 @@
       "fields": [
         "connection",
         "connection_profile",
+        "diagnostic_projector",
         "file_transfer",
+        "health_probe",
+        "health_spec",
         "operation_journal",
         "profile_digest",
         "remote_profile",
         "server_id"
       ],
       "kind": "dataclass",
-      "line": 26,
+      "line": 36,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.server.composition",
       "name": "ServerManagementComposition",
@@ -70834,7 +70872,7 @@
         "scope"
       ],
       "kind": "dataclass",
-      "line": 124,
+      "line": 134,
       "methods": [
         "__post_init__",
         "expired_at"
@@ -70950,6 +70988,26 @@
       "top_system": "resource"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 73,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.compute.api.contracts",
+      "name": "ComputePlacementUnavailable",
+      "nesting": [
+        "ComputePlacementUnavailable"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.compute.api.contracts.ComputePlacementUnavailable",
+      "system_key": "resource/compute",
+      "top_system": "resource"
+    },
+    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -70969,7 +71027,7 @@
         "required_labels"
       ],
       "kind": "dataclass",
-      "line": 78,
+      "line": 88,
       "methods": [
         "__post_init__"
       ],
@@ -70992,7 +71050,7 @@
         "PREFER_IDLE_ALLOW_SHARED"
       ],
       "kind": "enum",
-      "line": 72,
+      "line": 82,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.api.contracts",
       "name": "GpuSharingMode",
@@ -71468,7 +71526,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 268,
+      "line": 269,
       "methods": [
         "__init__",
         "_usage",
@@ -71498,7 +71556,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 499,
+      "line": 500,
       "methods": [
         "__init__",
         "_connection",
@@ -71538,7 +71596,7 @@
         "memory_bytes"
       ],
       "kind": "dataclass",
-      "line": 70,
+      "line": 71,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -96540,13 +96598,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3211,
-    "classes": 3162,
+    "association_edges": 3212,
+    "classes": 3164,
     "constructor_edges": 864,
     "inheritance_edges": 138,
-    "module_import_edges": 5504,
+    "module_import_edges": 5526,
     "parse_errors": 0,
-    "python_modules": 2533,
+    "python_modules": 2534,
     "registry_authorities": 20,
     "registry_nodes": 172,
     "top_level_systems": 16
@@ -102174,6 +102232,10 @@
     },
     {
       "source": "noetrium_platform.composition",
+      "target": "noetrium_platform.managed_observability"
+    },
+    {
+      "source": "noetrium_platform.composition",
       "target": "noetrium_platform.managed_research_runtime"
     },
     {
@@ -102537,8 +102599,60 @@
       "target": "noetrium_platform.research.experimentation.run.manifest.api"
     },
     {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.evidence.observability.capture.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.evidence.observability.capture.runtime"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.evidence.observability.logging.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.evidence.observability.logging.record.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.evidence.observability.logging.routing.runtime"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.evidence.observability.logging.storage.composition.jsonl"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.evidence.observability.telemetry.metric.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.evidence.observability.telemetry.metric.runtime"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.foundation.governance.architecture.runtime.capability_composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.foundation.governance.system_registry.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_observability",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
       "source": "noetrium_platform.composition.managed_research_runtime",
       "target": "noetrium_platform.capabilities.model.deployment.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.composition.managed_observability"
     },
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
@@ -102551,6 +102665,18 @@
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.infrastructure.reliability.recovery.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.infrastructure.reliability.recovery.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.infrastructure.reliability.recovery.execution.composition"
     },
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
@@ -110246,6 +110372,14 @@
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.server.composition",
+      "target": "noetrium_platform.infrastructure.lifecycle.server.health.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.server.composition",
+      "target": "noetrium_platform.infrastructure.lifecycle.server.health.composition"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.server.composition",
       "target": "noetrium_platform.infrastructure.lifecycle.server.identity.api"
     },
     {
@@ -113186,6 +113320,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.reliability.recovery.composition.lease_binding",
+      "target": "noetrium_platform.infrastructure.resources.lease.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.reliability.recovery.composition.lease_binding",
       "target": "noetrium_platform.infrastructure.resources.providers"
     },
     {
@@ -113203,6 +113341,14 @@
     {
       "source": "noetrium_platform.infrastructure.reliability.recovery.execution.api",
       "target": "noetrium_platform.infrastructure.reliability.recovery.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.reliability.recovery.execution.composition",
+      "target": "noetrium_platform.infrastructure.reliability.recovery.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.reliability.recovery.execution.composition",
+      "target": "noetrium_platform.infrastructure.reliability.recovery.execution.runtime"
     },
     {
       "source": "noetrium_platform.infrastructure.reliability.recovery.execution.runtime",
@@ -125044,6 +125190,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.managed_observability",
         "noetrium_platform.managed_research_runtime"
       ],
       "module": "noetrium_platform.composition",
@@ -125255,10 +125402,34 @@
     },
     {
       "imports": [
+        "noetrium_platform.evidence.observability.capture.composition",
+        "noetrium_platform.evidence.observability.capture.runtime",
+        "noetrium_platform.evidence.observability.logging.composition",
+        "noetrium_platform.evidence.observability.logging.record.api",
+        "noetrium_platform.evidence.observability.logging.routing.runtime",
+        "noetrium_platform.evidence.observability.logging.storage.composition.jsonl",
+        "noetrium_platform.evidence.observability.telemetry.metric.composition",
+        "noetrium_platform.evidence.observability.telemetry.metric.runtime",
+        "noetrium_platform.foundation.governance.architecture.runtime.capability_composition",
+        "noetrium_platform.foundation.governance.system_registry.api",
+        "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.foundation.kernel.kernel"
+      ],
+      "module": "noetrium_platform.composition.managed_observability",
+      "path": "noetrium_platform/composition/managed_observability.py",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "imports": [
         "noetrium_platform.capabilities.model.deployment.composition",
+        "noetrium_platform.composition.managed_observability",
         "noetrium_platform.composition.model_management",
         "noetrium_platform.composition.research_execution_pool",
         "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.infrastructure.reliability.recovery.api",
+        "noetrium_platform.infrastructure.reliability.recovery.composition",
+        "noetrium_platform.infrastructure.reliability.recovery.execution.composition",
         "noetrium_platform.infrastructure.resources.directory.api",
         "noetrium_platform.research.execution.admission.api",
         "noetrium_platform.research.execution.scheduling.api"
@@ -135516,6 +135687,8 @@
       "imports": [
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.infrastructure.lifecycle.server.health.api",
+        "noetrium_platform.infrastructure.lifecycle.server.health.composition",
         "noetrium_platform.infrastructure.lifecycle.server.identity.api",
         "noetrium_platform.infrastructure.lifecycle.server.identity.composition",
         "noetrium_platform.infrastructure.lifecycle.server.identity.providers",
@@ -138365,6 +138538,7 @@
       "imports": [
         "noetrium_platform.infrastructure.reliability.recovery.api",
         "noetrium_platform.infrastructure.reliability.recovery.runtime.lease_adapter",
+        "noetrium_platform.infrastructure.resources.lease.api",
         "noetrium_platform.infrastructure.resources.providers"
       ],
       "module": "noetrium_platform.infrastructure.reliability.recovery.composition.lease_binding",
@@ -138407,7 +138581,10 @@
       "top_system": "reliability"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.infrastructure.reliability.recovery.api",
+        "noetrium_platform.infrastructure.reliability.recovery.execution.runtime"
+      ],
       "module": "noetrium_platform.infrastructure.reliability.recovery.execution.composition",
       "path": "noetrium_platform/infrastructure/reliability/recovery/execution/composition/__init__.py",
       "system_key": "reliability/recovery/execution",
@@ -144418,7 +144595,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "8269c3819955b6cafc8e83442fa3f6a516f9356b",
+  "source_git_sha": "2a245abdee2332cda8fc69ba67a4a6d17c995cfa",
   "system_import_edges": [
     {
       "count": 108,
@@ -144836,12 +145013,12 @@
       "target": "platform"
     },
     {
-      "count": 242,
+      "count": 244,
       "source": "reliability",
       "target": "reliability"
     },
     {
-      "count": 2,
+      "count": 3,
       "source": "reliability",
       "target": "resource"
     },
@@ -144916,7 +145093,7 @@
       "target": "resource"
     },
     {
-      "count": 563,
+      "count": 565,
       "source": "runtime",
       "target": "runtime"
     },

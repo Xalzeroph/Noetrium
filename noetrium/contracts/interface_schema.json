@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "597ad6d540c3d2a6898980f153bbecd7970dcb11529fac1d7a247249e9769744",
+  "interface_digest": "182a2fd25be7561e7859ad61fb2dab2b1dc6d4cbfd01ab4adb369e1417503b49",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -96457,6 +96457,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "ComputePlacementUnavailable",
+              "origin_module": ".contracts",
+              "origin_name": "ComputePlacementUnavailable",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "ComputeRequirement",
               "origin_module": ".contracts",
               "origin_name": "ComputeRequirement",
@@ -96596,6 +96605,7 @@
             "ComputeCluster",
             "ComputeGPU",
             "ComputeHost",
+            "ComputePlacementUnavailable",
             "ComputeRequirement",
             "ComputeLeasePolicy",
             "DEFAULT_COMPUTE_LEASE_POLICY",
@@ -96905,6 +96915,49 @@
               "schema_version": "1"
             },
             {
+              "bases": [
+                "RuntimeError"
+              ],
+              "decorators": [],
+              "doc": "Expected capacity exhaustion for one exact compute placement request.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "'ComputeRequirement'",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "requirement",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __init__(self, requirement: 'ComputeRequirement') -> None:"
+                }
+              ],
+              "name": "ComputePlacementUnavailable",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
               "bases": [],
               "decorators": [
                 "dataclass(frozen=True, slots=True)"
@@ -97078,6 +97131,7 @@
             "ComputeCluster",
             "ComputeGPU",
             "ComputeHost",
+            "ComputePlacementUnavailable",
             "ComputeRequirement",
             "ComputeLeasePolicy",
             "DEFAULT_COMPUTE_LEASE_POLICY",

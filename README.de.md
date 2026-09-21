@@ -21,7 +21,7 @@
 
 <!-- readme-locale:de -->
 
-<!-- readme-source-sha256:21009cd5cf41a3e8a2e4ccda5617701b830662e6d6d3f47cc3fc07e99507bce5 -->
+<!-- readme-source-sha256:a9b939fa0afe1c2c31c3c8f6c2587d2e0daee14abb0394cfe2afb8bb42e6d060 -->
 
 <p align="center">
   <strong>Agents bauen. Experimente ausführen. Ergebnisse verifizieren.</strong><br>

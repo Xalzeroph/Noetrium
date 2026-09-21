@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ko -->
 
-<!-- readme-source-sha256:21009cd5cf41a3e8a2e4ccda5617701b830662e6d6d3f47cc3fc07e99507bce5 -->
+<!-- readme-source-sha256:a9b939fa0afe1c2c31c3c8f6c2587d2e0daee14abb0394cfe2afb8bb42e6d060 -->
 
 <p align="center">
   <strong>연구 시스템을 구성하고, 귀속 가능한 실행을 수행하고, 증거를 검증하세요.</strong><br>
