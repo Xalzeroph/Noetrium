@@ -1,6 +1,6 @@
-# syntax=docker/dockerfile:1.7
 
-FROM python:3.12-slim-bookworm
+ARG PYTHON_RUNTIME_IMAGE=python:3.12-slim-bookworm
+FROM ${PYTHON_RUNTIME_IMAGE}
 
 ARG PLATFORM_SOURCE_SHA=unknown
 ARG PLATFORM_WHEEL_SHA256=unknown

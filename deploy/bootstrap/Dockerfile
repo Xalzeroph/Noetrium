@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.7
 
 # Deployment control-plane image. The host contract is Docker only: Python and
 # release tooling execute here rather than leaking from the host workstation.

@@ -24,6 +24,8 @@ FORBIDDEN_IMAGE_MARKERS = (
 WHEEL_LABEL = "org.opencontainers.image.noetrium.wheel.sha256"
 DISTRIBUTION_LABEL = "org.opencontainers.image.noetrium.distribution-evidence.sha256"
 REVISION_LABEL = "org.opencontainers.image.revision"
+PYTHON_RUNTIME_CANONICAL_IMAGE = "python:3.12-slim-bookworm"
+JAVA_RUNTIME_CANONICAL_IMAGE = "eclipse-temurin:21-jre-jammy"
 
 
 def _run(
@@ -219,7 +221,10 @@ def build_environment_images(
     profiles: tuple[str, ...],
     work_root: Path,
     output: Path,
+    python_runtime_image: str,
+    python_runtime_canonical_image: str,
     java_runtime_image: str,
+    java_runtime_canonical_image: str,
     node_version: str,
     rebuild: bool = False,
 ) -> dict:
@@ -308,6 +313,8 @@ def build_environment_images(
             (
                 "docker",
                 "build",
+                "--build-arg",
+                f"PYTHON_RUNTIME_IMAGE={python_runtime_image}",
                 "--build-arg",
                 f"PLATFORM_SOURCE_SHA={source_sha}",
                 "--build-arg",
@@ -418,7 +425,26 @@ def build_environment_images(
         "catalog_sha256": _sha256(CATALOG_PATH),
         "wheel_sha256": wheel_sha256,
         "distribution_evidence_sha256": distribution_evidence_sha256,
-        "java_runtime_image": java_runtime_image,
+        "runtime_image_sources": {
+            "python": {
+                "canonical_image": python_runtime_canonical_image,
+                "source_image": python_runtime_image,
+                "source_identity": (
+                    _image_identity(python_runtime_image)
+                    if _image_exists(python_runtime_image)
+                    else None
+                ),
+            },
+            "java": {
+                "canonical_image": java_runtime_canonical_image,
+                "source_image": java_runtime_image,
+                "source_identity": (
+                    _image_identity(java_runtime_image)
+                    if "minecraft" in profiles and _image_exists(java_runtime_image)
+                    else None
+                ),
+            },
+        },
         "node_version": node_version,
         "profiles": list(profiles),
         "rebuild": rebuild,
@@ -470,10 +496,30 @@ def main(argv: list[str] | None = None) -> int:
         default=Path("environment-image-build.json"),
     )
     build.add_argument(
+        "--python-runtime-canonical-image",
+        default=os.environ.get(
+            "PYTHON_RUNTIME_CANONICAL_IMAGE", PYTHON_RUNTIME_CANONICAL_IMAGE
+        ),
+    )
+    build.add_argument(
+        "--python-runtime-image",
+        default=os.environ.get(
+            "PYTHON_RUNTIME_IMAGE", PYTHON_RUNTIME_CANONICAL_IMAGE
+        ),
+        help="Actual Python runtime source image; may use a deployment registry mirror.",
+    )
+    build.add_argument(
+        "--java-runtime-canonical-image",
+        default=os.environ.get(
+            "JAVA_RUNTIME_CANONICAL_IMAGE", JAVA_RUNTIME_CANONICAL_IMAGE
+        ),
+    )
+    build.add_argument(
         "--java-runtime-image",
         default=os.environ.get(
-            "JAVA_RUNTIME_IMAGE", "eclipse-temurin:21-jre-jammy"
+            "JAVA_RUNTIME_IMAGE", JAVA_RUNTIME_CANONICAL_IMAGE
         ),
+        help="Actual Java runtime source image; may use a deployment registry mirror.",
     )
     build.add_argument(
         "--node-version",
@@ -519,7 +565,10 @@ def main(argv: list[str] | None = None) -> int:
             profiles=tuple(args.profiles),
             work_root=args.work_root,
             output=args.output,
+            python_runtime_image=args.python_runtime_image,
+            python_runtime_canonical_image=args.python_runtime_canonical_image,
             java_runtime_image=args.java_runtime_image,
+            java_runtime_canonical_image=args.java_runtime_canonical_image,
             node_version=args.node_version,
             rebuild=args.rebuild,
         )

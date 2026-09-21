@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.7
 
 ARG PLATFORM_BASE_IMAGE=noetrium:local
 ARG JAVA_RUNTIME_IMAGE=eclipse-temurin:21-jre-jammy

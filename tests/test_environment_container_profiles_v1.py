@@ -81,3 +81,20 @@ def test_environment_bootstrap_supports_linked_git_worktrees_without_host_git() 
     prefix = text.split("docker build", 1)[0].lower()
     assert "python3" not in prefix
     assert "python -m" not in prefix
+
+
+def test_deployment_runtime_images_are_source_configurable_without_remote_frontend() -> None:
+    base = (ROOT / "deploy" / "Dockerfile").read_text(encoding="utf-8")
+    builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
+        encoding="utf-8"
+    )
+    assert "ARG PYTHON_RUNTIME_IMAGE=python:3.12-slim-bookworm" in base
+    assert "FROM ${PYTHON_RUNTIME_IMAGE}" in base
+    assert "--python-runtime-image" in builder
+    assert "--python-runtime-canonical-image" in builder
+    assert "--java-runtime-image" in builder
+    assert "--java-runtime-canonical-image" in builder
+    assert '"runtime_image_sources"' in builder
+    for dockerfile in (ROOT / "deploy").rglob("Dockerfile"):
+        text = dockerfile.read_text(encoding="utf-8")
+        assert "# syntax=docker/dockerfile:" not in text
