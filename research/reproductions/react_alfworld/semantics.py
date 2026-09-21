@@ -30,18 +30,38 @@ def is_think_action(action: str) -> bool:
     return action.startswith(REACT_ALFWORLD_FIDELITY.think_prefix)
 
 
-def visible_observation(action: str, environment_observation: str) -> str:
-    action = normalize_model_action(action)
+def notebook_initial_observation(environment_observation: str) -> str:
+    """Apply the released notebook's reset-observation projection exactly."""
+
+    if not isinstance(environment_observation, str):
+        raise TypeError("ReAct initial environment observation must be text")
+    return "\n".join(environment_observation.split("\n\n")[1:])
+
+
+def notebook_step_observation(environment_observation: str) -> str:
+    """Apply the released notebook's ``process_ob`` projection exactly."""
+
     if not isinstance(environment_observation, str):
         raise TypeError("ReAct environment observation must be text")
+    if environment_observation.startswith("You arrive at loc "):
+        boundary = environment_observation.find(". ")
+        if boundary >= 0:
+            return environment_observation[boundary + 2 :]
+    return environment_observation
+
+
+def visible_observation(action: str, environment_observation: str) -> str:
+    action = normalize_model_action(action)
     if is_think_action(action):
         return REACT_ALFWORLD_FIDELITY.think_observation
-    return environment_observation
+    return notebook_step_observation(environment_observation)
 
 
 __all__ = [
     "ReactProtocolError",
     "is_think_action",
     "normalize_model_action",
+    "notebook_initial_observation",
+    "notebook_step_observation",
     "visible_observation",
 ]

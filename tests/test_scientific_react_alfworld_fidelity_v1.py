@@ -53,3 +53,28 @@ def test_react_transcript_matches_original_action_observation_shape() -> None:
         " think: inspect first\nOK.\n>"
         " open fridge\nThe fridge is open.\n>"
     )
+
+
+def test_released_notebook_projects_initial_observation_after_first_blank_paragraph() -> None:
+    from research.reproductions.react_alfworld import notebook_initial_observation
+
+    raw = "Welcome to ALFWorld.\n\nYou are in a kitchen.\nYour task is to: put the apple away."
+    assert notebook_initial_observation(raw) == (
+        "You are in a kitchen.\nYour task is to: put the apple away."
+    )
+
+
+def test_released_notebook_strips_arrival_prefix_from_step_observation() -> None:
+    from research.reproductions.react_alfworld import notebook_step_observation
+
+    raw = "You arrive at loc 3. On the table, you see an apple 1."
+    assert notebook_step_observation(raw) == "On the table, you see an apple 1."
+    assert notebook_step_observation("The fridge is open.") == "The fridge is open."
+
+
+def test_think_action_keeps_notebook_ok_projection_over_environment_text() -> None:
+    from research.reproductions.react_alfworld import visible_observation
+
+    raw = "You arrive at loc 7. Nothing happens."
+    assert visible_observation("think: inspect", raw) == "OK."
+    assert visible_observation("go to table 1", raw) == "Nothing happens."

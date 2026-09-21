@@ -14,6 +14,8 @@ from .program import (
     react_alfworld_initial_state,
 )
 from .semantics import (
+    notebook_initial_observation,
+    notebook_step_observation,
     ReactProtocolError,
     is_think_action,
     normalize_model_action,
@@ -23,6 +25,8 @@ from .study import REACT_ALFWORLD_RELEASED_TRIAL_PROTOCOL, build_react_alfworld_
 from .trajectory import ReactAlfworldTranscript, ReactTrajectoryStep, render_react_alfworld_transcript
 
 __all__ = [
+    "notebook_initial_observation",
+    "notebook_step_observation",
     "REACT_ALFWORLD_FIDELITY",
     "REACT_ALFWORLD_METHOD_PROGRAM",
     "REACT_ALFWORLD_RELEASED_TRIAL_PROTOCOL",
