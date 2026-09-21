@@ -22,7 +22,7 @@
       "noetrium_platform.infrastructure.lifecycle.api.contracts"
     ]
   },
-  "catalog_digest": "44d798ddd3ce6ffd34a05ce8048e516fc785b7289565ea5f75238d22ca7b68b2",
+  "catalog_digest": "3bd16c445c0584bcaa0a42170e5a6e47c0eac1327612beae27c1f7a3c4772af6",
   "direct_symbol_sources": {
     "ActionIdentityViolation": "noetrium_platform.capabilities.environment.api",
     "ActionKind": "noetrium_platform.capabilities.environment.embodied.api",
@@ -613,6 +613,7 @@
     "MachineEvent": "noetrium_platform.research.execution.machines.api",
     "ManagedDirectoryKind": "noetrium_platform.infrastructure.resources.directory.api",
     "ManagedModelAsset": "noetrium_platform.capabilities.model.asset.api.contracts",
+    "ManagedResearchRuntime": "noetrium_platform.platform",
     "MaterializedTaskVerifierArchive": "noetrium_platform.research.experimentation.study.api.materialization",
     "MaterializedTreeInspection": "noetrium_platform.evidence.artifact.content.api",
     "MaterializedTreeInspectionPort": "noetrium_platform.evidence.artifact.content.api",
@@ -1559,6 +1560,7 @@
     "bind_environment_category_catalog": "noetrium_platform.platform",
     "bind_experiment_execution": "noetrium_platform.platform",
     "bind_experiment_resources": "noetrium_platform.platform",
+    "bind_local_managed_research_runtime": "noetrium_platform.platform",
     "bind_method_checkpoint_store": "noetrium_platform.platform",
     "bind_method_endpoint": "noetrium_platform.platform",
     "bind_minecraft_environment": "noetrium_platform.platform",
