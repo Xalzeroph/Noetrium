@@ -428,6 +428,32 @@ class ProgrammableMachineInterpreter:
             raise ValueError("machine state belongs to a different ResearchProgram")
         return state
 
+    def _resolve_dynamic_next_node(self, node: ProgramNode, requested: str) -> str:
+        """Resolve handler-selected nodes, including RuntimeModule-local ids.
+
+        Static module edges are namespace-qualified by RuntimeProgramComposer at
+        compile time. Dynamic handler edges cannot be known then, so a handler
+        may return a local node id and the interpreter resolves it against the
+        module metadata injected by the composer. Exact global ids always win.
+        """
+        requested = _text(requested, "program dynamic next_node")
+        try:
+            self.program.node(requested)
+            return requested
+        except KeyError as original:
+            configuration = thaw_json(node.configuration)
+            if isinstance(configuration, dict):
+                module_id = configuration.get("runtime_module")
+                if type(module_id) is str and module_id.strip():
+                    qualified = f"{module_id}.{requested}"
+                    try:
+                        self.program.node(qualified)
+                    except KeyError:
+                        pass
+                    else:
+                        return qualified
+            raise original
+
     def propose(self, command: MachineCommand, state: MachineSnapshot) -> TransitionProposal:
         if state.program.program_digest != self.program.program_digest:
             raise ValueError("MachineProgramRef does not match ResearchProgram")
@@ -491,7 +517,11 @@ class ProgrammableMachineInterpreter:
         merged = dict(data)
         merged.update(_mapping(result.state_update, "program state_update"))
         visits[cursor] = visit
-        next_node = result.next_node if result.next_node is not None else node.next_node
+        next_node = (
+            self._resolve_dynamic_next_node(node, result.next_node)
+            if result.next_node is not None
+            else node.next_node
+        )
         accepted = result.status or (MachineStatus.COMPLETED if next_node is None else MachineStatus.RUNNABLE)
         if result.wait_reason is not None and accepted is not MachineStatus.WAITING:
             raise ValueError("wait_reason requires WAITING status")

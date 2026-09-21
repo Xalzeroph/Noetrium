@@ -126,10 +126,10 @@ def test_logical_scheduling_executes_as_runtime_machine_transition() -> None:
     )
 
     assert execution.status is MachineStatus.COMPLETED
-    assert execution.data["selected_participant_ids"] == (
+    assert execution.data["selected_participant_ids"] == [
         "agent-a",
         "agent-b",
-    )
+    ]
     assert binding.selection is not None
     assert execution.data["selection_digest"] == (
         binding.selection.selection_digest
