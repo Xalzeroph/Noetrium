@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "f2331a06e0b61880154520002f5c34116d4835850dd4cacf824acc9d36230e6c",
+  "interface_digest": "597ad6d540c3d2a6898980f153bbecd7970dcb11529fac1d7a247249e9769744",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -28528,12 +28528,20 @@
                   "name": "shard_capacity_units",
                   "receiver": false,
                   "required": false
+                },
+                {
+                  "annotation": "tuple[str, ...] | None",
+                  "default": "None",
+                  "kind": "keyword_only",
+                  "name": "worker_scope_ids",
+                  "receiver": false,
+                  "required": false
                 }
               ],
               "return_annotation": "CompiledExperimentShardPlan",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1",
-              "signature": "def compile_experiment_shard_plan(compiled: CompiledExperimentProgram, *, shard_count: int, assignment_cost_units: Mapping[str, int] | None=None, shard_capacity_units: tuple[int, ...] | None=None) -> CompiledExperimentShardPlan:"
+              "signature": "def compile_experiment_shard_plan(compiled: CompiledExperimentProgram, *, shard_count: int, assignment_cost_units: Mapping[str, int] | None=None, shard_capacity_units: tuple[int, ...] | None=None, worker_scope_ids: tuple[str, ...] | None=None) -> CompiledExperimentShardPlan:"
             }
           ],
           "symbols": [

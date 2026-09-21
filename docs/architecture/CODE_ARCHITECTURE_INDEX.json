@@ -1837,6 +1837,31 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPlacement"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolLease"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolLease",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolReport"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolReport",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPlacement"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.capabilities.model.deployment.runtime.applied_store.AppliedModelDeploymentStore",
       "target": "noetrium_platform.capabilities.model.deployment.runtime.applied.AppliedModelDeployment"
     },
@@ -4629,6 +4654,21 @@
       "kind": "references",
       "source": "noetrium_platform.composition.host_runtime_verification.HostInventoryRuntimeVerification",
       "target": "noetrium_platform.capabilities.model.serving.api.host_verification_ports.HostInventoryProvider"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
+      "target": "noetrium_platform.composition.model_management.ManagementPlaneAuthorities"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
+      "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.model_management.ManagementPlaneAuthorities",
+      "target": "noetrium_platform.composition.platform_meta.PlatformMetaAuthorities"
     },
     {
       "kind": "references",
@@ -13919,6 +13959,11 @@
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.checkpoint.runtime.restore.RunCheckpointRestorer",
       "target": "noetrium_platform.research.experimentation.checkpoint.api.results.RunRestoreResult"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.composition.model_replica_sharding.ModelReplicaShardPlan",
+      "target": "noetrium_platform.research.experimentation.composition.model_replica_sharding.ModelReplicaWorker"
     },
     {
       "kind": "references",
@@ -25656,6 +25701,133 @@
     },
     {
       "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 184,
+      "methods": [
+        "__init__",
+        "_target_count",
+        "_deployment",
+        "ensure"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "name": "LocalModelReplicaPoolRuntime",
+      "nesting": [
+        "LocalModelReplicaPoolRuntime"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
+      "system_key": "model/deployment",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "compute",
+        "deployment",
+        "deployment_id",
+        "endpoint",
+        "replica_index",
+        "status"
+      ],
+      "kind": "dataclass",
+      "line": 81,
+      "methods": [
+        "placement_digest"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "name": "ModelReplicaPlacement",
+      "nesting": [
+        "ModelReplicaPlacement"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPlacement",
+      "system_key": "model/deployment",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 117,
+      "methods": [
+        "__init__",
+        "assert_healthy",
+        "close",
+        "__enter__",
+        "__exit__"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "name": "ModelReplicaPoolLease",
+      "nesting": [
+        "ModelReplicaPoolLease"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolLease",
+      "system_key": "model/deployment",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "placements",
+        "report_digest",
+        "request_digest"
+      ],
+      "kind": "dataclass",
+      "line": 95,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "name": "ModelReplicaPoolReport",
+      "nesting": [
+        "ModelReplicaPoolReport"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolReport",
+      "system_key": "model/deployment",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "compute",
+        "cwd",
+        "endpoint_candidate_count",
+        "endpoint_host",
+        "engine",
+        "extra_args",
+        "model_id",
+        "pool_id",
+        "python_environment_id",
+        "replica_count",
+        "scope",
+        "tags"
+      ],
+      "kind": "dataclass",
+      "line": 42,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "name": "ModelReplicaPoolRequest",
+      "nesting": [
+        "ModelReplicaPoolRequest"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolRequest",
+      "system_key": "model/deployment",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
       ],
@@ -37240,6 +37412,56 @@
     },
     {
       "bases": [],
+      "decorators": [
+        "dataclass(slots=True)"
+      ],
+      "fields": [
+        "_closed",
+        "_model_controller",
+        "_orchestration_group",
+        "_stop",
+        "execution_pool",
+        "management"
+      ],
+      "kind": "dataclass",
+      "line": 31,
+      "methods": [
+        "start_background_controllers",
+        "assert_healthy",
+        "close",
+        "__enter__",
+        "__exit__"
+      ],
+      "module": "noetrium_platform.composition.managed_research_runtime",
+      "name": "ManagedResearchRuntime",
+      "nesting": [
+        "ManagedResearchRuntime"
+      ],
+      "qualname": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 22,
+      "methods": [
+        "__init__",
+        "wait"
+      ],
+      "module": "noetrium_platform.composition.managed_research_runtime",
+      "name": "_EventStop",
+      "nesting": [
+        "_EventStop"
+      ],
+      "qualname": "noetrium_platform.composition.managed_research_runtime._EventStop",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
@@ -37262,7 +37484,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 77,
+      "line": 86,
       "methods": [
         "__init__",
         "open",
@@ -37290,11 +37512,12 @@
         "execution_environments",
         "host",
         "models",
+        "platform_meta",
         "python_environments",
         "scopes"
       ],
       "kind": "dataclass",
-      "line": 66,
+      "line": 74,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -37819,13 +38042,14 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 26,
+      "line": 35,
       "methods": [
         "__init__",
         "model_admission",
         "open_orchestration_group",
         "open_experiment_group",
         "compute_lease_guard_factory",
+        "endpoint_lease_guard_factory",
         "open_model_io_group",
         "close_orchestration_group",
         "close_experiment_group",
@@ -71065,7 +71289,7 @@
         "scheduler"
       ],
       "kind": "dataclass",
-      "line": 22,
+      "line": 24,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.composition",
       "name": "InMemoryComputeStack",
@@ -72358,7 +72582,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 196,
+      "line": 201,
       "methods": [
         "__init__",
         "store",
@@ -72380,7 +72604,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 458,
+      "line": 463,
       "methods": [
         "__init__",
         "_task_group_for",
@@ -72404,7 +72628,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 678,
+      "line": 722,
       "methods": [
         "__init__",
         "spec",
@@ -72429,7 +72653,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 841,
+      "line": 885,
       "methods": [
         "__init__",
         "profile",
@@ -72455,7 +72679,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 629,
+      "line": 673,
       "methods": [
         "__init__",
         "lifecycle",
@@ -83308,6 +83532,58 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "binding_set_digest",
+        "plan_digest",
+        "shard_plan",
+        "workers"
+      ],
+      "kind": "dataclass",
+      "line": 60,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.experimentation.composition.model_replica_sharding",
+      "name": "ModelReplicaShardPlan",
+      "nesting": [
+        "ModelReplicaShardPlan"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.composition.model_replica_sharding.ModelReplicaShardPlan",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "binding_digest",
+        "capacity_units",
+        "deployment_generation",
+        "deployment_id",
+        "worker_digest",
+        "worker_scope_id"
+      ],
+      "kind": "dataclass",
+      "line": 24,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.experimentation.composition.model_replica_sharding",
+      "name": "ModelReplicaWorker",
+      "nesting": [
+        "ModelReplicaWorker"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.composition.model_replica_sharding.ModelReplicaWorker",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "branch_id",
         "branch_writes",
         "environment_generation",
@@ -92393,6 +92669,21 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPlacement"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolLease"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolReport"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime.ModelDeploymentRuntime",
       "target": "noetrium_platform.capabilities.model.deployment.runtime.applied.AppliedModelDeployment"
     },
@@ -92945,6 +93236,11 @@
       "kind": "constructs",
       "source": "noetrium_platform.composition.agent_turn_projection.AgentTurnJournalProjection",
       "target": "noetrium_platform.composition.agent_turn_projection.AgentTurnTrajectory"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
+      "target": "noetrium_platform.composition.managed_research_runtime._EventStop"
     },
     {
       "kind": "constructs",
@@ -96243,13 +96539,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3202,
-    "classes": 3153,
-    "constructor_edges": 860,
+    "association_edges": 3211,
+    "classes": 3162,
+    "constructor_edges": 864,
     "inheritance_edges": 138,
-    "module_import_edges": 5471,
+    "module_import_edges": 5503,
     "parse_errors": 0,
-    "python_modules": 2528,
+    "python_modules": 2533,
     "registry_authorities": 20,
     "registry_nodes": 172,
     "top_level_systems": 16
@@ -99176,6 +99472,42 @@
       "target": "noetrium_platform.foundation.kernel.kernel.leaf_contract"
     },
     {
+      "source": "noetrium_platform.capabilities.model.deployment.composition",
+      "target": "noetrium_platform.capabilities.model.deployment.replica_pool"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "target": "noetrium_platform.capabilities.model.deployment.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "target": "noetrium_platform.capabilities.model.deployment.runtime.templates"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "target": "noetrium_platform.foundation.scope.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "target": "noetrium_platform.infrastructure.resources.allocation.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "target": "noetrium_platform.infrastructure.resources.allocation.composition"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "target": "noetrium_platform.infrastructure.resources.compute.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "target": "noetrium_platform.infrastructure.resources.lease.api"
+    },
+    {
       "source": "noetrium_platform.capabilities.model.deployment.runtime",
       "target": "noetrium_platform.capabilities.model.deployment.applied_store"
     },
@@ -101840,6 +102172,10 @@
       "target": "noetrium_platform.capabilities.participant.core.api.runtime"
     },
     {
+      "source": "noetrium_platform.composition",
+      "target": "noetrium_platform.managed_research_runtime"
+    },
+    {
       "source": "noetrium_platform.composition.agent_turn",
       "target": "noetrium_platform.capabilities.participant.core.api.lifecycle"
     },
@@ -102200,6 +102536,30 @@
       "target": "noetrium_platform.research.experimentation.run.manifest.api"
     },
     {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.composition.model_management"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.composition.research_execution_pool"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.infrastructure.resources.directory.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.research.execution.admission.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.research.execution.scheduling.api"
+    },
+    {
       "source": "noetrium_platform.composition.method_telemetry_sink",
       "target": "noetrium_platform.capabilities.participant.method.api"
     },
@@ -102253,6 +102613,10 @@
     },
     {
       "source": "noetrium_platform.composition.model_management",
+      "target": "noetrium_platform.capabilities.model.deployment.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.capabilities.model.deployment.runtime"
     },
     {
@@ -102262,6 +102626,10 @@
     {
       "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.composition.platform_meta"
+    },
+    {
+      "source": "noetrium_platform.composition.model_management",
+      "target": "noetrium_platform.composition.research_execution_pool"
     },
     {
       "source": "noetrium_platform.composition.model_management",
@@ -102314,6 +102682,10 @@
     {
       "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.infrastructure.resources.compute.api"
+    },
+    {
+      "source": "noetrium_platform.composition.model_management",
+      "target": "noetrium_platform.infrastructure.resources.compute.composition"
     },
     {
       "source": "noetrium_platform.composition.model_management",
@@ -102826,6 +103198,14 @@
     {
       "source": "noetrium_platform.composition.research_execution_pool",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.research_execution_pool",
+      "target": "noetrium_platform.infrastructure.resources.allocation.api"
+    },
+    {
+      "source": "noetrium_platform.composition.research_execution_pool",
+      "target": "noetrium_platform.infrastructure.resources.allocation.runtime"
     },
     {
       "source": "noetrium_platform.composition.research_execution_pool",
@@ -112884,6 +113264,10 @@
       "target": "noetrium_platform.infrastructure.resources.lease.api"
     },
     {
+      "source": "noetrium_platform.infrastructure.resources.allocation.composition",
+      "target": "noetrium_platform.infrastructure.resources.allocation.local_candidates"
+    },
+    {
       "source": "noetrium_platform.infrastructure.resources.allocation.providers",
       "target": "noetrium_platform.infrastructure.resources.allocation.socket_probe"
     },
@@ -112945,11 +113329,23 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.compute.composition",
+      "target": "noetrium_platform.infrastructure.resources.compute.local_inventory"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.compute.composition",
       "target": "noetrium_platform.infrastructure.resources.compute.runtime"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.compute.composition",
       "target": "noetrium_platform.infrastructure.resources.lease.runtime"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.compute.composition.local_inventory",
+      "target": "noetrium_platform.foundation.scope.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.compute.composition.local_inventory",
+      "target": "noetrium_platform.infrastructure.resources.compute.api"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.compute.providers",
@@ -113345,6 +113741,10 @@
     },
     {
       "source": "noetrium_platform.platform",
+      "target": "noetrium_platform.composition.managed_research_runtime"
+    },
+    {
+      "source": "noetrium_platform.platform",
       "target": "noetrium_platform.composition.research_campaign"
     },
     {
@@ -113382,6 +113782,10 @@
     {
       "source": "noetrium_platform.platform",
       "target": "noetrium_platform.infrastructure.resources.compute.api"
+    },
+    {
+      "source": "noetrium_platform.platform",
+      "target": "noetrium_platform.infrastructure.resources.directory.api"
     },
     {
       "source": "noetrium_platform.platform",
@@ -117021,6 +117425,26 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.composition",
+      "target": "noetrium_platform.research.experimentation.api"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.composition",
+      "target": "noetrium_platform.research.experimentation.model_replica_sharding"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.composition.model_replica_sharding",
+      "target": "noetrium_platform.capabilities.model.api"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.composition.model_replica_sharding",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.composition.model_replica_sharding",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.composition.model_replica_sharding",
       "target": "noetrium_platform.research.experimentation.api"
     },
     {
@@ -121659,9 +122083,27 @@
       "top_system": "model"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.capabilities.model.deployment.replica_pool"
+      ],
       "module": "noetrium_platform.capabilities.model.deployment.composition",
       "path": "noetrium_platform/capabilities/model/deployment/composition/__init__.py",
+      "system_key": "model/deployment",
+      "top_system": "model"
+    },
+    {
+      "imports": [
+        "noetrium_platform.capabilities.model.deployment.api",
+        "noetrium_platform.capabilities.model.deployment.runtime.templates",
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.scope.api",
+        "noetrium_platform.infrastructure.resources.allocation.api",
+        "noetrium_platform.infrastructure.resources.allocation.composition",
+        "noetrium_platform.infrastructure.resources.compute.api",
+        "noetrium_platform.infrastructure.resources.lease.api"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
       "system_key": "model/deployment",
       "top_system": "model"
     },
@@ -124596,7 +125038,9 @@
       "top_system": "participant"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.managed_research_runtime"
+      ],
       "module": "noetrium_platform.composition",
       "path": "noetrium_platform/composition/__init__.py",
       "system_key": null,
@@ -124806,6 +125250,20 @@
     },
     {
       "imports": [
+        "noetrium_platform.composition.model_management",
+        "noetrium_platform.composition.research_execution_pool",
+        "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.infrastructure.resources.directory.api",
+        "noetrium_platform.research.execution.admission.api",
+        "noetrium_platform.research.execution.scheduling.api"
+      ],
+      "module": "noetrium_platform.composition.managed_research_runtime",
+      "path": "noetrium_platform/composition/managed_research_runtime.py",
+      "system_key": null,
+      "top_system": null
+    },
+    {
+      "imports": [
         "noetrium_platform.capabilities.participant.method.api",
         "noetrium_platform.evidence.observability.capture.api",
         "noetrium_platform.evidence.observability.capture.runtime"
@@ -124835,9 +125293,11 @@
         "noetrium_platform.capabilities.model.assignment.runtime",
         "noetrium_platform.capabilities.model.composition",
         "noetrium_platform.capabilities.model.deployment.api",
+        "noetrium_platform.capabilities.model.deployment.composition",
         "noetrium_platform.capabilities.model.deployment.runtime",
         "noetrium_platform.capabilities.model.qualification.composition",
         "noetrium_platform.composition.platform_meta",
+        "noetrium_platform.composition.research_execution_pool",
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.foundation.scope.api",
         "noetrium_platform.infrastructure.lifecycle.host.api",
@@ -124851,6 +125311,7 @@
         "noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
         "noetrium_platform.infrastructure.resources.compute.api",
+        "noetrium_platform.infrastructure.resources.compute.composition",
         "noetrium_platform.infrastructure.resources.compute.providers",
         "noetrium_platform.infrastructure.resources.directory.api",
         "noetrium_platform.infrastructure.resources.directory.runtime"
@@ -125162,6 +125623,8 @@
         "noetrium_platform.capabilities.model.serving.runtime",
         "noetrium_platform.composition.concurrency",
         "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.infrastructure.resources.allocation.api",
+        "noetrium_platform.infrastructure.resources.allocation.runtime",
         "noetrium_platform.infrastructure.resources.compute.api",
         "noetrium_platform.infrastructure.resources.compute.runtime",
         "noetrium_platform.research.execution.admission.api",
@@ -138059,9 +138522,18 @@
       "top_system": "resource"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.infrastructure.resources.allocation.local_candidates"
+      ],
       "module": "noetrium_platform.infrastructure.resources.allocation.composition",
       "path": "noetrium_platform/infrastructure/resources/allocation/composition/__init__.py",
+      "system_key": "resource/allocation",
+      "top_system": "resource"
+    },
+    {
+      "imports": [],
+      "module": "noetrium_platform.infrastructure.resources.allocation.composition.local_candidates",
+      "path": "noetrium_platform/infrastructure/resources/allocation/composition/local_candidates.py",
       "system_key": "resource/allocation",
       "top_system": "resource"
     },
@@ -138188,11 +138660,22 @@
     {
       "imports": [
         "noetrium_platform.infrastructure.resources.compute.api",
+        "noetrium_platform.infrastructure.resources.compute.local_inventory",
         "noetrium_platform.infrastructure.resources.compute.runtime",
         "noetrium_platform.infrastructure.resources.lease.runtime"
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.composition",
       "path": "noetrium_platform/infrastructure/resources/compute/composition/__init__.py",
+      "system_key": "resource/compute",
+      "top_system": "resource"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.scope.api",
+        "noetrium_platform.infrastructure.resources.compute.api"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.compute.composition.local_inventory",
+      "path": "noetrium_platform/infrastructure/resources/compute/composition/local_inventory.py",
       "system_key": "resource/compute",
       "top_system": "resource"
     },
@@ -138667,6 +139150,7 @@
         "noetrium_platform.capabilities.participant.agent.runtime",
         "noetrium_platform.capabilities.participant.method.api",
         "noetrium_platform.capabilities.participant.method.runtime",
+        "noetrium_platform.composition.managed_research_runtime",
         "noetrium_platform.composition.research_campaign",
         "noetrium_platform.composition.research_execution_pool",
         "noetrium_platform.evidence.artifact.content.api",
@@ -138677,6 +139161,7 @@
         "noetrium_platform.infrastructure.lifecycle.host.composition.authorities",
         "noetrium_platform.infrastructure.lifecycle.process.api",
         "noetrium_platform.infrastructure.resources.compute.api",
+        "noetrium_platform.infrastructure.resources.directory.api",
         "noetrium_platform.product.operator.runtime.run_control_application",
         "noetrium_platform.research.execution.admission.api",
         "noetrium_platform.research.execution.scheduling.api",
@@ -142146,10 +142631,23 @@
     },
     {
       "imports": [
-        "noetrium_platform.research.experimentation.api"
+        "noetrium_platform.research.experimentation.api",
+        "noetrium_platform.research.experimentation.model_replica_sharding"
       ],
       "module": "noetrium_platform.research.experimentation.composition",
       "path": "noetrium_platform/research/experimentation/composition/__init__.py",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "imports": [
+        "noetrium_platform.capabilities.model.api",
+        "noetrium_platform.capabilities.model.serving.endpoint.api",
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.research.experimentation.api"
+      ],
+      "module": "noetrium_platform.research.experimentation.composition.model_replica_sharding",
+      "path": "noetrium_platform/research/experimentation/composition/model_replica_sharding.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -143914,7 +144412,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "36b3a76db0b8876362f08708ca335371d6f36e1c",
+  "source_git_sha": "3a85a7c08da841d10c1b73e2ffb2f432c29306a6",
   "system_import_edges": [
     {
       "count": 108,
@@ -144072,7 +144570,7 @@
       "target": "execution"
     },
     {
-      "count": 387,
+      "count": 389,
       "source": "experimentation",
       "target": "experimentation"
     },
@@ -144082,7 +144580,7 @@
       "target": "governance"
     },
     {
-      "count": 1,
+      "count": 3,
       "source": "experimentation",
       "target": "model"
     },
@@ -144092,7 +144590,7 @@
       "target": "participant"
     },
     {
-      "count": 103,
+      "count": 104,
       "source": "experimentation",
       "target": "platform"
     },
@@ -144137,17 +144635,17 @@
       "target": "governance"
     },
     {
-      "count": 447,
+      "count": 450,
       "source": "model",
       "target": "model"
     },
     {
-      "count": 105,
+      "count": 106,
       "source": "model",
       "target": "platform"
     },
     {
-      "count": 9,
+      "count": 13,
       "source": "model",
       "target": "resource"
     },
@@ -144157,7 +144655,7 @@
       "target": "runtime"
     },
     {
-      "count": 10,
+      "count": 11,
       "source": "model",
       "target": "scope"
     },
@@ -144352,7 +144850,7 @@
       "target": "platform"
     },
     {
-      "count": 82,
+      "count": 85,
       "source": "resource",
       "target": "resource"
     },
@@ -144362,7 +144860,7 @@
       "target": "runtime"
     },
     {
-      "count": 16,
+      "count": 17,
       "source": "resource",
       "target": "scope"
     },
