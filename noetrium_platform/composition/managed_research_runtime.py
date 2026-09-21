@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from pathlib import Path
 from threading import Event
 from typing import Mapping
@@ -50,8 +51,13 @@ class ManagedResearchRuntime:
     ) -> None:
         if self._closed:
             raise RuntimeError("managed research runtime is closed")
-        if model_reconcile_interval_seconds <= 0:
-            raise ValueError("model reconcile interval must be positive")
+        if isinstance(model_reconcile_interval_seconds, bool) or not isinstance(
+            model_reconcile_interval_seconds, (int, float)
+        ):
+            raise TypeError("model reconcile interval must be a real number")
+        interval = float(model_reconcile_interval_seconds)
+        if not math.isfinite(interval) or interval <= 0:
+            raise ValueError("model reconcile interval must be finite and positive")
         if self._model_controller is not None and not self._model_controller.done():
             return
         stop = _EventStop(self._stop)
@@ -61,7 +67,7 @@ class ManagedResearchRuntime:
                 lane_kind=ExecutionLaneKind.BLOCKING_IO,
             ),
             self.management.models.controller.run,
-            interval_seconds=model_reconcile_interval_seconds,
+            interval_seconds=interval,
             stop=stop,
         )
 
