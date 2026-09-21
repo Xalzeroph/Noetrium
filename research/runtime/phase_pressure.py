@@ -269,6 +269,7 @@ def run(args: argparse.Namespace) -> dict:
                 )
     finally:
         group.close(cancel_pending=True)
+        concurrency.close()
 
     summary = {
         "schema": "noetrium.phase-pressure-summary.v1",
