@@ -14,6 +14,7 @@ from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentL
 from noetrium_platform.capabilities.model.asset.providers import HuggingFaceCliModelSource
 from noetrium_platform.capabilities.model.asset.runtime import LocalModelAssetStorage, ModelAssetManager, ModelAssetRegistry
 from noetrium_platform.capabilities.model.composition import DeploymentModelAssetReferences
+from noetrium_platform.capabilities.model.deployment.composition import LocalModelReplicaPoolRuntime
 from noetrium_platform.capabilities.model.assignment.runtime import ModelAssignmentManager
 from noetrium_platform.capabilities.model.deployment.runtime import (
     AppliedModelDeploymentStore,
@@ -59,6 +60,7 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage im
 
 from noetrium_platform.infrastructure.lifecycle.service.composition import compose_local_process_backend, build_service_supervisor
 from noetrium_platform.infrastructure.lifecycle.host.composition import HostComposition, compose_local_host
+from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.platform_meta import (
     PlatformMetaAuthorities,
     build_durable_platform_meta,
@@ -249,4 +251,29 @@ def build_local_management_plane(
     )
 
 
-__all__ = ["LocalModelServiceRuntimeFactory", "ManagementPlaneAuthorities", "build_local_management_plane"]
+def bind_local_model_replica_pool(
+    plane: ManagementPlaneAuthorities,
+    execution_pool: ResearchExecutionPool,
+) -> LocalModelReplicaPoolRuntime:
+    """Bind automatic local model placement to shared research resource authority."""
+
+    if not isinstance(plane, ManagementPlaneAuthorities):
+        raise TypeError("model replica pool requires ManagementPlaneAuthorities")
+    if not isinstance(execution_pool, ResearchExecutionPool):
+        raise TypeError("model replica pool requires ResearchExecutionPool")
+    return LocalModelReplicaPoolRuntime(
+        deployment_catalog=plane.models.deployment_catalog,
+        deployment_runtime=plane.models.deployment_runtime,
+        fleet=plane.models.fleet,
+        compute_scheduler=plane.compute_scheduler,
+        endpoint_allocations=plane.platform_meta.endpoint_allocations,
+        compute_lease_guards=execution_pool.compute_lease_guard_factory(
+            plane.compute_scheduler
+        ),
+        endpoint_lease_guards=execution_pool.endpoint_lease_guard_factory(
+            plane.platform_meta.endpoint_allocations
+        ),
+    )
+
+
+__all__ = ["LocalModelServiceRuntimeFactory", "ManagementPlaneAuthorities", "bind_local_model_replica_pool", "build_local_management_plane"]

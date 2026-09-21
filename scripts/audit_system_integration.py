@@ -89,8 +89,48 @@ def channel_for_path(path: Path) -> str:
     }.get(first, "other")
 
 
+def leaf_contract_ready(package_path: Path) -> bool:
+    boundary = package_path / "api" / "boundary.py"
+    owner = package_path / "runtime" / "owner.py"
+    composition = package_path / "composition" / "default.py"
+    if not all(path.is_file() for path in (boundary, owner, composition)):
+        return False
+    try:
+        boundary_text = boundary.read_text(encoding="utf-8")
+        owner_text = owner.read_text(encoding="utf-8")
+        composition_text = composition.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return (
+        "SystemLeafContract" in boundary_text
+        and "SystemLeafRuntimeOwner" in owner_text
+        and "def compose(" in composition_text
+    )
+
+
+
+def aggregate_shell_ready(package_path: Path, child_keys: tuple[str, ...]) -> bool:
+    if not child_keys:
+        return False
+    allowed = {"__init__.py", "boundary.py"}
+    for shape in ("api", "runtime", "providers", "composition"):
+        root = package_path / shape
+        if not root.is_dir():
+            continue
+        for path in root.glob("*.py"):
+            if path.name not in allowed:
+                return False
+    return True
+
+
 def build_report() -> dict:
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    children_by_key: dict[str, list[str]] = {str(key): [] for key in catalog}
+    for child_key, child_spec in catalog.items():
+        parent = child_spec.get("parent")
+        if isinstance(parent, str):
+            normalized = parent.replace(".", "/")
+            children_by_key.setdefault(normalized, []).append(str(child_key))
     downstream_document = json.loads(DOWNSTREAM.read_text(encoding="utf-8"))
     downstream = downstream_document.get("systems", downstream_document)
     if not isinstance(downstream, list):
@@ -163,6 +203,13 @@ def build_report() -> dict:
             status = "public-facade-missing"
         elif production:
             status = "production-integrated"
+        elif leaf_contract_ready(package_path):
+            status = "extensible-leaf-ready"
+        elif aggregate_shell_ready(
+            package_path,
+            tuple(sorted(children_by_key.get(key, ()))),
+        ):
+            status = "aggregate-ready"
         elif scripts or research:
             status = "operations-or-research-only"
         elif tests:
