@@ -4,13 +4,17 @@ import argparse
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
-import hashlib
 import json
 from pathlib import Path
 import re
 import time
 
-from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
+from noetrium_platform.capabilities.model.request.api import (
+    ModelRequestRecorderPort,
+)
+from noetrium_platform.capabilities.model.request.composition import (
+    build_directory_model_request_recorder,
+)
 from noetrium_platform.capabilities.model.serving.endpoint import (
     ModelEndpointDispatchPoolPort,
     OperationalModelEndpointReplicaSet,
@@ -22,14 +26,12 @@ from noetrium_platform.capabilities.model.serving.runtime import ModelAdmissionR
 from noetrium_platform.foundation.kernel.concurrency.composition import (
     build_concurrency_runtime,
 )
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
 from noetrium_platform.foundation.kernel.kernel import (
     EffectCertainty,
     EffectClass,
     EffectReceipt,
     ExecutionContext,
     ImmutableModelIdentity,
-    canonical_bytes,
     canonical_digest,
 )
 from noetrium_platform.research.execution.workflow.api import (
@@ -121,9 +123,13 @@ class PooledSelfConsistencyReasoner:
         self,
         pool: ModelEndpointDispatchPoolPort,
         binding: SelfConsistencyGSM8KModelBinding,
+        recorder: ModelRequestRecorderPort,
     ) -> None:
+        if not isinstance(recorder, ModelRequestRecorderPort):
+            raise TypeError("Self-Consistency reasoner requires ModelRequestRecorderPort")
         self._pool = pool
         self._binding = binding
+        self._recorder = recorder
         self._invocations: list[SelfConsistencyInvocation] = []
 
     @property
@@ -160,14 +166,11 @@ class PooledSelfConsistencyReasoner:
         }
         if self._binding.disable_thinking:
             body["chat_template_kwargs"] = {"enable_thinking": False}
-        body_bytes = canonical_bytes(body)
         request_id = (
             f"{request.context.run_id}:{request.context.task_id or 'task'}:"
             f"{request.agent_id}:sample-{sample_index:02d}"
         )
-        prompt_bytes = prompt.encode("utf-8")
-        envelope = ModelRequestEnvelope(
-            schema_version="model-request.v1",
+        envelope = self._recorder.record(
             request_id=request_id,
             context=request.context,
             role=request.agent_id,
@@ -175,22 +178,15 @@ class PooledSelfConsistencyReasoner:
             prompt_generation_id=self._binding.prompt_generation_id,
             prompt_id=COT_GSM8K_PROMPT_BUNDLE_ID,
             prompt_digest=COT_GSM8K_PROMPT_DIGEST,
-            request_body=ArtifactBlobRef(
-                canonical_digest(body),
-                len(body_bytes),
-                "application/json",
-            ),
-            compiled_prompt=ArtifactBlobRef(
-                hashlib.sha256(prompt_bytes).hexdigest(),
-                len(prompt_bytes),
-                "text/plain",
-            ),
+            request_body=body,
+            compiled_prompt_text=prompt,
             source_artifact_refs=(
                 f"prompt:{COT_GSM8K_PROMPT_DIGEST}",
                 f"task:{request.context.task_id or 'unknown'}",
                 f"sample:{sample_index}",
             ),
         )
+        self._recorder.verify_visible_request(envelope, body)
         dispatch = self._pool.complete(envelope, body)
         endpoint_request = dispatch.request
         response = dispatch.response
@@ -250,19 +246,22 @@ def run_self_consistency_gsm8k_episode(
     run_id: str,
     state_root: str | Path,
     evidence: MethodEvidencePort,
+    recorder: ModelRequestRecorderPort,
     runtime_binding_digest: str,
 ) -> SelfConsistencyGSM8KEpisodeResult:
     if not isinstance(task, GSM8KMaterializedTask):
         raise TypeError("Self-Consistency task must be GSM8KMaterializedTask")
     if not isinstance(evidence, MethodEvidencePort):
         raise TypeError("Self-Consistency episode requires MethodEvidencePort")
+    if not isinstance(recorder, ModelRequestRecorderPort):
+        raise TypeError("Self-Consistency episode requires ModelRequestRecorderPort")
     if (
         type(runtime_binding_digest) is not str
         or len(runtime_binding_digest) != 64
         or any(char not in "0123456789abcdef" for char in runtime_binding_digest)
     ):
         raise ValueError("Self-Consistency runtime_binding_digest must be SHA-256")
-    reasoner = PooledSelfConsistencyReasoner(endpoint_pool, binding)
+    reasoner = PooledSelfConsistencyReasoner(endpoint_pool, binding, recorder)
     execution = ExecutionContext(
         run_id,
         f"trace:{run_id}",
@@ -360,6 +359,7 @@ def _run_substitute_task(
     task_root.mkdir(parents=True, exist_ok=True)
     started = time.time()
     run_id = f"self-consistency-qwen3-8b-substitute:{task.record.task_id}"
+    recorder = build_directory_model_request_recorder(task_root / "model-requests")
     binding = SelfConsistencyGSM8KModelBinding(
         served_model_name=served_model_name,
         model=model,
@@ -377,9 +377,16 @@ def _run_substitute_task(
             run_id=run_id,
             state_root=task_root / "machine",
             evidence=DirectoryEventMethodEvidence(task_root / "evidence"),
+            recorder=recorder,
             runtime_binding_digest=runtime_binding_digest,
         )
         result = episode.method_result
+        request_record_count = len(tuple((task_root / "model-requests" / "requests").glob("*.json")))
+        if request_record_count != SELF_CONSISTENCY_GSM8K_FIDELITY.reasoning_path_count:
+            raise RuntimeError(
+                "Self-Consistency durable model-request cardinality drift: "
+                f"{request_record_count}"
+            )
         if result.status is not MethodRunStatus.SUCCEEDED:
             raise RuntimeError(
                 f"Self-Consistency method status={result.status.value}: {result.failure}"
@@ -419,6 +426,7 @@ def _run_substitute_task(
             "answer_histogram": _histogram(samples),
             "correct": selected == gold,
             "model_call_count": len(episode.invocations),
+            "model_request_record_count": request_record_count,
             "deployment_call_counts": tuple(sorted(deployment_counts.items())),
             "invocations": tuple(asdict(item) for item in episode.invocations),
             "effect_receipt_count": len(result.effect_receipts),
@@ -442,6 +450,7 @@ def _run_substitute_task(
             "answer_histogram": (),
             "correct": False,
             "model_call_count": None,
+            "model_request_record_count": None,
             "deployment_call_counts": (),
             "invocations": (),
             "effect_receipt_count": None,
@@ -506,6 +515,7 @@ def run_external_qwen_substitute_pool(
         "model_identity_digest": deployments[0].model_identity_digest,
         "replica_set_digest": replicas.replica_set_digest,
         "method_program_digest": SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM.program_digest,
+        "model_request_schema": "model-request.v1",
         "sampling": {
             "reasoning_path_count": SELF_CONSISTENCY_GSM8K_FIDELITY.reasoning_path_count,
             "temperature": SELF_CONSISTENCY_GSM8K_FIDELITY.temperature,
@@ -565,6 +575,7 @@ def run_external_qwen_substitute_pool(
         "per_replica_capacity": per_replica_capacity,
         "environment_kind": "text_world",
         "runtime_binding_digest": runtime_binding_digest,
+        "model_request_schema": "model-request.v1",
     }
     manifest["manifest_digest"] = canonical_digest(manifest)
     (output_root / "experiment-manifest.json").write_text(
@@ -647,6 +658,11 @@ def run_external_qwen_substitute_pool(
             for row in completed
             if row["model_call_count"] is not None
         ),
+        "model_request_record_count": sum(
+            int(row["model_request_record_count"])
+            for row in completed
+            if row["model_request_record_count"] is not None
+        ),
         "replica_set_digest": replicas.replica_set_digest,
         "pool_snapshot": pool_snapshot,
         "total_duration_seconds": time.time() - started,
@@ -668,8 +684,11 @@ def run_external_qwen_substitute_pool(
         raise RuntimeError(
             f"Self-Consistency substitute run failed closed: {len(completed)}/{count} tasks succeeded"
         )
-    if summary["model_call_count"] != count * SELF_CONSISTENCY_GSM8K_FIDELITY.reasoning_path_count:
+    expected_calls = count * SELF_CONSISTENCY_GSM8K_FIDELITY.reasoning_path_count
+    if summary["model_call_count"] != expected_calls:
         raise RuntimeError("Self-Consistency model-call cardinality drift")
+    if summary["model_request_record_count"] != expected_calls:
+        raise RuntimeError("Self-Consistency durable model-request cardinality drift")
     print(json.dumps(summary, sort_keys=True))
     return summary
 
