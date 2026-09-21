@@ -141,7 +141,8 @@ def run(args: argparse.Namespace) -> dict:
     records: list[dict] = []
     try:
         for package, program in selected:
-            for repetition in range(args.repetitions):
+            for local_repetition in range(args.repetitions):
+                repetition = args.repetition_offset + local_repetition
                 output = args.output_root / package / f"rep-{repetition:02d}"
                 output.mkdir(parents=True, exist_ok=True)
                 factory = StructuredViewChatRequestFactory(
@@ -277,6 +278,8 @@ def run(args: argparse.Namespace) -> dict:
         "source_sha": source_sha,
         "shard_index": args.shard_index,
         "shard_count": args.shard_count,
+        "repetition_offset": args.repetition_offset,
+        "repetitions": args.repetitions,
         "package_count": len(selected),
         "run_count": len(records),
         "succeeded": sum(row["status"] == "succeeded" for row in records),
@@ -300,6 +303,7 @@ def main() -> int:
     parser.add_argument("--shard-index", type=int, required=True)
     parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--repetitions", type=int, default=3)
+    parser.add_argument("--repetition-offset", type=int, default=0)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--max-tokens", type=int, default=384)
     parser.add_argument("--temperature", type=float, default=0.0)
@@ -311,6 +315,8 @@ def main() -> int:
         raise ValueError("invalid shard index/count")
     if args.repetitions < 1:
         raise ValueError("repetitions must be positive")
+    if args.repetition_offset < 0:
+        raise ValueError("repetition_offset must be non-negative")
     run(args)
     return 0
 
