@@ -6,8 +6,64 @@ from typing import Mapping, Protocol
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, JsonInput
 
-from .contracts import ModelEndpointRequest, ModelEndpointResponse
+from .contracts import ModelEndpointRequest, ModelEndpointResponse, ModelEndpointRoute
 from .qualification import QualifiedModelEndpointBinding
+
+
+@dataclass(frozen=True, slots=True)
+class OperationalModelEndpointReplica:
+    """One exact live route admitted for non-claim operational dispatch.
+
+    This contract freezes only transport identity and capacity. It carries no
+    qualification certificate and therefore must never be interpreted as
+    scientific model equivalence or claim eligibility.
+    """
+
+    route: ModelEndpointRoute
+    capacity: int
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.route, ModelEndpointRoute):
+            raise TypeError("operational endpoint replica requires ModelEndpointRoute")
+        if type(self.capacity) is not int or self.capacity <= 0:
+            raise ValueError("operational endpoint replica capacity must be positive")
+
+    @property
+    def deployment_id(self) -> str:
+        return self.route.deployment_id
+
+    @property
+    def deployment_generation(self) -> str:
+        return self.route.deployment_generation
+
+    @property
+    def max_admitted_concurrency(self) -> int:
+        return self.capacity
+
+
+@dataclass(frozen=True, slots=True)
+class OperationalModelEndpointReplicaSet:
+    """Frozen route set for substitute/non-claim endpoint dispatch."""
+
+    replicas: tuple[OperationalModelEndpointReplica, ...]
+    replica_set_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.replicas) is not tuple or not self.replicas:
+            raise ValueError("operational endpoint replica set requires at least one replica")
+        if any(not isinstance(item, OperationalModelEndpointReplica) for item in self.replicas):
+            raise TypeError("operational endpoint replica set contains invalid replica")
+        ordered = tuple(sorted(self.replicas, key=lambda item: item.deployment_id))
+        if len({item.deployment_id for item in ordered}) != len(ordered):
+            raise ValueError("operational endpoint replica deployments must be unique")
+        object.__setattr__(self, "replicas", ordered)
+        object.__setattr__(self, "replica_set_digest", canonical_digest({
+            "schema": "operational-model-endpoint-replica-set.v1",
+            "replicas": tuple({
+                "route": item.route,
+                "capacity": item.capacity,
+            } for item in ordered),
+        }))
 
 
 @dataclass(frozen=True, slots=True)
@@ -123,6 +179,18 @@ class QualifiedModelEndpointReplicaBindingPort(Protocol):
     ) -> QualifiedModelEndpointReplicaSet: ...
 
 
+class ModelEndpointDispatchPoolPort(Protocol):
+    """Minimal dispatch contract shared by operational and qualified pools."""
+
+    def complete(
+        self,
+        request: ModelRequestEnvelope,
+        body: Mapping[str, JsonInput],
+    ) -> ModelEndpointDispatchResult: ...
+
+    def snapshot(self) -> ModelEndpointPoolSnapshot: ...
+
+
 class AdaptiveModelEndpointPoolPort(Protocol):
     @property
     def replica_set(self) -> QualifiedModelEndpointReplicaSet: ...
@@ -138,9 +206,12 @@ class AdaptiveModelEndpointPoolPort(Protocol):
 
 __all__ = [
     "AdaptiveModelEndpointPoolPort",
+    "ModelEndpointDispatchPoolPort",
     "ModelEndpointDispatchResult",
     "ModelEndpointPoolSnapshot",
     "ModelEndpointReplicaSnapshot",
+    "OperationalModelEndpointReplica",
+    "OperationalModelEndpointReplicaSet",
     "QualifiedModelEndpointReplicaBindingPort",
     "QualifiedModelEndpointReplicaSet",
 ]

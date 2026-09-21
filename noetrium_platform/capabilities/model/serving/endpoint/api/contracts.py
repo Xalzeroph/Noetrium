@@ -30,7 +30,7 @@ def _require_sha256(value: object, field: str) -> str:
 
 @dataclass(frozen=True, slots=True)
 class ModelEndpointRequest:
-    """One request sent to an already-bound, qualified model endpoint."""
+    """One request sent to an exact deployment endpoint."""
 
     request: ModelRequestEnvelope
     deployment_id: str
@@ -60,7 +60,7 @@ class ModelEndpointRequest:
 
 @dataclass(frozen=True, slots=True)
 class ModelEndpointRoute:
-    """Operational route bound to one qualified deployment identity."""
+    """Operational route bound to one exact deployment identity."""
 
     deployment_id: str
     deployment_generation: str

@@ -15,10 +15,13 @@ from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelop
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointResponse,
     ModelEndpointRoute,
+    OperationalModelEndpointReplica,
+    OperationalModelEndpointReplicaSet,
     QualifiedModelEndpointBinding,
     QualifiedModelEndpointReplicaSet,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
+    AdaptiveOperationalModelEndpointPool,
     AdaptiveQualifiedModelEndpointPool,
 )
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
@@ -81,10 +84,14 @@ def _envelope(index: int = 0) -> ModelRequestEnvelope:
 
 class _GateEndpoint:
     def __init__(self, binding, gate: Event, entered: list[str], lock: Lock) -> None:
-        self._route = ModelEndpointRoute(
-            binding.deployment_id,
-            binding.deployment_generation,
-            binding.base_url,
+        self._route = (
+            binding.route
+            if isinstance(binding, OperationalModelEndpointReplica)
+            else ModelEndpointRoute(
+                binding.deployment_id,
+                binding.deployment_generation,
+                binding.base_url,
+            )
         )
         self._gate = gate
         self._entered = entered
@@ -108,10 +115,14 @@ class _GateEndpoint:
 
 class _FailingEndpoint:
     def __init__(self, binding, fail: bool) -> None:
-        self._route = ModelEndpointRoute(
-            binding.deployment_id,
-            binding.deployment_generation,
-            binding.base_url,
+        self._route = (
+            binding.route
+            if isinstance(binding, OperationalModelEndpointReplica)
+            else ModelEndpointRoute(
+                binding.deployment_id,
+                binding.deployment_generation,
+                binding.base_url,
+            )
         )
         self._fail = fail
         self.calls = 0
@@ -274,3 +285,76 @@ def test_project_provider_materializes_replica_pool_instead_of_single_endpoint()
     assert materialized == [replica_set]
     assert client.binding.deployment_id == replica_set.bindings[0].deployment_id
     assert provider.bind(requirement) is client
+
+
+def _operational(index: int, *, capacity: int = 2) -> OperationalModelEndpointReplica:
+    return OperationalModelEndpointReplica(
+        ModelEndpointRoute(
+            f"operational-{index}",
+            f"{index + 20:064x}",
+            f"http://127.0.0.1:{19000 + index}",
+        ),
+        capacity,
+    )
+
+
+def test_operational_replica_set_binds_route_and_capacity_without_qualification() -> None:
+    first = OperationalModelEndpointReplicaSet((_operational(0, capacity=1), _operational(1)))
+    second = OperationalModelEndpointReplicaSet((_operational(0, capacity=2), _operational(1)))
+    assert first.replica_set_digest != second.replica_set_digest
+    assert len(first.replica_set_digest) == 64
+
+
+def test_operational_pool_spreads_pressure_without_claiming_qualification() -> None:
+    replica_set = OperationalModelEndpointReplicaSet(
+        tuple(_operational(index, capacity=1) for index in range(2))
+    )
+    gate = Event()
+    lock = Lock()
+    entered: list[str] = []
+    pool = AdaptiveOperationalModelEndpointPool(
+        replica_set,
+        lambda replica: _GateEndpoint(replica, gate, entered, lock),
+    )
+
+    def invoke(index: int):
+        return pool.complete(
+            _envelope(index),
+            {"model": "qwen", "messages": ({"role": "user", "content": "x"},)},
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(invoke, index) for index in range(2)]
+        deadline = time.monotonic() + 3
+        while len(entered) < 2 and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert set(entered) == {"operational-0", "operational-1"}
+        gate.set()
+        results = [future.result(timeout=3) for future in futures]
+    assert {row.response.deployment_id for row in results} == {
+        "operational-0", "operational-1"
+    }
+    assert pool.snapshot().selection_sequence == 2
+
+
+def test_operational_pool_does_not_replay_uncertain_failure() -> None:
+    replica_set = OperationalModelEndpointReplicaSet((_operational(0), _operational(1)))
+    endpoints = {}
+
+    def factory(replica):
+        endpoint = _FailingEndpoint(replica, fail=replica.deployment_id == "operational-0")
+        endpoints[replica.deployment_id] = endpoint
+        return endpoint
+
+    pool = AdaptiveOperationalModelEndpointPool(
+        replica_set,
+        factory,
+        failure_cooldown_seconds=60,
+        max_failure_cooldown_seconds=60,
+    )
+    with pytest.raises(RuntimeError, match="replica failed"):
+        pool.complete(_envelope(90), {"model": "qwen"})
+    assert endpoints["operational-0"].calls == 1
+    assert endpoints["operational-1"].calls == 0
+    result = pool.complete(_envelope(91), {"model": "qwen"})
+    assert result.response.deployment_id == "operational-1"

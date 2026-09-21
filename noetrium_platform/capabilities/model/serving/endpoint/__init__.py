@@ -1,9 +1,12 @@
-from .runtime import AdaptiveQualifiedModelEndpointPool, ModelEndpointPoolUnavailable
+from .runtime import AdaptiveOperationalModelEndpointPool, AdaptiveQualifiedModelEndpointPool, ModelEndpointPoolUnavailable
 from .api import (
     AdaptiveModelEndpointPoolPort,
+    ModelEndpointDispatchPoolPort,
     ModelEndpointDispatchResult,
     ModelEndpointPoolSnapshot,
     ModelEndpointReplicaSnapshot,
+    OperationalModelEndpointReplica,
+    OperationalModelEndpointReplicaSet,
     QualifiedModelEndpointReplicaBindingPort,
     QualifiedModelEndpointReplicaSet,
     AsyncJsonHttpTransportPort,
@@ -21,10 +24,12 @@ from .api import (
 )
 
 __all__ = [
-    "AdaptiveModelEndpointPoolPort", "AdaptiveQualifiedModelEndpointPool",
+    "AdaptiveModelEndpointPoolPort", "AdaptiveOperationalModelEndpointPool", "AdaptiveQualifiedModelEndpointPool",
+    "ModelEndpointDispatchPoolPort",
     "AsyncJsonHttpTransportPort", "JsonHttpResponse", "ModelEndpointDispatchResult",
     "ModelEndpointError", "ModelEndpointPoolSnapshot", "ModelEndpointPoolUnavailable",
-    "ModelEndpointReplicaSnapshot", "QualifiedModelEndpointReplicaBindingPort",
+    "ModelEndpointReplicaSnapshot", "OperationalModelEndpointReplica",
+    "OperationalModelEndpointReplicaSet", "QualifiedModelEndpointReplicaBindingPort",
     "QualifiedModelEndpointReplicaSet",
     "ModelEndpointFactoryPort", "ModelEndpointPort", "ModelEndpointRequest",
     "ModelEndpointResponse", "ModelEndpointRoute", "QualifiedModelClosurePublication",

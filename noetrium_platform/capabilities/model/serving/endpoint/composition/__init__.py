@@ -2,6 +2,7 @@
 
 from .binding import FrozenDeploymentEndpointBinder, FrozenEndpointBinding
 from .qualified import (
+    build_adaptive_operational_endpoint_pool,
     build_adaptive_qualified_endpoint_pool,
     build_openai_compatible_qualified_endpoint,
 )
@@ -19,6 +20,7 @@ __all__ = [
     "PersistedQualifiedModelEndpointBinding",
     "QualifiedModelClosureReadError",
     "QualifiedModelDeploymentClosure",
+    "build_adaptive_operational_endpoint_pool",
     "build_adaptive_qualified_endpoint_pool",
     "build_openai_compatible_qualified_endpoint",
     "build_openai_compatible_runtime_canary_endpoint",

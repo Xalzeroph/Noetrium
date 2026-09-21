@@ -16,6 +16,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api.replica import (
     ModelEndpointDispatchResult,
     ModelEndpointPoolSnapshot,
     ModelEndpointReplicaSnapshot,
+    OperationalModelEndpointReplicaSet,
     QualifiedModelEndpointReplicaSet,
 )
 
@@ -38,18 +39,13 @@ class _ReplicaRuntime:
     last_selected_sequence: int = 0
 
 
-class AdaptiveQualifiedModelEndpointPool:
-    """Work-conserving request routing across exact qualified model replicas.
-
-    Selection is operational only: every replica must already prove the same
-    immutable model, stack, tokenizer, chat template, role and prompt generation.
-    Requests are never transparently replayed after an endpoint failure because
-    the failed invocation may have an uncertain external effect/cost.
-    """
+class _AdaptiveModelEndpointPoolCore:
+    """Work-conserving routing shared by operational and qualified pools."""
 
     def __init__(
         self,
-        replica_set: QualifiedModelEndpointReplicaSet,
+        replicas: tuple[object, ...],
+        replica_set_digest: str,
         endpoint_factory: Callable[[object], ModelEndpointPort],
         *,
         ewma_alpha: float = 0.2,
@@ -57,8 +53,14 @@ class AdaptiveQualifiedModelEndpointPool:
         max_failure_cooldown_seconds: float = 30.0,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
-        if not isinstance(replica_set, QualifiedModelEndpointReplicaSet):
-            raise TypeError("adaptive model endpoint pool requires qualified replica set")
+        if type(replicas) is not tuple or not replicas:
+            raise ValueError("adaptive model endpoint pool requires at least one replica")
+        if (
+            type(replica_set_digest) is not str
+            or len(replica_set_digest) != 64
+            or any(char not in "0123456789abcdef" for char in replica_set_digest)
+        ):
+            raise ValueError("adaptive model endpoint pool requires replica set digest")
         if not callable(endpoint_factory):
             raise TypeError("adaptive model endpoint pool requires endpoint factory")
         if (
@@ -74,7 +76,7 @@ class AdaptiveQualifiedModelEndpointPool:
                 raise ValueError(f"endpoint pool {name} must be finite and positive")
         if max_failure_cooldown_seconds < failure_cooldown_seconds:
             raise ValueError("endpoint pool max cooldown cannot be shorter than base cooldown")
-        self._replica_set = replica_set
+        self._replica_set_digest = replica_set_digest
         self._clock = clock
         self._ewma_alpha = float(ewma_alpha)
         self._failure_cooldown = float(failure_cooldown_seconds)
@@ -82,10 +84,10 @@ class AdaptiveQualifiedModelEndpointPool:
         self._lock = Lock()
         self._selection_sequence = 0
         self._runtimes: dict[str, _ReplicaRuntime] = {}
-        self._bindings = {
-            item.deployment_id: item for item in self._replica_set.bindings
-        }
-        for binding in self._replica_set.bindings:
+        self._bindings = {item.deployment_id: item for item in replicas}
+        if len(self._bindings) != len(replicas):
+            raise ValueError("adaptive model endpoint pool deployments must be unique")
+        for binding in replicas:
             endpoint = endpoint_factory(binding)
             if endpoint.route.deployment_id != binding.deployment_id:
                 raise ValueError("endpoint factory deployment identity drift")
@@ -95,10 +97,6 @@ class AdaptiveQualifiedModelEndpointPool:
                 endpoint=endpoint,
                 capacity=binding.max_admitted_concurrency,
             )
-
-    @property
-    def replica_set(self) -> QualifiedModelEndpointReplicaSet:
-        return self._replica_set
 
     def _select(self) -> tuple[int, object, _ReplicaRuntime]:
         now = self._clock()
@@ -110,7 +108,7 @@ class AdaptiveQualifiedModelEndpointPool:
             ]
             if not available:
                 raise ModelEndpointPoolUnavailable(
-                    "all qualified model endpoint replicas are cooling down after failures"
+                    "all model endpoint replicas are cooling down after failures"
                 )
 
             def score(row):
@@ -205,7 +203,7 @@ class AdaptiveQualifiedModelEndpointPool:
         return ModelEndpointDispatchResult(
             request=physical_request,
             response=response,
-            replica_set_digest=self._replica_set.replica_set_digest,
+            replica_set_digest=self._replica_set_digest,
             selection_sequence=sequence,
         )
 
@@ -228,13 +226,68 @@ class AdaptiveQualifiedModelEndpointPool:
                 for deployment_id, runtime in sorted(self._runtimes.items())
             )
             return ModelEndpointPoolSnapshot(
-                replica_set_digest=self._replica_set.replica_set_digest,
+                replica_set_digest=self._replica_set_digest,
                 selection_sequence=self._selection_sequence,
                 replicas=rows,
             )
 
 
+class AdaptiveOperationalModelEndpointPool(_AdaptiveModelEndpointPoolCore):
+    """Adaptive dispatch across frozen routes without qualification claims."""
+
+    def __init__(
+        self,
+        replica_set: OperationalModelEndpointReplicaSet,
+        endpoint_factory: Callable[[object], ModelEndpointPort],
+        **kwargs,
+    ) -> None:
+        if not isinstance(replica_set, OperationalModelEndpointReplicaSet):
+            raise TypeError("operational endpoint pool requires operational replica set")
+        self._operational_replica_set = replica_set
+        super().__init__(
+            replica_set.replicas,
+            replica_set.replica_set_digest,
+            endpoint_factory,
+            **kwargs,
+        )
+
+    @property
+    def replica_set(self) -> OperationalModelEndpointReplicaSet:
+        return self._operational_replica_set
+
+
+class AdaptiveQualifiedModelEndpointPool(_AdaptiveModelEndpointPoolCore):
+    """Adaptive dispatch across replicas proven scientifically interchangeable.
+
+    Every replica must already prove the same immutable model, stack, tokenizer,
+    chat template, role and prompt generation. Requests are never transparently
+    replayed after an endpoint failure because the failed invocation may have an
+    uncertain external effect/cost.
+    """
+
+    def __init__(
+        self,
+        replica_set: QualifiedModelEndpointReplicaSet,
+        endpoint_factory: Callable[[object], ModelEndpointPort],
+        **kwargs,
+    ) -> None:
+        if not isinstance(replica_set, QualifiedModelEndpointReplicaSet):
+            raise TypeError("qualified endpoint pool requires qualified replica set")
+        self._qualified_replica_set = replica_set
+        super().__init__(
+            replica_set.bindings,
+            replica_set.replica_set_digest,
+            endpoint_factory,
+            **kwargs,
+        )
+
+    @property
+    def replica_set(self) -> QualifiedModelEndpointReplicaSet:
+        return self._qualified_replica_set
+
+
 __all__ = [
+    "AdaptiveOperationalModelEndpointPool",
     "AdaptiveQualifiedModelEndpointPool",
     "ModelEndpointPoolUnavailable",
 ]

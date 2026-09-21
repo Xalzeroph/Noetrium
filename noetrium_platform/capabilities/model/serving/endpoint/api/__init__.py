@@ -9,9 +9,12 @@ from .contracts import (
 from .ports import AsyncJsonHttpTransportPort, ModelEndpointFactoryPort, ModelEndpointPort
 from .replica import (
     AdaptiveModelEndpointPoolPort,
+    ModelEndpointDispatchPoolPort,
     ModelEndpointDispatchResult,
     ModelEndpointPoolSnapshot,
     ModelEndpointReplicaSnapshot,
+    OperationalModelEndpointReplica,
+    OperationalModelEndpointReplicaSet,
     QualifiedModelEndpointReplicaBindingPort,
     QualifiedModelEndpointReplicaSet,
 )
@@ -22,8 +25,9 @@ __all__ = [
     "AsyncJsonHttpTransportPort", "JsonHttpResponse", "ModelEndpointError",
     "ModelEndpointObserverPort", "ModelEndpointFactoryPort", "ModelEndpointPort", "ModelEndpointRequest",
     "ModelEndpointResponse", "ModelEndpointRoute", "QualifiedModelClosurePublication",
-    "AdaptiveModelEndpointPoolPort", "ModelEndpointDispatchResult",
+    "AdaptiveModelEndpointPoolPort", "ModelEndpointDispatchPoolPort", "ModelEndpointDispatchResult",
     "ModelEndpointPoolSnapshot", "ModelEndpointReplicaSnapshot",
+    "OperationalModelEndpointReplica", "OperationalModelEndpointReplicaSet",
     "QualifiedModelEndpointReplicaBindingPort",
     "QualifiedModelEndpointReplicaSet",
     "QualifiedModelClosurePublicationReceipt", "QualifiedModelEndpointBinding",
