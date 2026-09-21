@@ -42,6 +42,8 @@ if not isinstance(METHOD_PROGRAM, api.MethodProgram):
     raise TypeError("method module must compile MethodProgram")
 if not isinstance(STUDY_SPEC, api.AgentStudySpec):
     raise TypeError("study module must export AgentStudySpec")
+if METHOD_SPEC.method_id != STUDY_SPEC.method_id:
+    raise ValueError("method and study must share one method identity")
 if not callable(build_study):
     raise TypeError("study module must export build_study")
 if not callable(api.compile_research_method):
@@ -228,7 +230,7 @@ def doctor_project(
     checks.append(_check(
         "standard_bindings",
         compile_ready,
-        "AgentMethodSpec, MethodProgram and AgentStudySpec compile through noetrium.api",
+        "method, study and MethodProgram share one identity through noetrium.api",
         "resolve project compile readiness: " + compile_detail,
     ))
 
