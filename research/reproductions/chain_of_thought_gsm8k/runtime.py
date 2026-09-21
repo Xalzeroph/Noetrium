@@ -146,6 +146,11 @@ def run_external_qwen_substitute(
     identity_digest = str(identity_doc["identity_digest"])
     if _SHA64.fullmatch(deployment_generation) is None or _SHA64.fullmatch(identity_digest) is None:
         raise ValueError("deployment/identity digests must be SHA-256")
+    identity_payload = dict(identity_doc)
+    identity_payload.pop("identity_digest", None)
+    expected_identity_digest = canonical_digest(identity_payload)
+    if identity_digest != expected_identity_digest:
+        raise ValueError("external model identity digest mismatch")
 
     generation_options: dict[str, object] = {
         "temperature": 0,
