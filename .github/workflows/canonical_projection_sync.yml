@@ -55,8 +55,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Projection commits are repository-maintenance commits owned by the
+          # repository identity. Keep automated convergence from introducing a
+          # second contributor identity into canonical history.
+          git config user.name "Xalzeroph"
+          git config user.email "203086430+Xalzeroph@users.noreply.github.com"
 
           for attempt in 1 2 3 4 5; do
             echo "platform projection convergence attempt ${attempt}"
