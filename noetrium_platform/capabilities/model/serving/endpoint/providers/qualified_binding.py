@@ -16,7 +16,12 @@ from noetrium_platform.capabilities.model.serving.api import (
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
-from ..api import ModelEndpointRoute, QualifiedModelEndpointBinding, QualifiedModelEndpointBindingPort
+from ..api import (
+    ModelEndpointRoute,
+    QualifiedModelEndpointBinding,
+    QualifiedModelEndpointBindingPort,
+    QualifiedModelEndpointReplicaSet,
+)
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
@@ -78,18 +83,17 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
         }
         self._clock = clock
 
-    def binding_for(self, *, role: str, prompt_generation: str) -> QualifiedModelEndpointBinding:
-        """Revalidate one receipt and every canary bound to the requested role.
-
-        Algorithm-Complexity: O(N)
-        Algorithm-Rationale: N is the number of passed canaries for this deployment/role; each must remain bound to the exact route, process generation, validity window, and receipt evidence set.
-        """
-        if not role.strip() or not prompt_generation.strip():
-            raise ValueError("qualified model binding role and prompt generation are required")
-        deployment_id = self._roles.deployment_for(role)
+    def _binding_for_deployment(
+        self,
+        deployment_id: str,
+        *,
+        role: str,
+        prompt_generation: str,
+        now: float,
+    ) -> QualifiedModelEndpointBinding:
         deployment = self._deployments.get(deployment_id)
         if deployment is None:
-            raise ValueError(f"qualified role assignment has no deployment: {deployment_id}")
+            raise ValueError(f"qualified deployment is missing: {deployment_id}")
         route = self._routes.get(deployment_id)
         if route is None:
             raise ValueError(f"qualified deployment has no endpoint route: {deployment_id}")
@@ -120,9 +124,6 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
             raise ValueError("runtime qualification receipt heartbeat evidence drift")
         if role not in receipt.qualified_roles:
             raise ValueError(f"runtime qualification receipt does not qualify role: {role}")
-        now = float(self._clock())
-        if not math.isfinite(now):
-            raise ValueError("runtime qualification binding clock must be finite")
         if receipt.created_at > now:
             raise ValueError("runtime qualification receipt is from the future")
         if receipt.valid_until < now:
@@ -168,6 +169,69 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
             completion_path=route.completion_path,
             timeout_s=route.timeout_s,
         )
+
+    def binding_for(self, *, role: str, prompt_generation: str) -> QualifiedModelEndpointBinding:
+        """Revalidate the canonical frozen deployment assigned to one role."""
+
+        if not role.strip() or not prompt_generation.strip():
+            raise ValueError("qualified model binding role and prompt generation are required")
+        now = float(self._clock())
+        if not math.isfinite(now):
+            raise ValueError("runtime qualification binding clock must be finite")
+        deployment_id = self._roles.deployment_for(role)
+        if deployment_id not in self._deployments:
+            raise ValueError(f"qualified role assignment has no deployment: {deployment_id}")
+        return self._binding_for_deployment(
+            deployment_id,
+            role=role,
+            prompt_generation=prompt_generation,
+            now=now,
+        )
+
+    def replica_set_for(
+        self,
+        *,
+        role: str,
+        prompt_generation: str,
+    ) -> QualifiedModelEndpointReplicaSet:
+        """Discover every currently valid replica of the canonical role binding.
+
+        The role manifest still freezes the scientific model choice to exactly one
+        canonical deployment. Additional deployments are eligible only when they
+        prove the exact same immutable model and stack and independently carry a
+        fresh qualification receipt plus passed canary evidence for the role.
+        Stale/unqualified operational replicas are omitted; the canonical role
+        assignment itself must remain valid or resolution fails closed.
+        """
+
+        canonical = self.binding_for(
+            role=role,
+            prompt_generation=prompt_generation,
+        )
+        now = float(self._clock())
+        values = [canonical]
+        for deployment_id, deployment in sorted(self._deployments.items()):
+            if deployment_id == canonical.deployment_id:
+                continue
+            if deployment.stack.identity != canonical.model:
+                continue
+            if deployment.stack.digest() != canonical.model_stack_digest:
+                continue
+            if deployment_id not in self._routes:
+                continue
+            if (deployment_id, role) not in self._canaries_by_binding:
+                continue
+            try:
+                binding = self._binding_for_deployment(
+                    deployment_id,
+                    role=role,
+                    prompt_generation=prompt_generation,
+                    now=now,
+                )
+            except (KeyError, ValueError):
+                continue
+            values.append(binding)
+        return QualifiedModelEndpointReplicaSet(tuple(values))
 
 
 __all__ = [

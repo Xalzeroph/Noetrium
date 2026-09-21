@@ -257,7 +257,8 @@ def test_qualified_builder_uses_frozen_binding_concurrency() -> None:
     group = runtime.open_task_group(f"qualified-builder:{uuid4().hex}")
     registry = _RecordingRegistry()
     identity = ImmutableModelIdentity(
-        "model", "repo/model", "rev", "engine", "1", "bfloat16", None, 4096
+        "model", "repo/model", "rev", "engine", "1", "bfloat16", None, 4096,
+        "tokenizer-revision",
     )
     binding = QualifiedModelEndpointBinding(
         role="planner",
@@ -272,6 +273,8 @@ def test_qualified_builder_uses_frozen_binding_concurrency() -> None:
         prompt_generation="prompt-v1",
         max_admitted_concurrency=3,
         runtime_canary_evidence_digests=("f" * 64,),
+        tokenizer_sha256="1" * 64,
+        chat_template_sha256=None,
     )
     try:
         endpoint = build_openai_compatible_qualified_endpoint(

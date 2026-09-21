@@ -68,12 +68,27 @@ def _publication_maps(publication: QualifiedModelClosurePublication):
 def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> None:
     deployments, routes, receipts, canaries = _publication_maps(publication)
     roles_by_deployment: dict[str, set[str]] = {key: set() for key in deployments}
+    roles_by_stack: dict[str, set[str]] = {}
     for assignment in publication.role_manifest.assignments:
-        if assignment.deployment_id not in deployments:
+        deployment = deployments.get(assignment.deployment_id)
+        if deployment is None:
             raise QualifiedModelClosurePublicationError(
                 f"qualified role references missing deployment: {assignment.role}"
             )
         roles_by_deployment[assignment.deployment_id].add(assignment.role)
+        roles_by_stack.setdefault(deployment.stack.digest(), set()).add(assignment.role)
+
+    required_roles_by_deployment: dict[str, set[str]] = {}
+    for deployment_id, deployment in deployments.items():
+        # Scientific identity remains one canonical deployment per role. Exact
+        # same-stack deployments are operational replicas and must independently
+        # qualify every role served by that immutable stack.
+        required_roles = set(roles_by_stack.get(deployment.stack.digest(), set()))
+        if not required_roles:
+            raise QualifiedModelClosurePublicationError(
+                f"qualified deployment is an orphan with no canonical stack role: {deployment_id}"
+            )
+        required_roles_by_deployment[deployment_id] = required_roles
 
     for deployment_id, deployment in deployments.items():
         route = routes[deployment_id]
@@ -105,8 +120,8 @@ def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> N
             raise QualifiedModelClosurePublicationError(
                 f"runtime qualification evidence identity drift: {deployment_id}"
             )
-        required_roles = roles_by_deployment[deployment_id]
-        if not required_roles or not required_roles.issubset(set(receipt.qualified_roles)):
+        required_roles = required_roles_by_deployment[deployment_id]
+        if not required_roles.issubset(set(receipt.qualified_roles)):
             raise QualifiedModelClosurePublicationError(
                 f"runtime qualification does not cover frozen roles: {deployment_id}"
             )
@@ -143,8 +158,10 @@ def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> N
             raise QualifiedModelClosurePublicationError("runtime canary deployment generation drift")
         if evidence.route_digest != canonical_digest(route):
             raise QualifiedModelClosurePublicationError("runtime canary route digest drift")
-        if evidence.role not in roles_by_deployment[evidence.deployment_id]:
-            raise QualifiedModelClosurePublicationError("runtime canary role is not frozen for deployment")
+        if evidence.role not in required_roles_by_deployment[evidence.deployment_id]:
+            raise QualifiedModelClosurePublicationError(
+                "runtime canary role is not qualified for deployment stack"
+            )
         if (evidence.process_pid, evidence.process_start_marker, evidence.argv_digest) != (
             receipt.process_pid, receipt.process_start_marker, receipt.argv_digest
         ):
@@ -161,7 +178,7 @@ def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> N
         covered.add((evidence.deployment_id, evidence.role))
     required = {
         (deployment_id, role)
-        for deployment_id, roles in roles_by_deployment.items()
+        for deployment_id, roles in required_roles_by_deployment.items()
         for role in roles
     }
     if covered != required:

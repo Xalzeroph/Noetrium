@@ -66,6 +66,7 @@ from noetrium_platform.capabilities.model.request.composition.recorder import (
 )
 from noetrium_platform.capabilities.model.serving.endpoint.composition import (
     PersistedQualifiedModelEndpointBinding,
+    build_adaptive_qualified_endpoint_pool,
     build_openai_compatible_qualified_endpoint,
     load_qualified_model_deployment_closure,
 )
@@ -937,12 +938,22 @@ class QualifiedProjectModelBinding:
                     admission_registry=self._admission,
                 )
 
+            def replica_pool_factory(replica_set):
+                return build_adaptive_qualified_endpoint_pool(
+                    replica_set,
+                    api_key=api_key,
+                    timeout_s=timeout_s,
+                    task_group=self._task_group,
+                    admission_registry=self._admission,
+                )
+
             self._provider: ProjectModelProviderPort = QualifiedModelProjectProvider(
                 profile,
                 bindings,
                 endpoint_factory,
                 self._model_requests,
                 tokenization_provider,
+                replica_pool_factory=replica_pool_factory,
             )
         except BaseException:
             if self._task_group is not None:

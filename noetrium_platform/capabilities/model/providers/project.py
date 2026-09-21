@@ -23,14 +23,17 @@ from noetrium_platform.capabilities.model.api.tokenization import (
     ModelRequestTokenizationProviderPort,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    AdaptiveModelEndpointPoolPort,
     ModelEndpointPort,
     ModelEndpointRequest,
     QualifiedModelEndpointBinding,
     QualifiedModelEndpointBindingPort,
+    QualifiedModelEndpointReplicaSet,
 )
 
 
 EndpointFactory = Callable[[QualifiedModelEndpointBinding], ModelEndpointPort]
+ReplicaPoolFactory = Callable[[QualifiedModelEndpointReplicaSet], AdaptiveModelEndpointPoolPort]
 
 
 _DIAGNOSTIC_URL = re.compile(r"(?i)\b(?:https?|wss?)://[^\s<>\"']+")
@@ -148,6 +151,79 @@ class _QualifiedProjectModelClient:
         )
 
 
+class _AdaptiveQualifiedProjectModelClient:
+    __slots__ = (
+        "_binding", "_requirement", "_pool", "_model_requests", "_tokenization"
+    )
+
+    def __init__(
+        self,
+        binding: ProjectModelBinding,
+        requirement: ModelCapabilityRequirement,
+        pool: AdaptiveModelEndpointPoolPort,
+        model_requests: ModelRequestRecorderPort,
+        tokenization: ModelRequestTokenizationPort,
+    ) -> None:
+        self._binding = binding
+        self._requirement = requirement
+        self._pool = pool
+        self._model_requests = model_requests
+        self._tokenization = tokenization
+
+    @property
+    def binding(self) -> ProjectModelBinding:
+        return self._binding
+
+    def complete(self, request: ProjectModelRequest) -> ProjectModelResponse:
+        if not isinstance(request, ProjectModelRequest):
+            raise TypeError("project model request must be typed")
+        if request.requirement_digest != self._binding.requirement_digest:
+            raise ValueError("project model request requirement drift")
+        envelope = request.envelope
+        if envelope.role != self._binding.role or envelope.model != self._binding.model:
+            raise ValueError("project model request model binding drift")
+        if (
+            envelope.prompt_generation_id != self._requirement.prompt_generation_id
+            or envelope.prompt_id != self._requirement.prompt_id
+            or envelope.prompt_digest != self._requirement.prompt_digest
+        ):
+            raise ValueError("project model request prompt provenance drift")
+        if self._requirement.tool_schema_sha256 is not None:
+            if (
+                envelope.tool_schema_bundle is None
+                or envelope.tool_schema_bundle.content_sha256
+                != self._requirement.tool_schema_sha256
+            ):
+                raise ValueError("project model request tool schema provenance drift")
+        self._model_requests.verify_visible_request(envelope, request.body)
+        budget = self._tokenization.inspect(
+            request.body,
+            context_length=self._binding.model.context_length,
+        )
+        if budget.tokenization_digest != self._binding.request_tokenization_digest:
+            raise ValueError("project model request tokenization provenance drift")
+        if not budget.fits:
+            raise ModelRequestContextExceeded(budget)
+
+        dispatch = self._pool.complete(envelope, request.body)
+        response = dispatch.response
+        if response.request_id != envelope.request_id:
+            raise ValueError("project model response request provenance drift")
+        return ProjectModelResponse(
+            request_digest=request.request_digest,
+            binding_digest=self._binding.digest(),
+            response_digest=response.response_digest,
+            text=response.text,
+            tool_calls=response.tool_calls,
+            finish_reason=response.finish_reason,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens,
+            operational_deployment_id=dispatch.request.deployment_id,
+            operational_deployment_generation=dispatch.request.deployment_generation,
+            operational_dispatch_digest=dispatch.dispatch_digest,
+        )
+
+
 class QualifiedModelProjectProvider(ProjectModelProviderPort):
     """Reference adapter from qualified Model authorities to the project seam."""
 
@@ -158,12 +234,14 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
         endpoint_factory: EndpointFactory,
         model_requests: ModelRequestRecorderPort,
         tokenization_provider: ModelRequestTokenizationProviderPort,
+        replica_pool_factory: ReplicaPoolFactory | None = None,
     ) -> None:
         if not isinstance(profile, ModelProviderProfile):
             raise TypeError("project model provider profile must be typed")
         self._profile = profile
         self._bindings = bindings
         self._endpoint_factory = endpoint_factory
+        self._replica_pool_factory = replica_pool_factory
         self._model_requests = model_requests
         if not isinstance(tokenization_provider, ModelRequestTokenizationProviderPort):
             raise TypeError("project model provider requires ModelRequestTokenizationProviderPort")
@@ -313,8 +391,34 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
             input_schema_id=requirement.input_schema_id,
             output_schema_id=requirement.output_schema_id,
         )
+        replica_set = None
+        replica_resolver = getattr(self._bindings, "replica_set_for", None)
+        if self._replica_pool_factory is not None and callable(replica_resolver):
+            try:
+                replica_set = replica_resolver(
+                    role=requirement.role,
+                    prompt_generation=requirement.prompt_generation_id or "",
+                )
+            except Exception as exc:
+                raise ModelProjectBindingError(
+                    (_diagnostic(
+                        self._profile,
+                        requirement,
+                        ModelBindingDiagnosticCode.QUALIFIED_BINDING_UNAVAILABLE,
+                        f"qualified model replica set unavailable: {_exception_detail(exc)}",
+                    ),)
+                ) from exc
         try:
-            endpoint = self._endpoint_factory(binding)
+            endpoint = (
+                self._endpoint_factory(binding)
+                if replica_set is None
+                else None
+            )
+            replica_pool = (
+                None
+                if replica_set is None
+                else self._replica_pool_factory(replica_set)
+            )
         except Exception as exc:
             raise ModelProjectBindingError(
                 (
@@ -326,7 +430,7 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
                     ),
                 )
             ) from exc
-        if (
+        if endpoint is not None and (
             endpoint.route.deployment_id != binding.deployment_id
             or endpoint.route.deployment_generation != binding.deployment_generation
         ):
@@ -340,11 +444,21 @@ class QualifiedModelProjectProvider(ProjectModelProviderPort):
                     ),
                 )
             )
-        client = _QualifiedProjectModelClient(
-            project_binding, requirement, endpoint, self._model_requests, tokenization
-        )
+        if replica_pool is None:
+            assert endpoint is not None
+            client = _QualifiedProjectModelClient(
+                project_binding, requirement, endpoint, self._model_requests, tokenization
+            )
+        else:
+            client = _AdaptiveQualifiedProjectModelClient(
+                project_binding,
+                requirement,
+                replica_pool,
+                self._model_requests,
+                tokenization,
+            )
         self._client_cache[cache_key] = client
         return client
 
 
-__all__ = ["EndpointFactory", "QualifiedModelProjectProvider"]
+__all__ = ["EndpointFactory", "QualifiedModelProjectProvider", "ReplicaPoolFactory"]

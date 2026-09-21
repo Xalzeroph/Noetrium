@@ -532,6 +532,9 @@ class ProjectModelResponse:
     input_tokens: int | None = None
     output_tokens: int | None = None
     selection_receipt: ModelBindingSelectionReceipt | None = None
+    operational_deployment_id: str | None = None
+    operational_deployment_generation: str | None = None
+    operational_dispatch_digest: str | None = None
 
     def __post_init__(self) -> None:
         _sha256(self.request_digest, "project model response request_digest")
@@ -551,6 +554,22 @@ class ProjectModelResponse:
                 raise ValueError("project model response selection request drift")
             if self.selection_receipt.selected_binding_digest != self.binding_digest:
                 raise ValueError("project model response selection binding drift")
+        operational = (
+            self.operational_deployment_id,
+            self.operational_deployment_generation,
+            self.operational_dispatch_digest,
+        )
+        if any(value is not None for value in operational):
+            if not all(isinstance(value, str) and value.strip() for value in operational):
+                raise ValueError("project model operational dispatch identity must be complete")
+            _sha256(
+                self.operational_deployment_generation,
+                "project model response operational_deployment_generation",
+            )
+            _sha256(
+                self.operational_dispatch_digest,
+                "project model response operational_dispatch_digest",
+            )
 
 
 class ModelBindingDiagnosticSeverity(StrEnum):

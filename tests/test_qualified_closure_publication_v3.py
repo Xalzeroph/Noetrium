@@ -51,7 +51,7 @@ def _digest(seed: str) -> str:
 def _publication() -> QualifiedModelClosurePublication:
     identity = ImmutableModelIdentity(
         "planner-model", "repo/model", "revision", "vllm", "0.1",
-        "bfloat16", None, 8192,
+        "bfloat16", None, 8192, "tokenizer-revision",
     )
     stack = ModelStackSpec(
         identity,

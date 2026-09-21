@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from noetrium_platform.capabilities.model.serving.api import ModelAdmissionRegistryPort
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    QualifiedModelEndpointReplicaSet,
     ModelEndpointPort,
     ModelEndpointRoute,
     QualifiedModelEndpointBinding,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
+from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
+    AdaptiveQualifiedModelEndpointPool,
+)
 from noetrium_platform.capabilities.model.serving.endpoint.providers import (
     OpenAICompatibleModelEndpoint,
     AsyncioJsonTransport,
@@ -38,7 +42,7 @@ def build_openai_compatible_qualified_endpoint(
             deployment_generation=binding.deployment_generation,
             base_url=binding.base_url,
             completion_path=binding.completion_path,
-            timeout_s=timeout_s or binding.timeout_s,
+            timeout_s=binding.timeout_s if timeout_s is None else timeout_s,
         ),
         transport=AsyncioJsonTransport(headers=headers),
         task_group=task_group,
@@ -47,4 +51,29 @@ def build_openai_compatible_qualified_endpoint(
     )
 
 
-__all__ = ["build_openai_compatible_qualified_endpoint"]
+__all__ = ["build_adaptive_qualified_endpoint_pool", "build_openai_compatible_qualified_endpoint"]
+
+
+
+def build_adaptive_qualified_endpoint_pool(
+    replica_set: QualifiedModelEndpointReplicaSet,
+    *,
+    api_key: str = "",
+    timeout_s: float | None = None,
+    task_group: TaskGroupPort,
+    admission_registry: ModelAdmissionRegistryPort,
+    observers: tuple[object, ...] = (),
+) -> AdaptiveQualifiedModelEndpointPool:
+    """Bind all qualified replicas to one adaptive operational dispatcher."""
+
+    def factory(binding: QualifiedModelEndpointBinding) -> ModelEndpointPort:
+        return build_openai_compatible_qualified_endpoint(
+            binding,
+            api_key=api_key,
+            timeout_s=timeout_s,
+            task_group=task_group,
+            admission_registry=admission_registry,
+            observers=observers,
+        )
+
+    return AdaptiveQualifiedModelEndpointPool(replica_set, factory)

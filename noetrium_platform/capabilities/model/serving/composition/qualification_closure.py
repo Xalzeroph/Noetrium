@@ -86,6 +86,24 @@ def qualify_and_publish_model_deployment_closure(
     required_roles = {item.role for item in role_manifest.assignments}
     if not required_roles:
         raise ValueError("qualified closure requires at least one frozen role")
+    roles_by_stack: dict[str, set[str]] = {}
+    for assignment in role_manifest.assignments:
+        deployment = deployment_map[assignment.deployment_id]
+        roles_by_stack.setdefault(deployment.stack.digest(), set()).add(assignment.role)
+    required_roles_by_deployment = {
+        deployment_id: tuple(sorted(roles_by_stack.get(deployment.stack.digest(), set())))
+        for deployment_id, deployment in deployment_map.items()
+    }
+    orphaned = sorted(
+        deployment_id
+        for deployment_id, roles in required_roles_by_deployment.items()
+        if not roles
+    )
+    if orphaned:
+        raise ValueError(
+            "qualified deployments have no canonical role for their exact stack: "
+            f"{orphaned}"
+        )
     probe_roles = {probe.role for probe in canary_probes}
     if probe_roles != required_roles:
         missing = sorted(required_roles - probe_roles)
@@ -111,46 +129,38 @@ def qualify_and_publish_model_deployment_closure(
 
     endpoints = {}
     canary_evidence = []
-    for probe in canary_probes:
-        deployment_id = role_manifest.deployment_for(probe.role)
+    probes_by_role = {probe.role: probe for probe in canary_probes}
+    for deployment_id in sorted(deployment_ids):
         deployment = deployment_map[deployment_id]
         route = route_map[deployment_id]
         heartbeat = heartbeat_map[deployment_id]
-        endpoint = endpoints.get(deployment_id)
-        if endpoint is None:
-            endpoint = build_openai_compatible_runtime_canary_endpoint(
-                deployment,
-                route,
-                task_group=task_group,
-                admission_registry=admission_registry,
-                api_key=api_keys.get(deployment_id, ""),
-                transport=transports.get(deployment_id),
-            )
-            endpoints[deployment_id] = endpoint
-        canary_evidence.append(
-            run_runtime_canary(
-                endpoint,
-                deployment,
-                route,
-                heartbeat,
-                probe,
-                max_heartbeat_age_seconds=max_heartbeat_age_seconds,
-            )
+        endpoint = build_openai_compatible_runtime_canary_endpoint(
+            deployment,
+            route,
+            task_group=task_group,
+            admission_registry=admission_registry,
+            api_key=api_keys.get(deployment_id, ""),
+            transport=transports.get(deployment_id),
         )
+        endpoints[deployment_id] = endpoint
+        for role in required_roles_by_deployment[deployment_id]:
+            probe = probes_by_role[role]
+            canary_evidence.append(
+                run_runtime_canary(
+                    endpoint,
+                    deployment,
+                    route,
+                    heartbeat,
+                    probe,
+                    max_heartbeat_age_seconds=max_heartbeat_age_seconds,
+                )
+            )
 
     receipts = []
     for deployment_id in sorted(deployment_ids):
         deployment = deployment_map[deployment_id]
         heartbeat = heartbeat_map[deployment_id]
-        roles = tuple(sorted(
-            item.role
-            for item in role_manifest.assignments
-            if item.deployment_id == deployment_id
-        ))
-        if not roles:
-            raise ValueError(
-                f"qualified deployment has no frozen role assignment: {deployment_id}"
-            )
+        roles = required_roles_by_deployment[deployment_id]
         canary_refs = tuple(sorted(
             f"canary:sha256:{item.evidence_digest}"
             for item in canary_evidence
