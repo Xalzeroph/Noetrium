@@ -6,6 +6,7 @@ from pathlib import Path
 from threading import Event
 from typing import Mapping
 
+from noetrium_platform.capabilities.model.deployment.composition import LocalModelReplicaPoolRuntime
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     ExecutionLaneKind,
@@ -16,7 +17,11 @@ from noetrium_platform.research.execution.admission.api import AdmissionBudget
 from noetrium_platform.research.execution.scheduling.api import ExecutionPriority
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
 
-from .model_management import ManagementPlaneAuthorities, build_local_management_plane
+from .model_management import (
+    ManagementPlaneAuthorities,
+    bind_local_model_replica_pool,
+    build_local_management_plane,
+)
 from .research_execution_pool import ResearchExecutionPool
 
 
@@ -34,13 +39,15 @@ class ManagedResearchRuntime:
 
     This owns no scheduling/model/run semantics. It only binds already-existing
     authorities to one structured-concurrency lifetime so downstream code cannot
-    accidentally bypass resource admission, model reconciliation, or shutdown.
+    accidentally bypass resource admission, model reconciliation, automatic
+    model placement, lease renewal, or shutdown.
     """
 
     execution_pool: ResearchExecutionPool
     management: ManagementPlaneAuthorities
     _orchestration_group: object
     _stop: Event
+    model_replica_pool: LocalModelReplicaPoolRuntime | None = None
     _model_controller: TaskHandlePort | None = None
     _closed: bool = False
 
@@ -156,6 +163,7 @@ def build_local_managed_research_runtime(
                 model_storage_pools=model_storage_pools,
                 task_group=group,
             )
+            model_replica_pool = bind_local_model_replica_pool(management, pool)
         except BaseException:
             pool.close_orchestration_group(group, cancel_pending=True)
             raise
@@ -164,6 +172,7 @@ def build_local_managed_research_runtime(
             management=management,
             _orchestration_group=group,
             _stop=Event(),
+            model_replica_pool=model_replica_pool,
         )
         if start_background_controllers:
             runtime.start_background_controllers(
