@@ -1,5 +1,13 @@
 """Shared downstream ALFWorld benchmark cuts for paper reproductions."""
 
+from .authority import (
+    ALFWORLD_RELEASE_AUTHORITY_DIGEST,
+    ALFWORLD_RELEASE_COMMIT,
+    ALFWORLD_RELEASE_PROVIDER,
+    ALFWORLD_RELEASE_REPOSITORY,
+    ALFWORLD_RELEASE_VERSION,
+)
+from .materializer import AlfworldMaterialization, materialize_alfworld_paper_eval
 from .cut import (
     ALFWORLD_BENCHMARK_ID,
     ALFWORLD_PAPER_EVAL_DATASET_PATH,
@@ -23,6 +31,13 @@ from .cut import (
 )
 
 __all__ = [
+    "ALFWORLD_RELEASE_AUTHORITY_DIGEST",
+    "ALFWORLD_RELEASE_COMMIT",
+    "ALFWORLD_RELEASE_PROVIDER",
+    "ALFWORLD_RELEASE_REPOSITORY",
+    "ALFWORLD_RELEASE_VERSION",
+    "AlfworldMaterialization",
+    "materialize_alfworld_paper_eval",
     "ALFWORLD_BENCHMARK_ID",
     "ALFWORLD_PAPER_EVAL_DATASET_PATH",
     "ALFWORLD_PAPER_EVAL_EXPECTED_TASK_COUNT",
