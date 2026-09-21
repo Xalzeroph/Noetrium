@@ -53,6 +53,34 @@ esac
 mkdir -p "$WORK_ROOT"
 WORK_ROOT="$(CDPATH= cd -- "$WORK_ROOT" && pwd)"
 
+# Linked Git worktrees store only a .git pointer inside the checkout. The
+# pointed-to metadata lives under the primary repository and must be visible at
+# the same absolute path inside the bootstrap container. Resolve it without
+# requiring host Git or Python so the host contract remains Docker + POSIX sh.
+GIT_METADATA_ARGS=""
+if [ -f "$ROOT/.git" ]; then
+  GITDIR="$(sed -n 's/^gitdir: //p' "$ROOT/.git")"
+  [ -n "$GITDIR" ] || {
+    echo "Linked worktree .git pointer is invalid: $ROOT/.git" >&2
+    exit 1
+  }
+  case "$GITDIR" in
+    /*) ;;
+    *) GITDIR="$ROOT/$GITDIR" ;;
+  esac
+  GITDIR="$(CDPATH= cd -- "$GITDIR" && pwd -P)"
+  GIT_METADATA_ROOT="$GITDIR"
+  if [ -f "$GITDIR/commondir" ]; then
+    COMMONDIR="$(cat "$GITDIR/commondir")"
+    case "$COMMONDIR" in
+      /*) GIT_METADATA_ROOT="$COMMONDIR" ;;
+      *) GIT_METADATA_ROOT="$GITDIR/$COMMONDIR" ;;
+    esac
+    GIT_METADATA_ROOT="$(CDPATH= cd -- "$GIT_METADATA_ROOT" && pwd -P)"
+  fi
+  GIT_METADATA_ARGS="-v $GIT_METADATA_ROOT:$GIT_METADATA_ROOT:ro"
+fi
+
 docker build \
   --build-arg "DOCKER_CLI_IMAGE=$DOCKER_CLI_IMAGE" \
   --tag "$BOOTSTRAP_IMAGE" \
@@ -65,7 +93,7 @@ docker build \
 # dedicated build/runtime root is writable. Git's safe-directory exception is
 # scoped to this exact read-only checkout; it is needed because the disposable
 # container's uid can differ from the checkout owner on CI or rootless hosts.
-COMMON_ARGS="$DAEMON_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$ROOT"
+COMMON_ARGS="$DAEMON_ARGS $GIT_METADATA_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$ROOT"
 
 if [ "${1:-}" = "build" ]; then
   # shellcheck disable=SC2086
