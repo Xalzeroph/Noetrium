@@ -22,7 +22,7 @@
       "noetrium_platform.infrastructure.lifecycle.api.contracts"
     ]
   },
-  "catalog_digest": "3bd16c445c0584bcaa0a42170e5a6e47c0eac1327612beae27c1f7a3c4772af6",
+  "catalog_digest": "176374b50053df367a16772be458ad56ef9d52c5cf5478fd41a151f6d5ee61fc",
   "direct_symbol_sources": {
     "ActionIdentityViolation": "noetrium_platform.capabilities.environment.api",
     "ActionKind": "noetrium_platform.capabilities.environment.embodied.api",
@@ -269,6 +269,7 @@
     "ComputeLeaseGuardFactoryPort": "noetrium_platform.infrastructure.resources.compute.api",
     "ComputeLeaseGuardPort": "noetrium_platform.infrastructure.resources.compute.api",
     "ComputeLeasePolicy": "noetrium_platform.infrastructure.resources.compute.api",
+    "ComputePlacementUnavailable": "noetrium_platform.infrastructure.resources.compute.api",
     "ComputeRequirement": "noetrium_platform.infrastructure.resources.compute.api",
     "ComputeSchedulerPort": "noetrium_platform.infrastructure.resources.compute.api",
     "ConcurrencyBudget": "noetrium_platform.foundation.kernel.concurrency.api",
@@ -2439,6 +2440,9 @@
       "resource/compute"
     ],
     "ComputeLeasePolicy": [
+      "resource/compute"
+    ],
+    "ComputePlacementUnavailable": [
       "resource/compute"
     ],
     "ComputeRequirement": [
@@ -13209,6 +13213,7 @@
             "ComputeCluster",
             "ComputeGPU",
             "ComputeHost",
+            "ComputePlacementUnavailable",
             "ComputeRequirement",
             "ComputeLeasePolicy",
             "DEFAULT_COMPUTE_LEASE_POLICY",
@@ -13234,6 +13239,7 @@
             "ComputeCluster",
             "ComputeGPU",
             "ComputeHost",
+            "ComputePlacementUnavailable",
             "ComputeRequirement",
             "ComputeLeasePolicy",
             "DEFAULT_COMPUTE_LEASE_POLICY",
@@ -13269,7 +13275,7 @@
       "canonical_authority": "resource",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.resource__compute",
-      "interface_digest": "b2f2922f979a85a90f58d9c00f7b6477b9c4949fa7f85c599dd753664854879f",
+      "interface_digest": "3787b738c3721c2d5bd25ac7f3b01fbc02686499ded0de1e74959682de74fdd7",
       "must_not_own": "environment packaging",
       "node_kind": "facet",
       "owns": "compute resource identity, capacities and provider facts",

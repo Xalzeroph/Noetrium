@@ -19,7 +19,7 @@ Example:
 
 - Registered systems: 172
 - Public API modules: 319
-- Public symbols: 2912
+- Public symbols: 2914
 - Registry digest: c4da8a78a00c12312ca68a1810040ec6762e8bd5a251a21a9fabb94d74ef93dd
 
 ## Capability domains
@@ -39,7 +39,7 @@ Example:
 | platform | 5 | 6 | 83 |
 | portfolio | 5 | 4 | 69 |
 | reliability | 7 | 15 | 87 |
-| resource | 6 | 17 | 130 |
+| resource | 6 | 17 | 132 |
 | runtime | 13 | 37 | 233 |
 | scope | 7 | 7 | 22 |
 
@@ -2440,8 +2440,8 @@ Example:
 
 #### API modules
 
-- noetrium_platform.infrastructure.resources.compute.api ?w^~)?t ComputeAllocation, ComputeCandidatePort, ComputeCluster, ComputeGPU, ComputeHost, ComputeRequirement, ComputeLeasePolicy, DEFAULT_COMPUTE_LEASE_POLICY, ComputeInventoryPort, ComputeLeaseGuardFactoryPort, ComputeLeaseGuardPort, ComputeSchedulerPort, GpuSharingMode, GpuDeviceStatus, GpuProcessStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus
-- noetrium_platform.infrastructure.resources.compute.api.contracts ?w^~)?t ComputeAllocation, ComputeCluster, ComputeGPU, ComputeHost, ComputeRequirement, ComputeLeasePolicy, DEFAULT_COMPUTE_LEASE_POLICY, GpuSharingMode
+- noetrium_platform.infrastructure.resources.compute.api ?w^~)?t ComputeAllocation, ComputeCandidatePort, ComputeCluster, ComputeGPU, ComputeHost, ComputePlacementUnavailable, ComputeRequirement, ComputeLeasePolicy, DEFAULT_COMPUTE_LEASE_POLICY, ComputeInventoryPort, ComputeLeaseGuardFactoryPort, ComputeLeaseGuardPort, ComputeSchedulerPort, GpuSharingMode, GpuDeviceStatus, GpuProcessStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus
+- noetrium_platform.infrastructure.resources.compute.api.contracts ?w^~)?t ComputeAllocation, ComputeCluster, ComputeGPU, ComputeHost, ComputePlacementUnavailable, ComputeRequirement, ComputeLeasePolicy, DEFAULT_COMPUTE_LEASE_POLICY, GpuSharingMode
 - noetrium_platform.infrastructure.resources.compute.api.ports ?w^~)?t ComputeCandidatePort, ComputeInventoryPort, ComputeLeaseGuardFactoryPort, ComputeLeaseGuardPort, ComputeSchedulerPort
 - noetrium_platform.infrastructure.resources.compute.api.runtime_status ?w^~)?t GpuDeviceStatus, GpuProcessStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus
 

@@ -1178,6 +1178,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeLeaseGuardFactoryPort as ComputeLeaseGuardFactoryPort,
     ComputeLeaseGuardPort as ComputeLeaseGuardPort,
     ComputeLeasePolicy as ComputeLeasePolicy,
+    ComputePlacementUnavailable as ComputePlacementUnavailable,
     ComputeRequirement as ComputeRequirement,
     ComputeSchedulerPort as ComputeSchedulerPort,
     DEFAULT_COMPUTE_LEASE_POLICY as DEFAULT_COMPUTE_LEASE_POLICY,
