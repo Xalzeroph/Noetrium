@@ -3,11 +3,22 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
+import importlib
+import inspect
 import json
+import sys
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from noetrium_platform.research.execution.workflow.api import (
+    MethodProgram,
+    analyze_method_runtime_requirements,
+)
+
 REPRO_ROOT = ROOT / "research" / "reproductions"
 BENCH_ROOT = ROOT / "research" / "benchmarks"
 CATALOG = ROOT / "research" / "catalog" / "reproduction_catalog.json"
@@ -55,6 +66,58 @@ def _benchmark_package(benchmark_id: str) -> Path | None:
     return None
 
 
+def _public_method_program(package: str) -> tuple[str | None, MethodProgram | None, str | None]:
+    module = importlib.import_module(f"research.reproductions.{package}.program")
+    exports = tuple(getattr(module, "__all__", ()))
+    programs = [
+        (name, getattr(module, name))
+        for name in exports
+        if isinstance(getattr(module, name, None), MethodProgram)
+    ]
+    unique = {program.program_digest: (name, program) for name, program in programs}
+    if len(unique) == 1:
+        name, program = next(iter(unique.values()))
+        return name, program, None
+    if len(unique) > 1:
+        return None, None, "program_export_ambiguous"
+
+    factories: list[tuple[str, object]] = []
+    required_factory_binding = False
+    for name in exports:
+        value = getattr(module, name, None)
+        if not callable(value) or not name.startswith("build_") or not name.endswith("program"):
+            continue
+        signature = inspect.signature(value)
+        annotation = signature.return_annotation
+        annotation_text = annotation if isinstance(annotation, str) else getattr(annotation, "__name__", "")
+        if annotation_text != "MethodProgram":
+            continue
+        required = tuple(
+            parameter
+            for parameter in signature.parameters.values()
+            if parameter.default is inspect.Parameter.empty
+            and parameter.kind not in (
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD,
+            )
+        )
+        if required:
+            required_factory_binding = True
+            continue
+        result = value()
+        if isinstance(result, MethodProgram):
+            factories.append((f"{name}()", result))
+    unique_factories = {program.program_digest: (name, program) for name, program in factories}
+    if len(unique_factories) == 1:
+        name, program = next(iter(unique_factories.values()))
+        return name, program, None
+    if len(unique_factories) > 1:
+        return None, None, "program_factory_ambiguous"
+    if required_factory_binding:
+        return None, None, "program_factory_requires_binding"
+    return None, None, "program_export_missing"
+
+
 @dataclass(frozen=True)
 class Lane:
     method_id: str
@@ -67,6 +130,13 @@ class Lane:
     has_study: bool
     has_runtime: bool
     runtime_has_main: bool
+    runtime_mode: str
+    program_export: str | None
+    program_digest: str | None
+    runtime_requirements_digest: str | None
+    runtime_ports: tuple[str, ...]
+    agent_ids: tuple[str, ...]
+    capability_ids: tuple[str, ...]
     benchmark_materializers: tuple[str, ...]
     pressure_ready: bool | None
     pressure_claim_ready: bool | None
@@ -114,36 +184,70 @@ def build_plan() -> dict:
             has_study = (root / "study.py").is_file()
             has_runtime = runtime.is_file()
             runtime_main = _has_main(runtime)
+            program_export: str | None = None
+            program: MethodProgram | None = None
+            program_error: str | None = None
+            runtime_requirements_digest: str | None = None
+            runtime_ports: tuple[str, ...] = ()
+            agent_ids: tuple[str, ...] = ()
+            capability_ids: tuple[str, ...] = ()
+
             if not has_program:
                 blockers.append("method_program_missing")
+            else:
+                try:
+                    program_export, program, program_error = _public_method_program(package)
+                except Exception as exc:
+                    blockers.append(f"program_import_failed:{type(exc).__name__}")
+                if program_error is not None:
+                    blockers.append(program_error)
+                if program is not None:
+                    requirements = analyze_method_runtime_requirements(program)
+                    runtime_requirements_digest = requirements.digest
+                    runtime_ports = tuple(port.value for port in requirements.ports)
+                    agent_ids = requirements.agent_ids
+                    capability_ids = requirements.capability_ids
+
             if not has_study:
                 blockers.append("study_missing")
-            if not has_runtime:
-                blockers.append("runtime_binding_missing")
-            elif not runtime_main:
-                blockers.append("runtime_entrypoint_missing")
+
+            if runtime_main:
+                runtime_mode = "direct_main"
+            elif program is not None:
+                runtime_mode = "declarative"
+                blockers.extend(f"runtime_port_unbound:{port}" for port in runtime_ports)
+                if has_runtime:
+                    blockers.append("runtime_entrypoint_missing")
+            else:
+                runtime_mode = "incomplete"
+                if has_runtime:
+                    blockers.append("runtime_entrypoint_missing")
+
             for bid in benchmark_ids:
                 if bid not in materializers:
                     blockers.append(f"benchmark_materializer_missing:{bid}")
             prs = pressure_by_package.get(package, [])
             p_ready = None if not prs else all(bool(x.get("ready")) for x in prs)
             p_claim = None if not prs else all(bool(x.get("claim_ready")) for x in prs)
-            # Only direct-main lanes are auto-launchable today. Everything else is
-            # admitted into the fleet but fails closed with explicit missing seams.
             state = "runnable" if not blockers else "blocked"
             lanes.append(Lane(
                 method_id=method["method_id"], package=package, lifecycle=lifecycle,
                 benchmark_ids=benchmark_ids, environment_kinds=tuple(sorted(envs)),
                 modalities=tuple(sorted(modalities)), has_program=has_program,
                 has_study=has_study, has_runtime=has_runtime,
-                runtime_has_main=runtime_main,
+                runtime_has_main=runtime_main, runtime_mode=runtime_mode,
+                program_export=program_export,
+                program_digest=None if program is None else program.program_digest,
+                runtime_requirements_digest=runtime_requirements_digest,
+                runtime_ports=runtime_ports, agent_ids=agent_ids,
+                capability_ids=capability_ids,
                 benchmark_materializers=tuple(sorted(materializers)),
                 pressure_ready=p_ready, pressure_claim_ready=p_claim,
                 state=state, blockers=tuple(sorted(set(blockers))),
             ))
     lanes.sort(key=lambda x: (x.state != "runnable", x.method_id, x.package))
     payload = {
-        "schema": "noetrium.reproduction-fleet-plan.v1",
+        "schema": "noetrium.reproduction-fleet-plan.v2",
         "protocol_bound_count": len(lanes),
         "runnable_count": sum(x.state == "runnable" for x in lanes),
         "blocked_count": sum(x.state == "blocked" for x in lanes),
