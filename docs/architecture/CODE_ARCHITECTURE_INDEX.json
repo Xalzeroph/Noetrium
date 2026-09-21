@@ -37421,10 +37421,11 @@
         "_orchestration_group",
         "_stop",
         "execution_pool",
-        "management"
+        "management",
+        "model_replica_pool"
       ],
       "kind": "dataclass",
-      "line": 32,
+      "line": 37,
       "methods": [
         "start_background_controllers",
         "assert_healthy",
@@ -37446,7 +37447,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 23,
+      "line": 28,
       "methods": [
         "__init__",
         "wait"
@@ -96543,7 +96544,7 @@
     "classes": 3162,
     "constructor_edges": 864,
     "inheritance_edges": 138,
-    "module_import_edges": 5503,
+    "module_import_edges": 5504,
     "parse_errors": 0,
     "python_modules": 2533,
     "registry_authorities": 20,
@@ -102534,6 +102535,10 @@
     {
       "source": "noetrium_platform.composition.host_runtime_verification",
       "target": "noetrium_platform.research.experimentation.run.manifest.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.capabilities.model.deployment.composition"
     },
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
@@ -125250,6 +125255,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.capabilities.model.deployment.composition",
         "noetrium_platform.composition.model_management",
         "noetrium_platform.composition.research_execution_pool",
         "noetrium_platform.foundation.kernel.concurrency.api",
@@ -144412,7 +144418,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "15b90af4f10f93560ffd642be7866932910a7c43",
+  "source_git_sha": "8269c3819955b6cafc8e83442fa3f6a516f9356b",
   "system_import_edges": [
     {
       "count": 108,
