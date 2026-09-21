@@ -843,11 +843,6 @@
     {
       "kind": "references",
       "source": "noetrium_platform.capabilities.environment.minecraft.providers.world_copy.ReflinkMinecraftWorldCopier",
-      "target": "noetrium_platform.capabilities.environment.minecraft.providers.world_copy.MinecraftWorldCopier"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.capabilities.environment.minecraft.providers.world_copy.ReflinkMinecraftWorldCopier",
       "target": "noetrium_platform.capabilities.environment.minecraft.providers.world_copy.MinecraftWorldCopyCommandRunner"
     },
     {
@@ -1927,6 +1922,31 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.capabilities.model.providers.project._AdaptiveQualifiedProjectModelClient",
+      "target": "noetrium_platform.capabilities.model.api.project.ModelCapabilityRequirement"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.providers.project._AdaptiveQualifiedProjectModelClient",
+      "target": "noetrium_platform.capabilities.model.api.project.ProjectModelBinding"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.providers.project._AdaptiveQualifiedProjectModelClient",
+      "target": "noetrium_platform.capabilities.model.api.project.ProjectModelRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.providers.project._AdaptiveQualifiedProjectModelClient",
+      "target": "noetrium_platform.capabilities.model.api.project.ProjectModelResponse"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.providers.project._AdaptiveQualifiedProjectModelClient",
+      "target": "noetrium_platform.capabilities.model.api.tokenization.ModelRequestTokenizationPort"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.capabilities.model.providers.project._QualifiedProjectModelClient",
       "target": "noetrium_platform.capabilities.model.api.project.ModelCapabilityRequirement"
     },
@@ -2847,6 +2867,46 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.AdaptiveModelEndpointPoolPort",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointDispatchResult"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.AdaptiveModelEndpointPoolPort",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointPoolSnapshot"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.AdaptiveModelEndpointPoolPort",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.QualifiedModelEndpointReplicaSet"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointDispatchResult",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.contracts.ModelEndpointRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointDispatchResult",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.contracts.ModelEndpointResponse"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointPoolSnapshot",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointReplicaSnapshot"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.QualifiedModelEndpointReplicaBindingPort",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.QualifiedModelEndpointReplicaSet"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.QualifiedModelEndpointReplicaSet",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.qualification.QualifiedModelEndpointBinding"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.capabilities.model.serving.endpoint.composition.binding.FrozenDeploymentEndpointBinder",
       "target": "noetrium_platform.capabilities.model.serving.endpoint.composition.binding.FrozenEndpointBinding"
     },
@@ -2854,6 +2914,36 @@
       "kind": "references",
       "source": "noetrium_platform.capabilities.model.serving.endpoint.providers.qualified_binding.PersistedQualifiedModelEndpointBinding",
       "target": "noetrium_platform.capabilities.model.serving.endpoint.providers.qualified_binding.QualifiedModelDeploymentClosure"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.ports.ModelEndpointPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointDispatchResult"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointPoolSnapshot"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.QualifiedModelEndpointReplicaSet"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool._ReplicaRuntime"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool._ReplicaRuntime",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.ports.ModelEndpointPort"
     },
     {
       "kind": "references",
@@ -12413,6 +12503,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.research.execution.machines.program.ProgrammableMachineInterpreter",
+      "target": "noetrium_platform.research.execution.machines.program.ProgramNode"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.machines.program.ProgrammableMachineInterpreter",
       "target": "noetrium_platform.research.execution.machines.program.ResearchProgram"
     },
     {
@@ -21023,7 +21118,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 33,
+      "line": 32,
       "methods": [
         "copy"
       ],
@@ -21043,7 +21138,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 18,
+      "line": 17,
       "methods": [
         "copy"
       ],
@@ -21063,7 +21158,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 22,
+      "line": 21,
       "methods": [
         "__call__"
       ],
@@ -21081,7 +21176,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 48,
+      "line": 47,
       "methods": [
         "__init__",
         "_remove_volatile",
@@ -23360,7 +23455,7 @@
         "severity"
       ],
       "kind": "dataclass",
-      "line": 571,
+      "line": 590,
       "methods": [
         "__post_init__"
       ],
@@ -23386,7 +23481,7 @@
         "QUALIFIED_BINDING_UNAVAILABLE"
       ],
       "kind": "enum",
-      "line": 562,
+      "line": 581,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.api.project",
       "name": "ModelBindingDiagnosticCode",
@@ -23408,7 +23503,7 @@
         "WARNING"
       ],
       "kind": "enum",
-      "line": 556,
+      "line": 575,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.api.project",
       "name": "ModelBindingDiagnosticSeverity",
@@ -23488,7 +23583,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 593,
+      "line": 612,
       "methods": [
         "__init__"
       ],
@@ -23736,7 +23831,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 602,
+      "line": 621,
       "methods": [
         "binding",
         "complete"
@@ -23759,7 +23854,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 610,
+      "line": 629,
       "methods": [
         "profile",
         "bind",
@@ -23808,6 +23903,9 @@
         "binding_digest",
         "finish_reason",
         "input_tokens",
+        "operational_deployment_generation",
+        "operational_deployment_id",
+        "operational_dispatch_digest",
         "output_tokens",
         "request_digest",
         "response_digest",
@@ -26192,7 +26290,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 151,
+      "line": 227,
       "methods": [
         "__init__",
         "profile",
@@ -26214,7 +26312,27 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 70,
+      "line": 154,
+      "methods": [
+        "__init__",
+        "binding",
+        "complete"
+      ],
+      "module": "noetrium_platform.capabilities.model.providers.project",
+      "name": "_AdaptiveQualifiedProjectModelClient",
+      "nesting": [
+        "_AdaptiveQualifiedProjectModelClient"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.providers.project._AdaptiveQualifiedProjectModelClient",
+      "system_key": "model",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 73,
       "methods": [
         "__init__",
         "binding",
@@ -31068,6 +31186,150 @@
       "top_system": "model"
     },
     {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 126,
+      "methods": [
+        "replica_set",
+        "complete",
+        "snapshot"
+      ],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "name": "AdaptiveModelEndpointPoolPort",
+      "nesting": [
+        "AdaptiveModelEndpointPoolPort"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.AdaptiveModelEndpointPoolPort",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "dispatch_digest",
+        "replica_set_digest",
+        "request",
+        "response",
+        "selection_sequence"
+      ],
+      "kind": "dataclass",
+      "line": 96,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "name": "ModelEndpointDispatchResult",
+      "nesting": [
+        "ModelEndpointDispatchResult"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointDispatchResult",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "replica_set_digest",
+        "replicas",
+        "selection_sequence"
+      ],
+      "kind": "dataclass",
+      "line": 89,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "name": "ModelEndpointPoolSnapshot",
+      "nesting": [
+        "ModelEndpointPoolSnapshot"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointPoolSnapshot",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "capacity",
+        "completed",
+        "consecutive_failures",
+        "cooling_down",
+        "deployment_generation",
+        "deployment_id",
+        "ewma_latency_seconds",
+        "failures",
+        "in_flight",
+        "selections"
+      ],
+      "kind": "dataclass",
+      "line": 75,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "name": "ModelEndpointReplicaSnapshot",
+      "nesting": [
+        "ModelEndpointReplicaSnapshot"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointReplicaSnapshot",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 120,
+      "methods": [
+        "replica_set_for"
+      ],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "name": "QualifiedModelEndpointReplicaBindingPort",
+      "nesting": [
+        "QualifiedModelEndpointReplicaBindingPort"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.QualifiedModelEndpointReplicaBindingPort",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "bindings",
+        "replica_set_digest"
+      ],
+      "kind": "dataclass",
+      "line": 14,
+      "methods": [
+        "__post_init__",
+        "role",
+        "prompt_generation"
+      ],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "name": "QualifiedModelEndpointReplicaSet",
+      "nesting": [
+        "QualifiedModelEndpointReplicaSet"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.QualifiedModelEndpointReplicaSet",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
@@ -31166,10 +31428,12 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 43,
+      "line": 48,
       "methods": [
         "__init__",
-        "binding_for"
+        "_binding_for_deployment",
+        "binding_for",
+        "replica_set_for"
       ],
       "module": "noetrium_platform.capabilities.model.serving.endpoint.providers.qualified_binding",
       "name": "PersistedQualifiedModelEndpointBinding",
@@ -31195,7 +31459,7 @@
         "runtime_qualifications"
       ],
       "kind": "dataclass",
-      "line": 26,
+      "line": 31,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.serving.endpoint.providers.qualified_binding",
       "name": "QualifiedModelDeploymentClosure",
@@ -31285,6 +31549,76 @@
         "QualifiedModelClosurePublicationError"
       ],
       "qualname": "noetrium_platform.capabilities.model.serving.endpoint.providers.qualified_closure_publication.QualifiedModelClosurePublicationError",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 41,
+      "methods": [
+        "__init__",
+        "replica_set",
+        "_select",
+        "_finish",
+        "complete",
+        "snapshot"
+      ],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool",
+      "name": "AdaptiveQualifiedModelEndpointPool",
+      "nesting": [
+        "AdaptiveQualifiedModelEndpointPool"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 23,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool",
+      "name": "ModelEndpointPoolUnavailable",
+      "nesting": [
+        "ModelEndpointPoolUnavailable"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.ModelEndpointPoolUnavailable",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(slots=True)"
+      ],
+      "fields": [
+        "capacity",
+        "completed",
+        "consecutive_failures",
+        "cooldown_until",
+        "endpoint",
+        "ewma_latency_seconds",
+        "failures",
+        "in_flight",
+        "last_selected_sequence",
+        "selections"
+      ],
+      "kind": "dataclass",
+      "line": 28,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool",
+      "name": "_ReplicaRuntime",
+      "nesting": [
+        "_ReplicaRuntime"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool._ReplicaRuntime",
       "system_key": "model/serving/endpoint",
       "top_system": "model"
     },
@@ -37904,14 +38238,16 @@
         "environments",
         "evolution",
         "experimentation",
+        "facts",
         "portfolio",
+        "research_results",
         "resource_leases",
         "resource_ownership",
         "scopes",
         "systems"
       ],
       "kind": "dataclass",
-      "line": 60,
+      "line": 69,
       "methods": [],
       "module": "noetrium_platform.composition.platform_meta",
       "name": "PlatformMetaAuthorities",
@@ -40414,6 +40750,27 @@
         "FactDecoderRegistry"
       ],
       "qualname": "noetrium_platform.evidence.data.fact.runtime.decoder_registry.FactDecoderRegistry",
+      "system_key": "data/fact",
+      "top_system": "data"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 28,
+      "methods": [
+        "__init__",
+        "append",
+        "get",
+        "count"
+      ],
+      "module": "noetrium_platform.evidence.data.fact.runtime.store",
+      "name": "InMemoryDurableFactStore",
+      "nesting": [
+        "InMemoryDurableFactStore"
+      ],
+      "qualname": "noetrium_platform.evidence.data.fact.runtime.store.InMemoryDurableFactStore",
       "system_key": "data/fact",
       "top_system": "data"
     },
@@ -72641,7 +72998,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 201,
+      "line": 202,
       "methods": [
         "__init__",
         "store",
@@ -72663,7 +73020,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 463,
+      "line": 464,
       "methods": [
         "__init__",
         "_task_group_for",
@@ -72687,7 +73044,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 722,
+      "line": 723,
       "methods": [
         "__init__",
         "spec",
@@ -72712,7 +73069,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 885,
+      "line": 886,
       "methods": [
         "__init__",
         "profile",
@@ -72738,7 +73095,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 673,
+      "line": 674,
       "methods": [
         "__init__",
         "lifecycle",
@@ -76914,7 +77271,7 @@
         "reason_code"
       ],
       "kind": "dataclass",
-      "line": 58,
+      "line": 57,
       "methods": [
         "__post_init__"
       ],
@@ -76933,7 +77290,6 @@
       ],
       "decorators": [],
       "fields": [
-        "FALLBACK",
         "PANEL",
         "SINGLE"
       ],
@@ -76991,7 +77347,7 @@
         "version"
       ],
       "kind": "dataclass",
-      "line": 74,
+      "line": 73,
       "methods": [
         "__post_init__"
       ],
@@ -77034,7 +77390,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 896,
+      "line": 871,
       "methods": [
         "__init__",
         "invoke"
@@ -77368,6 +77724,7 @@
       "methods": [
         "__init__",
         "_state",
+        "_resolve_dynamic_next_node",
         "propose"
       ],
       "module": "noetrium_platform.research.execution.machines.program",
@@ -92769,7 +93126,22 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.capabilities.model.providers.project.QualifiedModelProjectProvider",
+      "target": "noetrium_platform.capabilities.model.providers.project._AdaptiveQualifiedProjectModelClient"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.providers.project.QualifiedModelProjectProvider",
       "target": "noetrium_platform.capabilities.model.providers.project._QualifiedProjectModelClient"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.providers.project._AdaptiveQualifiedProjectModelClient",
+      "target": "noetrium_platform.capabilities.model.api.project.ProjectModelResponse"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.providers.project._AdaptiveQualifiedProjectModelClient",
+      "target": "noetrium_platform.capabilities.model.api.tokenization.ModelRequestContextExceeded"
     },
     {
       "kind": "constructs",
@@ -93000,6 +93372,36 @@
       "kind": "constructs",
       "source": "noetrium_platform.capabilities.model.serving.endpoint.composition.binding.FrozenDeploymentEndpointBinder",
       "target": "noetrium_platform.capabilities.model.serving.endpoint.composition.binding.FrozenEndpointBinding"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.contracts.ModelEndpointRequest"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointDispatchResult"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointPoolSnapshot"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica.ModelEndpointReplicaSnapshot"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.ModelEndpointPoolUnavailable"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool.AdaptiveQualifiedModelEndpointPool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool._ReplicaRuntime"
     },
     {
       "kind": "constructs",
@@ -96598,13 +97000,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3212,
-    "classes": 3164,
-    "constructor_edges": 864,
+    "association_edges": 3231,
+    "classes": 3175,
+    "constructor_edges": 873,
     "inheritance_edges": 138,
-    "module_import_edges": 5527,
+    "module_import_edges": 5550,
     "parse_errors": 0,
-    "python_modules": 2534,
+    "python_modules": 2537,
     "registry_authorities": 20,
     "registry_nodes": 172,
     "top_level_systems": 16
@@ -100991,6 +101393,10 @@
       "target": "noetrium_platform.capabilities.model.serving.api"
     },
     {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint",
+      "target": "noetrium_platform.capabilities.model.serving.runtime"
+    },
+    {
       "source": "noetrium_platform.capabilities.model.serving.endpoint.api",
       "target": "noetrium_platform.capabilities.model.serving.endpoint.contracts"
     },
@@ -101005,6 +101411,10 @@
     {
       "source": "noetrium_platform.capabilities.model.serving.endpoint.api",
       "target": "noetrium_platform.capabilities.model.serving.endpoint.qualification"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.replica"
     },
     {
       "source": "noetrium_platform.capabilities.model.serving.endpoint.api.contracts",
@@ -101032,6 +101442,22 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.serving.endpoint.api.qualification",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "target": "noetrium_platform.capabilities.model.request.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.contracts"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.qualification"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
@@ -101069,6 +101495,10 @@
     {
       "source": "noetrium_platform.capabilities.model.serving.endpoint.composition.qualified",
       "target": "noetrium_platform.capabilities.model.serving.endpoint.providers"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.composition.qualified",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.runtime"
     },
     {
       "source": "noetrium_platform.capabilities.model.serving.endpoint.composition.qualified",
@@ -101181,6 +101611,30 @@
     {
       "source": "noetrium_platform.capabilities.model.serving.endpoint.providers.qualified_closure_publication",
       "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.replica_pool"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool",
+      "target": "noetrium_platform.capabilities.model.request.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.contracts"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.ports"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api.replica"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool",
+      "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.capabilities.model.serving.providers",
@@ -103072,6 +103526,22 @@
     },
     {
       "source": "noetrium_platform.composition.platform_meta",
+      "target": "noetrium_platform.evidence.data.fact.api"
+    },
+    {
+      "source": "noetrium_platform.composition.platform_meta",
+      "target": "noetrium_platform.evidence.data.fact.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.platform_meta",
+      "target": "noetrium_platform.evidence.data.query.api"
+    },
+    {
+      "source": "noetrium_platform.composition.platform_meta",
+      "target": "noetrium_platform.evidence.data.query.cross.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.platform_meta",
       "target": "noetrium_platform.foundation.governance.architecture.runtime.capability_composition"
     },
     {
@@ -104207,6 +104677,18 @@
       "target": "noetrium_platform.evidence.data.record.api"
     },
     {
+      "source": "noetrium_platform.evidence.data.fact.composition",
+      "target": "noetrium_platform.evidence.data.fact.api"
+    },
+    {
+      "source": "noetrium_platform.evidence.data.fact.composition",
+      "target": "noetrium_platform.evidence.data.fact.providers"
+    },
+    {
+      "source": "noetrium_platform.evidence.data.fact.composition",
+      "target": "noetrium_platform.evidence.data.fact.runtime"
+    },
+    {
       "source": "noetrium_platform.evidence.data.fact.providers",
       "target": "noetrium_platform.evidence.data.fact.sqlite"
     },
@@ -104231,7 +104713,19 @@
       "target": "noetrium_platform.evidence.data.fact.decoder_registry"
     },
     {
+      "source": "noetrium_platform.evidence.data.fact.runtime",
+      "target": "noetrium_platform.evidence.data.fact.store"
+    },
+    {
       "source": "noetrium_platform.evidence.data.fact.runtime.decoder_registry",
+      "target": "noetrium_platform.evidence.data.fact.api"
+    },
+    {
+      "source": "noetrium_platform.evidence.data.fact.runtime.store",
+      "target": "noetrium_platform.evidence.data._canonical"
+    },
+    {
+      "source": "noetrium_platform.evidence.data.fact.runtime.store",
       "target": "noetrium_platform.evidence.data.fact.api"
     },
     {
@@ -123762,7 +124256,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.capabilities.model.serving.api"
+        "noetrium_platform.capabilities.model.serving.api",
+        "noetrium_platform.capabilities.model.serving.runtime"
       ],
       "module": "noetrium_platform.capabilities.model.serving.endpoint",
       "path": "noetrium_platform/capabilities/model/serving/endpoint/__init__.py",
@@ -123774,7 +124269,8 @@
         "noetrium_platform.capabilities.model.serving.endpoint.contracts",
         "noetrium_platform.capabilities.model.serving.endpoint.ports",
         "noetrium_platform.capabilities.model.serving.endpoint.publication",
-        "noetrium_platform.capabilities.model.serving.endpoint.qualification"
+        "noetrium_platform.capabilities.model.serving.endpoint.qualification",
+        "noetrium_platform.capabilities.model.serving.endpoint.replica"
       ],
       "module": "noetrium_platform.capabilities.model.serving.endpoint.api",
       "path": "noetrium_platform/capabilities/model/serving/endpoint/api/__init__.py",
@@ -123829,6 +124325,18 @@
     },
     {
       "imports": [
+        "noetrium_platform.capabilities.model.request.api",
+        "noetrium_platform.capabilities.model.serving.endpoint.api.contracts",
+        "noetrium_platform.capabilities.model.serving.endpoint.api.qualification",
+        "noetrium_platform.foundation.kernel.kernel"
+      ],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+      "path": "noetrium_platform/capabilities/model/serving/endpoint/api/replica.py",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "imports": [
         "noetrium_platform.capabilities.model.serving.endpoint.binding",
         "noetrium_platform.capabilities.model.serving.endpoint.providers",
         "noetrium_platform.capabilities.model.serving.endpoint.qualified",
@@ -123854,6 +124362,7 @@
         "noetrium_platform.capabilities.model.serving.api",
         "noetrium_platform.capabilities.model.serving.endpoint.api",
         "noetrium_platform.capabilities.model.serving.endpoint.providers",
+        "noetrium_platform.capabilities.model.serving.endpoint.runtime",
         "noetrium_platform.foundation.kernel.concurrency.api"
       ],
       "module": "noetrium_platform.capabilities.model.serving.endpoint.composition.qualified",
@@ -123945,9 +124454,24 @@
       "top_system": "model"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.capabilities.model.serving.endpoint.replica_pool"
+      ],
       "module": "noetrium_platform.capabilities.model.serving.endpoint.runtime",
       "path": "noetrium_platform/capabilities/model/serving/endpoint/runtime/__init__.py",
+      "system_key": "model/serving/endpoint",
+      "top_system": "model"
+    },
+    {
+      "imports": [
+        "noetrium_platform.capabilities.model.request.api",
+        "noetrium_platform.capabilities.model.serving.endpoint.api.contracts",
+        "noetrium_platform.capabilities.model.serving.endpoint.api.ports",
+        "noetrium_platform.capabilities.model.serving.endpoint.api.replica",
+        "noetrium_platform.foundation.kernel.kernel"
+      ],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool",
+      "path": "noetrium_platform/capabilities/model/serving/endpoint/runtime/replica_pool.py",
       "system_key": "model/serving/endpoint",
       "top_system": "model"
     },
@@ -125667,6 +126191,10 @@
         "noetrium_platform.evidence.artifact.catalog.runtime",
         "noetrium_platform.evidence.data.dataset.api",
         "noetrium_platform.evidence.data.dataset.runtime",
+        "noetrium_platform.evidence.data.fact.api",
+        "noetrium_platform.evidence.data.fact.composition",
+        "noetrium_platform.evidence.data.query.api",
+        "noetrium_platform.evidence.data.query.cross.composition",
         "noetrium_platform.foundation.governance.architecture.runtime.capability_composition",
         "noetrium_platform.foundation.governance.evolution.api",
         "noetrium_platform.foundation.governance.evolution.providers",
@@ -126955,7 +127483,11 @@
       "top_system": "data"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.evidence.data.fact.api",
+        "noetrium_platform.evidence.data.fact.providers",
+        "noetrium_platform.evidence.data.fact.runtime"
+      ],
       "module": "noetrium_platform.evidence.data.fact.composition",
       "path": "noetrium_platform/evidence/data/fact/composition/__init__.py",
       "system_key": "data/fact",
@@ -126984,7 +127516,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.evidence.data.fact.decoder_registry"
+        "noetrium_platform.evidence.data.fact.decoder_registry",
+        "noetrium_platform.evidence.data.fact.store"
       ],
       "module": "noetrium_platform.evidence.data.fact.runtime",
       "path": "noetrium_platform/evidence/data/fact/runtime/__init__.py",
@@ -126997,6 +127530,16 @@
       ],
       "module": "noetrium_platform.evidence.data.fact.runtime.decoder_registry",
       "path": "noetrium_platform/evidence/data/fact/runtime/decoder_registry.py",
+      "system_key": "data/fact",
+      "top_system": "data"
+    },
+    {
+      "imports": [
+        "noetrium_platform.evidence.data._canonical",
+        "noetrium_platform.evidence.data.fact.api"
+      ],
+      "module": "noetrium_platform.evidence.data.fact.runtime.store",
+      "path": "noetrium_platform/evidence/data/fact/runtime/store.py",
       "system_key": "data/fact",
       "top_system": "data"
     },
@@ -144600,7 +145143,7 @@
   "parse_errors": [],
   "registry_sha256": "321ddcd600aa940784d9932b2a1d14877b908c1085ed5b1fef3583ed588edf7a",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "340ba4ff254e90cb7a04f409bd2d076a11a8cc1c",
+  "source_git_sha": "d5b27b967ca8137e4d9e1ca31d0c061942911ae5",
   "system_import_edges": [
     {
       "count": 108,
@@ -144623,7 +145166,7 @@
       "target": "artifact"
     },
     {
-      "count": 78,
+      "count": 84,
       "source": "data",
       "target": "data"
     },
@@ -144823,12 +145366,12 @@
       "target": "governance"
     },
     {
-      "count": 450,
+      "count": 461,
       "source": "model",
       "target": "model"
     },
     {
-      "count": 106,
+      "count": 108,
       "source": "model",
       "target": "platform"
     },

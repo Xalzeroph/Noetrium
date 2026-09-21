@@ -1,3 +1,3 @@
-"""Composition plane for the registered experimentation/workload system."""
+from .default import bind_method_workload
 
-__all__ = []
+__all__ = ["bind_method_workload"]

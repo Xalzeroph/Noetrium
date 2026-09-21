@@ -9,7 +9,7 @@ from noetrium_platform.product.operator.api import (
     ResearchApplicationPort,
     project_template_revision,
 )
-from noetrium_platform.foundation.portfolio.api import (
+from noetrium_platform.foundation.portfolio.project.api import (
     ProjectManifest,
     decode_project_manifest_bytes,
 )

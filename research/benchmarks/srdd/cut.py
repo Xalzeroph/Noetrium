@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from noetrium import api
+from noetrium.contracts import canonical_digest, require_sha256
 
 from collections import Counter
 from dataclasses import dataclass
@@ -19,7 +20,7 @@ SRDD_SUBCATEGORY_COUNT = 40
 SRDD_TASKS_PER_SUBCATEGORY = 30
 SRDD_MAIN_AREAS = ("Education", "Work", "Life", "Game", "Creation")
 SRDD_SPLIT_ID = "all"
-SRDD_SOURCE_CONTENT_DIGEST = api.canonical_digest({
+SRDD_SOURCE_CONTENT_DIGEST = canonical_digest({
     "repository": SRDD_REPOSITORY,
     "commit": SRDD_DATASET_COMMIT,
     "path": SRDD_DATASET_PATH,
@@ -41,7 +42,7 @@ class SrddTaskRecord:
             value = getattr(self, field_name)
             if type(value) is not str or not value.strip():
                 raise ValueError(f"SRDD {field_name} must be non-empty")
-        api.require_sha256(self.content_digest, "SRDD task content_digest")
+        require_sha256(self.content_digest, "SRDD task content_digest")
 
     @property
     def task_id(self) -> str:

@@ -46,6 +46,7 @@ def test_reference_counter_satisfies_public_provider_conformance() -> None:
         "provider_identity",
         "open_session",
         "observe",
+        "branch_state_port",
         "snapshot",
         "restore",
         "act",

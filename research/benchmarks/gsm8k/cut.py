@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from noetrium import api
+from noetrium.contracts import require_sha256
 
 from dataclasses import dataclass
 
@@ -30,9 +31,9 @@ class GSM8KTaskRecord:
             raise ValueError(
                 f"GSM8K {self.split_id} index must be in [0, {limit})"
             )
-        api.require_sha256(self.question_digest, "GSM8K question_digest")
-        api.require_sha256(self.answer_digest, "GSM8K answer_digest")
-        api.require_sha256(self.content_digest, "GSM8K content_digest")
+        require_sha256(self.question_digest, "GSM8K question_digest")
+        require_sha256(self.answer_digest, "GSM8K answer_digest")
+        require_sha256(self.content_digest, "GSM8K content_digest")
 
     @property
     def task_id(self) -> str:
@@ -40,7 +41,7 @@ class GSM8KTaskRecord:
 
 
 def gsm8k_revision(dataset_content_sha256: str) -> str:
-    api.require_sha256(dataset_content_sha256, "GSM8K dataset_content_sha256")
+    require_sha256(dataset_content_sha256, "GSM8K dataset_content_sha256")
     return (
         f"gsm8k@repo:{GSM8K_ARCHIVED_COMMIT}:"
         f"dataset:{dataset_content_sha256}"
@@ -48,7 +49,7 @@ def gsm8k_revision(dataset_content_sha256: str) -> str:
 
 
 def build_gsm8k_source(*, dataset_content_sha256: str) -> api.BenchmarkSourceSpec:
-    api.require_sha256(dataset_content_sha256, "GSM8K dataset_content_sha256")
+    require_sha256(dataset_content_sha256, "GSM8K dataset_content_sha256")
     return api.BenchmarkSourceSpec(
         source_id=GSM8K_BENCHMARK_ID,
         kind=api.BenchmarkSourceKind.GIT,
@@ -78,7 +79,7 @@ def build_gsm8k_task_set(
         raise ValueError("GSM8K records must be a non-empty tuple")
     if any(type(row) is not GSM8KTaskRecord for row in records):
         raise TypeError("GSM8K records must contain GSM8KTaskRecord")
-    api.require_sha256(dataset_content_sha256, "GSM8K dataset_content_sha256")
+    require_sha256(dataset_content_sha256, "GSM8K dataset_content_sha256")
 
     ordered = tuple(sorted(records, key=lambda row: (row.split_id, row.index)))
     task_ids = tuple(row.task_id for row in ordered)

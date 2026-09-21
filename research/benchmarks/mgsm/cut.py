@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from noetrium import api
+from noetrium.contracts import require_sha256
 
 from dataclasses import dataclass
 
@@ -36,7 +37,7 @@ class MGSMTaskRecord:
             raise ValueError("MGSM question must be non-empty")
         if type(self.answer) is not str or not self.answer.strip():
             raise ValueError("MGSM answer must be non-empty")
-        api.require_sha256(self.content_digest, "MGSM task content_digest")
+        require_sha256(self.content_digest, "MGSM task content_digest")
 
     @property
     def task_id(self) -> str:
@@ -57,7 +58,7 @@ def build_mgsm_source(
     dataset_revision: str,
     dataset_content_sha256: str,
 ) -> api.BenchmarkSourceSpec:
-    api.require_sha256(dataset_content_sha256, "MGSM dataset_content_sha256")
+    require_sha256(dataset_content_sha256, "MGSM dataset_content_sha256")
     return api.BenchmarkSourceSpec(
         source_id=MGSM_BENCHMARK_ID,
         kind=api.BenchmarkSourceKind.HUGGINGFACE,
@@ -89,7 +90,7 @@ def build_mgsm_adas_task_set(
 
     if type(records) is not tuple or any(type(row) is not MGSMTaskRecord for row in records):
         raise TypeError("MGSM records must be a tuple of MGSMTaskRecord")
-    api.require_sha256(dataset_content_sha256, "MGSM dataset_content_sha256")
+    require_sha256(dataset_content_sha256, "MGSM dataset_content_sha256")
 
     by_key = {(row.language, row.index): row for row in records}
     expected = {

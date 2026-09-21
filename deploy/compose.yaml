@@ -18,3 +18,27 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
+
+  platform-test:
+    profiles: ["test"]
+    image: ${PLATFORM_TEST_IMAGE:-noetrium-test:local}
+    build:
+      context: ./test
+      args:
+        PLATFORM_TEST_BASE_IMAGE: ${PLATFORM_IMAGE:-noetrium:local}
+        PYTEST_VERSION: ${PYTEST_VERSION:-8.4.2}
+    init: true
+    restart: "no"
+    working_dir: /workspace
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONPATH: /workspace:/workspace/tests
+    volumes:
+      - type: bind
+        source: ${PLATFORM_SOURCE_ROOT:-..}
+        target: /workspace
+        read_only: true
+      - type: tmpfs
+        target: /tmp
+    entrypoint: ["/bin/sh", "-lc"]
+    command: ["python -m pytest -q -p no:cacheprovider"]

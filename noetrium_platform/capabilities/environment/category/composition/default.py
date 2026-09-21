@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from importlib import import_module
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.governance.system_registry.api import system_catalog
 
 from ..api.contracts import (
     EnvironmentCategoryDescriptor,
@@ -15,12 +17,39 @@ from ..runtime.catalog import (
 )
 
 
+def _validate_registered_environment_families() -> None:
+    """Fail closed unless every registered environment family exposes API and composition.
+
+    Environment families are discovered through the canonical system registry rather
+    than a hard-coded import list. Contract-only families still need a composition
+    boundary so downstream code never has to special-case their package topology.
+    """
+    for descriptor in system_catalog():
+        if descriptor.parent_key != "environment":
+            continue
+        contract_capabilities = tuple(
+            capability
+            for capability in descriptor.provides
+            if capability.startswith("environment.") and capability.endswith(".contract")
+        )
+        if not contract_capabilities:
+            continue
+        try:
+            import_module(descriptor.package_prefix + ".api")
+            import_module(descriptor.package_prefix + ".composition")
+        except ImportError as exc:
+            raise RuntimeError(
+                f"registered environment family is not composable: {descriptor.identity.key}"
+            ) from exc
+
+
 @dataclass(frozen=True, slots=True)
 class DefaultEnvironmentCategoryCatalog:
     _categories: tuple[EnvironmentCategoryDescriptor, ...]
     _implementations: tuple[EnvironmentImplementationDescriptor, ...]
 
     def __post_init__(self) -> None:
+        _validate_registered_environment_families()
         category_ids = {item.category_id for item in self._categories}
         if len(category_ids) != len(self._categories):
             raise ValueError("environment category ids must be unique")

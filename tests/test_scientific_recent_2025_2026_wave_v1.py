@@ -3,16 +3,16 @@ import importlib
 from noetrium_platform.research.reproduction import ReproductionAssetKind
 
 WAVE = (
-    ("videoarm_cvpr2026", 2026, 2, 5, true),
-    ("watch_learn_cvpr2026", 2026, 2, 5, true),
-    ("lvagent_iccv2025", 2025, 3, 5, true),
-    ("embodied_videoagent_iccv2025", 2025, 3, 5, false),
-    ("openwebvoyager_acl2025", 2025, 2, 5, true),
-    ("adaptagent_acl2025", 2025, 3, 5, true),
-    ("r2d2_acl2025", 2025, 2, 5, true),
-    ("cer_acl2025", 2025, 3, 5, true),
-    ("dars_acl2025", 2025, 2, 5, true),
-    ("webagent_r1_emnlp2025", 2025, 2, 5, true),
+    ("videoarm_cvpr2026", 2026, 2, 5, True),
+    ("watch_learn_cvpr2026", 2026, 2, 5, True),
+    ("lvagent_iccv2025", 2025, 3, 5, True),
+    ("embodied_videoagent_iccv2025", 2025, 3, 5, False),
+    ("openwebvoyager_acl2025", 2025, 2, 5, True),
+    ("adaptagent_acl2025", 2025, 3, 5, True),
+    ("r2d2_acl2025", 2025, 2, 5, True),
+    ("cer_acl2025", 2025, 3, 5, True),
+    ("dars_acl2025", 2025, 2, 5, True),
+    ("webagent_r1_emnlp2025", 2025, 2, 5, True),
 )
 
 def test_recent_2025_2026_peer_reviewed_wave_is_real_protocol_work() -> None:

@@ -25,3 +25,15 @@ __all__ += [
     "compile_model_replica_shard_plan",
     "qualified_replica_capacity_units",
 ]
+
+from noetrium_platform.research.experimentation.evaluation.composition import (
+    bind_paired_evaluation_host,
+)
+from noetrium_platform.research.experimentation.workload.composition import (
+    bind_method_workload,
+)
+
+__all__ += [
+    "bind_method_workload",
+    "bind_paired_evaluation_host",
+]

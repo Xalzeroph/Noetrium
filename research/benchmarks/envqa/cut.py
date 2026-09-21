@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from noetrium import api
+from noetrium.contracts import require_sha256
 
 from collections import defaultdict
 from dataclasses import dataclass
@@ -22,14 +23,14 @@ class TaskRecord:
             raise ValueError("Env-QA split_id must be text")
         if type(self.task_key) is not str or not self.task_key.strip():
             raise ValueError("Env-QA task_key must be text")
-        api.require_sha256(self.content_digest, "Env-QA task content_digest")
+        require_sha256(self.content_digest, "Env-QA task content_digest")
     @property
     def task_id(self) -> str:
         return f"envqa:{self.split_id}:{self.task_key}"
 
 
 def build_source_spec(*, content_digest: str) -> api.BenchmarkSourceSpec:
-    api.require_sha256(content_digest, "Env-QA source content_digest")
+    require_sha256(content_digest, "Env-QA source content_digest")
     return api.BenchmarkSourceSpec(
         source_id=BENCHMARK_ID,
         kind=api.BenchmarkSourceKind.GIT,
@@ -43,7 +44,7 @@ def build_source_spec(*, content_digest: str) -> api.BenchmarkSourceSpec:
 def build_task_set(records: tuple[TaskRecord, ...], *, source_digest: str) -> api.BenchmarkTaskSet:
     if type(records) is not tuple or not records or any(type(row) is not TaskRecord for row in records):
         raise TypeError("Env-QA records must be a non-empty TaskRecord tuple")
-    api.require_sha256(source_digest, "Env-QA source_digest")
+    require_sha256(source_digest, "Env-QA source_digest")
     task_ids = [row.task_id for row in records]
     if len(task_ids) != len(set(task_ids)):
         raise ValueError("Env-QA task identities must be unique")
