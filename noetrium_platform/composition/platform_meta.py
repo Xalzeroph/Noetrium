@@ -9,6 +9,15 @@ from noetrium_platform.evidence.artifact.catalog.api import ArtifactRegistryPort
 from noetrium_platform.evidence.artifact.catalog.runtime import InMemoryArtifactRegistry
 from noetrium_platform.evidence.data.dataset.api import DatasetRegistryPort
 from noetrium_platform.evidence.data.dataset.runtime import InMemoryDatasetRegistry
+from noetrium_platform.evidence.data.fact.api import DurableFactStorePort
+from noetrium_platform.evidence.data.fact.composition import (
+    compose_in_memory_fact_store,
+    compose_sqlite_fact_store,
+)
+from noetrium_platform.evidence.data.query.api import ResearchResultQueryPort
+from noetrium_platform.evidence.data.query.cross.composition import (
+    compose_builtin_research_result_query,
+)
 from noetrium_platform.research.experimentation.catalog.api import ExperimentationCatalogPort
 from noetrium_platform.research.experimentation.catalog.runtime import (
     InMemoryExperimentationCatalog,
@@ -69,6 +78,8 @@ class PlatformMetaAuthorities:
     environments: ExecutionEnvironmentCatalogPort
     artifacts: ArtifactRegistryPort
     datasets: DatasetRegistryPort
+    facts: DurableFactStorePort
+    research_results: ResearchResultQueryPort
     resource_ownership: ResourceOwnershipPort
     resource_leases: ResourceLeasePort
     endpoint_allocations: EndpointAllocationPort
@@ -91,6 +102,14 @@ def build_in_memory_platform_meta(
         leases=resources,
         probe=SocketEndpointProbe(),
     )
+    artifacts = InMemoryArtifactRegistry()
+    datasets = InMemoryDatasetRegistry()
+    facts = compose_in_memory_fact_store()
+    research_results = compose_builtin_research_result_query(
+        datasets=datasets,
+        artifacts=artifacts,
+        scopes=scopes,
+    )
     return PlatformMetaAuthorities(
         systems=systems,
         evolution=evolution,
@@ -99,8 +118,10 @@ def build_in_memory_platform_meta(
         portfolio=InMemoryPortfolioCatalog(scopes),
         experimentation=InMemoryExperimentationCatalog(scopes),
         environments=ExecutionEnvironmentCatalog(scopes),
-        artifacts=InMemoryArtifactRegistry(),
-        datasets=InMemoryDatasetRegistry(),
+        artifacts=artifacts,
+        datasets=datasets,
+        facts=facts,
+        research_results=research_results,
         resource_ownership=resources,
         resource_leases=resources,
         endpoint_allocations=endpoint_allocations,
@@ -148,6 +169,24 @@ def build_durable_platform_meta(
         database, compute_inventory, gpu_runtime_observer=gpu_runtime_observer,
         host_runtime_observer=host_runtime_observer,
     )
+    artifacts = cast(
+        ArtifactRegistryPort,
+        import_module(
+            "noetrium_platform.evidence.artifact.catalog.providers"
+        ).SQLiteArtifactRegistry(root / "platform-artifacts.sqlite"),
+    )
+    datasets = cast(
+        DatasetRegistryPort,
+        import_module(
+            "noetrium_platform.evidence.data.dataset.providers.sqlite"
+        ).SQLiteDatasetRegistry(root / "platform-datasets.sqlite"),
+    )
+    facts = compose_sqlite_fact_store(root / "platform-facts.sqlite")
+    research_results = compose_builtin_research_result_query(
+        datasets=datasets,
+        artifacts=artifacts,
+        scopes=scopes,
+    )
     return PlatformMetaAuthorities(
         systems=systems,
         evolution=evolution,
@@ -156,18 +195,10 @@ def build_durable_platform_meta(
         portfolio=SQLitePortfolioCatalog(database, scopes),
         experimentation=experimentation,
         environments=SQLiteExecutionEnvironmentCatalog(root / "platform-environments.sqlite", scopes),
-        artifacts=cast(
-            ArtifactRegistryPort,
-            import_module(
-                "noetrium_platform.evidence.artifact.catalog.providers"
-            ).SQLiteArtifactRegistry(root / "platform-artifacts.sqlite"),
-        ),
-        datasets=cast(
-            DatasetRegistryPort,
-            import_module(
-                "noetrium_platform.evidence.data.dataset.providers.sqlite"
-            ).SQLiteDatasetRegistry(root / "platform-datasets.sqlite"),
-        ),
+        artifacts=artifacts,
+        datasets=datasets,
+        facts=facts,
+        research_results=research_results,
         resource_ownership=resources,
         resource_leases=resources,
         endpoint_allocations=endpoint_allocations,
