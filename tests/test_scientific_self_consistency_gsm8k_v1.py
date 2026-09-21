@@ -4,9 +4,12 @@ from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentRequest,
     MethodAgentResult,
+    MethodEvent,
+    MethodEvidenceStatus,
     MethodRunStatus,
     MethodRuntimeContext,
 )
+from noetrium_platform.research.execution.workflow.providers import DirectoryEventMethodEvidence
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 from research.benchmarks.gsm8k import GSM8KTaskRecord, build_gsm8k_task_set
 from research.reproductions.self_consistency_gsm8k import (
@@ -31,17 +34,19 @@ class _Sampler:
         }
         answer = 9 if self.calls <= 25 else 8
         return MethodAgentResult(
-            value=f"Reasoning path {self.calls}. The answer is {answer}."
+            value=f"Reasoning path {self.calls}. The answer is {answer}.",
+            events=(MethodEvent("model.invocation", {"sample_index": self.calls - 1}),),
         )
 
 
-def test_self_consistency_samples_40_paths_and_marginalizes_answers() -> None:
+def test_self_consistency_samples_40_paths_and_marginalizes_answers(tmp_path) -> None:
     sampler = _Sampler()
     result = UniversalMethodMachine(max_steps=128).run(
         SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(
             ExecutionContext("sc-run", "trace", "span", task_id="gsm8k:test:00000"),
             agent_loop=sampler,
+            evidence=DirectoryEventMethodEvidence(tmp_path / "evidence"),
         ),
         initial_state=self_consistency_gsm8k_initial_state(
             task_id="gsm8k:test:00000",
@@ -50,10 +55,13 @@ def test_self_consistency_samples_40_paths_and_marginalizes_answers() -> None:
     )
 
     assert result.status is MethodRunStatus.SUCCEEDED
+    assert result.evidence_status is MethodEvidenceStatus.COMPLETE
     assert sampler.calls == 40
     assert result.value["reasoning_path_count"] == 40
     assert result.value["selected_answer"] == "9"
     assert result.value["selected_vote_count"] == 25
+    assert sum(event.kind == "self-consistency.reasoning-paths" for event in result.events) == 40
+    assert sum(event.kind == "self-consistency.answer-histogram" for event in result.events) == 1
 
 
 def test_self_consistency_normalizes_task_specific_numeric_answers() -> None:

@@ -15,6 +15,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     freeze_json,
 )
 from noetrium_platform.research.execution.workflow.api import (
+    MethodEvent,
     MethodExecutionClass,
     MethodNodeRequest,
     MethodNodeResult,
@@ -127,6 +128,16 @@ def _record_sample(request: MethodNodeRequest) -> MethodNodeResult:
             "sample_index": next_index,
             "samples": samples,
         },
+        events=(
+            MethodEvent(
+                "self-consistency.reasoning-paths",
+                {
+                    "sample_index": sample_index,
+                    "answer": answer,
+                    "completion_digest": canonical_digest(completion),
+                },
+            ),
+        ),
         next_node=(
             "aggregate"
             if next_index >= f.reasoning_path_count
@@ -166,6 +177,16 @@ def _aggregate(request: MethodNodeRequest) -> MethodNodeResult:
             "selected_answer": selected,
             "selected_vote_count": counts[selected],
         },
+        events=(
+            MethodEvent(
+                "self-consistency.answer-histogram",
+                {
+                    "selected_answer": selected,
+                    "selected_vote_count": counts[selected],
+                    "answer_histogram": tuple(sorted(counts.items())),
+                },
+            ),
+        ),
         next_node="return",
     )
 
