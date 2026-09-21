@@ -23,6 +23,11 @@ from noetrium_platform.research.execution.workflow.api import (
 )
 
 from .fidelity import SELF_CONSISTENCY_GSM8K_FIDELITY
+from research.reproductions.chain_of_thought_gsm8k.prompt import (
+    COT_GSM8K_PROMPT_BUNDLE_ID,
+    COT_GSM8K_PROMPT_DIGEST,
+    render_chain_of_thought_gsm8k_prompt,
+)
 
 _REASONER = "self-consistency.reasoner"
 _ANSWER_PHRASE = re.compile(
@@ -59,7 +64,9 @@ def _reasoner_view(request: MethodNodeRequest) -> JsonObject:
         "question": question,
         "sample_index": sample_index,
         "sample_count": f.reasoning_path_count,
-        "prompt_bundle": "cot.gsm8k.neurips2022.appendix-table20",
+        "prompt_bundle": COT_GSM8K_PROMPT_BUNDLE_ID,
+        "prompt_digest": COT_GSM8K_PROMPT_DIGEST,
+        "prompt": render_chain_of_thought_gsm8k_prompt(question),
         "cot_exemplar_count": f.cot_exemplar_count,
         "sampling": {
             "strategy": "temperature_top_k",
@@ -188,6 +195,8 @@ def build_self_consistency_gsm8k_method_program() -> MethodProgram:
         "benchmark_id": f.benchmark_id,
         "cot_exemplar_count": f.cot_exemplar_count,
         "cot_prompt_source": f.cot_prompt_source,
+        "prompt_bundle": COT_GSM8K_PROMPT_BUNDLE_ID,
+        "prompt_digest": COT_GSM8K_PROMPT_DIGEST,
         "reasoning_path_count": f.reasoning_path_count,
         "temperature": f.temperature,
         "top_k": f.top_k,

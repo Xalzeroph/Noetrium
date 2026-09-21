@@ -12,6 +12,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 from noetrium_platform.research.execution.workflow.api import (
+    MethodEvent,
     MethodExecutionClass,
     MethodNodeRequest,
     MethodNodeResult,
@@ -20,6 +21,11 @@ from noetrium_platform.research.execution.workflow.api import (
 )
 
 from .fidelity import CHAIN_OF_THOUGHT_GSM8K_FIDELITY
+from .prompt import (
+    COT_GSM8K_PROMPT_BUNDLE_ID,
+    COT_GSM8K_PROMPT_DIGEST,
+    render_chain_of_thought_gsm8k_prompt,
+)
 
 _REASONER = "cot.reasoner"
 
@@ -45,7 +51,9 @@ def _reasoner_view(request: MethodNodeRequest) -> JsonObject:
         "task_id": request.state.get("task_id"),
         "question": question,
         "prompt_mode": f.prompt_mode,
-        "prompt_bundle": "cot.gsm8k.neurips2022.appendix-table20",
+        "prompt_bundle": COT_GSM8K_PROMPT_BUNDLE_ID,
+        "prompt_digest": COT_GSM8K_PROMPT_DIGEST,
+        "prompt": render_chain_of_thought_gsm8k_prompt(question),
         "exemplar_count": f.exemplar_count,
         "exemplar_source": f.exemplar_source,
         "decoding": f.decoding,
@@ -68,6 +76,12 @@ def _record_completion(request: MethodNodeRequest) -> MethodNodeResult:
     return MethodNodeResult(
         value={"completion": text},
         state_update={"completion": text},
+        events=(
+            MethodEvent(
+                "cot.reasoning-completion",
+                {"completion_digest": canonical_digest(text)},
+            ),
+        ),
         next_node="return",
     )
 
@@ -94,6 +108,8 @@ def build_chain_of_thought_gsm8k_method_program() -> MethodProgram:
         "exemplar_count": f.exemplar_count,
         "exemplar_source": f.exemplar_source,
         "prompt_mode": f.prompt_mode,
+        "prompt_bundle": COT_GSM8K_PROMPT_BUNDLE_ID,
+        "prompt_digest": COT_GSM8K_PROMPT_DIGEST,
         "decoding": f.decoding,
         "samples_per_task": f.samples_per_task,
         "calculator_enabled": f.calculator_enabled,
