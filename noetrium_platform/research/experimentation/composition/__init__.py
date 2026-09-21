@@ -11,3 +11,17 @@ from noetrium_platform.research.experimentation.api import (
 )
 
 __all__ = ["CompiledExperimentProgram", "ExperimentProgramBinding"]
+
+from .model_replica_sharding import (
+    ModelReplicaShardPlan,
+    ModelReplicaWorker,
+    compile_model_replica_shard_plan,
+    qualified_replica_capacity_units,
+)
+
+__all__ += [
+    "ModelReplicaShardPlan",
+    "ModelReplicaWorker",
+    "compile_model_replica_shard_plan",
+    "qualified_replica_capacity_units",
+]

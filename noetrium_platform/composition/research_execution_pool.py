@@ -11,6 +11,15 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     DEFAULT_COMPUTE_LEASE_POLICY,
 )
 from noetrium_platform.infrastructure.resources.compute.runtime import ComputeLeaseHeartbeatFactory
+from noetrium_platform.infrastructure.resources.allocation.api import (
+    DEFAULT_ENDPOINT_LEASE_POLICY,
+    EndpointAllocationPort,
+    EndpointLeaseGuardFactoryPort,
+    EndpointLeasePolicy,
+)
+from noetrium_platform.infrastructure.resources.allocation.runtime import (
+    EndpointLeaseHeartbeatFactory,
+)
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     Deadline,
@@ -79,6 +88,7 @@ class ResearchExecutionPool:
             self._orchestration.close()
             raise
         self._compute_lease_group: TaskGroupPort | None = None
+        self._endpoint_lease_group: TaskGroupPort | None = None
         self._closed = False
 
     @property
@@ -157,6 +167,34 @@ class ResearchExecutionPool:
             task_group=self._compute_lease_group,
             heartbeat_scheduler=self._experiments.heartbeats,
             lane_id="research-compute-lease-renewal",
+            lane_capacity=lane_capacity,
+            policy=policy,
+        )
+
+    def endpoint_lease_guard_factory(
+        self,
+        allocations: EndpointAllocationPort,
+        *,
+        policy: EndpointLeasePolicy = DEFAULT_ENDPOINT_LEASE_POLICY,
+        lane_capacity: int | None = 1,
+    ) -> EndpointLeaseGuardFactoryPort:
+        """Share one structured heartbeat authority across endpoint leases."""
+
+        if self._closed:
+            raise RuntimeError("research execution pool is closed")
+        if self._endpoint_lease_group is None:
+            self._endpoint_lease_group = self._experiments.open_task_group(
+                f"research-endpoint-leases:{uuid4().hex}",
+                resource_id="endpoint-lease-heartbeats",
+                priority=ExecutionPriority.CRITICAL,
+                admission_mode=AdmissionMode.BLOCK,
+                failure_policy=TaskFailurePolicy.FAIL_FAST,
+            )
+        return EndpointLeaseHeartbeatFactory(
+            allocations=allocations,
+            task_group=self._endpoint_lease_group,
+            heartbeat_scheduler=self._experiments.heartbeats,
+            lane_id="research-endpoint-lease-renewal",
             lane_capacity=lane_capacity,
             policy=policy,
         )

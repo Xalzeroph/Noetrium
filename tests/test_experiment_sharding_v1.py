@@ -240,3 +240,37 @@ def test_shard_plan_rejects_invalid_worker_capacity_model() -> None:
             shard_count=2,
             shard_capacity_units=(1, 0),
         )
+
+
+def test_shard_plan_can_bind_explicit_worker_scopes() -> None:
+    compiled = _compiled()
+    sharded = compile_experiment_shard_plan(
+        compiled,
+        shard_count=3,
+        shard_capacity_units=(1, 2, 3),
+        worker_scope_ids=("worker:gpu-a", "worker:gpu-b", "worker:gpu-c"),
+    )
+
+    assert tuple(row.worker_scope_id for row in sharded.shards) == (
+        "worker:gpu-a",
+        "worker:gpu-b",
+        "worker:gpu-c",
+    )
+    assert tuple(row.capacity_units for row in sharded.shards) == (1, 2, 3)
+    sharded.assert_complete_for(compiled)
+
+
+def test_shard_plan_rejects_invalid_worker_scopes() -> None:
+    compiled = _compiled()
+    with pytest.raises(ValueError, match="exactly shard_count"):
+        compile_experiment_shard_plan(
+            compiled,
+            shard_count=2,
+            worker_scope_ids=("worker:a",),
+        )
+    with pytest.raises(ValueError, match="unique"):
+        compile_experiment_shard_plan(
+            compiled,
+            shard_count=2,
+            worker_scope_ids=("worker:a", "worker:a"),
+        )

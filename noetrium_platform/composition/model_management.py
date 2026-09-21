@@ -59,7 +59,13 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage im
 
 from noetrium_platform.infrastructure.lifecycle.service.composition import compose_local_process_backend, build_service_supervisor
 from noetrium_platform.infrastructure.lifecycle.host.composition import HostComposition, compose_local_host
-from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
+from noetrium_platform.composition.platform_meta import (
+    PlatformMetaAuthorities,
+    build_durable_platform_meta,
+)
+from noetrium_platform.infrastructure.resources.compute.composition import (
+    discover_local_compute_host,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,6 +78,7 @@ class ManagementPlaneAuthorities:
     host: HostComposition
     compute_scheduler: ComputeSchedulerPort
     deployment_qualification: DeploymentQualificationAuthorities
+    platform_meta: PlatformMetaAuthorities
 
 
 class LocalModelServiceRuntimeFactory:
@@ -146,14 +153,19 @@ def build_local_management_plane(
     local_commands = build_local_command_runner(task_group)
     gpu_runtime = NvidiaSmiGpuRuntimeObserver(local_commands)
     host_runtime = LocalHostRuntimeObserver()
-    meta = build_in_memory_platform_meta(
+    directories = build_local_directory_authorities(layout)
+    directory_layout = directories.layout
+    meta = build_durable_platform_meta(
+        directory_layout.layout.state / "platform-meta",
         gpu_runtime_observer=gpu_runtime,
         host_runtime_observer=host_runtime,
     )
+    discovered_host = discover_local_compute_host(
+        gpu_runtime_observer=gpu_runtime,
+    )
+    meta.compute_inventory.register_host(discovered_host)
     scopes = meta.scopes
     host = compose_local_host(planner=meta.capability_composition)
-    directories = build_local_directory_authorities(layout)
-    directory_layout = directories.layout
     runner = SubprocessEnvironmentCommandRunner(local_commands)
     pip_cache = directory_layout.layout.cache / "pip"
     conda_cache = directory_layout.layout.cache / "conda-packages"
@@ -233,6 +245,7 @@ def build_local_management_plane(
             environments.execution,
             local_commands,
         ),
+        meta,
     )
 
 
