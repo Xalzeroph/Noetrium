@@ -25,6 +25,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodNodeResult,
     MethodProgram,
     MethodProgramBuilder,
+    MethodRuntimePort,
 )
 
 from .fidelity import JARVIS1_REFERENCE_FIDELITY
@@ -579,6 +580,7 @@ def build_jarvis1_method_program() -> MethodProgram:
     )
     return builder.build(
         configuration=configuration,
+        required_runtime_ports=(MethodRuntimePort.CHILD_MACHINES,),
         required_capabilities=(_CONTROLLER_CAPABILITY,),
         execution_class=MethodExecutionClass.EFFECT_RECORDED,
         evidence_obligations=(

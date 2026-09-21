@@ -28,6 +28,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodNodeResult,
     MethodProgram,
     MethodProgramBuilder,
+    MethodRuntimePort,
 )
 
 from .chest_memory import (
@@ -1554,6 +1555,7 @@ def build_voyager_minecraft_method_program() -> MethodProgram:
     )
     return builder.build(
         configuration=configuration,
+        required_runtime_ports=(MethodRuntimePort.CHILD_MACHINES,),
         required_capabilities=(
             _CURRICULUM_RANDOM_CAPABILITY,
             _PROGRAM_EXECUTION_CAPABILITY,

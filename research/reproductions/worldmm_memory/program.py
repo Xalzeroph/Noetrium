@@ -30,6 +30,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodNodeResult,
     MethodProgram,
     MethodProgramBuilder,
+    MethodRuntimePort,
 )
 
 from .fidelity import WORLDMM_REFERENCE_FIDELITY
@@ -753,6 +754,7 @@ def build_worldmm_method_program() -> MethodProgram:
     )
     return builder.build(
         configuration=configuration,
+        required_runtime_ports=(MethodRuntimePort.CHILD_MACHINES,),
         required_capabilities=(
             _REASON_CAPABILITY,
             _ANSWER_CAPABILITY,

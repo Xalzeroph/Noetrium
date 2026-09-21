@@ -27,6 +27,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodNodeResult,
     MethodProgram,
     MethodProgramBuilder,
+    MethodRuntimePort,
 )
 
 from .aov import (
@@ -769,6 +770,7 @@ def build_flow_method_program() -> MethodProgram:
     builder.return_node("return", "flow.result", _return_result)
     return builder.build(
         configuration=configuration,
+        required_runtime_ports=(MethodRuntimePort.CHILD_MACHINES,),
         execution_class=MethodExecutionClass.CHECKPOINTABLE,
         evidence_obligations=(
             "flow.initial-workflow-candidates",

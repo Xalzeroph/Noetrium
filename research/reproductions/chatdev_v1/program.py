@@ -24,6 +24,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodNodeResult,
     MethodProgram,
     MethodProgramBuilder,
+    MethodRuntimePort,
 )
 
 from .chain import (
@@ -850,6 +851,7 @@ def build_chatdev_v1_method_program() -> MethodProgram:
     )
     return builder.build(
         configuration=configuration,
+        required_runtime_ports=(MethodRuntimePort.CHILD_MACHINES,),
         execution_class=MethodExecutionClass.EFFECT_RECORDED,
         evidence_obligations=(
             "chatdev.phase-runtime.child-cuts",
