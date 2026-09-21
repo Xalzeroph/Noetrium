@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from fractions import Fraction
+
 import pytest
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
@@ -198,3 +200,43 @@ def test_shard_plan_can_leave_excess_workers_idle_without_identity_loss() -> Non
     assert len(sharded.shards) == 8
     assert sum(bool(row.assignment_digests) for row in sharded.shards) == 6
     sharded.assert_complete_for(compiled)
+
+
+def test_shard_plan_balances_against_heterogeneous_worker_capacity() -> None:
+    compiled = _compiled()
+    assignments = tuple(compiled.plan.assignments)
+    costs = {row.assignment_digest: 10 for row in assignments}
+
+    sharded = compile_experiment_shard_plan(
+        compiled,
+        shard_count=3,
+        assignment_cost_units=costs,
+        shard_capacity_units=(1, 2, 3),
+    )
+
+    assert tuple(row.capacity_units for row in sharded.shards) == (1, 2, 3)
+    assert tuple(len(row.assignment_digests) for row in sharded.shards) == (1, 2, 3)
+    assert tuple(row.estimated_cost_units for row in sharded.shards) == (10, 20, 30)
+    assert len({
+        Fraction(row.estimated_cost_units, row.capacity_units)
+        for row in sharded.shards
+    }) == 1
+    sharded.assert_complete_for(compiled)
+
+
+def test_shard_plan_rejects_invalid_worker_capacity_model() -> None:
+    compiled = _compiled()
+
+    with pytest.raises(ValueError, match="exactly shard_count"):
+        compile_experiment_shard_plan(
+            compiled,
+            shard_count=2,
+            shard_capacity_units=(1,),
+        )
+
+    with pytest.raises(ValueError, match="positive"):
+        compile_experiment_shard_plan(
+            compiled,
+            shard_count=2,
+            shard_capacity_units=(1, 0),
+        )
