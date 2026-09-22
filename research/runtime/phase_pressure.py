@@ -19,9 +19,6 @@ from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
-    ModelEndpointRoute,
-    OperationalModelEndpointReplica,
-    OperationalModelEndpointReplicaSet,
     OperationalModelServingInventory,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.providers import (
@@ -57,6 +54,20 @@ from noetrium_platform.research.experimentation.workload.composition import (
 ROOT = Path(__file__).resolve().parents[2]
 REPRO_ROOT = ROOT / "research" / "reproductions"
 _PRINT_LOCK = Lock()
+
+
+def _git_sha() -> str:
+    return subprocess.check_output(
+        [
+            "git",
+            "-c",
+            f"safe.directory={ROOT}",
+            "rev-parse",
+            "HEAD",
+        ],
+        cwd=ROOT,
+        text=True,
+    ).strip()
 
 
 _PRESSURE_SUPPORTED_NODE_KINDS = frozenset({
