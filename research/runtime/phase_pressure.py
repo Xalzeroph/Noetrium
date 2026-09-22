@@ -24,6 +24,9 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     OperationalModelEndpointReplicaSet,
     OperationalModelServingInventory,
 )
+from noetrium_platform.capabilities.model.serving.endpoint.providers import (
+    load_operational_model_serving_inventory,
+)
 from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
     PinnedReplicaSelectionPolicy,
 )
@@ -34,7 +37,6 @@ from noetrium_platform.capabilities.model.serving.runtime import ModelAdmissionR
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
-    ImmutableModelIdentity,
     canonical_digest,
 )
 from noetrium_platform.research.execution.workflow.api import MethodNodeKind, MethodProgram
@@ -57,67 +59,25 @@ REPRO_ROOT = ROOT / "research" / "reproductions"
 _PRINT_LOCK = Lock()
 
 
-def _json(path: Path) -> dict:
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise TypeError(f"{path}: expected object")
-    return value
+_PRESSURE_SUPPORTED_NODE_KINDS = frozenset({
+    MethodNodeKind.AGENT,
+    MethodNodeKind.ROUTE,
+    MethodNodeKind.RETURN,
+})
 
 
-def _git_sha() -> str:
-    return subprocess.check_output(
-        [
-            "git",
-            "-c",
-            f"safe.directory={ROOT}",
-            "rev-parse",
-            "HEAD",
-        ],
-        cwd=ROOT,
-        text=True,
-    ).strip()
+def _pressure_compatible(program: MethodProgram) -> bool:
+    """Return whether the generic pressure runtime can bind this program.
 
+    Selection is based on runtime capabilities, never authoring metadata.
+    Programs requiring capability, compute, checkpoint or interrupt bindings are
+    intentionally routed to environment/matched reproduction lanes instead.
+    """
 
-def _model(document: dict) -> ImmutableModelIdentity:
-    value = document.get("model")
-    if not isinstance(value, dict):
-        raise ValueError("operational inventory lacks model identity")
-    return ImmutableModelIdentity(**value)
-
-
-def load_operational_inventory(path: Path) -> OperationalModelServingInventory:
-    document = _json(path)
-    schema = document.get("schema")
-    if schema != "noetrium.operational-model-serving-inventory.v1":
-        raise ValueError(
-            "operational inventory schema mismatch: "
-            f"expected 'noetrium.operational-model-serving-inventory.v1', got {schema!r}"
-        )
-    served_model_name = document.get("served_model_name")
-    if not isinstance(served_model_name, str) or not served_model_name.strip():
-        raise ValueError("operational inventory requires served_model_name")
-    rows = document.get("replicas")
-    if not isinstance(rows, list) or not rows:
-        raise ValueError("operational inventory requires non-empty replicas")
-    replicas: list[OperationalModelEndpointReplica] = []
-    for index, row in enumerate(rows):
-        if not isinstance(row, dict):
-            raise TypeError(f"operational inventory replica[{index}] must be object")
-        route = ModelEndpointRoute(
-            deployment_id=str(row["deployment_id"]),
-            deployment_generation=str(row["deployment_generation"]),
-            base_url=str(row["base_url"]),
-            completion_path=str(row.get("completion_path", "/v1/chat/completions")),
-            timeout_s=float(row.get("timeout_s", 120.0)),
-        )
-        capacity = row.get("capacity")
-        if type(capacity) is not int or capacity <= 0:
-            raise ValueError(f"operational inventory replica[{index}] capacity must be positive")
-        replicas.append(OperationalModelEndpointReplica(route, capacity))
-    return OperationalModelServingInventory(
-        model=_model(document),
-        served_model_name=served_model_name,
-        replica_set=OperationalModelEndpointReplicaSet(tuple(replicas)),
+    kinds = {node.kind for node in program.graph.nodes}
+    return (
+        MethodNodeKind.AGENT in kinds
+        and kinds.issubset(_PRESSURE_SUPPORTED_NODE_KINDS)
     )
 
 
@@ -127,12 +87,12 @@ def _program_for(package: str) -> MethodProgram | None:
         value
         for value in vars(module).values()
         if isinstance(value, MethodProgram)
-        and value.configuration.get("authoring_form") == "agent_phase_sequence.v1"
     ]
     unique = {value.program_digest: value for value in programs}
     if len(unique) != 1:
         return None
-    return next(iter(unique.values()))
+    program = next(iter(unique.values()))
+    return program if _pressure_compatible(program) else None
 
 
 def discover() -> tuple[tuple[str, MethodProgram], ...]:
@@ -259,7 +219,10 @@ def _run_episode(
         ),
     )
     started = time.time()
-    result = UniversalMethodMachine(max_steps=task.max_steps).run(
+    result = UniversalMethodMachine(
+        max_steps=task.max_steps,
+        max_seconds=task.max_seconds,
+    ).run(
         invocation.program,
         runtime=invocation.runtime,
         input_value=invocation.input_value,
@@ -271,6 +234,10 @@ def _run_episode(
         "lane": "platform-pressure",
         "matched_reproduction": False,
         "claim_ready": False,
+        "selection_contract": "method-node-kind.v1",
+        "supported_node_kinds": tuple(
+            sorted(kind.value for kind in _PRESSURE_SUPPORTED_NODE_KINDS)
+        ),
         "package": package,
         "repetition": repetition,
         "source_sha": source_sha,
@@ -349,8 +316,46 @@ def _failed_record(
     return record
 
 
+def _load_resumable_record(
+    *,
+    output_root: Path,
+    package: str,
+    program: MethodProgram,
+    repetition: int,
+    source_sha: str,
+    inventory: OperationalModelServingInventory,
+) -> dict | None:
+    path = output_root / package / f"rep-{repetition:02d}" / "result.json"
+    if not path.is_file():
+        return None
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(record, dict):
+        return None
+    expected = {
+        "schema": "noetrium.phase-pressure-result.v2",
+        "lane": "platform-pressure",
+        "package": package,
+        "repetition": repetition,
+        "source_sha": source_sha,
+        "program_digest": program.program_digest,
+        "serving_inventory_digest": inventory.identity_digest,
+        "replica_set_digest": inventory.replica_set.replica_set_digest,
+    }
+    if any(record.get(key) != value for key, value in expected.items()):
+        return None
+    digest = record.get("record_digest")
+    payload = dict(record)
+    payload.pop("record_digest", None)
+    if not isinstance(digest, str) or canonical_digest(payload) != digest:
+        return None
+    return record
+
+
 def run(args: argparse.Namespace) -> dict:
-    inventory = load_operational_inventory(args.deployment_inventory)
+    inventory = load_operational_model_serving_inventory(args.deployment_inventory)
     source_sha = _git_sha()
     all_rows = discover()
     selected = tuple(
@@ -367,7 +372,27 @@ def run(args: argparse.Namespace) -> dict:
     if not jobs:
         raise RuntimeError("phase pressure selection produced no jobs")
 
-    auto_workers = min(len(jobs), inventory.capacity)
+    resumed_records: list[dict] = []
+    pending_jobs: list[tuple[str, MethodProgram, int]] = []
+    for package, program, repetition in jobs:
+        record = (
+            _load_resumable_record(
+                output_root=args.output_root,
+                package=package,
+                program=program,
+                repetition=repetition,
+                source_sha=source_sha,
+                inventory=inventory,
+            )
+            if args.resume
+            else None
+        )
+        if record is None:
+            pending_jobs.append((package, program, repetition))
+        else:
+            resumed_records.append(record)
+
+    auto_workers = min(max(1, len(pending_jobs)), inventory.capacity)
     worker_count = auto_workers if args.worker_count is None else args.worker_count
     if worker_count < 1:
         raise ValueError("worker_count must be positive")
@@ -399,7 +424,7 @@ def run(args: argparse.Namespace) -> dict:
         selection_policy=selection_policy,
     )
 
-    records: list[dict] = []
+    records: list[dict] = list(resumed_records)
     try:
         with ThreadPoolExecutor(
             max_workers=worker_count,
@@ -417,7 +442,7 @@ def run(args: argparse.Namespace) -> dict:
                     pool=pool,
                     args=args,
                 ): (package, repetition)
-                for package, program, repetition in jobs
+                for package, program, repetition in pending_jobs
             }
             for future in as_completed(futures):
                 package, repetition = futures[future]
@@ -451,6 +476,8 @@ def run(args: argparse.Namespace) -> dict:
         "repetitions": args.repetitions,
         "package_count": len(selected),
         "run_count": len(records),
+        "executed_count": len(pending_jobs),
+        "resumed_count": len(resumed_records),
         "worker_count": worker_count,
         "auto_worker_count": auto_workers,
         "serving_inventory_digest": inventory.identity_digest,
@@ -497,6 +524,7 @@ def main() -> int:
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--timeout-s", type=float, default=180.0)
     parser.add_argument("--max-method-steps", type=int, default=128)
+    parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
     if not 0 <= args.shard_index < args.shard_count:
         raise ValueError("invalid shard index/count")
