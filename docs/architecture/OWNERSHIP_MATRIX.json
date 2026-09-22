@@ -1,5 +1,5 @@
 {
-  "matrix_digest": "86b548c761c45d26f8a0916a45f49919d76eb0c847c952fb2cbc1da2b4a98345",
+  "matrix_digest": "a230d6b4871502c638ce10afa646e6bd690b4e951b6143e1380ed75293ecd8d7",
   "rows": [
     {
       "audit_required": [],
@@ -9,7 +9,9 @@
       "node_kind": "authority",
       "parent": null,
       "plane": "evidence",
-      "provides": [],
+      "provides": [
+        "artifact.registry"
+      ],
       "public_abi": [
         "api",
         "runtime"
@@ -18,126 +20,9 @@
         "platform",
         "scope"
       ],
-      "row_digest": "f33322713c355f51bbb539604992c47b944bb81085818ae9e601984c131672f0",
+      "row_digest": "c87938f13a8fa34a5ec543bd7f15162ca05180735151bfafbf810c396ebf2698",
       "state_authority": "artifact_identity",
       "system_id": "artifact"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "artifact",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "artifact",
-      "plane": "evidence",
-      "provides": [
-        "artifact.registry"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers"
-      ],
-      "requires": [],
-      "row_digest": "c31f01b2e5f3c1ef54bf5bbb826a45241b12436cc0e29944ca3b4e9e8d19ccb1",
-      "state_authority": "artifact_identity",
-      "system_id": "artifact/catalog"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "artifact",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "artifact",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "c7a683bca6a22f9078c35b9cc6e174d0e344573553e3492af186127005e8828a",
-      "state_authority": "artifact_identity",
-      "system_id": "artifact/content"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "artifact",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "artifact",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "0304d2fab29c31b2af55320e5280ab82485da76204ad3a57bef74df2a9338834",
-      "state_authority": "artifact_identity",
-      "system_id": "artifact/lineage"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "artifact",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "artifact/lineage",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "1f3c53e33dd844a794fce3d5807495bbd75b5e371c31026620c629eadbeb583b",
-      "state_authority": "artifact_identity",
-      "system_id": "artifact/lineage/relation"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "artifact",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "artifact",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "03cfb3d500bf2f869ca9b4d532c59a76386e2bd3e53f9d0b1135a49ea1fa3960",
-      "state_authority": "artifact_identity",
-      "system_id": "artifact/reference"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "artifact",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "artifact",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "9fad38e4dde7bb69df36fbd1be2fceb6662661c629dcf783eec41b50b0e1e712",
-      "state_authority": "artifact_identity",
-      "system_id": "artifact/retention"
     },
     {
       "audit_required": [],
@@ -147,7 +32,10 @@
       "node_kind": "authority",
       "parent": null,
       "plane": "evidence",
-      "provides": [],
+      "provides": [
+        "dataset.registry",
+        "projection.runtime"
+      ],
       "public_abi": [
         "api"
       ],
@@ -156,30 +44,9 @@
         "platform",
         "scope"
       ],
-      "row_digest": "1f70430e2d4cfbb698f39dc11954950db8a03442b3a69706b0e3b78186a7a1a0",
+      "row_digest": "cd030232278c39393456716141d054b28ccfd3e6b25c29a14e5ec140cb9150bc",
       "state_authority": "data_authority",
       "system_id": "data"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "data",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "data",
-      "plane": "evidence",
-      "provides": [
-        "dataset.registry"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers"
-      ],
-      "requires": [],
-      "row_digest": "5ebe84f4b46b3abf519e689c4ead0a0ba5cfce0e8c0ee6d5ab3bb24de911baea",
-      "state_authority": "data_authority",
-      "system_id": "data/dataset"
     },
     {
       "audit_required": [],
@@ -202,64 +69,6 @@
       "row_digest": "f9911c40937f12bd6c708ce2a48c5e3a3bd4c0a82065a74704729369f76cf6f2",
       "state_authority": "fact_authority",
       "system_id": "data/fact"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "data",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "data",
-      "plane": "evidence",
-      "provides": [
-        "projection.runtime"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "35138b8b829f074bcabf000ac98617ea367a7609d26ff1ce2c91a78e84fa24b0",
-      "state_authority": "data_authority",
-      "system_id": "data/projection"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "data",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "projection",
-      "parent": "data",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "2dd3989c8b6137a256413afd50def54842002ea7bde50488866c4da4d81b6b07",
-      "state_authority": "data_authority",
-      "system_id": "data/query"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "data",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "projection",
-      "parent": "data/query",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "b656b4f5eebde9cd004b0b12bf4fe22afc7d863c8ad99f22734a70a8712b9f36",
-      "state_authority": "data_authority",
-      "system_id": "data/query/cross"
     },
     {
       "audit_required": [],
@@ -291,111 +100,29 @@
       "node_kind": "authority",
       "parent": null,
       "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "platform",
-        "reliability",
-        "resource",
-        "scope"
-      ],
-      "row_digest": "71558edf9a940a9cd5aff0b0463ee62c0e372ec988a3b55b40334b1f72680875",
-      "state_authority": "environment_state",
-      "system_id": "environment"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "environment",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "ee0d0e385b25a032cc202e10a55f89a12f37477d46e5295d1516009cea87124a",
-      "state_authority": "environment_state",
-      "system_id": "environment/binding"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "environment",
-      "plane": "capabilities",
       "provides": [
-        "environment.catalog"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "9f5cefa0b2f481c32b54202cd1c691e63ad35f2f33eca677a4089d4e216b0a6f",
-      "state_authority": "environment_state",
-      "system_id": "environment/catalog"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "environment",
-      "plane": "capabilities",
-      "provides": [
-        "environment.category"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [
-        "governance/system_registry",
-        "platform"
-      ],
-      "row_digest": "7f3dcb481bb72ac62aa1b9c1f879b54c6cbb7693a6c521b5a2797d5d0d73ec56",
-      "state_authority": "environment_state",
-      "system_id": "environment/category"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "environment",
-      "plane": "capabilities",
-      "provides": [
+        "environment.catalog",
+        "environment.category",
+        "environment.contract",
         "environment.embodied.contract"
       ],
       "public_abi": [
         "api",
+        "runtime",
         "providers",
         "composition"
       ],
       "requires": [
-        "environment",
+        "governance/system_registry",
+        "platform",
         "reliability",
-        "resource"
+        "resource",
+        "runtime",
+        "scope"
       ],
-      "row_digest": "510c1065215581e33ed72af87731501cc9cd8cc8fac28f856fd78c96fe1e7dc7",
+      "row_digest": "d7ebd94d61cc6effa38925aee954035b0f38c10d3d57e04b6ae8370c3db3917a",
       "state_authority": "environment_state",
-      "system_id": "environment/embodied"
+      "system_id": "environment"
     },
     {
       "audit_required": [],
@@ -418,63 +145,6 @@
       "row_digest": "ae724f9c7203cb1a92d15d60644c5a07f23231dda961d450b6a591b0d14f967f",
       "state_authority": "environment_state",
       "system_id": "environment/gui"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "environment",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "d4892d79b2f048beaa5714c4e08aca3a41445f99de0136ef704ca62c037d807c",
-      "state_authority": "environment_state",
-      "system_id": "environment/instance"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "environment/instance",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "ba78dba05e58747f49355b32854240dbeda113ca43bde8b6a2bfb1f2f0b484d0",
-      "state_authority": "environment_state",
-      "system_id": "environment/instance/identity"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "environment/instance",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "3ad844276b483a6008b4bed677b29ec0be3afdd87e88ff4ed265c42a7439a607",
-      "state_authority": "environment_state",
-      "system_id": "environment/instance/readiness"
     },
     {
       "audit_required": [],
@@ -509,45 +179,6 @@
       "canonical_authority": "environment",
       "direct_authority": false,
       "downstream_surface": "metadata_only",
-      "node_kind": "adapter",
-      "parent": "environment",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "118bd787637eddf9aee7df61150af9de143274c9b12682133c45bd229c02a1a7",
-      "state_authority": "environment_state",
-      "system_id": "environment/resolution"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "adapter",
-      "parent": "environment",
-      "plane": "capabilities",
-      "provides": [
-        "environment.contract"
-      ],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "06beb9bb29c352b8b3d23f01a307e1ad3f5b179adb4a8001826403d1b8f1f3a2",
-      "state_authority": "environment_state",
-      "system_id": "environment/runtime"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
       "node_kind": "provider",
       "parent": "environment",
       "plane": "capabilities",
@@ -561,69 +192,12 @@
       ],
       "requires": [
         "environment",
-        "runtime",
-        "resource"
+        "resource",
+        "runtime"
       ],
-      "row_digest": "a0f13491c449a78e23b80faaab6ef48b7c39d14af81223d83fb0ce7a0ef1c888",
+      "row_digest": "783a01baf010577416ad8b4145942c871f79b7be6ed877ec18c9e223c34c50a4",
       "state_authority": "environment_state",
       "system_id": "environment/software"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "environment",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "5316575c7162d5274f07704519bc4431e54ef0102e0a2efbfb74dd9def02dbee",
-      "state_authority": "environment_state",
-      "system_id": "environment/specification"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "environment/specification",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "bccaa59fc0971d89b26684a24fc5fd57f6ec4738665332805e4d12b961ef2885",
-      "state_authority": "environment_state",
-      "system_id": "environment/specification/digest"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "environment",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "environment/specification",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "d8896e3eabd6aa1a7cd594b03ab1b437eb76315fc467e52b515bb7b4625b8e6c",
-      "state_authority": "environment_state",
-      "system_id": "environment/specification/schema"
     },
     {
       "audit_required": [],
@@ -676,13 +250,24 @@
       "node_kind": "authority",
       "parent": null,
       "plane": "research",
-      "provides": [],
+      "provides": [
+        "capability.invocation",
+        "capability.registration",
+        "method.abi",
+        "method.checkpoint",
+        "method.machine",
+        "research.machine.authoring",
+        "research.program",
+        "runtime.program",
+        "workflow.runtime"
+      ],
       "public_abi": [
         "api",
         "runtime",
         "composition"
       ],
       "requires": [
+        "artifact",
         "environment",
         "governance",
         "model",
@@ -693,70 +278,9 @@
         "runtime",
         "scope"
       ],
-      "row_digest": "5c6947c898cbb8c436c37537c4f8fb5207fb652a6ee9dea00498574f84c7e5d7",
+      "row_digest": "b1cadb6f2cdedf3aa31443b9308914d17724228e8ac9d68328bef83ee36c73ce",
       "state_authority": "execution_operations",
       "system_id": "execution"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "execution",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "policy",
-      "parent": "execution",
-      "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "0011c625d2f69bc7e5818e98fc92ab18efabeef9f6023883eb9d06999bf07e7b",
-      "state_authority": "execution_operations",
-      "system_id": "execution/admission"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "execution",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "execution",
-      "plane": "research",
-      "provides": [
-        "capability.invocation",
-        "capability.registration"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "24f2a945237ea6916e9f7b4251ad8e92e75424d2aece667d4b194d106aee5d43",
-      "state_authority": "execution_operations",
-      "system_id": "execution/capability"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "execution",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "execution",
-      "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "e8639eeb7b0b47cb2e9b41eaa12264f5f0f201e7c39e74da92d7479a12057372",
-      "state_authority": "execution_operations",
-      "system_id": "execution/command"
     },
     {
       "audit_required": [],
@@ -780,359 +304,46 @@
     },
     {
       "audit_required": [],
-      "canonical_authority": "execution",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "execution",
-      "plane": "research",
-      "provides": [
-        "research.program",
-        "runtime.program",
-        "research.machine.authoring"
-      ],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [
-        "artifact/content",
-        "environment",
-        "model",
-        "participant/capability",
-        "platform"
-      ],
-      "row_digest": "15b36931d5eb26094744374714f467664a036147ae61d64adff8ef330c3e52a2",
-      "state_authority": "execution_operations",
-      "system_id": "execution/research_program"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "execution",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "policy",
-      "parent": "execution",
-      "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "c0adc61c52e19b8034a50a26364527222bbf062f210c8edc7d38ed0a23dada42",
-      "state_authority": "execution_operations",
-      "system_id": "execution/scheduling"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "execution",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "execution",
-      "plane": "research",
-      "provides": [
-        "workflow.runtime",
-        "method.machine",
-        "method.abi",
-        "method.checkpoint"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "participant/capability",
-        "participant/method",
-        "platform"
-      ],
-      "row_digest": "45d1232199bc75ec19f3769e884571faf12f589e9b9a01708c70c07dcfab796b",
-      "state_authority": "execution_operations",
-      "system_id": "execution/workflow"
-    },
-    {
-      "audit_required": [],
       "canonical_authority": "experimentation",
       "direct_authority": true,
       "downstream_surface": "public",
       "node_kind": "authority",
       "parent": null,
       "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "composition"
-      ],
-      "requires": [
-        "environment",
-        "execution",
-        "participant",
-        "platform",
-        "portfolio",
-        "scope",
-        "governance",
-        "model"
-      ],
-      "row_digest": "932d14106b13fac311fb37d791bfe596b0bc75936993ce45993d809a395ef6df",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "a41bb4e3aa21a054933b23f1528daa3e421bdc01a836e1af58a91908ce4f61d5",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/branch"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "experimentation",
-      "plane": "research",
       "provides": [
-        "experiment.catalog"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [
-        "experimentation/experiment",
-        "experimentation/run",
-        "experimentation/study",
-        "scope"
-      ],
-      "row_digest": "fbbd790dafab2d09502e5efd98f94f4cc9c8651755262c747c80cdba029ec704",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/catalog"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [
-        "run.checkpoint"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "33904d01b5bdee79278de30b606146cd6741914773316d23e2cfdafbdca2aefa",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/checkpoint"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "25e4b3cf2d8d0fffb584774975d2b1b7e4b7ae1c759c3a350301b209797d1fd0",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/evaluation"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [
+        "experiment.catalog",
         "experiment.definition",
-        "experiment.runtime"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "2cd18aa19eedac1a987b3ce72e68a0aae3a397f5dd5a0ceecd1ba1dc1858f305",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/experiment"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [
-        "experiment.resource-policy"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [
-        "experimentation/experiment",
-        "resource/compute",
-        "scope"
-      ],
-      "row_digest": "4912e257a4a592310037b09eb650c2342c42017653b87dc05d5a55140858c656",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/resource"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [
+        "experiment.resource-policy",
+        "experiment.runtime",
+        "experiment.workload",
+        "research.workbench",
+        "run.checkpoint",
         "run.control",
         "run.decision",
         "run.identity",
         "run.lifecycle",
-        "run.manifest"
-      ],
-      "public_abi": [
-        "api",
-        "composition",
-        "providers",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "b04269120b60f2b61a580e915a92b124d4eaf6e041c52c96e5e23cf9528d6943",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/run"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [
+        "run.manifest",
         "study.definition"
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
-        "artifact"
+        "artifact",
+        "environment",
+        "execution",
+        "governance",
+        "model",
+        "participant",
+        "platform",
+        "portfolio",
+        "resource",
+        "scope"
       ],
-      "row_digest": "04d86de8596b7bb1d15eb554eee69907b609069eb336ef2b86fca0b0d1a62b3a",
+      "row_digest": "489a3a8af16469d7cf0372aa244d5c2dcdd388fe8c238be356341cfad4af98dd",
       "state_authority": "experimentation_state",
-      "system_id": "experimentation/study"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "2ae749a60b9061a1046a34335a76ab926611480cbc33dfe33dced6503d52e9fd",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/variant"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [
-        "research.workbench"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "experimentation/study"
-      ],
-      "row_digest": "18223e4f56077844a182620dc6d6db4db7f5302018623f45d930956ac8d11ff2",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/workbench"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "adapter",
-      "parent": "experimentation",
-      "plane": "research",
-      "provides": [
-        "experiment.workload"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [
-        "environment/runtime",
-        "experimentation/experiment",
-        "experimentation/run",
-        "participant/method",
-        "platform"
-      ],
-      "row_digest": "8d8889667c733f54bed0e6eb5b79d155ce3bd25aa2702e5eede1c934cdac6174",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/workload"
+      "system_id": "experimentation"
     },
     {
       "audit_required": [],
@@ -1142,164 +353,25 @@
       "node_kind": "facet",
       "parent": null,
       "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "platform"
-      ],
-      "row_digest": "4bb742f02482df30e391c5558e604fc3843a77d508983dc9100b5ec6d1987766",
-      "state_authority": "none",
-      "system_id": "governance"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "tool",
-      "parent": "governance",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "79cf633e9ff86f89d5562c82491b77efdb3e891b92d258c152f02686a612b32e",
-      "state_authority": "none",
-      "system_id": "governance/algorithm"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "tool",
-      "parent": "governance",
-      "plane": "foundation",
       "provides": [
-        "architecture.audit"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [
-        "scope"
-      ],
-      "row_digest": "480b3d679fb877eb11f5e969e515d5f08dc8a1230ff67cc5dfbb10c6e5a69104",
-      "state_authority": "none",
-      "system_id": "governance/architecture"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "tool",
-      "parent": "governance",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "ca5d56d43390152eb60bdfadbab0b270862b58c12ec872a58b3d58fdf1a3cfd8",
-      "state_authority": "none",
-      "system_id": "governance/concurrency"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "policy",
-      "parent": "governance",
-      "plane": "foundation",
-      "provides": [
-        "governance.evolution"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers"
-      ],
-      "requires": [
-        "governance/system_registry",
-        "observability"
-      ],
-      "row_digest": "316d8b0898a92d02acbae22d68ecaf003a1c5bfb00f7a2deaf34d9f6f8c88a2e",
-      "state_authority": "none",
-      "system_id": "governance/evolution"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "policy",
-      "parent": "governance",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "6959c59c01254ec749c53857c39b38dcb2ca22286151c8545868d0fdb3b66d62",
-      "state_authority": "none",
-      "system_id": "governance/gate"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "tool",
-      "parent": "governance",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "ba4e5675cffc69ef4e5fe94c0f230a948a7492177a213b9252a2afb7cff7e06d",
-      "state_authority": "none",
-      "system_id": "governance/performance"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "tool",
-      "parent": "governance",
-      "plane": "foundation",
-      "provides": [
+        "architecture.audit",
+        "governance.evolution",
         "quality.audit"
       ],
       "public_abi": [
-        "api"
+        "api",
+        "runtime",
+        "providers",
+        "composition"
       ],
-      "requires": [],
-      "row_digest": "c0dc89e6dfae93bc874308aa67523579e4dd4abf54a3c0a9879131665dd57127",
+      "requires": [
+        "governance/system_registry",
+        "platform",
+        "scope"
+      ],
+      "row_digest": "db0c9bb7d3eafc2a27ab5bbe11d943d228a38a80071d32e7bab23e828b8f92c1",
       "state_authority": "none",
-      "system_id": "governance/quality"
+      "system_id": "governance"
     },
     {
       "audit_required": [],
@@ -1321,65 +393,6 @@
       "row_digest": "dff245a719056adafcd3eb80580295e3da857ae1b3ed14e69c21d5345aaa4e48",
       "state_authority": "release_authority",
       "system_id": "governance/release"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "tool",
-      "parent": "governance",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "dcdfdfd2e70b28612be5c9d5fab947a2f7932d6e77e879bb29fcf197474c99c9",
-      "state_authority": "none",
-      "system_id": "governance/repository_boundary"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "policy",
-      "parent": "governance",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "e2030487cd73f97e6da8f3adcda20f2a47b66153e9497a08c2bf2cbfdddab7e5",
-      "state_authority": "none",
-      "system_id": "governance/schema"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "policy",
-      "parent": "governance",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "868dc1a06968fdf4438a4799f5245981910270ac937160d82be9685663e44391",
-      "state_authority": "none",
-      "system_id": "governance/security"
     },
     {
       "audit_required": [],
@@ -1407,7 +420,16 @@
       "node_kind": "authority",
       "parent": null,
       "plane": "capabilities",
-      "provides": [],
+      "provides": [
+        "model.asset",
+        "model.asset-acquisition",
+        "model.assignment",
+        "model.deployment",
+        "model.deployment-control",
+        "model.qualification",
+        "model.request",
+        "model.serving"
+      ],
       "public_abi": [
         "api",
         "providers",
@@ -1421,310 +443,9 @@
         "runtime",
         "scope"
       ],
-      "row_digest": "bcc1abbfe999023947fac72b218dbc9c7f3b63cc2d0beff99458b162a6219589",
+      "row_digest": "74554e540bfd0dd9105c3505714513225471188a19fcdfd751d1c5b9ae63afa0",
       "state_authority": "model_identity",
       "system_id": "model"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "model",
-      "plane": "capabilities",
-      "provides": [
-        "model.asset",
-        "model.asset-acquisition"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers"
-      ],
-      "requires": [],
-      "row_digest": "458282b74b5a2d5e75f4eee696d760b63a3411f73555cc0581a2af348c44d653",
-      "state_authority": "model_identity",
-      "system_id": "model/asset"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "model",
-      "plane": "capabilities",
-      "provides": [
-        "model.assignment"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "715d33f3fe8ceb280a000504dda42ad6aa1c31db7a0e72cc637c29d96dc615cf",
-      "state_authority": "model_identity",
-      "system_id": "model/assignment"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "model",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "d99e851300320487bf6282eec84b385b736c52bf214718f34c72839e2d9a8778",
-      "state_authority": "model_identity",
-      "system_id": "model/catalog"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "model/catalog",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "dc845cc2bcc99cb8a6137c29dde05d29ba0fb81992cce4fab6a6f5cc622713b9",
-      "state_authority": "model_identity",
-      "system_id": "model/catalog/family"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "model/catalog",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "20f59f360f3689fecba76e96dfe0afc6f412119fe2ec25f5e98d707e1835e2c7",
-      "state_authority": "model_identity",
-      "system_id": "model/catalog/revision"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "model",
-      "plane": "capabilities",
-      "provides": [
-        "model.deployment",
-        "model.deployment-control"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "71f2a06c3eb1f885bb3fc4d27056a4c82f9ea71b9b6162b0941a512e72071790",
-      "state_authority": "model_identity",
-      "system_id": "model/deployment"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "model/deployment",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "24af026db25e6042b9927065fd0a3aec10754908604f174028d08782110a3a34",
-      "state_authority": "model_identity",
-      "system_id": "model/deployment/closure"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "policy",
-      "parent": "model",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "b07c31d9b14844575bfac855443a899dafc9460d78029053576b29a06780e6e4",
-      "state_authority": "model_identity",
-      "system_id": "model/qualification"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "model",
-      "plane": "capabilities",
-      "provides": [
-        "model.request"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "61c213c3b9e1616f8ad96ba8858a04941e964d55f95cc563ae2f3f3905cea476",
-      "state_authority": "model_identity",
-      "system_id": "model/request"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "model/request",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "82e6b256c425f586ee92337a204ee1b69da3e568885301840381ceaf1c2c91a9",
-      "state_authority": "model_identity",
-      "system_id": "model/request/input"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "model/request",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "fd296bcfa491abdbcdfe5f091725cdfe3255ae26cd1dabfbcde12f1f05872c01",
-      "state_authority": "model_identity",
-      "system_id": "model/request/output"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "model/request",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "7dd89d038e51ed40e9e1c35884469953602a6e624465d9f30aa960cf063f7338",
-      "state_authority": "model_identity",
-      "system_id": "model/request/prompt"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "adapter",
-      "parent": "model",
-      "plane": "capabilities",
-      "provides": [
-        "model.serving",
-        "model.qualification"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "7f5287d9ab37753042ee1d1ac646f0751326c7aba1a00e64a8bbc87616b06fd4",
-      "state_authority": "model_identity",
-      "system_id": "model/serving"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "adapter",
-      "parent": "model/serving",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "2d23a7a34e308f45a5d55ebf1cdfdfe620e9b738d26511420587ca1ab66b4e2d",
-      "state_authority": "model_identity",
-      "system_id": "model/serving/endpoint"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "model",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "model",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "b0f575e396eddb9b8b349221ba5dae44cf5e81b5e96bb3ce7d85f75c5ec2968b",
-      "state_authority": "model_identity",
-      "system_id": "model/stack"
     },
     {
       "audit_required": [],
@@ -1734,7 +455,12 @@
       "node_kind": "projection",
       "parent": null,
       "plane": "evidence",
-      "provides": [],
+      "provides": [
+        "logging.observation",
+        "logging.routing",
+        "status.read-model",
+        "telemetry.metrics"
+      ],
       "public_abi": [
         "api"
       ],
@@ -1744,7 +470,7 @@
         "platform",
         "scope"
       ],
-      "row_digest": "ce4fa64dd2165be1fbeb6d97ffc07d4d3622f730ec55dcee3780d65694c100f6",
+      "row_digest": "7d90b484a2dc87fedf32ab370ac6e268e1ae27e3d05cf90fbebb45e95ba0f732",
       "state_authority": "none",
       "system_id": "observability"
     },
@@ -1753,275 +479,8 @@
       "canonical_authority": null,
       "direct_authority": false,
       "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "66cfd5b994ce58006cad3e9e28768d597b591535b1c80e39ad818e168f5937ec",
-      "state_authority": "none",
-      "system_id": "observability/capture"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "6a1ba49ae5b7f8d410f963b6a8eed40eb23e7c32802f5a0f5beb9e2e9eb42364",
-      "state_authority": "none",
-      "system_id": "observability/diagnostic"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/diagnostic",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "a49641d758bc671e1cea565d8866989e0ec7ed30b27f1baae9197dbbbd0e887c",
-      "state_authority": "none",
-      "system_id": "observability/diagnostic/correlation"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/diagnostic",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "c3482a359f7cf371a4dd0cb4bdcd9bade0323cf76367b4e7f54bf92ab01a319a",
-      "state_authority": "none",
-      "system_id": "observability/diagnostic/query"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/diagnostic",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "404283dbcaf909a293373cd83e8546c8470864a4151d642a8a35df9409640a15",
-      "state_authority": "none",
-      "system_id": "observability/diagnostic/snapshot"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability",
-      "plane": "evidence",
-      "provides": [
-        "logging.observation"
-      ],
-      "public_abi": [
-        "api",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "2b08725781ee51233c64fe89502468f9a048ad1879f287e01d59783cc2bf5733",
-      "state_authority": "none",
-      "system_id": "observability/logging"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/logging",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "a6ad899cc20d04b7b01e1796907b543c17fcc07ed5f24aba26bc11fc2a538cfd",
-      "state_authority": "none",
-      "system_id": "observability/logging/capture"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/logging",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "17a31453d9864fe59f8fa9f6df82ac60dc0307c70ae27bef9944a0f404d710da",
-      "state_authority": "none",
-      "system_id": "observability/logging/context"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/logging",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "4f132a9ba3720518a52e649a975f0ef5d5355cf17dabcfb1d7e160b9d39ef8ef",
-      "state_authority": "none",
-      "system_id": "observability/logging/projection"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/logging",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "6abcec9e0646e7905e6f0b0a774d9efa35e95caa51c959352281b1e7999d2d50",
-      "state_authority": "none",
-      "system_id": "observability/logging/query"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/logging",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers"
-      ],
-      "requires": [],
-      "row_digest": "9998c5f6218c2963a6992ec5b5fc76d4dbe237d9ead5690a862e7de7c05fcc91",
-      "state_authority": "none",
-      "system_id": "observability/logging/record"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/logging",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "5b516f7299179a1d54fc1d31c85e451491b6413c297678f0c86f81a48b15f4b5",
-      "state_authority": "none",
-      "system_id": "observability/logging/retention"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/logging",
-      "plane": "evidence",
-      "provides": [
-        "logging.routing"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "81dfe7c4e1bf0992c61da5231bba8177303dc6b5b8d218d868cfa28791803ceb",
-      "state_authority": "none",
-      "system_id": "observability/logging/routing"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
       "node_kind": "provider",
-      "parent": "observability/logging",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "b3c968d07797d6f707683fb162f4b6418af614dc5fa6bb726a991a0e1421327b",
-      "state_authority": "none",
-      "system_id": "observability/logging/sink"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "provider",
-      "parent": "observability/logging",
+      "parent": "observability",
       "plane": "evidence",
       "provides": [],
       "public_abi": [
@@ -2030,7 +489,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "578909700d3c762107fff269397f7ce8c3bb48cb931913efef4799621eda3505",
+      "row_digest": "05b794ddeb5dc7fac88872a0f6b0027c28f55917a04d928bf90c6c7315464d08",
       "state_authority": "none",
       "system_id": "observability/logging/storage"
     },
@@ -2039,202 +498,8 @@
       "canonical_authority": null,
       "direct_authority": false,
       "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "8313892ee5192533168255bfa971ac403eb4686256eebadc5a9ba89685e494dc",
-      "state_authority": "none",
-      "system_id": "observability/projection"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability",
-      "plane": "evidence",
-      "provides": [
-        "status.read-model"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "a5b1405b4b5abaef21e8db21b502f857175de1c34b91d002804977434926b784",
-      "state_authority": "none",
-      "system_id": "observability/status"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/status",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "535202833ee066aede45b1c4b3fa2d454cfff519d07c8f1ef0440bc35434c5be",
-      "state_authority": "none",
-      "system_id": "observability/status/health"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/status",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "55291efcd1dc1bb155dcdacc7f4a1b6a6785ead6179817c142e8af48b9ad3c0b",
-      "state_authority": "none",
-      "system_id": "observability/status/lifecycle_view"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability",
-      "plane": "evidence",
-      "provides": [
-        "telemetry.metrics"
-      ],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "93ff434d148631c2abd4a84461dd01006319b5ca16f03ca25dad1eb9217c44b6",
-      "state_authority": "none",
-      "system_id": "observability/telemetry"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/telemetry",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "a4231525faf67f5d15e44e99c7678eed493fccd3849796066081f1d3b1918631",
-      "state_authority": "none",
-      "system_id": "observability/telemetry/event"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/telemetry",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "8aa84831580b5a3c1a05254fe923c1709b612601e248a2cad3894c2b0adc0362",
-      "state_authority": "none",
-      "system_id": "observability/telemetry/metric"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "794649602a41a56f0bb87c4cc2bb16de8eefda29751b3d8139b9c70d810fe71a",
-      "state_authority": "none",
-      "system_id": "observability/tracing"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/tracing",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "827f06d0a8f24d00e5bd97b8f7692912b9f563a350825145ec87c148c9370684",
-      "state_authority": "none",
-      "system_id": "observability/tracing/context"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "observability/tracing",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "b39d54b2603a088abe755f1b0d3da696954f9a4bf14ccd2b90e423a8784feeda",
-      "state_authority": "none",
-      "system_id": "observability/tracing/propagation"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
       "node_kind": "provider",
-      "parent": "observability/tracing",
+      "parent": "observability",
       "plane": "evidence",
       "provides": [],
       "public_abi": [
@@ -2244,7 +509,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "c47f777f179fad8f7288bdd3ad381ab2d5ba2150e4da856eb33a76fc4e839927",
+      "row_digest": "8d6a464f3beadae6272f41b1a1ce9dfc3b03fe1bbf6ce624582e9ab53f74ca44",
       "state_authority": "none",
       "system_id": "observability/tracing/storage"
     },
@@ -2259,8 +524,7 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "environment",
@@ -2273,145 +537,12 @@
         "portfolio",
         "reliability",
         "resource",
+        "runtime",
         "scope"
       ],
-      "row_digest": "eea330a52dd30fa17e70c8e3105b13f241357aa2f5eb7094144d5e390cd71db8",
+      "row_digest": "5778934ebcbdd412bbc3c60be63268e43de02f77186a594b8a4e9bf927e25610",
       "state_authority": "none",
       "system_id": "operator"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "product_surface",
-      "parent": "operator",
-      "plane": "product",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "0beb48a195980fa995357faacd86c6ecf6b34c1bd297ad9318e9cf0ee6962e79",
-      "state_authority": "none",
-      "system_id": "operator/audit"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "product_surface",
-      "parent": "operator",
-      "plane": "product",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "81ffaaa6791cbc3c0891f92f1e358196088228d81f320e839dd2b62cf9296a01",
-      "state_authority": "none",
-      "system_id": "operator/command"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "product_surface",
-      "parent": "operator/command",
-      "plane": "product",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "9a48aa02dad220fef7111b218548d2e56ee1f731a525b04f1863c4adda9687db",
-      "state_authority": "none",
-      "system_id": "operator/command/intent"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "product_surface",
-      "parent": "operator",
-      "plane": "product",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "01f1ce9703374a7e80dfcbe6d98559912ea1c73107f6e41e942c1b0daf2acd9d",
-      "state_authority": "none",
-      "system_id": "operator/incident"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "product_surface",
-      "parent": "operator",
-      "plane": "product",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [
-        "runtime"
-      ],
-      "row_digest": "642aa8a8e6a57888765623954ba8d7c289d0e39a6092826c6dc7e0381ee4509b",
-      "state_authority": "none",
-      "system_id": "operator/maintenance"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "product_surface",
-      "parent": "operator",
-      "plane": "product",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "7dd7a8e90a13a3a0c6d9157ead6233e2fe97c664a1153e2b142eb948b371bb5d",
-      "state_authority": "none",
-      "system_id": "operator/query"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "product_surface",
-      "parent": "operator/query",
-      "plane": "product",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "70c61d6c01eff0c8b57ef8c16c057fcffd6ef75be018959a21d9cce203ac84c2",
-      "state_authority": "none",
-      "system_id": "operator/query/search"
     },
     {
       "audit_required": [],
@@ -2421,166 +552,30 @@
       "node_kind": "authority",
       "parent": null,
       "plane": "capabilities",
-      "provides": [],
+      "provides": [
+        "agent.contract",
+        "capability.contract",
+        "method.contract",
+        "method.runtime",
+        "participant.definition",
+        "participant.runtime.abi",
+        "participant.session"
+      ],
       "public_abi": [
         "api",
         "providers",
         "composition"
       ],
       "requires": [
+        "artifact",
         "data",
+        "governance",
         "platform",
         "reliability"
       ],
-      "row_digest": "4671a1dc8b4a0ccb00f1ecee04188cc680aecfac9e60cf5544c0157b52d486c6",
+      "row_digest": "8bf03886928f57d605b495fd92a90343d88efe6b13662aa428d0dda80e4e7ca1",
       "state_authority": "participant_state",
       "system_id": "participant"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "participant",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "participant",
-      "plane": "capabilities",
-      "provides": [
-        "agent.contract"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [
-        "model"
-      ],
-      "row_digest": "6dbeeef192449ab5e07fb950a7783672d4a7dc3c1a6c80d7c7c368e341d8061e",
-      "state_authority": "participant_state",
-      "system_id": "participant/agent"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "participant",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "participant",
-      "plane": "capabilities",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "6ad91ead913a53add8af0948ce7aa63b836eb04bd58a7d6f7b3fdc4d4f392e61",
-      "state_authority": "participant_state",
-      "system_id": "participant/binding"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "participant",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "participant",
-      "plane": "capabilities",
-      "provides": [
-        "capability.contract"
-      ],
-      "public_abi": [
-        "api",
-        "providers"
-      ],
-      "requires": [],
-      "row_digest": "fe8f66bf48ac3bf210ce6680383846b61650f5aacdac384ccf2ac55112eaf984",
-      "state_authority": "participant_state",
-      "system_id": "participant/capability"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "participant",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "participant",
-      "plane": "capabilities",
-      "provides": [
-        "participant.runtime.abi"
-      ],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [
-        "platform"
-      ],
-      "row_digest": "67ef32517a20cb63fc5c910fb0f56df9640446816dba2e6e9b16fa5b947b712d",
-      "state_authority": "participant_state",
-      "system_id": "participant/core"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "participant",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "participant",
-      "plane": "capabilities",
-      "provides": [
-        "participant.definition"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "0e07b5b44c52fd178cf83268df6d157a783d1314d3637cc4ee118e879d1e8980",
-      "state_authority": "participant_state",
-      "system_id": "participant/definition"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "participant",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "participant",
-      "plane": "capabilities",
-      "provides": [
-        "method.contract",
-        "method.runtime"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [
-        "governance"
-      ],
-      "row_digest": "0acd57b08ba534af7ad13281ffa66ae0d893509aae8cd48abd92315995ef3966",
-      "state_authority": "participant_state",
-      "system_id": "participant/method"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "participant",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "participant",
-      "plane": "capabilities",
-      "provides": [
-        "participant.session"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "11f453c4f748c22e7d33639533cecd58c09b252164986d2e18e6c24f33d3b923",
-      "state_authority": "participant_state",
-      "system_id": "participant/session"
     },
     {
       "audit_required": [],
@@ -2599,86 +594,6 @@
       "row_digest": "2277f98307975fd1d7cd5df084cc6c37297c59d6d666f8ba48e250c07f55911c",
       "state_authority": "platform_identity",
       "system_id": "platform"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "platform",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "platform",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "982502f69b8e972ac951f6ffda9b0f91e2cd46b28223a0100a695faf040a9625",
-      "state_authority": "platform_identity",
-      "system_id": "platform/concurrency"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "platform",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "platform",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "4b629b62057cb76fa566b900a9bbec51ba6b6b7779777e5ee6c1a5566dd5b7cd",
-      "state_authority": "platform_identity",
-      "system_id": "platform/configuration"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "platform",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "platform",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "9362863fb60e73ef3d2384cd6fa7da7ab45159f54f021705c4a7c33b9faa4f0d",
-      "state_authority": "platform_identity",
-      "system_id": "platform/identity"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "platform",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "platform",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "cc52892d9aba087a104a85daddf56c0309de9b051f0dc87e6cc7ffeff368d1d2",
-      "state_authority": "platform_identity",
-      "system_id": "platform/lifecycle"
     },
     {
       "audit_required": [],
@@ -2703,90 +618,18 @@
     },
     {
       "audit_required": [],
-      "canonical_authority": "portfolio",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "portfolio",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "07ffc2abd33041a337d6808ec838d07f8d6e49692b4695fa37945c7400cdb9a5",
-      "state_authority": "portfolio_metadata",
-      "system_id": "portfolio/membership"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "portfolio",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "portfolio",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "b7f50fb00fa43be20e0161259bbc109c43a05906642bd4fb772934ba291ed58b",
-      "state_authority": "portfolio_metadata",
-      "system_id": "portfolio/program"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "portfolio",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "portfolio",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "867ae98a48ceefaa7f64d612bc8c9e42bcf94e6f0d6ef9b0acac4380e4b6e161",
-      "state_authority": "portfolio_metadata",
-      "system_id": "portfolio/project"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "portfolio",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "portfolio",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "d66b7ee0052264010d17a7fbe171d43b0d3844672980bcaeb27f30a6f4806a79",
-      "state_authority": "portfolio_metadata",
-      "system_id": "portfolio/workspace"
-    },
-    {
-      "audit_required": [],
       "canonical_authority": null,
       "direct_authority": false,
       "downstream_surface": "public",
       "node_kind": "facet",
       "parent": null,
       "plane": "foundation",
-      "provides": [],
+      "provides": [
+        "diagnostics.causal",
+        "forensics.ledger",
+        "recovery.execution",
+        "recovery.runtime"
+      ],
       "public_abi": [
         "api"
       ],
@@ -2795,31 +638,12 @@
         "governance",
         "observability",
         "platform",
+        "resource",
         "scope"
       ],
-      "row_digest": "a6351298578e4a72159c3bff0ff6bdcf56192e0cf4c38f20ea84a46abe5dd1d9",
+      "row_digest": "25d4b9f49faa3c83290b53262a4d276685c4673eb8a4d7fa9c0aab7e7536e335",
       "state_authority": "none",
       "system_id": "reliability"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "reliability",
-      "plane": "foundation",
-      "provides": [
-        "diagnostics.causal"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "5638b170baf063ee8244d50f3cc77b5fed07b0345bd48429abb7183e0074c7ff",
-      "state_authority": "none",
-      "system_id": "reliability/diagnostics"
     },
     {
       "audit_required": [],
@@ -2830,15 +654,15 @@
       "parent": "reliability",
       "plane": "foundation",
       "provides": [
-        "effect.safety",
-        "effect.journal"
+        "effect.journal",
+        "effect.safety"
       ],
       "public_abi": [
         "api",
         "runtime"
       ],
       "requires": [],
-      "row_digest": "29e17b06fd4f3830365a2950dde99ad7aa0a1654155d814ad0e4654041aed075",
+      "row_digest": "d307be1f26a370b3a602f65757fcbfa802c27f5e7b63d0cb785c74929ae99138",
       "state_authority": "effect_authority",
       "system_id": "reliability/effect"
     },
@@ -2863,161 +687,32 @@
     },
     {
       "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "projection",
-      "parent": "reliability",
-      "plane": "foundation",
-      "provides": [
-        "forensics.ledger"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "05311a3f8010500adf6547fd71ed638a8c09027c70aafb2227fdab583f4c5f9f",
-      "state_authority": "none",
-      "system_id": "reliability/forensics"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "adapter",
-      "parent": "reliability",
-      "plane": "foundation",
-      "provides": [
-        "recovery.runtime"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [
-        "resource"
-      ],
-      "row_digest": "c00936a6ea1c3dc2effe6763d9d5a026c707a2a86866915e5c89b24445092dbd",
-      "state_authority": "none",
-      "system_id": "reliability/recovery"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "adapter",
-      "parent": "reliability/recovery",
-      "plane": "foundation",
-      "provides": [
-        "recovery.execution"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "efcca46e39f19973006d05c517844981be797ea8c9a78259e75aa8bc6a965846",
-      "state_authority": "none",
-      "system_id": "reliability/recovery/execution"
-    },
-    {
-      "audit_required": [],
       "canonical_authority": "resource",
       "direct_authority": true,
       "downstream_surface": "public",
       "node_kind": "authority",
       "parent": null,
       "plane": "foundation",
-      "provides": [],
+      "provides": [
+        "compute.inventory",
+        "compute.scheduler",
+        "directory.layout",
+        "resource.endpoint-allocation",
+        "resource.hierarchical-resolution",
+        "workspace.storage"
+      ],
       "public_abi": [
         "api",
         "providers"
       ],
       "requires": [
         "platform",
+        "resource/lease",
         "scope"
       ],
-      "row_digest": "1d6ba92dc4e051890f0b6d4533691ef066db33ab652e5288386bc2cc36de573d",
+      "row_digest": "f67da8bf3e8630bbff6de3ab249177467597347ad36b9caf77f63066b242ba38",
       "state_authority": "resource_inventory",
       "system_id": "resource"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "resource",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "resource",
-      "plane": "foundation",
-      "provides": [
-        "resource.endpoint-allocation"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "resource/lease"
-      ],
-      "row_digest": "e7ff9056768aa846559aaa8fd17a089e29a564bc951085d876c6d09557725fa4",
-      "state_authority": "resource_inventory",
-      "system_id": "resource/allocation"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "resource",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "resource",
-      "plane": "foundation",
-      "provides": [
-        "compute.inventory",
-        "compute.scheduler"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "runtime/process",
-        "resource/lease"
-      ],
-      "row_digest": "14fa7d04536d975faf2b953f727f8945643f081de2f3c1f42b88146df1515c83",
-      "state_authority": "resource_inventory",
-      "system_id": "resource/compute"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "resource",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "resource",
-      "plane": "foundation",
-      "provides": [
-        "directory.layout",
-        "workspace.storage"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [],
-      "row_digest": "21b8bf1c5fc1944c2a15a7835b844ea8ffc2113fce9fa72f922dc3d41ed03134",
-      "state_authority": "resource_inventory",
-      "system_id": "resource/directory"
     },
     {
       "audit_required": [],
@@ -3043,306 +738,40 @@
     },
     {
       "audit_required": [],
-      "canonical_authority": "resource",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "policy",
-      "parent": "resource",
-      "plane": "foundation",
-      "provides": [
-        "resource.hierarchical-resolution"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "867ff6a3cd212e78b44b189f0e04048c436ba96199954c436e2b15d6c133734b",
-      "state_authority": "resource_inventory",
-      "system_id": "resource/resolution"
-    },
-    {
-      "audit_required": [],
       "canonical_authority": "runtime",
       "direct_authority": true,
       "downstream_surface": "public",
       "node_kind": "authority",
       "parent": null,
       "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [
-        "governance",
-        "observability",
-        "platform",
-        "reliability",
-        "resource",
-        "scope"
-      ],
-      "row_digest": "fe45db4164a5bdc509becd3c52286f6e9a31643fa46316e5e2128764f4ed1247",
-      "state_authority": "runtime_state",
-      "system_id": "runtime"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "runtime",
-      "plane": "foundation",
       "provides": [
-        "host.runtime"
-      ],
-      "public_abi": [
-        "api",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "d053c6a009c0e66f6bd2a1a0f50d36d1f29966245f5f652ff352cc67d9db9e74",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/host"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "runtime",
-      "plane": "foundation",
-      "provides": [
+        "host.runtime",
+        "persistent-session.runtime",
+        "process.capture",
         "process.execution",
-        "process.capture"
-      ],
-      "public_abi": [
-        "api"
-      ],
-      "requires": [],
-      "row_digest": "247d95b4aaf5710f731608a13102edd9a23efc43194db78b516f1a800767b1a0",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/process"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "adapter",
-      "parent": "runtime/process",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "1f49c0af4faf11caccde81359b7f1943b97e2f996649ec59fba4ae542d6ec384",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/process/supervision"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "provider",
-      "parent": "runtime",
-      "plane": "foundation",
-      "provides": [
-        "python-environment.registry",
-        "python-environment.lifecycle",
         "python-environment.execution",
-        "python-environment.packages"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [
-        "runtime",
-        "resource"
-      ],
-      "row_digest": "f2d8adce4f614f93c8f6546300b3260e02540fe9de97a9a659cd8a89a7afa243",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/python"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "runtime",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "febd158309a763b4c5a3555c7a0422bfc59fa05b030ab574447fc3d529b4a5a7",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/server"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "runtime/server",
-      "plane": "foundation",
-      "provides": [
-        "server.bootstrap"
-      ],
-      "public_abi": [
-        "api",
-        "runtime"
-      ],
-      "requires": [
-        "governance/release",
-        "platform",
-        "runtime/session"
-      ],
-      "row_digest": "6e30e8e7185cf3425a2a6cf9ffa9cc5f3ab8395fb1ad93c5a28f1e02af45ee60",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/server/bootstrap"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "runtime/server",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "ad40ddf4ba4c1391f1f024ded5175640488e5f6b308918eabfa08946fda77409",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/server/health"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "runtime/server",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "bda9817ba4d04574f5dee43ed8af88de49014a1c83719ce867991ae3caad86bd",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/server/identity"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "runtime/server",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "runtime/server/bootstrap"
-      ],
-      "row_digest": "edb121796b44a2b9ba73824359525a6168af4317f667b1d695756bea32adecf2",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/server/lifecycle"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "runtime",
-      "plane": "foundation",
-      "provides": [
+        "python-environment.lifecycle",
+        "python-environment.packages",
+        "python-environment.registry",
+        "runtime.toolchain",
+        "server.bootstrap",
         "service.runtime"
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "2a702bcf4d6569a41fa889a0c7db5d4e7bfb447bba4a6a3d0f61e9f00a60a3df",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/service"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "runtime",
-      "plane": "foundation",
-      "provides": [
-        "persistent-session.runtime"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers"
-      ],
-      "requires": [],
-      "row_digest": "8cc829a4b412597ec9b4cacc3410ced6b3c4414d8d10667b38248a9bd62ebaa8",
-      "state_authority": "runtime_state",
-      "system_id": "runtime/session"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "runtime",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "provider",
-      "parent": "runtime",
-      "plane": "foundation",
-      "provides": [
-        "runtime.toolchain"
-      ],
-      "public_abi": [
-        "api",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
-        "artifact"
+        "artifact",
+        "governance",
+        "governance/release",
+        "platform",
+        "resource",
+        "scope"
       ],
-      "row_digest": "00893fa2338d2732360fdb55524b4aee85e04cb077e79394d20a0dd768d0d7ca",
+      "row_digest": "5f5597d9e1484d0d5d05798ee5c9f69e92ca1435ff7d579e17092d193a35e278",
       "state_authority": "runtime_state",
-      "system_id": "runtime/toolchain"
+      "system_id": "runtime"
     },
     {
       "audit_required": [],
@@ -3364,127 +793,8 @@
       "row_digest": "12dca42ba0675859044c4e16b30a231184ed31e4a00619c5c3d17fbecda2bf12",
       "state_authority": "scope_tree",
       "system_id": "scope"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "scope",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "scope",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "82d68de374a23a4890eb3072d37e1fc4670d6540b0ef5e7c1c2e2380aff2e15f",
-      "state_authority": "scope_tree",
-      "system_id": "scope/hierarchy"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "scope",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "scope",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "5bb165c8830cd1f59d3d53ff8f0b49669728c894c959129df2f493dd0edc0c5f",
-      "state_authority": "scope_tree",
-      "system_id": "scope/identity"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "scope",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "scope",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "329fd2954f65bd0138e950ea481afc52e9ef9f1cd22403421050d12b3bfa7d3d",
-      "state_authority": "scope_tree",
-      "system_id": "scope/membership"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "scope",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "scope",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "46456a392f64638693b419d9ec7040d3e67b47ec2e33b1cc8f6857357fa01491",
-      "state_authority": "scope_tree",
-      "system_id": "scope/ownership"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "scope",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "scope",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "dc2c621133d8584dbb2b29eef275a6a1b7928c6716de16480a5352c754b07f11",
-      "state_authority": "scope_tree",
-      "system_id": "scope/path"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "scope",
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "facet",
-      "parent": "scope",
-      "plane": "foundation",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "aa7e1ecb74947cde5abf8533ed351c265bd7db9c3f7cda121e6ec8ba9ddb4f7b",
-      "state_authority": "scope_tree",
-      "system_id": "scope/resolution"
     }
   ],
   "schema": "noetrium.ownership-matrix.v2",
-  "source_digest": "a965a820bdd843c947fad442011c2a28258401976103fc017aad3dc3337138ad"
+  "source_digest": "32417b6ec809150c7246db43d3b822ab999ac9ac7d0a3dfda83b9414126f3bb7"
 }

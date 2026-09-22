@@ -5,7 +5,6 @@ from .jsonl_process import (
     JsonlProcessSpec,
     JsonlProcessTransport,
     ProcessFactory,
-    ProcessTerminator,
 )
 
 __all__ = [
@@ -15,5 +14,4 @@ __all__ = [
     "JsonlProcessSpec",
     "JsonlProcessTransport",
     "ProcessFactory",
-    "ProcessTerminator",
 ]

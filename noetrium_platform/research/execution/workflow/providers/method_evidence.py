@@ -4,7 +4,7 @@ from dataclasses import asdict
 import hashlib
 from pathlib import Path
 
-from noetrium_platform.foundation.kernel.kernel import canonical_bytes
+from noetrium_platform.foundation.kernel.kernel import canonical_bytes, canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import (
     atomic_replace_bytes,
 )
@@ -14,6 +14,7 @@ from ..api import (
     MethodEvidenceStatus,
     MethodRunResult,
 )
+from ..api.runtime_services import MethodEvidenceFactoryPort
 
 
 class DirectoryEventMethodEvidence:
@@ -93,4 +94,16 @@ class DirectoryEventMethodEvidence:
         )
 
 
-__all__ = ["DirectoryEventMethodEvidence"]
+class DirectoryMethodEvidenceFactory(MethodEvidenceFactoryPort):
+    @property
+    def identity_digest(self) -> str:
+        return canonical_digest({
+            "provider": "directory-method-evidence",
+            "version": 1,
+        })
+
+    def create(self, root: str | Path) -> DirectoryEventMethodEvidence:
+        return DirectoryEventMethodEvidence(root)
+
+
+__all__ = ["DirectoryEventMethodEvidence", "DirectoryMethodEvidenceFactory"]

@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable
-
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
-from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
+from noetrium_platform.substrate.api import OperatingSystemRoute, ProcessSupervisorPort
 
 from ..api import MinecraftDiagnosticsPort, MinecraftEnvironmentSpec, MinecraftCheckpointPort
-from ..providers.jsonl_bridge import JsonlMinecraftBridge, ProcessTerminator
+from ..providers.jsonl_bridge import JsonlMinecraftBridge
 from ..providers.jsonl_transport import ProcessFactory
 from ..runtime import MinecraftEnvironmentImplementation, MinecraftEnvironmentRuntime
 
@@ -27,7 +25,7 @@ def compose_minecraft_environment(
     diagnostics: MinecraftDiagnosticsPort | None = None,
     checkpoint: MinecraftCheckpointPort | None = None,
     process_factory: ProcessFactory | None = None,
-    process_terminator: ProcessTerminator | None = None,
+    process_supervisor: ProcessSupervisorPort,
     task_group: TaskGroupPort,
 ) -> MinecraftEnvironmentAssembly:
     """Bind the replaceable JSONL provider to the MC environment runtime.
@@ -44,7 +42,7 @@ def compose_minecraft_environment(
             agent=environment_spec.agent,
             operating_system=operating_system,
             process_factory=process_factory,
-            process_terminator=process_terminator,
+            process_supervisor=process_supervisor,
             diagnostics=diagnostics,
             task_group=task_group,
         )

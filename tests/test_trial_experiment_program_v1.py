@@ -31,7 +31,7 @@ from noetrium_platform.research.experimentation.study.api import (
     TrialBudget,
     TrialExecutionReceipt,
 )
-from noetrium_platform.research.experimentation.study.runtime import (
+from noetrium_platform.research.experimentation.run.runtime.trial import (
     TrialExperimentProgramBinding,
     compile_trial_experiment_program,
 )

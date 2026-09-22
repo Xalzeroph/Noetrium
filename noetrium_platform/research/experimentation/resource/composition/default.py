@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.resources.compute.api import ComputeLeaseGuardFactoryPort, ComputeSchedulerPort
+from noetrium_platform.research.execution.api import ComputeLeaseGuardFactoryPort, ComputeSchedulerPort
 from noetrium_platform.research.experimentation.resource.api import ExperimentResourceBinderPort
 from noetrium_platform.research.experimentation.resource.runtime import ExperimentResourceBinder
 

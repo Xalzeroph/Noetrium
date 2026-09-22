@@ -9,7 +9,7 @@ import time
 from threading import RLock
 from typing import Any
 
-from noetrium_platform.capabilities.participant.capability.api import CapabilityRequest, CapabilityResult
+from noetrium_platform.capabilities.api import CapabilityRequest, CapabilityResult
 from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
     EffectClass,

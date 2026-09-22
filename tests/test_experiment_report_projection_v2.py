@@ -6,8 +6,9 @@ from noetrium_platform.research.experimentation.experiment.api import (
     ExecutionMode, ExperimentDefinition, ExperimentLifecycleState, ExperimentUnit,
     ExperimentUnitKind, ObservationEnvelope, ObservationKind, UnitOutcome, UnitOutcomeState,
 )
-from noetrium_platform.research.experimentation.study.runtime import (
-    UniversalExperimentKernel, project_experiment_run_report,
+from noetrium_platform.research.experimentation.experiment.runtime.matrix import (
+    UniversalExperimentKernel,
+    project_experiment_run_report,
 )
 
 SHA = "a" * 64

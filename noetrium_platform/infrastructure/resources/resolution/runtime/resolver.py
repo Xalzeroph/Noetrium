@@ -5,7 +5,7 @@ from pathlib import Path
 import shutil
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.path.api import ScopePathPort
+from noetrium_platform.foundation.governance.api import ScopePathPort
 
 from ..api import ResourceResolutionPort, ResourceResolutionRequest, ResolvedResourceBinding
 

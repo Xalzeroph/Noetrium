@@ -8,7 +8,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 from noetrium_platform.foundation.kernel.kernel.auxiliary_failures import OperationAuxiliaryFailureSink
 
 from .emission import operational_observation_enabled
-from .events import EventEnvelope, EventSink
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope, EventSink
 
 
 class OperationAuxiliaryFailureEventSink(OperationAuxiliaryFailureSink):

@@ -18,25 +18,23 @@ from noetrium_platform.capabilities.model.deployment.runtime.templates import (
     vllm_deployment,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.api import ScopeIdentity
-from noetrium_platform.infrastructure.resources.allocation.api import (
+from noetrium_platform.substrate.api import ScopeIdentity
+from noetrium_platform.substrate.api import (
     EndpointAllocation,
+    EndpointCandidatePortSourcePort,
     EndpointAllocationPort,
     EndpointAllocationRequest,
     EndpointBindingProof,
     EndpointLeaseGuardFactoryPort,
 )
-from noetrium_platform.infrastructure.resources.allocation.composition import (
-    discover_local_tcp_candidate_ports,
-)
-from noetrium_platform.infrastructure.resources.compute.api import (
+from noetrium_platform.substrate.api import (
     ComputeAllocation,
     ComputeLeaseGuardFactoryPort,
     ComputePlacementUnavailable,
     ComputeRequirement,
     ComputeSchedulerPort,
 )
-from noetrium_platform.infrastructure.resources.lease.api import ResourceOwnership
+from noetrium_platform.substrate.api import ResourceOwnership
 
 
 @dataclass(frozen=True, slots=True)
@@ -193,6 +191,7 @@ class LocalModelReplicaPoolRuntime:
         fleet: ModelFleetRuntimePort,
         compute_scheduler: ComputeSchedulerPort,
         endpoint_allocations: EndpointAllocationPort,
+        endpoint_candidates: EndpointCandidatePortSourcePort,
         compute_lease_guards: ComputeLeaseGuardFactoryPort,
         endpoint_lease_guards: EndpointLeaseGuardFactoryPort,
     ) -> None:
@@ -201,6 +200,7 @@ class LocalModelReplicaPoolRuntime:
         self._fleet = fleet
         self._compute_scheduler = compute_scheduler
         self._endpoint_allocations = endpoint_allocations
+        self._endpoint_candidates = endpoint_candidates
         self._compute_lease_guards = compute_lease_guards
         self._endpoint_lease_guards = endpoint_lease_guards
 
@@ -274,7 +274,7 @@ class LocalModelReplicaPoolRuntime:
                         break
                     raise
                 compute_rows.append(compute)
-                ports = discover_local_tcp_candidate_ports(
+                ports = self._endpoint_candidates.candidate_ports(
                     host=request.endpoint_host,
                     count=request.endpoint_candidate_count,
                 )

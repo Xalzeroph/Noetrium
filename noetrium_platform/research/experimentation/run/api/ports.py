@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Protocol, TypeVar
 
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.execution.decision.cycle_result import DecisionCycleResult
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import DecisionCycleResult
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.run.api.lifecycle_ports import RunSessionPort

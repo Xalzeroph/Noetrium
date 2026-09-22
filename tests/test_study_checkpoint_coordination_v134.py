@@ -7,7 +7,7 @@ import tempfile
 import pytest
 
 from noetrium_platform.composition.context_action import context_action_participant_adapters
-from noetrium_platform.capabilities.environment.runtime.api import EnvironmentIdentity
+from noetrium_platform.capabilities.environment.api import EnvironmentIdentity
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, OperationExecutor
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot
 from noetrium_platform.research.experimentation.checkpoint.runtime.coordination import RunCheckpointCoordinator, RunCheckpointIdentityMismatch

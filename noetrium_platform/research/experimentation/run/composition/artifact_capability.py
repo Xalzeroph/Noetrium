@@ -4,7 +4,7 @@ import hashlib
 import json
 from collections.abc import Mapping
 
-from noetrium_platform.capabilities.participant.capability.api import (
+from noetrium_platform.research.execution.api import (
     CapabilityDescriptor,
     CapabilityRequest,
     CapabilityResult,

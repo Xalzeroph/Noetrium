@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from noetrium_platform.capabilities.participant.capability.api import CapabilityPort
+from noetrium_platform.research.execution.api import CapabilityPort
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     JsonObject,
@@ -13,7 +13,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     freeze_json,
     require_sha256,
 )
-from noetrium_platform.research.execution.workflow.api import (
+from noetrium_platform.research.execution.api import (
     AsyncOperationDispatchPort,
     MethodAgentLoopPort,
     MethodChildMachinePort,
@@ -24,13 +24,13 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodSchemaPort,
     analyze_method_runtime_requirements,
 )
-from noetrium_platform.research.execution.workflow.api.dispatch import OperationDispatchPort
-from noetrium_platform.research.execution.workflow.composition import (
+from noetrium_platform.research.execution.api import OperationDispatchPort
+from noetrium_platform.research.execution.api import (
+    MethodEvidenceFactoryPort,
+    MethodRuntimeBinderPort,
     MethodRuntimePortInventory,
-    bind_machine_method_runtime,
     plan_method_runtime_binding,
 )
-from noetrium_platform.research.execution.workflow.providers import DirectoryEventMethodEvidence
 from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
 
 from ..api import WorkloadMethodInvocation
@@ -113,6 +113,8 @@ class MethodRuntimeBindings:
     fresh context, evidence sink and Machine authority per task.
     """
 
+    runtime_binder: MethodRuntimeBinderPort
+    evidence_factory: MethodEvidenceFactoryPort | None = None
     capabilities: CapabilityPort | None = None
     dispatcher: OperationDispatchPort | None = None
     observation: MethodObservationPort | None = None
@@ -124,6 +126,12 @@ class MethodRuntimeBindings:
     runtime_binding_digest: str | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.runtime_binder, MethodRuntimeBinderPort):
+            raise TypeError("declarative runtime requires MethodRuntimeBinderPort")
+        if self.evidence_factory is not None and not isinstance(
+            self.evidence_factory, MethodEvidenceFactoryPort
+        ):
+            raise TypeError("declarative runtime evidence_factory must satisfy MethodEvidenceFactoryPort")
         if self.state_root is not None:
             object.__setattr__(self, "state_root", Path(self.state_root))
         if self.runtime_binding_digest is not None:
@@ -132,7 +140,13 @@ class MethodRuntimeBindings:
     def resolved_runtime_binding_digest(self) -> str:
         if self.runtime_binding_digest is not None:
             return self.runtime_binding_digest
-        identities: dict[str, str] = {}
+        identities: dict[str, str] = {
+            "runtime_binder": _port_identity(self.runtime_binder, "runtime_binder"),
+        }
+        if self.evidence_factory is not None:
+            identities["evidence_factory"] = _port_identity(
+                self.evidence_factory, "evidence_factory"
+            )
         for name, value in (
             ("capabilities", self.capabilities),
             ("dispatcher", self.dispatcher),
@@ -179,8 +193,12 @@ class MethodRuntimeBindings:
         task_root: Path | None = None
         evidence = None
         if self.state_root is not None:
+            if self.evidence_factory is None:
+                raise RuntimeError(
+                    "durable declarative runtime requires MethodEvidenceFactoryPort"
+                )
             task_root = self.state_root / _safe_task_key(task)
-            evidence = DirectoryEventMethodEvidence(task_root / "evidence")
+            evidence = self.evidence_factory.create(task_root / "evidence")
         runtime = MethodRuntimeContext(
             execution=execution,
             capabilities=self.capabilities,
@@ -195,7 +213,7 @@ class MethodRuntimeBindings:
             runtime_binding_digest=runtime_binding_digest,
             schema_digest=schema_digest,
         )
-        return bind_machine_method_runtime(
+        return self.runtime_binder.bind(
             program,
             runtime,
             state_root=None if task_root is None else task_root / "machine",
@@ -207,6 +225,8 @@ def compose_method_runtime_bindings(
     program: MethodProgram,
     inventory: MethodRuntimePortInventory,
     *,
+    runtime_binder: MethodRuntimeBinderPort,
+    evidence_factory: MethodEvidenceFactoryPort | None = None,
     state_root: str | Path | None = None,
     dispatcher: OperationDispatchPort | None = None,
     observation: MethodObservationPort | None = None,
@@ -227,6 +247,8 @@ def compose_method_runtime_bindings(
     requirements = analyze_method_runtime_requirements(program)
     ports = set(requirements.ports)
     return MethodRuntimeBindings(
+        runtime_binder=runtime_binder,
+        evidence_factory=evidence_factory,
         capabilities=(
             inventory.capabilities
             if MethodRuntimePort.CAPABILITIES in ports

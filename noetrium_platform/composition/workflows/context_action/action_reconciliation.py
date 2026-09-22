@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionNotApplied,
     ActionRecoveryRequired,
     ActionReconciliationDisposition,

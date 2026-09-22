@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.evidence.data.query.api import (
+from noetrium_platform.research.execution.api import (
     ResearchDimension,
     ResearchDimensionKind,
     ResearchQuerySourceError,
@@ -11,7 +11,7 @@ from noetrium_platform.evidence.data.query.api import (
     ResearchSourceDisposition,
     ResearchSourceSnapshot,
 )
-from noetrium_platform.evidence.data.query.api.identity import source_cut
+from noetrium_platform.research.execution.api import source_cut
 from noetrium_platform.research.experimentation.run.api.control import (
     RunControlAction,
     RunControlError,
@@ -21,7 +21,7 @@ from noetrium_platform.research.experimentation.run.api.control import (
     RunControlRequest,
     RunControlTarget,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.research.execution.api import ScopeIdentity, ScopeKind
 
 
 def _matches_query(record: ResearchResultRecord, query: ResearchResultQuery) -> bool:
@@ -119,7 +119,7 @@ class RunControlResearchResultSource:
             self._record(
                 kind=ResearchResultKind.RUN,
                 result_id=receipt.run_id,
-                content_sha256=receipt.receipt_digest,
+                content_sha256=receipt.projection_digest,
                 schema_ref="run-control.machine-receipt.v2",
             )
         ]

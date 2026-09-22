@@ -14,9 +14,12 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskFailureScope,
     TaskGroupPort,
 )
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from noetrium_platform.infrastructure.lifecycle.service.api import (
+    ServiceLaunchContract,
+    ServiceProcessIdentity,
+    ServiceProcessLivenessPort,
+)
 
-from .process_contracts import ExactProcessBackend
 
 
 class ProcessAliveReadinessProbe:
@@ -35,7 +38,7 @@ class ProcessAliveReadinessProbe:
         context,
         process: ServiceProcessIdentity,
         contract: ServiceLaunchContract,
-        backend: ExactProcessBackend,
+        backend: ServiceProcessLivenessPort,
     ) -> str:
         while True:
             context.checkpoint()
@@ -52,7 +55,7 @@ class ProcessAliveReadinessProbe:
         self,
         process: ServiceProcessIdentity,
         contract: ServiceLaunchContract,
-        backend: ExactProcessBackend,
+        backend: ServiceProcessLivenessPort,
     ) -> str:
         with self._sequence_lock:
             self._sequence += 1
@@ -163,7 +166,7 @@ class HttpEndpointReadinessProbe:
         context,
         process: ServiceProcessIdentity,
         contract: ServiceLaunchContract,
-        backend: ExactProcessBackend,
+        backend: ServiceProcessLivenessPort,
     ) -> str:
         last_error = "not-ready"
         while True:
@@ -188,7 +191,7 @@ class HttpEndpointReadinessProbe:
         self,
         process: ServiceProcessIdentity,
         contract: ServiceLaunchContract,
-        backend: ExactProcessBackend,
+        backend: ServiceProcessLivenessPort,
     ) -> str:
         with self._sequence_lock:
             self._sequence += 1

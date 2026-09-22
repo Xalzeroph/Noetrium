@@ -18,7 +18,7 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ServiceStartRecoveryHandle,
     StaticServiceEnvironmentProvider,
 )
-from noetrium_platform.infrastructure.lifecycle.service.runtime.environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 
 
 def h(v: str) -> str:

@@ -181,7 +181,7 @@ from noetrium_platform.capabilities.model.request.prompt.runtime.promotion_contr
 )
 from noetrium_platform.capabilities.model.request.prompt.runtime.request_contract import PromptRequestContract
 from noetrium_platform.capabilities.model.request.prompt.runtime.runtime_contracts import ActivePromptBundle
-from noetrium_platform.capabilities.model.serving.api.heartbeat import ServiceHeartbeat
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceHeartbeat
 from noetrium_platform.capabilities.model.serving.api.inventory import (
     CPUInventory,
     CPUNode,

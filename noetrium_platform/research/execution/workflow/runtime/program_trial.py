@@ -30,7 +30,10 @@ from noetrium_platform.research.execution.machines import (
     ResearchHostOperation,
     ResearchProgramHost,
 )
-from noetrium_platform.research.execution.workflow.api.trial import TrialCycleExecution
+from noetrium_platform.research.execution.workflow.api.trial import (
+    ExecutionTrialProtocolKind,
+    TrialCycleExecution,
+)
 
 
 @dataclass(slots=True)
@@ -96,6 +99,7 @@ class _TrialBinding:
 
 
 class RuntimeProgramTrialProtocol:
+    protocol_kind = ExecutionTrialProtocolKind.RUNTIME_PROGRAM
     """ExperimentTrialProtocol adapter backed by one Runtime Machine per cycle."""
 
     def __init__(

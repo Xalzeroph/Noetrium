@@ -21,13 +21,13 @@ from noetrium_platform.product.operator.api import (
     ProjectDoctorDisposition,
     ProjectTestStage,
 )
-from noetrium_platform.product.operator.composition.research import main
+from noetrium_platform.composition.operator.wiring.research import main
 from noetrium_platform.product.operator.runtime import (
     project_doctor,
     project_scaffold,
     project_testing,
 )
-from noetrium_platform.product.operator.runtime.project_platform_identity import (
+from noetrium_platform.composition.operator.project.project_platform_identity import (
     InstalledPlatformIdentity,
 )
 from noetrium_platform.product.operator.runtime.research_cli import build_research_parser

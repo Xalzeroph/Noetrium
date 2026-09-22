@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
+from noetrium_platform.foundation.governance.api import SystemIdentity
 from noetrium_platform.evidence.observability.logging.context.api import DiagnosticAddress
 from noetrium_platform.evidence.observability.logging.record.api import LogLevel, LogRecord
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
 
 LOG_RECORD_SCHEMA_VERSION = "noetrium.log-record.v1"

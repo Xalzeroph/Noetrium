@@ -5,22 +5,20 @@ from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentTrialProtocolIdentity,
     ExperimentTrialProtocolIdentityMismatch,
 )
-from noetrium_platform.research.execution.workflow.runtime.program_trial import (
-    RuntimeProgramTrialProtocol,
+from noetrium_platform.research.execution.api import (
+    ExecutionTrialProtocolPort,
+    require_execution_trial_protocol,
 )
 
 
-def trial_protocol_identity(trial_protocol: RuntimeProgramTrialProtocol) -> ExperimentTrialProtocolIdentity:
-    if not isinstance(trial_protocol, RuntimeProgramTrialProtocol):
-        raise TypeError(
-            "trial protocol identity requires RuntimeProgramTrialProtocol"
-        )
+def trial_protocol_identity(trial_protocol: ExecutionTrialProtocolPort) -> ExperimentTrialProtocolIdentity:
+    trial_protocol = require_execution_trial_protocol(trial_protocol)
     protocol_id = trial_protocol.protocol_id
     if not isinstance(protocol_id, str) or not protocol_id.strip():
-        raise ValueError("RuntimeProgramTrialProtocol must expose a stable non-empty protocol_id")
+        raise ValueError("ExecutionTrialProtocolPort must expose a stable non-empty protocol_id")
     configuration_digest = getattr(trial_protocol, "configuration_digest", None)
     if type(configuration_digest) is not str or len(configuration_digest) != 64 or any(ch not in "0123456789abcdef" for ch in configuration_digest):
-        raise ValueError("RuntimeProgramTrialProtocol.configuration_digest must be lowercase SHA-256")
+        raise ValueError("ExecutionTrialProtocolPort.configuration_digest must be lowercase SHA-256")
     return ExperimentTrialProtocolIdentity(protocol_id, configuration_digest)
 
 

@@ -9,7 +9,7 @@ import time
 import unittest
 
 from tests._concurrency_support import OwnedForensicStore as ForensicStore
-from noetrium_platform.product.operator.query.runtime.route_runtime import route_runtime
+from noetrium_platform.composition.operator.query.route_runtime import route_runtime
 from noetrium_platform.product.operator.runtime.parser import build_parser
 from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat_storage import FileServiceHeartbeatStore
 from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeControlStore, RuntimeTxnPhase

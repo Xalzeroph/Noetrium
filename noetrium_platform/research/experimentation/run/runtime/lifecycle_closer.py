@@ -4,8 +4,8 @@ from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 from ..api.lifecycle import RunCleanupFailure, RunCleanupReport
 from ..api.identity import RunIdentity
-from noetrium_platform.capabilities.participant.core.api import ParticipantSessionBinding
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantSessionLifecyclePort
+from noetrium_platform.research.execution.api import ParticipantSessionBinding
+from noetrium_platform.research.execution.api import ParticipantSessionLifecyclePort
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 
 

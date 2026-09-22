@@ -22,8 +22,8 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import JsonValue
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
-from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
-from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
+from noetrium_platform.substrate.api import OperatingSystemRoute
+from noetrium_platform.substrate.api import ProcessSupervisorPort
 
 
 
@@ -86,9 +86,6 @@ class ProcessFactory(Protocol):
     ) -> JsonlProcess: ...
 
 
-ProcessTerminator = Callable[[JsonlProcess, bool], None]
-
-
 class FailureReporter(Protocol):
     def __call__(
         self,
@@ -118,7 +115,7 @@ class JsonlProcessTransport:
         task_group: TaskGroupPort,
         transport_identity: str,
         process_factory: ProcessFactory | None = None,
-        process_terminator: ProcessTerminator | None = None,
+        process_supervisor: ProcessSupervisorPort,
         failure_reporter: FailureReporter | None = None,
         stderr_tail_lines: int = 300,
         environment_overrides: Mapping[str, str] | None = None,
@@ -156,10 +153,7 @@ class JsonlProcessTransport:
         self._stdout_task: TaskHandlePort[None] | None = None
         self._stderr_task: TaskHandlePort[None] | None = None
         self._stderr_handle: TextIO | None = None
-        self._process_supervisor = build_process_supervisor(
-            task_group,
-            termination_hook=process_terminator,
-        )
+        self._process_supervisor = process_supervisor
 
     @property
     def started(self) -> bool:
@@ -457,6 +451,5 @@ __all__ = [
     "JsonlProcessSpec",
     "JsonlProcessTransport",
     "ProcessFactory",
-    "ProcessTerminator",
     "safe_exception_message",
 ]

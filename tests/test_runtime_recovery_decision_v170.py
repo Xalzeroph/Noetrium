@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from noetrium_platform.infrastructure.reliability.diagnostics.runtime import RuntimeRecoveryDecisionService
+from noetrium_platform.composition.reliability_observability import RuntimeRecoveryDecisionService
 from noetrium_platform.infrastructure.reliability.recovery.api import RecoveryActionCode, RecoveryAutomation
 from noetrium_platform.evidence.observability.status.api import HealthState, PlatformStatus, SubsystemSnapshot
 

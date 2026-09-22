@@ -44,6 +44,7 @@ def _audit_recovery_planner_purity(root: Path) -> list[SourceInvariantViolation]
         "noetrium_platform.infrastructure.reliability.forensics",
         "noetrium_platform.product.operator",
         "noetrium_platform.infrastructure.reliability.effect.runtime",
+        "noetrium_platform.composition.runtime_control",
     )
     rows: list[SourceInvariantViolation] = []
     for module, line in imports(path):

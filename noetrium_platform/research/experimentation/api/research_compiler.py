@@ -14,7 +14,7 @@ from noetrium_platform.research.experimentation.experiment.api import (
 )
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet, RunResearchSemanticsReference
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.portfolio.api import ProjectManifest, ProjectRequirementCardinality
+from noetrium_platform.research.execution.api import ProjectManifest, ProjectRequirementCardinality
 
 from noetrium_platform.research.experimentation.binding import ResearchBindingContribution, ResearchRequirementResolution
 from noetrium_platform.research.experimentation.study.api.contracts import StudyAssignment, StudyProtocol, StudyVariantSpec, VariantKind
@@ -103,7 +103,7 @@ def resolve_research_requirements(
         row for row in project_manifest.provider_bindings
         if row.requirement_id in selected_capability_set
     )
-    from noetrium_platform.foundation.governance.architecture.api import CompositionSubject
+    from noetrium_platform.research.execution.api import CompositionSubject
     return ResearchRequirementResolution(
         project_manifest.semantic_digest,
         CompositionSubject.project_subject(

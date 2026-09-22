@@ -18,7 +18,8 @@ class PublicAPIImportTests(unittest.TestCase):
 
         self.assertEqual(noetrium.__all__, ["api", "__version__"])
         self.assertIsNotNone(api.AgentGoal)
-        self.assertIsNotNone(api.JsonValue)
+        with self.assertRaises(AttributeError):
+            _ = api.JsonValue
         self.assertTrue(callable(api.compile_research_method))
         self.assertIsNotNone(api.MultiAgentRuntime)
         self.assertIsNotNone(api.VersionedMemoryGraph)

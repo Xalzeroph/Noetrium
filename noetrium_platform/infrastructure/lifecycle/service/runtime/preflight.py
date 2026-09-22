@@ -6,7 +6,7 @@ from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceLaunchContract,
     ServiceLaunchPreflightReport,
 )
-from .environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 
 
 class ServiceLaunchPreflightError(RuntimeError):

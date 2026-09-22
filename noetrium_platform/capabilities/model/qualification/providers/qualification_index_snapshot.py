@@ -12,7 +12,6 @@ from noetrium_platform.capabilities.model.qualification.api import (
 
 
 RunCommand = Callable[[tuple[str, ...], float], tuple[int, str, str]]
-_WORKER_PATH = Path(__file__).with_name("qualification_index_worker.py")
 _MAIN_FIELDS = frozenset({
     "selected_version",
     "artifacts",
@@ -164,8 +163,11 @@ def decode_snapshot_output(output: str) -> dict[str, object]:
 class TargetPackageIndexSnapshotProbe:
     """Run the target-Python dependency worker and decode only typed observations."""
 
-    def __init__(self, run: RunCommand) -> None:
+    def __init__(self, run: RunCommand, worker_path: Path) -> None:
+        if not isinstance(worker_path, Path):
+            raise TypeError("qualification index worker_path must be pathlib.Path")
         self._run = run
+        self._worker_path = worker_path
 
     def capture(
         self,
@@ -180,8 +182,8 @@ class TargetPackageIndexSnapshotProbe:
         root_candidates: tuple[str, ...] = (),
         cache_dir: Path | None = None,
     ) -> dict[str, object]:
-        if not _WORKER_PATH.is_file():
-            return _failure("target simple-index worker is missing from the installed package")
+        if not self._worker_path.is_file():
+            return _failure("target simple-index worker is missing from the bound composition")
         preferred = {
             str(name).lower().replace("_", "-"): str(value)
             for name, value in (preferred_versions or {}).items()
@@ -189,7 +191,7 @@ class TargetPackageIndexSnapshotProbe:
         }
         argv = (
             str(python),
-            str(_WORKER_PATH),
+            str(self._worker_path),
             index_url,
             package,
             json.dumps(available_versions),

@@ -6,8 +6,8 @@ from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonVal
 
 from noetrium_platform.research.experimentation.checkpoint.api import RunCheckpointCoordinatorPort
 from .decision_coordination import identity_context
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from ..identity.api import RunIdentity
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
+from ..api.identity import RunIdentity
 from .resources import OpenRunResources
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 

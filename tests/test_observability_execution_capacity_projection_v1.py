@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from noetrium_platform.research.execution.admission.api import (
+from noetrium_platform.research.execution.policy.api import (
     AdmissionTopologySnapshot,
     GroupAdmissionSnapshot,
     LaneAdmissionSnapshot,

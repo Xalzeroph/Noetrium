@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Generic, TypeVar
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import ScopeIdentity
 
 T=TypeVar("T")
 

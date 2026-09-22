@@ -31,6 +31,13 @@ from noetrium_platform.research.execution.operation.api import (
     TERMINAL_OPERATION_STATES,
     revise_operation,
     transition_operation,
+    CommandConflict,
+    CommandCorruption,
+    CommandDeduplicationKey,
+    CommandId,
+    CommandIntentPort,
+    CommandStorePort,
+    ExecutionCommand,
 )
 
 from noetrium_platform.research.execution.operation.api.contracts import (
@@ -64,6 +71,29 @@ from noetrium_platform.research.execution.operation.api.reconciliation import (
     project_effect_reconciliation as reconciliation__project_effect_reconciliation,
 )
 
+from noetrium_platform.research.execution.operation.command.api import (
+    CommandConflict as api__CommandConflict,
+    CommandCorruption as api__CommandCorruption,
+    CommandDeduplicationKey as api__CommandDeduplicationKey,
+    CommandId as api__CommandId,
+    CommandIntentPort as api__CommandIntentPort,
+    CommandStorePort as api__CommandStorePort,
+    ExecutionCommand as api__ExecutionCommand,
+)
+
+from noetrium_platform.research.execution.operation.command.api.contracts import (
+    CommandDeduplicationKey as contracts__CommandDeduplicationKey,
+    CommandId as contracts__CommandId,
+    ExecutionCommand as contracts__ExecutionCommand,
+)
+
+from noetrium_platform.research.execution.operation.command.api.ports import (
+    CommandConflict as ports__CommandConflict,
+    CommandCorruption as ports__CommandCorruption,
+    CommandIntentPort as ports__CommandIntentPort,
+    CommandStorePort as ports__CommandStorePort,
+)
+
 SYSTEM_KEY = 'execution/operation'
 PACKAGE_PREFIX = 'noetrium_platform.research.execution.operation'
-__all__ = ('EffectId', 'IllegalOperationTransition', 'OperationAdmissionPort', 'OperationConflict', 'OperationCorruption', 'OperationEffectCertainty', 'OperationEffectProfile', 'OperationFailure', 'OperationFailureKind', 'OperationId', 'OperationLifecyclePort', 'OperationRecoveryPort', 'OperationSnapshot', 'OperationState', 'OperationStorePort', 'OperationSubmissionPort', 'EffectReconciliationOutcome', 'EffectReconciliationVerdict', 'project_effect_reconciliation', 'TERMINAL_OPERATION_STATES', 'revise_operation', 'transition_operation', 'contracts__EffectId', 'contracts__IllegalOperationTransition', 'contracts__OperationEffectCertainty', 'contracts__OperationEffectProfile', 'contracts__OperationFailure', 'contracts__OperationFailureKind', 'contracts__OperationId', 'contracts__OperationSnapshot', 'contracts__OperationState', 'contracts__TERMINAL_OPERATION_STATES', 'contracts__revise_operation', 'contracts__transition_operation', 'ports__OperationAdmissionPort', 'ports__OperationConflict', 'ports__OperationCorruption', 'ports__OperationLifecyclePort', 'ports__OperationRecoveryPort', 'ports__OperationStorePort', 'ports__OperationSubmissionPort', 'reconciliation__EffectReconciliationOutcome', 'reconciliation__EffectReconciliationVerdict', 'reconciliation__project_effect_reconciliation')
+__all__ = ('EffectId', 'IllegalOperationTransition', 'OperationAdmissionPort', 'OperationConflict', 'OperationCorruption', 'OperationEffectCertainty', 'OperationEffectProfile', 'OperationFailure', 'OperationFailureKind', 'OperationId', 'OperationLifecyclePort', 'OperationRecoveryPort', 'OperationSnapshot', 'OperationState', 'OperationStorePort', 'OperationSubmissionPort', 'EffectReconciliationOutcome', 'EffectReconciliationVerdict', 'project_effect_reconciliation', 'TERMINAL_OPERATION_STATES', 'revise_operation', 'transition_operation', 'CommandConflict', 'CommandCorruption', 'CommandDeduplicationKey', 'CommandId', 'CommandIntentPort', 'CommandStorePort', 'ExecutionCommand', 'contracts__EffectId', 'contracts__IllegalOperationTransition', 'contracts__OperationEffectCertainty', 'contracts__OperationEffectProfile', 'contracts__OperationFailure', 'contracts__OperationFailureKind', 'contracts__OperationId', 'contracts__OperationSnapshot', 'contracts__OperationState', 'contracts__TERMINAL_OPERATION_STATES', 'contracts__revise_operation', 'contracts__transition_operation', 'ports__OperationAdmissionPort', 'ports__OperationConflict', 'ports__OperationCorruption', 'ports__OperationLifecyclePort', 'ports__OperationRecoveryPort', 'ports__OperationStorePort', 'ports__OperationSubmissionPort', 'reconciliation__EffectReconciliationOutcome', 'reconciliation__EffectReconciliationVerdict', 'reconciliation__project_effect_reconciliation', 'api__CommandConflict', 'api__CommandCorruption', 'api__CommandDeduplicationKey', 'api__CommandId', 'api__CommandIntentPort', 'api__CommandStorePort', 'api__ExecutionCommand', 'contracts__CommandDeduplicationKey', 'contracts__CommandId', 'contracts__ExecutionCommand', 'ports__CommandConflict', 'ports__CommandCorruption', 'ports__CommandIntentPort', 'ports__CommandStorePort')

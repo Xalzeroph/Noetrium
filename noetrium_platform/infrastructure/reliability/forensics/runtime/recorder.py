@@ -11,7 +11,7 @@ from noetrium_platform.infrastructure.reliability.failure.api import (
     FailureSpec,
     build_failure_from_spec,
 )
-from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope
 from noetrium_platform.infrastructure.reliability.forensics.api.ports import ForensicStorePort
 from noetrium_platform.infrastructure.reliability.forensics.runtime.write_lanes import ForensicProjectionError
 

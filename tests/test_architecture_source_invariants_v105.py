@@ -16,7 +16,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); journal=root/'noetrium_platform/infrastructure/reliability/effect/runtime'; journal.mkdir(parents=True)
             (journal/'contracts.py').write_text(
-                'from noetrium_platform.capabilities.environment.runtime.api import ActionRequest\n'
+                'from noetrium_platform.capabilities.environment.api import ActionRequest\n'
                 'from noetrium_platform.capabilities.participant.capability.api import CapabilityRequest\n',
                 encoding='utf-8',
             )
@@ -33,7 +33,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_domain_logic_cannot_import_forensic_implementation(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); workflow=root/'noetrium_platform/research/execution/workflow/implementations/context_action'; workflow.mkdir(parents=True)
+            root=Path(td); workflow=root/'noetrium_platform/composition/workflows/context_action'; workflow.mkdir(parents=True)
             (workflow/'bad.py').write_text(
                 'from noetrium_platform.infrastructure.reliability.forensics import ForensicStore\n', encoding='utf-8'
             )
@@ -51,7 +51,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_domain_logic_cannot_import_effect_journal_implementation(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); workflow=root/'noetrium_platform/research/execution/workflow/implementations/context_action'; workflow.mkdir(parents=True)
+            root=Path(td); workflow=root/'noetrium_platform/composition/workflows/context_action'; workflow.mkdir(parents=True)
             (workflow/'bad.py').write_text(
                 'from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal\n',
                 encoding='utf-8',
@@ -63,7 +63,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); journal=root/'noetrium_platform/infrastructure/reliability/effect/runtime'; journal.mkdir(parents=True)
             (journal/'action_compat.py').write_text(
-                'from noetrium_platform.capabilities.environment.runtime.api import ActionRequest\n', encoding='utf-8'
+                'from noetrium_platform.capabilities.environment.api import ActionRequest\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='effect_journal_domain_firewall' for x in rows))
@@ -191,21 +191,27 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
 
     def test_workflow_cannot_import_study_orchestration(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); workflow=root/'noetrium_platform/research/execution/workflow/implementations/context_action'; workflow.mkdir(parents=True)
+            root=Path(td); workflow=root/'noetrium_platform/composition/workflows/context_action'; workflow.mkdir(parents=True)
             (workflow/'bad.py').write_text(
                 'from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='workflow_contract_dependency_direction' for x in rows))
 
-    def test_workflow_cannot_import_runtime_implementation(self):
+    def test_execution_core_cannot_import_composition_workflow(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); workflow=root/'noetrium_platform/research/execution/workflow/implementations/agent_turn'; workflow.mkdir(parents=True)
-            (workflow/'bad.py').write_text(
-                'from noetrium_platform.research.execution.workflow.runtime import KernelOperationDispatcher\n', encoding='utf-8'
+            root=Path(td)
+            core=root/'noetrium_platform/research/execution/workflow/runtime'
+            core.mkdir(parents=True)
+            (core/'bad.py').write_text(
+                'from noetrium_platform.composition.workflows.agent_turn import AgentTurnSurfaceFactory\n',
+                encoding='utf-8',
             )
             rows=audit_source_invariants(root)
-            self.assertTrue(any(x.invariant=='workflow_contract_dependency_direction' for x in rows))
+            self.assertTrue(any(
+                x.invariant == 'execution_core_composition_dependency_direction'
+                for x in rows
+            ))
 
     def test_implementation_catalog_cannot_own_session_lifecycle(self):
         with tempfile.TemporaryDirectory() as td:

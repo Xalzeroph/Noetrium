@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from noetrium_platform.foundation.kernel.kernel import EffectReceipt
-from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.substrate.api import PreparedEffectHandle
 
 from .contracts import ActionReconciliationResult, ActionRequest, ActionResult, action_request_digest
 

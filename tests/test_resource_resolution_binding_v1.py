@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 from noetrium_platform.infrastructure.resources.resolution import ResourceResolutionRequest
-from noetrium_platform.infrastructure.resources.resolution.composition import build_local_resource_resolver
+from noetrium_platform.composition.resource_scope import build_local_resource_resolver
 
 
 def test_named_resource_binding_resolves_paths_and_executables_without_project_path_logic(tmp_path: Path):

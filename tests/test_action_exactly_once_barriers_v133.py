@@ -21,7 +21,7 @@ from noetrium_platform.composition.operation_forensics import OperationForensicF
 from noetrium_platform.composition.context_action import context_action_failure_classifier_chain
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent, EffectIntentPhase
 from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal, SQLiteEffectIntentJournal
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionReconciliationDisposition,
     ActionReconciliationResult,
     ActionRequest,

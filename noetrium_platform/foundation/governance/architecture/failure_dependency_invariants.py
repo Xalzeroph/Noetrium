@@ -8,7 +8,7 @@ from .source_scan import SourceInvariantViolation, imports, violation
 def audit_failure_dependency_invariants(root: Path) -> list[SourceInvariantViolation]:
     rows: list[SourceInvariantViolation] = []
     protected = (
-        root / "projects", root / "noetrium_platform" / "research" / "experimentation" / "experiment", root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations",
+        root / "projects", root / "noetrium_platform" / "research" / "experimentation" / "experiment", root / "noetrium_platform" / "composition" / "workflows",
         root / "noetrium_platform" / "research" / "execution" / "runtime" / "manager", root / "noetrium_platform" / "capabilities" / "model" / "serving",
         root / "noetrium_platform" / "infrastructure" / "lifecycle" / "service" / "runtime", root / "noetrium_platform" / "capabilities" / "participant" / "agent" / "api",
         root / "noetrium_platform" / "capabilities" / "participant" / "capability" / "api", root / "noetrium_platform" / "capabilities" / "environment" / "runtime" / "api",
@@ -35,8 +35,8 @@ def audit_failure_dependency_invariants(root: Path) -> list[SourceInvariantViola
         for path in sorted(forensics.rglob(legacy_name)) if forensics.exists() else ():
             rows.append(violation(root, path, "failure_contract_authority", 1, f"forensic backend reintroduced failure semantic/domain adapter in {legacy_name}"))
     forbidden_domain_prefixes = (
-        "noetrium_platform.infrastructure.lifecycle.service.runtime", "noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.environment.runtime.api",
-        "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api", "noetrium_platform.research.execution.workflow.implementations",
+        "noetrium_platform.infrastructure.lifecycle.service.runtime", "noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.environment.api",
+        "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api", "noetrium_platform.composition.workflows",
         "noetrium_platform.research.experimentation.study", "noetrium_platform.capabilities.model.serving", "noetrium_platform.infrastructure.lifecycle.launch_control", "projects",
     )
     for path in sorted(forensics.rglob("*.py")):

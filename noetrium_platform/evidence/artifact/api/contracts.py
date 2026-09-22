@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.kernel.kernel import SystemIdentity, SystemPort, SystemSpec
-
 _HEX = frozenset("0123456789abcdef")
 
 
@@ -23,3 +21,6 @@ class ArtifactContentIdentity:
             or any(char not in _HEX for char in self.content_sha256)
         ):
             raise ValueError("artifact content identity content_sha256 must be lowercase SHA-256")
+
+
+__all__ = ["ArtifactContentIdentity"]

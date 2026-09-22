@@ -4,10 +4,145 @@ Authority: None
 Canonical authority: None
 Node kind: facet
 Downstream surface: public
-API exports: none (metadata-only facade)
+API exports: available
 This module is regenerated from the canonical registry and API exports.
 """
 
+from noetrium_platform.infrastructure.reliability.api import (
+    DEFAULT_FAILURE_CATALOG,
+    DiagnosticEvidencePort,
+    EffectCompletionEvidence,
+    EffectIntent,
+    EffectIntentJournal,
+    EffectIntentPrepareResult,
+    EffectIntentRecord,
+    EffectReconciliationDisposition,
+    EffectReconciliationProof,
+    FailureCatalog,
+    FailureEnvelope,
+    FailureLedgerPort,
+    PendingEffectRecoveryRequired,
+    PreparedEffectHandle,
+)
+
+from noetrium_platform.infrastructure.reliability.diagnostics.api import (
+    DiagnosticEvidencePort as api__DiagnosticEvidencePort,
+    DiagnosticIndexSessionPort,
+    DiagnosticObjectRecord,
+    IncidentPattern,
+    IncidentProjectionPort,
+    IncidentProjectionSync,
+    MetricQueryPort,
+    OperationInvocationRecord,
+    StateWriterRecord,
+)
+
+from noetrium_platform.infrastructure.reliability.diagnostics.api.incidents import (
+    IncidentPattern as incidents__IncidentPattern,
+    IncidentProjectionPort as incidents__IncidentProjectionPort,
+    IncidentProjectionSync as incidents__IncidentProjectionSync,
+)
+
+from noetrium_platform.infrastructure.reliability.diagnostics.api.ports import (
+    DiagnosticEvidencePort as ports__DiagnosticEvidencePort,
+    DiagnosticIndexSessionPort as ports__DiagnosticIndexSessionPort,
+    MetricQueryPort as ports__MetricQueryPort,
+    MetricQueryRow,
+)
+
+from noetrium_platform.infrastructure.reliability.diagnostics.api.records import (
+    DiagnosticObjectRecord as records__DiagnosticObjectRecord,
+    OperationInvocationRecord as records__OperationInvocationRecord,
+    StateWriterRecord as records__StateWriterRecord,
+    freeze_diagnostic_mapping,
+)
+
+from noetrium_platform.infrastructure.reliability.forensics.api import (
+    CRASH_BUNDLE_SCHEMA_VERSION,
+    CrashBundleManifest,
+    CrashBundleVerification,
+    ForensicCriticalWriteLanePort,
+    ForensicEventWriteLanePort,
+    ForensicIndexPort,
+    ForensicIndexReadSessionPort,
+    ForensicLedgerPort,
+    ForensicRuntimeParts,
+    ForensicStorePort,
+    ForensicWriterLeasePort,
+    MutationRecord,
+    VerifiedLedgerCut,
+    VerifiedLedgerSlice,
+)
+
+from noetrium_platform.infrastructure.reliability.forensics.api.crash_bundle_contracts import (
+    CrashBundleManifest as crash_bundle_contracts__CrashBundleManifest,
+    CrashBundleVerification as crash_bundle_contracts__CrashBundleVerification,
+)
+
+from noetrium_platform.infrastructure.reliability.forensics.api.ledger import (
+    VerifiedLedgerCut as ledger__VerifiedLedgerCut,
+    VerifiedLedgerSlice as ledger__VerifiedLedgerSlice,
+)
+
+from noetrium_platform.infrastructure.reliability.forensics.api.mutation import (
+    ExecutionContext,
+    MutationRecord as mutation__MutationRecord,
+)
+
+from noetrium_platform.infrastructure.reliability.forensics.api.ports import (
+    ForensicCriticalWriteLanePort as ports__ForensicCriticalWriteLanePort,
+    ForensicEventWriteLanePort as ports__ForensicEventWriteLanePort,
+    ForensicIndexPort as ports__ForensicIndexPort,
+    ForensicIndexReadSessionPort as ports__ForensicIndexReadSessionPort,
+    ForensicLedgerPort as ports__ForensicLedgerPort,
+    ForensicStorePort as ports__ForensicStorePort,
+    ForensicWriterLeasePort as ports__ForensicWriterLeasePort,
+    ForensicWriteActorPort,
+)
+
+from noetrium_platform.infrastructure.reliability.forensics.api.runtime_parts import (
+    ForensicRuntimeParts as runtime_parts__ForensicRuntimeParts,
+)
+
+from noetrium_platform.infrastructure.reliability.recovery.api import (
+    RecoveryActionCode,
+    RecoveryAutomation,
+    RecoveryDecisionReport,
+    RecoveryRecommendation,
+    RecoveryLease,
+    RecoveryLeaseBusy,
+    RecoveryExecutionFactoryPort,
+    RecoveryExecutionPort,
+    RecoveryLeaseReadPort,
+    RecoveryLeaseStatePort,
+    RecoveryLeaseStatusPort,
+)
+
+from noetrium_platform.infrastructure.reliability.recovery.api.contracts import (
+    RecoveryActionCode as contracts__RecoveryActionCode,
+    RecoveryAutomation as contracts__RecoveryAutomation,
+    RecoveryDecisionReport as contracts__RecoveryDecisionReport,
+    RecoveryRecommendation as contracts__RecoveryRecommendation,
+)
+
+from noetrium_platform.infrastructure.reliability.recovery.api.lease import (
+    RecoveryLease as lease__RecoveryLease,
+    RecoveryLeaseBusy as lease__RecoveryLeaseBusy,
+)
+
+from noetrium_platform.infrastructure.reliability.recovery.api.ports import (
+    RecoveryExecutionFactoryPort as ports__RecoveryExecutionFactoryPort,
+    RecoveryExecutionPort as ports__RecoveryExecutionPort,
+    RecoveryLeaseReadPort as ports__RecoveryLeaseReadPort,
+    RecoveryLeaseStatePort as ports__RecoveryLeaseStatePort,
+    RecoveryLeaseStatusPort as ports__RecoveryLeaseStatusPort,
+)
+
+from noetrium_platform.infrastructure.reliability.recovery.execution.api import (
+    RecoveryExecutionFactoryPort as api__RecoveryExecutionFactoryPort,
+    RecoveryExecutionPort as api__RecoveryExecutionPort,
+)
+
 SYSTEM_KEY = 'reliability'
 PACKAGE_PREFIX = 'noetrium_platform.infrastructure.reliability'
-__all__ = ()
+__all__ = ('DEFAULT_FAILURE_CATALOG', 'DiagnosticEvidencePort', 'EffectCompletionEvidence', 'EffectIntent', 'EffectIntentJournal', 'EffectIntentPrepareResult', 'EffectIntentRecord', 'EffectReconciliationDisposition', 'EffectReconciliationProof', 'FailureCatalog', 'FailureEnvelope', 'FailureLedgerPort', 'PendingEffectRecoveryRequired', 'PreparedEffectHandle', 'api__DiagnosticEvidencePort', 'DiagnosticIndexSessionPort', 'DiagnosticObjectRecord', 'IncidentPattern', 'IncidentProjectionPort', 'IncidentProjectionSync', 'MetricQueryPort', 'OperationInvocationRecord', 'StateWriterRecord', 'incidents__IncidentPattern', 'incidents__IncidentProjectionPort', 'incidents__IncidentProjectionSync', 'ports__DiagnosticEvidencePort', 'ports__DiagnosticIndexSessionPort', 'ports__MetricQueryPort', 'MetricQueryRow', 'records__DiagnosticObjectRecord', 'records__OperationInvocationRecord', 'records__StateWriterRecord', 'freeze_diagnostic_mapping', 'CRASH_BUNDLE_SCHEMA_VERSION', 'CrashBundleManifest', 'CrashBundleVerification', 'ForensicCriticalWriteLanePort', 'ForensicEventWriteLanePort', 'ForensicIndexPort', 'ForensicIndexReadSessionPort', 'ForensicLedgerPort', 'ForensicRuntimeParts', 'ForensicStorePort', 'ForensicWriterLeasePort', 'MutationRecord', 'VerifiedLedgerCut', 'VerifiedLedgerSlice', 'crash_bundle_contracts__CrashBundleManifest', 'crash_bundle_contracts__CrashBundleVerification', 'ledger__VerifiedLedgerCut', 'ledger__VerifiedLedgerSlice', 'ExecutionContext', 'mutation__MutationRecord', 'ports__ForensicCriticalWriteLanePort', 'ports__ForensicEventWriteLanePort', 'ports__ForensicIndexPort', 'ports__ForensicIndexReadSessionPort', 'ports__ForensicLedgerPort', 'ports__ForensicStorePort', 'ports__ForensicWriterLeasePort', 'ForensicWriteActorPort', 'runtime_parts__ForensicRuntimeParts', 'RecoveryActionCode', 'RecoveryAutomation', 'RecoveryDecisionReport', 'RecoveryRecommendation', 'RecoveryLease', 'RecoveryLeaseBusy', 'RecoveryExecutionFactoryPort', 'RecoveryExecutionPort', 'RecoveryLeaseReadPort', 'RecoveryLeaseStatePort', 'RecoveryLeaseStatusPort', 'contracts__RecoveryActionCode', 'contracts__RecoveryAutomation', 'contracts__RecoveryDecisionReport', 'contracts__RecoveryRecommendation', 'lease__RecoveryLease', 'lease__RecoveryLeaseBusy', 'ports__RecoveryExecutionFactoryPort', 'ports__RecoveryExecutionPort', 'ports__RecoveryLeaseReadPort', 'ports__RecoveryLeaseStatePort', 'ports__RecoveryLeaseStatusPort', 'api__RecoveryExecutionFactoryPort', 'api__RecoveryExecutionPort')

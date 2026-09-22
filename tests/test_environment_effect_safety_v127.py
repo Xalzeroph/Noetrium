@@ -7,7 +7,7 @@ from tests_support import context_action_spec
 
 import pytest
 
-from noetrium_platform.capabilities.environment.runtime.api import action_request_digest, ActionResult, EnvironmentIdentity, Observation
+from noetrium_platform.capabilities.environment.api import action_request_digest, ActionResult, EnvironmentIdentity, Observation
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, OperationFailure
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime

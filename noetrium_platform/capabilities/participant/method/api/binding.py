@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.governance.architecture.api.capability_composition import (
+from noetrium_platform.substrate.api import (
     BindingPlan,
     CapabilityOffer,
 )

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from noetrium_platform.capabilities.environment.minecraft.api import MinecraftRconEndpoint, MinecraftServerSpec
-from noetrium_platform.capabilities.environment.minecraft.composition import (
+from noetrium_platform.composition.minecraft_agent import (
     LocalMinecraftExperimentHostFactory,
     MinecraftExperimentHostInputs,
 )

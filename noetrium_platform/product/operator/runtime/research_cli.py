@@ -14,9 +14,9 @@ from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 
 from noetrium_platform.product.operator.api.json_rendering import render_json
 
-from .project_application_loader import load_project_application
 
 ResearchCliDelegate = Callable[[list[str] | None], int]
+ProjectApplicationLoader = Callable[..., object]
 _EXPECTED_ERRORS = (KeyError, ValueError, FileNotFoundError, OSError, RuntimeError, TypeError, json.JSONDecodeError)
 
 
@@ -91,8 +91,8 @@ def _load_payload(args: argparse.Namespace):
     return None
 
 
-def _run_project_lifecycle(args: argparse.Namespace) -> int:
-    loaded = load_project_application(args.project_root, config_path=args.config)
+def _run_project_lifecycle(args: argparse.Namespace, project_application_loader: ProjectApplicationLoader) -> int:
+    loaded = project_application_loader(args.project_root, config_path=args.config)
     application = loaded.application
     target = args.target or loaded.default_target
     facade = ResearchFacade(application)
@@ -124,6 +124,7 @@ def run_research_cli(
     diagnose_main: ResearchCliDelegate,
     manage_main: ResearchCliDelegate,
     project_experience: ProjectFacade,
+    project_application_loader: ProjectApplicationLoader,
 ) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     if raw_argv and raw_argv[0] == "diagnose":
@@ -134,7 +135,7 @@ def run_research_cli(
     try:
         if args.command == "project":
             return _run_project(args, project_experience)
-        return _run_project_lifecycle(args)
+        return _run_project_lifecycle(args, project_application_loader)
     except ResearchOperationFailure as exc:
         _emit({"ok": False, "command": args.command, "result": exc.result}, stream=sys.stderr)
         return 3
@@ -153,4 +154,4 @@ def run_research_cli(
         return 2
 
 
-__all__ = ["ResearchCliDelegate", "build_research_parser", "run_research_cli"]
+__all__ = ["ProjectApplicationLoader", "ResearchCliDelegate", "build_research_parser", "run_research_cli"]

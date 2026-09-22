@@ -17,7 +17,7 @@ from noetrium_platform.infrastructure.reliability.effect.runtime import (
     InMemoryEffectIntentJournal,
     SQLiteEffectIntentJournal,
 )
-from noetrium_platform.capabilities.environment.runtime.api import ActionRequest
+from noetrium_platform.capabilities.environment.api import ActionRequest
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
 
 

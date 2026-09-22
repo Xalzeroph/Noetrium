@@ -8,7 +8,7 @@ from noetrium_platform.capabilities.environment.api import (
     EnvironmentSession,
     Observation,
 )
-from noetrium_platform.capabilities.environment.composition import (
+from noetrium_platform.composition.environment_capabilities import (
     EnvironmentResetCapabilityBinding,
     environment_reset_capability_payload,
 )

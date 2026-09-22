@@ -7,7 +7,7 @@ from noetrium_platform.infrastructure.lifecycle.process.supervision.composition 
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
 
 from .capture_paths import ServiceCapturePaths
-from .environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 from .linux_children import LinuxChildRegistry
 from .linux_identity import LinuxExactProcessVerifier
 from .linux_procfs import LinuxProcfsReader

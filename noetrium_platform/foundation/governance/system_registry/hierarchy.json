@@ -1,0 +1,93 @@
+{
+  "schema": "noetrium-layer-hierarchy.v3",
+  "global_contract_prefixes": [
+    "noetrium_platform.foundation.kernel.kernel",
+    "noetrium_platform.foundation.kernel.record_plane",
+    "noetrium_platform.foundation.kernel.concurrency.api"
+  ],
+  "layers": [
+    {
+      "id": "scope",
+      "lower": null,
+      "members": [
+        "scope"
+      ],
+      "facade": "noetrium_platform.foundation.scope.api",
+      "composition": "noetrium_platform.foundation.scope.composition"
+    },
+    {
+      "id": "governance",
+      "lower": "scope",
+      "members": [
+        "governance"
+      ],
+      "facade": "noetrium_platform.foundation.governance.api",
+      "composition": "noetrium_platform.foundation.governance.composition"
+    },
+    {
+      "id": "foundation",
+      "lower": "governance",
+      "members": [
+        "artifact",
+        "resource",
+        "observability",
+        "reliability"
+      ],
+      "facade": "noetrium_platform.foundation.api",
+      "composition": "noetrium_platform.foundation.composition"
+    },
+    {
+      "id": "substrate",
+      "lower": "foundation",
+      "members": [
+        "portfolio",
+        "data",
+        "runtime"
+      ],
+      "facade": "noetrium_platform.substrate.api",
+      "composition": "noetrium_platform.substrate.composition"
+    },
+    {
+      "id": "capability",
+      "lower": "substrate",
+      "members": [
+        "environment",
+        "model",
+        "participant"
+      ],
+      "facade": "noetrium_platform.capabilities.api",
+      "composition": "noetrium_platform.capabilities.composition"
+    },
+    {
+      "id": "execution",
+      "lower": "capability",
+      "members": [
+        "execution"
+      ],
+      "facade": "noetrium_platform.research.execution.api",
+      "composition": "noetrium_platform.research.execution.composition"
+    },
+    {
+      "id": "experimentation",
+      "lower": "execution",
+      "members": [
+        "experimentation"
+      ],
+      "facade": "noetrium_platform.research.experimentation.api",
+      "composition": "noetrium_platform.research.experimentation.composition"
+    },
+    {
+      "id": "product",
+      "lower": "experimentation",
+      "members": [
+        "operator"
+      ],
+      "facade": "noetrium_platform.product.api",
+      "composition": "noetrium_platform.product.composition"
+    }
+  ],
+  "application_composition": "noetrium_platform.composition",
+  "global_systems": [
+    "platform"
+  ]
+}

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import JsonObject, canonical_digest
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.substrate.api import is_absolute_target_path
 
 
 EXCLUDED_DIRECTORIES = frozenset({"logs", "crash-reports"})

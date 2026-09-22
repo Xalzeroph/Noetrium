@@ -6,7 +6,7 @@ import unittest
 from noetrium_platform.infrastructure.reliability.failure.api import DEFAULT_FAILURE_CATALOG, FailureCatalog, FailureSpec, RecoveryAction
 
 from noetrium_platform.infrastructure.reliability.forensics.runtime import FailureCatalogSourceAudit
-from noetrium_platform.infrastructure.reliability.primitives import CrashClass
+from noetrium_platform.infrastructure.lifecycle.service.api import CrashClass
 from noetrium_platform.composition.service_crash_failure import SERVICE_CRASH_FAILURE_CODES
 
 

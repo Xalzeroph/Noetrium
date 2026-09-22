@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol
 
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
+from noetrium_platform.research.execution.api import ArtifactContentIdentity
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
 _HEX = frozenset("0123456789abcdef")

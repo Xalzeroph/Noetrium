@@ -4,7 +4,7 @@ from noetrium_platform.research.execution.api.intent import (
     ExecutionIntentReceipt,
     ExecutionOperationIntent,
 )
-from noetrium_platform.research.execution.command.api import CommandIntentPort
+from noetrium_platform.research.execution.operation.api import CommandIntentPort
 from noetrium_platform.research.execution.operation.api import OperationSubmissionPort
 
 

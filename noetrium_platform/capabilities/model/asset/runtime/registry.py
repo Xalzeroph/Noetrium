@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayoutPort, ManagedDirectoryKind
+from noetrium_platform.substrate.api import DirectoryLayoutPort, ManagedDirectoryKind
 from noetrium_platform.capabilities.model.asset.api import ManagedModelAsset
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
 

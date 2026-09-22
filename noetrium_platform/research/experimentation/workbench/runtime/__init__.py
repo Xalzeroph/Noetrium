@@ -1,3 +1,4 @@
+from .table_program import TableProgramExecutor
 from .candidate_program_capability import (
     CandidateProgramCapabilityBinding,
     candidate_program_capability_payload,
@@ -6,6 +7,7 @@ from .engine import InMemoryBaselineRegistry, ResearchLifecycle, ScientificStati
 from .plotting import ResearchFigureFactory
 
 __all__ = [
+    "TableProgramExecutor",
     "CandidateProgramCapabilityBinding",
     "candidate_program_capability_payload",
     "InMemoryBaselineRegistry",

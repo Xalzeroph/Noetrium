@@ -12,8 +12,8 @@ from noetrium_platform.capabilities.model._persisted import (
     text_tuple,
 )
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentSpec, ModelDesiredState
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
-from noetrium_platform.foundation.scope.api import scope_from_data, scope_to_data
+from noetrium_platform.substrate.api import ServiceLaunchContract
+from noetrium_platform.substrate.api import scope_from_data, scope_to_data
 
 from .applied import AppliedModelDeployment
 

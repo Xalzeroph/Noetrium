@@ -12,7 +12,7 @@ from dataclasses import dataclass
 import hashlib
 from typing import Mapping, Protocol
 
-from noetrium_platform.capabilities.environment.runtime.api import Observation
+from noetrium_platform.capabilities.environment.api import Observation
 from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_bytes
 
 from ..api.ports import MinecraftCheckpointPort

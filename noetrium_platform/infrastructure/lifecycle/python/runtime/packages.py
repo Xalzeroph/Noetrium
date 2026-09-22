@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayoutPort, ManagedDirectoryKind
+from noetrium_platform.foundation.api import DirectoryLayoutPort, ManagedDirectoryKind
 from noetrium_platform.infrastructure.lifecycle.python.api import (
     EnvironmentCommandResult,
     InstalledPythonPackage,

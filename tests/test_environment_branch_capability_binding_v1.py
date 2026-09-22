@@ -8,7 +8,7 @@ from noetrium_platform.capabilities.environment.api import (
     EnvironmentIdentity,
     Observation,
 )
-from noetrium_platform.capabilities.environment.composition import (
+from noetrium_platform.composition.environment_capabilities import (
     EnvironmentBranchCapabilityBinding,
     environment_branch_action_spec,
     environment_fork_action_payload,

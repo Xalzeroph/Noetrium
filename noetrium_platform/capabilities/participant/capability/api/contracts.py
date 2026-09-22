@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.infrastructure.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
+from noetrium_platform.substrate.api import EffectReconciliationDisposition, PreparedEffectHandle
 from noetrium_platform.foundation.kernel.kernel import EffectClass, EffectReceipt, ExecutionContext, JsonObject, JsonValue, canonical_digest, freeze_json
 
 

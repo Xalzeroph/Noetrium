@@ -27,7 +27,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineStatus,
     canonical_digest,
 )
-from noetrium_platform.research.execution.machines import (
+from noetrium_platform.research.execution.api import (
     ExperimentConcern,
     ExperimentProgramBuilder,
     ProgramHandlerRegistry,

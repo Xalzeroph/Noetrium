@@ -26,8 +26,8 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointRoute,
     QualifiedModelEndpointBinding,
 )
+from noetrium_platform.capabilities.participant.agent.api import AgentIdentity
 from noetrium_platform.capabilities.participant.api import (
-    AgentIdentity,
     AgentProjectDefinition,
     ParticipantBindingDiagnosticCode,
     ParticipantProjectBindingError,

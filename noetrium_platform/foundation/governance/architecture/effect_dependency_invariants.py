@@ -14,8 +14,8 @@ def audit_effect_dependency_invariants(root: Path) -> list[SourceInvariantViolat
     if journal.exists():
         forbidden_prefixes = (
             "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api",
-            "noetrium_platform.capabilities.environment.runtime.api", "noetrium_platform.capabilities.participant.method.api",
-            "noetrium_platform.research.experimentation.study", "noetrium_platform.research.execution.workflow.implementations",
+            "noetrium_platform.capabilities.environment.api", "noetrium_platform.capabilities.participant.method.api",
+            "noetrium_platform.research.experimentation.study", "noetrium_platform.composition.workflows",
             "projects",
         )
         for path in sorted(journal.rglob("*.py")):
@@ -23,7 +23,7 @@ def audit_effect_dependency_invariants(root: Path) -> list[SourceInvariantViolat
                 if module.startswith(forbidden_prefixes):
                     rows.append(violation(root, path, "effect_journal_domain_firewall", line, f"generic effect journal imports higher/concrete runtime domain {module}"))
 
-    for base in (root / "noetrium_platform" / "research" / "experimentation" / "experiment", root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations", root / "projects"):
+    for base in (root / "noetrium_platform" / "research" / "experimentation" / "experiment", root / "noetrium_platform" / "composition" / "workflows", root / "projects"):
         if not base.exists():
             continue
         for path in sorted(base.rglob("*.py")):

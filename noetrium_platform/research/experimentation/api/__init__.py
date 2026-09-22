@@ -167,3 +167,70 @@ __all__ = [
     "RunScientificValidity",
     "RunTaskOutcome",
 ]
+
+from noetrium_platform.research.execution.api import (
+    ActionKind,
+    ActionSpec,
+    AgentGoal,
+    AgentMethodSpec,
+    AgentPhaseSpec,
+    EmbodiedActionCommand,
+    EmbodimentKind,
+    EmbodimentSpec,
+    EnvironmentSpec,
+    ExecutionEnvironmentKind,
+    GuardDecision,
+    GuardVerdict,
+    MethodProgram,
+    MethodProgramBuilder,
+    MethodWorkflow,
+    SensorModality,
+    SensorSpec,
+)
+
+_EXPERIMENTATION_EXECUTION_AUTHORING_EXPORTS = (
+    "ActionKind",
+    "ActionSpec",
+    "AgentGoal",
+    "AgentMethodSpec",
+    "AgentPhaseSpec",
+    "EmbodiedActionCommand",
+    "EmbodimentKind",
+    "EmbodimentSpec",
+    "EnvironmentSpec",
+    "ExecutionEnvironmentKind",
+    "GuardDecision",
+    "GuardVerdict",
+    "MethodProgram",
+    "MethodProgramBuilder",
+    "MethodWorkflow",
+    "SensorModality",
+    "SensorSpec",
+)
+__all__ += _EXPERIMENTATION_EXECUTION_AUTHORING_EXPORTS
+
+from noetrium_platform.research.experimentation.workbench.api import (
+    TableAggregateStep,
+    TableDeriveStep,
+    TableExpression,
+    TableExpressionKind,
+    TableFilterStep,
+    TableJoinStep,
+    TableProgram,
+    TableProjectStep,
+    TableStepKind,
+)
+_EXPERIMENTATION_TABLE_AUTHORING_EXPORTS = (
+    "TableAggregateStep",
+    "TableDeriveStep",
+    "TableExpression",
+    "TableExpressionKind",
+    "TableFilterStep",
+    "TableJoinStep",
+    "TableProgram",
+    "TableProjectStep",
+    "TableStepKind",
+)
+__all__ += _EXPERIMENTATION_TABLE_AUTHORING_EXPORTS
+# Canonical static layer ABI.
+__all__ = ['MachineCut', 'ResearchBindingContribution', 'ResearchCapabilityBinding', 'ResearchModelRoleBinding', 'ResearchModelRoleRequirement', 'ResearchParticipantBinding', 'ResearchBindingRequirements', 'ResearchParticipantRequirement', 'ResearchRequirementResolution', 'resolve_research_requirements', 'TaskVerifierArtifact', 'TaskVerifierPort', 'TaskVerifierReceipt', 'TaskVerifierRequest', 'TrialProviderPort', 'TrialMatrixExecutionReport', 'TrialExecutionRequest', 'TrialExecutionReceipt', 'TrialExecutionStageReceipt', 'ModelRoleUsage', 'ReplayLevel', 'AnalysisDefinition', 'AnalysisResult', 'PostHocEvaluationDefinition', 'PostHocEvaluationResult', 'Study', 'StudyModel', 'StudyParticipant', 'BenchmarkAssignmentMode', 'BenchmarkTaskSet', 'BenchmarkSourceKind', 'BenchmarkSourcePort', 'BenchmarkSourceResolution', 'BenchmarkSourceSpec', 'InMemoryBenchmarkSource', 'MeasurementContentReference', 'MeasurementCut', 'TaskArtifactSpec', 'TaskDefinition', 'TaskPackageSpec', 'TaskVerifierIsolation', 'TaskGraph', 'TaskGraphEdge', 'TaskGraphRelation', 'TaskSetSplit', 'TrialBudget', 'diff_research_plans', 'compile_research_plan', 'ResearchPlanDiff', 'CompiledResearchPlan', 'compile_research_method', 'CompiledExperimentShardPlan', 'ExperimentBatchPlacement', 'ExperimentShard', 'compile_experiment_shard_plan', 'CompiledExperimentProgram', 'ExperimentBatch', 'ExperimentBatchKind', 'ExperimentProgramBinding', 'compile_experiment_program', 'experiment_report_from_data', 'CompiledResearchCampaign', 'CompiledResearchCampaignLane', 'ResearchCampaignCompilationUnit', 'compile_research_campaign', 'ResearchCampaignExecutionPort', 'ResearchCampaignExecutionReport', 'ResearchCampaignLaneResult', 'ResearchCampaignLaneState', 'ResearchCampaignPlan', 'ResearchCampaignStudy', 'ResearchCampaignStudyBinding', 'StudyIntervention', 'StudyFactorSpec', 'ResearchStudyDefinition', 'StudyExecutionPolicy', 'ResearchRevision', 'ParticipantSchedule', 'MeasurementValueKind', 'MeasurementValue', 'MeasurementRecord', 'MeasurementProtocol', 'MeasurementDefinition', 'FactorSelection', 'FactorLevelSpec', 'ProjectIdentityProjection', 'ProjectManifestProjection', 'ProjectRunDefinition', 'RunControlAction', 'RunControlPort', 'RunControlPreparedOperation', 'RunControlReceipt', 'RunControlRequest', 'RunControlTarget', 'RunEvidenceValidity', 'RunExecutionOutcome', 'RunOutcomeProjection', 'RunScientificValidity', 'RunTaskOutcome', 'ActionKind', 'ActionSpec', 'AgentGoal', 'AgentMethodSpec', 'AgentPhaseSpec', 'EmbodiedActionCommand', 'EmbodimentKind', 'EmbodimentSpec', 'EnvironmentSpec', 'ExecutionEnvironmentKind', 'GuardDecision', 'GuardVerdict', 'MethodProgram', 'MethodProgramBuilder', 'MethodWorkflow', 'SensorModality', 'SensorSpec', 'TableAggregateStep', 'TableDeriveStep', 'TableExpression', 'TableExpressionKind', 'TableFilterStep', 'TableJoinStep', 'TableProgram', 'TableProjectStep', 'TableStepKind']

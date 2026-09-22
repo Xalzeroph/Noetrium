@@ -9,7 +9,7 @@ from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentWorkloadFailure,
     FailureScope,
 )
-from noetrium_platform.research.execution.workflow.api import MethodProgram, MethodRuntimeContext
+from noetrium_platform.research.execution.api import MethodProgram, MethodRuntimeContext
 from noetrium_platform.foundation.kernel.kernel import (
     JsonObject,
     JsonValue,

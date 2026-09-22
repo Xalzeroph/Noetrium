@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandRunnerPort
+from noetrium_platform.substrate.api import LocalCommandRunnerPort
 
 from noetrium_platform.capabilities.model.qualification.api import (
     DeploymentCapabilityProbePort,
@@ -84,13 +84,15 @@ def build_local_deployment_qualification(
     package_manager,
     execution,
     local_commands: LocalCommandRunnerPort,
+    *,
+    index_worker_path: Path,
 ) -> DeploymentQualificationAuthorities:
     evidence = FileDeploymentQualificationEvidenceStore(evidence_root)
     applications = FileDeploymentQualificationApplicationStore(evidence_root / "applications")
     runtimes = FileDeploymentQualificationRuntimeStore(evidence_root / "runtime")
     return DeploymentQualificationAuthorities(
         qualification=LocalDeploymentQualification(
-            LocalDeploymentCapabilityProbe(local_commands),
+            LocalDeploymentCapabilityProbe(local_commands, index_worker_path=index_worker_path),
             DeploymentQualificationResolver(),
             evidence,
         ),

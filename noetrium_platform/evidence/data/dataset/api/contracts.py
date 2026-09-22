@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.api import ScopeIdentity
 
 
 @dataclass(frozen=True, slots=True)

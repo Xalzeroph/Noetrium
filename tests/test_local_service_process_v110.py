@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
+from noetrium_platform.infrastructure.lifecycle.service.api import MaterializedServiceEnvironment, ServiceLaunchContract
 from noetrium_platform.foundation.kernel.concurrency.api import TaskFailurePolicy
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from service_os_test_support import make_service_supervisor
@@ -19,7 +19,6 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactServiceSupervisor,
     LinuxProcessBackend,
     LocalServiceProcessAdapter,
-    MaterializedServiceEnvironment,
     ProcessAliveReadinessProbe,
     ServicePhase,
     ServiceProcessDrift,

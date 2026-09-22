@@ -4,7 +4,7 @@ from contextlib import AbstractContextManager
 from pathlib import Path
 from typing import Callable, Iterator, ParamSpec, Protocol, TypeVar
 
-from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope
 from noetrium_platform.foundation.kernel.kernel import JsonDocument
 from noetrium_platform.infrastructure.reliability.failure.api import FailureEnvelope
 from noetrium_platform.infrastructure.reliability.diagnostics.api.records import (

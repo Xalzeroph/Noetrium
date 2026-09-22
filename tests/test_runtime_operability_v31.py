@@ -8,7 +8,7 @@ from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat import 
 from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeControlStore, ServiceHeartbeat
 from noetrium_platform.infrastructure.reliability.recovery.api.lease import RecoveryLeaseBusy
 from tests_support import recovery_lease_state
-from noetrium_platform.infrastructure.reliability.primitives import CrashClass, CrashEvidence, classify_crash
+from noetrium_platform.infrastructure.lifecycle.service.api import CrashClass, CrashEvidence, classify_crash
 
 class RuntimeOperabilityV31Tests(unittest.TestCase):
     def test_runtime_state_writes_always_append_hash_chained_history(self):

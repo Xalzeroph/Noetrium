@@ -1,3 +1,4 @@
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -8,7 +9,7 @@ from pathlib import Path
 import re
 import time
 
-from noetrium_platform.capabilities.model.request.composition import (
+from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint import ModelEndpointRoute
@@ -223,7 +224,7 @@ def run_external_qwen_substitute(
                 binding_plan_digest=binding.digest,
                 runtime_binding_digest=runtime_binding_digest,
             )
-            runtime = bind_machine_method_runtime(
+            runtime = bind_standard_method_runtime(
                 CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM,
                 runtime,
                 state_root=task_root / "machine",

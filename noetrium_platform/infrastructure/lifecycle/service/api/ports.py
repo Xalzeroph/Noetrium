@@ -5,6 +5,7 @@ import math
 from typing import Protocol
 
 from .contracts import ServiceLaunchContract, ServiceProcessIdentity
+from .environment import MaterializedServiceEnvironment
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,13 +85,46 @@ class ExactServiceRuntimePort(Protocol):
     def stop_exact(self, contract: ServiceLaunchContract) -> ServiceStopOutcome: ...
 
 
+class ServiceProcessLivenessPort(Protocol):
+    """Narrow process liveness view exposed to domain-specific readiness probes."""
+
+    def alive(self, process: ServiceProcessIdentity) -> bool: ...
+
+
+class ServiceReadinessProbePort(Protocol):
+    """Domain-specific readiness over a frozen service and liveness-only process view."""
+
+    def wait_ready(
+        self,
+        process: ServiceProcessIdentity,
+        contract: ServiceLaunchContract,
+        liveness: ServiceProcessLivenessPort,
+    ) -> str: ...
+
+
+class ServiceRuntimeFactoryPort(Protocol):
+    """Create one exact service runtime without exposing Runtime implementation topology."""
+
+    def open(
+        self,
+        contract: ServiceLaunchContract,
+        *,
+        environment: MaterializedServiceEnvironment,
+        readiness: ServiceReadinessProbePort,
+        preflight: ServiceLaunchPreflightPort | None = None,
+    ) -> ExactServiceRuntimePort: ...
+
+
 __all__ = [
     "ExactServiceRuntimePort",
     "ServiceEnvironmentPort",
     "ServiceLaunchPreflightReport",
     "ServiceLaunchPreflightPort",
+    "ServiceProcessLivenessPort",
+    "ServiceReadinessProbePort",
     "ServiceReadyObservation",
     "ServiceReconcileObservation",
+    "ServiceRuntimeFactoryPort",
     "ServiceStartOutcome",
     "ServiceStopOutcome",
 ]

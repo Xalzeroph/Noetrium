@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.evidence.artifact.catalog.api import (
+from noetrium_platform.foundation.api import (
     ArtifactKind,
     ArtifactQuery,
     ArtifactRecord,
@@ -18,7 +18,7 @@ from noetrium_platform.evidence.data.query.api import (
     ResearchSourceSnapshot,
 )
 from noetrium_platform.evidence.data.query.api.identity import source_cut
-from noetrium_platform.foundation.scope.api import ScopeRegistryPort
+from noetrium_platform.foundation.api import ScopeRegistryPort
 
 from noetrium_platform.evidence.data.query.cross.providers._common import matches_query, scope_dimensions
 

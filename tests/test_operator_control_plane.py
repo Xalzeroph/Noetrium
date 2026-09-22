@@ -13,7 +13,7 @@ from noetrium_platform.foundation.kernel.kernel import ExecutionContext, Immutab
 from noetrium_platform.capabilities.model.serving.api import ModelPhase, ModelRunState
 from noetrium_platform.capabilities.model.serving.runtime import RecoveryPlanner, ExactRecoveryCoordinator, RecoveryExecutionError
 from noetrium_platform.infrastructure.reliability.diagnostics.runtime import EvidenceVerifier, FailureDiagnosisService
-from noetrium_platform.infrastructure.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
+from noetrium_platform.composition.reliability_observability.forensic_status import ForensicStatusProbe
 from noetrium_platform.evidence.observability.status.runtime import PlatformStatusService
 
 

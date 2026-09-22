@@ -4,10 +4,141 @@ Authority: data_authority
 Canonical authority: data
 Node kind: authority
 Downstream surface: public
-API exports: none (metadata-only facade)
+API exports: available
 This module is regenerated from the canonical registry and API exports.
 """
 
+from noetrium_platform.evidence.data.api import (
+    ResearchDimension,
+    ResearchDimensionKind,
+    ResearchQuerySourceError,
+    ResearchResultKind,
+    ResearchResultQuery,
+    ResearchResultRecord,
+    ResearchResultReference,
+    ResearchSourceDisposition,
+    ResearchSourceSnapshot,
+    source_cut,
+)
+
+from noetrium_platform.evidence.data.dataset.api import (
+    DatasetIdentity,
+    DatasetNotFound,
+    DatasetQuery,
+    DatasetRegistryConflict,
+    DatasetRegistryCorruptionError,
+    DatasetRegistryPort,
+    DatasetVersion,
+)
+
+from noetrium_platform.evidence.data.dataset.api.contracts import (
+    DatasetIdentity as contracts__DatasetIdentity,
+    DatasetQuery as contracts__DatasetQuery,
+    DatasetVersion as contracts__DatasetVersion,
+)
+
+from noetrium_platform.evidence.data.dataset.api.errors import (
+    DatasetNotFound as errors__DatasetNotFound,
+    DatasetRegistryConflict as errors__DatasetRegistryConflict,
+    DatasetRegistryCorruptionError as errors__DatasetRegistryCorruptionError,
+)
+
+from noetrium_platform.evidence.data.dataset.api.ports import (
+    DatasetRegistryPort as ports__DatasetRegistryPort,
+)
+
+from noetrium_platform.evidence.data.projection.api import (
+    ProjectionCheckpoint,
+    ProjectionCheckpointStorePort,
+    ProjectionCursor,
+    ProjectionReducerPort,
+    ProjectionTail,
+    SemanticProjectionEntry,
+    SemanticProjectionSnapshot,
+    SemanticSourceReference,
+)
+
+from noetrium_platform.evidence.data.projection.api.contracts import (
+    ProjectionCheckpoint as contracts__ProjectionCheckpoint,
+    ProjectionCheckpointStorePort as contracts__ProjectionCheckpointStorePort,
+    ProjectionCursor as contracts__ProjectionCursor,
+    ProjectionReducerPort as contracts__ProjectionReducerPort,
+    ProjectionTail as contracts__ProjectionTail,
+)
+
+from noetrium_platform.evidence.data.projection.api.semantic import (
+    SemanticProjectionEntry as semantic__SemanticProjectionEntry,
+    SemanticProjectionSnapshot as semantic__SemanticProjectionSnapshot,
+    SemanticSourceReference as semantic__SemanticSourceReference,
+)
+
+from noetrium_platform.evidence.data.query.api import (
+    ResearchDimension as api__ResearchDimension,
+    ResearchDimensionKind as api__ResearchDimensionKind,
+    ResearchQueryGap,
+    ResearchQueryGapKind,
+    ResearchQuerySourceError as api__ResearchQuerySourceError,
+    ResearchResultKind as api__ResearchResultKind,
+    ResearchResultPage,
+    ResearchResultQuery as api__ResearchResultQuery,
+    ResearchResultQueryPort,
+    ResearchResultRecord as api__ResearchResultRecord,
+    ResearchResultReference as api__ResearchResultReference,
+    ResearchResultSourcePort,
+    ResearchSourceCut,
+    ResearchSourceDisposition as api__ResearchSourceDisposition,
+    ResearchSourceSnapshot as api__ResearchSourceSnapshot,
+    ResearchSourceStatus,
+    SemanticSimilarityMatch,
+    SemanticSimilarityMetric,
+    SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort,
+    SemanticSimilarityResult,
+)
+
+from noetrium_platform.evidence.data.query.api.contracts import (
+    ResearchDimension as contracts__ResearchDimension,
+    ResearchDimensionKind as contracts__ResearchDimensionKind,
+    ResearchQueryGap as contracts__ResearchQueryGap,
+    ResearchQueryGapKind as contracts__ResearchQueryGapKind,
+    ResearchQuerySourceError as contracts__ResearchQuerySourceError,
+    ResearchResultKind as contracts__ResearchResultKind,
+    ResearchResultPage as contracts__ResearchResultPage,
+    ResearchResultQuery as contracts__ResearchResultQuery,
+    ResearchResultRecord as contracts__ResearchResultRecord,
+    ResearchResultReference as contracts__ResearchResultReference,
+    ResearchSourceCut as contracts__ResearchSourceCut,
+    ResearchSourceDisposition as contracts__ResearchSourceDisposition,
+    ResearchSourceSnapshot as contracts__ResearchSourceSnapshot,
+    ResearchSourceStatus as contracts__ResearchSourceStatus,
+)
+
+from noetrium_platform.evidence.data.query.api.identity import (
+    input_cut_digest,
+    query_document,
+    record_document,
+    research_query_digest,
+    source_cut as identity__source_cut,
+)
+
+from noetrium_platform.evidence.data.query.api.ports import (
+    ResearchResultQueryPort as ports__ResearchResultQueryPort,
+    ResearchResultSourcePort as ports__ResearchResultSourcePort,
+)
+
+from noetrium_platform.evidence.data.query.api.semantic import (
+    SemanticSimilarityMatch as semantic__SemanticSimilarityMatch,
+    SemanticSimilarityMetric as semantic__SemanticSimilarityMetric,
+    SemanticSimilarityQuery as semantic__SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort as semantic__SemanticSimilarityQueryPort,
+    SemanticSimilarityResult as semantic__SemanticSimilarityResult,
+)
+
+from noetrium_platform.evidence.data.query.cross.api import (
+    ResearchResultQueryPort as api__ResearchResultQueryPort,
+    ResearchResultSourcePort as api__ResearchResultSourcePort,
+)
+
 SYSTEM_KEY = 'data'
 PACKAGE_PREFIX = 'noetrium_platform.evidence.data'
-__all__ = ()
+__all__ = ('ResearchDimension', 'ResearchDimensionKind', 'ResearchQuerySourceError', 'ResearchResultKind', 'ResearchResultQuery', 'ResearchResultRecord', 'ResearchResultReference', 'ResearchSourceDisposition', 'ResearchSourceSnapshot', 'source_cut', 'DatasetIdentity', 'DatasetNotFound', 'DatasetQuery', 'DatasetRegistryConflict', 'DatasetRegistryCorruptionError', 'DatasetRegistryPort', 'DatasetVersion', 'contracts__DatasetIdentity', 'contracts__DatasetQuery', 'contracts__DatasetVersion', 'errors__DatasetNotFound', 'errors__DatasetRegistryConflict', 'errors__DatasetRegistryCorruptionError', 'ports__DatasetRegistryPort', 'ProjectionCheckpoint', 'ProjectionCheckpointStorePort', 'ProjectionCursor', 'ProjectionReducerPort', 'ProjectionTail', 'SemanticProjectionEntry', 'SemanticProjectionSnapshot', 'SemanticSourceReference', 'contracts__ProjectionCheckpoint', 'contracts__ProjectionCheckpointStorePort', 'contracts__ProjectionCursor', 'contracts__ProjectionReducerPort', 'contracts__ProjectionTail', 'semantic__SemanticProjectionEntry', 'semantic__SemanticProjectionSnapshot', 'semantic__SemanticSourceReference', 'api__ResearchDimension', 'api__ResearchDimensionKind', 'ResearchQueryGap', 'ResearchQueryGapKind', 'api__ResearchQuerySourceError', 'api__ResearchResultKind', 'ResearchResultPage', 'api__ResearchResultQuery', 'ResearchResultQueryPort', 'api__ResearchResultRecord', 'api__ResearchResultReference', 'ResearchResultSourcePort', 'ResearchSourceCut', 'api__ResearchSourceDisposition', 'api__ResearchSourceSnapshot', 'ResearchSourceStatus', 'SemanticSimilarityMatch', 'SemanticSimilarityMetric', 'SemanticSimilarityQuery', 'SemanticSimilarityQueryPort', 'SemanticSimilarityResult', 'contracts__ResearchDimension', 'contracts__ResearchDimensionKind', 'contracts__ResearchQueryGap', 'contracts__ResearchQueryGapKind', 'contracts__ResearchQuerySourceError', 'contracts__ResearchResultKind', 'contracts__ResearchResultPage', 'contracts__ResearchResultQuery', 'contracts__ResearchResultRecord', 'contracts__ResearchResultReference', 'contracts__ResearchSourceCut', 'contracts__ResearchSourceDisposition', 'contracts__ResearchSourceSnapshot', 'contracts__ResearchSourceStatus', 'input_cut_digest', 'query_document', 'record_document', 'research_query_digest', 'identity__source_cut', 'ports__ResearchResultQueryPort', 'ports__ResearchResultSourcePort', 'semantic__SemanticSimilarityMatch', 'semantic__SemanticSimilarityMetric', 'semantic__SemanticSimilarityQuery', 'semantic__SemanticSimilarityQueryPort', 'semantic__SemanticSimilarityResult', 'api__ResearchResultQueryPort', 'api__ResearchResultSourcePort')

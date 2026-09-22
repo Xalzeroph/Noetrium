@@ -27,7 +27,6 @@ def _audit_api_dependency_direction(root: Path) -> list[SourceInvariantViolation
         (root / "noetrium_platform" / "evidence" / "data" / "projection" / "api", ("noetrium_platform.evidence.data.projection.runtime", "noetrium_platform.infrastructure.reliability.forensics")),
         (root / "noetrium_platform" / "evidence" / "data" / "fact" / "api", ("noetrium_platform.evidence.data.fact.runtime",)),
         (root / "noetrium_platform" / "capabilities" / "participant" / "capability" / "api", ("noetrium_platform.research.execution.capability.runtime",)),
-        (root / "noetrium_platform" / "evidence" / "data" / "record" / "api", ("noetrium_platform.evidence.data.fact.api", "noetrium_platform.evidence.observability.api", "noetrium_platform.capabilities.participant.capability.api")),
     )
     for base, forbidden in rules:
         if not base.exists():
@@ -49,19 +48,19 @@ def audit_harness_pattern_invariants(root: Path) -> list[SourceInvariantViolatio
     )
     rows += _require_tokens(
         root,
-        root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations" / "agent_turn" / "capability_routing.py",
+        root / "noetrium_platform" / "composition" / "workflows" / "agent_turn" / "capability_routing.py",
         "scoped_capability_pipeline",
         ("RegistrationScopePort", "CapabilityInvocationPipelinePort", "self._scope.acquire", "self._scope.dispose"),
     )
     rows += _require_tokens(
         root,
-        root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations" / "agent_turn" / "agent_turn_operations.py",
+        root / "noetrium_platform" / "composition" / "workflows" / "agent_turn" / "agent_turn_operations.py",
         "scoped_capability_lifecycle",
         ("finally:", "router.close()"),
     )
     rows += _require_tokens(
         root,
-        root / "noetrium_platform" / "evidence" / "data" / "record" / "api" / "contracts.py",
+        root / "noetrium_platform" / "foundation" / "kernel" / "record_plane.py",
         "execution_record_planes",
         ("DURABLE_FACT", "LIVE_INTERCEPTION", "SIDE_PLANE_OBSERVATION"),
     )

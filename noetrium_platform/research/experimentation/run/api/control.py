@@ -5,11 +5,11 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, Protocol
 
 from noetrium_platform.foundation.kernel.kernel import MachineCut, canonical_digest
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
 from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.run.api.manifest import RunLaunchManifest
 from noetrium_platform.research.experimentation.run.api.manifest_evidence import EvidenceBundleReceipt
-from noetrium_platform.research.execution.operation.api import EffectReconciliationVerdict
+from noetrium_platform.research.execution.api import EffectReconciliationVerdict
 
 if TYPE_CHECKING:
     from noetrium_platform.research.experimentation.checkpoint.api.contracts import RunCheckpointManifest
@@ -336,9 +336,9 @@ class RunControlReceipt:
         return self.machine_cut.revision
 
     @property
-    def receipt_digest(self) -> str:
+    def projection_digest(self) -> str:
+        """Stable identity of the authoritative Run state projection at this cut."""
         return canonical_digest({
-            "action": self.action.value,
             "run_id": self.run_id,
             "run_identity_digest": self.run_identity_digest,
             "run_manifest_digest": self.run_manifest_digest,
@@ -357,6 +357,14 @@ class RunControlReceipt:
                 else self.evidence_bundle_receipt.digest
             ),
             "outcomes": self.outcomes,
+        })
+
+    @property
+    def receipt_digest(self) -> str:
+        """Command-response identity; includes the requested control action."""
+        return canonical_digest({
+            "action": self.action.value,
+            "projection_digest": self.projection_digest,
         })
 
 

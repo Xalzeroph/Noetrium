@@ -9,11 +9,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from noetrium_platform.capabilities.participant.core.api import (
+from noetrium_platform.research.execution.api import (
     BoundParticipants,
     ParticipantSessionBinding,
 )
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import (
+from noetrium_platform.research.execution.api import (
     ParticipantSessionLifecyclePort,
 )
 from noetrium_platform.foundation.kernel.kernel import (
@@ -27,13 +27,13 @@ from noetrium_platform.foundation.kernel.kernel import (
     OperationStatus,
     canonical_digest,
 )
-from noetrium_platform.research.execution.decision.cycle_identity import (
+from noetrium_platform.research.execution.api import (
     DecisionCycleIdentity,
 )
-from noetrium_platform.research.execution.decision.cycle_result import (
+from noetrium_platform.research.execution.api import (
     DecisionCycleResult,
 )
-from noetrium_platform.research.execution.machines import (
+from noetrium_platform.research.execution.api import (
     ProgramNodeRequest,
     ProgramNodeResult,
     RuntimeConcern,
@@ -41,7 +41,7 @@ from noetrium_platform.research.execution.machines import (
     RuntimeProgramBuilder,
     ResearchProgramHost,
 )
-from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
+from noetrium_platform.research.execution.api import TrialCycleExecution
 from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentComponentBindingPort,
     ExperimentSpec,
@@ -50,8 +50,8 @@ from noetrium_platform.research.experimentation.experiment.api import (
 from noetrium_platform.research.experimentation.run.api.lifecycle import (
     RunCleanupFailure,
     RunCleanupReport,
-    attach_cleanup_note,
 )
+from noetrium_platform.research.experimentation.run.api.cleanup import attach_cleanup_note
 
 
 DECISION_CYCLE_RUNTIME_PROGRAM = (

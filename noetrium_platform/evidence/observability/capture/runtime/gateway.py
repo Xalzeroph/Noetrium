@@ -4,7 +4,7 @@ import base64
 from threading import RLock
 import time
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemRegistryPort
+from noetrium_platform.foundation.governance.api import SystemRegistryPort
 from noetrium_platform.foundation.kernel.kernel import JsonObject, thaw_json
 
 from ..api.contracts import RawCaptureHealth, RawObservationEnvelope, RawObservationReceipt

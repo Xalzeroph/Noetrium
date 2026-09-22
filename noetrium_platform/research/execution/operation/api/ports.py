@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Protocol
-from noetrium_platform.research.execution.command.api import CommandId
-from noetrium_platform.infrastructure.reliability.effect.api import EffectReconciliationProof
+from noetrium_platform.research.execution.operation.command.api import CommandId
+from noetrium_platform.capabilities.api import EffectReconciliationProof
 from .contracts import (
     EffectId,
     OperationEffectCertainty,

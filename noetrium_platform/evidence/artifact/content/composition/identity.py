@@ -9,7 +9,7 @@ from noetrium_platform.evidence.artifact.reference.api import (
     ArtifactReferenceNotFound,
     ArtifactReferencePort,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import ScopeIdentity
 
 from noetrium_platform.evidence.artifact.content.api import (
     ArtifactContentIdentityResolverPort,

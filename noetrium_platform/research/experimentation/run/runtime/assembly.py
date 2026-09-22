@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from noetrium_platform.research.experimentation.checkpoint.api import RunCheckpointCoordinatorPort
-from ..lifecycle.api import RunSessionFactoryPort, RunSessionPort
+from ..api.lifecycle_ports import RunSessionFactoryPort, RunSessionPort
 from .cycle import RunCycleExecutor
-from ..identity.api import RunIdentity
+from ..api.identity import RunIdentity
 from .resources import OpenRunResources
 from .restore import RunInitialization
 from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentSpec,
     ExperimentTrialCycleExecutorPort,
 )
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantSessionLifecyclePort
+from noetrium_platform.research.execution.api import ParticipantSessionLifecyclePort
 
 
 class RunAssembly:

@@ -10,7 +10,7 @@ import tempfile
 
 from noetrium_platform.composition.operation_forensics import OperationForensicFailureSink
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent
-from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, action_request_digest
+from noetrium_platform.capabilities.environment.api import ActionRequest, action_request_digest
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, ExecutionContext, OperationExecutor, OperationRequest
 from noetrium_platform.composition.workflows.context_action.forensic_refs import StudyOperationFailureReferenceProjector
 

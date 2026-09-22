@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Protocol, TypeVar
 
-from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
-from noetrium_platform.capabilities.participant.core.api import (
+from noetrium_platform.research.execution.api import TrialCycleExecution
+from noetrium_platform.research.execution.api import (
     BoundParticipants,
     ParticipantSessionBinding,
 )

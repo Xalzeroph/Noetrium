@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.governance.api import is_absolute_target_path
 
 
 @dataclass(frozen=True, slots=True)

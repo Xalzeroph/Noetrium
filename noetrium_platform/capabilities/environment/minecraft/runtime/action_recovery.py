@@ -4,13 +4,13 @@ from dataclasses import dataclass
 import json
 from typing import Mapping
 
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionIdentityViolation,
     ActionRequest,
     action_request_digest,
 )
 from noetrium_platform.foundation.kernel.kernel import JsonInput, canonical_bytes
-from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.substrate.api import PreparedEffectHandle
 
 
 @dataclass(frozen=True, slots=True)

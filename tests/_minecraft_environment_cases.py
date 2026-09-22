@@ -45,11 +45,11 @@ from noetrium_platform.capabilities.environment.minecraft.composition.server_ser
     build_server_service_contract,
     compose_minecraft_server_service_runtime,
 )
-from noetrium_platform.capabilities.environment.minecraft.composition.diagnostics import (
+from noetrium_platform.composition.environment_observability.minecraft_diagnostics import (
     StructuredMinecraftDiagnostics,
 )
 from noetrium_platform.capabilities.environment.minecraft.composition.environment import compose_minecraft_environment
-from noetrium_platform.capabilities.environment.minecraft.composition.participant_runtime import (
+from noetrium_platform.composition.minecraft_agent.participant_runtime import (
     compose_minecraft_participant_endpoint,
 )
 from noetrium_platform.capabilities.environment.minecraft.runtime import (
@@ -58,7 +58,7 @@ from noetrium_platform.capabilities.environment.minecraft.runtime import (
     MinecraftEnvironmentSession,
     MinecraftStateProjection,
 )
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionIdentityViolation,
     ActionReconciliationDisposition,
     ActionReconciliationResult,
@@ -69,6 +69,7 @@ from noetrium_platform.evidence.observability.logging.record.api import LogRecor
 from noetrium_platform.evidence.observability.logging.record.runtime import StructuredLogger
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
 from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceProcessIdentity,
     ServiceReadyObservation,
@@ -76,7 +77,8 @@ from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceStartOutcome,
     ServiceStopOutcome,
 )
-from noetrium_platform.infrastructure.lifecycle.service.runtime.environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.composition import LocalServiceRuntimeComposer
 from noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts import ProcessReconcileResult, ProcessReconcileStatus
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 
@@ -1037,6 +1039,7 @@ def test_jsonl_bridge_preserves_action_identity_and_reconciliation_proof() -> No
     agent = MinecraftAgentSpec(version="1.21.6")
     spec = MinecraftBridgeSpec(command=("fake-node",), cwd=".", command_timeout_s=1, connect_timeout_s=1)
     diagnostics = _Diagnostics()
+    task_group = make_task_group("minecraft-bridge")
     bridge = JsonlMinecraftBridge(
         endpoint=endpoint,
         spec=spec,
@@ -1044,7 +1047,8 @@ def test_jsonl_bridge_preserves_action_identity_and_reconciliation_proof() -> No
         operating_system=TEST_OPERATING_SYSTEM,
         process_factory=lambda _command, **_kwargs: _FakeProcess(),
         diagnostics=diagnostics,
-        task_group=make_task_group("minecraft-bridge"),
+        process_supervisor=build_process_supervisor(task_group),
+        task_group=task_group,
     )
     bridge.start()
     result = bridge.command("wait", {"action_id": "action-1", "ms": 1}, timeout_s=1)
@@ -1063,6 +1067,7 @@ def test_jsonl_bridge_preserves_action_identity_and_reconciliation_proof() -> No
 
 
 def test_jsonl_bridge_fails_handshake_on_provider_capability_drift() -> None:
+    task_group = make_task_group("minecraft-bridge-drift")
     bridge = JsonlMinecraftBridge(
         endpoint=MinecraftEndpointSpec(),
         spec=MinecraftBridgeSpec(
@@ -1071,7 +1076,8 @@ def test_jsonl_bridge_fails_handshake_on_provider_capability_drift() -> None:
         agent=MinecraftAgentSpec(version="1.21.6"),
         operating_system=TEST_OPERATING_SYSTEM,
         process_factory=lambda _command, **_kwargs: _FakeProcess(["wait"]),
-        task_group=make_task_group("minecraft-bridge-drift"),
+        process_supervisor=build_process_supervisor(task_group),
+        task_group=task_group,
     )
     with pytest.raises(MinecraftBridgeError) as caught:
         bridge.start()
@@ -1216,16 +1222,21 @@ def test_minecraft_server_runtime_uses_generic_service_composer(tmp_path) -> Non
         artifact_digest="b" * 64,
         runtime_identity_digest="c" * 64,
     )
-    runtime = compose_minecraft_server_service_runtime(
-        spec,
-        contract,
-        environment=environment,
+    task_group = make_task_group("minecraft-server-service")
+    runtime_factory = LocalServiceRuntimeComposer(
         state_root=tmp_path / "state",
         intent_root=tmp_path / "intents",
         capture_root=tmp_path / "captures",
         operating_system=TEST_OPERATING_SYSTEM,
         process_backend=_ComposedServiceBackend(),
-        task_group=make_task_group("minecraft-server-service"),
+        task_group=task_group,
+    )
+    runtime = compose_minecraft_server_service_runtime(
+        spec,
+        contract,
+        environment=environment,
+        runtime_factory=runtime_factory,
+        task_group=task_group,
     )
     # Construction proves the MC composition contributes only TCP readiness;
     # the injected backend keeps this test independent of a live Java server.
@@ -1237,10 +1248,12 @@ def test_minecraft_composition_binds_provider_once() -> None:
         endpoint=MinecraftEndpointSpec(),
         bridge=MinecraftBridgeSpec(command=("node", "bridge.js"), cwd="/srv/minecraft/bridge"),
     )
+    task_group = make_task_group("minecraft-environment")
     assembly = compose_minecraft_environment(
         spec,
         operating_system=TEST_OPERATING_SYSTEM,
-        task_group=make_task_group("minecraft-environment"),
+        process_supervisor=build_process_supervisor(task_group),
+        task_group=task_group,
     )
     assert assembly.implementation.identity.environment_id == "minecraft"
     assert assembly.runtime.runtime_identity.runtime_id == "minecraft.environment.session"
@@ -1251,10 +1264,12 @@ def test_minecraft_composition_joins_generic_participant_endpoint_without_second
         endpoint=MinecraftEndpointSpec(),
         bridge=MinecraftBridgeSpec(command=("node", "bridge.js"), cwd="/srv/minecraft/bridge"),
     )
+    task_group = make_task_group("minecraft-environment")
     assembly = compose_minecraft_environment(
         spec,
         operating_system=TEST_OPERATING_SYSTEM,
-        task_group=make_task_group("minecraft-environment"),
+        process_supervisor=build_process_supervisor(task_group),
+        task_group=task_group,
     )
     endpoint = compose_minecraft_participant_endpoint(assembly.implementation, assembly.runtime)
     assert endpoint.implementation_identity.kind == "environment"
@@ -1267,7 +1282,7 @@ def test_minecraft_composition_joins_generic_participant_endpoint_without_second
 
 def test_minecraft_agent_executor_preserves_effect_identity_and_possible_certainty() -> None:
     from noetrium_platform.capabilities.environment.api import ActionResult
-    from noetrium_platform.capabilities.environment.minecraft.composition import MinecraftAgentActionExecutor
+    from noetrium_platform.composition.minecraft_agent import MinecraftAgentActionExecutor
     from noetrium_platform.capabilities.participant.agent.api import AgentActionStep
     from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt
 

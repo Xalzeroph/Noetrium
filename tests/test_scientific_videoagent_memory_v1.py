@@ -1,3 +1,4 @@
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
 
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
@@ -280,7 +281,7 @@ def test_videoagent_method_preserves_nested_object_react_receipts() -> None:
         child_machines=children,
         runtime_binding_digest=agent_loop.identity_digest,
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         VIDEOAGENT_METHOD_PROGRAM,
         runtime,
         machine_id="method:videoagent:test",

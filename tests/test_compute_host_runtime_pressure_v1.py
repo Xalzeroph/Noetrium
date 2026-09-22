@@ -1,4 +1,4 @@
-﻿from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeHost,
     ComputeRequirement,

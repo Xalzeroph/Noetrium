@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.research.execution.api import is_absolute_target_path
 
 from .trial import TaskVerifierArtifact
 

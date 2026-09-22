@@ -14,7 +14,7 @@ from noetrium_platform.infrastructure.lifecycle.python.api import (
 )
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import fsync_directory
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import InterprocessFileLock
-from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayoutPort, ManagedDirectoryKind
+from noetrium_platform.foundation.api import DirectoryLayoutPort, ManagedDirectoryKind
 
 from .lifecycle_transaction import (
     PythonEnvironmentLifecycleTransaction,

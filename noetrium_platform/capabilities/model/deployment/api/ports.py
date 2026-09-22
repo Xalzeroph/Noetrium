@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from typing import Protocol
-from noetrium_platform.infrastructure.lifecycle.service.api.ports import ExactServiceRuntimePort, ServiceStartOutcome, ServiceStopOutcome
-from noetrium_platform.infrastructure.lifecycle.service.api.contracts import ServiceLaunchContract
-from noetrium_platform.infrastructure.resources.compute.api import GpuDeviceStatus, GpuRuntimeSnapshot
+from noetrium_platform.substrate.api import ExactServiceRuntimePort, ServiceStartOutcome, ServiceStopOutcome
+from noetrium_platform.substrate.api import ServiceLaunchContract
+from noetrium_platform.substrate.api import GpuDeviceStatus, GpuRuntimeSnapshot
 from .contracts import (
     ModelControlSnapshot, ModelControllerState, ModelDeploymentLogs, ModelDeploymentSelector,
     ModelDeploymentSpec, ModelDeploymentStatus, ModelDesiredState, ModelEnvironmentUsage,

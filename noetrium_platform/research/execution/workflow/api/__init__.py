@@ -1,5 +1,10 @@
 from .authoring import AgentMethodSpec, AgentPhaseSpec, MethodWorkflow
-from .trial import TrialCycleExecution
+from .trial import (
+    ExecutionTrialProtocolKind,
+    ExecutionTrialProtocolPort,
+    TrialCycleExecution,
+    require_execution_trial_protocol,
+)
 from .errors import WorkflowParticipantRequirementError
 from .surfaces import (
     WorkflowSurfaceBindingContext,
@@ -52,6 +57,9 @@ from .runtime_requirements import (
 )
 
 __all__ = [
+    "require_execution_trial_protocol",
+    "ExecutionTrialProtocolPort",
+    "ExecutionTrialProtocolKind",
     "AgentMethodSpec", "AgentPhaseSpec", "MethodWorkflow",
 "EffectIntentOperationPort", "OperationDispatchPort", "OperationExecutionPort", "TrialCycleExecution", "WorkflowGraph",
     "WorkflowGraphError", "WorkflowParticipantRequirementError", "WorkflowStep", "WorkflowSurfaceBindingContext", "WorkflowSurfaceFactory",
@@ -62,3 +70,36 @@ __all__ = [
     "MethodRuntimeContext", "MethodRuntimePort", "MethodRuntimeRequirements",
     "MethodSchemaPort", "analyze_method_runtime_requirements",
 ]
+
+from .runtime_binding import (
+    MethodRuntimeBindingPlan,
+    MethodRuntimePortInventory,
+    plan_method_runtime_binding,
+)
+
+
+_RUNTIME_BINDING_API_EXPORTS = (
+    "MethodRuntimeBindingPlan",
+    "MethodRuntimePortInventory",
+    "plan_method_runtime_binding",
+)
+__all__ += _RUNTIME_BINDING_API_EXPORTS
+
+from .runtime_services import (
+    MethodEvidenceFactoryPort,
+    MethodRuntimeBinderPort,
+    require_method_evidence_factory,
+    require_method_runtime_binder,
+)
+
+
+_RUNTIME_SERVICE_API_EXPORTS = (
+    "MethodEvidenceFactoryPort",
+    "MethodRuntimeBinderPort",
+    "require_method_evidence_factory",
+    "require_method_runtime_binder",
+)
+__all__ += _RUNTIME_SERVICE_API_EXPORTS
+
+# Canonical static ABI.
+__all__ = ['require_execution_trial_protocol', 'ExecutionTrialProtocolPort', 'ExecutionTrialProtocolKind', 'AgentMethodSpec', 'AgentPhaseSpec', 'MethodWorkflow', 'EffectIntentOperationPort', 'OperationDispatchPort', 'OperationExecutionPort', 'TrialCycleExecution', 'WorkflowGraph', 'WorkflowGraphError', 'WorkflowParticipantRequirementError', 'WorkflowStep', 'WorkflowSurfaceBindingContext', 'WorkflowSurfaceFactory', 'WorkflowSurfaceReuseScope', 'workflow_surface_id', 'workflow_surface_reuse_scope', 'AsyncMethodAgentLoopPort', 'AsyncOperationDispatchPort', 'MethodAgentLoopPort', 'MethodAgentRequest', 'MethodAgentResult', 'MethodAgentTargetHandler', 'MethodCapabilityTargetHandler', 'MethodAgentViewHandler', 'MethodCheckpoint', 'MethodCheckpointStorePort', 'MethodEvidenceStatus', 'MethodExecutionClass', 'MethodEvidencePort', 'MethodEvent', 'MethodGraph', 'MethodInterrupt', 'MethodMachinePort', 'MethodChildMachinePort', 'MethodNodeHandler', 'MethodNodeKind', 'MethodNodeRequest', 'MethodNodeResult', 'MethodNodeSpec', 'MethodObservationPort', 'MethodProgram', 'MethodProgramBuilder', 'MethodRunResult', 'MethodRunStatus', 'MethodRuntimeContext', 'MethodRuntimePort', 'MethodRuntimeRequirements', 'MethodSchemaPort', 'analyze_method_runtime_requirements', 'MethodRuntimeBindingPlan', 'MethodRuntimePortInventory', 'plan_method_runtime_binding', 'MethodEvidenceFactoryPort', 'MethodRuntimeBinderPort', 'require_method_evidence_factory', 'require_method_runtime_binder']

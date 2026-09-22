@@ -3,7 +3,7 @@ from tests_support import context_action_spec, runtime_identity_for_test
 import hashlib
 import unittest
 
-from noetrium_platform.capabilities.environment.runtime.api import action_request_digest, EnvironmentIdentity, Observation, ActionResult
+from noetrium_platform.capabilities.environment.api import action_request_digest, EnvironmentIdentity, Observation, ActionResult
 from noetrium_platform.foundation.kernel.kernel import EffectReceipt, EffectClass, EffectCertainty
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, RecallResult
 from noetrium_platform.capabilities.participant.binding.runtime.configuration import ParticipantConfigurationCatalog

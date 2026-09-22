@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.research.execution.api import ScopeIdentity, ScopeKind
 
 
 @dataclass(frozen=True, slots=True)

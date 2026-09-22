@@ -7,7 +7,7 @@ from noetrium_platform.capabilities.environment.api.provider import (
     EnvironmentSessionServices,
 )
 
-from noetrium_platform.capabilities.environment.runtime.api import StateMachineDynamicsPort, StateMachineEnvironmentSpec
+from noetrium_platform.capabilities.environment.api import StateMachineDynamicsPort, StateMachineEnvironmentSpec
 from noetrium_platform.research.execution.environments import (
     StateMachineEnvironmentImplementation,
     StateMachineEnvironmentRuntime,

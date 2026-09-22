@@ -11,10 +11,10 @@ from noetrium_platform.infrastructure.reliability.diagnostics.runtime import (
     DebugSnapshotService,
     EvidenceVerifier,
     FailureDiagnosisService,
-    RuntimeRecoveryDecisionService,
     TriagePlanService,
 )
-from noetrium_platform.infrastructure.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
+from noetrium_platform.composition.reliability_observability.forensic_status import ForensicStatusProbe
+from noetrium_platform.composition.reliability_observability import RuntimeRecoveryDecisionService
 from noetrium_platform.evidence.observability.status.api import PlatformStatus
 from noetrium_platform.evidence.observability.status.runtime import JsonStateStatusProbe, PlatformStatusService
 from noetrium_platform.infrastructure.reliability.forensics.runtime import CrashBundleBuilder, verify_crash_bundle

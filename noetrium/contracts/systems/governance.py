@@ -8,11 +8,69 @@ API exports: available
 This module is regenerated from the canonical registry and API exports.
 """
 
+from noetrium_platform.foundation.governance.algorithm.api.contracts import (
+    AlgorithmBaselineApproval,
+    AlgorithmComplexityMigrationApproval,
+    AlgorithmDiff,
+    AlgorithmGovernanceApprovalSet,
+    AlgorithmFinding,
+    AlgorithmGateReport,
+    AlgorithmLanguage,
+    AlgorithmMetrics,
+    AlgorithmPriority,
+    AlgorithmSnapshot,
+    AlgorithmSymbol,
+    FileAnalysis,
+    LanguageCoverage,
+    SourceDocument,
+    SymbolDelta,
+)
+
+from noetrium_platform.foundation.governance.algorithm.api.ports import (
+    AlgorithmSnapshotStorePort,
+    FileAnalysisCachePort,
+    LanguageAnalyzerPort,
+    SourceInventoryPort,
+)
+
 from noetrium_platform.foundation.governance.api import (
+    PLATFORM_SCOPE,
+    PathFlavor,
+    ScopeIdentity,
+    ScopeKind,
+    ScopePathPort,
+    ScopeRegistryPort,
+    is_absolute_target_path,
+    scope_from_data,
+    scope_to_data,
+    BindingDiagnostic,
+    BindingDiagnosticCode,
+    BindingDiagnosticReference,
+    BindingDiagnosticReferenceKind,
+    BindingDiagnosticSeverity,
+    BindingPlan,
+    BindingProof,
+    BindingRemediationCategory,
+    BindingResolution,
+    CapabilityCompositionPlannerPort,
+    CapabilityOffer,
+    CapabilityRequirement,
+    CompositionContract,
+    CompositionIdentity,
+    CompositionSubject,
+    EXCEPTION_DESCRIPTOR_V1,
+    ExecutionQualificationPort,
     GovernanceBaselineApproval,
     GovernanceBaselineApprovalSet,
     GovernanceBaselineLane,
-    governance_baseline_semantic_digest,
+    HOST_OPERATING_SYSTEM_ROUTE_V1,
+    LOGGING_SYSTEM_V1,
+    LOG_QUERY_V1,
+    LOG_SINK_V1,
+    METHOD_COMPOSITION_PORTS_V1,
+    QualificationEvidence,
+    QualificationKind,
+    ReleasePinStorePort,
     RepositorySourceBlob,
     RepositorySourceFailure,
     RepositorySourceFailureKind,
@@ -20,8 +78,19 @@ from noetrium_platform.foundation.governance.api import (
     RepositorySourceIndexPort,
     RepositorySourcePort,
     RepositorySourceSnapshot,
+    RequirementAddress,
+    SERVER_CONNECTION_FACTORY_V1,
+    SERVER_FILE_TRANSFER_FACTORY_V1,
+    SystemDescriptor,
+    SystemIdentity,
+    SystemRegistryChange,
+    SystemRegistryPort,
+    governance_baseline_semantic_digest,
+    interface_contract_digest,
     repository_source_scope_digest,
     repository_source_scope_text_digest,
+    require_production_qualification,
+    system_catalog,
 )
 
 from noetrium_platform.foundation.governance.api.baseline_authority import (
@@ -43,6 +112,278 @@ from noetrium_platform.foundation.governance.api.repository_source import (
     repository_source_scope_text_digest as repository_source__repository_source_scope_text_digest,
 )
 
+from noetrium_platform.foundation.governance.architecture.api import (
+    AmbiguousCapabilityProvider,
+    BindingDiagnostic as api__BindingDiagnostic,
+    BindingDiagnosticCode as api__BindingDiagnosticCode,
+    BindingDiagnosticReference as api__BindingDiagnosticReference,
+    BindingDiagnosticReferenceKind as api__BindingDiagnosticReferenceKind,
+    BindingDiagnosticSeverity as api__BindingDiagnosticSeverity,
+    BindingEdge,
+    BindingPlan as api__BindingPlan,
+    BindingProof as api__BindingProof,
+    BindingRemediationCategory as api__BindingRemediationCategory,
+    BindingResolution as api__BindingResolution,
+    BindingResolutionState,
+    BindingResolverPort,
+    CapabilityBindingError,
+    CapabilityCompositionPlannerPort as api__CapabilityCompositionPlannerPort,
+    CapabilityDependencyCycle,
+    CapabilityInterfaceMismatch,
+    CapabilityKey,
+    CapabilityOffer as api__CapabilityOffer,
+    CapabilityRequirement as api__CapabilityRequirement,
+    CompositionContract as api__CompositionContract,
+    CompositionContractError,
+    CompositionIdentity as api__CompositionIdentity,
+    CompositionSubject as api__CompositionSubject,
+    CompositionSubjectKind,
+    CompositionTopologyError,
+    MissingCapabilityProvider,
+    ProviderSelection,
+    ProviderIngressContractError,
+    ProviderIngressProtocol,
+    ProviderIngressViolation,
+    ProviderImplementationIdentity,
+    ProviderIngressBoundary,
+    ProviderQualificationIdentity,
+    ProviderRevision,
+    ProviderRevisionKind,
+    provider_implementation_from_repository_source,
+    RequirementAddress as api__RequirementAddress,
+    RequirementCardinality,
+    interface_contract_digest as api__interface_contract_digest,
+    ConsensusQualificationPort,
+    ExecutionQualificationPort as api__ExecutionQualificationPort,
+    IsolationQualificationPort,
+    QualificationEvidence as api__QualificationEvidence,
+    QualificationKind as api__QualificationKind,
+    WorkerAttestationQualificationPort,
+    require_production_qualification as api__require_production_qualification,
+    SemanticBoundaryClaim,
+    SemanticBoundaryClaimError,
+    SemanticBoundaryClassification,
+    SemanticBoundaryEvidence,
+    SemanticStateAuthorityKind,
+    validate_semantic_boundary_claim,
+)
+
+from noetrium_platform.foundation.governance.architecture.api.capabilities import (
+    EXCEPTION_DESCRIPTOR_V1 as capabilities__EXCEPTION_DESCRIPTOR_V1,
+    HOST_OPERATING_SYSTEM_ROUTE_V1 as capabilities__HOST_OPERATING_SYSTEM_ROUTE_V1,
+    LOG_QUERY_V1 as capabilities__LOG_QUERY_V1,
+    LOG_SINK_V1 as capabilities__LOG_SINK_V1,
+    LOGGING_SYSTEM_V1 as capabilities__LOGGING_SYSTEM_V1,
+    METHOD_COMPOSITION_PORTS_V1 as capabilities__METHOD_COMPOSITION_PORTS_V1,
+    SERVER_CONNECTION_FACTORY_V1 as capabilities__SERVER_CONNECTION_FACTORY_V1,
+    SERVER_FILE_TRANSFER_FACTORY_V1 as capabilities__SERVER_FILE_TRANSFER_FACTORY_V1,
+)
+
+from noetrium_platform.foundation.governance.architecture.api.capability_composition import (
+    AmbiguousCapabilityProvider as capability_composition__AmbiguousCapabilityProvider,
+    BindingDiagnostic as capability_composition__BindingDiagnostic,
+    BindingDiagnosticCode as capability_composition__BindingDiagnosticCode,
+    BindingDiagnosticReference as capability_composition__BindingDiagnosticReference,
+    BindingDiagnosticReferenceKind as capability_composition__BindingDiagnosticReferenceKind,
+    BindingDiagnosticSeverity as capability_composition__BindingDiagnosticSeverity,
+    BindingEdge as capability_composition__BindingEdge,
+    BindingPlan as capability_composition__BindingPlan,
+    BindingProof as capability_composition__BindingProof,
+    BindingRemediationCategory as capability_composition__BindingRemediationCategory,
+    BindingResolution as capability_composition__BindingResolution,
+    BindingResolutionState as capability_composition__BindingResolutionState,
+    BindingResolverPort as capability_composition__BindingResolverPort,
+    CapabilityBindingError as capability_composition__CapabilityBindingError,
+    CapabilityCompositionPlannerPort as capability_composition__CapabilityCompositionPlannerPort,
+    CapabilityDependencyCycle as capability_composition__CapabilityDependencyCycle,
+    CapabilityInterfaceMismatch as capability_composition__CapabilityInterfaceMismatch,
+    CapabilityKey as capability_composition__CapabilityKey,
+    CapabilityOffer as capability_composition__CapabilityOffer,
+    CapabilityRequirement as capability_composition__CapabilityRequirement,
+    CompositionContract as capability_composition__CompositionContract,
+    CompositionContractError as capability_composition__CompositionContractError,
+    CompositionIdentity as capability_composition__CompositionIdentity,
+    CompositionSubject as capability_composition__CompositionSubject,
+    CompositionSubjectKind as capability_composition__CompositionSubjectKind,
+    CompositionTopologyError as capability_composition__CompositionTopologyError,
+    MissingCapabilityProvider as capability_composition__MissingCapabilityProvider,
+    ProviderSelection as capability_composition__ProviderSelection,
+    RequirementAddress as capability_composition__RequirementAddress,
+    RequirementCardinality as capability_composition__RequirementCardinality,
+    interface_contract_digest as capability_composition__interface_contract_digest,
+)
+
+from noetrium_platform.foundation.governance.architecture.api.execution_qualification import (
+    ConsensusQualificationPort as execution_qualification__ConsensusQualificationPort,
+    ExecutionQualificationPort as execution_qualification__ExecutionQualificationPort,
+    IsolationQualificationPort as execution_qualification__IsolationQualificationPort,
+    QualificationEvidence as execution_qualification__QualificationEvidence,
+    QualificationKind as execution_qualification__QualificationKind,
+    WorkerAttestationQualificationPort as execution_qualification__WorkerAttestationQualificationPort,
+    require_production_qualification as execution_qualification__require_production_qualification,
+)
+
+from noetrium_platform.foundation.governance.architecture.api.provider_ingress import (
+    ProviderImplementationIdentity as provider_ingress__ProviderImplementationIdentity,
+    ProviderIngressBoundary as provider_ingress__ProviderIngressBoundary,
+    ProviderIngressContractError as provider_ingress__ProviderIngressContractError,
+    ProviderIngressProtocol as provider_ingress__ProviderIngressProtocol,
+    ProviderIngressViolation as provider_ingress__ProviderIngressViolation,
+    ProviderQualificationIdentity as provider_ingress__ProviderQualificationIdentity,
+    ProviderRevision as provider_ingress__ProviderRevision,
+    ProviderRevisionKind as provider_ingress__ProviderRevisionKind,
+    provider_implementation_from_repository_source as provider_ingress__provider_implementation_from_repository_source,
+)
+
+from noetrium_platform.foundation.governance.architecture.api.semantic_boundary import (
+    SemanticBoundaryClaim as semantic_boundary__SemanticBoundaryClaim,
+    SemanticBoundaryClaimError as semantic_boundary__SemanticBoundaryClaimError,
+    SemanticBoundaryClassification as semantic_boundary__SemanticBoundaryClassification,
+    SemanticBoundaryEvidence as semantic_boundary__SemanticBoundaryEvidence,
+    SemanticStateAuthorityKind as semantic_boundary__SemanticStateAuthorityKind,
+    validate_semantic_boundary_claim as semantic_boundary__validate_semantic_boundary_claim,
+)
+
+from noetrium_platform.foundation.governance.concurrency.api.contracts import (
+    ConcurrencyLanguage,
+    ConcurrencyPriority,
+    ConcurrencyFinding,
+    ConcurrencyMetrics,
+    ConcurrencyHotspot,
+    ConcurrencyCoverage,
+    ConcurrencySnapshot,
+    ConcurrencyDocument,
+    ConcurrencyFileAnalysis,
+    ConcurrencyBaseline,
+    ConcurrencyGateReport,
+)
+
+from noetrium_platform.foundation.governance.concurrency.api.ports import (
+    ConcurrencyBaseline as ports__ConcurrencyBaseline,
+    ConcurrencyDocument as ports__ConcurrencyDocument,
+    ConcurrencyFileAnalysis as ports__ConcurrencyFileAnalysis,
+    ConcurrencyLanguage as ports__ConcurrencyLanguage,
+    ConcurrencySnapshot as ports__ConcurrencySnapshot,
+    ConcurrencySourceInventoryPort,
+    ConcurrencyLanguageAnalyzerPort,
+    ConcurrencySnapshotStorePort,
+)
+
+from noetrium_platform.foundation.governance.evolution.api import (
+    DiscoveryReport,
+    DriftKind,
+    EvolutionAssessment,
+    EvolutionProposal,
+    EvolutionStage,
+    EvolutionStateStorePort,
+    EvolutionTransition,
+    ImprovementSignal,
+    ObservationOutcome,
+    SignalKind,
+    SystemEvolutionPort,
+    TopologyDrift,
+    TopologyObservation,
+)
+
+from noetrium_platform.foundation.governance.evolution.api.contracts import (
+    DiscoveryReport as contracts__DiscoveryReport,
+    DriftKind as contracts__DriftKind,
+    EvolutionAssessment as contracts__EvolutionAssessment,
+    EvolutionProposal as contracts__EvolutionProposal,
+    EvolutionStage as contracts__EvolutionStage,
+    EvolutionTransition as contracts__EvolutionTransition,
+    ImprovementSignal as contracts__ImprovementSignal,
+    ObservationOutcome as contracts__ObservationOutcome,
+    SignalKind as contracts__SignalKind,
+    TopologyDrift as contracts__TopologyDrift,
+    TopologyObservation as contracts__TopologyObservation,
+)
+
+from noetrium_platform.foundation.governance.evolution.api.ports import (
+    EvolutionStateStorePort as ports__EvolutionStateStorePort,
+    SystemEvolutionPort as ports__SystemEvolutionPort,
+)
+
+from noetrium_platform.foundation.governance.gate.api import (
+    GateCompositionPort,
+    GateFinding,
+    GatePort,
+    GateReport,
+    GateRequest,
+    GateSeverity,
+)
+
+from noetrium_platform.foundation.governance.gate.api.contracts import (
+    GateFinding as contracts__GateFinding,
+    GateReport as contracts__GateReport,
+    GateRequest as contracts__GateRequest,
+    GateSeverity as contracts__GateSeverity,
+)
+
+from noetrium_platform.foundation.governance.gate.api.ports import (
+    GateCompositionPort as ports__GateCompositionPort,
+    GatePort as ports__GatePort,
+)
+
+from noetrium_platform.foundation.governance.performance.api.contracts import (
+    PerformanceLanguage,
+    PerformancePriority,
+    PerformanceFinding,
+    PerformanceMetrics,
+    PerformanceHotspot,
+    PerformanceCoverage,
+    PerformanceSnapshot,
+    PerformanceBaseline,
+    PerformanceGateReport,
+    PerformanceDocument,
+    PerformanceFileAnalysis,
+)
+
+from noetrium_platform.foundation.governance.performance.api.ports import (
+    PerformanceBaseline as ports__PerformanceBaseline,
+    PerformanceDocument as ports__PerformanceDocument,
+    PerformanceFileAnalysis as ports__PerformanceFileAnalysis,
+    PerformanceLanguage as ports__PerformanceLanguage,
+    PerformanceSnapshot as ports__PerformanceSnapshot,
+    PerformanceSourceInventoryPort,
+    PerformanceLanguageAnalyzerPort,
+    PerformanceSnapshotStorePort,
+)
+
+from noetrium_platform.foundation.governance.quality.api import (
+    BANNED_RUNTIME_IDENTIFIERS,
+    DegradationFinding,
+    FORBIDDEN_ENABLED_CONFIG_KEYS,
+    FORBIDDEN_NONEMPTY_CONFIG_KEYS,
+    SilentFailureFinding,
+)
+
+from noetrium_platform.foundation.governance.quality.api.contracts import (
+    BANNED_RUNTIME_IDENTIFIERS as contracts__BANNED_RUNTIME_IDENTIFIERS,
+    DegradationFinding as contracts__DegradationFinding,
+    FORBIDDEN_ENABLED_CONFIG_KEYS as contracts__FORBIDDEN_ENABLED_CONFIG_KEYS,
+    FORBIDDEN_NONEMPTY_CONFIG_KEYS as contracts__FORBIDDEN_NONEMPTY_CONFIG_KEYS,
+    SilentFailureFinding as contracts__SilentFailureFinding,
+)
+
+from noetrium_platform.foundation.governance.repository_boundary.api import (
+    DownstreamImportKind,
+    DownstreamImportObservation,
+    DownstreamProjectImportReport,
+    RepositoryBoundaryReport,
+    RepositoryBoundaryViolation,
+    RepositoryBoundaryAuditor,
+)
+
+from noetrium_platform.foundation.governance.repository_boundary.api.contracts import (
+    DownstreamImportKind as contracts__DownstreamImportKind,
+    DownstreamImportObservation as contracts__DownstreamImportObservation,
+    DownstreamProjectImportReport as contracts__DownstreamProjectImportReport,
+    RepositoryBoundaryReport as contracts__RepositoryBoundaryReport,
+    RepositoryBoundaryViolation as contracts__RepositoryBoundaryViolation,
+    RepositoryBoundaryAuditor as contracts__RepositoryBoundaryAuditor,
+)
+
 SYSTEM_KEY = 'governance'
 PACKAGE_PREFIX = 'noetrium_platform.foundation.governance'
-__all__ = ('GovernanceBaselineApproval', 'GovernanceBaselineApprovalSet', 'GovernanceBaselineLane', 'governance_baseline_semantic_digest', 'RepositorySourceBlob', 'RepositorySourceFailure', 'RepositorySourceFailureKind', 'RepositorySourceIncompleteError', 'RepositorySourceIndexPort', 'RepositorySourcePort', 'RepositorySourceSnapshot', 'repository_source_scope_digest', 'repository_source_scope_text_digest', 'baseline_authority__GovernanceBaselineApproval', 'baseline_authority__GovernanceBaselineApprovalSet', 'baseline_authority__GovernanceBaselineLane', 'baseline_authority__governance_baseline_semantic_digest', 'repository_source__RepositorySourceBlob', 'repository_source__RepositorySourceFailure', 'repository_source__RepositorySourceFailureKind', 'repository_source__RepositorySourceIncompleteError', 'repository_source__RepositorySourceIndexPort', 'repository_source__RepositorySourcePort', 'repository_source__RepositorySourceSnapshot', 'repository_source__repository_source_scope_digest', 'repository_source__repository_source_scope_text_digest')
+__all__ = ('AlgorithmBaselineApproval', 'AlgorithmComplexityMigrationApproval', 'AlgorithmDiff', 'AlgorithmGovernanceApprovalSet', 'AlgorithmFinding', 'AlgorithmGateReport', 'AlgorithmLanguage', 'AlgorithmMetrics', 'AlgorithmPriority', 'AlgorithmSnapshot', 'AlgorithmSymbol', 'FileAnalysis', 'LanguageCoverage', 'SourceDocument', 'SymbolDelta', 'AlgorithmSnapshotStorePort', 'FileAnalysisCachePort', 'LanguageAnalyzerPort', 'SourceInventoryPort', 'PLATFORM_SCOPE', 'PathFlavor', 'ScopeIdentity', 'ScopeKind', 'ScopePathPort', 'ScopeRegistryPort', 'is_absolute_target_path', 'scope_from_data', 'scope_to_data', 'BindingDiagnostic', 'BindingDiagnosticCode', 'BindingDiagnosticReference', 'BindingDiagnosticReferenceKind', 'BindingDiagnosticSeverity', 'BindingPlan', 'BindingProof', 'BindingRemediationCategory', 'BindingResolution', 'CapabilityCompositionPlannerPort', 'CapabilityOffer', 'CapabilityRequirement', 'CompositionContract', 'CompositionIdentity', 'CompositionSubject', 'EXCEPTION_DESCRIPTOR_V1', 'ExecutionQualificationPort', 'GovernanceBaselineApproval', 'GovernanceBaselineApprovalSet', 'GovernanceBaselineLane', 'HOST_OPERATING_SYSTEM_ROUTE_V1', 'LOGGING_SYSTEM_V1', 'LOG_QUERY_V1', 'LOG_SINK_V1', 'METHOD_COMPOSITION_PORTS_V1', 'QualificationEvidence', 'QualificationKind', 'ReleasePinStorePort', 'RepositorySourceBlob', 'RepositorySourceFailure', 'RepositorySourceFailureKind', 'RepositorySourceIncompleteError', 'RepositorySourceIndexPort', 'RepositorySourcePort', 'RepositorySourceSnapshot', 'RequirementAddress', 'SERVER_CONNECTION_FACTORY_V1', 'SERVER_FILE_TRANSFER_FACTORY_V1', 'SystemDescriptor', 'SystemIdentity', 'SystemRegistryChange', 'SystemRegistryPort', 'governance_baseline_semantic_digest', 'interface_contract_digest', 'repository_source_scope_digest', 'repository_source_scope_text_digest', 'require_production_qualification', 'system_catalog', 'baseline_authority__GovernanceBaselineApproval', 'baseline_authority__GovernanceBaselineApprovalSet', 'baseline_authority__GovernanceBaselineLane', 'baseline_authority__governance_baseline_semantic_digest', 'repository_source__RepositorySourceBlob', 'repository_source__RepositorySourceFailure', 'repository_source__RepositorySourceFailureKind', 'repository_source__RepositorySourceIncompleteError', 'repository_source__RepositorySourceIndexPort', 'repository_source__RepositorySourcePort', 'repository_source__RepositorySourceSnapshot', 'repository_source__repository_source_scope_digest', 'repository_source__repository_source_scope_text_digest', 'AmbiguousCapabilityProvider', 'api__BindingDiagnostic', 'api__BindingDiagnosticCode', 'api__BindingDiagnosticReference', 'api__BindingDiagnosticReferenceKind', 'api__BindingDiagnosticSeverity', 'BindingEdge', 'api__BindingPlan', 'api__BindingProof', 'api__BindingRemediationCategory', 'api__BindingResolution', 'BindingResolutionState', 'BindingResolverPort', 'CapabilityBindingError', 'api__CapabilityCompositionPlannerPort', 'CapabilityDependencyCycle', 'CapabilityInterfaceMismatch', 'CapabilityKey', 'api__CapabilityOffer', 'api__CapabilityRequirement', 'api__CompositionContract', 'CompositionContractError', 'api__CompositionIdentity', 'api__CompositionSubject', 'CompositionSubjectKind', 'CompositionTopologyError', 'MissingCapabilityProvider', 'ProviderSelection', 'ProviderIngressContractError', 'ProviderIngressProtocol', 'ProviderIngressViolation', 'ProviderImplementationIdentity', 'ProviderIngressBoundary', 'ProviderQualificationIdentity', 'ProviderRevision', 'ProviderRevisionKind', 'provider_implementation_from_repository_source', 'api__RequirementAddress', 'RequirementCardinality', 'api__interface_contract_digest', 'ConsensusQualificationPort', 'api__ExecutionQualificationPort', 'IsolationQualificationPort', 'api__QualificationEvidence', 'api__QualificationKind', 'WorkerAttestationQualificationPort', 'api__require_production_qualification', 'SemanticBoundaryClaim', 'SemanticBoundaryClaimError', 'SemanticBoundaryClassification', 'SemanticBoundaryEvidence', 'SemanticStateAuthorityKind', 'validate_semantic_boundary_claim', 'capabilities__EXCEPTION_DESCRIPTOR_V1', 'capabilities__HOST_OPERATING_SYSTEM_ROUTE_V1', 'capabilities__LOG_QUERY_V1', 'capabilities__LOG_SINK_V1', 'capabilities__LOGGING_SYSTEM_V1', 'capabilities__METHOD_COMPOSITION_PORTS_V1', 'capabilities__SERVER_CONNECTION_FACTORY_V1', 'capabilities__SERVER_FILE_TRANSFER_FACTORY_V1', 'capability_composition__AmbiguousCapabilityProvider', 'capability_composition__BindingDiagnostic', 'capability_composition__BindingDiagnosticCode', 'capability_composition__BindingDiagnosticReference', 'capability_composition__BindingDiagnosticReferenceKind', 'capability_composition__BindingDiagnosticSeverity', 'capability_composition__BindingEdge', 'capability_composition__BindingPlan', 'capability_composition__BindingProof', 'capability_composition__BindingRemediationCategory', 'capability_composition__BindingResolution', 'capability_composition__BindingResolutionState', 'capability_composition__BindingResolverPort', 'capability_composition__CapabilityBindingError', 'capability_composition__CapabilityCompositionPlannerPort', 'capability_composition__CapabilityDependencyCycle', 'capability_composition__CapabilityInterfaceMismatch', 'capability_composition__CapabilityKey', 'capability_composition__CapabilityOffer', 'capability_composition__CapabilityRequirement', 'capability_composition__CompositionContract', 'capability_composition__CompositionContractError', 'capability_composition__CompositionIdentity', 'capability_composition__CompositionSubject', 'capability_composition__CompositionSubjectKind', 'capability_composition__CompositionTopologyError', 'capability_composition__MissingCapabilityProvider', 'capability_composition__ProviderSelection', 'capability_composition__RequirementAddress', 'capability_composition__RequirementCardinality', 'capability_composition__interface_contract_digest', 'execution_qualification__ConsensusQualificationPort', 'execution_qualification__ExecutionQualificationPort', 'execution_qualification__IsolationQualificationPort', 'execution_qualification__QualificationEvidence', 'execution_qualification__QualificationKind', 'execution_qualification__WorkerAttestationQualificationPort', 'execution_qualification__require_production_qualification', 'provider_ingress__ProviderImplementationIdentity', 'provider_ingress__ProviderIngressBoundary', 'provider_ingress__ProviderIngressContractError', 'provider_ingress__ProviderIngressProtocol', 'provider_ingress__ProviderIngressViolation', 'provider_ingress__ProviderQualificationIdentity', 'provider_ingress__ProviderRevision', 'provider_ingress__ProviderRevisionKind', 'provider_ingress__provider_implementation_from_repository_source', 'semantic_boundary__SemanticBoundaryClaim', 'semantic_boundary__SemanticBoundaryClaimError', 'semantic_boundary__SemanticBoundaryClassification', 'semantic_boundary__SemanticBoundaryEvidence', 'semantic_boundary__SemanticStateAuthorityKind', 'semantic_boundary__validate_semantic_boundary_claim', 'ConcurrencyLanguage', 'ConcurrencyPriority', 'ConcurrencyFinding', 'ConcurrencyMetrics', 'ConcurrencyHotspot', 'ConcurrencyCoverage', 'ConcurrencySnapshot', 'ConcurrencyDocument', 'ConcurrencyFileAnalysis', 'ConcurrencyBaseline', 'ConcurrencyGateReport', 'ports__ConcurrencyBaseline', 'ports__ConcurrencyDocument', 'ports__ConcurrencyFileAnalysis', 'ports__ConcurrencyLanguage', 'ports__ConcurrencySnapshot', 'ConcurrencySourceInventoryPort', 'ConcurrencyLanguageAnalyzerPort', 'ConcurrencySnapshotStorePort', 'DiscoveryReport', 'DriftKind', 'EvolutionAssessment', 'EvolutionProposal', 'EvolutionStage', 'EvolutionStateStorePort', 'EvolutionTransition', 'ImprovementSignal', 'ObservationOutcome', 'SignalKind', 'SystemEvolutionPort', 'TopologyDrift', 'TopologyObservation', 'contracts__DiscoveryReport', 'contracts__DriftKind', 'contracts__EvolutionAssessment', 'contracts__EvolutionProposal', 'contracts__EvolutionStage', 'contracts__EvolutionTransition', 'contracts__ImprovementSignal', 'contracts__ObservationOutcome', 'contracts__SignalKind', 'contracts__TopologyDrift', 'contracts__TopologyObservation', 'ports__EvolutionStateStorePort', 'ports__SystemEvolutionPort', 'GateCompositionPort', 'GateFinding', 'GatePort', 'GateReport', 'GateRequest', 'GateSeverity', 'contracts__GateFinding', 'contracts__GateReport', 'contracts__GateRequest', 'contracts__GateSeverity', 'ports__GateCompositionPort', 'ports__GatePort', 'PerformanceLanguage', 'PerformancePriority', 'PerformanceFinding', 'PerformanceMetrics', 'PerformanceHotspot', 'PerformanceCoverage', 'PerformanceSnapshot', 'PerformanceBaseline', 'PerformanceGateReport', 'PerformanceDocument', 'PerformanceFileAnalysis', 'ports__PerformanceBaseline', 'ports__PerformanceDocument', 'ports__PerformanceFileAnalysis', 'ports__PerformanceLanguage', 'ports__PerformanceSnapshot', 'PerformanceSourceInventoryPort', 'PerformanceLanguageAnalyzerPort', 'PerformanceSnapshotStorePort', 'BANNED_RUNTIME_IDENTIFIERS', 'DegradationFinding', 'FORBIDDEN_ENABLED_CONFIG_KEYS', 'FORBIDDEN_NONEMPTY_CONFIG_KEYS', 'SilentFailureFinding', 'contracts__BANNED_RUNTIME_IDENTIFIERS', 'contracts__DegradationFinding', 'contracts__FORBIDDEN_ENABLED_CONFIG_KEYS', 'contracts__FORBIDDEN_NONEMPTY_CONFIG_KEYS', 'contracts__SilentFailureFinding', 'DownstreamImportKind', 'DownstreamImportObservation', 'DownstreamProjectImportReport', 'RepositoryBoundaryReport', 'RepositoryBoundaryViolation', 'RepositoryBoundaryAuditor', 'contracts__DownstreamImportKind', 'contracts__DownstreamImportObservation', 'contracts__DownstreamProjectImportReport', 'contracts__RepositoryBoundaryReport', 'contracts__RepositoryBoundaryViolation', 'contracts__RepositoryBoundaryAuditor')

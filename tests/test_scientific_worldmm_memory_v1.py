@@ -1,3 +1,4 @@
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
 
 from noetrium_platform.capabilities.participant.capability.api import (
@@ -204,7 +205,7 @@ def test_worldmm_runs_adaptive_cross_facet_memory_as_nested_machine() -> None:
             ),
         }),
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         WORLDMM_METHOD_PROGRAM,
         runtime,
         machine_id="method:worldmm:test",
@@ -277,7 +278,7 @@ def test_worldmm_malformed_reasoning_json_defaults_to_final_answer() -> None:
             "fixture": "worldmm-malformed-runtime",
         }),
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         WORLDMM_METHOD_PROGRAM,
         runtime,
         machine_id="method:worldmm:malformed",

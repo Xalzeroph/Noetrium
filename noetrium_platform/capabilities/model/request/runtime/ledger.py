@@ -15,7 +15,7 @@ from noetrium_platform.capabilities.model._persisted import (
     text_tuple,
 )
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
+from noetrium_platform.substrate.api import ArtifactBlobRef
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import InterprocessFileLock

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from importlib import import_module
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.governance.system_registry.api import system_catalog
+from noetrium_platform.substrate.api import system_catalog
 
 from ..api.contracts import (
     EnvironmentCategoryDescriptor,

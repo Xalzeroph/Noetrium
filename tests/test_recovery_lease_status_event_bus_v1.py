@@ -10,7 +10,7 @@ from noetrium_platform.evidence.observability.status.runtime import (
     RecoveryLeaseStatusProbe,
 )
 from noetrium_platform.infrastructure.reliability.recovery.api.lease import RecoveryLease
-from noetrium_platform.infrastructure.reliability.recovery.composition import compose_recovery_lease_status_probe
+from noetrium_platform.composition.reliability_observability import compose_recovery_lease_status_probe
 
 
 class Source:

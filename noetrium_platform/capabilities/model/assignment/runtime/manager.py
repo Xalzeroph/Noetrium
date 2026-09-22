@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.capabilities.model.assignment.api import ModelAssignment, ResolvedModelAssignment
-from noetrium_platform.infrastructure.resources.resolution import HierarchicalResourceResolver, ScopedValue
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeRegistryPort
+from noetrium_platform.substrate.api import HierarchicalResourceResolver, ScopedValue
+from noetrium_platform.substrate.api import ScopeIdentity, ScopeRegistryPort
 
 
 class ModelAssignmentManager:

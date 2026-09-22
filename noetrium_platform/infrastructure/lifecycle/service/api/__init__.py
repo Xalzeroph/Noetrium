@@ -1,3 +1,5 @@
+from .crash import CrashClass, CrashDiagnosis, CrashEvidence, classify_crash
+from .environment import MaterializedServiceEnvironment, service_environment_digest
 from .heartbeat import ServiceHeartbeat
 from .contracts import ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
 from .ports import (
@@ -5,18 +7,30 @@ from .ports import (
     ServiceEnvironmentPort,
     ServiceLaunchPreflightPort,
     ServiceLaunchPreflightReport,
+    ServiceProcessLivenessPort,
+    ServiceReadinessProbePort,
     ServiceReadyObservation,
     ServiceReconcileObservation,
+    ServiceRuntimeFactoryPort,
     ServiceStartOutcome,
     ServiceStopOutcome,
 )
 
 __all__ = [
+    "CrashClass",
+    "CrashDiagnosis",
+    "CrashEvidence",
+    "classify_crash",
+    "MaterializedServiceEnvironment",
+    "service_environment_digest",
     "ServiceHeartbeat",
     "ExactServiceRuntimePort",
     "ServiceEnvironmentPort",
     "ServiceLaunchPreflightPort",
     "ServiceLaunchPreflightReport",
+    "ServiceProcessLivenessPort",
+    "ServiceReadinessProbePort",
+    "ServiceRuntimeFactoryPort",
     "ServiceContractDrift",
     "ServiceLaunchContract",
     "ServiceProcessIdentity",

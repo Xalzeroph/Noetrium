@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionIdentityViolation,
     ActionRequest,
     StateMachineDynamicsIdentity,
@@ -206,7 +206,7 @@ def test_state_machine_live_truth_is_not_held_in_legacy_session_fields() -> None
 
 
 def test_runtime_state_machine_surface_forwards_canonical_contracts() -> None:
-    from noetrium_platform.capabilities.environment.runtime.api import state_machine as runtime_state_machine
+    from noetrium_platform.capabilities.environment.api import state_machine as runtime_state_machine
 
     for name in (
         "StateMachineDynamicsIdentity",

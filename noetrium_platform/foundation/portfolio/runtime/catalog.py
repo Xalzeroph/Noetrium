@@ -5,7 +5,7 @@ from pathlib import Path
 import sqlite3
 from threading import RLock
 
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeRegistryPort
+from noetrium_platform.foundation.api import PLATFORM_SCOPE, ScopeIdentity, ScopeRegistryPort
 from noetrium_platform.foundation.portfolio.api import (
     ProgramSpec,
     ProjectManifest,

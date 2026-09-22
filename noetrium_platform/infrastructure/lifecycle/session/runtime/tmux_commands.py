@@ -6,7 +6,7 @@ import re
 import shlex
 
 from noetrium_platform.infrastructure.lifecycle.session.api import PersistentSessionSpec
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.api import is_absolute_target_path
 
 _LABEL_RE = re.compile(r"^[A-Za-z0-9_.-]{1,96}$")
 

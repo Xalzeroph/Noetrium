@@ -22,7 +22,7 @@ from noetrium_platform.infrastructure.reliability.forensics.api import MutationR
 from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter import ForensicDiagnosticEvidence
 from noetrium_platform.infrastructure.reliability.failure.api import build_failure
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
-from noetrium_platform.product.operator.composition.cli import main as operator_main
+from noetrium_platform.composition.operator.wiring.cli import main as operator_main
 from noetrium_platform.composition.release_verification import verify_source_tree_release
 from noetrium_platform.evidence.observability.telemetry.metric.providers import SQLiteTelemetryReader
 from noetrium_platform.foundation.governance.release.runtime.manifest import build_release_manifest

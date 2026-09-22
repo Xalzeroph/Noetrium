@@ -43,28 +43,32 @@ def test_shape_sync_materializes_missing_standard_planes(tmp_path: Path) -> None
         assert "AUTO-GENERATED registered-system plane stub" in text
 
 
-def test_unified_api_requires_explicit_selection_for_true_symbol_collision() -> None:
+def test_unified_api_does_not_expose_registry_collision_escape_hatch() -> None:
     from noetrium import api
 
-    experiment = api.system("experimentation/experiment")
-    study = api.system("experimentation/study")
-
-    assert experiment.ExperimentPlan is not study.ExperimentPlan
+    assert not hasattr(api, "system")
+    assert api.search("ExperimentPlan") == ()
+    assert api.describe("ExperimentPlan") == ()
     try:
         api.resolve("ExperimentPlan")
-    except AttributeError as exc:
-        assert "ambiguous Noetrium public symbol" in str(exc)
+    except AttributeError:
+        pass
     else:
-        raise AssertionError("true public symbol collision must require explicit system selection")
+        raise AssertionError("non-Product registry symbols must not escape through unified API")
 
 
-def test_registered_contracts_are_reachable_through_unified_api() -> None:
+def test_product_authoring_contracts_are_reachable_through_unified_api() -> None:
     from noetrium import api
 
-    DeploymentStatusIdentity = api.DeploymentStatusIdentity
-    LocalCommandRunnerPort = api.LocalCommandRunnerPort
+    AgentMethodSpec = api.AgentMethodSpec
+    Study = api.Study
 
-    assert DeploymentStatusIdentity.__module__.startswith("noetrium_platform.research.execution.api")
-    assert LocalCommandRunnerPort.__module__.startswith(
-        "noetrium_platform.infrastructure.lifecycle.process.api"
+    assert AgentMethodSpec.__module__.startswith(
+        "noetrium_platform.research.execution.workflow.api"
     )
+    assert Study.__module__.startswith(
+        "noetrium_platform.research.experimentation.study"
+    )
+    for private_name in ("DeploymentStatusIdentity", "LocalCommandRunnerPort"):
+        assert api.owners(private_name) == ()
+        assert api.search(private_name) == ()

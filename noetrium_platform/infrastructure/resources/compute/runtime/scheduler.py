@@ -14,7 +14,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     HostRuntimeObserverPort, HostRuntimeSnapshot,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceIdentity, ResourceKind, ResourceLease, ResourceLeasePort, ResourceOwner,
     ResourceOwnership, ResourceOwnershipPort,

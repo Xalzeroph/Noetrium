@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.governance.architecture.api import (
+from noetrium_platform.substrate.api import (
     BindingDiagnostic,
     BindingDiagnosticCode,
     BindingDiagnosticReference,

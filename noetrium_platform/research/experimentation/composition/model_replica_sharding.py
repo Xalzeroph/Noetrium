@@ -5,11 +5,11 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from noetrium_platform.capabilities.model.api import (
+from noetrium_platform.research.execution.api import (
     ProjectModelBinding,
     ProjectModelBindingSet,
 )
-from noetrium_platform.capabilities.model.serving.endpoint.api import (
+from noetrium_platform.research.execution.api import (
     QualifiedModelEndpointBinding,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256

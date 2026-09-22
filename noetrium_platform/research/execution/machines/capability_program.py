@@ -13,12 +13,12 @@ from enum import StrEnum
 from threading import RLock
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.capabilities.participant.capability.api import (
+from noetrium_platform.capabilities.api import (
     CapabilityDescriptor,
     CapabilityRequest,
     CapabilityResult,
 )
-from noetrium_platform.capabilities.participant.capability.api.policy import (
+from noetrium_platform.capabilities.api import (
     CapabilityPolicySet,
     GuardVerdict,
 )

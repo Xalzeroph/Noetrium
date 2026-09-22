@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Protocol
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.substrate.api import ScopeIdentity
 from .contracts import (
     ManagedModelAsset, ModelAcquisitionReceipt, ModelAssetMode, ModelAssetStats, ModelAssetUsage,
     ModelConfigSummary, ModelSourceSpec, ModelStoragePoolStatus,

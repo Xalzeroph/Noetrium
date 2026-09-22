@@ -1,14 +1,1 @@
-from .lease_binding import compose_resource_recovery_lease, compose_sqlite_recovery_lease
-from .status_events import (
-    RecoveryLeaseStatusEventProjection,
-    RecoveryLeaseStatusEventPublisher,
-    compose_recovery_lease_status_probe,
-)
-
-__all__ = [
-    "compose_resource_recovery_lease",
-    "compose_sqlite_recovery_lease",
-    "RecoveryLeaseStatusEventProjection",
-    "RecoveryLeaseStatusEventPublisher",
-    "compose_recovery_lease_status_probe",
-]
+"""Reliability-local recovery composition. Cross-authority adapters live in noetrium_platform.composition."""

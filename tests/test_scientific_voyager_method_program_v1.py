@@ -1,3 +1,4 @@
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
 
 from noetrium_platform.capabilities.participant.capability.api import (
@@ -232,7 +233,7 @@ def test_voyager_method_runs_one_successful_task_and_preserves_release_iteration
         agent_loop=agents,
         child_machines=children,
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         VOYAGER_MINECRAFT_METHOD_PROGRAM,
         runtime,
         machine_id="method:voyager:test",
@@ -403,7 +404,7 @@ def test_voyager_curriculum_run_qa_enrichment_is_memory_backed_and_randomness_is
         agent_loop=agents,
         child_machines=children,
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         VOYAGER_MINECRAFT_METHOD_PROGRAM,
         runtime,
         machine_id="method:voyager:curriculum",

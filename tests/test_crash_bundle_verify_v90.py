@@ -11,7 +11,7 @@ from noetrium_platform.infrastructure.reliability.forensics.runtime import Crash
 from noetrium_platform.infrastructure.reliability.failure.api import build_failure_from_spec
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.product.operator.runtime.parser import build_parser
-from noetrium_platform.product.operator.query.runtime.route_runtime import route_runtime
+from noetrium_platform.composition.operator.query.route_runtime import route_runtime
 
 
 class CrashBundleVerifyV90Tests(unittest.TestCase):

@@ -1,3 +1,4 @@
+from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
 import json
 from pathlib import Path
 
@@ -118,7 +119,7 @@ def test_local_capability_probe_composes_split_fact_probes(tmp_path) -> None:
                 return LocalCommandResult(argv, 0, "ok", "")
             return LocalCommandResult(argv, 1, "", "unavailable")
 
-    facts = LocalDeploymentCapabilityProbe(Runner()).capture(
+    facts = LocalDeploymentCapabilityProbe(Runner(), index_worker_path=QUALIFICATION_INDEX_WORKER_PATH).capture(
         DeploymentQualificationRequest("model", model_path, python_executable, backends=("dummy",), package_index_urls=("https://example.invalid/simple",), probe_timeout_seconds=1.0)
     )
 

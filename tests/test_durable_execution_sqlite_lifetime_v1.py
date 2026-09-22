@@ -5,8 +5,8 @@ from threading import Barrier
 
 import pytest
 
-from noetrium_platform.research.execution.command.api import CommandConflict, CommandCorruption, CommandId, ExecutionCommand
-from noetrium_platform.research.execution.command.providers import SQLiteCommandStore
+from noetrium_platform.research.execution.operation.api import CommandConflict, CommandCorruption, CommandId, ExecutionCommand
+from noetrium_platform.research.execution.operation.command.providers import SQLiteCommandStore
 from noetrium_platform.research.execution.operation.api import OperationConflict, OperationCorruption, OperationId
 from noetrium_platform.research.execution.operation.providers import SQLiteOperationStore
 from noetrium_platform.research.execution.operation.runtime import OperationOwner

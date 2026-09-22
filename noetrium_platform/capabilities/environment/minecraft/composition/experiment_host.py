@@ -14,9 +14,9 @@ from noetrium_platform.capabilities.environment.minecraft.api import (
     MinecraftWorldCutPort,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.infrastructure.resources.allocation.api import EndpointAllocationPort, EndpointLeaseGuardFactoryPort
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
-from noetrium_platform.infrastructure.lifecycle.service.api import (
+from noetrium_platform.substrate.api import EndpointAllocationPort, EndpointLeaseGuardFactoryPort
+from noetrium_platform.substrate.api import is_absolute_target_path
+from noetrium_platform.substrate.api import (
     ServiceLaunchContract,
     ServiceProcessIdentity,
     ServiceReconcileObservation,

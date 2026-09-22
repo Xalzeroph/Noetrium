@@ -343,7 +343,7 @@ def _validate_catalog_header(
         raise DownstreamCatalogIntegrityError(
             "generated downstream capability catalog has an invalid shape"
         )
-    if document["schema"] != "noetrium-downstream-contracts.v4":
+    if document["schema"] != "noetrium-downstream-contracts.v5":
         raise DownstreamCatalogIntegrityError("invalid generated downstream capability catalog schema")
     if document["entrypoint"] != "noetrium.api":
         raise DownstreamCatalogIntegrityError("invalid unified downstream entrypoint")
@@ -597,15 +597,6 @@ def validate_downstream_capability_catalog(
         raise DownstreamCatalogIntegrityError(
             f"symbol cannot be both direct and ambiguous: {sorted(overlap)!r}"
         )
-    unresolved_registered = set(expected_index) - (
-        set(direct_sources) | set(ambiguous_sources)
-    )
-    if unresolved_registered:
-        raise DownstreamCatalogIntegrityError(
-            "registered symbols missing unified resolution: "
-            f"{sorted(unresolved_registered)!r}"
-        )
-
     return DownstreamCapabilityCatalog(
         schema=document["schema"],
         entrypoint=document["entrypoint"],

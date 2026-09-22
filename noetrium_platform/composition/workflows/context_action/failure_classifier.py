@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.infrastructure.reliability.effect.api import EffectAlreadyConsumed, EffectRecoveryAnchorMissing
-from noetrium_platform.capabilities.environment.runtime.api import ActionNotApplied, ActionSafetyCapabilityMissing, ActionScientificCommitContradiction
+from noetrium_platform.capabilities.environment.api import ActionNotApplied, ActionSafetyCapabilityMissing, ActionScientificCommitContradiction
 from noetrium_platform.infrastructure.reliability.failure.api import (
     ClassifiedOperationFailure,
     DEFAULT_FAILURE_CATALOG,

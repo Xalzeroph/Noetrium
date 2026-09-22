@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentSpec
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
+from noetrium_platform.substrate.api import ServiceLaunchContract
 
 
 @dataclass(frozen=True, slots=True)

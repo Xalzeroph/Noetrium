@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict
 
-from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpointRef
+from noetrium_platform.research.execution.api import ParticipantCheckpointRef
 
 from ..api.contracts import (
     RunCheckpointIntegrityError,

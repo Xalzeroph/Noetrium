@@ -14,7 +14,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 from noetrium_platform.foundation.kernel.kernel.operation import EffectReceipt
-from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.substrate.api import PreparedEffectHandle
 
 
 @dataclass(frozen=True, slots=True)

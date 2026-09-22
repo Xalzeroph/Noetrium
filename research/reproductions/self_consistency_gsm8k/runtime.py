@@ -1,3 +1,4 @@
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
 
 import argparse
@@ -12,7 +13,7 @@ import time
 from noetrium_platform.capabilities.model.request.api import (
     ModelRequestRecorderPort,
 )
-from noetrium_platform.capabilities.model.request.composition import (
+from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint import (
@@ -268,7 +269,7 @@ def run_self_consistency_gsm8k_episode(
         f"span:{task.record.task_id}",
         task_id=task.record.task_id,
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM,
         MethodRuntimeContext(
             execution,

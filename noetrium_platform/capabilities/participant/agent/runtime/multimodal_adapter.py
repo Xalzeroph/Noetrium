@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from typing import Protocol
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
-from noetrium_platform.capabilities.model.api import MultimodalPart
+from noetrium_platform.substrate.api import MultimodalPart
 
 from ..api.cognition import AgentObservation
 from ..api.cognition_ports import AgentObservationPort

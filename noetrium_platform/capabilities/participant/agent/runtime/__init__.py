@@ -1,6 +1,5 @@
 """participant.agent runtime boundary."""
 
-from .model_view import AgentActionHistoryProjection, AgentActionHistoryProjectionReceipt, project_action_history
 from .participant_message_facts import (
     ParticipantMessageFactBinding,
     record_participant_message_delivery,
@@ -13,8 +12,6 @@ from .multimodal_adapter import AgentObservationPartSourcePort, MultimodalAgentO
 
 __all__ = [
     "AGENT_TURN_FACT_SCHEMA",
-    "AgentActionHistoryProjection",
-    "AgentActionHistoryProjectionReceipt",
     "AgentMultimodalObservationProjector",
     "AgentObservationPartSourcePort",
     "AgentTurnFact",
@@ -26,7 +23,6 @@ __all__ = [
     "VisionInterpretation",
     "VisionObservationProjector",
     "MultimodalAgentObservationPort",
-    "project_action_history",
     "record_participant_message_delivery",
     "record_participant_message_dispatch",
 ]

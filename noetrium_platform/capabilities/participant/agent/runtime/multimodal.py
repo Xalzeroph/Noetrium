@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Iterable
 
-from noetrium_platform.capabilities.model.api import MultimodalPart
+from noetrium_platform.substrate.api import MultimodalPart
 from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_digest, freeze_json
 
 from ..api.cognition import AgentObservation

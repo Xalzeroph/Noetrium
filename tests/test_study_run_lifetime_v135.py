@@ -12,7 +12,7 @@ import tempfile
 
 import pytest
 
-from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, ActionResult, EnvironmentIdentity, Observation, action_request_digest
+from noetrium_platform.capabilities.environment.api import ActionRequest, ActionResult, EnvironmentIdentity, Observation, action_request_digest
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, MethodTaskCompletionReceipt, RecallResult
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime

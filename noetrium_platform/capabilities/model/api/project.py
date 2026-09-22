@@ -6,7 +6,7 @@ from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
+from noetrium_platform.substrate.api import ArtifactBlobRef
 from noetrium_platform.capabilities.model.request.prompt.api import PromptSelectionPort
 from noetrium_platform.foundation.kernel.kernel import (
     ImmutableModelIdentity,

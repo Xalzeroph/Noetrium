@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.evidence.artifact.content.api import (
+from noetrium_platform.foundation.api import (
     ArchiveMaterializationPort,
     ArtifactAcquisitionPort,
     ArtifactHttpOpener,

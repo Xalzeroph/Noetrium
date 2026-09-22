@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-from noetrium_platform.evidence.artifact.catalog.api import ArtifactKind, ArtifactRetention
-from noetrium_platform.evidence.artifact.content.api import (
+from noetrium_platform.foundation.api import ArtifactKind, ArtifactRetention
+from noetrium_platform.foundation.api import (
     ArchiveMaterializationPort,
     ArchiveMaterializationRequest,
     ArtifactAcquisitionPort,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.capabilities.environment.runtime.api import ActionResult
+from noetrium_platform.capabilities.environment.api import ActionResult
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
 from noetrium_platform.capabilities.participant.method.api import MethodTaskCompletionReceipt
 

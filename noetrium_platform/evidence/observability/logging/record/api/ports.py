@@ -4,8 +4,8 @@ from collections.abc import Mapping
 from typing import Protocol
 
 from noetrium_platform.evidence.observability.logging.context.api import DiagnosticAddress
-from noetrium_platform.foundation.governance.system_registry.api import SystemDescriptor, SystemIdentity
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.foundation.governance.api import SystemDescriptor, SystemIdentity
+from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
 
 from .contracts import LogLevel, LogRecord
 

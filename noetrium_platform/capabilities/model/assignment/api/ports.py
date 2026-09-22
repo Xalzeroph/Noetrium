@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Protocol
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.substrate.api import ScopeIdentity
 from .contracts import ModelAssignment, ResolvedModelAssignment
 
 class ModelAssignmentPort(Protocol):

@@ -4,9 +4,9 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.api import ScopeIdentity
-from noetrium_platform.infrastructure.resources.compute.api import GpuSharingMode
-from noetrium_platform.research.execution.scheduling.api import ExecutionPriority
+from noetrium_platform.research.execution.api import ScopeIdentity
+from noetrium_platform.research.execution.api import GpuSharingMode
+from noetrium_platform.research.execution.api import ExecutionPriority
 
 
 class ModelCapacityMode(StrEnum):

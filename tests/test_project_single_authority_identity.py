@@ -12,7 +12,7 @@ from noetrium_platform.product.operator.api import (
     ProjectDoctorDisposition,
 )
 from noetrium_platform.product.operator.runtime import project_doctor, project_scaffold
-from noetrium_platform.product.operator.runtime.project_platform_identity import (
+from noetrium_platform.composition.operator.project.project_platform_identity import (
     InstalledPlatformIdentity,
 )
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.execution.workflow.api import (
+from noetrium_platform.research.execution.api import (
     WorkflowSurfaceBindingContext,
     WorkflowSurfaceFactory,
     WorkflowSurfaceReuseScope,

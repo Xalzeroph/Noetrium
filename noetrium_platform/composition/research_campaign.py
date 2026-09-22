@@ -12,7 +12,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskFailureScope,
 )
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
-from noetrium_platform.research.execution.scheduling.api import ExecutionPriority
+from noetrium_platform.research.execution.policy.api import ExecutionPriority
 from noetrium_platform.research.experimentation.api.campaign import (
     ResearchCampaignExecutionReport,
     ResearchCampaignLaneResult,
@@ -21,7 +21,7 @@ from noetrium_platform.research.experimentation.api.campaign import (
     ResearchCampaignStudy,
     ResearchCampaignStudyBinding,
 )
-from noetrium_platform.research.experimentation.study.runtime import (
+from noetrium_platform.research.experimentation.study.algorithms import (
     BasicStudyMetricAggregator,
 )
 from noetrium_platform.research.experimentation.api.program import (

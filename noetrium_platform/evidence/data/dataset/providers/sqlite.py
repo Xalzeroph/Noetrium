@@ -16,7 +16,7 @@ from noetrium_platform.evidence.data.dataset.api import (
 from noetrium_platform.evidence.data._canonical import DataCanonicalDecodingError, canonical_digest, strict_json_loads
 from noetrium_platform.evidence.data._sqlite_transaction import rollback_data_writer
 from noetrium_platform.evidence.data._sqlite_types import require_optional_text, require_text
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.api import ScopeIdentity, ScopeKind
 
 
 class SQLiteDatasetRegistry:

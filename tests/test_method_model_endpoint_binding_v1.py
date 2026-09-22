@@ -1,6 +1,7 @@
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
 
-from noetrium_platform.capabilities.model.request.composition import (
+from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
@@ -180,7 +181,7 @@ def test_endpoint_agent_closes_machine_journal_and_method_evidence(tmp_path) -> 
         evidence=DirectoryEventMethodEvidence(tmp_path / "evidence"),
         binding_plan_digest=binding.digest,
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM,
         runtime,
         state_root=tmp_path / "machine",

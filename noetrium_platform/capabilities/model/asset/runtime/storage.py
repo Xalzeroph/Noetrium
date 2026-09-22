@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 from typing import Mapping
 
-from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayoutPort, ManagedDirectoryKind
+from noetrium_platform.substrate.api import DirectoryLayoutPort, ManagedDirectoryKind
 from noetrium_platform.capabilities.model.asset.api import ManagedModelAsset, ModelAssetMode, ModelStoragePoolStatus
 
 

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
-from noetrium_platform.capabilities.participant.capability.api import (
+from noetrium_platform.research.execution.api import (
     CapabilityDescriptor,
     CapabilityRequest,
     CapabilityResult,
     capability_request_digest,
 )
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
+from noetrium_platform.research.execution.api import ArtifactContentIdentity
 from noetrium_platform.foundation.kernel.kernel import EffectClass, require_sha256
 from noetrium_platform.research.experimentation.workbench.api import (
     CandidateProgramExecutionPort,

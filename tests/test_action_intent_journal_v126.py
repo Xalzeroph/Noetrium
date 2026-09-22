@@ -15,7 +15,7 @@ import pytest
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent, EffectIntentConflict, PendingEffectRecoveryRequired
 
 from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal, SQLiteEffectIntentJournal
-from noetrium_platform.capabilities.environment.runtime.api import action_request_digest, ActionReconciliationDisposition, ActionReconciliationResult, ActionRequest, ActionResult, ActionSafetyCapabilityMissing, EnvironmentIdentity, Observation
+from noetrium_platform.capabilities.environment.api import action_request_digest, ActionReconciliationDisposition, ActionReconciliationResult, ActionRequest, ActionResult, ActionSafetyCapabilityMissing, EnvironmentIdentity, Observation
 from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext, OperationFailure
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult

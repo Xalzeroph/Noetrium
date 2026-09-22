@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from noetrium_platform.evidence.artifact.content.api import MultimodalPart
+
 from noetrium.api import complete_project_model, invoke_multimodal_model
 from noetrium_platform.capabilities.model.api import (
     ModelProviderProfile,
-    MultimodalPart,
     MultimodalRequest,
     ProjectModelBinding,
     ProjectModelClientPort,
@@ -11,7 +12,7 @@ from noetrium_platform.capabilities.model.api import (
     MultimodalRequestCodecPort,
 )
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef, ArtifactBlobStorePort
-from noetrium_platform.capabilities.model.request.composition.recorder import (
+from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
 from noetrium_platform.foundation.kernel.kernel import (

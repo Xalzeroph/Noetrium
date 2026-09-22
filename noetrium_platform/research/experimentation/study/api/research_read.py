@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from typing import Protocol
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.research.execution.api import ScopeIdentity, ScopeKind
 
 from .benchmark import BenchmarkTaskSet
 from .measurement import MeasurementRecord

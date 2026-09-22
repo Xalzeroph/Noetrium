@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping, Protocol
 
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionReconciliationResult,
     ActionRequest,
     ActionResult,
@@ -26,7 +26,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     JsonValue,
     canonical_digest,
 )
-from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.substrate.api import PreparedEffectHandle
 
 from ..api import (
     MinecraftEnvironmentSpec,

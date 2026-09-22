@@ -17,7 +17,7 @@ import pytest
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntentPhase
 
 from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionReconciliationDisposition,
     ActionReconciliationResult,
     ActionRequest,

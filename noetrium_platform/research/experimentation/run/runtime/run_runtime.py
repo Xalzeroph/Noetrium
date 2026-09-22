@@ -9,11 +9,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 
-from noetrium_platform.capabilities.participant.core.api import (
+from noetrium_platform.research.execution.api import (
     BoundParticipants,
     ParticipantSessionBinding,
 )
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import (
+from noetrium_platform.research.execution.api import (
     ParticipantSessionLifecyclePort,
 )
 from noetrium_platform.foundation.kernel.kernel import (
@@ -26,10 +26,10 @@ from noetrium_platform.foundation.kernel.kernel import (
     OperationStatus,
     canonical_digest,
 )
-from noetrium_platform.research.execution.decision.cycle_identity import (
+from noetrium_platform.research.execution.api import (
     DecisionCycleIdentity,
 )
-from noetrium_platform.research.execution.machines import (
+from noetrium_platform.research.execution.api import (
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchMachineSession,
@@ -50,11 +50,9 @@ from noetrium_platform.research.experimentation.run.api.identity import RunIdent
 from noetrium_platform.research.experimentation.run.api.lifecycle import (
     RunCleanupFailure,
     RunCleanupReport,
-    RunSessionPort,
 )
-from noetrium_platform.research.experimentation.run.runtime.lifecycle_session.session import (
-    RunSession,
-)
+from noetrium_platform.research.experimentation.run.api.lifecycle_ports import RunSessionPort
+from .lifecycle_session import RunSession
 from .cycle import RunCycleExecutor
 from .decision_runtime import identity_context
 from .program import RunMachineBinding, RunMachineSession, RunPhase

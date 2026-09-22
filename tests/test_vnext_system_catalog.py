@@ -6,6 +6,14 @@ from noetrium_platform.foundation.governance.system_registry.api import SystemLa
 from noetrium_platform.foundation.governance.architecture.system_topology_invariants import audit_system_topology_completeness
 import noetrium_platform.foundation.governance.architecture.system_topology_invariants as topology_invariants
 
+def _components():
+    return json.loads(
+        (
+            Path(__file__).parents[1]
+            / "noetrium_platform/foundation/governance/system_registry/components.json"
+        ).read_text(encoding="utf-8")
+    )
+
 def test_vnext_catalog_has_unique_keys_and_parent_first_order():
     rows=system_catalog(); keys=[row.identity.key for row in rows]
     assert len(keys)==len(set(keys))
@@ -68,50 +76,54 @@ def test_shared_kernel_consumers_declare_platform_dependency_at_parent_system():
     assert by_key["data"].requires == ("artifact", "platform", "scope")
 
 
-def test_runtime_declares_read_only_resource_dependency_for_preflight_composition():
+def test_runtime_system_dependency_closure_includes_component_dependencies():
     by_key = {row.identity.key: row for row in system_catalog()}
-    assert by_key["runtime"].requires == ("governance", "observability", "platform", "reliability", "resource", "scope")
+    assert by_key["runtime"].requires == (
+        "artifact",
+        "governance",
+        "governance/release",
+        "platform",
+        "resource",
+        "scope",
+    )
 
 
-def test_trial_study_convergence_retires_scientific_system_authority():
+def test_trial_study_convergence_keeps_study_as_experimentation_component():
     by_key = {row.identity.key: row for row in system_catalog()}
+    components = _components()
     assert "scientific" not in by_key
     assert not any(key.startswith("scientific/") for key in by_key)
     assert "scientific" not in {layer.value for layer in SystemLayer}
-    assert by_key["experimentation/study"].requires == ("artifact",)
+    assert components["experimentation/study"]["system"] == "experimentation"
+    assert components["experimentation/study"]["node_kind"] == "facet"
 
-
-def test_logging_is_decomposed_into_independent_authorities():
+def test_logging_is_one_bounded_context_with_internal_facets():
     keys={row.identity.key for row in system_catalog()}
-    for key in {
-        'observability/logging/context','observability/logging/record','observability/logging/routing',
-        'observability/logging/sink','observability/logging/storage','observability/logging/query',
-        'observability/logging/projection','observability/logging/retention','observability/logging/capture'
-    }:
-        assert key in keys
-
-def test_section42_scaffold_contraction_keeps_parent_authorities_only():
-    keys={row.identity.key for row in system_catalog()}
-    retired = {
-        "reliability/diagnostics/causal", "reliability/diagnostics/timeline",
-        "reliability/failure/catalog", "reliability/failure/descriptor",
-        "reliability/failure/envelope", "reliability/failure/fingerprint",
-        "reliability/failure/materialization", "reliability/failure/taxonomy",
-        "reliability/incident", "reliability/policy", "reliability/reconciliation",
-        "reliability/reconciliation/effect", "reliability/reconciliation/state",
-        "reliability/recovery/evidence", "reliability/recovery/plan",
-        "reliability/recovery/replay", "resource/catalog", "runtime/control",
-        "runtime/history", "runtime/process/identity", "runtime/process/launch",
-        "runtime/process/lifecycle", "runtime/session/binding",
-        "runtime/session/identity", "runtime/supervision",
+    components=_components()
+    internal = {
+        "observability/logging/context","observability/logging/record","observability/logging/routing",
+        "observability/logging/query","observability/logging/projection","observability/logging/retention",
+        "observability/logging/capture",
     }
-    assert keys.isdisjoint(retired)
-    assert {
-        "reliability", "reliability/diagnostics", "reliability/failure",
-        "reliability/recovery", "resource", "runtime", "runtime/process",
-        "runtime/session",
-    } <= keys
+    assert keys.isdisjoint(internal)
+    assert internal.isdisjoint(components)
+    logging = components["observability/logging"]
+    assert logging["system"] == "observability"
+    facets={row["key"] for row in logging.get("internal_facets",())}
+    assert {"observability/logging/context","observability/logging/record",
+            "observability/logging/routing","observability/logging/query"} <= facets
+    assert "logging.routing" in logging["provides"]
+    assert "observability/logging/sink" in facets
+    assert "observability/logging/sink" not in keys
+    assert "observability/logging/storage" in keys
 
+def test_section42_scaffold_contraction_keeps_system_owners_and_component_metadata():
+    keys={row.identity.key for row in system_catalog()}
+    components=_components()
+    assert {"reliability","reliability/failure","resource","runtime"} <= keys
+    assert "runtime/session" not in keys
+    assert components["runtime/session"]["system"] == "runtime"
+    assert components["reliability/recovery"]["system"] == "reliability"
 
 def test_packaged_catalog_is_the_single_topology_declaration_authority():
     topology_source = (
@@ -160,7 +172,7 @@ def test_registered_package_authority_cannot_point_to_missing_source(tmp_path, m
     assert "noetrium_platform.foundation.scope" in rows[0].detail
 
 
-def test_new_standard_shaped_system_is_fail_closed_until_registered(tmp_path):
+def test_source_shape_never_creates_system_topology(tmp_path):
     package = tmp_path / "noetrium_platform" / "foundation" / "governance" / "rogue"
     for path in (tmp_path / "noetrium_platform", tmp_path / "noetrium_platform" / "foundation" / "governance", package):
         path.mkdir(parents=True, exist_ok=True)
@@ -169,10 +181,7 @@ def test_new_standard_shaped_system_is_fail_closed_until_registered(tmp_path):
         target = package / plane
         target.mkdir()
         (target / "__init__.py").write_text("", encoding="utf-8")
-    rows = audit_system_topology_completeness(tmp_path)
-    assert len(rows) == 1
-    assert rows[0].invariant == "unregistered_standard_system"
-    assert "noetrium_platform.foundation.governance.rogue" in rows[0].detail
+    assert audit_system_topology_completeness(tmp_path) == []
 
 
 class _CatalogResource:
@@ -265,17 +274,17 @@ def test_catalog_runtime_metadata_is_closed_over_registered_nodes_and_capabiliti
             )
             provided_by[capability] = key
 
-def test_architecture_policy_facets_are_folded_into_parent_authority():
+def test_architecture_policy_facets_are_components_of_governance():
     root = Path(__file__).parents[1]
     keys = {row.identity.key for row in system_catalog()}
-    assert "governance/architecture" in keys
-    assert "governance/architecture/authority" not in keys
-    assert "governance/architecture/dependency" not in keys
+    components = _components()
+    assert "governance/architecture" not in keys
+    assert components["governance/architecture"]["system"] == "governance"
     assert not any((root / "noetrium_platform/foundation/governance/architecture/authority").rglob("*.py"))
     assert not any((root / "noetrium_platform/foundation/governance/architecture/dependency").rglob("*.py"))
 
 
-def test_partial_system_shape_is_fail_closed_before_four_planes_exist(tmp_path):
+def test_partial_source_shape_is_only_component_organization(tmp_path):
     package = tmp_path / "noetrium_platform" / "foundation" / "governance" / "partial"
     for path in (
         tmp_path / "noetrium_platform",
@@ -288,10 +297,7 @@ def test_partial_system_shape_is_fail_closed_before_four_planes_exist(tmp_path):
         target = package / plane
         target.mkdir()
         (target / "__init__.py").write_text("", encoding="utf-8")
-    rows = audit_system_topology_completeness(tmp_path)
-    assert len(rows) == 1
-    assert rows[0].invariant == "unregistered_standard_system"
-    assert "noetrium_platform.foundation.governance.partial" in rows[0].detail
+    assert audit_system_topology_completeness(tmp_path) == []
 
 
 def test_registered_system_missing_declared_plane_is_fail_closed(tmp_path, monkeypatch):

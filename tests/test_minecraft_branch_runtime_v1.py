@@ -15,12 +15,12 @@ from noetrium_platform.capabilities.environment.minecraft.api import (
     MinecraftRconEndpoint,
     MinecraftWorldBranch,
 )
-from noetrium_platform.capabilities.environment.minecraft.composition import (
+from noetrium_platform.composition.minecraft_agent import (
     MinecraftBranchRuntimeFactory,
     MinecraftEnvironmentAssembly,
 )
 from noetrium_platform.capabilities.environment.minecraft.runtime import MinecraftEnvironmentImplementation
-from noetrium_platform.capabilities.environment.runtime.api import DurablePreparedActionSession
+from noetrium_platform.capabilities.environment.api import DurablePreparedActionSession
 from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocationRequest,
     EndpointAllocationState,

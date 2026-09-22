@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import ScopeIdentity
 
 from .contracts import (
     DirectoryCleanupCandidate,

@@ -8,6 +8,114 @@ API exports: available
 This module is regenerated from the canonical registry and API exports.
 """
 
+from noetrium_platform.capabilities.participant.agent.api import (
+    project_action_history,
+    AgentActionHistoryProjectionReceipt,
+    AgentActionHistoryProjection,
+    AGENT_ACTION_HISTORY_VIEW_SCHEMA,
+    AgentIdentity,
+    AgentSession,
+    AgentSnapshot,
+    AgentTurnRequest,
+    AgentTurnResult,
+    AgentImplementation,
+    AgentActionExecutorPort,
+    AgentActionSequence,
+    AgentActionStep,
+    AgentActionSummary,
+    AgentCognitionError,
+    AgentCompletionDecision,
+    AgentCompletionDisposition,
+    AgentCompletionPort,
+    AgentDiagnosticsPort,
+    AgentEvidencePort,
+    AgentGoal,
+    AgentLoopCheckpoint,
+    AgentLoopResult,
+    AgentLoopTerminationReason,
+    AgentMemoryContext,
+    AgentModeDecision,
+    AgentModeDisposition,
+    AgentMemoryPort,
+    AgentObservation,
+    AgentObservationPort,
+    AgentPlannerPort,
+    AgentPlanningRequest,
+    AgentProgressPort,
+    AgentReactiveModePort,
+    AgentReceiptCheckpoint,
+    AgentSafetyDecision,
+    AgentSafetyDisposition,
+    AgentSafetySupervisorPort,
+    AgentSkillCatalogPort,
+    AgentSkillDescription,
+    AgentSkillRecord,
+    AgentSkillSelection,
+    AgentStepReceipt,
+    action_summary_payload,
+)
+
+from noetrium_platform.capabilities.participant.agent.api.cognition import (
+    AgentActionSequence as cognition__AgentActionSequence,
+    AgentActionStep as cognition__AgentActionStep,
+    AgentActionSummary as cognition__AgentActionSummary,
+    AgentCognitionError as cognition__AgentCognitionError,
+    AgentGoal as cognition__AgentGoal,
+    AgentLoopCheckpoint as cognition__AgentLoopCheckpoint,
+    AgentLoopResult as cognition__AgentLoopResult,
+    AgentLoopTerminationReason as cognition__AgentLoopTerminationReason,
+    AgentMemoryContext as cognition__AgentMemoryContext,
+    AgentModeDecision as cognition__AgentModeDecision,
+    AgentModeDisposition as cognition__AgentModeDisposition,
+    AgentObservation as cognition__AgentObservation,
+    AgentPlanningRequest as cognition__AgentPlanningRequest,
+    AgentReceiptCheckpoint as cognition__AgentReceiptCheckpoint,
+    AgentSafetyDecision as cognition__AgentSafetyDecision,
+    AgentSafetyDisposition as cognition__AgentSafetyDisposition,
+    AgentSkillDescription as cognition__AgentSkillDescription,
+    AgentSkillRecord as cognition__AgentSkillRecord,
+    AgentSkillSelection as cognition__AgentSkillSelection,
+    AgentStepReceipt as cognition__AgentStepReceipt,
+    action_summary_payload as cognition__action_summary_payload,
+)
+
+from noetrium_platform.capabilities.participant.agent.api.cognition_ports import (
+    AgentActionExecutorPort as cognition_ports__AgentActionExecutorPort,
+    AgentCompletionPort as cognition_ports__AgentCompletionPort,
+    AgentDiagnosticsPort as cognition_ports__AgentDiagnosticsPort,
+    AgentEvidencePort as cognition_ports__AgentEvidencePort,
+    AgentMemoryPort as cognition_ports__AgentMemoryPort,
+    AgentObservationPort as cognition_ports__AgentObservationPort,
+    AgentPlannerPort as cognition_ports__AgentPlannerPort,
+    AgentProgressPort as cognition_ports__AgentProgressPort,
+    AgentReactiveModePort as cognition_ports__AgentReactiveModePort,
+    AgentSafetySupervisorPort as cognition_ports__AgentSafetySupervisorPort,
+    AgentSkillCatalogPort as cognition_ports__AgentSkillCatalogPort,
+)
+
+from noetrium_platform.capabilities.participant.agent.api.completion import (
+    AgentCompletionDecision as completion__AgentCompletionDecision,
+    AgentCompletionDisposition as completion__AgentCompletionDisposition,
+)
+
+from noetrium_platform.capabilities.participant.agent.api.contracts import (
+    CapabilityPort,
+    ExecutionContext,
+    AgentIdentity as contracts__AgentIdentity,
+    AgentSnapshot as contracts__AgentSnapshot,
+    AgentTurnRequest as contracts__AgentTurnRequest,
+    AgentTurnResult as contracts__AgentTurnResult,
+    AgentSession as contracts__AgentSession,
+    AgentImplementation as contracts__AgentImplementation,
+)
+
+from noetrium_platform.capabilities.participant.agent.api.model_view import (
+    AGENT_ACTION_HISTORY_VIEW_SCHEMA as model_view__AGENT_ACTION_HISTORY_VIEW_SCHEMA,
+    AgentActionHistoryProjection as model_view__AgentActionHistoryProjection,
+    AgentActionHistoryProjectionReceipt as model_view__AgentActionHistoryProjectionReceipt,
+    project_action_history as model_view__project_action_history,
+)
+
 from noetrium_platform.capabilities.participant.api import (
     PARTICIPANT_MESSAGE_ROUTE_SCHEMA,
     ParticipantMessageFactBinding,
@@ -58,6 +166,43 @@ from noetrium_platform.capabilities.participant.api import (
     ProjectParticipantBinding,
     ProjectParticipantProviderPort,
     TopologyChangeKind,
+    AGENT_ACTION_HISTORY_VIEW_SCHEMA as api__AGENT_ACTION_HISTORY_VIEW_SCHEMA,
+    AgentActionHistoryProjectionReceipt as api__AgentActionHistoryProjectionReceipt,
+    AgentGoal as api__AgentGoal,
+    AgentMemoryContext as api__AgentMemoryContext,
+    AgentMemoryPort as api__AgentMemoryPort,
+    AgentObservation as api__AgentObservation,
+    AgentSkillDescription as api__AgentSkillDescription,
+    AgentStepReceipt as api__AgentStepReceipt,
+    BoundParticipant,
+    BoundParticipants,
+    CapabilityDescriptor,
+    CapabilityEffectReconciliationResult,
+    CapabilityPolicySet,
+    CapabilityPort as api__CapabilityPort,
+    CapabilityRequest,
+    CapabilityResult,
+    GuardVerdict,
+    MethodIdentity,
+    MethodProgramIdentity,
+    ParticipantCheckpoint,
+    ParticipantCheckpointRuntimePort,
+    ParticipantLifecycleAdapterRegistry,
+    ParticipantRuntimeBinding,
+    ParticipantRuntimeHandle,
+    ParticipantSessionBinding,
+    capability_effect_request_id,
+    capability_request_digest,
+    participant_operation_type,
+    participant_operation_verb,
+    project_action_history as api__project_action_history,
+    ParticipantCheckpointOperationsPort,
+    ParticipantCheckpointRef,
+    ParticipantImplementationIdentity,
+    ParticipantResolutionPort,
+    ParticipantSessionLifecyclePort,
+    ParticipantSessionRuntimeIdentity,
+    GuardDecision,
 )
 
 from noetrium_platform.capabilities.participant.api.messaging import (
@@ -121,6 +266,272 @@ from noetrium_platform.capabilities.participant.api.topology import (
     TopologyChangeKind as topology__TopologyChangeKind,
 )
 
+from noetrium_platform.capabilities.participant.binding.api.contracts import (
+    ParticipantBindingResolverPort,
+    ParticipantConfigurationResolverPort,
+    ParticipantImplementationResolverPort,
+    ParticipantImplementationRegistration,
+    ParticipantRuntimeEndpointFactory,
+    ParticipantSessionRuntimeResolverPort,
+    ParticipantSessionRuntimeRegistration,
+)
+
+from noetrium_platform.capabilities.participant.capability.api import (
+    CapabilityApprovalDenied,
+    CapabilityApprovalPort,
+    CapabilityCarrierTransportPort,
+    CapabilityDescriptor as api__CapabilityDescriptor,
+    CapabilityEffectReconciliationResult as api__CapabilityEffectReconciliationResult,
+    CapabilityExportSession,
+    CapabilityGuardPort,
+    CapabilityInputCarrier,
+    CapabilityOutputCarrier,
+    CapabilityPolicyDenied,
+    CapabilityPolicySet as api__CapabilityPolicySet,
+    CapabilityPort as api2__CapabilityPort,
+    CapabilityPostPolicyPort,
+    CapabilityPostPolicyViolation,
+    CapabilityProviderImplementation,
+    CapabilityProviderIdentity,
+    CapabilityProviderSession,
+    CapabilityRequest as api__CapabilityRequest,
+    CapabilityResult as api__CapabilityResult,
+    CapabilitySelectionReference,
+    CapabilitySelectionView,
+    DurablePreparedCapabilitySession,
+    GuardDecision as api__GuardDecision,
+    GuardVerdict as api__GuardVerdict,
+    TypedCapabilityCarrierCodec,
+    TypedCarrierReference,
+    capability_effect_request_id as api__capability_effect_request_id,
+    capability_request_digest as api__capability_request_digest,
+    decode_typed_capability_input,
+    decode_typed_capability_result,
+    make_typed_capability_request,
+    make_typed_capability_result,
+    materialize_capability_selection_view,
+    require_pure_typed_descriptor,
+)
+
+from noetrium_platform.capabilities.participant.capability.api.contracts import (
+    EffectReconciliationDisposition,
+    PreparedEffectHandle,
+    EffectClass,
+    EffectReceipt,
+    ExecutionContext as contracts__ExecutionContext,
+    CapabilityProviderIdentity as contracts__CapabilityProviderIdentity,
+    CapabilityDescriptor as contracts__CapabilityDescriptor,
+    CapabilityRequest as contracts__CapabilityRequest,
+    capability_effect_request_id as contracts__capability_effect_request_id,
+    capability_request_digest as contracts__capability_request_digest,
+    CapabilityResult as contracts__CapabilityResult,
+    CapabilityEffectReconciliationResult as contracts__CapabilityEffectReconciliationResult,
+    DurablePreparedCapabilitySession as contracts__DurablePreparedCapabilitySession,
+    CapabilityPort as contracts__CapabilityPort,
+    CapabilityExportSession as contracts__CapabilityExportSession,
+    CapabilityProviderSession as contracts__CapabilityProviderSession,
+    CapabilityProviderImplementation as contracts__CapabilityProviderImplementation,
+)
+
+from noetrium_platform.capabilities.participant.capability.api.policy import (
+    CapabilityApprovalDenied as policy__CapabilityApprovalDenied,
+    CapabilityApprovalPort as policy__CapabilityApprovalPort,
+    CapabilityGuardPort as policy__CapabilityGuardPort,
+    CapabilityPolicyDenied as policy__CapabilityPolicyDenied,
+    CapabilityPolicySet as policy__CapabilityPolicySet,
+    CapabilityPostPolicyPort as policy__CapabilityPostPolicyPort,
+    CapabilityPostPolicyViolation as policy__CapabilityPostPolicyViolation,
+    GuardDecision as policy__GuardDecision,
+    GuardVerdict as policy__GuardVerdict,
+)
+
+from noetrium_platform.capabilities.participant.capability.api.selection import (
+    CapabilitySelectionReference as selection__CapabilitySelectionReference,
+    CapabilitySelectionView as selection__CapabilitySelectionView,
+    materialize_capability_selection_view as selection__materialize_capability_selection_view,
+)
+
+from noetrium_platform.capabilities.participant.capability.api.typed import (
+    CapabilityCarrierTransportPort as typed__CapabilityCarrierTransportPort,
+    CapabilityInputCarrier as typed__CapabilityInputCarrier,
+    CapabilityOutputCarrier as typed__CapabilityOutputCarrier,
+    TypedCapabilityCarrierCodec as typed__TypedCapabilityCarrierCodec,
+    TypedCarrierReference as typed__TypedCarrierReference,
+    decode_typed_capability_input as typed__decode_typed_capability_input,
+    decode_typed_capability_result as typed__decode_typed_capability_result,
+    make_typed_capability_request as typed__make_typed_capability_request,
+    make_typed_capability_result as typed__make_typed_capability_result,
+    require_pure_typed_descriptor as typed__require_pure_typed_descriptor,
+)
+
+from noetrium_platform.capabilities.participant.core.api import (
+    BoundParticipant as api__BoundParticipant,
+    BoundParticipants as api__BoundParticipants,
+    ParticipantSessionBinding as api__ParticipantSessionBinding,
+)
+
+from noetrium_platform.capabilities.participant.core.api.bound import (
+    BoundParticipant as bound__BoundParticipant,
+    BoundParticipants as bound__BoundParticipants,
+    ParticipantSessionBinding as bound__ParticipantSessionBinding,
+)
+
+from noetrium_platform.capabilities.participant.core.api.checkpoint import (
+    ParticipantCheckpoint as checkpoint__ParticipantCheckpoint,
+    ParticipantCheckpointIdentityMismatch,
+    ParticipantCheckpointRef as checkpoint__ParticipantCheckpointRef,
+)
+
+from noetrium_platform.capabilities.participant.core.api.contracts import (
+    ParticipantConfigurationArtifact,
+    ParticipantImplementationIdentity as contracts__ParticipantImplementationIdentity,
+    ParticipantRuntimeBinding as contracts__ParticipantRuntimeBinding,
+    ParticipantSessionRuntimeIdentity as contracts__ParticipantSessionRuntimeIdentity,
+)
+
+from noetrium_platform.capabilities.participant.core.api.frozen_manifests import (
+    ParticipantImplementationInventory,
+    ParticipantRuntimeBindingManifest,
+    ParticipantRuntimeInventory,
+)
+
+from noetrium_platform.capabilities.participant.core.api.lifecycle import (
+    ParticipantIdentityMismatch,
+    ParticipantLifecycleAdapter,
+    ParticipantLifecycleAdapterRegistry as lifecycle__ParticipantLifecycleAdapterRegistry,
+)
+
+from noetrium_platform.capabilities.participant.core.api.runtime import (
+    ParticipantResolverPort,
+    ParticipantRuntimeEndpoint,
+    ParticipantRuntimeHandle as runtime__ParticipantRuntimeHandle,
+    ParticipantSessionRuntime,
+)
+
+from noetrium_platform.capabilities.participant.core.api.runtime_operations import (
+    PARTICIPANT_OPERATION_VERBS,
+    ParticipantOperationContractError,
+    participant_operation_type as runtime_operations__participant_operation_type,
+    participant_operation_verb as runtime_operations__participant_operation_verb,
+    validate_participant_kind,
+)
+
+from noetrium_platform.capabilities.participant.core.api.runtime_ports import (
+    ParticipantCheckpointOperationsPort as runtime_ports__ParticipantCheckpointOperationsPort,
+    ParticipantCheckpointRuntimePort as runtime_ports__ParticipantCheckpointRuntimePort,
+    ParticipantResolutionPort as runtime_ports__ParticipantResolutionPort,
+    ParticipantSessionLifecyclePort as runtime_ports__ParticipantSessionLifecyclePort,
+)
+
+from noetrium_platform.capabilities.participant.definition.api import (
+    ParticipantConfigurationArtifact as api__ParticipantConfigurationArtifact,
+    ParticipantImplementationCatalogPort,
+    ParticipantImplementationFactory,
+    ParticipantImplementationIdentity as api__ParticipantImplementationIdentity,
+    RegisteredParticipantImplementation,
+)
+
+from noetrium_platform.capabilities.participant.definition.api.contracts import (
+    ParticipantImplementationFactory as contracts__ParticipantImplementationFactory,
+    RegisteredParticipantImplementation as contracts__RegisteredParticipantImplementation,
+)
+
+from noetrium_platform.capabilities.participant.definition.api.ports import (
+    ParticipantImplementationCatalogPort as ports__ParticipantImplementationCatalogPort,
+)
+
+from noetrium_platform.capabilities.participant.method.api import (
+    IdempotentTaskCompletionSession,
+    MethodIdentity as api__MethodIdentity,
+    MethodCompositionPorts,
+    MethodEndpointFactoryPort,
+    MethodEndpointPort,
+    MethodImplementation,
+    MethodObservation,
+    MethodProgramIdentity as api__MethodProgramIdentity,
+    MethodProgramIdentityMismatch,
+    MethodObservationDeliveryError,
+    MethodObservationOutboxFactoryPort,
+    MethodObservationOutboxPort,
+    MethodObservationSink,
+    MethodRuntimeBinding,
+    MethodRuntimeIdentity,
+    MethodServices,
+    MethodSession,
+    MethodSessionRuntime,
+    MethodSystemBinding,
+    MethodSnapshot,
+    MethodTaskCompletionReceipt,
+    MethodTaskOutcome,
+    RecallRequest,
+    RecallResult,
+    TaskCompletionReconciliationSession,
+    TaskCompletionSafetyCapabilityMissing,
+)
+
+from noetrium_platform.capabilities.participant.method.api.binding import (
+    MethodSystemBinding as binding__MethodSystemBinding,
+)
+
+from noetrium_platform.capabilities.participant.method.api.contracts import (
+    ExecutionContext as contracts2__ExecutionContext,
+    MethodIdentity as contracts__MethodIdentity,
+    MethodProgramIdentity as contracts__MethodProgramIdentity,
+    MethodProgramIdentityMismatch as contracts__MethodProgramIdentityMismatch,
+    MethodSnapshot as contracts__MethodSnapshot,
+    RecallRequest as contracts__RecallRequest,
+    RecallResult as contracts__RecallResult,
+    MethodTaskOutcome as contracts__MethodTaskOutcome,
+    MethodTaskCompletionReceipt as contracts__MethodTaskCompletionReceipt,
+    IdempotentTaskCompletionSession as contracts__IdempotentTaskCompletionSession,
+    TaskCompletionReconciliationSession as contracts__TaskCompletionReconciliationSession,
+    MethodSession as contracts__MethodSession,
+)
+
+from noetrium_platform.capabilities.participant.method.api.errors import (
+    TaskCompletionSafetyCapabilityMissing as errors__TaskCompletionSafetyCapabilityMissing,
+)
+
+from noetrium_platform.capabilities.participant.method.api.observability import (
+    ExecutionContext as observability__ExecutionContext,
+    MethodObservation as observability__MethodObservation,
+    MethodObservationDeliveryError as observability__MethodObservationDeliveryError,
+    MethodObservationSink as observability__MethodObservationSink,
+    MethodObservationOutboxPort as observability__MethodObservationOutboxPort,
+    MethodObservationOutboxFactoryPort as observability__MethodObservationOutboxFactoryPort,
+    MethodServices as observability__MethodServices,
+)
+
+from noetrium_platform.capabilities.participant.method.api.ports import (
+    MethodCompositionPorts as ports__MethodCompositionPorts,
+    MethodEndpointFactoryPort as ports__MethodEndpointFactoryPort,
+    MethodEndpointPort as ports__MethodEndpointPort,
+    MethodImplementation as ports__MethodImplementation,
+    MethodRuntimeBinding as ports__MethodRuntimeBinding,
+    MethodRuntimeIdentity as ports__MethodRuntimeIdentity,
+    MethodSessionRuntime as ports__MethodSessionRuntime,
+)
+
+from noetrium_platform.capabilities.participant.session.api import (
+    ParticipantCheckpointRuntimePort as api__ParticipantCheckpointRuntimePort,
+    ParticipantRuntimeEndpoint as api__ParticipantRuntimeEndpoint,
+    ParticipantSessionLifecyclePort as api__ParticipantSessionLifecyclePort,
+    ParticipantSessionRuntime as api__ParticipantSessionRuntime,
+    ParticipantSessionRuntimeCatalogPort,
+    ParticipantSessionRuntimeFactory,
+    ParticipantSessionRuntimeIdentity as api__ParticipantSessionRuntimeIdentity,
+    RegisteredParticipantSessionRuntime,
+)
+
+from noetrium_platform.capabilities.participant.session.api.contracts import (
+    ParticipantSessionRuntimeFactory as contracts__ParticipantSessionRuntimeFactory,
+    RegisteredParticipantSessionRuntime as contracts__RegisteredParticipantSessionRuntime,
+)
+
+from noetrium_platform.capabilities.participant.session.api.ports import (
+    ParticipantSessionRuntimeCatalogPort as ports__ParticipantSessionRuntimeCatalogPort,
+)
+
 SYSTEM_KEY = 'participant'
 PACKAGE_PREFIX = 'noetrium_platform.capabilities.participant'
-__all__ = ('PARTICIPANT_MESSAGE_ROUTE_SCHEMA', 'ParticipantMessageFactBinding', 'ParticipantMessageKind', 'ParticipantMessageRecipientReceipt', 'ParticipantMessageRouteReceipt', 'ParticipantMessageRouteRequest', 'ParticipantMessageRouterPort', 'participant_message_content_digest', 'AgentProjectDefinition', 'MethodProjectDefinition', 'method_program_identity_for_requirement', 'method_program_identity_for_runtime_binding', 'require_method_program_runtime_binding', 'ArchitectureChangeKind', 'ParticipantArchitectureChange', 'ParticipantArchitectureComponent', 'ParticipantArchitectureRevision', 'ParticipantArchitectureTransition', 'ParticipantBindingDiagnostic', 'ParticipantBindingDiagnosticCode', 'ParticipantBindingDiagnosticSeverity', 'ParticipantMessageSchedule', 'ParticipantMessageScheduleEntry', 'ParticipantProjectBindingError', 'ParticipantProviderProfile', 'ParticipantRequirement', 'ParticipantRequirementContribution', 'ParticipantRevisionAuthorityPort', 'ParticipantRevisionAuthoritySnapshot', 'ParticipantRevisionCommit', 'ParticipantRevisionConflictError', 'ParticipantRevisionEvidence', 'ParticipantRevisionEvidenceKind', 'ParticipantRevisionIntegrityError', 'ParticipantRevisionProposal', 'ParticipantRevisionStateError', 'ParticipantRevisionValue', 'ParticipantStateCompatibility', 'ParticipantStateRevision', 'ParticipantStateTransition', 'ParticipantTransitionValue', 'PreparedParticipantRevision', 'ParticipantTopology', 'ParticipantTopologyChange', 'ParticipantTopologyMember', 'ParticipantTopologyTransition', 'ProjectParticipantBinding', 'ProjectParticipantProviderPort', 'TopologyChangeKind', 'messaging__PARTICIPANT_MESSAGE_ROUTE_SCHEMA', 'messaging__ParticipantMessageFactBinding', 'messaging__ParticipantMessageKind', 'messaging__ParticipantMessageRecipientReceipt', 'messaging__ParticipantMessageRouteReceipt', 'messaging__ParticipantMessageRouteRequest', 'messaging__ParticipantMessageRouterPort', 'messaging__participant_message_content_digest', 'project__AgentProjectDefinition', 'project__MethodProjectDefinition', 'project__method_program_identity_for_requirement', 'project__method_program_identity_for_runtime_binding', 'project__require_method_program_runtime_binding', 'project__ParticipantBindingDiagnostic', 'project__ParticipantBindingDiagnosticCode', 'project__ParticipantBindingDiagnosticSeverity', 'project__ParticipantProjectBindingError', 'project__ParticipantProviderProfile', 'project__ParticipantRequirementContribution', 'project__ParticipantRequirement', 'project__ProjectParticipantBinding', 'project__ProjectParticipantProviderPort', 'revision__ParticipantRevisionAuthorityPort', 'revision__ParticipantRevisionAuthoritySnapshot', 'revision__ParticipantRevisionCommit', 'revision__ParticipantRevisionConflictError', 'revision__ParticipantRevisionEvidence', 'revision__ParticipantRevisionEvidenceKind', 'revision__ParticipantRevisionIntegrityError', 'revision__ParticipantRevisionProposal', 'revision__ParticipantRevisionStateError', 'revision__ParticipantRevisionValue', 'revision__ParticipantStateCompatibility', 'revision__ParticipantStateRevision', 'revision__ParticipantStateTransition', 'revision__ParticipantTransitionValue', 'revision__PreparedParticipantRevision', 'topology__ArchitectureChangeKind', 'topology__ParticipantArchitectureChange', 'topology__ParticipantArchitectureComponent', 'topology__ParticipantArchitectureRevision', 'topology__ParticipantArchitectureTransition', 'topology__ParticipantMessageSchedule', 'topology__ParticipantMessageScheduleEntry', 'topology__ParticipantTopology', 'topology__ParticipantTopologyChange', 'topology__ParticipantTopologyMember', 'topology__ParticipantTopologyTransition', 'topology__TopologyChangeKind')
+__all__ = ('project_action_history', 'AgentActionHistoryProjectionReceipt', 'AgentActionHistoryProjection', 'AGENT_ACTION_HISTORY_VIEW_SCHEMA', 'AgentIdentity', 'AgentSession', 'AgentSnapshot', 'AgentTurnRequest', 'AgentTurnResult', 'AgentImplementation', 'AgentActionExecutorPort', 'AgentActionSequence', 'AgentActionStep', 'AgentActionSummary', 'AgentCognitionError', 'AgentCompletionDecision', 'AgentCompletionDisposition', 'AgentCompletionPort', 'AgentDiagnosticsPort', 'AgentEvidencePort', 'AgentGoal', 'AgentLoopCheckpoint', 'AgentLoopResult', 'AgentLoopTerminationReason', 'AgentMemoryContext', 'AgentModeDecision', 'AgentModeDisposition', 'AgentMemoryPort', 'AgentObservation', 'AgentObservationPort', 'AgentPlannerPort', 'AgentPlanningRequest', 'AgentProgressPort', 'AgentReactiveModePort', 'AgentReceiptCheckpoint', 'AgentSafetyDecision', 'AgentSafetyDisposition', 'AgentSafetySupervisorPort', 'AgentSkillCatalogPort', 'AgentSkillDescription', 'AgentSkillRecord', 'AgentSkillSelection', 'AgentStepReceipt', 'action_summary_payload', 'cognition__AgentActionSequence', 'cognition__AgentActionStep', 'cognition__AgentActionSummary', 'cognition__AgentCognitionError', 'cognition__AgentGoal', 'cognition__AgentLoopCheckpoint', 'cognition__AgentLoopResult', 'cognition__AgentLoopTerminationReason', 'cognition__AgentMemoryContext', 'cognition__AgentModeDecision', 'cognition__AgentModeDisposition', 'cognition__AgentObservation', 'cognition__AgentPlanningRequest', 'cognition__AgentReceiptCheckpoint', 'cognition__AgentSafetyDecision', 'cognition__AgentSafetyDisposition', 'cognition__AgentSkillDescription', 'cognition__AgentSkillRecord', 'cognition__AgentSkillSelection', 'cognition__AgentStepReceipt', 'cognition__action_summary_payload', 'cognition_ports__AgentActionExecutorPort', 'cognition_ports__AgentCompletionPort', 'cognition_ports__AgentDiagnosticsPort', 'cognition_ports__AgentEvidencePort', 'cognition_ports__AgentMemoryPort', 'cognition_ports__AgentObservationPort', 'cognition_ports__AgentPlannerPort', 'cognition_ports__AgentProgressPort', 'cognition_ports__AgentReactiveModePort', 'cognition_ports__AgentSafetySupervisorPort', 'cognition_ports__AgentSkillCatalogPort', 'completion__AgentCompletionDecision', 'completion__AgentCompletionDisposition', 'CapabilityPort', 'ExecutionContext', 'contracts__AgentIdentity', 'contracts__AgentSnapshot', 'contracts__AgentTurnRequest', 'contracts__AgentTurnResult', 'contracts__AgentSession', 'contracts__AgentImplementation', 'model_view__AGENT_ACTION_HISTORY_VIEW_SCHEMA', 'model_view__AgentActionHistoryProjection', 'model_view__AgentActionHistoryProjectionReceipt', 'model_view__project_action_history', 'PARTICIPANT_MESSAGE_ROUTE_SCHEMA', 'ParticipantMessageFactBinding', 'ParticipantMessageKind', 'ParticipantMessageRecipientReceipt', 'ParticipantMessageRouteReceipt', 'ParticipantMessageRouteRequest', 'ParticipantMessageRouterPort', 'participant_message_content_digest', 'AgentProjectDefinition', 'MethodProjectDefinition', 'method_program_identity_for_requirement', 'method_program_identity_for_runtime_binding', 'require_method_program_runtime_binding', 'ArchitectureChangeKind', 'ParticipantArchitectureChange', 'ParticipantArchitectureComponent', 'ParticipantArchitectureRevision', 'ParticipantArchitectureTransition', 'ParticipantBindingDiagnostic', 'ParticipantBindingDiagnosticCode', 'ParticipantBindingDiagnosticSeverity', 'ParticipantMessageSchedule', 'ParticipantMessageScheduleEntry', 'ParticipantProjectBindingError', 'ParticipantProviderProfile', 'ParticipantRequirement', 'ParticipantRequirementContribution', 'ParticipantRevisionAuthorityPort', 'ParticipantRevisionAuthoritySnapshot', 'ParticipantRevisionCommit', 'ParticipantRevisionConflictError', 'ParticipantRevisionEvidence', 'ParticipantRevisionEvidenceKind', 'ParticipantRevisionIntegrityError', 'ParticipantRevisionProposal', 'ParticipantRevisionStateError', 'ParticipantRevisionValue', 'ParticipantStateCompatibility', 'ParticipantStateRevision', 'ParticipantStateTransition', 'ParticipantTransitionValue', 'PreparedParticipantRevision', 'ParticipantTopology', 'ParticipantTopologyChange', 'ParticipantTopologyMember', 'ParticipantTopologyTransition', 'ProjectParticipantBinding', 'ProjectParticipantProviderPort', 'TopologyChangeKind', 'api__AGENT_ACTION_HISTORY_VIEW_SCHEMA', 'api__AgentActionHistoryProjectionReceipt', 'api__AgentGoal', 'api__AgentMemoryContext', 'api__AgentMemoryPort', 'api__AgentObservation', 'api__AgentSkillDescription', 'api__AgentStepReceipt', 'BoundParticipant', 'BoundParticipants', 'CapabilityDescriptor', 'CapabilityEffectReconciliationResult', 'CapabilityPolicySet', 'api__CapabilityPort', 'CapabilityRequest', 'CapabilityResult', 'GuardVerdict', 'MethodIdentity', 'MethodProgramIdentity', 'ParticipantCheckpoint', 'ParticipantCheckpointRuntimePort', 'ParticipantLifecycleAdapterRegistry', 'ParticipantRuntimeBinding', 'ParticipantRuntimeHandle', 'ParticipantSessionBinding', 'capability_effect_request_id', 'capability_request_digest', 'participant_operation_type', 'participant_operation_verb', 'api__project_action_history', 'ParticipantCheckpointOperationsPort', 'ParticipantCheckpointRef', 'ParticipantImplementationIdentity', 'ParticipantResolutionPort', 'ParticipantSessionLifecyclePort', 'ParticipantSessionRuntimeIdentity', 'GuardDecision', 'messaging__PARTICIPANT_MESSAGE_ROUTE_SCHEMA', 'messaging__ParticipantMessageFactBinding', 'messaging__ParticipantMessageKind', 'messaging__ParticipantMessageRecipientReceipt', 'messaging__ParticipantMessageRouteReceipt', 'messaging__ParticipantMessageRouteRequest', 'messaging__ParticipantMessageRouterPort', 'messaging__participant_message_content_digest', 'project__AgentProjectDefinition', 'project__MethodProjectDefinition', 'project__method_program_identity_for_requirement', 'project__method_program_identity_for_runtime_binding', 'project__require_method_program_runtime_binding', 'project__ParticipantBindingDiagnostic', 'project__ParticipantBindingDiagnosticCode', 'project__ParticipantBindingDiagnosticSeverity', 'project__ParticipantProjectBindingError', 'project__ParticipantProviderProfile', 'project__ParticipantRequirementContribution', 'project__ParticipantRequirement', 'project__ProjectParticipantBinding', 'project__ProjectParticipantProviderPort', 'revision__ParticipantRevisionAuthorityPort', 'revision__ParticipantRevisionAuthoritySnapshot', 'revision__ParticipantRevisionCommit', 'revision__ParticipantRevisionConflictError', 'revision__ParticipantRevisionEvidence', 'revision__ParticipantRevisionEvidenceKind', 'revision__ParticipantRevisionIntegrityError', 'revision__ParticipantRevisionProposal', 'revision__ParticipantRevisionStateError', 'revision__ParticipantRevisionValue', 'revision__ParticipantStateCompatibility', 'revision__ParticipantStateRevision', 'revision__ParticipantStateTransition', 'revision__ParticipantTransitionValue', 'revision__PreparedParticipantRevision', 'topology__ArchitectureChangeKind', 'topology__ParticipantArchitectureChange', 'topology__ParticipantArchitectureComponent', 'topology__ParticipantArchitectureRevision', 'topology__ParticipantArchitectureTransition', 'topology__ParticipantMessageSchedule', 'topology__ParticipantMessageScheduleEntry', 'topology__ParticipantTopology', 'topology__ParticipantTopologyChange', 'topology__ParticipantTopologyMember', 'topology__ParticipantTopologyTransition', 'topology__TopologyChangeKind', 'ParticipantBindingResolverPort', 'ParticipantConfigurationResolverPort', 'ParticipantImplementationResolverPort', 'ParticipantImplementationRegistration', 'ParticipantRuntimeEndpointFactory', 'ParticipantSessionRuntimeResolverPort', 'ParticipantSessionRuntimeRegistration', 'CapabilityApprovalDenied', 'CapabilityApprovalPort', 'CapabilityCarrierTransportPort', 'api__CapabilityDescriptor', 'api__CapabilityEffectReconciliationResult', 'CapabilityExportSession', 'CapabilityGuardPort', 'CapabilityInputCarrier', 'CapabilityOutputCarrier', 'CapabilityPolicyDenied', 'api__CapabilityPolicySet', 'api2__CapabilityPort', 'CapabilityPostPolicyPort', 'CapabilityPostPolicyViolation', 'CapabilityProviderImplementation', 'CapabilityProviderIdentity', 'CapabilityProviderSession', 'api__CapabilityRequest', 'api__CapabilityResult', 'CapabilitySelectionReference', 'CapabilitySelectionView', 'DurablePreparedCapabilitySession', 'api__GuardDecision', 'api__GuardVerdict', 'TypedCapabilityCarrierCodec', 'TypedCarrierReference', 'api__capability_effect_request_id', 'api__capability_request_digest', 'decode_typed_capability_input', 'decode_typed_capability_result', 'make_typed_capability_request', 'make_typed_capability_result', 'materialize_capability_selection_view', 'require_pure_typed_descriptor', 'EffectReconciliationDisposition', 'PreparedEffectHandle', 'EffectClass', 'EffectReceipt', 'contracts__ExecutionContext', 'contracts__CapabilityProviderIdentity', 'contracts__CapabilityDescriptor', 'contracts__CapabilityRequest', 'contracts__capability_effect_request_id', 'contracts__capability_request_digest', 'contracts__CapabilityResult', 'contracts__CapabilityEffectReconciliationResult', 'contracts__DurablePreparedCapabilitySession', 'contracts__CapabilityPort', 'contracts__CapabilityExportSession', 'contracts__CapabilityProviderSession', 'contracts__CapabilityProviderImplementation', 'policy__CapabilityApprovalDenied', 'policy__CapabilityApprovalPort', 'policy__CapabilityGuardPort', 'policy__CapabilityPolicyDenied', 'policy__CapabilityPolicySet', 'policy__CapabilityPostPolicyPort', 'policy__CapabilityPostPolicyViolation', 'policy__GuardDecision', 'policy__GuardVerdict', 'selection__CapabilitySelectionReference', 'selection__CapabilitySelectionView', 'selection__materialize_capability_selection_view', 'typed__CapabilityCarrierTransportPort', 'typed__CapabilityInputCarrier', 'typed__CapabilityOutputCarrier', 'typed__TypedCapabilityCarrierCodec', 'typed__TypedCarrierReference', 'typed__decode_typed_capability_input', 'typed__decode_typed_capability_result', 'typed__make_typed_capability_request', 'typed__make_typed_capability_result', 'typed__require_pure_typed_descriptor', 'api__BoundParticipant', 'api__BoundParticipants', 'api__ParticipantSessionBinding', 'bound__BoundParticipant', 'bound__BoundParticipants', 'bound__ParticipantSessionBinding', 'checkpoint__ParticipantCheckpoint', 'ParticipantCheckpointIdentityMismatch', 'checkpoint__ParticipantCheckpointRef', 'ParticipantConfigurationArtifact', 'contracts__ParticipantImplementationIdentity', 'contracts__ParticipantRuntimeBinding', 'contracts__ParticipantSessionRuntimeIdentity', 'ParticipantImplementationInventory', 'ParticipantRuntimeBindingManifest', 'ParticipantRuntimeInventory', 'ParticipantIdentityMismatch', 'ParticipantLifecycleAdapter', 'lifecycle__ParticipantLifecycleAdapterRegistry', 'ParticipantResolverPort', 'ParticipantRuntimeEndpoint', 'runtime__ParticipantRuntimeHandle', 'ParticipantSessionRuntime', 'PARTICIPANT_OPERATION_VERBS', 'ParticipantOperationContractError', 'runtime_operations__participant_operation_type', 'runtime_operations__participant_operation_verb', 'validate_participant_kind', 'runtime_ports__ParticipantCheckpointOperationsPort', 'runtime_ports__ParticipantCheckpointRuntimePort', 'runtime_ports__ParticipantResolutionPort', 'runtime_ports__ParticipantSessionLifecyclePort', 'api__ParticipantConfigurationArtifact', 'ParticipantImplementationCatalogPort', 'ParticipantImplementationFactory', 'api__ParticipantImplementationIdentity', 'RegisteredParticipantImplementation', 'contracts__ParticipantImplementationFactory', 'contracts__RegisteredParticipantImplementation', 'ports__ParticipantImplementationCatalogPort', 'IdempotentTaskCompletionSession', 'api__MethodIdentity', 'MethodCompositionPorts', 'MethodEndpointFactoryPort', 'MethodEndpointPort', 'MethodImplementation', 'MethodObservation', 'api__MethodProgramIdentity', 'MethodProgramIdentityMismatch', 'MethodObservationDeliveryError', 'MethodObservationOutboxFactoryPort', 'MethodObservationOutboxPort', 'MethodObservationSink', 'MethodRuntimeBinding', 'MethodRuntimeIdentity', 'MethodServices', 'MethodSession', 'MethodSessionRuntime', 'MethodSystemBinding', 'MethodSnapshot', 'MethodTaskCompletionReceipt', 'MethodTaskOutcome', 'RecallRequest', 'RecallResult', 'TaskCompletionReconciliationSession', 'TaskCompletionSafetyCapabilityMissing', 'binding__MethodSystemBinding', 'contracts2__ExecutionContext', 'contracts__MethodIdentity', 'contracts__MethodProgramIdentity', 'contracts__MethodProgramIdentityMismatch', 'contracts__MethodSnapshot', 'contracts__RecallRequest', 'contracts__RecallResult', 'contracts__MethodTaskOutcome', 'contracts__MethodTaskCompletionReceipt', 'contracts__IdempotentTaskCompletionSession', 'contracts__TaskCompletionReconciliationSession', 'contracts__MethodSession', 'errors__TaskCompletionSafetyCapabilityMissing', 'observability__ExecutionContext', 'observability__MethodObservation', 'observability__MethodObservationDeliveryError', 'observability__MethodObservationSink', 'observability__MethodObservationOutboxPort', 'observability__MethodObservationOutboxFactoryPort', 'observability__MethodServices', 'ports__MethodCompositionPorts', 'ports__MethodEndpointFactoryPort', 'ports__MethodEndpointPort', 'ports__MethodImplementation', 'ports__MethodRuntimeBinding', 'ports__MethodRuntimeIdentity', 'ports__MethodSessionRuntime', 'api__ParticipantCheckpointRuntimePort', 'api__ParticipantRuntimeEndpoint', 'api__ParticipantSessionLifecyclePort', 'api__ParticipantSessionRuntime', 'ParticipantSessionRuntimeCatalogPort', 'ParticipantSessionRuntimeFactory', 'api__ParticipantSessionRuntimeIdentity', 'RegisteredParticipantSessionRuntime', 'contracts__ParticipantSessionRuntimeFactory', 'contracts__RegisteredParticipantSessionRuntime', 'ports__ParticipantSessionRuntimeCatalogPort')

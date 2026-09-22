@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.infrastructure.lifecycle.python.api import (
+from noetrium_platform.substrate.api import (
     EnvironmentCommandResult,
     PythonEnvironmentExecutionPort,
 )

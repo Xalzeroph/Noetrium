@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
+from noetrium_platform.capabilities.api import ArtifactContentIdentity
+from noetrium_platform.capabilities.api import ArtifactBlobRef
 from noetrium_platform.foundation.kernel.kernel import (
     EffectCertainty,
     JsonInput,

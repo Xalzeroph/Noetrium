@@ -19,7 +19,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
     thaw_json,
 )
-from noetrium_platform.research.execution.machines import (
+from noetrium_platform.research.execution.api import (
     EvaluationConcern,
     ProgramHandlerRegistry,
     ProgramNodeRequest,

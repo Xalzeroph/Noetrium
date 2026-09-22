@@ -11,6 +11,7 @@ from noetrium_platform.capabilities.environment.providers import (
     JsonlProcessTransport,
 )
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
 from tests._concurrency_support import make_task_group
 
 
@@ -36,10 +37,12 @@ class _ExitedProcess:
 
 
 def _transport(process: _ExitedProcess, **kwargs) -> JsonlProcessTransport:
+    task_group = make_task_group("environment-jsonl-generic")
     return JsonlProcessTransport(
         spec=JsonlProcessSpec(("worker",), "."),
         operating_system=LocalOperatingSystemRoute(),
-        task_group=make_task_group("environment-jsonl-generic"),
+        task_group=task_group,
+        process_supervisor=build_process_supervisor(task_group),
         transport_identity="generic-test",
         process_factory=lambda _command, **_options: process,
         **kwargs,
@@ -61,10 +64,12 @@ def test_generic_transport_frames_requests_and_reads_messages() -> None:
 def test_generic_transport_applies_only_explicit_environment_overrides() -> None:
     process = _ExitedProcess("")
     captured = {}
+    task_group = make_task_group("environment-jsonl-env")
     transport = JsonlProcessTransport(
         spec=JsonlProcessSpec(("worker",), "."),
         operating_system=LocalOperatingSystemRoute(),
-        task_group=make_task_group("environment-jsonl-env"),
+        task_group=task_group,
+        process_supervisor=build_process_supervisor(task_group),
         transport_identity="env-test",
         process_factory=lambda _command, **options: captured.update(options) or process,
         environment_overrides={"NOE_ENV_TEST": "frozen"},

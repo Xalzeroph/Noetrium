@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity, DecisionCycleIdentityProvider
-from noetrium_platform.research.execution.decision.cycle_result import DecisionCycleResult
+from noetrium_platform.research.execution.api import DecisionCycleIdentity, DecisionCycleIdentityProvider
+from noetrium_platform.research.execution.api import DecisionCycleResult
 from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.run.api.identity_ports import RunIdentityProvider
 from noetrium_platform.research.experimentation.run.api import RunSessionPort

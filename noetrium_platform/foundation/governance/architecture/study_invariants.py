@@ -35,13 +35,22 @@ def _audit_study_definition_boundary(root: Path) -> list[SourceInvariantViolatio
     rows: list[SourceInvariantViolation] = []
     forbidden = (
         "noetrium_platform.capabilities.participant",
-        "noetrium_platform.research.execution",
         "noetrium_platform.composition",
         "noetrium_platform.infrastructure.lifecycle",
         "noetrium_platform.capabilities.model",
     )
+    execution_root = "noetrium_platform.research.execution.api"
     for path in _python_files(study):
         for module, line in imports(path):
+            if module.startswith("noetrium_platform.research.execution") and module != execution_root:
+                rows.append(violation(
+                    root,
+                    path,
+                    "study_definition_boundary",
+                    line,
+                    f"Study may consume only the Execution root facade, not {module}",
+                ))
+                continue
             if module.startswith(forbidden):
                 rows.append(violation(
                     root,

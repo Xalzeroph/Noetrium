@@ -16,7 +16,7 @@ def audit_composition_family_firewall(root: Path) -> list[SourceInvariantViolati
             "noetrium_platform.composition.workflows.agent_turn",
         )),
         (composition / "agent_turn.py", "composition_agent_turn_firewall", (
-            "noetrium_platform.capabilities.environment.runtime.api", "noetrium_platform.capabilities.participant.method.api", "noetrium_platform.composition.context_action",
+            "noetrium_platform.capabilities.environment.api", "noetrium_platform.capabilities.participant.method.api", "noetrium_platform.composition.context_action",
             "noetrium_platform.composition.participants.environment", "noetrium_platform.composition.participants.method",
             "noetrium_platform.composition.registries.environment", "noetrium_platform.composition.registries.method",
             "noetrium_platform.composition.workflows.context_action",
@@ -30,11 +30,11 @@ def audit_composition_family_firewall(root: Path) -> list[SourceInvariantViolati
                 rows.append(violation(root, path, invariant, line, f"composition family imports unrelated domain authority {module}"))
 
     bridge_checks = (
-        (composition / "participants" / "method.py", "participant_method_bridge_firewall", ("noetrium_platform.capabilities.environment.runtime.api", "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api")),
+        (composition / "participants" / "method.py", "participant_method_bridge_firewall", ("noetrium_platform.capabilities.environment.api", "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api")),
         (composition / "participants" / "environment.py", "participant_environment_bridge_firewall", ("noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api")),
-        (composition / "participants" / "agent.py", "participant_agent_bridge_firewall", ("noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.environment.runtime.api", "noetrium_platform.capabilities.participant.capability.api")),
-        (composition / "participants" / "capability.py", "participant_capability_bridge_firewall", ("noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.environment.runtime.api", "noetrium_platform.capabilities.participant.agent.api")),
-        (composition / "participants" / "generic.py", "participant_generic_bridge_firewall", ("noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.environment.runtime.api", "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api")),
+        (composition / "participants" / "agent.py", "participant_agent_bridge_firewall", ("noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.environment.api", "noetrium_platform.capabilities.participant.capability.api")),
+        (composition / "participants" / "capability.py", "participant_capability_bridge_firewall", ("noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.environment.api", "noetrium_platform.capabilities.participant.agent.api")),
+        (composition / "participants" / "generic.py", "participant_generic_bridge_firewall", ("noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.environment.api", "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api")),
     )
     for path, invariant, forbidden in bridge_checks:
         if not path.exists():

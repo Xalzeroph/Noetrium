@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent, PreparedEffectHandle
 from noetrium_platform.infrastructure.reliability.failure.api import OperationFailureReferenceProjection, exception_correlation_refs
-from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, ActionResult, action_request_digest
+from noetrium_platform.capabilities.environment.api import ActionRequest, ActionResult, action_request_digest
 from noetrium_platform.foundation.kernel.kernel import OperationRequest
 
 

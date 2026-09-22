@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Protocol
 
 from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
-from noetrium_platform.research.execution.workflow.api import MethodRunResult
+from noetrium_platform.research.execution.api import MethodRunResult
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 from .contracts import WorkloadEvaluation, WorkloadMethodInvocation, WorkloadTaskResult

@@ -5,7 +5,7 @@ import sqlite3
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
-from noetrium_platform.research.execution.command.api import CommandId
+from noetrium_platform.research.execution.operation.command.api import CommandId
 from noetrium_platform.research.execution.operation.api import (
     EffectId,
     OperationConflict,

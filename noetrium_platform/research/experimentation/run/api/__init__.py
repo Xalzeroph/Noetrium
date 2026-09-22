@@ -2,7 +2,7 @@ from .identity import RunIdentity
 from .identity_ports import RunIdentityProvider
 from .lifecycle import RunCleanupFailure, RunCleanupReport, RunClosed, RunRecoveryRequired
 from .cleanup import attach_cleanup_note
-from .lifecycle_ports import RunCycleExecutionPort, RunCycleExecutorPort, RunLifetimePort
+from .lifecycle_ports import RunCycleExecutionPort, RunCycleExecutorPort, RunLifetimePort, RunSessionFactoryPort
 from .manifest import CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference
 from .manifest_evidence import (
     DerivedEvidenceArtifact,
@@ -113,6 +113,7 @@ __all__ = [
     "RunRuntimePort",
     "RunDiagnosticsPort",
     "RunSessionPort",
+    "RunSessionFactoryPort",
     "ExperimentRunSpec",
     "ExperimentRunExecutionPort",
     "ExperimentRunResult",

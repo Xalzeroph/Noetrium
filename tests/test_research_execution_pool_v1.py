@@ -11,7 +11,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     ExecutionSpec,
     TaskContextPort,
 )
-from noetrium_platform.research.execution.admission.api import AdmissionBudget
+from noetrium_platform.research.execution.policy.api import AdmissionBudget
 
 
 def test_pool_group_lifecycle_unregisters_identity_for_safe_reuse() -> None:

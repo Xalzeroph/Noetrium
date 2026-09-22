@@ -4,7 +4,7 @@ import math
 import sqlite3
 from dataclasses import replace
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
     ResourceIdentity,

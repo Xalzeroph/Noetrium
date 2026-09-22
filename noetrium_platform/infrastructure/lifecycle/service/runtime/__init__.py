@@ -12,10 +12,8 @@ from .crash_capture import CaptureTailRef, CrashCaptureEvidence, ServiceCrashEvi
 __all__ += ("CaptureTailRef","CrashCaptureEvidence","ServiceCrashEvidenceAdapter","ServiceCrashReport","freeze_crash_evidence","service_exit_class")
 
 from .environment import (
-    MaterializedServiceEnvironment,
     ServiceEnvironmentProvider,
     StaticServiceEnvironmentProvider,
-    service_environment_digest,
 )
 from .preflight import LocalServiceLaunchPreflight, ServiceLaunchPreflightError, ServiceLaunchPreflightReport
 from .capture_paths import DirectoryCapturePathProvider, ServiceCapturePathProvider, ServiceCapturePaths
@@ -26,17 +24,14 @@ from .process_contracts import (
     ProcessReconcileResult,
     ProcessReconcileStatus,
     ServiceProcessDrift,
-    ServiceReadinessProbe,
 )
 from .readiness import ProcessAliveReadinessProbe
 
 __all__ += (
     "LocalServiceLaunchPreflight","ServiceLaunchPreflightError","ServiceLaunchPreflightReport",
-    "MaterializedServiceEnvironment",
-    "ServiceEnvironmentProvider",
+        "ServiceEnvironmentProvider",
     "StaticServiceEnvironmentProvider",
-    "service_environment_digest",
-    "DirectoryCapturePathProvider",
+        "DirectoryCapturePathProvider",
     "ExactProcessBackend",
     "LinuxProcessBackend",
     "LocalServiceProcessAdapter",
@@ -46,7 +41,6 @@ __all__ += (
     "ServiceCapturePathProvider",
     "ServiceCapturePaths",
     "ServiceProcessDrift",
-    "ServiceReadinessProbe",
 )
 
 from .start_resume import ServiceStartDisposition, ServiceStartRecoveryRequired, ServiceStartResumeDecision, decide_service_start_resume

@@ -191,6 +191,17 @@ class ComputeGuards:
         return guard
 
 
+class CandidatePorts:
+    def __init__(self) -> None:
+        self.next = 24000
+
+    def candidate_ports(self, *, host: str, count: int) -> tuple[int, ...]:
+        del host
+        start = self.next
+        self.next += count
+        return tuple(range(start, start + count))
+
+
 class EndpointGuards:
     def __init__(self):
         self.created = []
@@ -216,6 +227,7 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
         fleet=Fleet(catalog),
         compute_scheduler=scheduler,
         endpoint_allocations=endpoints,
+        endpoint_candidates=CandidatePorts(),
         compute_lease_guards=compute_guards,
         endpoint_lease_guards=endpoint_guards,
     )
@@ -273,6 +285,7 @@ def test_auto_model_replica_pool_does_not_mask_scheduler_failure(tmp_path) -> No
         fleet=Fleet(catalog),
         compute_scheduler=scheduler,
         endpoint_allocations=endpoints,
+        endpoint_candidates=CandidatePorts(),
         compute_lease_guards=ComputeGuards(),
         endpoint_lease_guards=EndpointGuards(),
     )

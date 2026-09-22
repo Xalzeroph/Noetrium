@@ -152,7 +152,7 @@ def test_run_control_source_projects_machine_backed_run_and_evidence() -> None:
         for row in first.records
         if row.reference.kind is ResearchResultKind.EVIDENCE
     )
-    assert run.content_sha256 == _receipt().receipt_digest
+    assert run.content_sha256 == _receipt().projection_digest
     assert evidence.lineage == (run.reference,)
 
 

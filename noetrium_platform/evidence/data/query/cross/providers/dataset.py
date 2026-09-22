@@ -13,7 +13,7 @@ from noetrium_platform.evidence.data.query.api import (
     ResearchSourceSnapshot,
 )
 from noetrium_platform.evidence.data.query.api.identity import source_cut
-from noetrium_platform.foundation.scope.api import ScopeRegistryPort
+from noetrium_platform.foundation.api import ScopeRegistryPort
 
 from ._common import matches_query, scope_dimensions
 

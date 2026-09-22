@@ -1,7 +1,7 @@
 """Side-effect-free compilation seam for downstream research methods."""
 from __future__ import annotations
 
-from noetrium_platform.foundation.portfolio.api import ProjectManifest
+from noetrium_platform.research.execution.api import ProjectManifest
 from noetrium_platform.research.experimentation.binding import ResearchBindingContribution
 from noetrium_platform.research.experimentation.study.api import ResearchStudyDefinition
 

@@ -113,6 +113,7 @@ class SystemDescriptor:
     layer: SystemLayer
     package_prefix: str
     node_kind: SystemNodeKind
+    topology_parent_key: str | None = None
     provides: tuple[str, ...] = ()
     requires: tuple[str, ...] = ()
     authorities: tuple[AuthorityDescriptor, ...] = ()
@@ -134,6 +135,13 @@ class SystemDescriptor:
             raise TypeError("downstream_surface must use DownstreamSurfaceMode")
         if not isinstance(self.node_kind, SystemNodeKind):
             raise TypeError("node_kind must use SystemNodeKind")
+        if self.topology_parent_key is not None and (
+            not isinstance(self.topology_parent_key, str)
+            or not self.topology_parent_key.strip()
+        ):
+            raise ValueError("topology_parent_key must be non-empty text when provided")
+        if self.topology_parent_key == self.identity.key:
+            raise ValueError("system descriptor cannot be its own topology parent")
         if self.canonical_authority_key is not None and (
             not isinstance(self.canonical_authority_key, str)
             or not self.canonical_authority_key.strip()
@@ -152,7 +160,8 @@ class SystemDescriptor:
 
     @property
     def parent_key(self) -> str | None:
-        return self.identity.parent_key
+        """Explicit topology parent; never inferred from the identity path."""
+        return self.topology_parent_key
 
     @property
     def authority_id(self) -> str | None:

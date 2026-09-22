@@ -61,7 +61,7 @@ from noetrium_platform.capabilities.model.api import (
 from noetrium_platform.capabilities.model.providers import QualifiedModelProjectProvider
 from noetrium_platform.capabilities.model.request.api import ModelRequestRecorderPort
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobStorePort
-from noetrium_platform.capabilities.model.request.composition.recorder import (
+from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.composition import (
@@ -108,8 +108,8 @@ from noetrium_platform.research.execution.workflow.api import (
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
-from noetrium_platform.research.execution.admission.api import AdmissionBudget
-from noetrium_platform.research.execution.scheduling.api import ExecutionPriority
+from noetrium_platform.research.execution.policy.api import AdmissionBudget
+from noetrium_platform.research.execution.policy.api import ExecutionPriority
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_campaign import ResearchCampaignBinding
 from noetrium_platform.composition.managed_research_runtime import (
@@ -169,7 +169,7 @@ from noetrium_platform.research.experimentation.study.api import (
     StudyMatrixExecutionReport,
     StudyMetricAggregationPort,
 )
-from noetrium_platform.research.experimentation.study.runtime import (
+from noetrium_platform.research.experimentation.study.algorithms import (
     BasicStudyMetricAggregator,
     DeterministicStudyAssignment,
 )
@@ -189,11 +189,14 @@ from noetrium_platform.research.experimentation.workbench.api import (
 from noetrium_platform.research.experimentation.workbench.composition import (
     compose_standard_research_workbench,
 )
-from noetrium_platform.product.operator.runtime.run_control_application import (
+from noetrium_platform.composition.operator.run_control_application import (
     bind_run_control_application,
 )
 from noetrium_platform.infrastructure.lifecycle.host.composition.authorities import (
     local_operating_system_route,
+)
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import (
+    build_process_supervisor,
 )
 
 
@@ -738,11 +741,13 @@ class MinecraftEnvironmentBinding:
             task_group_id or f"project-minecraft-{uuid4().hex}"
         )
         try:
+            process_supervisor = build_process_supervisor(self._task_group)
             self._assembly = compose_minecraft_environment(
                 spec,
                 operating_system=local_operating_system_route(),
                 diagnostics=diagnostics,
                 checkpoint=checkpoint,
+                process_supervisor=process_supervisor,
                 task_group=self._task_group,
             )
         except BaseException:
@@ -1193,12 +1198,12 @@ def run_method_program(
     enables crash-durable journal/snapshot recovery; otherwise execution uses an
     embedded process-local Machine authority.
     """
-    from noetrium_platform.research.execution.workflow.composition import bind_machine_method_runtime
+    from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 
     if runtime.transitions is None:
         if resume and state_root is None:
             raise ValueError("durable method resume requires state_root or a pre-bound transition authority")
-        runtime = bind_machine_method_runtime(program, runtime, state_root=state_root)
+        runtime = bind_standard_method_runtime(program, runtime, state_root=state_root)
     bound = machine or bind_universal_method_machine()
     return bound.run(program, runtime=runtime, input_value=input_value, initial_state=initial_state, resume=resume)
 
@@ -1214,12 +1219,12 @@ async def run_method_program_async(
     state_root: str | Path | None = None,
 ) -> MethodRunResult:
     """Async Machine-backed sibling of :func:`run_method_program`."""
-    from noetrium_platform.research.execution.workflow.composition import bind_machine_method_runtime
+    from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 
     if runtime.transitions is None:
         if resume and state_root is None:
             raise ValueError("durable method resume requires state_root or a pre-bound transition authority")
-        runtime = bind_machine_method_runtime(program, runtime, state_root=state_root)
+        runtime = bind_standard_method_runtime(program, runtime, state_root=state_root)
     bound = machine or bind_universal_method_machine()
     return await bound.run_async(program, runtime=runtime, input_value=input_value, initial_state=initial_state, resume=resume)
 

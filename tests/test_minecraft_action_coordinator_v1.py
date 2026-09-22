@@ -16,7 +16,7 @@ from noetrium_platform.capabilities.environment.minecraft.runtime.action_coordin
 )
 from noetrium_platform.capabilities.environment.minecraft.runtime.checkpoint import MinecraftActionVerification
 from noetrium_platform.capabilities.environment.minecraft.runtime.errors import MinecraftEnvironmentFailure
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionIdentityViolation,
     ActionReconciliationDisposition,
     ActionRequest,

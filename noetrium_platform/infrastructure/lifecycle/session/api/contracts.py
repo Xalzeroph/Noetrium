@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 
 from noetrium_platform.foundation.kernel.kernel.errors import redact_text
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.api import is_absolute_target_path
 
 _SESSION_RE = re.compile(r"^[A-Za-z0-9_.-]{1,96}$")
 _BACKEND_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")

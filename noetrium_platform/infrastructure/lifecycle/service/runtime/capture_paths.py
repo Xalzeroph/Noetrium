@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.api import is_absolute_target_path
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol

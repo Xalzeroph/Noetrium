@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity, SystemRegistryPort
+from noetrium_platform.foundation.governance.api import SystemIdentity, SystemRegistryPort
 from noetrium_platform.evidence.observability.logging.query.api import LogQueryPort
 from noetrium_platform.evidence.observability.logging.record.api import (
     ExceptionDescriptorPort,
@@ -22,13 +22,13 @@ from noetrium_platform.evidence.observability.logging.sink.api import LogSinkPor
 from noetrium_platform.evidence.observability.logging.composition.raw_sink import RegistryBoundRawLogSink
 from noetrium_platform.evidence.observability.capture.runtime import RegistryBoundRawObservationGateway
 from noetrium_platform.evidence.observability.api import ContextMetricSink
-from noetrium_platform.foundation.governance.architecture.api.capabilities import (
+from noetrium_platform.foundation.governance.api import (
     EXCEPTION_DESCRIPTOR_V1,
     LOG_QUERY_V1,
     LOG_SINK_V1,
     LOGGING_SYSTEM_V1,
 )
-from noetrium_platform.foundation.governance.architecture.api.capability_composition import (
+from noetrium_platform.foundation.governance.api import (
     BindingPlan,
     CapabilityOffer,
     CapabilityRequirement,
@@ -38,11 +38,9 @@ from noetrium_platform.foundation.governance.architecture.api.capability_composi
     RequirementAddress,
     interface_contract_digest,
 )
-from noetrium_platform.foundation.governance.architecture.runtime.capability_composition import (
-    CapabilityCompositionPlanner,
-)
+from noetrium_platform.foundation.governance.api import CapabilityCompositionPlannerPort
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
 
 
 _LOGGING_SYSTEM = SystemIdentity("observability", ("logging",))
@@ -84,7 +82,7 @@ def compose_logging_system(
     *,
     sink: LogSinkBinding,
     query: LogQueryBinding,
-    planner: CapabilityCompositionPlanner,
+    planner: CapabilityCompositionPlannerPort,
     systems: SystemRegistryPort,
     scope: ScopeIdentity = PLATFORM_SCOPE,
     exception_descriptor: ExceptionDescriptorBinding | None = None,

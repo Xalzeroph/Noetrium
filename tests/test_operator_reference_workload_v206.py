@@ -9,7 +9,7 @@ import pytest
 from noetrium.api import ResearchFacade
 from noetrium_platform.product.operator.reference import ReferenceResearchApplication
 from noetrium_platform.product.operator.reference.application import ReferencePhase, ReferenceState
-from noetrium_platform.product.operator.composition.research import main
+from noetrium_platform.composition.operator.wiring.research import main
 from noetrium_platform.foundation.kernel.kernel.durability import (
     ChecksummedDocumentError,
     encode_checksummed_document,

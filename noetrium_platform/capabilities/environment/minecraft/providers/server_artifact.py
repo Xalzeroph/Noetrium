@@ -6,15 +6,15 @@ from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 from typing import Any, Mapping
 
-from noetrium_platform.evidence.artifact.catalog.api import ArtifactKind, ArtifactRecord, ArtifactRetention
-from noetrium_platform.evidence.artifact.content.api import (
+from noetrium_platform.substrate.api import ArtifactKind, ArtifactRecord, ArtifactRetention
+from noetrium_platform.substrate.api import (
     ArtifactAcquisitionPort,
     ArtifactAcquisitionRequest,
     ArtifactAcquisitionResult,
     ArtifactHttpOpener,
     ArtifactHttpResponse,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.substrate.api import ScopeIdentity
 
 
 VERSION_MANIFEST_URL = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json"

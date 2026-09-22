@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.environment.runtime.api import ActionReconciliationResult, ActionResult
+from noetrium_platform.capabilities.environment.api import ActionReconciliationResult, ActionResult
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
 from noetrium_platform.capabilities.participant.core.api import BoundParticipants
 from noetrium_platform.research.execution.workflow.api import OperationDispatchPort

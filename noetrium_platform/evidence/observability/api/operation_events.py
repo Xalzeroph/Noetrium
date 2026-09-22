@@ -3,7 +3,7 @@ from __future__ import annotations
 from noetrium_platform.foundation.kernel.kernel import JsonValue, OperationRequest, OperationResult, canonical_digest
 
 from .emission import operational_observation_enabled
-from .events import EventEnvelope, EventSink
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope, EventSink
 
 
 EMITTED_EVENT_TYPES = (

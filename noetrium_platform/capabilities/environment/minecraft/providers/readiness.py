@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol
 
-from noetrium_platform.infrastructure.lifecycle.toolchain.api import (
+from noetrium_platform.substrate.api import (
     RuntimeToolchainError,
     parse_java_major as parse_runtime_java_major,
 )

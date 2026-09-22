@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+from noetrium_platform.composition.method_runtime import (
+    standard_method_evidence_factory,
+    standard_method_runtime_binder,
+)
+
+
 from pathlib import Path
 
 import pytest
@@ -125,7 +131,11 @@ def test_declarative_compiler_creates_isolated_machine_and_evidence_per_task(tmp
     program = _program()
     compiler = DeclarativeWorkloadMethodCompiler(
         program=program,
-        runtime=MethodRuntimeBindings(state_root=tmp_path / "state"),
+        runtime=MethodRuntimeBindings(
+            runtime_binder=standard_method_runtime_binder(),
+            evidence_factory=standard_method_evidence_factory(),
+            state_root=tmp_path / "state",
+        ),
         input_projection=TaskFieldProjection(
             fields=(("task_id", "task_id"), ("objective", "objective")),
             constants={"lane": "test"},

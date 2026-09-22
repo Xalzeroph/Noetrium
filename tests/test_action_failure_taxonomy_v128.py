@@ -48,7 +48,7 @@ def test_post_effect_journal_failure_requires_effect_reconciliation():
 
 
 def test_action_not_applied_has_replan_recovery():
-    from noetrium_platform.capabilities.environment.runtime.api import ActionNotApplied
+    from noetrium_platform.capabilities.environment.api import ActionNotApplied
     with tempfile.TemporaryDirectory() as td:
         with ForensicStore(Path(td)) as store:
             sink = OperationForensicFailureSink(store, classifier=context_action_failure_classifier_chain())

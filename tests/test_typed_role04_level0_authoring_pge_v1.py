@@ -9,8 +9,8 @@ from noetrium_platform.capabilities.model.api import (
 )
 from noetrium_platform.capabilities.model.request.prompt.composition import RegistryPromptSelection
 from noetrium_platform.capabilities.model.request.prompt.runtime import PromptRegistry, PromptSection, PromptSpec
+from noetrium_platform.capabilities.participant.agent.api import AgentIdentity
 from noetrium_platform.capabilities.participant.api import (
-    AgentIdentity,
     AgentProjectDefinition,
     MethodProjectDefinition,
     ParticipantRequirement,

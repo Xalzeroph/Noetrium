@@ -5,9 +5,9 @@ from noetrium_platform.foundation.governance.algorithm.api import AlgorithmLangu
 from noetrium_platform.foundation.governance.algorithm.runtime.python_analyzer import PythonAlgorithmAnalyzer
 
 from noetrium_platform.research.execution.api import ExecutionOperationIntent
-from noetrium_platform.research.execution.command.api import ExecutionCommand
-from noetrium_platform.research.execution.command.providers import SQLiteCommandStore
-from noetrium_platform.research.execution.command.runtime import CommandIntentOwner
+from noetrium_platform.research.execution.operation.api import ExecutionCommand
+from noetrium_platform.research.execution.operation.command.providers import SQLiteCommandStore
+from noetrium_platform.research.execution.operation.command.runtime import CommandIntentOwner
 from noetrium_platform.research.execution.operation.api import OperationId
 from noetrium_platform.research.execution.operation.providers import SQLiteOperationStore
 from noetrium_platform.research.execution.operation.runtime import OperationOwner

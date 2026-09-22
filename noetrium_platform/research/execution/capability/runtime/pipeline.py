@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from noetrium_platform.capabilities.participant.capability.api import (
+from noetrium_platform.capabilities.api import (
     CapabilityDescriptor,
     CapabilityPolicySet,
     CapabilityRequest,

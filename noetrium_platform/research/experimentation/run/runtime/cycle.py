@@ -4,12 +4,12 @@ from dataclasses import dataclass, replace
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
 
-from noetrium_platform.capabilities.participant.core.api import BoundParticipants, ParticipantSessionBinding
+from noetrium_platform.research.execution.api import BoundParticipants, ParticipantSessionBinding
 from noetrium_platform.research.experimentation.checkpoint.api import RunCheckpointCoordinatorPort
 from .decision_runtime import identity_context
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.execution.decision.cycle_result import DecisionCycleResult
-from ..identity.api import RunIdentity
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import DecisionCycleResult
+from ..api.identity import RunIdentity
 from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentSpec,
     ExperimentTrialCycleExecutorPort,

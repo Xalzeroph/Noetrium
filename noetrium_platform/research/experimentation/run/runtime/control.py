@@ -4,8 +4,8 @@ from collections.abc import Mapping
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.execution.operation.api import (
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import (
     EffectReconciliationOutcome,
     EffectReconciliationVerdict,
 )

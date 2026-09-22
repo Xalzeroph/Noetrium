@@ -1,3 +1,4 @@
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import (
@@ -186,7 +187,7 @@ def test_chatdev_method_program_commits_runtime_and_environment_child_cuts() -> 
         ),
         child_machines=children,
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         CHATDEV_V1_METHOD_PROGRAM,
         runtime,
         machine_id="method:chatdev-v1:test",

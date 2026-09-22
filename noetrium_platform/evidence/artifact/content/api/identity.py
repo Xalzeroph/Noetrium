@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import ScopeIdentity
 
 
 _HEX = frozenset("0123456789abcdef")

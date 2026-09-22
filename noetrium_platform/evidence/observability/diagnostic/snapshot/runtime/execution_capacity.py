@@ -6,7 +6,7 @@ from noetrium_platform.evidence.observability.diagnostic.snapshot.api import (
     GroupExecutionDiagnostic,
     SerialMailboxDiagnostic,
 )
-from noetrium_platform.evidence.observability.projection.api import ExecutionCapacityFacts
+from noetrium_platform.evidence.observability.status.api import ExecutionCapacityFacts
 
 
 def project_execution_capacity_diagnostic(

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import MachineJournalPort, MachineSnapshotStorePort
-from noetrium_platform.research.execution.machines import ResearchProgramHost
+from noetrium_platform.research.execution.api import ResearchProgramHost
 
 from ..runtime import paired_evaluation_host
 

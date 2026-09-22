@@ -29,9 +29,8 @@ def test_generated_catalog_covers_exact_registry() -> None:
     assert catalog.symbol_index
     assert catalog.direct_symbol_sources
     assert not (set(catalog.direct_symbol_sources) & set(catalog.ambiguous_symbol_sources))
-    assert set(catalog.symbol_index) <= (
-        set(catalog.direct_symbol_sources) | set(catalog.ambiguous_symbol_sources)
-    )
+    assert len(catalog.symbol_index) > len(catalog.direct_symbol_sources)
+    assert set(catalog.direct_symbol_sources).isdisjoint(catalog.ambiguous_symbol_sources)
     assert catalog.topology_digest
     assert (
         ROOT / "docs/architecture/VNEXT_SYSTEM_CATALOG.json"
@@ -53,16 +52,22 @@ def test_generated_facades_are_importable() -> None:
             )
 
 
-def test_persistent_session_contract_is_visible_through_unified_api() -> None:
+def test_low_level_runtime_contracts_are_not_default_downstream_api() -> None:
     from noetrium import api
 
-    module = api.system("runtime/session")
-    assert api.PersistentSessionSpec is module.PersistentSessionSpec
-    assert api.PersistentSessionRuntimePort is module.PersistentSessionRuntimePort
-    assert api.RuntimeControllerCommand is module.RuntimeControllerCommand
-    assert importlib.util.find_spec("noetrium.contracts.server") is None
-    assert importlib.util.find_spec("noetrium.contracts.session") is None
-
+    assert not hasattr(api, "system")
+    for name in (
+        "PersistentSessionSpec",
+        "PersistentSessionRuntimePort",
+        "RuntimeControllerCommand",
+        "LocalCommandRunnerPort",
+        "DeploymentStatusIdentity",
+    ):
+        assert api.owners(name) == ()
+        assert api.search(name) == ()
+        assert api.describe(name) == ()
+        with pytest.raises(AttributeError):
+            api.resolve(name)
 
 def test_reference_components_are_visible_through_unified_api() -> None:
     from noetrium import api

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 
-from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope
 from noetrium_platform.infrastructure.reliability.failure.api import FailureEnvelope
 from noetrium_platform.infrastructure.reliability.forensics.api.mutation import MutationRecord
 from noetrium_platform.infrastructure.reliability.forensics.composition.runtime_factory import bootstrap_projection_freshness, build_forensic_runtime_parts

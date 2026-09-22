@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
-from noetrium_platform.capabilities.participant.core.api import ParticipantSessionBinding
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantCheckpointRuntimePort
-from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint
-from noetrium_platform.capabilities.participant.core.api.runtime_operations import participant_operation_type
+from noetrium_platform.capabilities.api import ParticipantSessionBinding
+from noetrium_platform.capabilities.api import ParticipantCheckpointRuntimePort
+from noetrium_platform.capabilities.api import ParticipantCheckpoint
+from noetrium_platform.capabilities.api import participant_operation_type
 from noetrium_platform.research.execution.workflow.api import OperationDispatchPort
 
 

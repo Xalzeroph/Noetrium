@@ -6,7 +6,7 @@ from noetrium_platform.capabilities.environment.api import (
     ActionReconciliationDisposition,
     ActionRequest,
 )
-from noetrium_platform.capabilities.environment.composition import EnvironmentSessionCapabilityAdapter
+from noetrium_platform.composition.environment_capabilities import EnvironmentSessionCapabilityAdapter
 from noetrium_platform.capabilities.environment.providers import JsonlProcessMessage
 from noetrium_platform.capabilities.participant.capability.api import CapabilityRequest
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, ExecutionContext

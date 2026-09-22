@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from noetrium_platform.capabilities.participant.method.api import (
+from noetrium_platform.capabilities.api import (
     MethodIdentity,
     MethodProgramIdentity,
 )

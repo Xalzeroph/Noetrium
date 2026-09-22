@@ -8,7 +8,7 @@ import time
 from typing import Mapping
 from uuid import uuid4
 
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionReconciliationDisposition,
     ActionRequest,
     Observation,
@@ -16,7 +16,7 @@ from noetrium_platform.capabilities.environment.runtime.api import (
 )
 from noetrium_platform.foundation.kernel.concurrency.api import SerialActorPort, TaskGroupPort
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue
-from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
+from noetrium_platform.substrate.api import OperatingSystemRoute, ProcessSupervisorPort
 
 from ..api import (
     MINECRAFT_ACTION_TYPES,
@@ -38,7 +38,6 @@ from .jsonl_transport import (
     JsonlProcessTransport,
     MinecraftBridgeError,
     ProcessFactory,
-    ProcessTerminator,
     safe_exception_message,
 )
 
@@ -59,7 +58,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
         agent: MinecraftAgentSpec,
         operating_system: OperatingSystemRoute,
         process_factory: ProcessFactory | None = None,
-        process_terminator: ProcessTerminator | None = None,
+        process_supervisor: ProcessSupervisorPort,
         diagnostics: MinecraftDiagnosticsPort | None = None,
         task_group: TaskGroupPort,
         stderr_tail_lines: int = 300,
@@ -88,7 +87,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
             task_group=task_group,
             bridge_identity=actor_identity,
             process_factory=process_factory,
-            process_terminator=process_terminator,
+            process_supervisor=process_supervisor,
             failure_reporter=self._failure_log,
             stderr_tail_lines=stderr_tail_lines,
         )
@@ -558,4 +557,4 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
 
 
 
-__all__ = ["JsonlMinecraftBridge", "JsonlProcess", "MinecraftBridgeError", "ProcessTerminator"]
+__all__ = ["JsonlMinecraftBridge", "JsonlProcess", "MinecraftBridgeError"]

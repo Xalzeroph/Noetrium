@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
+from noetrium_platform.foundation.governance.api import SystemIdentity
 from noetrium_platform.evidence.observability.logging.record.api import LogLevel, LogRecord
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import ScopeIdentity
 
 
 class LogQueryPort(Protocol):

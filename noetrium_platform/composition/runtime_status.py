@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.reliability.diagnostics.runtime.status_projection import ForensicStatusProbe
+from noetrium_platform.composition.reliability_observability.forensic_status import ForensicStatusProbe
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 from noetrium_platform.infrastructure.reliability.diagnostics.api import DiagnosticEvidencePort
 from .runtime_status_contracts import RuntimeStatusLayout
@@ -10,8 +10,10 @@ from noetrium_platform.infrastructure.lifecycle.launch_control.history import Ru
 from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_history_storage import FileRuntimeHistoryStorage
 from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_state_storage import FileRuntimeControlStateStore
 from noetrium_platform.composition.runtime_control.model_status import ModelDeploymentStatusProbe
-from noetrium_platform.infrastructure.reliability.recovery.composition import (
+from noetrium_platform.composition.reliability_observability import (
     compose_recovery_lease_status_probe,
+)
+from noetrium_platform.composition.reliability_resources import (
     compose_sqlite_recovery_lease,
 )
 from noetrium_platform.composition.status_adapters.runtime import RuntimeTransactionStatusProbe

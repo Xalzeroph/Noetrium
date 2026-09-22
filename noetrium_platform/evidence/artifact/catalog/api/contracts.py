@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import ScopeIdentity
 
 
 class ArtifactKind(StrEnum):

@@ -6,8 +6,8 @@ from typing import Callable, Protocol
 from urllib.request import Request
 
 from noetrium_platform.evidence.artifact.catalog.api import ArtifactKind, ArtifactRecord, ArtifactRetention
-from noetrium_platform.foundation.scope.api import ScopeIdentity
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.governance.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import is_absolute_target_path
 
 
 @dataclass(frozen=True, slots=True)

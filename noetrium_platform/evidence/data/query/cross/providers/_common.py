@@ -6,7 +6,7 @@ from noetrium_platform.evidence.data.query.api import (
     ResearchResultQuery,
     ResearchResultRecord,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind, ScopeRegistryPort
+from noetrium_platform.foundation.api import ScopeIdentity, ScopeKind, ScopeRegistryPort
 
 
 _SCOPE_DIMENSIONS = {

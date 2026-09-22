@@ -15,8 +15,8 @@ from noetrium_platform.research.execution.machines import (
     compile_context,
 )
 
-from noetrium_platform.capabilities.participant.agent.api.cognition import AgentGoal, AgentMemoryContext, AgentObservation, AgentSkillDescription
-from noetrium_platform.capabilities.participant.agent.runtime.model_view import (
+from noetrium_platform.capabilities.api import AgentGoal, AgentMemoryContext, AgentObservation, AgentSkillDescription
+from noetrium_platform.capabilities.api import (
     AGENT_ACTION_HISTORY_VIEW_SCHEMA,
     AgentActionHistoryProjectionReceipt,
     project_action_history,

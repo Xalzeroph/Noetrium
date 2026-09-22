@@ -5,8 +5,8 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineJournalPort,
     MachineSnapshotStorePort,
 )
-from noetrium_platform.capabilities.participant.core.api import BoundParticipants, ParticipantSessionBinding
-from noetrium_platform.research.execution.workflow.api import (
+from noetrium_platform.research.execution.api import BoundParticipants, ParticipantSessionBinding
+from noetrium_platform.research.execution.api import (
     EffectIntentOperationPort,
     OperationDispatchPort,
     TrialCycleExecution,
@@ -15,7 +15,10 @@ from noetrium_platform.research.execution.workflow.api import (
     WorkflowSurfaceReuseScope,
     workflow_surface_id,
 )
-from noetrium_platform.research.execution.workflow.runtime.program_trial import RuntimeProgramTrialProtocol
+from noetrium_platform.research.execution.api import (
+    ExecutionTrialProtocolPort,
+    require_execution_trial_protocol,
+)
 
 from .workflow_surfaces import ExperimentWorkflowSurfaceRegistry
 
@@ -26,20 +29,15 @@ class ExperimentTrialCycleExecutor:
     def __init__(
         self,
         dispatcher: OperationDispatchPort,
-        trial_protocol: RuntimeProgramTrialProtocol,
+        trial_protocol: ExecutionTrialProtocolPort,
         *,
         effect_intents: EffectIntentOperationPort | None = None,
         workflow_surface_factories: tuple[WorkflowSurfaceFactory, ...] = (),
         machine_journal: MachineJournalPort | None = None,
         machine_snapshot_store: MachineSnapshotStorePort | None = None,
     ) -> None:
-        if not isinstance(trial_protocol, RuntimeProgramTrialProtocol):
-            raise TypeError(
-                "ExperimentTrialCycleExecutor requires RuntimeProgramTrialProtocol; "
-                "custom trial runners are not accepted"
-            )
         self.dispatcher = dispatcher
-        self.trial_protocol = trial_protocol
+        self.trial_protocol = require_execution_trial_protocol(trial_protocol)
         self.effect_intents = effect_intents
         self._surface_registry = ExperimentWorkflowSurfaceRegistry(workflow_surface_factories)
         self._machine_journal = machine_journal

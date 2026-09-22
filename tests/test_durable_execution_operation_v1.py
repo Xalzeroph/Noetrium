@@ -1,7 +1,7 @@
 from pathlib import Path
 import sqlite3
 
-from noetrium_platform.research.execution.command.api import CommandId
+from noetrium_platform.research.execution.operation.api import CommandId
 from noetrium_platform.research.execution.operation.api import (
     EffectId, IllegalOperationTransition, OperationConflict, OperationCorruption, OperationEffectCertainty, OperationEffectProfile,
     OperationFailure, OperationFailureKind, OperationId, OperationSnapshot, OperationState,

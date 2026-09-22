@@ -24,10 +24,12 @@ from noetrium_platform.research.experimentation.workload.api import (
     WorkloadMethodReceipt,
     WorkloadTaskResult,
 )
-from noetrium_platform.research.experimentation.study.runtime import (
+from noetrium_platform.research.experimentation.run.runtime.trial import (
     StandardWorkloadMeasurementProjection,
-    StaticExperimentTaskProjection,
     WorkloadTrialProvider,
+)
+from noetrium_platform.research.experimentation.workload.api import (
+    StaticExperimentTaskProjection,
 )
 
 

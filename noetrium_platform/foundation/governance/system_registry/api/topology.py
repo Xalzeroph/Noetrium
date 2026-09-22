@@ -97,7 +97,7 @@ def _parse_semantics(key: str, value: object) -> _CatalogSemantics:
     parent = value["parent"]
     if parent is not None and not isinstance(parent, str):
         raise RuntimeError(f"invalid packaged catalog parent for {key!r}")
-    normalized_parent = parent.replace(".", "/") if isinstance(parent, str) else None
+    normalized_parent = parent if isinstance(parent, str) else None
     try:
         downstream_surface = DownstreamSurfaceMode(value.get("downstream_surface", "public"))
         node_kind = SystemNodeKind(value["node_kind"])
@@ -125,6 +125,18 @@ def _parse_semantics(key: str, value: object) -> _CatalogSemantics:
 
 
 @lru_cache(maxsize=1)
+def _load_component_catalog() -> dict[str, dict[str, object]]:
+    resource = files("noetrium_platform.foundation.governance.system_registry").joinpath("components.json")
+    try:
+        raw = json.loads(resource.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("cannot load packaged system component catalog") from exc
+    if not isinstance(raw, dict):
+        raise RuntimeError("packaged system component catalog must be an object")
+    return raw
+
+
+@lru_cache(maxsize=1)
 def _load_catalog_semantics() -> dict[str, _CatalogSemantics]:
     """Load and validate the single canonical recursive system catalog."""
     catalog_resource = files("noetrium_platform.foundation.governance.system_registry").joinpath("catalog.json")
@@ -149,15 +161,37 @@ def _load_catalog_semantics() -> dict[str, _CatalogSemantics]:
                 f"catalog package_prefix {semantics.package_prefix!r} for {key!r} "
                 "does not resolve to a source package/module"
             )
-        expected_parent = None if len(parts) == 1 else "/".join(parts[:-1])
-        if semantics.parent != expected_parent:
-            raise RuntimeError(f"parent drift for {key!r}")
-        if expected_parent is not None and expected_parent not in seen:
-            raise RuntimeError(f"catalog parent must precede child: {key!r}")
         result[key] = semantics
         seen.add(key)
 
     known = set(result)
+    for key, semantics in result.items():
+        parent = semantics.parent
+        if parent is not None and parent not in known:
+            raise RuntimeError(
+                f"catalog topology parent {parent!r} for {key!r} is not registered"
+            )
+        if parent == key:
+            raise RuntimeError(f"catalog node {key!r} cannot parent itself")
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def validate_parent_chain(key: str) -> None:
+        if key in visited:
+            return
+        if key in visiting:
+            raise RuntimeError(f"catalog topology parent cycle at {key!r}")
+        visiting.add(key)
+        parent = result[key].parent
+        if parent is not None:
+            validate_parent_chain(parent)
+        visiting.remove(key)
+        visited.add(key)
+
+    for key in result:
+        validate_parent_chain(key)
+
     direct_authorities = {
         key for key, semantics in result.items()
         if semantics.node_kind is SystemNodeKind.AUTHORITY
@@ -180,13 +214,17 @@ def _load_catalog_semantics() -> dict[str, _CatalogSemantics]:
                 )
             if dependency == key:
                 raise RuntimeError(f"catalog node {key!r} cannot require itself")
+        component_catalog = _load_component_catalog()
         for component in semantics.components:
-            if component not in known:
+            if component not in component_catalog:
                 raise RuntimeError(
-                    f"catalog component {component!r} for {key!r} is not registered"
+                    f"catalog component {component!r} for {key!r} is not declared in components.json"
                 )
-            if component == key:
-                raise RuntimeError(f"catalog node {key!r} cannot contain itself as a component")
+            owner = component_catalog[component].get("system")
+            if owner != key:
+                raise RuntimeError(
+                    f"catalog component {component!r} is owned by {owner!r}, not {key!r}"
+                )
         for capability in semantics.provides:
             previous = capability_owners.get(capability)
             if previous is not None:
@@ -214,6 +252,7 @@ def _descriptor_from_catalog(key: str, semantics: _CatalogSemantics) -> SystemDe
         components=semantics.components,
         downstream_surface=semantics.downstream_surface,
         node_kind=semantics.node_kind,
+        topology_parent_key=semantics.parent,
         canonical_authority_key=semantics.canonical_authority,
     )
 
@@ -239,49 +278,9 @@ def _system_shape_candidates(
     *,
     registered_packages: tuple[str, ...],
 ) -> tuple[str, ...]:
-    """Discover package roots that look system-shaped before they become complete.
-
-    Two or more standard planes are enough evidence to fail closed. This catches
-    api+runtime/api+providers systems that the historical four-plane-only scanner missed.
-    """
-
-    namespace_containers = {
-        prefix
-        for package in registered_packages
-        for index in range(1, len(package.split(".")))
-        for prefix in (".".join(package.split(".")[:index]),)
-        if prefix not in registered_packages
-    }
-    discovered: list[str] = []
-    # Runtime topology is deliberately narrower than repository layout.
-    # Reference implementations, reproductions, SDKs and product examples live
-    # outside the authoritative system graph even when they use api/runtime-like
-    # directory names.
-    platform_root = source_root / "noetrium_platform"
-    package_roots = (platform_root,) if platform_root.is_dir() else ()
-    for package_root in package_roots:
-        if not (package_root / "__init__.py").is_file():
-            continue
-        candidates = (package_root, *sorted(package_root.rglob("*")))
-        for path in candidates:
-            if not path.is_dir() or not (path / "__init__.py").is_file():
-                continue
-            relative = path.relative_to(package_root)
-            module = package_root.name
-            if relative.parts:
-                module += "." + ".".join(relative.parts)
-            if (
-                module not in registered_packages
-                and any(part in SYSTEM_PLANES for part in relative.parts)
-            ):
-                continue
-            if module in namespace_containers:
-                continue
-            plane_count = sum(_plane_exists(path, plane) for plane in SYSTEM_PLANES)
-            if plane_count < 2:
-                continue
-            discovered.append(module)
-    return tuple(dict.fromkeys(discovered))
+    """Project explicit registry ownership; filesystem shape never creates a system."""
+    del source_root
+    return registered_packages
 
 
 def audit_system_topology_source(
@@ -289,11 +288,10 @@ def audit_system_topology_source(
     *,
     descriptors: tuple[SystemDescriptor, ...] | None = None,
 ) -> TopologySourceAudit:
-    """Compare automatic source-shape discovery with the canonical catalog.
+    """Validate explicitly registered topology against source.
 
-    Registered nodes must resolve to real packages and physically satisfy their
-    declared planes. Any unregistered package with at least two standard system
-    planes is rejected before it can become an implicit second topology source.
+    Source package shape is never a topology declaration. Only catalog.json may
+    create a system owner; components.json carries non-system semantic facets.
     """
 
     source_root = (Path(root) if root is not None else Path(__file__).resolve().parents[5]).resolve()
@@ -323,9 +321,7 @@ def audit_system_topology_source(
         discovered_standard_packages=discovered_tuple,
         stale_registered_packages=tuple(sorted(stale)),
         incomplete_registered_packages=tuple(sorted(incomplete)),
-        unregistered_standard_packages=tuple(
-            package for package in discovered_tuple if package not in registered
-        ),
+        unregistered_standard_packages=(),
     )
 
 

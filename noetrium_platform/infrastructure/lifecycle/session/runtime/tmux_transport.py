@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.api import is_absolute_target_path
 from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessCommandRunnerPort
 
 from noetrium_platform.infrastructure.lifecycle.session.api import (

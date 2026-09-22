@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from noetrium_platform.foundation.governance.architecture.api import BindingProof, CompositionSubject
-from noetrium_platform.capabilities.model.api.project import ProjectModelBinding
-from noetrium_platform.capabilities.participant.api.project import ProjectParticipantBinding
+from noetrium_platform.research.execution.api import BindingProof, CompositionSubject
+from noetrium_platform.research.execution.api import ProjectModelBinding
+from noetrium_platform.research.execution.api import ProjectParticipantBinding
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage
-from noetrium_platform.foundation.portfolio.api import (
+from noetrium_platform.research.execution.api import (
     ProjectCapabilityRequirement,
     ProjectConfigurationReference,
     ProjectMethodRequirement,

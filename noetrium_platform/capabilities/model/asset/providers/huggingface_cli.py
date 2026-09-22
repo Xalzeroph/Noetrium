@@ -5,7 +5,7 @@ import os
 import shutil
 from pathlib import Path
 
-from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandRunnerPort, LocalCommandStartError, LocalCommandTimeoutError
+from noetrium_platform.substrate.api import LocalCommandRunnerPort, LocalCommandStartError, LocalCommandTimeoutError
 from noetrium_platform.capabilities.model.asset.api import (
     ModelAcquisitionReceipt,
     ModelAssetStoragePort,

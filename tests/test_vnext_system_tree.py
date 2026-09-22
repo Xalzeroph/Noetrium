@@ -27,6 +27,7 @@ def node(key: tuple[str, ...], pkg: str) -> SystemDescriptor:
         layer=SystemLayer.INFRASTRUCTURE,
         package_prefix=pkg,
         node_kind=SystemNodeKind.FACET,
+        topology_parent_key="/".join(key[:-1]),
         canonical_authority_key=key[0],
     )
 
@@ -69,3 +70,15 @@ def test_descendants_preserve_sorted_breadth_first_topology_with_child_index() -
         "kernel/zeta",
         "kernel/alpha/leaf",
     ]
+
+
+def test_identity_path_does_not_imply_topology_parent() -> None:
+    descriptor = SystemDescriptor(
+        identity=SystemIdentity("kernel", ("detached",)),
+        layer=SystemLayer.INFRASTRUCTURE,
+        package_prefix="noetrium_platform.infrastructure.reliability",
+        node_kind=SystemNodeKind.FACET,
+        canonical_authority_key="kernel",
+    )
+    assert descriptor.identity.key == "kernel/detached"
+    assert descriptor.parent_key is None

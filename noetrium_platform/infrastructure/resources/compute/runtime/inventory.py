@@ -7,7 +7,7 @@ import sqlite3
 from threading import RLock
 
 from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeGPU, ComputeHost
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
 
 class InMemoryComputeInventory:

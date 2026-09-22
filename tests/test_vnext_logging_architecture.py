@@ -7,7 +7,7 @@ from noetrium_platform.evidence.observability.logging.context.api import Diagnos
 from noetrium_platform.evidence.observability.logging.record.api import LogLevel
 from noetrium_platform.evidence.observability.logging.record.runtime import StructuredLogger
 from noetrium_platform.evidence.observability.logging.storage.runtime import InMemoryLogStore
-from noetrium_platform.infrastructure.reliability.diagnostics.runtime import DiagnosticLogQueryAdapter
+from noetrium_platform.composition.reliability_observability import DiagnosticLogQueryAdapter
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
 
 

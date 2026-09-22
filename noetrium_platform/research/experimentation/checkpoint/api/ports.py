@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
-from noetrium_platform.capabilities.participant.core.api import BoundParticipants, ParticipantSessionBinding
+from noetrium_platform.research.execution.api import BoundParticipants, ParticipantSessionBinding
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 from .results import RunCheckpointResult, RunRestoreResult

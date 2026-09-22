@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from ..api import FigureRendererPort, ReportTableRendererPort, TableReaderPort
+from ..api import FigureRendererPort, ReportTableRendererPort, TableProgramExecutionPort, TableReaderPort
 from ..providers import (
     CsvTableReader,
     JsonlTableReader,
@@ -15,6 +15,7 @@ from ..runtime import (
     ResearchLifecycle,
     ScientificStatistics,
     TablePipeline,
+    TableProgramExecutor,
 )
 
 
@@ -29,6 +30,7 @@ class ResearchWorkbenchAssembly:
     table_renderer: ReportTableRendererPort
     figure_renderer: FigureRendererPort
     svg_renderer: FigureRendererPort
+    table_program: TableProgramExecutionPort
 
 
 def compose_standard_research_workbench() -> ResearchWorkbenchAssembly:
@@ -45,6 +47,7 @@ def compose_standard_research_workbench() -> ResearchWorkbenchAssembly:
         table_renderer=StandardTableRenderer(),
         figure_renderer=PublicationFigureRenderer(),
         svg_renderer=SvgFigureRenderer(),
+        table_program=TableProgramExecutor(),
     )
 
 

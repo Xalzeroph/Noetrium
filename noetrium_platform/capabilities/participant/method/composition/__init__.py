@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.governance.architecture.api.capabilities import (
+from noetrium_platform.substrate.api import (
     METHOD_COMPOSITION_PORTS_V1,
 )
-from noetrium_platform.foundation.governance.architecture.api.capability_composition import (
+from noetrium_platform.substrate.api import (
     BindingPlan,
     CapabilityOffer,
     CompositionContract,
@@ -15,10 +15,10 @@ from noetrium_platform.foundation.governance.architecture.api.capability_composi
     CompositionSubject,
     interface_contract_digest,
 )
-from noetrium_platform.foundation.governance.architecture.runtime.capability_composition import (
-    CapabilityCompositionPlanner,
+from noetrium_platform.substrate.api import (
+    CapabilityCompositionPlannerPort,
 )
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
+from noetrium_platform.substrate.api import SystemIdentity
 from noetrium_platform.capabilities.participant.method.api import (
     MethodCompositionPorts,
     MethodEndpointFactoryPort,
@@ -30,7 +30,7 @@ from noetrium_platform.capabilities.participant.method.runtime import (
     DefaultMethodObservationOutboxFactory,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.substrate.api import PLATFORM_SCOPE, ScopeIdentity
 
 
 _METHOD_SYSTEM = SystemIdentity("participant", ("method",))
@@ -50,7 +50,7 @@ class MethodSystemProviders:
 def compose_method_system(
     *,
     providers: MethodSystemProviders,
-    planner: CapabilityCompositionPlanner,
+    planner: CapabilityCompositionPlannerPort,
     scope: ScopeIdentity = PLATFORM_SCOPE,
     parent_plan_digest: str | None = None,
 ) -> MethodSystemBinding:
@@ -86,7 +86,7 @@ def compose_method_system(
 
 def compose_default_method_system(
     *,
-    planner: CapabilityCompositionPlanner,
+    planner: CapabilityCompositionPlannerPort,
     scope: ScopeIdentity = PLATFORM_SCOPE,
     parent_plan_digest: str | None = None,
 ) -> MethodSystemBinding:

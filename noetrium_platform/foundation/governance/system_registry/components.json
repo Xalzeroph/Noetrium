@@ -1,0 +1,1773 @@
+{
+  "artifact/catalog": {
+    "system": "artifact",
+    "parent": "artifact",
+    "package_prefix": "noetrium_platform.evidence.artifact.catalog",
+    "node_kind": "facet",
+    "canonical_authority": "artifact",
+    "owns": "artifact metadata and logical identity catalog",
+    "must_not_own": "content bytes mutation",
+    "shape": [
+      "api",
+      "runtime",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "artifact.registry"
+    ],
+    "components": []
+  },
+  "artifact/content": {
+    "system": "artifact",
+    "parent": "artifact",
+    "package_prefix": "noetrium_platform.evidence.artifact.content",
+    "node_kind": "facet",
+    "canonical_authority": "artifact",
+    "owns": "immutable content storage and content digest identity",
+    "must_not_own": "business metadata",
+    "shape": [
+      "api",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "artifact/lineage": {
+    "system": "artifact",
+    "parent": "artifact",
+    "package_prefix": "noetrium_platform.evidence.artifact.lineage",
+    "node_kind": "facet",
+    "canonical_authority": "artifact",
+    "owns": "artifact lineage and provenance relations",
+    "must_not_own": "scientific result truth",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "artifact/lineage/relation",
+        "package_prefix": "noetrium_platform.evidence.artifact.lineage.relation",
+        "node_kind": "facet",
+        "owns": "immutable artifact lineage edge identity",
+        "must_not_own": "scientific result semantics",
+        "shape": [
+          "api",
+          "providers"
+        ]
+      }
+    ]
+  },
+  "artifact/reference": {
+    "system": "artifact",
+    "parent": "artifact",
+    "package_prefix": "noetrium_platform.evidence.artifact.reference",
+    "node_kind": "facet",
+    "canonical_authority": "artifact",
+    "owns": "references, aliases and cross-system artifact pointers",
+    "must_not_own": "content mutation",
+    "shape": [
+      "api",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "artifact/retention": {
+    "system": "artifact",
+    "parent": "artifact",
+    "package_prefix": "noetrium_platform.evidence.artifact.retention",
+    "node_kind": "facet",
+    "canonical_authority": "artifact",
+    "owns": "retention, pinning and garbage-collection policy",
+    "must_not_own": "business state semantics",
+    "shape": [
+      "api",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "data/dataset": {
+    "system": "data",
+    "parent": "data",
+    "package_prefix": "noetrium_platform.evidence.data.dataset",
+    "node_kind": "facet",
+    "canonical_authority": "data",
+    "owns": "dataset identity, schema references and lifecycle",
+    "must_not_own": "dataset physical storage implementation",
+    "shape": [
+      "api",
+      "runtime",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "dataset.registry"
+    ],
+    "components": []
+  },
+  "data/projection": {
+    "system": "data",
+    "parent": "data",
+    "package_prefix": "noetrium_platform.evidence.data.projection",
+    "node_kind": "projection",
+    "canonical_authority": "data",
+    "owns": "derived read models and projection lifecycle",
+    "must_not_own": "source-of-truth mutation",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [
+      "projection.runtime"
+    ],
+    "components": []
+  },
+  "data/query": {
+    "system": "data",
+    "parent": "data",
+    "package_prefix": "noetrium_platform.evidence.data.query",
+    "node_kind": "projection",
+    "canonical_authority": "data",
+    "owns": "read query contracts spanning non-authoritative projections",
+    "must_not_own": "durable writes",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "data/query/cross",
+        "package_prefix": "noetrium_platform.evidence.data.query.cross",
+        "node_kind": "projection",
+        "owns": "cross-authority read composition and query federation",
+        "must_not_own": "writes and authority mutation",
+        "shape": [
+          "api",
+          "runtime",
+          "providers",
+          "composition"
+        ]
+      }
+    ]
+  },
+  "environment/catalog": {
+    "system": "environment",
+    "parent": "environment",
+    "package_prefix": "noetrium_platform.capabilities.environment.catalog",
+    "node_kind": "facet",
+    "canonical_authority": "environment",
+    "owns": "environment catalog and versioned definitions",
+    "must_not_own": "resource capacity",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "environment.catalog"
+    ],
+    "components": []
+  },
+  "environment/category": {
+    "system": "environment",
+    "parent": "environment",
+    "package_prefix": "noetrium_platform.capabilities.environment.category",
+    "node_kind": "facet",
+    "canonical_authority": "environment",
+    "owns": "environment category definitions, category/provider descriptors, compatibility and category fingerprint contracts",
+    "must_not_own": "environment instance lifecycle, provider execution, project task semantics or vendor-specific runtime state",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "governance/system_registry",
+      "platform"
+    ],
+    "provides": [
+      "environment.category"
+    ],
+    "components": []
+  },
+  "environment/embodied": {
+    "system": "environment",
+    "parent": "environment",
+    "package_prefix": "noetrium_platform.capabilities.environment.embodied",
+    "node_kind": "facet",
+    "canonical_authority": "environment",
+    "owns": "embodied environment contracts, episode/trajectory interaction and provider-facing embodiment metadata",
+    "must_not_own": "generic environment catalog, experiment semantics, model serving, telemetry storage or vendor SDK internals",
+    "shape": [
+      "api",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "environment",
+      "reliability",
+      "resource"
+    ],
+    "provides": [
+      "environment.embodied.contract"
+    ],
+    "components": []
+  },
+  "environment/instance": {
+    "system": "environment",
+    "parent": "environment",
+    "package_prefix": "noetrium_platform.capabilities.environment.instance",
+    "node_kind": "facet",
+    "canonical_authority": "environment",
+    "owns": "environment instance identity, readiness and lifecycle",
+    "must_not_own": "host supervision implementation",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "environment/runtime": {
+    "system": "environment",
+    "parent": "environment",
+    "package_prefix": "noetrium_platform.capabilities.environment.runtime",
+    "node_kind": "adapter",
+    "canonical_authority": "environment",
+    "owns": "environment runtime adapter contracts",
+    "must_not_own": "environment catalog authority",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [
+      "environment.contract"
+    ],
+    "components": []
+  },
+  "environment/specification": {
+    "system": "environment",
+    "parent": "environment",
+    "package_prefix": "noetrium_platform.capabilities.environment.specification",
+    "node_kind": "facet",
+    "canonical_authority": "environment",
+    "owns": "environment definition and immutable spec identity",
+    "must_not_own": "live host process state",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "execution/capability": {
+    "system": "execution",
+    "parent": "execution",
+    "package_prefix": "noetrium_platform.research.execution.capability",
+    "node_kind": "facet",
+    "canonical_authority": "execution",
+    "owns": "capability declarations and invocation contracts",
+    "must_not_own": "provider implementation",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "capability.invocation",
+      "capability.registration"
+    ],
+    "components": []
+  },
+  "execution/policy": {
+    "system": "execution",
+    "parent": "execution",
+    "package_prefix": "noetrium_platform.research.execution.policy",
+    "node_kind": "policy",
+    "canonical_authority": "execution",
+    "owns": "execution admission, hierarchical capacity and fair scheduling policy",
+    "must_not_own": "resource inventory, task execution or provider state",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "execution/policy/scheduling",
+        "package_prefix": "noetrium_platform.research.execution.policy.scheduling",
+        "node_kind": "policy",
+        "owns": "priority, aging, fairness and deterministic scheduling order",
+        "must_not_own": "live resource/admission state, quotas or executor lifecycle",
+        "shape": [
+          "api",
+          "runtime"
+        ]
+      }
+    ]
+  },
+  "execution/research_program": {
+    "system": "execution",
+    "parent": "execution",
+    "package_prefix": "noetrium_platform.research.execution.machines",
+    "node_kind": "facet",
+    "canonical_authority": "execution",
+    "owns": "paper-programmable ResearchProgram, RuntimeModule, rule and host authoring contracts for non-Method research Machines",
+    "must_not_own": "Machine Journal transition truth, MethodProgram semantics, provider effects or physical resource scheduling",
+    "shape": [],
+    "downstream_surface": "public",
+    "requires": [
+      "artifact/content",
+      "environment",
+      "model",
+      "participant/capability",
+      "platform"
+    ],
+    "provides": [
+      "research.program",
+      "runtime.program",
+      "research.machine.authoring"
+    ],
+    "components": []
+  },
+  "execution/workflow": {
+    "system": "execution",
+    "parent": "execution",
+    "package_prefix": "noetrium_platform.research.execution.workflow",
+    "node_kind": "facet",
+    "canonical_authority": "execution",
+    "owns": "workflow definitions, universal method-machine orchestration, and resumable control semantics",
+    "must_not_own": "process supervision",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "participant/capability",
+      "participant/method",
+      "platform"
+    ],
+    "provides": [
+      "workflow.runtime",
+      "method.machine",
+      "method.abi",
+      "method.checkpoint"
+    ],
+    "components": []
+  },
+  "experimentation/catalog": {
+    "system": "experimentation",
+    "parent": "experimentation",
+    "package_prefix": "noetrium_platform.research.experimentation.catalog",
+    "node_kind": "projection",
+    "canonical_authority": "experimentation",
+    "owns": "typed experiment catalog views, implementation candidates, slot health and catalog publication/query contracts",
+    "must_not_own": "experiment execution, study measurement truth, run lifecycle or benchmark implementation runtime",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [
+      "experimentation/experiment",
+      "experimentation/run",
+      "experimentation/study",
+      "scope"
+    ],
+    "provides": [
+      "experiment.catalog"
+    ],
+    "components": []
+  },
+  "experimentation/checkpoint": {
+    "system": "experimentation",
+    "parent": "experimentation",
+    "package_prefix": "noetrium_platform.research.experimentation.checkpoint",
+    "node_kind": "facet",
+    "canonical_authority": "experimentation",
+    "owns": "checkpoint identity, binding and lifecycle",
+    "must_not_own": "artifact content storage",
+    "shape": [
+      "api",
+      "runtime",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "run.checkpoint"
+    ],
+    "components": []
+  },
+  "experimentation/evaluation": {
+    "system": "experimentation",
+    "parent": "experimentation",
+    "package_prefix": "noetrium_platform.research.experimentation.evaluation",
+    "node_kind": "facet",
+    "canonical_authority": "experimentation",
+    "owns": "evaluation contracts, execution-neutral evaluators and evaluation composition",
+    "must_not_own": "experiment execution lifecycle or scientific claim acceptance",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "experimentation/experiment": {
+    "system": "experimentation",
+    "parent": "experimentation",
+    "package_prefix": "noetrium_platform.research.experimentation.experiment",
+    "node_kind": "facet",
+    "canonical_authority": "experimentation",
+    "owns": "experiment definitions, variants and experiment lifecycle",
+    "must_not_own": "runtime process state",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "experiment.definition",
+      "experiment.runtime"
+    ],
+    "components": []
+  },
+  "experimentation/resource": {
+    "system": "experimentation",
+    "parent": "experimentation",
+    "package_prefix": "noetrium_platform.research.experimentation.resource",
+    "node_kind": "facet",
+    "canonical_authority": "experimentation",
+    "owns": "typed experiment resource policy identity, placement requirements and allocation receipts",
+    "must_not_own": "physical compute truth, model-serving capacity or execution scheduling policy",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "experimentation/experiment",
+      "resource/compute",
+      "scope"
+    ],
+    "provides": [
+      "experiment.resource-policy"
+    ],
+    "components": []
+  },
+  "experimentation/run": {
+    "system": "experimentation",
+    "parent": "experimentation",
+    "package_prefix": "noetrium_platform.research.experimentation.run",
+    "node_kind": "facet",
+    "canonical_authority": "experimentation",
+    "owns": "run identity, frozen run contract and run lifecycle",
+    "must_not_own": "server supervision internals",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "run.control",
+      "run.decision",
+      "run.identity",
+      "run.lifecycle",
+      "run.manifest"
+    ],
+    "components": []
+  },
+  "experimentation/study": {
+    "system": "experimentation",
+    "parent": "experimentation",
+    "package_prefix": "noetrium_platform.research.experimentation.study",
+    "node_kind": "facet",
+    "canonical_authority": "experimentation",
+    "owns": "study definitions, hypotheses and study lifecycle",
+    "must_not_own": "method implementation internals",
+    "shape": [
+      "api",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "artifact"
+    ],
+    "provides": [
+      "study.definition"
+    ],
+    "components": []
+  },
+  "experimentation/workbench": {
+    "system": "experimentation",
+    "parent": "experimentation",
+    "package_prefix": "noetrium_platform.research.experimentation.workbench",
+    "node_kind": "facet",
+    "canonical_authority": "experimentation",
+    "owns": "typed research analysis tables, deterministic statistics/evaluation workflow and report/figure publication semantics",
+    "must_not_own": "experiment execution lifecycle, measurement truth, method semantics or vendor-specific scientific backends",
+    "shape": [
+      "api",
+      "runtime",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "experimentation/study"
+    ],
+    "provides": [
+      "research.workbench"
+    ],
+    "components": []
+  },
+  "experimentation/workload": {
+    "system": "experimentation",
+    "parent": "experimentation",
+    "package_prefix": "noetrium_platform.research.experimentation.workload",
+    "node_kind": "adapter",
+    "canonical_authority": "experimentation",
+    "owns": "generic experiment task-runner contracts, workload context, task handles/results and checkpointable workload execution semantics",
+    "must_not_own": "experiment definition truth, environment provider internals, participant method semantics or run durability authority",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [
+      "environment/runtime",
+      "experimentation/experiment",
+      "experimentation/run",
+      "participant/method",
+      "platform"
+    ],
+    "provides": [
+      "experiment.workload"
+    ],
+    "components": []
+  },
+  "governance/algorithm": {
+    "system": "governance",
+    "parent": "governance",
+    "package_prefix": "noetrium_platform.foundation.governance.algorithm",
+    "node_kind": "tool",
+    "canonical_authority": null,
+    "owns": "repository-wide algorithm inventory, complexity baselines and regression gates",
+    "must_not_own": "runtime execution or scientific result semantics",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "governance/architecture": {
+    "system": "governance",
+    "parent": "governance",
+    "package_prefix": "noetrium_platform.foundation.governance.architecture",
+    "node_kind": "tool",
+    "canonical_authority": null,
+    "owns": "architecture rules, dependencies and invariants",
+    "must_not_own": "business state",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [
+      "scope"
+    ],
+    "provides": [
+      "architecture.audit"
+    ],
+    "components": []
+  },
+  "governance/concurrency": {
+    "system": "governance",
+    "parent": "governance",
+    "package_prefix": "noetrium_platform.foundation.governance.concurrency",
+    "node_kind": "tool",
+    "canonical_authority": null,
+    "owns": "repository-wide concurrency topology findings, reviewed debt baselines and concurrency regression gates",
+    "must_not_own": "runtime task scheduling or mutable execution state",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "governance/evolution": {
+    "system": "governance",
+    "parent": "governance",
+    "package_prefix": "noetrium_platform.foundation.governance.evolution",
+    "node_kind": "policy",
+    "canonical_authority": null,
+    "owns": "topology-driven discovery, drift detection and improvement proposals",
+    "must_not_own": "domain state, external effects and direct runtime mutation",
+    "shape": [
+      "api",
+      "runtime",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "governance/system_registry",
+      "observability"
+    ],
+    "provides": [
+      "governance.evolution"
+    ],
+    "components": []
+  },
+  "governance/gate": {
+    "system": "governance",
+    "parent": "governance",
+    "package_prefix": "noetrium_platform.foundation.governance.gate",
+    "node_kind": "policy",
+    "canonical_authority": null,
+    "owns": "recursive gate contracts and composition semantics",
+    "must_not_own": "business state, runtime execution or scientific acceptance",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "governance/performance": {
+    "system": "governance",
+    "parent": "governance",
+    "package_prefix": "noetrium_platform.foundation.governance.performance",
+    "node_kind": "tool",
+    "canonical_authority": null,
+    "owns": "repository-wide performance hotspots, reviewed debt baselines and performance regression gates",
+    "must_not_own": "runtime resource scheduling or business execution",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "governance/quality": {
+    "system": "governance",
+    "parent": "governance",
+    "package_prefix": "noetrium_platform.foundation.governance.quality",
+    "node_kind": "tool",
+    "canonical_authority": null,
+    "owns": "quality gates, audits and invariants as descriptive policy",
+    "must_not_own": "runtime business control",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [
+      "quality.audit"
+    ],
+    "components": []
+  },
+  "governance/repository_boundary": {
+    "system": "governance",
+    "parent": "governance",
+    "package_prefix": "noetrium_platform.foundation.governance.repository_boundary",
+    "node_kind": "tool",
+    "canonical_authority": null,
+    "owns": "enforce reusable upstream repository/package/release boundary",
+    "must_not_own": "downstream project scientific or deployment policy",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "model/asset": {
+    "system": "model",
+    "parent": "model",
+    "package_prefix": "noetrium_platform.capabilities.model.asset",
+    "node_kind": "facet",
+    "canonical_authority": "model",
+    "owns": "immutable model asset identity and provenance",
+    "must_not_own": "artifact byte storage",
+    "shape": [
+      "api",
+      "runtime",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "model.asset",
+      "model.asset-acquisition"
+    ],
+    "components": []
+  },
+  "model/assignment": {
+    "system": "model",
+    "parent": "model",
+    "package_prefix": "noetrium_platform.capabilities.model.assignment",
+    "node_kind": "facet",
+    "canonical_authority": "model",
+    "owns": "assign models to scope/run/participant roles",
+    "must_not_own": "serving process lifecycle",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "model.assignment"
+    ],
+    "components": []
+  },
+  "model/catalog": {
+    "system": "model",
+    "parent": "model",
+    "package_prefix": "noetrium_platform.capabilities.model.catalog",
+    "node_kind": "facet",
+    "canonical_authority": "model",
+    "owns": "model families/revisions catalog and metadata",
+    "must_not_own": "live deployment state",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "model/catalog/revision",
+        "package_prefix": "noetrium_platform.capabilities.model.catalog.revision",
+        "node_kind": "facet",
+        "owns": "versioned model revision identity",
+        "must_not_own": "mutable serving state",
+        "shape": [
+          "api",
+          "providers",
+          "composition"
+        ]
+      }
+    ]
+  },
+  "model/deployment": {
+    "system": "model",
+    "parent": "model",
+    "package_prefix": "noetrium_platform.capabilities.model.deployment",
+    "node_kind": "facet",
+    "canonical_authority": "model",
+    "owns": "deployment identity, exact closure and lifecycle contract",
+    "must_not_own": "server process implementation",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "model.deployment",
+      "model.deployment-control"
+    ],
+    "components": []
+  },
+  "model/qualification": {
+    "system": "model",
+    "parent": "model",
+    "package_prefix": "noetrium_platform.capabilities.model.qualification",
+    "node_kind": "policy",
+    "canonical_authority": "model",
+    "owns": "model/runtime/host qualification evidence and compatibility claims",
+    "must_not_own": "live capacity snapshots",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "model/request": {
+    "system": "model",
+    "parent": "model",
+    "package_prefix": "noetrium_platform.capabilities.model.request",
+    "node_kind": "facet",
+    "canonical_authority": "model",
+    "owns": "model request identity, exact input contract and response envelope",
+    "must_not_own": "business result semantics",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "model.request"
+    ],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "model/request/prompt",
+        "package_prefix": "noetrium_platform.capabilities.model.request.prompt",
+        "node_kind": "facet",
+        "owns": "model-request prompt blocks, deterministic compilation and prompt publication contracts",
+        "must_not_own": "model serving, inference transport or participant cognition state",
+        "shape": [
+          "api",
+          "runtime",
+          "composition"
+        ]
+      }
+    ]
+  },
+  "model/serving": {
+    "system": "model",
+    "parent": "model",
+    "package_prefix": "noetrium_platform.capabilities.model.serving",
+    "node_kind": "adapter",
+    "canonical_authority": "model",
+    "owns": "serving endpoint contract and request routing semantics",
+    "must_not_own": "model catalog metadata",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [
+      "model.qualification",
+      "model.serving"
+    ],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "model/serving/endpoint",
+        "package_prefix": "noetrium_platform.capabilities.model.serving.endpoint",
+        "node_kind": "adapter",
+        "owns": "serving endpoint identity and exposure contract",
+        "must_not_own": "request result truth",
+        "shape": [
+          "api",
+          "runtime",
+          "providers",
+          "composition"
+        ]
+      }
+    ]
+  },
+  "model/stack": {
+    "system": "model",
+    "parent": "model",
+    "package_prefix": "noetrium_platform.capabilities.model.stack",
+    "node_kind": "facet",
+    "canonical_authority": "model",
+    "owns": "model stack composition and runtime build identity",
+    "must_not_own": "server health",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "observability/capture": {
+    "system": "observability",
+    "parent": "observability",
+    "package_prefix": "noetrium_platform.evidence.observability.capture",
+    "node_kind": "projection",
+    "canonical_authority": null,
+    "owns": "raw byte/event/process capture contracts",
+    "must_not_own": "semantic log interpretation",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "observability/diagnostic": {
+    "system": "observability",
+    "parent": "observability",
+    "package_prefix": "noetrium_platform.evidence.observability.diagnostic",
+    "node_kind": "projection",
+    "canonical_authority": null,
+    "owns": "operator-facing diagnostic correlation contracts",
+    "must_not_own": "failure/state authority",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "observability/diagnostic/snapshot",
+        "package_prefix": "noetrium_platform.evidence.observability.diagnostic.snapshot",
+        "node_kind": "projection",
+        "owns": "portable diagnostic snapshots assembled from existing authorities",
+        "must_not_own": "new business truth",
+        "shape": [
+          "api",
+          "runtime"
+        ]
+      }
+    ]
+  },
+  "observability/logging": {
+    "system": "observability",
+    "parent": "observability",
+    "package_prefix": "noetrium_platform.evidence.observability.logging",
+    "node_kind": "projection",
+    "canonical_authority": null,
+    "owns": "structured logs, context, sinks, stores, queries, retention and capture",
+    "must_not_own": "failure taxonomy and recovery",
+    "shape": [
+      "api",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [
+      "logging.observation",
+      "logging.routing"
+    ],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "observability/logging/context",
+        "package_prefix": "noetrium_platform.evidence.observability.logging.context",
+        "node_kind": "projection",
+        "owns": "diagnostic context construction and propagation metadata",
+        "must_not_own": "log record persistence and query",
+        "shape": [
+          "api"
+        ]
+      },
+      {
+        "key": "observability/logging/query",
+        "package_prefix": "noetrium_platform.evidence.observability.logging.query",
+        "node_kind": "projection",
+        "owns": "log query contracts and filtering",
+        "must_not_own": "log writes",
+        "shape": [
+          "api"
+        ]
+      },
+      {
+        "key": "observability/logging/record",
+        "package_prefix": "noetrium_platform.evidence.observability.logging.record",
+        "node_kind": "projection",
+        "owns": "structured log schema, normalization and identity",
+        "must_not_own": "sink routing and storage",
+        "shape": [
+          "api",
+          "runtime",
+          "providers"
+        ]
+      },
+      {
+        "key": "observability/logging/routing",
+        "package_prefix": "noetrium_platform.evidence.observability.logging.routing",
+        "node_kind": "projection",
+        "owns": "log routing rules and fan-out decisions",
+        "must_not_own": "log storage mutation",
+        "shape": [
+          "api",
+          "runtime"
+        ]
+      },
+      {
+        "key": "observability/logging/sink",
+        "package_prefix": "noetrium_platform.evidence.observability.logging.sink",
+        "node_kind": "provider",
+        "owns": "sink contracts and delivery lifecycle",
+        "must_not_own": "query/index semantics",
+        "shape": [
+          "api"
+        ]
+      }
+    ]
+  },
+  "observability/status": {
+    "system": "observability",
+    "parent": "observability",
+    "package_prefix": "noetrium_platform.evidence.observability.status",
+    "node_kind": "projection",
+    "canonical_authority": null,
+    "owns": "health/status observations and status projections",
+    "must_not_own": "authoritative lifecycle state",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [
+      "status.read-model"
+    ],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "observability/status/execution_capacity",
+        "package_prefix": "noetrium_platform.evidence.observability.status.api.execution_capacity",
+        "node_kind": "projection",
+        "owns": "observation projections/indexes and read models",
+        "must_not_own": "source-of-truth mutation",
+        "shape": [
+          "api"
+        ]
+      }
+    ]
+  },
+  "observability/telemetry": {
+    "system": "observability",
+    "parent": "observability",
+    "package_prefix": "noetrium_platform.evidence.observability.telemetry",
+    "node_kind": "projection",
+    "canonical_authority": null,
+    "owns": "metrics/events/counters and telemetry routing",
+    "must_not_own": "durable domain state",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [
+      "telemetry.metrics"
+    ],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "observability/telemetry/event",
+        "package_prefix": "noetrium_platform.evidence.observability.telemetry.event",
+        "node_kind": "projection",
+        "owns": "structured telemetry event definitions and emission contracts",
+        "must_not_own": "durable facts",
+        "shape": [
+          "api",
+          "runtime"
+        ]
+      },
+      {
+        "key": "observability/telemetry/metric",
+        "package_prefix": "noetrium_platform.evidence.observability.telemetry.metric",
+        "node_kind": "projection",
+        "owns": "metric definitions, aggregation and metric identity",
+        "must_not_own": "business result truth",
+        "shape": [
+          "api",
+          "runtime",
+          "providers",
+          "composition"
+        ]
+      }
+    ]
+  },
+  "observability/tracing": {
+    "system": "observability",
+    "parent": "observability",
+    "package_prefix": "noetrium_platform.evidence.observability.tracing",
+    "node_kind": "projection",
+    "canonical_authority": null,
+    "owns": "trace/span identity and propagation",
+    "must_not_own": "business operation truth",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "operator/audit": {
+    "system": "operator",
+    "parent": "operator",
+    "package_prefix": "noetrium_platform.product.operator.audit",
+    "node_kind": "product_surface",
+    "canonical_authority": null,
+    "owns": "audit/reporting views across system authorities",
+    "must_not_own": "new durable truth",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "operator/command": {
+    "system": "operator",
+    "parent": "operator",
+    "package_prefix": "noetrium_platform.product.operator.command",
+    "node_kind": "product_surface",
+    "canonical_authority": null,
+    "owns": "operator command intent and command result contracts",
+    "must_not_own": "domain command execution",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "operator/maintenance": {
+    "system": "operator",
+    "parent": "operator",
+    "package_prefix": "noetrium_platform.product.operator.maintenance",
+    "node_kind": "product_surface",
+    "canonical_authority": null,
+    "owns": "maintenance workflows and administrative actions",
+    "must_not_own": "provider internals",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [
+      "runtime"
+    ],
+    "provides": [],
+    "components": []
+  },
+  "operator/query": {
+    "system": "operator",
+    "parent": "operator",
+    "package_prefix": "noetrium_platform.product.operator.query",
+    "node_kind": "product_surface",
+    "canonical_authority": null,
+    "owns": "operator read/query contracts",
+    "must_not_own": "durable state mutation",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "participant/binding": {
+    "system": "participant",
+    "parent": "participant",
+    "package_prefix": "noetrium_platform.capabilities.participant.binding",
+    "node_kind": "facet",
+    "canonical_authority": "participant",
+    "owns": "binding participants to scopes, methods, environments or models",
+    "must_not_own": "provider internals",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "participant/capability": {
+    "system": "participant",
+    "parent": "participant",
+    "package_prefix": "noetrium_platform.capabilities.participant.capability",
+    "node_kind": "facet",
+    "canonical_authority": "participant",
+    "owns": "participant capability declarations and exposure",
+    "must_not_own": "execution capability implementation",
+    "shape": [
+      "api",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "capability.contract"
+    ],
+    "components": []
+  },
+  "participant/core": {
+    "system": "participant",
+    "parent": "participant",
+    "package_prefix": "noetrium_platform.capabilities.participant.core",
+    "node_kind": "facet",
+    "canonical_authority": "participant",
+    "owns": "foundational participant runtime identities, capability descriptors, runtime binding, delivery, lifecycle and checkpoint contracts",
+    "must_not_own": "project participant selection policy, method semantics, environment semantics or process supervision implementation",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "platform"
+    ],
+    "provides": [
+      "participant.runtime.abi"
+    ],
+    "components": []
+  },
+  "participant/definition": {
+    "system": "participant",
+    "parent": "participant",
+    "package_prefix": "noetrium_platform.capabilities.participant.definition",
+    "node_kind": "facet",
+    "canonical_authority": "participant",
+    "owns": "participant identities and types",
+    "must_not_own": "execution session state",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "participant.definition"
+    ],
+    "components": []
+  },
+  "participant/method": {
+    "system": "participant",
+    "parent": "participant",
+    "package_prefix": "noetrium_platform.capabilities.participant.method",
+    "node_kind": "facet",
+    "canonical_authority": "participant",
+    "owns": "method participant binding contracts",
+    "must_not_own": "method implementation itself",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "governance"
+    ],
+    "provides": [
+      "method.contract",
+      "method.runtime"
+    ],
+    "components": []
+  },
+  "participant/session": {
+    "system": "participant",
+    "parent": "participant",
+    "package_prefix": "noetrium_platform.capabilities.participant.session",
+    "node_kind": "facet",
+    "canonical_authority": "participant",
+    "owns": "participant session identity and lifecycle contract",
+    "must_not_own": "server/process implementation",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "participant.session"
+    ],
+    "components": []
+  },
+  "platform/concurrency": {
+    "system": "platform",
+    "parent": "platform",
+    "package_prefix": "noetrium_platform.foundation.kernel.concurrency",
+    "node_kind": "facet",
+    "canonical_authority": "platform",
+    "owns": "process-owned bounded executors, serial lanes, timers and structured concurrency lifecycle mechanisms",
+    "must_not_own": "domain mutable state, admission quotas/decisions, scheduling priority/fairness or business semantics",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "portfolio/project": {
+    "system": "portfolio",
+    "parent": "portfolio",
+    "package_prefix": "noetrium_platform.foundation.portfolio.project",
+    "node_kind": "facet",
+    "canonical_authority": "portfolio",
+    "owns": "project metadata, configuration references and lifecycle",
+    "must_not_own": "experiment/run execution state",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  },
+  "reliability/diagnostics": {
+    "system": "reliability",
+    "parent": "reliability",
+    "package_prefix": "noetrium_platform.infrastructure.reliability.diagnostics",
+    "node_kind": "projection",
+    "canonical_authority": null,
+    "owns": "read-side cross-system correlation and root-cause views",
+    "must_not_own": "durable authority mutation",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [
+      "diagnostics.causal"
+    ],
+    "components": []
+  },
+  "reliability/forensics": {
+    "system": "reliability",
+    "parent": "reliability",
+    "package_prefix": "noetrium_platform.infrastructure.reliability.forensics",
+    "node_kind": "projection",
+    "canonical_authority": null,
+    "owns": "durable evidence bundles, causal evidence and forensic indexes",
+    "must_not_own": "business result semantics",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [],
+    "provides": [
+      "forensics.ledger"
+    ],
+    "components": []
+  },
+  "reliability/recovery": {
+    "system": "reliability",
+    "parent": "reliability",
+    "package_prefix": "noetrium_platform.infrastructure.reliability.recovery",
+    "node_kind": "adapter",
+    "canonical_authority": null,
+    "owns": "recovery plans, exact replay/reconcile and recovery lifecycle",
+    "must_not_own": "provider storage internals",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [
+      "resource"
+    ],
+    "provides": [
+      "recovery.execution",
+      "recovery.runtime"
+    ],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "reliability/recovery/execution",
+        "package_prefix": "noetrium_platform.infrastructure.reliability.recovery.execution",
+        "node_kind": "adapter",
+        "owns": "recovery execution lifecycle and effect handoff",
+        "must_not_own": "failure taxonomy",
+        "shape": [
+          "api",
+          "runtime"
+        ]
+      }
+    ]
+  },
+  "resource/allocation": {
+    "system": "resource",
+    "parent": "resource",
+    "package_prefix": "noetrium_platform.infrastructure.resources.allocation",
+    "node_kind": "facet",
+    "canonical_authority": "resource",
+    "owns": "resource allocation intents and allocations",
+    "must_not_own": "execution workflow semantics",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "resource/lease"
+    ],
+    "provides": [
+      "resource.endpoint-allocation"
+    ],
+    "components": []
+  },
+  "resource/compute": {
+    "system": "resource",
+    "parent": "resource",
+    "package_prefix": "noetrium_platform.infrastructure.resources.compute",
+    "node_kind": "facet",
+    "canonical_authority": "resource",
+    "owns": "compute resource identity, capacities and provider facts",
+    "must_not_own": "environment packaging",
+    "shape": [
+      "api",
+      "runtime",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "runtime/process",
+      "resource/lease"
+    ],
+    "provides": [
+      "compute.inventory",
+      "compute.scheduler"
+    ],
+    "components": []
+  },
+  "resource/directory": {
+    "system": "resource",
+    "parent": "resource",
+    "package_prefix": "noetrium_platform.infrastructure.resources.directory",
+    "node_kind": "facet",
+    "canonical_authority": "resource",
+    "owns": "managed filesystem/directory identity and lifecycle",
+    "must_not_own": "artifact immutable content",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "directory.layout",
+      "workspace.storage"
+    ],
+    "components": []
+  },
+  "resource/resolution": {
+    "system": "resource",
+    "parent": "resource",
+    "package_prefix": "noetrium_platform.infrastructure.resources.resolution",
+    "node_kind": "policy",
+    "canonical_authority": "resource",
+    "owns": "resource resolution policies and resolved bindings",
+    "must_not_own": "environment/model identity",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "resource.hierarchical-resolution"
+    ],
+    "components": []
+  },
+  "runtime/host": {
+    "system": "runtime",
+    "parent": "runtime",
+    "package_prefix": "noetrium_platform.infrastructure.lifecycle.host",
+    "node_kind": "facet",
+    "canonical_authority": "runtime",
+    "owns": "live host identity and runtime host attachment",
+    "must_not_own": "resource catalog metadata",
+    "shape": [
+      "api",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "host.runtime"
+    ],
+    "components": []
+  },
+  "runtime/process": {
+    "system": "runtime",
+    "parent": "runtime",
+    "package_prefix": "noetrium_platform.infrastructure.lifecycle.process",
+    "node_kind": "facet",
+    "canonical_authority": "runtime",
+    "owns": "process identity, launch contract and lifecycle",
+    "must_not_own": "experiment semantics",
+    "shape": [
+      "api"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "process.capture",
+      "process.execution"
+    ],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "runtime/process/supervision",
+        "package_prefix": "noetrium_platform.infrastructure.lifecycle.process.supervision",
+        "node_kind": "adapter",
+        "owns": "process health/reconcile loops",
+        "must_not_own": "durable runtime history storage",
+        "shape": [
+          "api",
+          "runtime"
+        ]
+      }
+    ]
+  },
+  "runtime/python": {
+    "system": "runtime",
+    "parent": "runtime",
+    "package_prefix": "noetrium_platform.infrastructure.lifecycle.python",
+    "node_kind": "provider",
+    "canonical_authority": "runtime",
+    "owns": "Python interpreter environments, package lifecycle and execution bindings",
+    "must_not_own": "generic process supervisor",
+    "shape": [
+      "api",
+      "runtime"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [
+      "resource",
+      "runtime"
+    ],
+    "provides": [
+      "python-environment.execution",
+      "python-environment.lifecycle",
+      "python-environment.packages",
+      "python-environment.registry"
+    ],
+    "components": []
+  },
+  "runtime/server": {
+    "system": "runtime",
+    "parent": "runtime",
+    "package_prefix": "noetrium_platform.infrastructure.lifecycle.server",
+    "node_kind": "facet",
+    "canonical_authority": "runtime",
+    "owns": "server identity, lifecycle and health contract",
+    "must_not_own": "model serving truth",
+    "shape": [
+      "api",
+      "runtime",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [
+      "governance/release",
+      "platform",
+      "runtime/session"
+    ],
+    "provides": [
+      "server.bootstrap"
+    ],
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "runtime/server/bootstrap",
+        "package_prefix": "noetrium_platform.infrastructure.lifecycle.host.bootstrap",
+        "node_kind": "facet",
+        "owns": "server bootstrap commands, phases, durable bootstrap state/facts and forward-repair transaction contracts",
+        "must_not_own": "persistent session implementation, release selection authority or server steady-state lifecycle policy",
+        "shape": [
+          "api",
+          "runtime"
+        ]
+      },
+      {
+        "key": "runtime/server/health",
+        "package_prefix": "noetrium_platform.infrastructure.lifecycle.server.health",
+        "node_kind": "facet",
+        "owns": "runtime server health contracts",
+        "must_not_own": "observability health storage",
+        "shape": [
+          "api",
+          "runtime",
+          "providers"
+        ]
+      },
+      {
+        "key": "runtime/server/identity",
+        "package_prefix": "noetrium_platform.infrastructure.lifecycle.server.identity",
+        "node_kind": "facet",
+        "owns": "stable server identity and deployment attachment",
+        "must_not_own": "live health",
+        "shape": [
+          "api",
+          "providers"
+        ]
+      },
+      {
+        "key": "runtime/server/lifecycle",
+        "package_prefix": "noetrium_platform.infrastructure.lifecycle.server.lifecycle",
+        "node_kind": "facet",
+        "owns": "server lifecycle state and transitions",
+        "must_not_own": "process internals",
+        "shape": [
+          "api",
+          "runtime",
+          "providers"
+        ]
+      }
+    ]
+  },
+  "runtime/service": {
+    "system": "runtime",
+    "parent": "runtime",
+    "package_prefix": "noetrium_platform.infrastructure.lifecycle.service",
+    "node_kind": "facet",
+    "canonical_authority": "runtime",
+    "owns": "managed service identity, registration and lifecycle",
+    "must_not_own": "scientific truth",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "service.runtime"
+    ],
+    "components": []
+  },
+  "runtime/session": {
+    "system": "runtime",
+    "parent": "runtime",
+    "package_prefix": "noetrium_platform.infrastructure.lifecycle.session",
+    "node_kind": "facet",
+    "canonical_authority": "runtime",
+    "owns": "runtime session identity and host/process bindings",
+    "must_not_own": "participant scientific semantics",
+    "shape": [
+      "api",
+      "runtime",
+      "providers"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [
+      "persistent-session.runtime"
+    ],
+    "components": []
+  },
+  "runtime/toolchain": {
+    "system": "runtime",
+    "parent": "runtime",
+    "package_prefix": "noetrium_platform.infrastructure.lifecycle.toolchain",
+    "node_kind": "provider",
+    "canonical_authority": "runtime",
+    "owns": "verified host toolchain acquisition, materialization, identity and receipts",
+    "must_not_own": "environment scenarios, experiment protocols, or project policy",
+    "shape": [
+      "api",
+      "providers",
+      "composition"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [
+      "artifact"
+    ],
+    "provides": [
+      "runtime.toolchain"
+    ],
+    "components": []
+  },
+  "scope/path": {
+    "system": "scope",
+    "parent": "scope",
+    "package_prefix": "noetrium_platform.foundation.scope.path",
+    "node_kind": "facet",
+    "canonical_authority": "scope",
+    "owns": "canonical scope paths and resolution",
+    "must_not_own": "domain-specific routing",
+    "shape": [
+      "api",
+      "runtime",
+      "composition"
+    ],
+    "downstream_surface": "public",
+    "requires": [],
+    "provides": [],
+    "components": []
+  }
+}

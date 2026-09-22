@@ -18,8 +18,15 @@ from noetrium_platform.capabilities.environment.minecraft.composition import (
     build_server_service_contract,
 )
 from noetrium_platform.capabilities.environment.minecraft.providers.server_files import MinecraftServerPreparationError, sha256_file
-from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
-from noetrium_platform.infrastructure.lifecycle.service.runtime.environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
+
+
+
+class _NoOpServiceRuntimeFactory:
+    def open(self, contract, *, environment, readiness, preflight=None):
+        del contract, environment, readiness, preflight
+        return SimpleNamespace()
+
 
 
 def _spec(root: Path) -> MinecraftServerSpec:
@@ -41,12 +48,8 @@ def _config(root: Path, *, accept_eula: bool) -> MinecraftServerServiceFactoryCo
             {"JAVA_HOME": "/usr"},
             "env:evidence",
         ),
-        state_root=root / "state",
-        intent_root=root / "intents",
-        capture_root=root / "captures",
-        operating_system=LocalOperatingSystemRoute(),
+        runtime_factory=_NoOpServiceRuntimeFactory(),
         accept_eula=accept_eula,
-        process_backend=object(),
         task_group=make_task_group("minecraft-server-factory"),
     )
 

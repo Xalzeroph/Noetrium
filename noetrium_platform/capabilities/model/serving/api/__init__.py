@@ -19,7 +19,7 @@ from .deployment import (
     RuntimeQualificationPublication,
     RuntimeQualificationPublisherPort,
 )
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceHeartbeat
+from noetrium_platform.substrate.api import ServiceHeartbeat
 from .host_verification import (
     HostInventoryReceipt,
     HostResourceDelta,

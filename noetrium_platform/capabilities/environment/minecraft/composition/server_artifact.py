@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.evidence.artifact.content.composition import compose_artifact_acquisition
-from noetrium_platform.evidence.artifact.content.providers.download import HttpOpener
+from noetrium_platform.substrate.api import (
+    ArtifactAcquisitionPort,
+    ArtifactHttpOpener,
+)
 
 from ..providers.server_artifact import OfficialMinecraftServerArtifactProvider
 
@@ -15,15 +17,14 @@ class MinecraftServerArtifactAssembly:
 
 def compose_official_minecraft_server_artifacts(
     *,
-    metadata_opener: HttpOpener | None = None,
-    artifact_opener: HttpOpener | None = None,
+    acquisition: ArtifactAcquisitionPort,
+    metadata_opener: ArtifactHttpOpener | None = None,
 ) -> MinecraftServerArtifactAssembly:
-    """Bind official Mojang metadata to the generic verified artifact acquirer."""
+    """Bind Minecraft metadata semantics over an injected Artifact acquisition port."""
 
-    acquisition = compose_artifact_acquisition(opener=artifact_opener)
     return MinecraftServerArtifactAssembly(
         provider=OfficialMinecraftServerArtifactProvider(
-            acquisition.acquirer,
+            acquisition,
             metadata_opener=metadata_opener,
         )
     )

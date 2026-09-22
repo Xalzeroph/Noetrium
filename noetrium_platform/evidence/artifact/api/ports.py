@@ -1,3 +1,6 @@
-from .contracts import SystemPort, SystemSpec
+"""Artifact authority ports are exported by their owning subdomains.
 
-__all__ = ["SystemPort", "SystemSpec"]
+The root Artifact API intentionally defines no generic SystemPort compatibility alias.
+"""
+
+__all__: list[str] = []

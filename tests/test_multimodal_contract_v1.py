@@ -1,8 +1,8 @@
+from noetrium_platform.evidence.artifact.content.api import MultimodalPart
 from noetrium_platform.capabilities.model.api import (
     ModelCapabilityInput,
     ModelCapabilityOutput,
     MultimodalMethodSpec,
-    MultimodalPart,
     MultimodalRequest,
     MultimodalRequestCodecPort,
     MultimodalResponse,

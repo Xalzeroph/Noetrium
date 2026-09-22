@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
+from noetrium_platform.substrate.api import ArtifactBlobRef
 
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext, ImmutableModelIdentity, JsonInput, JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256,

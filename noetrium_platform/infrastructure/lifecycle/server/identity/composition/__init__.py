@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
-from noetrium_platform.foundation.governance.architecture.api.capabilities import (
+from noetrium_platform.foundation.api import SystemIdentity
+from noetrium_platform.foundation.api import (
     HOST_OPERATING_SYSTEM_ROUTE_V1,
     SERVER_CONNECTION_FACTORY_V1,
     SERVER_FILE_TRANSFER_FACTORY_V1,
 )
-from noetrium_platform.foundation.governance.architecture.api.capability_composition import (
+from noetrium_platform.foundation.api import (
     BindingPlan,
     CapabilityOffer,
     CapabilityRequirement,
@@ -27,7 +27,7 @@ from noetrium_platform.infrastructure.lifecycle.server.identity.api import (
     ServerConnectionFactoryPort,
     ServerFileTransferFactoryPort,
 )
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.foundation.api import PLATFORM_SCOPE, ScopeIdentity
 
 from noetrium_platform.infrastructure.lifecycle.server.identity.providers import (
     EnvironmentSSHServerConnectionFactory,

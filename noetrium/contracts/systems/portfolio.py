@@ -65,6 +65,30 @@ from noetrium_platform.foundation.portfolio.api.ports import (
     PortfolioCatalogPort as ports__PortfolioCatalogPort,
 )
 
+from noetrium_platform.foundation.portfolio.project.api.contracts import (
+    PROJECT_MANIFEST_SCHEMA as contracts2__PROJECT_MANIFEST_SCHEMA,
+    ProjectCapabilityRequirement as contracts2__ProjectCapabilityRequirement,
+    ProjectConfigurationReference as contracts2__ProjectConfigurationReference,
+    ProjectIdentity as contracts2__ProjectIdentity,
+    ProjectManifest as contracts2__ProjectManifest,
+    ProjectManifestDecodeError as contracts2__ProjectManifestDecodeError,
+    ProjectManifestFacet as contracts2__ProjectManifestFacet,
+    ProjectManifestFacetChange as contracts2__ProjectManifestFacetChange,
+    ProjectManifestFacetDiff as contracts2__ProjectManifestFacetDiff,
+    ProjectManifestIdentityFacets as contracts2__ProjectManifestIdentityFacets,
+    ProjectProviderBinding as contracts2__ProjectProviderBinding,
+    ProjectMethodRequirement as contracts2__ProjectMethodRequirement,
+    ProjectRequirementCardinality as contracts2__ProjectRequirementCardinality,
+    ProjectSpec as contracts2__ProjectSpec,
+    ProjectToolProvenance as contracts2__ProjectToolProvenance,
+    decode_project_manifest_bytes as contracts2__decode_project_manifest_bytes,
+    decode_project_manifest_document as contracts2__decode_project_manifest_document,
+    diff_project_manifest_facets as contracts2__diff_project_manifest_facets,
+    encode_project_manifest as contracts2__encode_project_manifest,
+    project_manifest_document as contracts2__project_manifest_document,
+    project_manifest_identity_facets as contracts2__project_manifest_identity_facets,
+)
+
 SYSTEM_KEY = 'portfolio'
 PACKAGE_PREFIX = 'noetrium_platform.foundation.portfolio'
-__all__ = ('PROJECT_MANIFEST_SCHEMA', 'PortfolioCatalogPort', 'ProgramSpec', 'ProjectCapabilityRequirement', 'ProjectConfigurationReference', 'ProjectIdentity', 'ProjectManifest', 'ProjectManifestDecodeError', 'ProjectManifestFacet', 'ProjectManifestFacetChange', 'ProjectManifestFacetDiff', 'ProjectManifestIdentityFacets', 'ProjectProviderBinding', 'ProjectMethodRequirement', 'ProjectRequirementCardinality', 'ProjectSpec', 'ProjectToolProvenance', 'WorkspaceSpec', 'decode_project_manifest_bytes', 'decode_project_manifest_document', 'diff_project_manifest_facets', 'encode_project_manifest', 'project_manifest_document', 'project_manifest_identity_facets', 'contracts__PROJECT_MANIFEST_SCHEMA', 'contracts__ProgramSpec', 'contracts__ProjectCapabilityRequirement', 'contracts__ProjectConfigurationReference', 'contracts__ProjectIdentity', 'contracts__ProjectManifest', 'contracts__ProjectManifestDecodeError', 'contracts__ProjectManifestFacet', 'contracts__ProjectManifestFacetChange', 'contracts__ProjectManifestFacetDiff', 'contracts__ProjectManifestIdentityFacets', 'contracts__ProjectProviderBinding', 'contracts__ProjectMethodRequirement', 'contracts__ProjectRequirementCardinality', 'contracts__ProjectSpec', 'contracts__ProjectToolProvenance', 'contracts__WorkspaceSpec', 'contracts__decode_project_manifest_bytes', 'contracts__decode_project_manifest_document', 'contracts__diff_project_manifest_facets', 'contracts__encode_project_manifest', 'contracts__project_manifest_document', 'contracts__project_manifest_identity_facets', 'ports__PortfolioCatalogPort')
+__all__ = ('PROJECT_MANIFEST_SCHEMA', 'PortfolioCatalogPort', 'ProgramSpec', 'ProjectCapabilityRequirement', 'ProjectConfigurationReference', 'ProjectIdentity', 'ProjectManifest', 'ProjectManifestDecodeError', 'ProjectManifestFacet', 'ProjectManifestFacetChange', 'ProjectManifestFacetDiff', 'ProjectManifestIdentityFacets', 'ProjectProviderBinding', 'ProjectMethodRequirement', 'ProjectRequirementCardinality', 'ProjectSpec', 'ProjectToolProvenance', 'WorkspaceSpec', 'decode_project_manifest_bytes', 'decode_project_manifest_document', 'diff_project_manifest_facets', 'encode_project_manifest', 'project_manifest_document', 'project_manifest_identity_facets', 'contracts__PROJECT_MANIFEST_SCHEMA', 'contracts__ProgramSpec', 'contracts__ProjectCapabilityRequirement', 'contracts__ProjectConfigurationReference', 'contracts__ProjectIdentity', 'contracts__ProjectManifest', 'contracts__ProjectManifestDecodeError', 'contracts__ProjectManifestFacet', 'contracts__ProjectManifestFacetChange', 'contracts__ProjectManifestFacetDiff', 'contracts__ProjectManifestIdentityFacets', 'contracts__ProjectProviderBinding', 'contracts__ProjectMethodRequirement', 'contracts__ProjectRequirementCardinality', 'contracts__ProjectSpec', 'contracts__ProjectToolProvenance', 'contracts__WorkspaceSpec', 'contracts__decode_project_manifest_bytes', 'contracts__decode_project_manifest_document', 'contracts__diff_project_manifest_facets', 'contracts__encode_project_manifest', 'contracts__project_manifest_document', 'contracts__project_manifest_identity_facets', 'ports__PortfolioCatalogPort', 'contracts2__PROJECT_MANIFEST_SCHEMA', 'contracts2__ProjectCapabilityRequirement', 'contracts2__ProjectConfigurationReference', 'contracts2__ProjectIdentity', 'contracts2__ProjectManifest', 'contracts2__ProjectManifestDecodeError', 'contracts2__ProjectManifestFacet', 'contracts2__ProjectManifestFacetChange', 'contracts2__ProjectManifestFacetDiff', 'contracts2__ProjectManifestIdentityFacets', 'contracts2__ProjectProviderBinding', 'contracts2__ProjectMethodRequirement', 'contracts2__ProjectRequirementCardinality', 'contracts2__ProjectSpec', 'contracts2__ProjectToolProvenance', 'contracts2__decode_project_manifest_bytes', 'contracts2__decode_project_manifest_document', 'contracts2__diff_project_manifest_facets', 'contracts2__encode_project_manifest', 'contracts2__project_manifest_document', 'contracts2__project_manifest_identity_facets')

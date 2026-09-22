@@ -6,7 +6,7 @@ from .tokenization import (
     ModelRequestTokenizationProviderPort,
 )
 from .authorities import ModelAuthorities
-from .multimodal import MultimodalMethodSpec, MultimodalPart, MultimodalRequest, MultimodalRequestCodecPort, MultimodalResponse
+from .multimodal import MultimodalMethodSpec, MultimodalRequest, MultimodalRequestCodecPort, MultimodalResponse
 from .capability import (
     EmbeddingInput,
     EmbeddingOutput,
@@ -71,6 +71,13 @@ from noetrium_platform.capabilities.model.catalog.revision.api import (
     ModelUpdateProducerPort, ModelUpdateProposal, ModelUpdateSource, PreparedModelRevision,
 )
 
+from noetrium_platform.capabilities.model.request.api import ModelRequestRecorderPort
+from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    ModelEndpointDispatchPoolPort,
+    ModelEndpointPort,
+    ModelEndpointRequest,
+)
+
 __all__ = [
     "ModelRequestContextExceeded",
     "ModelRequestTokenBudget",
@@ -79,7 +86,6 @@ __all__ = [
     "ModelRequestTokenizationProviderPort",
     "EmbeddingInput",
     "MultimodalMethodSpec",
-    "MultimodalPart",
     "MultimodalRequest",
     "MultimodalRequestCodecPort",
     "MultimodalResponse",
@@ -154,3 +160,29 @@ __all__ = [
     "ProjectModelRequest",
     "ProjectModelResponse",
 ]
+
+__all__ += ("ModelRequestRecorderPort", "ModelEndpointDispatchPoolPort", "ModelEndpointPort", "ModelEndpointRequest")
+
+from noetrium_platform.capabilities.model.request.api import ModelRequestRecorderPort
+from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    ModelEndpointDispatchPoolPort,
+    ModelEndpointPort,
+    ModelEndpointRequest,
+    QualifiedModelEndpointBinding,
+)
+
+_MODEL_PARENT_EXTRA_EXPORTS = (
+    "ModelEndpointDispatchPoolPort",
+    "ModelEndpointPort",
+    "ModelEndpointRequest",
+    "ModelRequestRecorderPort",
+    "QualifiedModelEndpointBinding",
+)
+
+__all__ = tuple(__all__) + _MODEL_PARENT_EXTRA_EXPORTS
+
+# Canonical static ABI for downstream contract generation.
+__all__ = ['ModelRequestContextExceeded', 'ModelRequestTokenBudget', 'ModelRequestTokenizationIdentity', 'ModelRequestTokenizationPort', 'ModelRequestTokenizationProviderPort', 'EmbeddingInput', 'MultimodalMethodSpec', 'MultimodalRequest', 'MultimodalRequestCodecPort', 'MultimodalResponse', 'EmbeddingOutput', 'EmbeddingVector', 'ModelCapabilityInput', 'ModelCapabilityInvocation', 'ModelCapabilityOutput', 'ModelCapabilityResponse', 'NamedScalar', 'ProjectModelStreamingCapabilityProviderPort', 'ProjectModelStreamingCapabilityClientPort', 'ModelCapabilityStreamTerminal', 'ModelCapabilityStreamSession', 'ModelCapabilityStreamDisposition', 'ModelCapabilityStreamChunk', 'PolicyActionProbability', 'PolicyInferenceInput', 'PolicyInferenceOutput', 'RankedCandidate', 'RankingCandidate', 'RankingInput', 'RankingOutput', 'ProjectModelCapabilityClientPort', 'ProjectModelCapabilityProviderPort', 'ScoredCandidate', 'ScoringCandidate', 'ScoringInput', 'ScoringOutput', 'StructuredGenerationOutput', 'StructuredGenerationInput', 'StructuredGenerationDecoderPort', 'ValueInferenceInput', 'ValueInferenceOutput', 'ModelPromotionDecision', 'ModelPromotionDisposition', 'ModelPromotionReceipt', 'ModelRevisionAuthorityPort', 'ModelRevisionAuthoritySnapshot', 'ModelRevisionCommit', 'ModelRevisionConflictError', 'ModelRevisionEvidence', 'ModelRevisionEvidenceKind', 'ModelRevisionIdentity', 'ModelRevisionIntegrityError', 'ModelRevisionStateError', 'ModelRollbackReceipt', 'ModelUpdateBuildEvidence', 'ModelUpdateBuildReceipt', 'ModelUpdatePlan', 'ModelUpdateProducerPort', 'ModelUpdateProposal', 'ModelUpdateSource', 'PreparedModelRevision', 'ModelAuthorities', 'ModelBindingSelectionReceipt', 'ModelBindingDiagnostic', 'ModelBindingDiagnosticCode', 'ModelBindingDiagnosticSeverity', 'ModelCapabilityRequirement', 'ModelProjectBindingError', 'ModelProjectDefinition', 'MultimodalInferenceOutput', 'MultimodalInferenceInput', 'MultimodalContent', 'ModelRequirementContribution', 'ModelProviderProfile', 'ProjectModelBinding', 'ProjectModelBindingSet', 'ProjectModelClientPort', 'ProjectModelProviderPort', 'ProjectModelRequest', 'ProjectModelResponse', 'ModelRequestRecorderPort', 'ModelEndpointDispatchPoolPort', 'ModelEndpointPort', 'ModelEndpointRequest', 'QualifiedModelEndpointBinding']
+
+# Canonical static ABI.
+__all__ = ['ModelRequestContextExceeded', 'ModelRequestTokenBudget', 'ModelRequestTokenizationIdentity', 'ModelRequestTokenizationPort', 'ModelRequestTokenizationProviderPort', 'EmbeddingInput', 'MultimodalMethodSpec', 'MultimodalRequest', 'MultimodalRequestCodecPort', 'MultimodalResponse', 'EmbeddingOutput', 'EmbeddingVector', 'ModelCapabilityInput', 'ModelCapabilityInvocation', 'ModelCapabilityOutput', 'ModelCapabilityResponse', 'NamedScalar', 'ProjectModelStreamingCapabilityProviderPort', 'ProjectModelStreamingCapabilityClientPort', 'ModelCapabilityStreamTerminal', 'ModelCapabilityStreamSession', 'ModelCapabilityStreamDisposition', 'ModelCapabilityStreamChunk', 'PolicyActionProbability', 'PolicyInferenceInput', 'PolicyInferenceOutput', 'RankedCandidate', 'RankingCandidate', 'RankingInput', 'RankingOutput', 'ProjectModelCapabilityClientPort', 'ProjectModelCapabilityProviderPort', 'ScoredCandidate', 'ScoringCandidate', 'ScoringInput', 'ScoringOutput', 'StructuredGenerationOutput', 'StructuredGenerationInput', 'StructuredGenerationDecoderPort', 'ValueInferenceInput', 'ValueInferenceOutput', 'ModelPromotionDecision', 'ModelPromotionDisposition', 'ModelPromotionReceipt', 'ModelRevisionAuthorityPort', 'ModelRevisionAuthoritySnapshot', 'ModelRevisionCommit', 'ModelRevisionConflictError', 'ModelRevisionEvidence', 'ModelRevisionEvidenceKind', 'ModelRevisionIdentity', 'ModelRevisionIntegrityError', 'ModelRevisionStateError', 'ModelRollbackReceipt', 'ModelUpdateBuildEvidence', 'ModelUpdateBuildReceipt', 'ModelUpdatePlan', 'ModelUpdateProducerPort', 'ModelUpdateProposal', 'ModelUpdateSource', 'PreparedModelRevision', 'ModelAuthorities', 'ModelBindingSelectionReceipt', 'ModelBindingDiagnostic', 'ModelBindingDiagnosticCode', 'ModelBindingDiagnosticSeverity', 'ModelCapabilityRequirement', 'ModelProjectBindingError', 'ModelProjectDefinition', 'MultimodalInferenceOutput', 'MultimodalInferenceInput', 'MultimodalContent', 'ModelRequirementContribution', 'ModelProviderProfile', 'ProjectModelBinding', 'ProjectModelBindingSet', 'ProjectModelClientPort', 'ProjectModelProviderPort', 'ProjectModelRequest', 'ProjectModelResponse', 'ModelRequestRecorderPort', 'ModelEndpointDispatchPoolPort', 'ModelEndpointPort', 'ModelEndpointRequest', 'QualifiedModelEndpointBinding']

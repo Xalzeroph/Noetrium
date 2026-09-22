@@ -9,8 +9,8 @@ from .source_scan import SourceInvariantViolation, is_transient_source_path, vio
 
 
 _CONCURRENCY_MODULE_PREFIX = "noetrium_platform.foundation.kernel.concurrency"
-_ADMISSION_MODULE_PREFIX = "noetrium_platform.research.execution.admission"
-_SCHEDULING_MODULE_PREFIX = "noetrium_platform.research.execution.scheduling"
+_POLICY_MODULE_PREFIX = "noetrium_platform.research.execution.policy"
+_POLICY_SCHEDULING_PREFIX = "noetrium_platform.research.execution.policy.scheduling"
 _FORBIDDEN_DIRECT_MODULES = frozenset(
     {
         "noetrium_platform.foundation.kernel.concurrency.providers",
@@ -92,7 +92,7 @@ def _audit_legacy_execution_seams(root: Path) -> list[SourceInvariantViolation]:
 
 
 def _audit_policy_dependency_direction(root: Path) -> list[SourceInvariantViolation]:
-    """Enforce scheduling -> admission -> neutral permit -> concurrency layering."""
+    """Enforce neutral concurrency mechanism below the unified execution-policy context."""
 
     rows: list[SourceInvariantViolation] = []
     for edge in scan_imports(root, package_roots=("noetrium_platform", "projects", "scripts")):
@@ -100,7 +100,7 @@ def _audit_policy_dependency_direction(root: Path) -> list[SourceInvariantViolat
         target = edge.target_module
 
         if source == _CONCURRENCY_MODULE_PREFIX or source.startswith(_CONCURRENCY_MODULE_PREFIX + "."):
-            if target == _ADMISSION_MODULE_PREFIX or target.startswith(_ADMISSION_MODULE_PREFIX + ".") or target == _SCHEDULING_MODULE_PREFIX or target.startswith(_SCHEDULING_MODULE_PREFIX + "."):
+            if target == _POLICY_MODULE_PREFIX or target.startswith(_POLICY_MODULE_PREFIX + "."):
                 rows.append(
                     violation(
                         root,
@@ -108,35 +108,30 @@ def _audit_policy_dependency_direction(root: Path) -> list[SourceInvariantViolat
                         "concurrency_policy_dependency_inversion",
                         edge.line,
                         (
-                            f"platform/concurrency may not import policy system {target}; "
+                            f"platform/concurrency may not import execution policy {target}; "
                             "inject a neutral public concurrency Port from composition"
                         ),
                     )
                 )
 
-        if source == _ADMISSION_MODULE_PREFIX or source.startswith(_ADMISSION_MODULE_PREFIX + "."):
-            if target.startswith(_SCHEDULING_MODULE_PREFIX + ".") and not target.startswith(
-                _SCHEDULING_MODULE_PREFIX + ".api"
+        # Scheduling is an internal pure ordering facet.  It may depend on its own
+        # API and kernel values, but never on admission/runtime state from the
+        # enclosing policy context.
+        if source == _POLICY_SCHEDULING_PREFIX or source.startswith(_POLICY_SCHEDULING_PREFIX + "."):
+            if (
+                target == _POLICY_MODULE_PREFIX
+                or (
+                    target.startswith(_POLICY_MODULE_PREFIX + ".")
+                    and not target.startswith(_POLICY_SCHEDULING_PREFIX + ".")
+                )
             ):
                 rows.append(
                     violation(
                         root,
                         root / edge.path,
-                        "admission_scheduling_implementation_bypass",
+                        "policy_scheduling_state_dependency",
                         edge.line,
-                        f"execution/admission may consume scheduling only through public API, not {target}",
-                    )
-                )
-
-        if source == _SCHEDULING_MODULE_PREFIX or source.startswith(_SCHEDULING_MODULE_PREFIX + "."):
-            if target == _ADMISSION_MODULE_PREFIX or target.startswith(_ADMISSION_MODULE_PREFIX + "."):
-                rows.append(
-                    violation(
-                        root,
-                        root / edge.path,
-                        "scheduling_admission_reverse_dependency",
-                        edge.line,
-                        f"execution/scheduling may not depend on execution/admission: {target}",
+                        f"execution/policy scheduling facet must remain state-free: {target}",
                     )
                 )
     return rows

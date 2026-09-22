@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
-from noetrium_platform.capabilities.participant.core.api import BoundParticipant
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantRuntimeBinding
-from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantLifecycleAdapterRegistry
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
-from noetrium_platform.capabilities.participant.core.api.runtime_operations import participant_operation_type
+from noetrium_platform.capabilities.api import BoundParticipant
+from noetrium_platform.capabilities.api import ParticipantRuntimeBinding
+from noetrium_platform.capabilities.api import ParticipantLifecycleAdapterRegistry
+from noetrium_platform.capabilities.api import ParticipantRuntimeHandle
+from noetrium_platform.capabilities.api import participant_operation_type
 from noetrium_platform.research.execution.workflow.api import OperationDispatchPort
 
 

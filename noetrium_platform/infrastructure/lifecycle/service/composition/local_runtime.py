@@ -7,15 +7,17 @@ from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceContractDrift,
     ServiceLaunchContract,
     ServiceLaunchPreflightPort,
+    ServiceReadinessProbePort,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemFamily, OperatingSystemRoute
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.api import is_absolute_target_path
 from noetrium_platform.infrastructure.lifecycle.service.runtime.capture_paths import DirectoryCapturePathProvider
-from noetrium_platform.infrastructure.lifecycle.service.runtime.environment import MaterializedServiceEnvironment, StaticServiceEnvironmentProvider
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.runtime.environment import StaticServiceEnvironmentProvider
 from noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend import LinuxProcessBackend
 from noetrium_platform.infrastructure.lifecycle.service.runtime.process_adapter import LocalServiceProcessAdapter
-from noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts import ExactProcessBackend, ServiceReadinessProbe
+from noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts import ExactProcessBackend
 from noetrium_platform.infrastructure.lifecycle.service.runtime.runtime_endpoint import ExactServiceRuntimeEndpoint
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
@@ -85,7 +87,7 @@ class LocalServiceRuntimeComposer:
         contract: ServiceLaunchContract,
         *,
         environment: MaterializedServiceEnvironment,
-        readiness: ServiceReadinessProbe,
+        readiness: ServiceReadinessProbePort,
         preflight: ServiceLaunchPreflightPort | None = None,
     ) -> ExactServiceRuntimePort:
         if preflight is not None: preflight.validate(contract, environment)

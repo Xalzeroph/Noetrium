@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope
 from noetrium_platform.infrastructure.reliability.forensics.api.ports import ForensicWriteActorPort
 from noetrium_platform.infrastructure.reliability.diagnostics.api import (
     DiagnosticObjectRecord, OperationInvocationRecord, StateWriterRecord,

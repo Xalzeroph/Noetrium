@@ -2,16 +2,20 @@ from __future__ import annotations
 
 import time
 
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from noetrium_platform.infrastructure.lifecycle.service.api import (
+    ServiceLaunchContract,
+    ServiceProcessIdentity,
+    ServiceReadinessProbePort,
+)
 from .capture_paths import ServiceCapturePathProvider
 from .contracts import ServiceReadyEvidence
-from .environment import MaterializedServiceEnvironment, ServiceEnvironmentProvider
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
+from .environment import ServiceEnvironmentProvider
 from .prepared_start import PreparedServiceStartReconcileResult, ServiceStartRecoveryHandle
 from .process_contracts import (
     ExactProcessBackend,
     ProcessReconcileStatus,
     ServiceProcessDrift,
-    ServiceReadinessProbe,
 )
 from .process_prepared import crash_durable_prepared_process_backend
 from .service_state_contracts import ServiceSupervisorState
@@ -25,7 +29,7 @@ class LocalServiceProcessAdapter:
         environment_provider: ServiceEnvironmentProvider,
         capture_paths: ServiceCapturePathProvider,
         process_backend: ExactProcessBackend,
-        readiness_probe: ServiceReadinessProbe,
+        readiness_probe: ServiceReadinessProbePort,
     ) -> None:
         self.environment_provider = environment_provider
         self.capture_paths = capture_paths

@@ -1,4 +1,4 @@
-from noetrium_platform.capabilities.model.api import MultimodalPart
+from noetrium_platform.evidence.artifact.content.api import MultimodalPart
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
 from noetrium_platform.capabilities.participant.agent.api.cognition import AgentObservation
 from noetrium_platform.capabilities.participant.agent.runtime import AgentMultimodalObservationProjector

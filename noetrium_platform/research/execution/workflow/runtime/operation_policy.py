@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import OperationSemanticPolicyViolation
-from noetrium_platform.capabilities.participant.core.api.runtime_operations import participant_operation_verb
+from noetrium_platform.capabilities.api import participant_operation_verb
 
 
 class ProtectedOperationSemanticPolicy:

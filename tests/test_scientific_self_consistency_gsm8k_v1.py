@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.model.request.composition import (
+from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (

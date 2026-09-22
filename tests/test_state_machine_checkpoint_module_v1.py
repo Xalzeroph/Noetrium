@@ -5,7 +5,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from noetrium_platform.capabilities.environment.runtime.api import freeze_json_mapping
+from noetrium_platform.capabilities.environment.api import freeze_json_mapping
 from noetrium_platform.research.execution.environments.state_machine import (
     StateMachineCheckpointError as FacadeCheckpointError,
 )

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Mapping, Protocol, runtime_checkable
 
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionReconciliationDisposition,
     ActionRequest,
     ActionResult,
@@ -11,7 +11,7 @@ from noetrium_platform.capabilities.environment.runtime.api import (
     Observation,
 )
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonInput, JsonValue
-from noetrium_platform.infrastructure.lifecycle.service.api.ports import ServiceReadyObservation, ServiceStartOutcome, ServiceStopOutcome
+from noetrium_platform.substrate.api import ServiceReadyObservation, ServiceStartOutcome, ServiceStopOutcome
 
 from .contracts import (
     MinecraftBranchRuntimeRequest,

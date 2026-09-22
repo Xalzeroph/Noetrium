@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
-from noetrium_platform.evidence.artifact.catalog.api import (
+from noetrium_platform.capabilities.api import ArtifactContentIdentity
+from noetrium_platform.capabilities.api import (
     ArtifactKind,
     ArtifactRecord,
     ArtifactRegistryPort,
     ArtifactRetention,
 )
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobStorePort
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.capabilities.api import ArtifactBlobStorePort
+from noetrium_platform.capabilities.api import ScopeIdentity
 from noetrium_platform.research.execution.api import (
     PublishedExecutableProgramSource,
 )

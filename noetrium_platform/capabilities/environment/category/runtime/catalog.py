@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.governance.system_registry.api import system_catalog
+from noetrium_platform.substrate.api import system_catalog
 
 from noetrium_platform.capabilities.environment.category.api.contracts import (
     EnvironmentCategoryDescriptor,

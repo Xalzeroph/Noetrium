@@ -1,5 +1,3 @@
-"""Resource allocation composition helpers."""
+"""Resource allocation composition contains no environment-specific defaults."""
 
-from .local_candidates import discover_local_tcp_candidate_ports
-
-__all__ = ["discover_local_tcp_candidate_ports"]
+__all__: list[str] = []

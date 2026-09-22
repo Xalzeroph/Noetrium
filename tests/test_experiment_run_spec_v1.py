@@ -89,7 +89,7 @@ class ExperimentRunSpecTests(unittest.TestCase):
         target = definition.control_target(3)
         self.assertEqual(target.run_id, definition.identity.run_id)
         self.assertEqual(target.run_manifest_digest, definition.manifest.digest())
-        self.assertEqual(target.expected_generation, 3)
+        self.assertEqual(target.expected_revision, 3)
 
     def test_project_run_definition_rejects_cross_identity_drift(self) -> None:
         definition = self._project_run_definition()

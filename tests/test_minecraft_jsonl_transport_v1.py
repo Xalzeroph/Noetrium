@@ -13,6 +13,7 @@ from noetrium_platform.capabilities.environment.minecraft.providers.jsonl_transp
     MinecraftBridgeError,
 )
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
 
 
 class _ExitedProcess:
@@ -37,6 +38,7 @@ class _ExitedProcess:
 
 
 def _transport(process: _ExitedProcess) -> JsonlProcessTransport:
+    task_group = make_task_group("minecraft-jsonl-transport")
     return JsonlProcessTransport(
         spec=MinecraftBridgeSpec(
             command=("fake-node",),
@@ -45,7 +47,8 @@ def _transport(process: _ExitedProcess) -> JsonlProcessTransport:
             connect_timeout_s=1,
         ),
         operating_system=LocalOperatingSystemRoute(),
-        task_group=make_task_group("minecraft-jsonl-transport"),
+        task_group=task_group,
+        process_supervisor=build_process_supervisor(task_group),
         bridge_identity="transport-test",
         process_factory=lambda _command, **_kwargs: process,
     )
@@ -103,12 +106,14 @@ def test_transport_adds_bridge_node_modules_to_child_environment(
         captured.update(kwargs)
         return process
 
+    task_group = make_task_group("minecraft-jsonl-node-path")
     transport = JsonlProcessTransport(
         spec=MinecraftBridgeSpec(
             command=("fake-node",), cwd=".", command_timeout_s=1, connect_timeout_s=1
         ),
         operating_system=LocalOperatingSystemRoute(),
-        task_group=make_task_group("minecraft-jsonl-node-path"),
+        task_group=task_group,
+        process_supervisor=build_process_supervisor(task_group),
         bridge_identity="node-path-test",
         process_factory=factory,
     )

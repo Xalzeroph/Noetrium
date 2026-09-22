@@ -8,10 +8,10 @@ from .identity import CHECKPOINT_STORE_IDENTITY
 from ..api.results import RunCheckpointResult, RunRestoreResult
 from .restore import RunCheckpointRestorer
 from .validation import RunCheckpointIdentityMismatch
-from noetrium_platform.capabilities.participant.core.api import BoundParticipants, ParticipantSessionBinding
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.execution.workflow.api import OperationDispatchPort
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantCheckpointOperationsPort
+from noetrium_platform.research.execution.api import BoundParticipants, ParticipantSessionBinding
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import OperationDispatchPort
+from noetrium_platform.research.execution.api import ParticipantCheckpointOperationsPort
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 
 

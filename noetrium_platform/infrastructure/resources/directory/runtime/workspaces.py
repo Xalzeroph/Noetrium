@@ -16,7 +16,7 @@ from noetrium_platform.infrastructure.resources.directory.api import (
     WorkspaceMetadataError,
     WorkspaceMetadataFailureCode,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity, scope_from_data, scope_to_data
+from noetrium_platform.foundation.governance.api import ScopeIdentity, scope_from_data, scope_to_data
 
 
 _WORKSPACE_SCHEMA = "resource.workspace-allocation.v2"

@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
-import noetrium_platform.product.operator.query.runtime.route_diagnostics as routes
+import noetrium_platform.composition.operator.query.route_diagnostics as routes
 
 
 def test_direct_diagnostic_route_does_not_open_evidence_session() -> None:

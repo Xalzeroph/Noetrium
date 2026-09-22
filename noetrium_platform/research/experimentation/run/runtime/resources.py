@@ -4,14 +4,15 @@ from dataclasses import dataclass
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
 
-from ..lifecycle.api import RunCleanupReport, attach_cleanup_note
-from noetrium_platform.capabilities.participant.core.api import BoundParticipants, ParticipantSessionBinding
+from ..api.lifecycle import RunCleanupReport
+from ..api.cleanup import attach_cleanup_note
+from noetrium_platform.research.execution.api import BoundParticipants, ParticipantSessionBinding
 from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentComponentBindingPort,
     ExperimentSpec,
 )
-from ..identity.api import RunIdentity
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantSessionLifecyclePort
+from ..api.identity import RunIdentity
+from noetrium_platform.research.execution.api import ParticipantSessionLifecyclePort
 
 
 @dataclass(frozen=True, slots=True)

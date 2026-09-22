@@ -9,7 +9,7 @@ import sys
 import tempfile
 import time
 
-from noetrium_platform.infrastructure.lifecycle.process.api import (
+from noetrium_platform.substrate.api import (
     LocalCommandRunnerPort,
     LocalCommandStartError,
     LocalCommandTimeoutError,
@@ -44,9 +44,9 @@ _MAX_ROOT_CANDIDATE_ATTEMPTS = 24
 class LocalDeploymentCapabilityProbe(DeploymentCapabilityProbePort):
     """Capture host facts without installing, starting or mutating anything."""
 
-    def __init__(self, runner: LocalCommandRunnerPort) -> None:
+    def __init__(self, runner: LocalCommandRunnerPort, *, index_worker_path: Path) -> None:
         self._runner = runner
-        self._index_snapshot = TargetPackageIndexSnapshotProbe(self._run)
+        self._index_snapshot = TargetPackageIndexSnapshotProbe(self._run, index_worker_path)
         self._host_probe = HostFactsProbe()
         self._accelerator_probe = AcceleratorFactsProbe(self._run)
         self._python_probe = PythonFactsProbe(self._run)

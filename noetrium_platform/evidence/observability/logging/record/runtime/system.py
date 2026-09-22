@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from threading import RLock
 
-from noetrium_platform.foundation.governance.system_registry.api import (
+from noetrium_platform.foundation.governance.api import (
     SystemDescriptor,
     SystemIdentity,
     SystemRegistryChange,
@@ -21,7 +21,7 @@ from noetrium_platform.evidence.observability.logging.record.api import (
 from noetrium_platform.evidence.observability.logging.record.runtime.logger import StructuredLogger
 from noetrium_platform.evidence.observability.logging.sink.api import LogSinkPort
 from noetrium_platform.evidence.observability.logging.context.api import DiagnosticAddress
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
 from noetrium_platform.foundation.kernel.kernel import JsonValue
 from noetrium_platform.evidence.observability.api.emission import operational_observation_enabled
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from noetrium_platform.capabilities.model._persisted import exact_fields, optional_text, text, text_tuple
 from noetrium_platform.capabilities.model.asset.api import ManagedModelAsset, ModelAssetMode, ModelAssetOrigin
-from noetrium_platform.foundation.scope.api import scope_from_data, scope_to_data
+from noetrium_platform.substrate.api import scope_from_data, scope_to_data
 
 
 _ASSET_FIELDS = frozenset({

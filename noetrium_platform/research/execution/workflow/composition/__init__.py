@@ -1,6 +1,6 @@
 """Composition helpers for the vNext workflow execution boundary."""
 
-from .machine_binding import bind_machine_method_runtime
+from .machine_binding import MachineMethodRuntimeBinder
 from .model_agent import (
     DispatchPoolBackedMethodAgentLoop,
     EndpointBackedMethodAgentLoop,
@@ -19,13 +19,13 @@ __all__ = [
     "MethodModelEndpointBinding",
     "PromptViewChatRequestFactory",
     "StructuredViewChatRequestFactory",
-    "bind_machine_method_runtime",
+    "MachineMethodRuntimeBinder",
     "MethodRuntimeBindingPlan",
     "MethodRuntimePortInventory",
     "plan_method_runtime_binding",
 ]
 
-from .runtime_binding import (
+from ..api.runtime_binding import (
     MethodRuntimeBindingPlan,
     MethodRuntimePortInventory,
     plan_method_runtime_binding,

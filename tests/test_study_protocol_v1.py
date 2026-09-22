@@ -9,7 +9,10 @@ from noetrium_platform.research.experimentation.study.api import (
     StudyVariantSpec,
     VariantKind,
 )
-from noetrium_platform.research.experimentation.study.runtime import BasicStudyMetricAggregator, DeterministicStudyAssignment
+from noetrium_platform.research.experimentation.study.algorithms import (
+    BasicStudyMetricAggregator,
+    DeterministicStudyAssignment,
+)
 import pytest
 
 

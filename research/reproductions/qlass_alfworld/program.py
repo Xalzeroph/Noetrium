@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
-from noetrium_platform.capabilities.environment.composition import (
+from noetrium_platform.composition.environment_capabilities import (
     environment_branch_action_spec,
     environment_replay_action_payload,
 )

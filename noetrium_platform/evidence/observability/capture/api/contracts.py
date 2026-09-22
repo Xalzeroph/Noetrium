@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 import math
 from enum import StrEnum
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
+from noetrium_platform.foundation.governance.api import SystemIdentity
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonObject, JsonValue, freeze_json
 
 

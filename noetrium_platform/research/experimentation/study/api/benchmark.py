@@ -8,8 +8,8 @@ from enum import StrEnum
 import math
 from typing import Protocol
 
-from noetrium_platform.evidence.artifact.catalog.api import ArtifactRegistryPort
-from noetrium_platform.evidence.artifact.reference.api import ArtifactReference, ArtifactReferencePort
+from noetrium_platform.research.execution.api import ArtifactRegistryPort
+from noetrium_platform.research.execution.api import ArtifactReference, ArtifactReferencePort
 from noetrium_platform.foundation.kernel.kernel import JsonObject, canonical_digest, freeze_json, require_sha256
 
 _HEX = frozenset("0123456789abcdef")

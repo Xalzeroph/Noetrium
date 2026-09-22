@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from noetrium_platform.capabilities.participant.api.messaging import (
+from noetrium_platform.capabilities.api import (
     ParticipantMessageRecipientReceipt,
     ParticipantMessageRouteReceipt,
     ParticipantMessageRouteRequest,

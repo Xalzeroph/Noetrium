@@ -21,7 +21,7 @@ from noetrium_platform.research.experimentation.study.api import (
     VariantBinding,
     VariantKind,
 )
-from noetrium_platform.research.experimentation.study.runtime import (
+from noetrium_platform.research.experimentation.study.algorithms import (
     BasicStudyMetricAggregator,
     DeterministicStudyAssignment,
 )

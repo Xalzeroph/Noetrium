@@ -4,7 +4,7 @@ from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunch
 from typing import Protocol, runtime_checkable
 
 from .capture_paths import ServiceCapturePaths
-from .environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 from .prepared_start import PreparedServiceStartReconcileResult, ServiceStartRecoveryHandle
 
 

@@ -7,7 +7,7 @@ from noetrium_platform.capabilities.model.deployment.api import (
     ModelRuntimeState,
     ModelServiceRuntimeFactoryPort,
 )
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceContractDrift
+from noetrium_platform.substrate.api import ServiceContractDrift
 
 from .applied import AppliedModelDeployment
 from .launch_materializer import ModelLaunchMaterializer

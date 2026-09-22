@@ -4,44 +4,19 @@ from noetrium_platform.foundation.kernel.kernel import (
     SystemService,
     SystemSpec,
 )
-from noetrium_platform.capabilities.environment.api import (
-    SystemIdentity as EnvironmentIdentity,
-    SystemPort as EnvironmentPort,
-    SystemSpec as EnvironmentSpec,
-)
-from noetrium_platform.capabilities.environment.runtime import (
-    SystemService as EnvironmentService,
-)
-from noetrium_platform.evidence.artifact.api import (
-    SystemIdentity as ArtifactIdentity,
-    SystemPort as ArtifactPort,
-    SystemSpec as ArtifactSpec,
-)
-from noetrium_platform.evidence.artifact.runtime import SystemService as ArtifactService
-from noetrium_platform.infrastructure.lifecycle.api import (
-    SystemIdentity as LifecycleIdentity,
-    SystemPort as LifecyclePort,
-    SystemSpec as LifecycleSpec,
-)
-from noetrium_platform.infrastructure.lifecycle.runtime import SystemService as LifecycleService
+import noetrium_platform.capabilities.environment.api as environment_api
+import noetrium_platform.evidence.artifact.api as artifact_api
+import noetrium_platform.infrastructure.lifecycle.api as lifecycle_api
 
 
-def test_framework_system_contracts_are_singletons_across_compatibility_boundaries():
-    assert EnvironmentIdentity is SystemIdentity
-    assert ArtifactIdentity is SystemIdentity
-    assert LifecycleIdentity is SystemIdentity
-    assert EnvironmentSpec is SystemSpec
-    assert ArtifactSpec is SystemSpec
-    assert LifecycleSpec is SystemSpec
-    assert EnvironmentPort is SystemPort
-    assert ArtifactPort is SystemPort
-    assert LifecyclePort is SystemPort
-    assert EnvironmentService is SystemService
-    assert ArtifactService is SystemService
-    assert LifecycleService is SystemService
+def test_kernel_system_contract_has_one_public_owner() -> None:
+    for module in (environment_api, artifact_api, lifecycle_api):
+        for name in ("SystemIdentity", "SystemPort", "SystemSpec"):
+            assert name not in getattr(module, "__all__", ())
+            assert not hasattr(module, name) or getattr(module, name) is not SystemIdentity
 
 
-def test_shared_system_service_is_a_read_only_downstream_boundary():
+def test_shared_system_service_is_a_read_only_kernel_boundary() -> None:
     spec = SystemSpec(
         identity=SystemIdentity("demo"),
         purpose="demo boundary",

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint, ParticipantCheckpointRef
+from noetrium_platform.research.execution.api import ParticipantCheckpoint, ParticipantCheckpointRef
 
 
 def _require_manifest_identity(values: tuple[object, ...]) -> None:

@@ -5,7 +5,7 @@ from enum import StrEnum
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.api import ScopeIdentity
 
 
 class PythonEnvironmentState(StrEnum):

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 
-from noetrium_platform.capabilities.participant.capability.api import (
+from noetrium_platform.capabilities.api import (
     CapabilityDescriptor,
     CapabilityEffectReconciliationResult,
     CapabilityRequest,
@@ -11,8 +11,8 @@ from noetrium_platform.capabilities.participant.capability.api import (
     capability_effect_request_id,
     capability_request_digest,
 )
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
+from noetrium_platform.capabilities.api import ArtifactContentIdentity
+from noetrium_platform.capabilities.api import ArtifactBlobRef
 from noetrium_platform.foundation.kernel.kernel import (
     EffectCertainty,
     EffectClass,
@@ -21,7 +21,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     JsonValue,
     thaw_json,
 )
-from noetrium_platform.infrastructure.reliability.effect.api import (
+from noetrium_platform.capabilities.api import (
     EffectReconciliationDisposition,
     PreparedEffectHandle,
 )

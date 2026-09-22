@@ -38,6 +38,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes, durable_unlink
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
+from noetrium_platform.substrate.api import ProcessSupervisorPort
 from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
 
 from ..authority import ALFWORLD_TEXT_RUNTIME_AUTHORITY_DIGEST
@@ -575,6 +576,7 @@ class AlfworldTextSession:
 def build_alfworld_text_session(
     spec: AlfworldTextRuntimeSpec,
     *,
+    process_supervisor: ProcessSupervisorPort,
     task_group: TaskGroupPort,
 ) -> AlfworldTextSession:
     data_root = Path(spec.data_root).resolve(strict=True)
@@ -611,6 +613,7 @@ def build_alfworld_text_session(
             ),
             operating_system=LocalOperatingSystemRoute(),
             task_group=task_group,
+            process_supervisor=process_supervisor,
             transport_identity=spec.provider_instance_id[:20],
             task_namespace="alfworld-worker",
         )

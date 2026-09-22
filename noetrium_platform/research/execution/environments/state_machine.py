@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 import json
 
-from noetrium_platform.capabilities.environment.api.provider import (
+from noetrium_platform.capabilities.api import (
     EnvironmentProviderCapabilities,
     EnvironmentSessionDiagnostics,
 )
@@ -29,7 +29,7 @@ from noetrium_platform.research.execution.machines import (
     state_machine_environment_host,
 )
 
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.api import (
     ActionIdentityViolation,
     ActionRequest,
     ActionResult,

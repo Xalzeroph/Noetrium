@@ -16,7 +16,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     strict_finite_json_digest,
     strict_json_loads,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.api import ScopeIdentity, ScopeKind
 
 
 PROJECT_MANIFEST_SCHEMA = "noetrium.project-manifest.v2"

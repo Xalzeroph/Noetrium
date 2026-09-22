@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from threading import Lock
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
-from noetrium_platform.infrastructure.resources.compute.api import (
+from noetrium_platform.research.execution.api import ScopeIdentity
+from noetrium_platform.research.execution.api import (
     ComputeLeaseGuardFactoryPort,
     ComputeLeaseGuardPort,
     ComputeRequirement,

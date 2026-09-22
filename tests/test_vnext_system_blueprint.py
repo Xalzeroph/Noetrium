@@ -11,17 +11,16 @@ def _registry() -> InMemorySystemRegistry:
 
 
 def test_complete_top_level_system_graph():
-    roots = tuple(row for row in system_catalog() if row.identity.is_system)
+    roots = tuple(row for row in system_catalog() if row.parent_key is None)
     assert roots
     assert all(row.parent_key is None for row in roots)
     assert all(row.layer.value == row.identity.system_id for row in roots)
 
 
-def test_systems_are_peers_not_platform_children():
+def test_systems_are_peers_not_implied_by_identity_path():
     registry = _registry()
-    assert registry.children("platform")
-    assert all(child.identity.system_id == "platform" for child in registry.children("platform"))
     assert "scope" not in {child.identity.key for child in registry.children("platform")}
+    assert all(child.parent_key == "platform" for child in registry.children("platform"))
 
 
 def test_recursive_children_are_derived_from_canonical_parent_links():

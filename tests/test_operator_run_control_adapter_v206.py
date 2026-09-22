@@ -10,7 +10,7 @@ from noetrium_platform.product.operator.api import (
     ResearchOperationFailure,
     ResearchRequest,
 )
-from noetrium_platform.product.operator.runtime.run_control_application import (
+from noetrium_platform.composition.operator.run_control_application import (
     bind_run_control_application,
 )
 from noetrium_platform.research.experimentation.run.api.control import (

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.participant.core.api import ParticipantSessionBinding
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantSessionLifecyclePort
+from noetrium_platform.research.execution.api import ParticipantSessionBinding
+from noetrium_platform.research.execution.api import ParticipantSessionLifecyclePort
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     InMemoryMachineJournal,

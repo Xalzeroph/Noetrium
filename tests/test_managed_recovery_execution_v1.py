@@ -4,7 +4,7 @@ import pytest
 
 from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
 from noetrium_platform.infrastructure.reliability.recovery.api import RecoveryLeaseBusy
-from noetrium_platform.infrastructure.reliability.recovery.composition import (
+from noetrium_platform.composition.reliability_resources import (
     compose_resource_recovery_lease,
 )
 from noetrium_platform.infrastructure.reliability.recovery.execution.composition import (

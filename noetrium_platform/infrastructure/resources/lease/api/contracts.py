@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 import math
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import ScopeIdentity
 
 
 class ResourceKind(StrEnum):

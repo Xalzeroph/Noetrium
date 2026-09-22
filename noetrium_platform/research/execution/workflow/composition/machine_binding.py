@@ -17,6 +17,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 from ..api import MethodProgram, MethodRuntimeContext
+from ..api.runtime_services import MethodRuntimeBinderPort
 from ..runtime import MachineMethodTransitionAuthority
 
 def _program_ref(program: MethodProgram, runtime: MethodRuntimeContext) -> MachineProgramRef:
@@ -48,7 +49,7 @@ def _program_ref(program: MethodProgram, runtime: MethodRuntimeContext) -> Machi
         ),
     )
 
-def bind_machine_method_runtime(
+def _bind_machine_method_runtime(
     program: MethodProgram,
     runtime: MethodRuntimeContext,
     *,
@@ -86,4 +87,30 @@ def bind_machine_method_runtime(
     return replace(runtime, transitions=MachineMethodTransitionAuthority(machine))
 
 
-__all__ = ["bind_machine_method_runtime"]
+class MachineMethodRuntimeBinder(MethodRuntimeBinderPort):
+    """Execution-owned Machine binding adapter selected by outer composition."""
+
+    @property
+    def identity_digest(self) -> str:
+        return canonical_digest({
+            "adapter": "machine-method-runtime-binder",
+            "version": 1,
+        })
+
+    def bind(
+        self,
+        program: MethodProgram,
+        runtime: MethodRuntimeContext,
+        *,
+        state_root: str | Path | None = None,
+        machine_id: str | None = None,
+    ) -> MethodRuntimeContext:
+        return _bind_machine_method_runtime(
+            program,
+            runtime,
+            state_root=state_root,
+            machine_id=machine_id,
+        )
+
+
+__all__ = ["MachineMethodRuntimeBinder"]

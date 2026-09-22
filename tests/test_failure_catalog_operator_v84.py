@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import unittest
 
-from noetrium_platform.product.operator.query.runtime import FailureCatalogView
+from noetrium_platform.composition.operator.query import FailureCatalogView
 from noetrium_platform.product.operator.runtime.parser import build_parser
-from noetrium_platform.product.operator.query.runtime.route_runtime import route_runtime
+from noetrium_platform.composition.operator.query.route_runtime import route_runtime
 
 
 class FailureCatalogOperatorV84Tests(unittest.TestCase):

@@ -42,17 +42,17 @@ _DISPATCH_AUTHORITIES = frozenset({
     "noetrium_platform/research/experimentation/checkpoint/checkpoint_capture.py",
     "noetrium_platform/research/experimentation/checkpoint/checkpoint_restore.py",
     "noetrium_platform/research/execution/workflow/runtime/effect_intents.py",
-    "noetrium_platform/research/execution/workflow/implementations/context_action/action_slot_guard.py",
-    "noetrium_platform/research/execution/workflow/implementations/context_action/action_capability.py",
-    "noetrium_platform/research/execution/workflow/implementations/context_action/action_authorization.py",
-    "noetrium_platform/research/execution/workflow/implementations/context_action/context_action_operations.py",
-    "noetrium_platform/research/execution/workflow/implementations/context_action/action_effect_provider.py",
-    "noetrium_platform/research/execution/workflow/implementations/context_action/action_reconciliation_operations.py",
-    "noetrium_platform/research/execution/workflow/implementations/context_action/method_completion.py",
-    "noetrium_platform/research/execution/workflow/implementations/context_action/action_recovery_binding.py",
-    "noetrium_platform/research/execution/workflow/implementations/agent_turn/capability_effect_provider.py",
-    "noetrium_platform/research/execution/workflow/implementations/agent_turn/agent_turn_operations.py",
-    "noetrium_platform/research/execution/workflow/implementations/agent_turn/capability_operations.py",
+    "noetrium_platform/composition/workflows/context_action/action_slot_guard.py",
+    "noetrium_platform/composition/workflows/context_action/action_capability.py",
+    "noetrium_platform/composition/workflows/context_action/action_authorization.py",
+    "noetrium_platform/composition/workflows/context_action/context_action_operations.py",
+    "noetrium_platform/composition/workflows/context_action/action_effect_provider.py",
+    "noetrium_platform/composition/workflows/context_action/action_reconciliation_operations.py",
+    "noetrium_platform/composition/workflows/context_action/method_completion.py",
+    "noetrium_platform/composition/workflows/context_action/action_recovery_binding.py",
+    "noetrium_platform/composition/workflows/agent_turn/capability_effect_provider.py",
+    "noetrium_platform/composition/workflows/agent_turn/agent_turn_operations.py",
+    "noetrium_platform/composition/workflows/agent_turn/capability_operations.py",
 })
 
 
@@ -96,8 +96,8 @@ def _audit_dispatch_authority(root: Path) -> list[SourceInvariantViolation]:
     scan_roots = (
         root / "noetrium_platform" / "research" / "experimentation" / "experiment",
         root / "noetrium_platform" / "research" / "execution" / "workflow" / "runtime",
-        root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations" / "context_action",
-        root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations" / "agent_turn",
+        root / "noetrium_platform" / "composition" / "workflows" / "context_action",
+        root / "noetrium_platform" / "composition" / "workflows" / "agent_turn",
     )
     for base in scan_roots:
         if not base.exists():
@@ -126,13 +126,12 @@ def _audit_dispatch_authority(root: Path) -> list[SourceInvariantViolation]:
 def _audit_workflow_dependency_direction(root: Path) -> list[SourceInvariantViolation]:
     """Scientific workflows depend on contracts only, never orchestration/runtime implementations."""
 
-    workflows = root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations"
+    workflows = root / "noetrium_platform" / "composition" / "workflows"
     if not workflows.exists():
         return []
     rows: list[SourceInvariantViolation] = []
     forbidden = (
         "noetrium_platform.research.experimentation",
-        "noetrium_platform.research.execution.workflow.runtime",
         "noetrium_platform.infrastructure.reliability.effect.runtime",
     )
     for path in sorted(workflows.rglob("*.py")):
@@ -147,8 +146,33 @@ def _audit_workflow_dependency_direction(root: Path) -> list[SourceInvariantViol
                 ))
     return rows
 
+
+
+def _audit_execution_core_composition_direction(root: Path) -> list[SourceInvariantViolation]:
+    """Execution core is inner architecture and may never depend on composition roots."""
+
+    base = root / "noetrium_platform" / "research" / "execution"
+    if not base.exists():
+        return []
+    rows: list[SourceInvariantViolation] = []
+    for path in sorted(base.rglob("*.py")):
+        for module, line in imports(path):
+            if module == "noetrium_platform.composition" or module.startswith(
+                "noetrium_platform.composition."
+            ):
+                rows.append(violation(
+                    root,
+                    path,
+                    "execution_core_composition_dependency_direction",
+                    line,
+                    f"execution core imports outer composition module {module}; inject through an inner port instead",
+                ))
+    return rows
+
+
 def audit_workflow_invariants(root: Path) -> list[SourceInvariantViolation]:
     rows = _audit_workflow_dependency_direction(root)
+    rows.extend(_audit_execution_core_composition_direction(root))
     runtime_root = root / "noetrium_platform" / "research" / "execution" / "workflow" / "runtime"
     if not runtime_root.exists():
         return rows
@@ -174,7 +198,7 @@ def audit_workflow_invariants(root: Path) -> list[SourceInvariantViolation]:
         required=_REQUIRED_EFFECT_INTENT_OPERATIONS,
     ))
 
-    workflows = root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations"
+    workflows = root / "noetrium_platform" / "composition" / "workflows"
     for family, required in _REQUIRED_WORKFLOW_OPERATIONS.items():
         base = workflows / family
         rows.extend(_audit_required_operations(

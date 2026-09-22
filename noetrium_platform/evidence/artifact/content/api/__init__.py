@@ -2,6 +2,7 @@
 
 from .blob import ArtifactBlobRef, ArtifactBlobStoreError, ArtifactBlobStorePort
 from .tensor import TensorContentRef, TensorContentStorePort
+from .multimodal import MultimodalPart
 from .acquisition import (
     ArtifactAcquisitionError,
     ArtifactHttpOpener,
@@ -34,6 +35,7 @@ from .materialization import (
 )
 
 __all__ = [
+    "MultimodalPart",
     "ArtifactBlobRef",
     "ArtifactBlobStoreError",
     "ArtifactBlobStorePort",

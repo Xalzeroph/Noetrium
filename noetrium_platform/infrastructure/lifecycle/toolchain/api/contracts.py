@@ -7,8 +7,8 @@ import platform as host_platform
 import re
 from dataclasses import asdict, dataclass
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.api import ScopeIdentity
+from noetrium_platform.foundation.api import is_absolute_target_path
 
 
 class RuntimeToolchainError(RuntimeError):

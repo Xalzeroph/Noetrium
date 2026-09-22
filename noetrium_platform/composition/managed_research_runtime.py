@@ -13,13 +13,13 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     ExecutionSpec,
     TaskHandlePort,
 )
-from noetrium_platform.research.execution.admission.api import AdmissionBudget
-from noetrium_platform.research.execution.scheduling.api import ExecutionPriority
+from noetrium_platform.research.execution.policy.api import AdmissionBudget
+from noetrium_platform.research.execution.policy.api import ExecutionPriority
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
 from noetrium_platform.infrastructure.reliability.recovery.api import (
     RecoveryExecutionFactoryPort,
 )
-from noetrium_platform.infrastructure.reliability.recovery.composition import (
+from noetrium_platform.composition.reliability_resources import (
     compose_resource_recovery_lease,
 )
 from noetrium_platform.infrastructure.reliability.recovery.execution.composition import (

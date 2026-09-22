@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent, PendingEffectRecoveryRequired
-from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, action_request_digest
+from noetrium_platform.capabilities.environment.api import ActionRequest, action_request_digest
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
 
 from noetrium_platform.capabilities.participant.core.api import BoundParticipants

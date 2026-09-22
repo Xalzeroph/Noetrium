@@ -288,7 +288,8 @@ def test_run_control_reopens_same_machine_cut_from_durable_journal(
         )
     )
     assert reopened.machine_cut == running.machine_cut
-    assert reopened.receipt_digest == running.receipt_digest
+    assert reopened.projection_digest == running.projection_digest
+    assert reopened.receipt_digest != running.receipt_digest
 
 
 def test_stale_revision_fails_before_external_lifecycle_effect(

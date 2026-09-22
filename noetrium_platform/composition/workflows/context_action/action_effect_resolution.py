@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.environment.runtime.api import ActionRecoveryRequired, ActionRequest, ActionResult
+from noetrium_platform.capabilities.environment.api import ActionRecoveryRequired, ActionRequest, ActionResult
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
 
 from .action_effect_provider import ActionEffectProviderOperations

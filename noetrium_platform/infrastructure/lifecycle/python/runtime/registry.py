@@ -3,14 +3,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayoutPort, ManagedDirectoryKind
+from noetrium_platform.foundation.api import DirectoryLayoutPort, ManagedDirectoryKind
 from noetrium_platform.infrastructure.lifecycle.python.api import (
     ManagedPythonEnvironment,
     PythonEnvironmentOwnership,
     PythonEnvironmentState,
 )
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes, durable_unlink, fsync_directory
-from noetrium_platform.foundation.scope.api import scope_from_data, scope_to_data
+from noetrium_platform.foundation.api import scope_from_data, scope_to_data
 
 
 class PythonEnvironmentRegistry:

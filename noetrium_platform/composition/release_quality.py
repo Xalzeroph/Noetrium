@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.execution.admission.api import AdmissionBudget
+from noetrium_platform.research.execution.policy.api import AdmissionBudget
 from pathlib import Path
 import hashlib
 import os

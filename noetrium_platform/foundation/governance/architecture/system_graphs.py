@@ -27,21 +27,17 @@ class SubsystemGraphEdge:
 def declared_system_graph() -> tuple[SystemGraphEdge, ...]:
     rows: list[SystemGraphEdge] = []
     for descriptor in system_catalog():
-        if not descriptor.identity.is_system:
-            continue
         for target in descriptor.requires:
-            rows.append(SystemGraphEdge(descriptor.identity.system_id, target))
+            rows.append(SystemGraphEdge(descriptor.identity.key, target))
     return tuple(sorted(rows, key=lambda row: (row.source, row.target)))
 
 
 def declared_subsystem_graph() -> tuple[SubsystemGraphEdge, ...]:
     rows: list[SubsystemGraphEdge] = []
     for descriptor in system_catalog():
-        if descriptor.identity.is_system:
-            continue
         parent = descriptor.parent_key
         if parent is None:
-            raise RuntimeError(f"subsystem has no parent: {descriptor.identity.key}")
+            continue
         rows.append(SubsystemGraphEdge(
             source=parent,
             target=descriptor.identity.key,

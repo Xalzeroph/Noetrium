@@ -1,3 +1,4 @@
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
 
 import asyncio
@@ -5,7 +6,7 @@ import multiprocessing
 
 import pytest
 
-from noetrium import platform as noetrium_platform
+from noetrium import api as noetrium_api
 from noetrium_platform.capabilities.participant.method.api import (
     MethodIdentity,
     MethodProgramIdentity,
@@ -127,7 +128,7 @@ def test_agent_checkpoint_payload_survives_limit_and_resume() -> None:
         .return_node("finish", "test.finish", finish)
         .build()
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         program, MethodRuntimeContext(context(), agent_loop=Agent())
     )
     first = UniversalMethodMachine(checkpoint_store=store, max_steps=1).run(
@@ -244,7 +245,7 @@ def test_evidence_validator_receives_the_real_run_result() -> None:
 
 
 def test_public_platform_facade_binds_universal_method_machine():
-    machine = noetrium_platform.bind_universal_method_machine(max_steps=3)
+    machine = noetrium_api.bind_universal_method_machine(max_steps=3)
     assert isinstance(machine, UniversalMethodMachine)
 
 
@@ -340,7 +341,7 @@ def test_public_facade_preserves_method_wall_clock_budget():
     program = MethodProgramBuilder(identity(), entrypoint="answer").return_node(
         "answer", "test.answer", lambda request: MethodNodeResult(value=42)
     ).build()
-    result = noetrium_platform.bind_universal_method_machine(
+    result = noetrium_api.bind_universal_method_machine(
         max_seconds=1, clock=lambda: next(ticks)
     ).run(program, runtime=MethodRuntimeContext(context()))
     assert result.status.value == "limit_reached"

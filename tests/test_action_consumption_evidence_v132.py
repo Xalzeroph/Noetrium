@@ -22,7 +22,7 @@ from noetrium_platform.infrastructure.reliability.effect.runtime import (
     InMemoryEffectIntentJournal,
     SQLiteEffectIntentJournal,
 )
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionReconciliationDisposition,
     ActionReconciliationResult,
     ActionRequest,

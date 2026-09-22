@@ -11,7 +11,7 @@ from noetrium_platform.infrastructure.lifecycle.process.supervision.api import P
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
 
 from .capture_paths import ServiceCapturePaths
-from .environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 from .linux_children import LinuxChildRegistry
 from .linux_procfs import LinuxProcfsReader
 from .linux_signal import signal_new_session_process_group

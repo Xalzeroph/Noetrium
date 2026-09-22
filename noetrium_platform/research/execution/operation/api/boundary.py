@@ -2,8 +2,8 @@
 
 SYSTEM = "execution"
 NODE = "execution/operation"
-OWNS = "operation identity, lifecycle and result envelopes"
-MUST_NOT_OWN = "failure taxonomy and recovery authority"
+OWNS = "immutable execution command intent plus operation identity, lifecycle and result envelopes"
+MUST_NOT_OWN = "failure taxonomy, recovery authority, provider effects or workflow orchestration"
 AUTHORITY = "operation_state"
 
 # This module is intentionally declarative. Concrete behavior belongs in runtime/providers.
@@ -17,8 +17,8 @@ CONTRACT = SystemLeafContract(
     node="execution/operation",
     package_prefix='noetrium_platform.research.execution.operation',
     authority_id="operation_state",
-    owns="operation identity, lifecycle and result envelopes",
-    must_not_own="failure taxonomy and recovery authority",
+    owns="immutable execution command intent plus operation identity, lifecycle and result envelopes",
+    must_not_own="failure taxonomy, recovery authority, provider effects or workflow orchestration",
     api_module='noetrium_platform.research.execution.operation.api',
     runtime_module='noetrium_platform.research.execution.operation.runtime',
     provider_module='noetrium_platform.research.execution.operation.providers',

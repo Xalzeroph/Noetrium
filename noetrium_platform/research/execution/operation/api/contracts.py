@@ -6,7 +6,7 @@ import math
 import re
 import time
 
-from noetrium_platform.research.execution.command.api import CommandId
+from noetrium_platform.research.execution.operation.command.api import CommandId
 
 _SHA256 = re.compile(r"^[0-9a-fA-F]{64}$")
 

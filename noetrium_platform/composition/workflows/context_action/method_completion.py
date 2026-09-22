@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from noetrium_platform.infrastructure.reliability.effect.api import EffectCompletionEvidence
-from noetrium_platform.capabilities.environment.runtime.api import ActionResult
+from noetrium_platform.capabilities.environment.api import ActionResult
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult, canonical_digest
 from noetrium_platform.capabilities.participant.method.api import (
     IdempotentTaskCompletionSession,

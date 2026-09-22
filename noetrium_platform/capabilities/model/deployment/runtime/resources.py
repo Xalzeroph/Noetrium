@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.capabilities.model.asset.api import ModelAssetManagementPort
-from noetrium_platform.infrastructure.resources.compute.api import GpuProcessStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot
+from noetrium_platform.substrate.api import GpuProcessStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot
 from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentCatalogPort,
     ModelFleetRuntimePort,

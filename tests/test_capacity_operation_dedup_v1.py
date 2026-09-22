@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from noetrium_platform.research.execution.command.api import CommandId
+from noetrium_platform.research.execution.operation.api import CommandId
 from noetrium_platform.research.execution.operation.api import OperationId
 from noetrium_platform.research.execution.operation.providers import SQLiteOperationStore
 from noetrium_platform.research.execution.operation.runtime import OperationOwner

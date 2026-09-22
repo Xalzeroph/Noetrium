@@ -3,7 +3,7 @@ from tests_support import context_action_runtime
 from tests_support import context_action_spec
 import unittest
 
-from noetrium_platform.capabilities.environment.runtime.api import EnvironmentIdentity
+from noetrium_platform.capabilities.environment.api import EnvironmentIdentity
 from noetrium_platform.foundation.kernel.kernel import OperationFailure
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime

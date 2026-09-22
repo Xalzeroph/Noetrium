@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from noetrium_platform.evidence.artifact.catalog.api import ArtifactRegistryPort
+from noetrium_platform.foundation.api import ArtifactRegistryPort
 from noetrium_platform.evidence.data.dataset.api import DatasetRegistryPort
 from noetrium_platform.evidence.data.query.api import ResearchResultQueryPort
 from noetrium_platform.evidence.data.query.cross.providers import DatasetResearchResultSource
-from noetrium_platform.foundation.scope.api import ScopeRegistryPort
+from noetrium_platform.foundation.api import ScopeRegistryPort
 
 from .artifact import ArtifactCatalogResearchResultSource
 from .default import compose

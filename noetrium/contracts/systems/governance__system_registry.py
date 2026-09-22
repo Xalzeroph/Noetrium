@@ -22,6 +22,9 @@ from noetrium_platform.foundation.governance.system_registry.api import (
     TopologySourceAudit,
     audit_system_topology_source,
     system_catalog,
+    LayerDescriptor,
+    LayerHierarchy,
+    layer_hierarchy,
 )
 
 from noetrium_platform.foundation.governance.system_registry.api.contracts import (
@@ -33,6 +36,12 @@ from noetrium_platform.foundation.governance.system_registry.api.contracts impor
     SystemNodeKind as contracts__SystemNodeKind,
     SystemRegistryChange as contracts__SystemRegistryChange,
     SystemLayer as contracts__SystemLayer,
+)
+
+from noetrium_platform.foundation.governance.system_registry.api.hierarchy import (
+    LayerDescriptor as hierarchy__LayerDescriptor,
+    LayerHierarchy as hierarchy__LayerHierarchy,
+    layer_hierarchy as hierarchy__layer_hierarchy,
 )
 
 from noetrium_platform.foundation.governance.system_registry.api.ports import (
@@ -49,4 +58,4 @@ from noetrium_platform.foundation.governance.system_registry.api.topology import
 
 SYSTEM_KEY = 'governance/system_registry'
 PACKAGE_PREFIX = 'noetrium_platform.foundation.governance.system_registry'
-__all__ = ('AuthorityDescriptor', 'DownstreamSurfaceMode', 'SYSTEM_CATALOG', 'SystemDescriptor', 'SystemIdentity', 'SystemLayer', 'SystemNodeKind', 'SystemRegistryChange', 'SystemRegistryObserver', 'SystemRegistryPort', 'TopologySourceAudit', 'audit_system_topology_source', 'system_catalog', 'contracts__AuthorityDescriptor', 'contracts__DownstreamSurfaceMode', 'SYSTEM_PLANES', 'contracts__SystemDescriptor', 'contracts__SystemIdentity', 'contracts__SystemNodeKind', 'contracts__SystemRegistryChange', 'contracts__SystemLayer', 'ports__SystemRegistryObserver', 'ports__SystemRegistryPort', 'topology__SYSTEM_CATALOG', 'topology__TopologySourceAudit', 'topology__audit_system_topology_source', 'topology__system_catalog')
+__all__ = ('AuthorityDescriptor', 'DownstreamSurfaceMode', 'SYSTEM_CATALOG', 'SystemDescriptor', 'SystemIdentity', 'SystemLayer', 'SystemNodeKind', 'SystemRegistryChange', 'SystemRegistryObserver', 'SystemRegistryPort', 'TopologySourceAudit', 'audit_system_topology_source', 'system_catalog', 'LayerDescriptor', 'LayerHierarchy', 'layer_hierarchy', 'contracts__AuthorityDescriptor', 'contracts__DownstreamSurfaceMode', 'SYSTEM_PLANES', 'contracts__SystemDescriptor', 'contracts__SystemIdentity', 'contracts__SystemNodeKind', 'contracts__SystemRegistryChange', 'contracts__SystemLayer', 'hierarchy__LayerDescriptor', 'hierarchy__LayerHierarchy', 'hierarchy__layer_hierarchy', 'ports__SystemRegistryObserver', 'ports__SystemRegistryPort', 'topology__SYSTEM_CATALOG', 'topology__TopologySourceAudit', 'topology__audit_system_topology_source', 'topology__system_catalog')

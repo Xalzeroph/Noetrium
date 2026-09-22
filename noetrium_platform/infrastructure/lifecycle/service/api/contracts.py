@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import math
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.api import is_absolute_target_path
 
 
 @dataclass(frozen=True, slots=True)

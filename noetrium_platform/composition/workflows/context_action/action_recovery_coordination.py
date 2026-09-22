@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.capabilities.environment.runtime.api import ActionRecoveryRequired
+from noetrium_platform.capabilities.environment.api import ActionRecoveryRequired
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from .action_contracts import SafeActionExecution
 from .action_preparation import ActionPreparationCoordinator

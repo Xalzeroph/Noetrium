@@ -17,12 +17,12 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     ExecutionEnvironmentKind,
     ResolvedEnvironmentSpec,
 )
-from noetrium_platform.infrastructure.resources.resolution import (
+from noetrium_platform.substrate.api import (
     HierarchicalResourceResolver,
     ResolutionPolicy,
     ScopedValue,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind, ScopeRegistryPort
+from noetrium_platform.substrate.api import ScopeIdentity, ScopeKind, ScopeRegistryPort
 
 
 _T = TypeVar("_T")

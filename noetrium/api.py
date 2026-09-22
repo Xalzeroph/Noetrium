@@ -32,10 +32,6 @@ def catalog() -> DownstreamCapabilityCatalog:
     return load_downstream_capability_catalog()
 
 
-def system(system_key: str) -> Any:
-    """Return one typed generated facade from the unified downstream API."""
-    return catalog().facade(system_key)
-
 
 @lru_cache(maxsize=1)
 def interface_schema() -> dict[str, Any]:
@@ -62,13 +58,14 @@ def owners(symbol: str) -> tuple[str, ...]:
     if not isinstance(symbol, str) or not symbol:
         raise ValueError("symbol must be non-empty text")
     current = catalog()
+    direct = current.direct_source(symbol)
+    ambiguous = current.ambiguous_sources(symbol)
+    if direct is None and not ambiguous:
+        return ()
     registered = current.owners(symbol)
     if registered:
         return registered
-    direct = current.direct_source(symbol)
-    if direct is not None:
-        return (direct,)
-    return current.ambiguous_sources(symbol)
+    return (direct,) if direct is not None else ambiguous
 
 def search(query: str, *, limit: int = 50) -> tuple[ApiSymbolMatch, ...]:
     """Search the unified symbol index without importing implementations."""
@@ -78,11 +75,7 @@ def search(query: str, *, limit: int = 50) -> tuple[ApiSymbolMatch, ...]:
         raise ValueError("limit must be positive")
     needle = query.casefold()
     current = catalog()
-    names = (
-        set(current.symbol_index)
-        | set(current.direct_symbol_sources)
-        | set(current.ambiguous_symbol_sources)
-    )
+    names = set(current.direct_symbol_sources) | set(current.ambiguous_symbol_sources)
     rows = [
         ApiSymbolMatch(symbol, owners(symbol))
         for symbol in names
@@ -96,11 +89,13 @@ def describe(symbol: str) -> tuple[dict[str, Any], ...]:
     """Return all generated schemas for a symbol without requiring module paths."""
     if not isinstance(symbol, str) or not symbol:
         raise ValueError("symbol must be non-empty text")
+    current = catalog()
+    if current.direct_source(symbol) is None and not current.ambiguous_sources(symbol):
+        return ()
     registered_rows = _schema_index().get(symbol, ())
     if registered_rows:
         return registered_rows
 
-    current = catalog()
     source = current.direct_source(symbol)
     sources = (source,) if source is not None else current.ambiguous_sources(symbol)
     return tuple(
@@ -119,7 +114,7 @@ def describe(symbol: str) -> tuple[dict[str, Any], ...]:
 
 @lru_cache(maxsize=None)
 def resolve(symbol: str) -> Any:
-    """Resolve one public symbol through the generated v4 resolution index."""
+    """Resolve one public symbol through the generated Product-level resolution index."""
     if not isinstance(symbol, str) or not symbol or symbol.startswith("_"):
         raise AttributeError(symbol)
     current = catalog()
@@ -137,9 +132,9 @@ def resolve(symbol: str) -> Any:
     if ambiguous:
         registered = current.owners(symbol)
         hint = (
-            f"select one with api.system(system_key).{symbol}; owners={registered!r}"
+            f"public owners={registered!r}; sources={ambiguous!r}"
             if registered
-            else f"symbol sources are ambiguous: {ambiguous!r}"
+            else f"public symbol sources are ambiguous: {ambiguous!r}"
         )
         raise AttributeError(
             f"ambiguous Noetrium public symbol {symbol!r}; {hint}"
@@ -166,7 +161,6 @@ def __dir__() -> list[str]:
         "DownstreamCapabilityCatalog",
         "DownstreamSystemSurface",
         "catalog",
-        "system",
         "resolve",
         "owners",
         "search",
@@ -183,7 +177,6 @@ __all__ = (
     "DownstreamCapabilityCatalog",
     "DownstreamSystemSurface",
     "catalog",
-    "system",
     "resolve",
     "owners",
     "search",

@@ -1,3 +1,17 @@
+from .table_program import (
+    TableAggregateStep,
+    TableDeriveStep,
+    TableExecutionReceipt,
+    TableExecutionResult,
+    TableExpression,
+    TableExpressionKind,
+    TableFilterStep,
+    TableJoinStep,
+    TableProgram,
+    TableProgramExecutionPort,
+    TableProjectStep,
+    TableStepKind,
+)
 from .candidate_program import (
     CandidateProgramExecutionPort,
     CandidateProgramExecutionReceipt,
@@ -22,6 +36,18 @@ from .contracts import (
 )
 
 __all__ = [
+    "TableAggregateStep",
+    "TableDeriveStep",
+    "TableExecutionReceipt",
+    "TableExecutionResult",
+    "TableExpression",
+    "TableExpressionKind",
+    "TableFilterStep",
+    "TableJoinStep",
+    "TableProgram",
+    "TableProgramExecutionPort",
+    "TableProjectStep",
+    "TableStepKind",
     "AggregationFunction", "AggregationSpec", "BaselineRegistryPort", "BaselineSpec",
     "CandidateProgramExecutionPort", "CandidateProgramExecutionReceipt",
     "CandidateProgramExecutionRequest", "CandidateProgramExecutionStatus",

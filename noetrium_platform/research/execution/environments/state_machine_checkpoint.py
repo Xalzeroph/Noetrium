@@ -13,7 +13,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.api import (
     ActionResult,
     Observation,
     freeze_json_mapping,

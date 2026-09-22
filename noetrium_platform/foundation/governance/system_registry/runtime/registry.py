@@ -24,6 +24,7 @@ def _topology_digest(descriptors: tuple[SystemDescriptor, ...]) -> str:
             },
             "layer": descriptor.layer.value,
             "package_prefix": descriptor.package_prefix,
+            "topology_parent_key": descriptor.parent_key,
             "provides": list(descriptor.provides),
             "requires": list(descriptor.requires),
             "authorities": [

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from noetrium_platform.research.execution.admission.api import AdmissionTopologySnapshot
-from noetrium_platform.evidence.observability.projection.api import (
+from noetrium_platform.research.execution.policy.api import AdmissionTopologySnapshot
+from noetrium_platform.evidence.observability.status.api import (
     ExecutionAdmissionScopeFact,
     ExecutionCapacityFacts,
     ExecutionGroupFact,

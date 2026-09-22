@@ -7,8 +7,8 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.execution.decision.cycle_result import DecisionCycleResult
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import DecisionCycleResult
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.run.runtime.program import RunMachineSession

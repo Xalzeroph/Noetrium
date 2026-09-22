@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
-from noetrium_platform.capabilities.participant.core.api import BoundParticipant, BoundParticipants
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantResolutionPort
+from noetrium_platform.research.execution.api import BoundParticipant, BoundParticipants
+from noetrium_platform.research.execution.api import ParticipantResolutionPort
 from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantTopology, ExperimentSpec
 
 

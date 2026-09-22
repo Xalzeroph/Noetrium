@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 
 from .emission import operational_observation_enabled
-from .events import EventEnvelope, EventSink
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope, EventSink
 
 
 @dataclass(frozen=True, slots=True)

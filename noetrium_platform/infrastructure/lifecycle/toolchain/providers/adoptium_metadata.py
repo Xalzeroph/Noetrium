@@ -8,7 +8,7 @@ from typing import Protocol
 from urllib.parse import unquote, urlencode, urlparse
 from urllib.request import Request, urlopen
 
-from noetrium_platform.evidence.artifact.content.api import ArtifactHttpOpener, ArtifactHttpResponse
+from noetrium_platform.foundation.api import ArtifactHttpOpener, ArtifactHttpResponse
 from noetrium_platform.infrastructure.lifecycle.toolchain.api import (
     JavaRuntimeProvisioningRequest,
     RuntimeToolchainError,

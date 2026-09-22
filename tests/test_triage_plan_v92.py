@@ -12,7 +12,7 @@ from noetrium_platform.infrastructure.reliability.failure.api import build_failu
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.infrastructure.reliability.diagnostics.runtime import TriagePlanService
 from noetrium_platform.product.operator.runtime.parser import build_parser
-from noetrium_platform.product.operator.query.runtime.route_diagnostics import route_diagnostics
+from noetrium_platform.composition.operator.query.route_diagnostics import route_diagnostics
 
 
 class TriagePlanV92Tests(unittest.TestCase):

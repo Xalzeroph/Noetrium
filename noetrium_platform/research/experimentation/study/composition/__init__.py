@@ -1,4 +1,4 @@
-from ..runtime import BasicStudyMetricAggregator
+from ..algorithms import BasicStudyMetricAggregator
 from ..providers import RunArtifactStudyPublication
 from noetrium_platform.research.experimentation.run.api import RunArtifactStorePort
 from .research_result_source import StudyResearchResultSource

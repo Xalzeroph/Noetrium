@@ -4,8 +4,8 @@ from dataclasses import replace
 import math
 from typing import Protocol
 
-from noetrium_platform.capabilities.environment.runtime.api import DurablePreparedActionSession, EnvironmentSession
-from noetrium_platform.infrastructure.resources.allocation.api import (
+from noetrium_platform.capabilities.environment.api import DurablePreparedActionSession, EnvironmentSession
+from noetrium_platform.substrate.api import (
     EndpointAllocation,
     EndpointAllocationState,
     EndpointBindingProof,
@@ -14,7 +14,7 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointLeaseGuardPort,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceReadyObservation
+from noetrium_platform.substrate.api import ServiceReadyObservation
 
 from ..api import (
     MinecraftBranchRuntimeFactoryPort,

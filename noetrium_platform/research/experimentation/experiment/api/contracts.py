@@ -7,12 +7,12 @@ import re
 from typing import Protocol
 
 from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest, freeze_json, require_sha256
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.research.execution.api import (
     ParticipantImplementationIdentity,
     ParticipantRuntimeBinding,
     ParticipantSessionRuntimeIdentity,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.research.execution.api import ScopeIdentity, ScopeKind
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage
 
 

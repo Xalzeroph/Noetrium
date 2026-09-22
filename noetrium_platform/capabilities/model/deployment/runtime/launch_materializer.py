@@ -3,8 +3,8 @@ from __future__ import annotations
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.capabilities.model.asset.api import ModelAssetManagementPort
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentSpec
-from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentLookupPort
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
+from noetrium_platform.substrate.api import PythonEnvironmentLookupPort
+from noetrium_platform.substrate.api import ServiceLaunchContract
 
 
 class ModelLaunchMaterializer:

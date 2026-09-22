@@ -1,7 +1,13 @@
 from __future__ import annotations
 
-from noetrium_platform.evidence.observability.api import EventEnvelope
-from noetrium_platform.evidence.data.projection.api import ProjectionCursor
+from dataclasses import dataclass
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope
+
+@dataclass(frozen=True, slots=True)
+class _ForensicProjectionWatermark:
+    source_id: str
+    position: int
+    source_digest: str
 
 
 class EventProjectionBuffer:
@@ -14,16 +20,16 @@ class EventProjectionBuffer:
             raise ValueError("event projection batch_size must be positive")
         self.index=index
         self.batch_size=batch_size
-        self._items:list[tuple[EventEnvelope,ProjectionCursor]]=[]
+        self._items:list[tuple[EventEnvelope,_ForensicProjectionWatermark]]=[]
 
     def add(self,event:EventEnvelope,rows:int,tail_hash:str)->bool:
-        self._items.append((event,ProjectionCursor(self.SOURCE_ID,rows,tail_hash)))
+        self._items.append((event,_ForensicProjectionWatermark(self.SOURCE_ID,rows,tail_hash)))
         return len(self._items)>=self.batch_size
 
-    def current_cursor(self)->ProjectionCursor|None:
+    def current_cursor(self)->_ForensicProjectionWatermark|None:
         return None if not self._items else self._items[-1][1]
 
-    def flush(self)->ProjectionCursor|None:
+    def flush(self)->_ForensicProjectionWatermark|None:
         if not self._items:
             return None
         batch=tuple(self._items)

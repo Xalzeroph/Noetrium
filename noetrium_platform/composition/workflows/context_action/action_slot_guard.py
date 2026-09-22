@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from noetrium_platform.infrastructure.reliability.effect.api import EffectAlreadyConsumed, EffectIntentPhase, EffectIntentRecord, EffectRecoveryAnchorMissing
-from noetrium_platform.capabilities.environment.runtime.api import ActionNotApplied, ActionRequest
+from noetrium_platform.capabilities.environment.api import ActionNotApplied, ActionRequest
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
 from noetrium_platform.research.execution.workflow.api import EffectIntentOperationPort, OperationDispatchPort
 from noetrium_platform.capabilities.participant.core.api import BoundParticipants

@@ -1,3 +1,1 @@
-from .lease_adapter import RecoveryLeaseAdapter
-
-__all__ = ["RecoveryLeaseAdapter"]
+"""Reliability recovery runtime semantics. Cross-authority lease adapters live in outer composition."""

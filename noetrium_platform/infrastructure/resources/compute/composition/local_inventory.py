@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import platform
 
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeGPU,
     ComputeHost,

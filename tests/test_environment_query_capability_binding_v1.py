@@ -5,7 +5,7 @@ from noetrium_platform.capabilities.environment.api import (
     EnvironmentQueryResult,
     Observation,
 )
-from noetrium_platform.capabilities.environment.composition import (
+from noetrium_platform.composition.environment_capabilities import (
     EnvironmentQueryCapabilityBinding,
     environment_query_capability_payload,
 )

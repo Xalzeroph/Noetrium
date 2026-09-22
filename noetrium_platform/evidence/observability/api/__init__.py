@@ -7,7 +7,7 @@ from .emission import (
     replay_observation_scope,
 )
 from .auxiliary_events import OperationAuxiliaryFailureEventSink
-from .events import EventEnvelope, EventSink
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope, EventSink
 from .fanout import EventDeliveryError, EventDeliveryFailure, FanoutEventSink
 from .metrics import ContextMetricSink
 from .raw import ContextRawObservationSink

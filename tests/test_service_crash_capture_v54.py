@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 from tests._concurrency_support import segmented_byte_capture
-from noetrium_platform.infrastructure.reliability.primitives import CrashClass, CrashEvidence
+from noetrium_platform.infrastructure.lifecycle.service.api import CrashClass, CrashEvidence
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_contracts import ServiceSupervisorState
 from noetrium_platform.infrastructure.lifecycle.service.runtime import (

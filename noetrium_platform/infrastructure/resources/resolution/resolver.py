@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections.abc import Callable
 from typing import Generic, TypeVar
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import ScopeIdentity
 from .contracts import ResolutionPolicy, ResolvedValue, ScopedValue
 
 T=TypeVar("T")

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionRecoveryRequired,
     ActionReconciliationDisposition,
     ActionReconciliationResult,

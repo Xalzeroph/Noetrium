@@ -381,7 +381,7 @@ def frozen_runtime_manifest(
         ReplayLevel,
         RunResearchSemanticsReference,
     )
-    from noetrium_platform.research.experimentation.run.manifest.api import (
+    from noetrium_platform.research.experimentation.run.api.manifest import (
         CompositionPlanReference,
         RunLaunchManifest,
     )
@@ -507,8 +507,6 @@ _repository_architecture_report_cached = _lru_cache(maxsize=4)(_repository_archi
 
 def recovery_lease_state(path):
     """Test composition for recovery ownership over canonical resource leases."""
-    from noetrium_platform.infrastructure.reliability.recovery.composition import (
-        compose_sqlite_recovery_lease,
-    )
+    from noetrium_platform.composition.reliability_resources import compose_sqlite_recovery_lease
 
     return compose_sqlite_recovery_lease(path)

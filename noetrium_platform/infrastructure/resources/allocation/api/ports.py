@@ -13,6 +13,19 @@ from .contracts import (
 from noetrium_platform.infrastructure.resources.lease.api import ResourceLease, ResourceOwner
 
 
+
+
+class EndpointCandidatePortSourcePort(Protocol):
+    """Produce non-authoritative endpoint candidates for an allocation request."""
+
+    def candidate_ports(
+        self,
+        *,
+        host: str,
+        count: int,
+    ) -> tuple[int, ...]: ...
+
+
 class EndpointProbePort(Protocol):
     def probe(self, endpoint: NetworkEndpoint) -> EndpointProbeResult: ...
 
@@ -71,6 +84,7 @@ class EndpointAllocationPort(Protocol):
 
 __all__ = [
     "AtomicEndpointReservationPort",
+    "EndpointCandidatePortSourcePort",
     "EndpointAllocationPort",
     "EndpointLeaseGuardFactoryPort",
     "EndpointLeaseGuardPort",

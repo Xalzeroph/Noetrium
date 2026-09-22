@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import re
 
-from noetrium_platform.foundation.scope.path.api import PathFlavor
+from noetrium_platform.foundation.governance.api import PathFlavor
 
 
 _KEY = re.compile(r"[a-z][a-z0-9_.-]*")

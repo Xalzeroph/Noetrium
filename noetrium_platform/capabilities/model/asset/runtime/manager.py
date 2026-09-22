@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import json
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.substrate.api import ScopeIdentity
 
 from noetrium_platform.capabilities.model.asset.api import (
     ManagedModelAsset,

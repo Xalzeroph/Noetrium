@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandRunnerPort
+from noetrium_platform.substrate.api import LocalCommandRunnerPort
 
 from ..api import SoftwareEnvironmentSpec
 from ..providers import LocalRepositorySoftwareProvider

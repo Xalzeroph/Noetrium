@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 
-from noetrium_platform.evidence.observability.projection.api import ExecutionCapacityFacts
+from noetrium_platform.evidence.observability.status.api import ExecutionCapacityFacts
 from noetrium_platform.evidence.observability.telemetry.metric.api import MetricObservation
 
 

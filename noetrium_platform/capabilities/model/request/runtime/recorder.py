@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext, ImmutableModelIdentity, JsonInput, JsonObject, canonical_bytes, freeze_json,
 )
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobStorePort
+from noetrium_platform.substrate.api import ArtifactBlobStorePort
 from noetrium_platform.capabilities.model.request.api import (
     ModelRequestEnvelope,
     ModelRequestLedgerPort,

@@ -1,6 +1,11 @@
-from .default import compose
-from noetrium_platform.infrastructure.lifecycle.process.supervision.runtime import AsyncLocalCommandRunner, AsyncProcessCommandRunner, AsyncProcessSupervisor
+from __future__ import annotations
+
 from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessTerminationPolicy
+from noetrium_platform.infrastructure.lifecycle.process.supervision.runtime import (
+    AsyncLocalCommandRunner,
+    AsyncProcessCommandRunner,
+    AsyncProcessSupervisor,
+)
 
 
 def build_local_command_runner(task_group, *, default_timeout_seconds: float = 3600.0) -> AsyncLocalCommandRunner:
@@ -26,4 +31,8 @@ def build_process_supervisor(
     )
 
 
-__all__ = ["build_local_command_runner", "build_process_command_runner", "build_process_supervisor", "compose"]
+__all__ = [
+    "build_local_command_runner",
+    "build_process_command_runner",
+    "build_process_supervisor",
+]

@@ -10,14 +10,14 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from noetrium_platform.capabilities.environment.api import (
+from noetrium_platform.capabilities.api import (
     ActionIdentityViolation,
     ActionRequest,
     StateMachineDynamicsPort,
     StateTransition,
     action_request_digest,
 )
-from noetrium_platform.capabilities.environment.api.state_machine import (
+from noetrium_platform.capabilities.api import (
     freeze_json_mapping,
     thaw_json_mapping,
 )

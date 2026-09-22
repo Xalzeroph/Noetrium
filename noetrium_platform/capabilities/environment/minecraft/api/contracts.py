@@ -8,9 +8,9 @@ import re
 from typing import Any, Mapping, TypeAlias
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.infrastructure.resources.allocation.api import EndpointAllocationRequest
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
-from noetrium_platform.foundation.scope.api import ScopeKind
+from noetrium_platform.substrate.api import EndpointAllocationRequest
+from noetrium_platform.substrate.api import is_absolute_target_path
+from noetrium_platform.substrate.api import ScopeKind
 
 
 MinecraftJsonValue: TypeAlias = (

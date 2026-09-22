@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Protocol, TypeVar
 
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.execution.decision.cycle_result import DecisionCycleResult
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import DecisionCycleResult
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
-from noetrium_platform.capabilities.participant.core.api import ParticipantSessionBinding
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantSessionLifecyclePort
+from noetrium_platform.research.execution.api import ParticipantSessionBinding
+from noetrium_platform.research.execution.api import ParticipantSessionLifecyclePort
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonInput, JsonValue, OperationResult
 from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 
@@ -75,9 +75,26 @@ class RunSessionPort(Protocol):
     def close(self) -> RunCleanupReport: ...
 
 
+class RunSessionFactoryPort(Protocol):
+    """Factory boundary for constructing one long-lived Run session."""
+
+    def create(
+        self,
+        *,
+        spec: ExperimentSpec,
+        identity: RunIdentity,
+        cycle_executor: RunCycleExecutorPort,
+        participant_sessions: tuple[ParticipantSessionBinding, ...],
+        participant_lifecycle: ParticipantSessionLifecyclePort,
+        open_operations: tuple[OperationResult[JsonValue], ...],
+        initial_context: ExecutionContext,
+    ) -> RunSessionPort: ...
+
+
 __all__ = [
     "RunCycleExecutionPort",
     "RunCycleExecutorPort",
     "RunLifetimePort",
     "RunSessionPort",
+    "RunSessionFactoryPort",
 ]

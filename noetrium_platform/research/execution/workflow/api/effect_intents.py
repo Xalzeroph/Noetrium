@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from noetrium_platform.infrastructure.reliability.effect.api import (
+from noetrium_platform.capabilities.api import (
     EffectCompletionEvidence,
     EffectIntent,
     EffectIntentPrepareResult,

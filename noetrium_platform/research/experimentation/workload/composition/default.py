@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.execution.workflow.api import MethodMachinePort
+from noetrium_platform.research.execution.api import MethodMachinePort
 
 from ..api import WorkloadMethodCompilerPort, WorkloadMethodResultAdapterPort, WorkloadTaskExecutionPort
 from ..runtime import WorkloadMethodBinding

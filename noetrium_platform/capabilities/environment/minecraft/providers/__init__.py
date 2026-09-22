@@ -1,6 +1,6 @@
 """Replaceable Minecraft transport and readiness providers."""
 
-from .jsonl_bridge import JsonlMinecraftBridge, MinecraftBridgeError, ProcessTerminator
+from .jsonl_bridge import JsonlMinecraftBridge, MinecraftBridgeError
 from .readiness import MinecraftReadinessProbe, minecraft_preflight
 from .raw_control import MinecraftRawControlProvider
 from .server_files import (
@@ -33,7 +33,6 @@ from .scenario import MinecraftScenarioProvisioningError, RconMinecraftScenarioP
 __all__ = [
     "JsonlMinecraftBridge",
     "MinecraftBridgeError",
-    "ProcessTerminator",
     "MinecraftReadinessProbe",
     "MinecraftRawControlProvider",
     "minecraft_preflight",

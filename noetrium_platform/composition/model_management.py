@@ -9,11 +9,12 @@ from noetrium_platform.infrastructure.lifecycle.process.supervision.composition 
 
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, DirectoryLayoutPort, DirectoryManagementAuthorities
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
-from noetrium_platform.capabilities.model.api import ModelAuthorities
+from noetrium_platform.capabilities.model.api import ModelAuthorities, ModelRevisionAuthorityPort
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentLogs
 from noetrium_platform.capabilities.model.asset.providers import HuggingFaceCliModelSource
 from noetrium_platform.capabilities.model.asset.runtime import LocalModelAssetStorage, ModelAssetManager, ModelAssetRegistry
 from noetrium_platform.capabilities.model.composition import DeploymentModelAssetReferences
+from noetrium_platform.capabilities.model.catalog.revision.composition import sqlite_revision_authority
 from noetrium_platform.capabilities.model.deployment.composition import LocalModelReplicaPoolRuntime
 from noetrium_platform.capabilities.model.assignment.runtime import ModelAssignmentManager
 from noetrium_platform.capabilities.model.deployment.runtime import (
@@ -34,7 +35,9 @@ from noetrium_platform.capabilities.model.qualification.composition import (
 )
 from noetrium_platform.infrastructure.resources.compute.api import ComputeSchedulerPort
 from noetrium_platform.infrastructure.resources.compute.providers import LocalHostRuntimeObserver, NvidiaSmiGpuRuntimeObserver
+from noetrium_platform.infrastructure.resources.allocation.providers.local_candidates import LocalTcpEndpointCandidateSource
 from noetrium_platform.composition.resource_probes import LocalCommandResourceProbe
+from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
 from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentAuthorities
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
 from noetrium_platform.capabilities.environment.catalog.runtime import ExecutionEnvironmentCatalog
@@ -46,13 +49,15 @@ from noetrium_platform.infrastructure.lifecycle.python.runtime import (
     SubprocessEnvironmentCommandRunner,
     VenvEnvironmentBackend,
 )
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
+from noetrium_platform.infrastructure.lifecycle.service.api import (
+    MaterializedServiceEnvironment,
+    ServiceLaunchContract,
+)
 from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     DirectoryCapturePathProvider,
     ExactServiceRuntimeEndpoint,
     HttpEndpointReadinessProbe,
     LocalServiceProcessAdapter,
-    MaterializedServiceEnvironment,
     ProcessAliveReadinessProbe,
     StaticServiceEnvironmentProvider,
 )
@@ -78,6 +83,7 @@ class ManagementPlaneAuthorities:
     execution_environments: ExecutionEnvironmentCatalogPort
     python_environments: PythonEnvironmentAuthorities
     models: ModelAuthorities
+    model_revisions: ModelRevisionAuthorityPort
     host: HostComposition
     compute_scheduler: ComputeSchedulerPort
     deployment_qualification: DeploymentQualificationAuthorities
@@ -235,20 +241,24 @@ def build_local_management_plane(
         assets, assignments, deployment_catalog, deployment_runtime, fleet, deployment_logs, resources, controller
     )
     return ManagementPlaneAuthorities(
-        scopes,
-        directories,
-        execution_environments,
-        environments,
-        models,
-        host,
-        meta.compute_scheduler,
-        build_local_deployment_qualification(
+        scopes=scopes,
+        directories=directories,
+        execution_environments=execution_environments,
+        python_environments=environments,
+        models=models,
+        model_revisions=sqlite_revision_authority(
+            directory_layout.layout.state / "model" / "revisions.sqlite3"
+        ),
+        host=host,
+        compute_scheduler=meta.compute_scheduler,
+        deployment_qualification=build_local_deployment_qualification(
             directory_layout.layout.state / "model" / "qualification",
             environments.packages,
             environments.execution,
             local_commands,
+            index_worker_path=QUALIFICATION_INDEX_WORKER_PATH,
         ),
-        meta,
+        platform_meta=meta,
     )
 
 
@@ -268,6 +278,7 @@ def bind_local_model_replica_pool(
         fleet=plane.models.fleet,
         compute_scheduler=plane.compute_scheduler,
         endpoint_allocations=plane.platform_meta.endpoint_allocations,
+        endpoint_candidates=LocalTcpEndpointCandidateSource(),
         compute_lease_guards=execution_pool.compute_lease_guard_factory(
             plane.compute_scheduler
         ),

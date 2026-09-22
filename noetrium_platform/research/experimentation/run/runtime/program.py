@@ -20,7 +20,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
     require_sha256,
 )
-from noetrium_platform.research.execution.machines import (
+from noetrium_platform.research.execution.api import (
     MachineEvent,
     ProgramHandlerRegistry,
     ProgramNodeRequest,

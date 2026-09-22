@@ -28,7 +28,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
-from noetrium_platform.infrastructure.lifecycle.process.api import (
+from noetrium_platform.substrate.api import (
     LocalCommandRunnerPort,
 )
 

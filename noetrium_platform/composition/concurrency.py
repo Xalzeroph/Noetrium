@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.research.execution.admission.api import (
+from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
@@ -10,9 +10,9 @@ from noetrium_platform.research.execution.admission.api import (
     AdmissionTopologySnapshot,
     ExecutionAdmissionPort,
 )
-from noetrium_platform.research.execution.admission.composition import build_execution_admission
-from noetrium_platform.research.execution.scheduling.api import ExecutionPriority
-from noetrium_platform.research.execution.scheduling.composition import build_admission_scheduling_policy
+from noetrium_platform.research.execution.policy.composition import build_execution_admission
+from noetrium_platform.research.execution.policy.api import ExecutionPriority
+from noetrium_platform.research.execution.policy.composition import build_admission_scheduling_policy
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     ConcurrencyTopologySnapshot,

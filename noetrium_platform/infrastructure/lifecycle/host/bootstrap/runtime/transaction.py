@@ -4,7 +4,7 @@ from dataclasses import replace
 import time
 
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
-from noetrium_platform.foundation.governance.release.api import ReleasePinStorePort
+from noetrium_platform.foundation.api import ReleasePinStorePort
 from noetrium_platform.infrastructure.lifecycle.host.bootstrap.api import (
     ServerBootstrapBlocked,
     ServerBootstrapPhase,

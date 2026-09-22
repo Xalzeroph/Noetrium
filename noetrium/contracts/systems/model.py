@@ -16,7 +16,6 @@ from noetrium_platform.capabilities.model.api import (
     ModelRequestTokenizationProviderPort,
     EmbeddingInput,
     MultimodalMethodSpec,
-    MultimodalPart,
     MultimodalRequest,
     MultimodalRequestCodecPort,
     MultimodalResponse,
@@ -90,6 +89,11 @@ from noetrium_platform.capabilities.model.api import (
     ProjectModelProviderPort,
     ProjectModelRequest,
     ProjectModelResponse,
+    ModelRequestRecorderPort,
+    ModelEndpointDispatchPoolPort,
+    ModelEndpointPort,
+    ModelEndpointRequest,
+    QualifiedModelEndpointBinding,
 )
 
 from noetrium_platform.capabilities.model.api.authorities import (
@@ -132,7 +136,7 @@ from noetrium_platform.capabilities.model.api.capability import (
 
 from noetrium_platform.capabilities.model.api.multimodal import (
     MultimodalMethodSpec as multimodal__MultimodalMethodSpec,
-    MultimodalPart as multimodal__MultimodalPart,
+    MultimodalPart,
     MultimodalRequest as multimodal__MultimodalRequest,
     MultimodalRequestCodecPort as multimodal__MultimodalRequestCodecPort,
     MultimodalResponse as multimodal__MultimodalResponse,
@@ -168,6 +172,496 @@ from noetrium_platform.capabilities.model.api.tokenization import (
     ModelRequestTokenizationProviderPort as tokenization__ModelRequestTokenizationProviderPort,
 )
 
+from noetrium_platform.capabilities.model.asset.api.contracts import (
+    ManagedModelAsset,
+    ModelAcquisitionReceipt,
+    ModelAssetMode,
+    ModelAssetOrigin,
+    ModelAssetStats,
+    ModelAssetUsage,
+    ModelConfigSummary,
+    ModelSourceSpec,
+    ModelStoragePoolStatus,
+)
+
+from noetrium_platform.capabilities.model.asset.api.ports import (
+    ModelAssetLookupPort,
+    ModelAssetManagementPort,
+    ModelAssetStoragePort,
+    ModelAssetUsagePort,
+    ModelSourceBackend,
+)
+
+from noetrium_platform.capabilities.model.assignment.api.contracts import (
+    ModelAssignment,
+    ResolvedModelAssignment,
+)
+
+from noetrium_platform.capabilities.model.assignment.api.ports import (
+    ModelAssignmentPort,
+)
+
+from noetrium_platform.capabilities.model.catalog.revision.api import (
+    ModelPromotionDecision as api__ModelPromotionDecision,
+    ModelPromotionDisposition as api__ModelPromotionDisposition,
+    ModelPromotionReceipt as api__ModelPromotionReceipt,
+    ModelRevisionAuthorityPort as api__ModelRevisionAuthorityPort,
+    ModelRevisionAuthoritySnapshot as api__ModelRevisionAuthoritySnapshot,
+    ModelRevisionCommit as api__ModelRevisionCommit,
+    ModelRevisionConflictError as api__ModelRevisionConflictError,
+    ModelRevisionEvidence as api__ModelRevisionEvidence,
+    ModelRevisionEvidenceKind as api__ModelRevisionEvidenceKind,
+    ModelRevisionIdentity as api__ModelRevisionIdentity,
+    ModelRevisionIntegrityError as api__ModelRevisionIntegrityError,
+    ModelRevisionStateError as api__ModelRevisionStateError,
+    ModelRollbackReceipt as api__ModelRollbackReceipt,
+    ModelUpdateProposal as api__ModelUpdateProposal,
+    PreparedModelRevision as api__PreparedModelRevision,
+    ModelUpdateBuildEvidence as api__ModelUpdateBuildEvidence,
+    ModelUpdateBuildReceipt as api__ModelUpdateBuildReceipt,
+    ModelUpdatePlan as api__ModelUpdatePlan,
+    ModelUpdateProducerPort as api__ModelUpdateProducerPort,
+    ModelUpdateSource as api__ModelUpdateSource,
+)
+
+from noetrium_platform.capabilities.model.catalog.revision.api.contracts import (
+    ModelPromotionDecision as contracts__ModelPromotionDecision,
+    ModelPromotionDisposition as contracts__ModelPromotionDisposition,
+    ModelPromotionReceipt as contracts__ModelPromotionReceipt,
+    ModelRevisionAuthorityPort as contracts__ModelRevisionAuthorityPort,
+    ModelRevisionAuthoritySnapshot as contracts__ModelRevisionAuthoritySnapshot,
+    ModelRevisionCommit as contracts__ModelRevisionCommit,
+    ModelRevisionConflictError as contracts__ModelRevisionConflictError,
+    ModelRevisionEvidence as contracts__ModelRevisionEvidence,
+    ModelRevisionEvidenceKind as contracts__ModelRevisionEvidenceKind,
+    ModelRevisionIdentity as contracts__ModelRevisionIdentity,
+    ModelRevisionIntegrityError as contracts__ModelRevisionIntegrityError,
+    ModelRevisionStateError as contracts__ModelRevisionStateError,
+    ModelRollbackReceipt as contracts__ModelRollbackReceipt,
+    ModelUpdateProposal as contracts__ModelUpdateProposal,
+    PreparedModelRevision as contracts__PreparedModelRevision,
+)
+
+from noetrium_platform.capabilities.model.catalog.revision.api.update import (
+    ModelUpdateBuildEvidence as update__ModelUpdateBuildEvidence,
+    ModelUpdateBuildReceipt as update__ModelUpdateBuildReceipt,
+    ModelUpdatePlan as update__ModelUpdatePlan,
+    ModelUpdateProducerPort as update__ModelUpdateProducerPort,
+    ModelUpdateSource as update__ModelUpdateSource,
+)
+
+from noetrium_platform.capabilities.model.deployment.api.contracts import (
+    ModelControlSnapshot,
+    ModelControllerPhase,
+    ModelControllerState,
+    ModelDeploymentLogs,
+    ModelDeploymentSelector,
+    ModelDeploymentSpec,
+    ModelDeploymentStatus,
+    ModelDesiredState,
+    ModelEnvironmentUsage,
+    ModelGpuAllocation,
+    ModelGpuConflict,
+    ModelGpuProcessBinding,
+    ModelLogTail,
+    ModelReconcileCycle,
+    ModelRuntimeState,
+)
+
+from noetrium_platform.capabilities.model.deployment.api.ports import (
+    ModelControllerStatePort,
+    ModelControllerStopPort,
+    ModelDeploymentCatalogPort,
+    ModelDeploymentLogPort,
+    ModelDeploymentRuntimePort,
+    ModelFleetRuntimePort,
+    ModelReconcileControllerPort,
+    ModelResourceViewPort,
+    ModelServiceRuntimeFactoryPort,
+)
+
+from noetrium_platform.capabilities.model.qualification.api.qualification import (
+    BackendCandidatePlan,
+    CandidateDecision,
+    DeploymentQualificationApplicationPort,
+    DeploymentQualificationApplicationReceipt,
+    DeploymentQualificationApplicationRequest,
+    DeploymentQualificationApplicationStorePort,
+    DeploymentQualificationRuntimePort,
+    DeploymentQualificationRuntimeReceipt,
+    DeploymentQualificationRuntimeRequest,
+    DeploymentQualificationRuntimeStorePort,
+    CudaFacts,
+    DEFAULT_DEPLOYMENT_PROBE_TIMEOUT_SECONDS,
+    DEFAULT_PACKAGE_INDEX_URL,
+    native_cuda_runtime_package_names,
+    DeploymentCapabilityFacts,
+    DeploymentCapabilityProbePort,
+    DeploymentQualificationPlan,
+    DeploymentQualificationEvidenceRecord,
+    DeploymentQualificationEvidenceStorePort,
+    DeploymentQualificationPort,
+    DeploymentQualificationRequest,
+    GpuCapabilityFacts,
+    GpuFabricFacts,
+    HostExecutionFacts,
+    InstallPackage,
+    ModelArtifactFacts,
+    OperatingSystemFacts,
+    PackageArtifactFacts,
+    PackageDependencyNodeFacts,
+    PackageIndexFacts,
+    PythonRuntimeFacts,
+    StorageCapabilityFacts,
+    QualificationCommandReceipt,
+    QualificationMaterializationStatus,
+    QualificationPackageInstallerPort,
+    DeploymentRuntimeQualificationStatus,
+    QualificationRuntimeProbePort,
+    RuntimeCheckReceipt,
+)
+
+from noetrium_platform.capabilities.model.request.api import (
+    ExecutionContext,
+    ImmutableModelIdentity,
+    ModelRequestEnvelope,
+    ModelRequestLedgerPort,
+    ModelRequestRecorderPort as api__ModelRequestRecorderPort,
+    ReconstructedModelRequest,
+)
+
+from noetrium_platform.capabilities.model.request.api.contracts import (
+    ModelRequestEnvelope as contracts__ModelRequestEnvelope,
+    ModelRequestLedgerPort as contracts__ModelRequestLedgerPort,
+    ModelRequestRecorderPort as contracts__ModelRequestRecorderPort,
+    ReconstructedModelRequest as contracts__ReconstructedModelRequest,
+)
+
+from noetrium_platform.capabilities.model.request.prompt.api import (
+    ActivePromptEvidenceReadPort,
+    ActivePromptVerificationEvidence,
+    PromptVerificationIntegrityError,
+    PromptTraceDescriptor,
+    PromptTraceObserverFailure,
+    PromptTraceObserverFailureSink,
+    PromptTraceObserverPort,
+    PromptTracePoint,
+    PromptTraceStage,
+    PromptTraceSummary,
+    PromptBoundRequest,
+    PromptBodyContext,
+    PromptDynamicBlock,
+    PromptRequestBindingPort,
+    PromptRequestBodyBuilder,
+    PromptSelectionIdentity,
+    PromptSelectionPort,
+)
+
+from noetrium_platform.capabilities.model.request.prompt.api.request import (
+    PromptBoundRequest as request__PromptBoundRequest,
+    PromptBodyContext as request__PromptBodyContext,
+    PromptDynamicBlock as request__PromptDynamicBlock,
+    PromptRequestBindingPort as request__PromptRequestBindingPort,
+    PromptRequestBodyBuilder as request__PromptRequestBodyBuilder,
+)
+
+from noetrium_platform.capabilities.model.request.prompt.api.selection import (
+    PromptSelectionIdentity as selection__PromptSelectionIdentity,
+    PromptSelectionPort as selection__PromptSelectionPort,
+)
+
+from noetrium_platform.capabilities.model.request.prompt.api.trace import (
+    PromptTraceDescriptor as trace__PromptTraceDescriptor,
+    PromptTraceObserverFailure as trace__PromptTraceObserverFailure,
+    PromptTraceObserverFailureSink as trace__PromptTraceObserverFailureSink,
+    PromptTraceObserverPort as trace__PromptTraceObserverPort,
+    PromptTracePoint as trace__PromptTracePoint,
+    PromptTraceStage as trace__PromptTraceStage,
+    PromptTraceSummary as trace__PromptTraceSummary,
+)
+
+from noetrium_platform.capabilities.model.request.prompt.api.verification import (
+    ActivePromptEvidenceReadPort as verification__ActivePromptEvidenceReadPort,
+    ActivePromptVerificationEvidence as verification__ActivePromptVerificationEvidence,
+    PromptVerificationIntegrityError as verification__PromptVerificationIntegrityError,
+)
+
+from noetrium_platform.capabilities.model.serving.api import (
+    CPUInventory,
+    CPUNode,
+    DeploymentPlacement,
+    GpuPlacementPolicyPort,
+    DurableRecoveryAttempt,
+    DurableRecoveryObserverFailureSink,
+    DurableRecoveryObserverPort,
+    DurableRecoveryPhase,
+    DurableRecoveryStorePort,
+    FrozenDeploymentIdentity,
+    FrozenDeploymentSet,
+    FrozenRoleAssignment,
+    GPUFabricLink,
+    GPUInventory,
+    HostInventory,
+    HostInventoryEvidenceStorePort,
+    HostInventoryProvider,
+    HostInventoryReceipt,
+    HostLimits,
+    HostResourceDelta,
+    MemoryInventory,
+    ModelAdmissionClosed,
+    ModelAdmissionLeasePort,
+    ModelAdmissionPort,
+    ModelAdmissionRegistryPort,
+    ModelAdmissionTimeout,
+    ModelPhase,
+    ModelRunState,
+    ModelSupervisorStateStorePort,
+    MountInventory,
+    PerformanceSample,
+    QualificationCertificate,
+    QualificationDecision,
+    QualificationEvidence,
+    QualificationPolicy,
+    ResourceQualificationMeasurements,
+    QualifiedDeploymentManifest,
+    RecoveryObserverFailure,
+    RecoveryPlan,
+    RecoveryResumeDecision,
+    RecoveryStep,
+    ResourceEnvelope,
+    RoleCanaryResult,
+    RoleModelAssignment,
+    RoleModelManifest,
+    RuntimeCanaryContract,
+    RuntimeCanaryEvidence,
+    RuntimeCanaryEvidenceStorePort,
+    RuntimeCanaryProbe,
+    RuntimeInventory,
+    RuntimeQualificationEvidenceStorePort,
+    RuntimeQualificationPublication,
+    RuntimeQualificationPublisherPort,
+    RuntimeQualificationReceipt,
+    ServiceHeartbeat,
+    begin_recovery_step,
+    build_host_inventory_receipt,
+    build_runtime_qualification_receipt,
+    compare_host_inventory_receipts,
+    complete_recovery_step,
+    decide_resume,
+    evaluate_qualification,
+    evaluate_runtime_canary_contract,
+    fail_recovery_step,
+    new_recovery_attempt,
+    recovery_plan_digest,
+    succeed_recovery,
+)
+
+from noetrium_platform.capabilities.model.serving.api.admission import (
+    ModelAdmissionClosed as admission__ModelAdmissionClosed,
+    ModelAdmissionLeasePort as admission__ModelAdmissionLeasePort,
+    ModelAdmissionPort as admission__ModelAdmissionPort,
+    ModelAdmissionRegistryPort as admission__ModelAdmissionRegistryPort,
+    ModelAdmissionTimeout as admission__ModelAdmissionTimeout,
+)
+
+from noetrium_platform.capabilities.model.serving.api.deployment import (
+    FrozenDeploymentIdentity as deployment__FrozenDeploymentIdentity,
+    FrozenDeploymentSet as deployment__FrozenDeploymentSet,
+    FrozenRoleAssignment as deployment__FrozenRoleAssignment,
+    RuntimeQualificationPublication as deployment__RuntimeQualificationPublication,
+    RuntimeQualificationPublisherPort as deployment__RuntimeQualificationPublisherPort,
+)
+
+from noetrium_platform.capabilities.model.serving.api.host_verification import (
+    HostInventoryReceipt as host_verification__HostInventoryReceipt,
+    HostResourceDelta as host_verification__HostResourceDelta,
+    build_host_inventory_receipt as host_verification__build_host_inventory_receipt,
+    compare_host_inventory_receipts as host_verification__compare_host_inventory_receipts,
+)
+
+from noetrium_platform.capabilities.model.serving.api.host_verification_ports import (
+    HostInventoryEvidenceStorePort as host_verification_ports__HostInventoryEvidenceStorePort,
+    HostInventoryProvider as host_verification_ports__HostInventoryProvider,
+)
+
+from noetrium_platform.capabilities.model.serving.api.inventory import (
+    CPUNode as inventory__CPUNode,
+    CPUInventory as inventory__CPUInventory,
+    GPUInventory as inventory__GPUInventory,
+    GPUFabricLink as inventory__GPUFabricLink,
+    MemoryInventory as inventory__MemoryInventory,
+    MountInventory as inventory__MountInventory,
+    RuntimeInventory as inventory__RuntimeInventory,
+    HostLimits as inventory__HostLimits,
+    HostInventory as inventory__HostInventory,
+)
+
+from noetrium_platform.capabilities.model.serving.api.placement import (
+    DeploymentPlacement as placement__DeploymentPlacement,
+    GpuPlacementPolicyPort as placement__GpuPlacementPolicyPort,
+)
+
+from noetrium_platform.capabilities.model.serving.api.qualification import (
+    RoleCanaryResult as qualification__RoleCanaryResult,
+    PerformanceSample as qualification__PerformanceSample,
+    ResourceQualificationMeasurements as qualification__ResourceQualificationMeasurements,
+    QualificationEvidence as qualification__QualificationEvidence,
+    QualificationPolicy as qualification__QualificationPolicy,
+    QualificationDecision as qualification__QualificationDecision,
+    evaluate_qualification as qualification__evaluate_qualification,
+)
+
+from noetrium_platform.capabilities.model.serving.api.qualified_deployment import (
+    DeploymentPlacement as qualified_deployment__DeploymentPlacement,
+    ModelStackSpec,
+    ResourceEnvelope as qualified_deployment__ResourceEnvelope,
+    QualificationCertificate as qualified_deployment__QualificationCertificate,
+    RoleModelAssignment as qualified_deployment__RoleModelAssignment,
+    RoleModelManifest as qualified_deployment__RoleModelManifest,
+    QualifiedDeploymentManifest as qualified_deployment__QualifiedDeploymentManifest,
+)
+
+from noetrium_platform.capabilities.model.serving.api.recovery import (
+    RecoveryPlan as recovery__RecoveryPlan,
+    RecoveryStep as recovery__RecoveryStep,
+)
+
+from noetrium_platform.capabilities.model.serving.api.recovery_observer import (
+    DurableRecoveryObserverFailureSink as recovery_observer__DurableRecoveryObserverFailureSink,
+    DurableRecoveryObserverPort as recovery_observer__DurableRecoveryObserverPort,
+    RecoveryObserverFailure as recovery_observer__RecoveryObserverFailure,
+)
+
+from noetrium_platform.capabilities.model.serving.api.recovery_ports import (
+    DurableRecoveryStorePort as recovery_ports__DurableRecoveryStorePort,
+)
+
+from noetrium_platform.capabilities.model.serving.api.recovery_state import (
+    DurableRecoveryAttempt as recovery_state__DurableRecoveryAttempt,
+    DurableRecoveryPhase as recovery_state__DurableRecoveryPhase,
+    RecoveryResumeDecision as recovery_state__RecoveryResumeDecision,
+    begin_recovery_step as recovery_state__begin_recovery_step,
+    complete_recovery_step as recovery_state__complete_recovery_step,
+    decide_resume as recovery_state__decide_resume,
+    fail_recovery_step as recovery_state__fail_recovery_step,
+    new_recovery_attempt as recovery_state__new_recovery_attempt,
+    recovery_plan_digest as recovery_state__recovery_plan_digest,
+    succeed_recovery as recovery_state__succeed_recovery,
+)
+
+from noetrium_platform.capabilities.model.serving.api.runtime_canary import (
+    RuntimeCanaryContract as runtime_canary__RuntimeCanaryContract,
+    RuntimeCanaryEvidence as runtime_canary__RuntimeCanaryEvidence,
+    RuntimeCanaryProbe as runtime_canary__RuntimeCanaryProbe,
+    evaluate_runtime_canary_contract as runtime_canary__evaluate_runtime_canary_contract,
+)
+
+from noetrium_platform.capabilities.model.serving.api.runtime_canary_ports import (
+    RuntimeCanaryEvidenceStorePort as runtime_canary_ports__RuntimeCanaryEvidenceStorePort,
+)
+
+from noetrium_platform.capabilities.model.serving.api.runtime_qualification import (
+    RuntimeQualificationReceipt as runtime_qualification__RuntimeQualificationReceipt,
+    build_runtime_qualification_receipt as runtime_qualification__build_runtime_qualification_receipt,
+)
+
+from noetrium_platform.capabilities.model.serving.api.runtime_qualification_ports import (
+    RuntimeQualificationEvidenceStorePort as runtime_qualification_ports__RuntimeQualificationEvidenceStorePort,
+)
+
+from noetrium_platform.capabilities.model.serving.api.state import (
+    ImmutableModelIdentity as state__ImmutableModelIdentity,
+    ModelPhase as state__ModelPhase,
+    ModelRunState as state__ModelRunState,
+)
+
+from noetrium_platform.capabilities.model.serving.api.supervisor_ports import (
+    ModelSupervisorStateStorePort as supervisor_ports__ModelSupervisorStateStorePort,
+)
+
+from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    AsyncJsonHttpTransportPort,
+    JsonHttpResponse,
+    ModelEndpointError,
+    ModelEndpointObserverPort,
+    ModelEndpointFactoryPort,
+    ModelEndpointPort as api__ModelEndpointPort,
+    ModelEndpointRequest as api__ModelEndpointRequest,
+    ModelEndpointResponse,
+    ModelEndpointRoute,
+    QualifiedModelClosurePublication,
+    AdaptiveModelEndpointPoolPort,
+    ModelEndpointDispatchPoolPort as api__ModelEndpointDispatchPoolPort,
+    ModelEndpointDispatchResult,
+    ModelEndpointPoolSnapshot,
+    ModelEndpointReplicaSelectionCandidate,
+    ModelEndpointReplicaSelectionPolicyPort,
+    ModelEndpointReplicaSnapshot,
+    OperationalModelEndpointReplica,
+    OperationalModelEndpointReplicaSet,
+    OperationalModelServingInventory,
+    QualifiedModelEndpointReplicaBindingPort,
+    QualifiedModelEndpointReplicaSet,
+    QualifiedModelClosurePublicationReceipt,
+    QualifiedModelEndpointBinding as api__QualifiedModelEndpointBinding,
+    QualifiedModelEndpointBindingPort,
+)
+
+from noetrium_platform.capabilities.model.serving.endpoint.api.contracts import (
+    JsonHttpResponse as contracts__JsonHttpResponse,
+    ModelEndpointError as contracts__ModelEndpointError,
+    ModelEndpointObserverPort as contracts__ModelEndpointObserverPort,
+    ModelEndpointRequest as contracts__ModelEndpointRequest,
+    ModelEndpointResponse as contracts__ModelEndpointResponse,
+    ModelEndpointRoute as contracts__ModelEndpointRoute,
+)
+
+from noetrium_platform.capabilities.model.serving.endpoint.api.operational_inventory import (
+    OperationalModelServingInventory as operational_inventory__OperationalModelServingInventory,
+)
+
+from noetrium_platform.capabilities.model.serving.endpoint.api.ports import (
+    AsyncJsonHttpTransportPort as ports__AsyncJsonHttpTransportPort,
+    ModelEndpointFactoryPort as ports__ModelEndpointFactoryPort,
+    ModelEndpointPort as ports__ModelEndpointPort,
+)
+
+from noetrium_platform.capabilities.model.serving.endpoint.api.publication import (
+    QualifiedModelClosurePublication as publication__QualifiedModelClosurePublication,
+    QualifiedModelClosurePublicationReceipt as publication__QualifiedModelClosurePublicationReceipt,
+)
+
+from noetrium_platform.capabilities.model.serving.endpoint.api.qualification import (
+    QualifiedModelEndpointBinding as qualification__QualifiedModelEndpointBinding,
+    QualifiedModelEndpointBindingPort as qualification__QualifiedModelEndpointBindingPort,
+)
+
+from noetrium_platform.capabilities.model.serving.endpoint.api.replica import (
+    AdaptiveModelEndpointPoolPort as replica__AdaptiveModelEndpointPoolPort,
+    ModelEndpointDispatchPoolPort as replica__ModelEndpointDispatchPoolPort,
+    ModelEndpointDispatchResult as replica__ModelEndpointDispatchResult,
+    ModelEndpointPoolSnapshot as replica__ModelEndpointPoolSnapshot,
+    ModelEndpointReplicaSelectionCandidate as replica__ModelEndpointReplicaSelectionCandidate,
+    ModelEndpointReplicaSelectionPolicyPort as replica__ModelEndpointReplicaSelectionPolicyPort,
+    ModelEndpointReplicaSnapshot as replica__ModelEndpointReplicaSnapshot,
+    OperationalModelEndpointReplica as replica__OperationalModelEndpointReplica,
+    OperationalModelEndpointReplicaSet as replica__OperationalModelEndpointReplicaSet,
+    QualifiedModelEndpointReplicaBindingPort as replica__QualifiedModelEndpointReplicaBindingPort,
+    QualifiedModelEndpointReplicaSet as replica__QualifiedModelEndpointReplicaSet,
+)
+
+from noetrium_platform.capabilities.model.stack.api import (
+    ModelArtifactClosure,
+    ModelStackSpec as api__ModelStackSpec,
+    RuntimeBuildIdentity,
+)
+
+from noetrium_platform.capabilities.model.stack.api.stack import (
+    ModelArtifactClosure as stack__ModelArtifactClosure,
+    ModelStackSpec as stack__ModelStackSpec,
+    RuntimeBuildIdentity as stack__RuntimeBuildIdentity,
+)
+
 SYSTEM_KEY = 'model'
 PACKAGE_PREFIX = 'noetrium_platform.capabilities.model'
-__all__ = ('ModelRequestContextExceeded', 'ModelRequestTokenBudget', 'ModelRequestTokenizationIdentity', 'ModelRequestTokenizationPort', 'ModelRequestTokenizationProviderPort', 'EmbeddingInput', 'MultimodalMethodSpec', 'MultimodalPart', 'MultimodalRequest', 'MultimodalRequestCodecPort', 'MultimodalResponse', 'EmbeddingOutput', 'EmbeddingVector', 'ModelCapabilityInput', 'ModelCapabilityInvocation', 'ModelCapabilityOutput', 'ModelCapabilityResponse', 'NamedScalar', 'ProjectModelStreamingCapabilityProviderPort', 'ProjectModelStreamingCapabilityClientPort', 'ModelCapabilityStreamTerminal', 'ModelCapabilityStreamSession', 'ModelCapabilityStreamDisposition', 'ModelCapabilityStreamChunk', 'PolicyActionProbability', 'PolicyInferenceInput', 'PolicyInferenceOutput', 'RankedCandidate', 'RankingCandidate', 'RankingInput', 'RankingOutput', 'ProjectModelCapabilityClientPort', 'ProjectModelCapabilityProviderPort', 'ScoredCandidate', 'ScoringCandidate', 'ScoringInput', 'ScoringOutput', 'StructuredGenerationOutput', 'StructuredGenerationInput', 'StructuredGenerationDecoderPort', 'ValueInferenceInput', 'ValueInferenceOutput', 'ModelPromotionDecision', 'ModelPromotionDisposition', 'ModelPromotionReceipt', 'ModelRevisionAuthorityPort', 'ModelRevisionAuthoritySnapshot', 'ModelRevisionCommit', 'ModelRevisionConflictError', 'ModelRevisionEvidence', 'ModelRevisionEvidenceKind', 'ModelRevisionIdentity', 'ModelRevisionIntegrityError', 'ModelRevisionStateError', 'ModelRollbackReceipt', 'ModelUpdateBuildEvidence', 'ModelUpdateBuildReceipt', 'ModelUpdatePlan', 'ModelUpdateProducerPort', 'ModelUpdateProposal', 'ModelUpdateSource', 'PreparedModelRevision', 'ModelAuthorities', 'ModelBindingSelectionReceipt', 'ModelBindingDiagnostic', 'ModelBindingDiagnosticCode', 'ModelBindingDiagnosticSeverity', 'ModelCapabilityRequirement', 'ModelProjectBindingError', 'ModelProjectDefinition', 'MultimodalInferenceOutput', 'MultimodalInferenceInput', 'MultimodalContent', 'ModelRequirementContribution', 'ModelProviderProfile', 'ProjectModelBinding', 'ProjectModelBindingSet', 'ProjectModelClientPort', 'ProjectModelProviderPort', 'ProjectModelRequest', 'ProjectModelResponse', 'authorities__ModelAuthorities', 'capability__EmbeddingInput', 'capability__EmbeddingOutput', 'capability__EmbeddingVector', 'capability__ModelCapabilityInput', 'capability__ModelCapabilityInvocation', 'capability__ModelCapabilityOutput', 'capability__ModelCapabilityResponse', 'capability__NamedScalar', 'capability__ProjectModelStreamingCapabilityProviderPort', 'capability__ProjectModelStreamingCapabilityClientPort', 'capability__ModelCapabilityStreamTerminal', 'capability__ModelCapabilityStreamSession', 'capability__ModelCapabilityStreamDisposition', 'capability__ModelCapabilityStreamChunk', 'capability__PolicyActionProbability', 'capability__PolicyInferenceInput', 'capability__PolicyInferenceOutput', 'capability__RankedCandidate', 'capability__RankingCandidate', 'capability__RankingInput', 'capability__RankingOutput', 'capability__ProjectModelCapabilityClientPort', 'capability__ProjectModelCapabilityProviderPort', 'capability__ScoredCandidate', 'capability__ScoringCandidate', 'capability__ScoringInput', 'capability__ScoringOutput', 'capability__StructuredGenerationOutput', 'capability__StructuredGenerationDecoderPort', 'capability__ValueInferenceInput', 'capability__ValueInferenceOutput', 'multimodal__MultimodalMethodSpec', 'multimodal__MultimodalPart', 'multimodal__MultimodalRequest', 'multimodal__MultimodalRequestCodecPort', 'multimodal__MultimodalResponse', 'project__ModelBindingSelectionReceipt', 'project__ModelBindingDiagnostic', 'project__ModelBindingDiagnosticCode', 'project__ModelBindingDiagnosticSeverity', 'project__ModelCapabilityRequirement', 'project__ModelProjectBindingError', 'project__ModelProjectDefinition', 'project__MultimodalInferenceOutput', 'project__MultimodalInferenceInput', 'project__MultimodalContent', 'project__ModelRequirementContribution', 'project__ModelProviderProfile', 'project__ProjectModelBinding', 'project__ProjectModelBindingSet', 'project__ProjectModelClientPort', 'project__ProjectModelProviderPort', 'project__ProjectModelRequest', 'project__ProjectModelResponse', 'project__StructuredGenerationInput', 'tokenization__ModelRequestContextExceeded', 'tokenization__ModelRequestTokenBudget', 'tokenization__ModelRequestTokenizationIdentity', 'tokenization__ModelRequestTokenizationPort', 'tokenization__ModelRequestTokenizationProviderPort')
+__all__ = ('ModelRequestContextExceeded', 'ModelRequestTokenBudget', 'ModelRequestTokenizationIdentity', 'ModelRequestTokenizationPort', 'ModelRequestTokenizationProviderPort', 'EmbeddingInput', 'MultimodalMethodSpec', 'MultimodalRequest', 'MultimodalRequestCodecPort', 'MultimodalResponse', 'EmbeddingOutput', 'EmbeddingVector', 'ModelCapabilityInput', 'ModelCapabilityInvocation', 'ModelCapabilityOutput', 'ModelCapabilityResponse', 'NamedScalar', 'ProjectModelStreamingCapabilityProviderPort', 'ProjectModelStreamingCapabilityClientPort', 'ModelCapabilityStreamTerminal', 'ModelCapabilityStreamSession', 'ModelCapabilityStreamDisposition', 'ModelCapabilityStreamChunk', 'PolicyActionProbability', 'PolicyInferenceInput', 'PolicyInferenceOutput', 'RankedCandidate', 'RankingCandidate', 'RankingInput', 'RankingOutput', 'ProjectModelCapabilityClientPort', 'ProjectModelCapabilityProviderPort', 'ScoredCandidate', 'ScoringCandidate', 'ScoringInput', 'ScoringOutput', 'StructuredGenerationOutput', 'StructuredGenerationInput', 'StructuredGenerationDecoderPort', 'ValueInferenceInput', 'ValueInferenceOutput', 'ModelPromotionDecision', 'ModelPromotionDisposition', 'ModelPromotionReceipt', 'ModelRevisionAuthorityPort', 'ModelRevisionAuthoritySnapshot', 'ModelRevisionCommit', 'ModelRevisionConflictError', 'ModelRevisionEvidence', 'ModelRevisionEvidenceKind', 'ModelRevisionIdentity', 'ModelRevisionIntegrityError', 'ModelRevisionStateError', 'ModelRollbackReceipt', 'ModelUpdateBuildEvidence', 'ModelUpdateBuildReceipt', 'ModelUpdatePlan', 'ModelUpdateProducerPort', 'ModelUpdateProposal', 'ModelUpdateSource', 'PreparedModelRevision', 'ModelAuthorities', 'ModelBindingSelectionReceipt', 'ModelBindingDiagnostic', 'ModelBindingDiagnosticCode', 'ModelBindingDiagnosticSeverity', 'ModelCapabilityRequirement', 'ModelProjectBindingError', 'ModelProjectDefinition', 'MultimodalInferenceOutput', 'MultimodalInferenceInput', 'MultimodalContent', 'ModelRequirementContribution', 'ModelProviderProfile', 'ProjectModelBinding', 'ProjectModelBindingSet', 'ProjectModelClientPort', 'ProjectModelProviderPort', 'ProjectModelRequest', 'ProjectModelResponse', 'ModelRequestRecorderPort', 'ModelEndpointDispatchPoolPort', 'ModelEndpointPort', 'ModelEndpointRequest', 'QualifiedModelEndpointBinding', 'authorities__ModelAuthorities', 'capability__EmbeddingInput', 'capability__EmbeddingOutput', 'capability__EmbeddingVector', 'capability__ModelCapabilityInput', 'capability__ModelCapabilityInvocation', 'capability__ModelCapabilityOutput', 'capability__ModelCapabilityResponse', 'capability__NamedScalar', 'capability__ProjectModelStreamingCapabilityProviderPort', 'capability__ProjectModelStreamingCapabilityClientPort', 'capability__ModelCapabilityStreamTerminal', 'capability__ModelCapabilityStreamSession', 'capability__ModelCapabilityStreamDisposition', 'capability__ModelCapabilityStreamChunk', 'capability__PolicyActionProbability', 'capability__PolicyInferenceInput', 'capability__PolicyInferenceOutput', 'capability__RankedCandidate', 'capability__RankingCandidate', 'capability__RankingInput', 'capability__RankingOutput', 'capability__ProjectModelCapabilityClientPort', 'capability__ProjectModelCapabilityProviderPort', 'capability__ScoredCandidate', 'capability__ScoringCandidate', 'capability__ScoringInput', 'capability__ScoringOutput', 'capability__StructuredGenerationOutput', 'capability__StructuredGenerationDecoderPort', 'capability__ValueInferenceInput', 'capability__ValueInferenceOutput', 'multimodal__MultimodalMethodSpec', 'MultimodalPart', 'multimodal__MultimodalRequest', 'multimodal__MultimodalRequestCodecPort', 'multimodal__MultimodalResponse', 'project__ModelBindingSelectionReceipt', 'project__ModelBindingDiagnostic', 'project__ModelBindingDiagnosticCode', 'project__ModelBindingDiagnosticSeverity', 'project__ModelCapabilityRequirement', 'project__ModelProjectBindingError', 'project__ModelProjectDefinition', 'project__MultimodalInferenceOutput', 'project__MultimodalInferenceInput', 'project__MultimodalContent', 'project__ModelRequirementContribution', 'project__ModelProviderProfile', 'project__ProjectModelBinding', 'project__ProjectModelBindingSet', 'project__ProjectModelClientPort', 'project__ProjectModelProviderPort', 'project__ProjectModelRequest', 'project__ProjectModelResponse', 'project__StructuredGenerationInput', 'tokenization__ModelRequestContextExceeded', 'tokenization__ModelRequestTokenBudget', 'tokenization__ModelRequestTokenizationIdentity', 'tokenization__ModelRequestTokenizationPort', 'tokenization__ModelRequestTokenizationProviderPort', 'ManagedModelAsset', 'ModelAcquisitionReceipt', 'ModelAssetMode', 'ModelAssetOrigin', 'ModelAssetStats', 'ModelAssetUsage', 'ModelConfigSummary', 'ModelSourceSpec', 'ModelStoragePoolStatus', 'ModelAssetLookupPort', 'ModelAssetManagementPort', 'ModelAssetStoragePort', 'ModelAssetUsagePort', 'ModelSourceBackend', 'ModelAssignment', 'ResolvedModelAssignment', 'ModelAssignmentPort', 'api__ModelPromotionDecision', 'api__ModelPromotionDisposition', 'api__ModelPromotionReceipt', 'api__ModelRevisionAuthorityPort', 'api__ModelRevisionAuthoritySnapshot', 'api__ModelRevisionCommit', 'api__ModelRevisionConflictError', 'api__ModelRevisionEvidence', 'api__ModelRevisionEvidenceKind', 'api__ModelRevisionIdentity', 'api__ModelRevisionIntegrityError', 'api__ModelRevisionStateError', 'api__ModelRollbackReceipt', 'api__ModelUpdateProposal', 'api__PreparedModelRevision', 'api__ModelUpdateBuildEvidence', 'api__ModelUpdateBuildReceipt', 'api__ModelUpdatePlan', 'api__ModelUpdateProducerPort', 'api__ModelUpdateSource', 'contracts__ModelPromotionDecision', 'contracts__ModelPromotionDisposition', 'contracts__ModelPromotionReceipt', 'contracts__ModelRevisionAuthorityPort', 'contracts__ModelRevisionAuthoritySnapshot', 'contracts__ModelRevisionCommit', 'contracts__ModelRevisionConflictError', 'contracts__ModelRevisionEvidence', 'contracts__ModelRevisionEvidenceKind', 'contracts__ModelRevisionIdentity', 'contracts__ModelRevisionIntegrityError', 'contracts__ModelRevisionStateError', 'contracts__ModelRollbackReceipt', 'contracts__ModelUpdateProposal', 'contracts__PreparedModelRevision', 'update__ModelUpdateBuildEvidence', 'update__ModelUpdateBuildReceipt', 'update__ModelUpdatePlan', 'update__ModelUpdateProducerPort', 'update__ModelUpdateSource', 'ModelControlSnapshot', 'ModelControllerPhase', 'ModelControllerState', 'ModelDeploymentLogs', 'ModelDeploymentSelector', 'ModelDeploymentSpec', 'ModelDeploymentStatus', 'ModelDesiredState', 'ModelEnvironmentUsage', 'ModelGpuAllocation', 'ModelGpuConflict', 'ModelGpuProcessBinding', 'ModelLogTail', 'ModelReconcileCycle', 'ModelRuntimeState', 'ModelControllerStatePort', 'ModelControllerStopPort', 'ModelDeploymentCatalogPort', 'ModelDeploymentLogPort', 'ModelDeploymentRuntimePort', 'ModelFleetRuntimePort', 'ModelReconcileControllerPort', 'ModelResourceViewPort', 'ModelServiceRuntimeFactoryPort', 'BackendCandidatePlan', 'CandidateDecision', 'DeploymentQualificationApplicationPort', 'DeploymentQualificationApplicationReceipt', 'DeploymentQualificationApplicationRequest', 'DeploymentQualificationApplicationStorePort', 'DeploymentQualificationRuntimePort', 'DeploymentQualificationRuntimeReceipt', 'DeploymentQualificationRuntimeRequest', 'DeploymentQualificationRuntimeStorePort', 'CudaFacts', 'DEFAULT_DEPLOYMENT_PROBE_TIMEOUT_SECONDS', 'DEFAULT_PACKAGE_INDEX_URL', 'native_cuda_runtime_package_names', 'DeploymentCapabilityFacts', 'DeploymentCapabilityProbePort', 'DeploymentQualificationPlan', 'DeploymentQualificationEvidenceRecord', 'DeploymentQualificationEvidenceStorePort', 'DeploymentQualificationPort', 'DeploymentQualificationRequest', 'GpuCapabilityFacts', 'GpuFabricFacts', 'HostExecutionFacts', 'InstallPackage', 'ModelArtifactFacts', 'OperatingSystemFacts', 'PackageArtifactFacts', 'PackageDependencyNodeFacts', 'PackageIndexFacts', 'PythonRuntimeFacts', 'StorageCapabilityFacts', 'QualificationCommandReceipt', 'QualificationMaterializationStatus', 'QualificationPackageInstallerPort', 'DeploymentRuntimeQualificationStatus', 'QualificationRuntimeProbePort', 'RuntimeCheckReceipt', 'ExecutionContext', 'ImmutableModelIdentity', 'ModelRequestEnvelope', 'ModelRequestLedgerPort', 'api__ModelRequestRecorderPort', 'ReconstructedModelRequest', 'contracts__ModelRequestEnvelope', 'contracts__ModelRequestLedgerPort', 'contracts__ModelRequestRecorderPort', 'contracts__ReconstructedModelRequest', 'ActivePromptEvidenceReadPort', 'ActivePromptVerificationEvidence', 'PromptVerificationIntegrityError', 'PromptTraceDescriptor', 'PromptTraceObserverFailure', 'PromptTraceObserverFailureSink', 'PromptTraceObserverPort', 'PromptTracePoint', 'PromptTraceStage', 'PromptTraceSummary', 'PromptBoundRequest', 'PromptBodyContext', 'PromptDynamicBlock', 'PromptRequestBindingPort', 'PromptRequestBodyBuilder', 'PromptSelectionIdentity', 'PromptSelectionPort', 'request__PromptBoundRequest', 'request__PromptBodyContext', 'request__PromptDynamicBlock', 'request__PromptRequestBindingPort', 'request__PromptRequestBodyBuilder', 'selection__PromptSelectionIdentity', 'selection__PromptSelectionPort', 'trace__PromptTraceDescriptor', 'trace__PromptTraceObserverFailure', 'trace__PromptTraceObserverFailureSink', 'trace__PromptTraceObserverPort', 'trace__PromptTracePoint', 'trace__PromptTraceStage', 'trace__PromptTraceSummary', 'verification__ActivePromptEvidenceReadPort', 'verification__ActivePromptVerificationEvidence', 'verification__PromptVerificationIntegrityError', 'CPUInventory', 'CPUNode', 'DeploymentPlacement', 'GpuPlacementPolicyPort', 'DurableRecoveryAttempt', 'DurableRecoveryObserverFailureSink', 'DurableRecoveryObserverPort', 'DurableRecoveryPhase', 'DurableRecoveryStorePort', 'FrozenDeploymentIdentity', 'FrozenDeploymentSet', 'FrozenRoleAssignment', 'GPUFabricLink', 'GPUInventory', 'HostInventory', 'HostInventoryEvidenceStorePort', 'HostInventoryProvider', 'HostInventoryReceipt', 'HostLimits', 'HostResourceDelta', 'MemoryInventory', 'ModelAdmissionClosed', 'ModelAdmissionLeasePort', 'ModelAdmissionPort', 'ModelAdmissionRegistryPort', 'ModelAdmissionTimeout', 'ModelPhase', 'ModelRunState', 'ModelSupervisorStateStorePort', 'MountInventory', 'PerformanceSample', 'QualificationCertificate', 'QualificationDecision', 'QualificationEvidence', 'QualificationPolicy', 'ResourceQualificationMeasurements', 'QualifiedDeploymentManifest', 'RecoveryObserverFailure', 'RecoveryPlan', 'RecoveryResumeDecision', 'RecoveryStep', 'ResourceEnvelope', 'RoleCanaryResult', 'RoleModelAssignment', 'RoleModelManifest', 'RuntimeCanaryContract', 'RuntimeCanaryEvidence', 'RuntimeCanaryEvidenceStorePort', 'RuntimeCanaryProbe', 'RuntimeInventory', 'RuntimeQualificationEvidenceStorePort', 'RuntimeQualificationPublication', 'RuntimeQualificationPublisherPort', 'RuntimeQualificationReceipt', 'ServiceHeartbeat', 'begin_recovery_step', 'build_host_inventory_receipt', 'build_runtime_qualification_receipt', 'compare_host_inventory_receipts', 'complete_recovery_step', 'decide_resume', 'evaluate_qualification', 'evaluate_runtime_canary_contract', 'fail_recovery_step', 'new_recovery_attempt', 'recovery_plan_digest', 'succeed_recovery', 'admission__ModelAdmissionClosed', 'admission__ModelAdmissionLeasePort', 'admission__ModelAdmissionPort', 'admission__ModelAdmissionRegistryPort', 'admission__ModelAdmissionTimeout', 'deployment__FrozenDeploymentIdentity', 'deployment__FrozenDeploymentSet', 'deployment__FrozenRoleAssignment', 'deployment__RuntimeQualificationPublication', 'deployment__RuntimeQualificationPublisherPort', 'host_verification__HostInventoryReceipt', 'host_verification__HostResourceDelta', 'host_verification__build_host_inventory_receipt', 'host_verification__compare_host_inventory_receipts', 'host_verification_ports__HostInventoryEvidenceStorePort', 'host_verification_ports__HostInventoryProvider', 'inventory__CPUNode', 'inventory__CPUInventory', 'inventory__GPUInventory', 'inventory__GPUFabricLink', 'inventory__MemoryInventory', 'inventory__MountInventory', 'inventory__RuntimeInventory', 'inventory__HostLimits', 'inventory__HostInventory', 'placement__DeploymentPlacement', 'placement__GpuPlacementPolicyPort', 'qualification__RoleCanaryResult', 'qualification__PerformanceSample', 'qualification__ResourceQualificationMeasurements', 'qualification__QualificationEvidence', 'qualification__QualificationPolicy', 'qualification__QualificationDecision', 'qualification__evaluate_qualification', 'qualified_deployment__DeploymentPlacement', 'ModelStackSpec', 'qualified_deployment__ResourceEnvelope', 'qualified_deployment__QualificationCertificate', 'qualified_deployment__RoleModelAssignment', 'qualified_deployment__RoleModelManifest', 'qualified_deployment__QualifiedDeploymentManifest', 'recovery__RecoveryPlan', 'recovery__RecoveryStep', 'recovery_observer__DurableRecoveryObserverFailureSink', 'recovery_observer__DurableRecoveryObserverPort', 'recovery_observer__RecoveryObserverFailure', 'recovery_ports__DurableRecoveryStorePort', 'recovery_state__DurableRecoveryAttempt', 'recovery_state__DurableRecoveryPhase', 'recovery_state__RecoveryResumeDecision', 'recovery_state__begin_recovery_step', 'recovery_state__complete_recovery_step', 'recovery_state__decide_resume', 'recovery_state__fail_recovery_step', 'recovery_state__new_recovery_attempt', 'recovery_state__recovery_plan_digest', 'recovery_state__succeed_recovery', 'runtime_canary__RuntimeCanaryContract', 'runtime_canary__RuntimeCanaryEvidence', 'runtime_canary__RuntimeCanaryProbe', 'runtime_canary__evaluate_runtime_canary_contract', 'runtime_canary_ports__RuntimeCanaryEvidenceStorePort', 'runtime_qualification__RuntimeQualificationReceipt', 'runtime_qualification__build_runtime_qualification_receipt', 'runtime_qualification_ports__RuntimeQualificationEvidenceStorePort', 'state__ImmutableModelIdentity', 'state__ModelPhase', 'state__ModelRunState', 'supervisor_ports__ModelSupervisorStateStorePort', 'AsyncJsonHttpTransportPort', 'JsonHttpResponse', 'ModelEndpointError', 'ModelEndpointObserverPort', 'ModelEndpointFactoryPort', 'api__ModelEndpointPort', 'api__ModelEndpointRequest', 'ModelEndpointResponse', 'ModelEndpointRoute', 'QualifiedModelClosurePublication', 'AdaptiveModelEndpointPoolPort', 'api__ModelEndpointDispatchPoolPort', 'ModelEndpointDispatchResult', 'ModelEndpointPoolSnapshot', 'ModelEndpointReplicaSelectionCandidate', 'ModelEndpointReplicaSelectionPolicyPort', 'ModelEndpointReplicaSnapshot', 'OperationalModelEndpointReplica', 'OperationalModelEndpointReplicaSet', 'OperationalModelServingInventory', 'QualifiedModelEndpointReplicaBindingPort', 'QualifiedModelEndpointReplicaSet', 'QualifiedModelClosurePublicationReceipt', 'api__QualifiedModelEndpointBinding', 'QualifiedModelEndpointBindingPort', 'contracts__JsonHttpResponse', 'contracts__ModelEndpointError', 'contracts__ModelEndpointObserverPort', 'contracts__ModelEndpointRequest', 'contracts__ModelEndpointResponse', 'contracts__ModelEndpointRoute', 'operational_inventory__OperationalModelServingInventory', 'ports__AsyncJsonHttpTransportPort', 'ports__ModelEndpointFactoryPort', 'ports__ModelEndpointPort', 'publication__QualifiedModelClosurePublication', 'publication__QualifiedModelClosurePublicationReceipt', 'qualification__QualifiedModelEndpointBinding', 'qualification__QualifiedModelEndpointBindingPort', 'replica__AdaptiveModelEndpointPoolPort', 'replica__ModelEndpointDispatchPoolPort', 'replica__ModelEndpointDispatchResult', 'replica__ModelEndpointPoolSnapshot', 'replica__ModelEndpointReplicaSelectionCandidate', 'replica__ModelEndpointReplicaSelectionPolicyPort', 'replica__ModelEndpointReplicaSnapshot', 'replica__OperationalModelEndpointReplica', 'replica__OperationalModelEndpointReplicaSet', 'replica__QualifiedModelEndpointReplicaBindingPort', 'replica__QualifiedModelEndpointReplicaSet', 'ModelArtifactClosure', 'api__ModelStackSpec', 'RuntimeBuildIdentity', 'stack__ModelArtifactClosure', 'stack__ModelStackSpec', 'stack__RuntimeBuildIdentity')

@@ -1,3 +1,4 @@
+from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
 from pathlib import Path
 import json
 from dataclasses import replace
@@ -23,7 +24,7 @@ from noetrium_platform.capabilities.model.qualification.runtime.qualification im
     DeploymentQualificationResolver,
     _QualificationFactView,
 )
-from noetrium_platform.product.operator.maintenance.runtime.management.deployments import _qualification_python_path
+from noetrium_platform.composition.operator.maintenance.management.deployments import _qualification_python_path
 from noetrium_platform.capabilities.model.qualification.providers.qualification_probe import LocalDeploymentCapabilityProbe
 from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandResult
 
@@ -475,7 +476,7 @@ def test_package_index_qualification_consumes_artifact_metadata_without_install(
             )
 
     runner = Runner()
-    item = LocalDeploymentCapabilityProbe(runner)._index(
+    item = LocalDeploymentCapabilityProbe(runner, index_worker_path=QUALIFICATION_INDEX_WORKER_PATH)._index(
         Path("/opt/env/bin/python"), "vllm", "https://pypi.org/simple", 3.0
     )
 
@@ -491,7 +492,7 @@ def test_package_index_probe_preserves_target_stderr_on_failure() -> None:
                 return LocalCommandResult(tuple(argv), 0, "Available versions: 1.2.3", "")
             return LocalCommandResult(tuple(argv), 17, "", "metadata endpoint failed")
 
-    item = LocalDeploymentCapabilityProbe(Runner())._index(
+    item = LocalDeploymentCapabilityProbe(Runner(), index_worker_path=QUALIFICATION_INDEX_WORKER_PATH)._index(
         Path("/opt/env/bin/python"), "vllm", "https://pypi.org/simple", 3.0
     )
 

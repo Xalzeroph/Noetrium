@@ -3,7 +3,7 @@ from __future__ import annotations
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, canonical_digest
 
 from ..api.contracts import RunCheckpointManifest, RunParticipantPayload
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 
 

@@ -5,8 +5,8 @@ import json
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.capabilities.model.request.api import ModelRequestRecorderPort
-from noetrium_platform.capabilities.model.serving.endpoint.api import (
+from noetrium_platform.capabilities.api import ModelRequestRecorderPort
+from noetrium_platform.capabilities.api import (
     ModelEndpointDispatchPoolPort,
     ModelEndpointPort,
     ModelEndpointRequest,

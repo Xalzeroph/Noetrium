@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
+import ast
 import unittest
 
 import pytest
@@ -11,12 +13,17 @@ from tests_support import frozen_runtime_manifest
 
 
 class RunLaunchManifestAuthorityV1Tests(unittest.TestCase):
-    def test_only_the_run_manifest_system_owns_launch_identity(self):
-        from noetrium_platform.research.execution.runtime import manager
-        from noetrium_platform.foundation.governance.release import api as release_api
-
-        self.assertFalse(hasattr(manager, "FrozenRuntimeManifest"))
-        self.assertFalse(hasattr(release_api, "RunLaunchManifest"))
+    def test_only_run_api_manifest_defines_run_launch_manifest(self):
+        root = Path(__file__).resolve().parents[1]
+        definitions = []
+        for path in (root / "noetrium_platform").rglob("*.py"):
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            if any(isinstance(node, ast.ClassDef) and node.name == "RunLaunchManifest" for node in tree.body):
+                definitions.append(path.relative_to(root).as_posix())
+        self.assertEqual(
+            definitions,
+            ["noetrium_platform/research/experimentation/run/api/manifest.py"],
+        )
 
     def test_composition_plan_is_required_and_changes_run_process_generation(self):
         manifest = frozen_runtime_manifest()

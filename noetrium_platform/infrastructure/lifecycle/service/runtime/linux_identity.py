@@ -5,7 +5,7 @@ from noetrium_platform.foundation.kernel.kernel import canonical_digest
 import os
 from pathlib import Path
 
-from .environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 from .linux_procfs import LinuxProcfsReader
 from .process_contracts import ProcessReconcileResult, ProcessReconcileStatus
 

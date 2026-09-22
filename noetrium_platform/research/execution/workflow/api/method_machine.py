@@ -13,11 +13,11 @@ from enum import StrEnum
 import inspect
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.capabilities.participant.capability.api import (
+from noetrium_platform.capabilities.api import (
     CapabilityPort,
     CapabilityResult,
 )
-from noetrium_platform.capabilities.participant.method.api import MethodProgramIdentity
+from noetrium_platform.capabilities.api import MethodProgramIdentity
 from noetrium_platform.foundation.kernel.kernel import (
     ChildMachineLink,
     EffectClass,

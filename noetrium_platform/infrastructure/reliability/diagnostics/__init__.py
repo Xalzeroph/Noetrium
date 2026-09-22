@@ -3,7 +3,6 @@
 from .api import (
     DiagnosticEvidencePort,
     DiagnosticIndexSessionPort,
-    DiagnosticLogQueryPort,
     IncidentPattern,
     IncidentProjectionPort,
     IncidentProjectionSync,
@@ -13,7 +12,6 @@ from .api import (
 __all__ = [
     "DiagnosticEvidencePort",
     "DiagnosticIndexSessionPort",
-    "DiagnosticLogQueryPort",
     "IncidentPattern",
     "IncidentProjectionPort",
     "IncidentProjectionSync",

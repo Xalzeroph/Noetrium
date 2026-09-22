@@ -11,7 +11,7 @@ from tests._concurrency_support import OwnedForensicStore as ForensicStore
 from noetrium_platform.composition.operation_forensics import OperationForensicFailureSink
 from noetrium_platform.composition.context_action import context_action_failure_classifier_chain
 from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal
-from noetrium_platform.capabilities.environment.runtime.api import EnvironmentIdentity, Observation
+from noetrium_platform.capabilities.environment.api import EnvironmentIdentity, Observation
 from noetrium_platform.foundation.kernel.kernel import OperationExecutor, OperationFailure
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime

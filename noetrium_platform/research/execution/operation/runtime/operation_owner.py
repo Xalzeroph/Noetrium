@@ -1,7 +1,7 @@
 from __future__ import annotations
 import time
-from noetrium_platform.research.execution.command.api import CommandId
-from noetrium_platform.infrastructure.reliability.effect.api import EffectReconciliationProof
+from noetrium_platform.research.execution.operation.command.api import CommandId
+from noetrium_platform.capabilities.api import EffectReconciliationProof
 from noetrium_platform.research.execution.operation.api import (EffectId,OperationEffectCertainty,OperationEffectProfile,OperationFailure,
     OperationFailureKind,OperationId,OperationSnapshot,OperationState,OperationStorePort,revise_operation,transition_operation,
     EffectReconciliationOutcome,project_effect_reconciliation)

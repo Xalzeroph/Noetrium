@@ -13,7 +13,7 @@ from noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_a
 from noetrium_platform.composition.service_crash_failure import service_crash_failure
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from tests._concurrency_support import segmented_byte_capture
-from noetrium_platform.infrastructure.reliability.primitives import CrashEvidence
+from noetrium_platform.infrastructure.lifecycle.service.api import CrashEvidence
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactServiceSupervisor,

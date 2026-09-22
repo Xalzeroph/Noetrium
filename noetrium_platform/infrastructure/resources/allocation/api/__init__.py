@@ -13,6 +13,7 @@ from .contracts import (
 )
 from .ports import (
     AtomicEndpointReservationPort,
+    EndpointCandidatePortSourcePort,
     EndpointAllocationPort,
     EndpointLeaseGuardFactoryPort,
     EndpointLeaseGuardPort,
@@ -23,6 +24,7 @@ __all__ = [
     "AtomicEndpointReservationPort",
     "DEFAULT_ENDPOINT_LEASE_POLICY",
     "EndpointAllocation",
+    "EndpointCandidatePortSourcePort",
     "EndpointAllocationPort",
     "EndpointAllocationRequest",
     "EndpointBindingProof",

@@ -1,6 +1,6 @@
 import math
 
-from noetrium_platform.research.execution.command.api import ExecutionCommand
+from noetrium_platform.research.execution.operation.api import ExecutionCommand
 
 
 def test_command_digest_is_canonicalized_and_identity_is_immutable():

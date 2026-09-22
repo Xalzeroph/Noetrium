@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent, EffectIntentPhase
-from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, ActionResult
+from noetrium_platform.capabilities.environment.api import ActionRequest, ActionResult
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult, canonical_digest
 
 

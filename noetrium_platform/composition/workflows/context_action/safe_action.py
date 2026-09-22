@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.infrastructure.reliability.effect.api import EffectCompletionEvidence, EffectIntentPhase
-from noetrium_platform.capabilities.environment.runtime.api import ActionNotApplied, ActionRecoveryRequired
+from noetrium_platform.capabilities.environment.api import ActionNotApplied, ActionRecoveryRequired
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
 
 from .action_assembly import ActionSafetyAssembly

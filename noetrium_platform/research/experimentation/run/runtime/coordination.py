@@ -6,13 +6,13 @@ from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentSpec,
     ExperimentTrialCycleExecutorPort,
 )
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
+from noetrium_platform.research.execution.api import DecisionCycleIdentity
 from .assembly import RunAssembly
-from ..identity.api import RunIdentity
+from ..api.identity import RunIdentity
 from .resources import RunResourceAcquirer
 from .restore import RunRestoreInitializer
-from ..lifecycle.api import RunSessionFactoryPort, RunSessionPort
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantSessionLifecyclePort
+from ..api.lifecycle_ports import RunSessionFactoryPort, RunSessionPort
+from noetrium_platform.research.execution.api import ParticipantSessionLifecyclePort
 
 
 class RunCoordinator:

@@ -1,26 +1,30 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.governance.system_registry.api import (
-    system_catalog,
-)
+from importlib.resources import files
+import json
+
+from noetrium_platform.foundation.governance.system_registry.api import system_catalog
 import noetrium_platform.research.execution.machines.api as research_program_api
 
 
-def test_research_program_authoring_is_registered_as_public_execution_facet() -> None:
-    descriptor = next(
-        row
-        for row in system_catalog()
-        if row.identity.key == "execution/research_program"
+def test_research_program_authoring_is_execution_component_of_public_authority() -> None:
+    by_key = {row.identity.key: row for row in system_catalog()}
+    execution = by_key["execution"]
+    components = json.loads(
+        files("noetrium_platform.foundation.governance.system_registry")
+        .joinpath("components.json")
+        .read_text(encoding="utf-8")
     )
-    assert descriptor.package_prefix == (
-        "noetrium_platform.research.execution.machines"
-    )
-    assert descriptor.node_kind.value == "facet"
-    assert descriptor.canonical_authority_key == "execution"
-    assert descriptor.downstream_surface.value == "public"
-    assert descriptor.shape == ("api",)
-    assert "research.program" in descriptor.provides
-    assert "runtime.program" in descriptor.provides
+    component = components["execution/research_program"]
+
+    assert "execution/research_program" not in by_key
+    assert execution.canonical_authority_key == "execution"
+    assert execution.downstream_surface.value == "public"
+    assert "research.program" in execution.provides
+    assert "runtime.program" in execution.provides
+    assert component["system"] == "execution"
+    assert component["node_kind"] == "facet"
+    assert component["package_prefix"] == "noetrium_platform.research.execution.machines"
 
 
 def test_research_program_public_api_exposes_authoring_not_interpreter_internals() -> None:

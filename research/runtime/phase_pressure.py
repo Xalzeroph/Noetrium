@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+from noetrium_platform.composition.method_runtime import (
+    standard_method_evidence_factory,
+    standard_method_runtime_binder,
+)
+
+
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import importlib
@@ -9,7 +15,7 @@ import subprocess
 from threading import Lock
 import time
 
-from noetrium_platform.capabilities.model.request.composition import (
+from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint import (

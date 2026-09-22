@@ -12,7 +12,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceLease,
     ResourceOwnership,
 )
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}")

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 
-from noetrium_platform.evidence.observability.api import EventEnvelope
+from noetrium_platform.foundation.kernel.record_plane import EventEnvelope
 from noetrium_platform.infrastructure.reliability.failure.api import FailureEnvelope
 from noetrium_platform.infrastructure.reliability.forensics.api.mutation import MutationRecord
 from noetrium_platform.infrastructure.reliability.forensics.providers.operation_projection import OperationInvocationProjection, event_operation_projection, raw_event_operation_projection

@@ -20,7 +20,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRuntimeContext,
     MethodRunStatus,
 )
-from noetrium_platform.research.execution.workflow.composition import bind_machine_method_runtime
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from noetrium_platform.research.execution.workflow.runtime import (
     InMemoryMethodCheckpointStore,
     KernelOperationDispatcher,
@@ -53,7 +53,7 @@ def test_program_runs_through_kernel_dispatch_and_checkpointing() -> None:
         .add(MethodNodeSpec("finish", "method.finish", (), finish, kind=MethodNodeKind.RETURN))
         .build()
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         program,
         MethodRuntimeContext(_context(), dispatcher=KernelOperationDispatcher(OperationExecutor())),
     )
@@ -144,7 +144,7 @@ def test_interrupt_checkpoint_can_resume_at_next_node() -> None:
         .add(MethodNodeSpec("finish", "method.finish", (), finish, kind=MethodNodeKind.RETURN))
         .build()
     )
-    runtime = bind_machine_method_runtime(program, MethodRuntimeContext(_context()))
+    runtime = bind_standard_method_runtime(program, MethodRuntimeContext(_context()))
     machine = UniversalMethodMachine(checkpoint_store=store)
     first = machine.run(program, runtime=runtime)
     assert first.status is MethodRunStatus.INTERRUPTED
@@ -197,7 +197,7 @@ def test_method_runtime_injects_child_machine_port_and_binds_identity() -> None:
         "child_machine_port_identity_digest": children.identity_digest,
     })
 
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         program,
         runtime,
         machine_id="method:test-child-binding",

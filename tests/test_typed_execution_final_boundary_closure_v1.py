@@ -2,16 +2,16 @@ import math
 
 import pytest
 
-from noetrium_platform.research.execution.admission.api import (
+from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
     AdmissionMode,
 )
-from noetrium_platform.research.execution.admission.runtime import HierarchicalAdmissionAuthority
+from noetrium_platform.research.execution.policy.runtime import HierarchicalAdmissionAuthority
 from noetrium_platform.infrastructure.lifecycle.launch_control import RunLaunchIdentity
-from noetrium_platform.research.execution.scheduling.api import ExecutionPriority, SchedulingCandidate
-from noetrium_platform.research.execution.scheduling.runtime import FairPrioritySchedulingPolicy
+from noetrium_platform.research.execution.policy.api import ExecutionPriority, SchedulingCandidate
+from noetrium_platform.research.execution.policy.runtime import FairPrioritySchedulingPolicy
 
 
 def test_admission_budget_rejects_numeric_coercion():

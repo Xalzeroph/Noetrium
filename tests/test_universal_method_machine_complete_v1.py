@@ -1,3 +1,4 @@
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
 
 import asyncio
@@ -152,7 +153,7 @@ def test_resume_preserves_visit_limits_and_event_lineage() -> None:
         .add(MethodNodeSpec("loop", "test.loop", ("loop",), loop, max_visits=2))
         .build()
     )
-    runtime = bind_machine_method_runtime(program, MethodRuntimeContext(_context()))
+    runtime = bind_standard_method_runtime(program, MethodRuntimeContext(_context()))
     machine = UniversalMethodMachine(checkpoint_store=store, max_steps=1)
     first = machine.run(program, runtime=runtime)
     assert first.checkpoint is not None
@@ -178,7 +179,7 @@ def test_resume_rejects_binding_identity_drift() -> None:
     )
     digest_a = canonical_digest({"binding": "a"})
     digest_b = canonical_digest({"binding": "b"})
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         program,
         MethodRuntimeContext(_context(), binding_plan_digest=digest_a),
     )
@@ -215,7 +216,7 @@ def test_evidence_is_authoritative_and_observation_failures_are_isolated() -> No
         .add(MethodNodeSpec("pause", "test.pause", (), kind=MethodNodeKind.INTERRUPT))
         .build()
     )
-    runtime = bind_machine_method_runtime(
+    runtime = bind_standard_method_runtime(
         program,
         MethodRuntimeContext(
             _context(),

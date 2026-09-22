@@ -1,3 +1,9 @@
+from .model_view import (
+    AGENT_ACTION_HISTORY_VIEW_SCHEMA,
+    AgentActionHistoryProjection,
+    AgentActionHistoryProjectionReceipt,
+    project_action_history,
+)
 from .contracts import AgentIdentity, AgentSession, AgentSnapshot, AgentTurnRequest, AgentTurnResult, AgentImplementation
 from .completion import AgentCompletionDecision, AgentCompletionDisposition
 from .cognition import (
@@ -40,6 +46,10 @@ from .cognition_ports import (
 )
 
 __all__ = [
+    "project_action_history",
+    "AgentActionHistoryProjectionReceipt",
+    "AgentActionHistoryProjection",
+    "AGENT_ACTION_HISTORY_VIEW_SCHEMA",
     "AgentIdentity",
     "AgentSession",
     "AgentSnapshot",

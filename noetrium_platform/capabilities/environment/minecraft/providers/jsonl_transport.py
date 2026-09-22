@@ -10,11 +10,10 @@ from noetrium_platform.capabilities.environment.providers.jsonl_process import (
     JsonlProcessSpec,
     JsonlProcessTransport as _JsonlProcessTransport,
     ProcessFactory,
-    ProcessTerminator,
     safe_exception_message,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
-from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
+from noetrium_platform.substrate.api import OperatingSystemRoute, ProcessSupervisorPort
 
 from ..api import MinecraftBridgeSpec
 
@@ -53,7 +52,7 @@ class JsonlProcessTransport(_JsonlProcessTransport):
         task_group: TaskGroupPort,
         bridge_identity: str,
         process_factory: ProcessFactory | None = None,
-        process_terminator: ProcessTerminator | None = None,
+        process_supervisor: ProcessSupervisorPort,
         failure_reporter=None,
         stderr_tail_lines: int = 300,
     ) -> None:
@@ -71,7 +70,7 @@ class JsonlProcessTransport(_JsonlProcessTransport):
             task_group=task_group,
             transport_identity=bridge_identity,
             process_factory=process_factory,
-            process_terminator=process_terminator,
+            process_supervisor=process_supervisor,
             failure_reporter=failure_reporter,
             stderr_tail_lines=stderr_tail_lines,
             environment_overrides=_node_path_overrides(),
@@ -86,6 +85,5 @@ __all__ = [
     "JsonlProcessTransport",
     "MinecraftBridgeError",
     "ProcessFactory",
-    "ProcessTerminator",
     "safe_exception_message",
 ]

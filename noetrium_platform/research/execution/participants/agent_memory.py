@@ -20,13 +20,13 @@ from noetrium_platform.research.execution.machines import (
     memory_initial_data,
 )
 
-from noetrium_platform.capabilities.participant.agent.api.cognition import (
+from noetrium_platform.capabilities.api import (
     AgentGoal,
     AgentMemoryContext,
     AgentObservation,
     AgentStepReceipt,
 )
-from noetrium_platform.capabilities.participant.agent.api.cognition_ports import AgentMemoryPort
+from noetrium_platform.capabilities.api import AgentMemoryPort
 
 
 class NoMemoryAgentMemory(AgentMemoryPort):

@@ -30,7 +30,7 @@ from noetrium_platform.research.experimentation.study.api import (
     VariantBinding,
     VariantKind,
 )
-from noetrium_platform.research.experimentation.study.runtime.trial import (
+from noetrium_platform.research.experimentation.run.runtime.trial import (
     TrialVerifierOrchestrator,
     _require_measurements,
 )

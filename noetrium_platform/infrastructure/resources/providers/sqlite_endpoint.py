@@ -38,7 +38,7 @@ from noetrium_platform.infrastructure.resources.providers.sqlite_resource import
     ensure_resource_schema,
     expire_lease,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
 
 class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):

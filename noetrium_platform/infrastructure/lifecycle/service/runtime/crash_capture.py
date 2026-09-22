@@ -6,7 +6,7 @@ import hashlib
 from typing import Protocol
 
 from noetrium_platform.infrastructure.lifecycle.process.api import CaptureManifest, CaptureSyncReceipt, ProcessByteCapturePort
-from noetrium_platform.infrastructure.reliability.primitives import CrashClass, CrashDiagnosis, CrashEvidence, classify_crash
+from noetrium_platform.infrastructure.lifecycle.service.api import CrashClass, CrashDiagnosis, CrashEvidence, classify_crash
 
 from .contracts import ServiceExitClass
 

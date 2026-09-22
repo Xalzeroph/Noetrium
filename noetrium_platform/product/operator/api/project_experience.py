@@ -3,11 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
+import re
 from typing import Protocol
 
-from noetrium_platform.foundation.portfolio.api import ProjectIdentity
 
 PROJECT_TEMPLATE_REVISION = "noetrium.project-template.v6"
+_PROJECT_TOKEN = re.compile(r"[a-z][a-z0-9_.-]*")
+_PROJECT_VERSION = re.compile(r"[0-9A-Za-z][0-9A-Za-z._+-]*")
 
 
 def project_template_revision() -> str:
@@ -26,7 +28,10 @@ class ProjectCreateRequest:
     destination: Path
 
     def __post_init__(self) -> None:
-        ProjectIdentity(self.project_id, self.version)
+        if _PROJECT_TOKEN.fullmatch(self.project_id) is None:
+            raise ValueError("project_id must be a canonical lowercase token")
+        if _PROJECT_VERSION.fullmatch(self.version) is None:
+            raise ValueError("project version is not canonical")
         if not isinstance(self.destination, Path):
             raise TypeError("project destination must be a pathlib.Path")
 

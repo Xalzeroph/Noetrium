@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
+
 import json
 from pathlib import Path
 
@@ -20,7 +22,7 @@ def test_snapshot_probe_executes_standalone_target_worker() -> None:
             ]
         }), ""
 
-    probe = TargetPackageIndexSnapshotProbe(run)
+    probe = TargetPackageIndexSnapshotProbe(run, QUALIFICATION_INDEX_WORKER_PATH)
     result = probe.capture(
         Path("/opt/env/bin/python"),
         "vllm",

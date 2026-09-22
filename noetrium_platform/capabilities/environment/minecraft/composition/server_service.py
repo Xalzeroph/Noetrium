@@ -8,21 +8,20 @@ from pathlib import Path
 from threading import Lock
 import time
 
-from noetrium_platform.infrastructure.lifecycle.service.api import (
+from noetrium_platform.substrate.api import (
     ExactServiceRuntimePort,
+    MaterializedServiceEnvironment,
+    ServiceEnvironmentPort,
     ServiceLaunchContract,
     ServiceLaunchPreflightPort,
+    ServiceLaunchPreflightReport,
+    ServiceProcessLivenessPort,
+    ServiceReadinessProbePort,
     ServiceReadyObservation,
     ServiceReconcileObservation,
+    ServiceRuntimeFactoryPort,
     ServiceStartOutcome,
     ServiceStopOutcome,
-)
-from noetrium_platform.infrastructure.lifecycle.service.composition import LocalServiceRuntimeComposer
-from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
-from noetrium_platform.infrastructure.lifecycle.service.runtime.environment import MaterializedServiceEnvironment
-from noetrium_platform.infrastructure.lifecycle.service.runtime.preflight import LocalServiceLaunchPreflight
-from noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts import (
-    ExactProcessBackend,
 )
 from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest
 from noetrium_platform.foundation.kernel.concurrency.api import (
@@ -63,7 +62,7 @@ class MinecraftTcpReadinessProbe:
         self._sequence = 0
         self._sequence_lock = Lock()
 
-    async def _wait_ready_async(self, context, process, contract: ServiceLaunchContract, backend: ExactProcessBackend) -> str:
+    async def _wait_ready_async(self, context, process, contract: ServiceLaunchContract, backend: ServiceProcessLivenessPort) -> str:
         last_error = "not-probed"
         while True:
             context.checkpoint()
@@ -93,7 +92,7 @@ class MinecraftTcpReadinessProbe:
                 context.checkpoint()
             await asyncio.sleep(delay)
 
-    def wait_ready(self, process, contract: ServiceLaunchContract, backend: ExactProcessBackend) -> str:
+    def wait_ready(self, process, contract: ServiceLaunchContract, backend: ServiceProcessLivenessPort) -> str:
         with self._sequence_lock:
             self._sequence += 1
             sequence = self._sequence
@@ -147,7 +146,7 @@ class MinecraftServerReadinessProbe:
         self.rcon_command = rcon_command
         self.poll_interval_s = poll_interval_s
 
-    def wait_ready(self, process, contract: ServiceLaunchContract, backend: ExactProcessBackend) -> str:
+    def wait_ready(self, process, contract: ServiceLaunchContract, backend: ServiceProcessLivenessPort) -> str:
         tcp_evidence = self.tcp.wait_ready(process, contract, backend)
         deadline = time.monotonic() + contract.readiness_timeout_s
         last_error = "not-probed"
@@ -201,23 +200,77 @@ def build_server_service_contract(
     )
 
 
-def build_minecraft_server_preflight(spec: MinecraftServerSpec) -> LocalServiceLaunchPreflight:
-    """Build the standard preflight for a prepared Minecraft work directory.
+class MinecraftServerLaunchPreflight:
+    """Minecraft-specific validation over the generic Runtime preflight port."""
 
-    The server process expects both files in its working directory. Deriving
-    these paths from the immutable spec keeps downstream callers from
-    duplicating deployment-specific checks.
-    """
-
-    if not isinstance(spec, MinecraftServerSpec):
-        raise TypeError("Minecraft preflight spec must be typed")
-    workdir = Path(spec.workdir)
-    return LocalServiceLaunchPreflight(
-        required_paths=(
-            str(workdir / "eula.txt"),
-            str(workdir / "server.properties"),
+    def __init__(self, spec: MinecraftServerSpec) -> None:
+        if not isinstance(spec, MinecraftServerSpec):
+            raise TypeError("Minecraft preflight spec must be typed")
+        workdir = Path(spec.workdir)
+        self.required_paths = (
+            workdir / "eula.txt",
+            workdir / "server.properties",
         )
-    )
+
+    def validate(
+        self,
+        contract: ServiceLaunchContract,
+        environment: ServiceEnvironmentPort,
+    ) -> ServiceLaunchPreflightReport:
+        checks: list[tuple[str, bool]] = []
+        errors: list[str] = []
+
+        def check(name: str, passed: bool, message: str) -> None:
+            checks.append((name, passed))
+            if not passed:
+                errors.append(message)
+
+        executable = Path(contract.executable)
+        cwd = Path(contract.cwd)
+        check(
+            "executable",
+            executable.is_file(),
+            f"executable is not a file: {contract.executable}",
+        )
+        check(
+            "cwd",
+            cwd.is_dir(),
+            f"service cwd is not a directory: {contract.cwd}",
+        )
+        check(
+            "environment_digest",
+            environment.digest == contract.environment_digest,
+            "materialized environment digest does not match launch contract",
+        )
+        for required in self.required_paths:
+            check(
+                "required:" + str(required),
+                required.exists(),
+                f"required Minecraft server resource is missing: {required}",
+            )
+        for index, argument in enumerate(contract.argv):
+            check(
+                f"argv[{index}]",
+                bool(argument) and "\x00" not in argument,
+                f"service argv[{index}] is empty or contains NUL",
+            )
+        report = ServiceLaunchPreflightReport(
+            contract.digest(),
+            tuple(checks),
+            tuple(errors),
+        )
+        if not report.ready:
+            raise MinecraftServerServiceError(
+                "Minecraft server launch preflight failed: "
+                + "; ".join(report.errors)
+            )
+        return report
+
+
+def build_minecraft_server_preflight(
+    spec: MinecraftServerSpec,
+) -> ServiceLaunchPreflightPort:
+    return MinecraftServerLaunchPreflight(spec)
 
 
 def compose_minecraft_server_service_runtime(
@@ -225,24 +278,19 @@ def compose_minecraft_server_service_runtime(
     contract: ServiceLaunchContract,
     *,
     environment: MaterializedServiceEnvironment,
-    state_root: Path,
-    intent_root: Path,
-    capture_root: Path,
-    operating_system: OperatingSystemRoute,
-    process_backend: ExactProcessBackend | None = None,
+    runtime_factory: ServiceRuntimeFactoryPort,
     preflight: ServiceLaunchPreflightPort | None = None,
     rcon_password_provider: Callable[[], str] | None = None,
     task_group: TaskGroupPort,
 ) -> ExactServiceRuntimePort:
-    """Bind MC endpoint readiness to the generic local service lifecycle.
+    """Bind Minecraft readiness through the Runtime-owned service factory port."""
 
-    MC contributes only its endpoint-specific readiness probe. Process launch,
-    capture, exact identity, state, stop and crash-recovery remain owned by the
-    runtime/service composition module.
-    """
-
-    tcp_readiness = MinecraftTcpReadinessProbe(host=spec.host, port=spec.port, task_group=task_group)
-    readiness = tcp_readiness
+    tcp_readiness = MinecraftTcpReadinessProbe(
+        host=spec.host,
+        port=spec.port,
+        task_group=task_group,
+    )
+    readiness: ServiceReadinessProbePort = tcp_readiness
     if spec.rcon_endpoint is not None:
         if rcon_password_provider is None:
             raise MinecraftServerServiceError(
@@ -256,14 +304,7 @@ def compose_minecraft_server_service_runtime(
             ),
         )
 
-    return LocalServiceRuntimeComposer(
-        state_root=state_root,
-        intent_root=intent_root,
-        capture_root=capture_root,
-        operating_system=operating_system,
-        task_group=task_group,
-        process_backend=process_backend,
-    ).open(
+    return runtime_factory.open(
         contract,
         environment=environment,
         readiness=readiness,
@@ -362,31 +403,32 @@ class MinecraftServerServiceController:
 
 @dataclass(frozen=True, slots=True)
 class MinecraftServerServiceFactoryConfig:
-    """All host-owned inputs needed to materialize one managed MC server."""
+    """Minecraft-owned inputs plus one adjacent Runtime factory port."""
 
     environment: MaterializedServiceEnvironment
-    state_root: Path
-    intent_root: Path
-    capture_root: Path
-    operating_system: OperatingSystemRoute
+    runtime_factory: ServiceRuntimeFactoryPort
     accept_eula: bool
     rcon_password_provider: Callable[[], str] | None = None
     readiness_timeout_s: float = 120.0
     stop_timeout_s: float = 30.0
     heartbeat_interval_s: float = 5.0
-    process_backend: ExactProcessBackend | None = None
     task_group: TaskGroupPort | None = None
 
     def __post_init__(self) -> None:
-        for name in ("state_root", "intent_root", "capture_root"):
-            if not getattr(self, name).is_absolute():
-                raise ValueError(f"Minecraft server service {name} must be absolute")
-        if min(self.readiness_timeout_s, self.stop_timeout_s, self.heartbeat_interval_s) <= 0:
+        if min(
+            self.readiness_timeout_s,
+            self.stop_timeout_s,
+            self.heartbeat_interval_s,
+        ) <= 0:
             raise ValueError("Minecraft server service timings must be positive")
-        if self.rcon_password_provider is not None and not callable(self.rcon_password_provider):
+        if self.rcon_password_provider is not None and not callable(
+            self.rcon_password_provider
+        ):
             raise ValueError("Minecraft RCON password provider must be callable")
         if self.task_group is None:
-            raise ValueError("Minecraft server service requires an explicit concurrency task_group")
+            raise ValueError(
+                "Minecraft server service requires an explicit concurrency task_group"
+            )
 
 
 class MinecraftServerServiceFactory:
@@ -441,11 +483,7 @@ class MinecraftServerServiceFactory:
             spec,
             contract,
             environment=self.config.environment,
-            state_root=self.config.state_root,
-            intent_root=self.config.intent_root,
-            capture_root=self.config.capture_root,
-            operating_system=self.config.operating_system,
-            process_backend=self.config.process_backend,
+            runtime_factory=self.config.runtime_factory,
             preflight=build_minecraft_server_preflight(spec),
             rcon_password_provider=(
                 (lambda: rcon_password)
@@ -462,6 +500,7 @@ __all__ = [
     "MinecraftServerServiceFactory",
     "MinecraftServerServiceFactoryConfig",
     "MinecraftServerReadinessProbe",
+    "MinecraftServerLaunchPreflight",
     "MinecraftServerServiceError",
     "MinecraftTcpReadinessProbe",
     "build_server_service_contract",

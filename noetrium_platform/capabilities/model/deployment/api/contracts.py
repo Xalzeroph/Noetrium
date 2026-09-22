@@ -5,9 +5,9 @@ from enum import StrEnum
 import math
 from pathlib import Path
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.substrate.api import ScopeIdentity
 from noetrium_platform.capabilities.model.asset.api import ManagedModelAsset
-from noetrium_platform.infrastructure.resources.compute.api import GpuDeviceStatus, GpuRuntimeSnapshot
+from noetrium_platform.substrate.api import GpuDeviceStatus, GpuRuntimeSnapshot
 
 
 class ModelDesiredState(StrEnum):

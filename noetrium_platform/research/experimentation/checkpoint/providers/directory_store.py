@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint
+from noetrium_platform.research.execution.api import ParticipantCheckpoint
 from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes, sha256_file
 
 from .codec import RunCheckpointManifestCodec

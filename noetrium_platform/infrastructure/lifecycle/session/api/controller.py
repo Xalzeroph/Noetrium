@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 from typing import Protocol
 
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.api import is_absolute_target_path
 
 from .contracts import PersistentSessionSpec, process_environment_digest
 

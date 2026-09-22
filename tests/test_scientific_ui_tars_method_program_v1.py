@@ -8,7 +8,7 @@ from noetrium_platform.capabilities.environment.api import (
     EnvironmentQueryResult,
     Observation,
 )
-from noetrium_platform.capabilities.environment.composition import (
+from noetrium_platform.composition.environment_capabilities import (
     EnvironmentQueryCapabilityBinding,
 )
 from noetrium_platform.capabilities.participant.capability.api import (

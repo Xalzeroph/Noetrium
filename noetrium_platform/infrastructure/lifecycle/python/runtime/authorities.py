@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayoutPort
+from noetrium_platform.foundation.api import DirectoryLayoutPort
 from noetrium_platform.infrastructure.lifecycle.python.api import (
     EnvironmentCommandRunnerPort,
     PythonEnvironmentAuthorities,

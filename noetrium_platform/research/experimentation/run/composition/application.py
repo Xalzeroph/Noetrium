@@ -8,7 +8,7 @@ from noetrium_platform.research.experimentation.run.runtime import ExperimentRun
 from noetrium_platform.research.experimentation.study.composition import (
     build_run_study_publication,
 )
-from noetrium_platform.research.experimentation.study.runtime import (
+from noetrium_platform.research.experimentation.study.algorithms import (
     BasicStudyMetricAggregator,
 )
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from threading import RLock
 
-from noetrium_platform.evidence.data.query.api import (
+from noetrium_platform.research.execution.api import (
     ResearchDimension,
     ResearchDimensionKind,
     ResearchResultKind,
@@ -14,12 +14,12 @@ from noetrium_platform.evidence.data.query.api import (
     ResearchResultReference,
     ResearchSourceSnapshot,
 )
-from noetrium_platform.evidence.data.query.api.identity import source_cut
+from noetrium_platform.research.execution.api import source_cut
 from noetrium_platform.research.experimentation.study.api import (
     StudyResearchReadPort,
     StudyResearchReadSnapshot,
 )
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.research.execution.api import ScopeIdentity, ScopeKind
 
 
 class StudyResearchResultSource:

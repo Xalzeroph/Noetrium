@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
-from noetrium_platform.infrastructure.lifecycle.service.runtime.environment import (
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import (
     MaterializedServiceEnvironment,
 )
 from noetrium_platform.infrastructure.lifecycle.service.runtime.preflight import (

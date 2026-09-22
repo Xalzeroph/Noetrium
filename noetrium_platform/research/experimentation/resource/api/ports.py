@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.research.execution.api import ScopeIdentity
 from noetrium_platform.research.experimentation.experiment.api import ExperimentDefinition
 
 from .contracts import ResourceAllocationReceipt, ResourcePolicy

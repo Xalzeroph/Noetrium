@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.governance.api import SystemIdentity
+from noetrium_platform.foundation.governance.api import ScopeIdentity
 
 
 @dataclass(frozen=True, slots=True)

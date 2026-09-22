@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from noetrium_platform.research.execution.command.api import ExecutionCommand
+from noetrium_platform.research.execution.operation.api import ExecutionCommand
 from noetrium_platform.research.execution.operation.api import (
     EffectId,
     OperationEffectProfile,

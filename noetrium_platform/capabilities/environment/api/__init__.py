@@ -44,9 +44,6 @@ from .contracts import (
     EnvironmentImplementation,
     EnvironmentSession,
     Observation,
-    SystemIdentity,
-    SystemPort,
-    SystemSpec,
     action_request_digest,
 )
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
@@ -100,7 +97,7 @@ __all__ = [
     "effect_receipt_from_payload",
     "action_result_payload",
     "action_result_from_payload",
-    "SystemIdentity", "SystemSpec", "SystemPort", "ExecutionContext",
+"ExecutionContext",
     "EffectClass", "EffectCertainty", "EffectReceipt",
     "ActionIdentityViolation", "ActionNotApplied", "ActionRecoveryRequired",
     "ActionReconciliationDisposition", "ActionReconciliationResult",
@@ -135,3 +132,32 @@ __all__ = [
     "StateMachineEnvironmentSpec", "StateTransition",
     "freeze_json_mapping", "thaw_json", "thaw_json_mapping",
 ]
+
+from noetrium_platform.capabilities.environment.catalog.api import (
+    EnvironmentSpec,
+    ExecutionEnvironmentKind,
+)
+from noetrium_platform.capabilities.environment.embodied.api import (
+    ActionKind,
+    ActionSpec,
+    EmbodiedActionCommand,
+    EmbodimentKind,
+    EmbodimentSpec,
+    EpisodeSpec,
+    SensorModality,
+    SensorSpec,
+)
+
+_ENVIRONMENT_AUTHORING_EXPORTS = (
+    "ActionKind",
+    "ActionSpec",
+    "EmbodiedActionCommand",
+    "EmbodimentKind",
+    "EmbodimentSpec",
+    "EnvironmentSpec",
+    "EpisodeSpec",
+    "ExecutionEnvironmentKind",
+    "SensorModality",
+    "SensorSpec",
+)
+__all__ += _ENVIRONMENT_AUTHORING_EXPORTS

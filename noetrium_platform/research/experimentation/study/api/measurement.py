@@ -12,8 +12,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 import math
 
-from noetrium_platform.evidence.artifact.catalog.api import ArtifactRegistryPort
-from noetrium_platform.evidence.artifact.reference.api import ArtifactReference, ArtifactReferencePort
+from noetrium_platform.research.execution.api import ArtifactRegistryPort
+from noetrium_platform.research.execution.api import ArtifactReference, ArtifactReferencePort
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
 from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest, freeze_json
 

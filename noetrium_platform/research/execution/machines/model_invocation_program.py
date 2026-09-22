@@ -19,7 +19,7 @@ import json
 from threading import RLock
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.capabilities.model.api import (
+from noetrium_platform.capabilities.api import (
     ModelBindingSelectionReceipt,
     ProjectModelBinding,
     ProjectModelBindingSet,
@@ -27,7 +27,7 @@ from noetrium_platform.capabilities.model.api import (
     ProjectModelRequest,
     ProjectModelResponse,
 )
-from noetrium_platform.evidence.artifact.content.api import (
+from noetrium_platform.capabilities.api import (
     ArtifactBlobRef,
     ArtifactBlobStorePort,
 )

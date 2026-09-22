@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
-from noetrium_platform.foundation.governance.architecture.api.capabilities import (
+from noetrium_platform.foundation.api import SystemIdentity
+from noetrium_platform.foundation.api import (
     HOST_OPERATING_SYSTEM_ROUTE_V1,
 )
-from noetrium_platform.foundation.governance.architecture.api.capability_composition import (
+from noetrium_platform.foundation.api import (
     BindingPlan,
     CapabilityOffer,
     CompositionContract,
@@ -16,7 +16,7 @@ from noetrium_platform.foundation.governance.architecture.api.capability_composi
     CapabilityCompositionPlannerPort,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.foundation.api import PLATFORM_SCOPE, ScopeIdentity
 
 from ..api import OperatingSystemRoute
 from ..providers import LocalOperatingSystemRoute

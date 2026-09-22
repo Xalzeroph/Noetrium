@@ -18,7 +18,7 @@ from ..api import (
     ServerRuntimeLaunchManifestPort,
     ServerSessionPolicyMismatch,
 )
-from noetrium_platform.foundation.scope.path.api import is_absolute_target_path
+from noetrium_platform.foundation.api import is_absolute_target_path
 
 
 @dataclass(frozen=True, slots=True)

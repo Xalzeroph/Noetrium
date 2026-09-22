@@ -10,7 +10,7 @@ from noetrium_platform.capabilities.environment.api import (
     Observation,
     action_request_digest,
 )
-from noetrium_platform.capabilities.environment.composition import (
+from noetrium_platform.composition.environment_capabilities import (
     EnvironmentSessionCapabilityAdapter,
     environment_action_capability_payload,
 )

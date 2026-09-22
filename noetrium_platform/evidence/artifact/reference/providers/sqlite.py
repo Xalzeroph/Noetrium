@@ -13,7 +13,7 @@ from noetrium_platform.evidence.artifact.reference.api import (
 from noetrium_platform.foundation.kernel.kernel import strict_finite_json_digest as canonical_digest
 from noetrium_platform.evidence.artifact._sqlite_connection import connect_artifact_reader, connect_artifact_writer, rollback_artifact_writer
 from noetrium_platform.evidence.artifact._sqlite_types import require_integer, require_text
-from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
 
 class SQLiteArtifactReferenceStore:

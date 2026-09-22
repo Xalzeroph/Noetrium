@@ -9,7 +9,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentObservation,
     AgentSkillDescription,
 )
-from noetrium_platform.capabilities.participant.agent.runtime.model_view import (
+from noetrium_platform.capabilities.participant.agent.api.model_view import (
     project_action_history,
 )
 from noetrium_platform.research.execution.participants.agent_context import (

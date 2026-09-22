@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
-from noetrium_platform.capabilities.participant.core.api import BoundParticipant, ParticipantSessionBinding
-from noetrium_platform.capabilities.participant.core.api.runtime_operations import participant_operation_type
+from noetrium_platform.capabilities.api import BoundParticipant, ParticipantSessionBinding
+from noetrium_platform.capabilities.api import participant_operation_type
 from noetrium_platform.research.execution.workflow.api import OperationDispatchPort
 
 

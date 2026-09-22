@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol
 
-from noetrium_platform.capabilities.environment.runtime.api import (
+from noetrium_platform.capabilities.environment.api import (
     ActionIdentityViolation,
     ActionReconciliationDisposition,
     ActionReconciliationResult,
@@ -20,7 +20,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     JsonValue,
     canonical_digest,
 )
-from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
+from noetrium_platform.substrate.api import PreparedEffectHandle
 
 from ..api import (
     MINECRAFT_ACTION_TYPES,

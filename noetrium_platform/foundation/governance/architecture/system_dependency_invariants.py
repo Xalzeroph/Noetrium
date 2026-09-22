@@ -1,23 +1,34 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 from noetrium_platform.foundation.governance.system_registry.api import (
     SystemDescriptor,
+    layer_hierarchy,
     system_catalog,
 )
 
-from .import_graph import scan_imports
-from .planes import is_composition_module
+from .import_graph import ImportEdge, scan_imports
 from .source_scan import SourceInvariantViolation, violation
 
 
-# Leaf contracts are declarative boundary metadata used by every subsystem.
-# Keep this exemption exact: exempting the whole platform kernel would hide
-# ordinary cross-system runtime dependencies.
-FOUNDATIONAL_MODULE_PREFIXES = (
-    "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-)
+@dataclass(frozen=True, slots=True)
+class LayerDependencyFinding:
+    kind: str
+    path: str
+    line: int
+    source_module: str
+    target_module: str
+    source_system: str | None = None
+    source_layer: str | None = None
+    target_system: str | None = None
+    target_layer: str | None = None
+    required_module: str | None = None
+
+
+def _same_or_child(module: str, prefix: str) -> bool:
+    return module == prefix or module.startswith(prefix + ".")
 
 
 def _owner_for_module(
@@ -27,128 +38,318 @@ def _owner_for_module(
     candidates = tuple(
         row
         for row in descriptors
-        if module == row.package_prefix or module.startswith(row.package_prefix + ".")
+        if _same_or_child(module, row.package_prefix)
     )
     return max(candidates, key=lambda row: len(row.package_prefix)) if candidates else None
 
 
-def _declared_system_cycles(descriptors: tuple[SystemDescriptor, ...]) -> tuple[tuple[str, ...], ...]:
-    """Return strongly-connected components in the declared top-level dependency graph."""
-
-    graph = {
-        row.identity.system_id: tuple(row.requires)
-        for row in descriptors
-        if row.identity.is_system
-    }
-    index = 0
-    indices: dict[str, int] = {}
-    lowlinks: dict[str, int] = {}
-    stack: list[str] = []
-    on_stack: set[str] = set()
-    components: list[tuple[str, ...]] = []
-
-    def visit(node: str) -> None:
-        nonlocal index
-        indices[node] = index
-        lowlinks[node] = index
-        index += 1
-        stack.append(node)
-        on_stack.add(node)
-        for target in graph.get(node, ()):
-            if target not in graph:
-                continue
-            if target not in indices:
-                visit(target)
-                lowlinks[node] = min(lowlinks[node], lowlinks[target])
-            elif target in on_stack:
-                lowlinks[node] = min(lowlinks[node], indices[target])
-        if lowlinks[node] != indices[node]:
-            return
-        component: list[str] = []
-        while True:
-            item = stack.pop()
-            on_stack.remove(item)
-            component.append(item)
-            if item == node:
-                break
-        if len(component) > 1:
-            components.append(tuple(sorted(component)))
-        elif node in graph.get(node, ()):
-            components.append((node,))
-
-    for node in sorted(graph):
-        if node not in indices:
-            visit(node)
-    return tuple(sorted(components))
+def _root_system_prefixes(
+    descriptors: tuple[SystemDescriptor, ...],
+) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for row in descriptors:
+        system_id = row.identity.system_id
+        current = result.get(system_id)
+        if current is None or len(row.package_prefix) < len(current):
+            result[system_id] = row.package_prefix
+    return result
 
 
 def _declared_dependency_covers(dependency: str, target_key: str) -> bool:
-    """Return whether a declared system/subsystem dependency covers the target owner."""
-
     return target_key == dependency or target_key.startswith(dependency + "/")
 
 
-def audit_system_dependency_invariants(root: Path) -> list[SourceInvariantViolation]:
-    """Enforce explicit cross-system dependencies and an acyclic system dependency DAG.
-
-    Containment and dependency are deliberately separate concepts. A subsystem may
-    declare dependencies specific to its wiring role (for example Platform
-    Composition) without forcing those dependencies onto its parent system.
-    """
-
+def layer_dependency_findings(
+    root: Path,
+    *,
+    edges: tuple[ImportEdge, ...] | None = None,
+) -> tuple[LayerDependencyFinding, ...]:
     root = Path(root).resolve()
     descriptors = system_catalog()
-    top_level = {
-        row.identity.system_id: row
+    hierarchy = layer_hierarchy()
+    layers = {row.layer_id: row for row in hierarchy.layers}
+    system_layer = {
+        system_id: row.layer_id
+        for row in hierarchy.layers
+        for system_id in row.members
+    }
+    global_systems = set(hierarchy.global_systems)
+    catalog_systems = {
+        row.identity.system_id
         for row in descriptors
         if row.identity.is_system
     }
+    declared_systems = set(system_layer) | global_systems
+    if declared_systems != catalog_systems:
+        missing = sorted(catalog_systems - declared_systems)
+        extra = sorted(declared_systems - catalog_systems)
+        raise RuntimeError(
+            f"layer hierarchy membership mismatch missing={missing} extra={extra}"
+        )
+
+    root_prefixes = _root_system_prefixes(descriptors)
+    facade_to_layer = {
+        row.facade_module: row.layer_id
+        for row in hierarchy.layers
+    }
+    composition_to_layer = {
+        row.composition_prefix: row.layer_id
+        for row in hierarchy.layers
+        if row.composition_prefix is not None
+    }
+    layer_order = {
+        row.layer_id: index
+        for index, row in enumerate(hierarchy.layers)
+    }
+
+    def facade_layer(module: str) -> str | None:
+        return facade_to_layer.get(module)
+
+    def facade_child_layer(module: str) -> str | None:
+        for facade, layer_id in facade_to_layer.items():
+            if module.startswith(facade + "."):
+                return layer_id
+        return None
+
+    def composition_layer(module: str) -> str | None:
+        for prefix, layer_id in composition_to_layer.items():
+            assert prefix is not None
+            if _same_or_child(module, prefix):
+                return layer_id
+        return None
+
+    findings: list[LayerDependencyFinding] = []
+
+    def add(
+        kind: str,
+        edge: ImportEdge,
+        *,
+        source_system: str | None = None,
+        source_layer: str | None = None,
+        target_system: str | None = None,
+        target_layer: str | None = None,
+        required_module: str | None = None,
+    ) -> None:
+        findings.append(
+            LayerDependencyFinding(
+                kind=kind,
+                path=edge.path,
+                line=edge.line,
+                source_module=edge.source_module,
+                target_module=edge.target_module,
+                source_system=source_system,
+                source_layer=source_layer,
+                target_system=target_system,
+                target_layer=target_layer,
+                required_module=required_module,
+            )
+        )
+
+    for edge in edges or scan_imports(root, package_roots=("noetrium_platform",)):
+        source_module = edge.source_module
+        target_module = edge.target_module
+
+        if hierarchy.is_global_contract(target_module):
+            continue
+        if _same_or_child(source_module, hierarchy.application_composition_prefix):
+            continue
+
+        source = _owner_for_module(descriptors, source_module)
+        target = _owner_for_module(descriptors, target_module)
+        source_system = None if source is None else source.identity.system_id
+        target_system = None if target is None else target.identity.system_id
+
+        if source_system is not None and source_system == target_system:
+            continue
+
+        # Global systems are below the regular hierarchy. Their immutable
+        # contracts were already accepted above by is_global_contract().
+        if source_system in global_systems:
+            if target_system is not None and target_system not in global_systems:
+                add(
+                    "global_system_reverse_dependency",
+                    edge,
+                    source_system=source_system,
+                    target_system=target_system,
+                    target_layer=system_layer.get(target_system),
+                )
+            continue
+
+        # Regular systems may reference only explicitly whitelisted global
+        # contracts, never arbitrary Kernel/Platform internals.
+        if target_system in global_systems:
+            add(
+                "global_system_internal_penetration",
+                edge,
+                source_system=source_system,
+                source_layer=(
+                    system_layer.get(source_system)
+                    if source_system is not None
+                    else None
+                ),
+                target_system=target_system,
+                required_module="global_contract_prefixes",
+            )
+            continue
+
+        source_facade_layer = facade_layer(source_module)
+        source_composition_layer = composition_layer(source_module)
+        target_facade_layer = facade_layer(target_module)
+        target_facade_child_layer = facade_child_layer(target_module)
+
+        if source_facade_layer is not None:
+            layer = layers[source_facade_layer]
+            if (
+                layer.lower_layer_id is not None
+                and target_module == layers[layer.lower_layer_id].facade_module
+            ):
+                continue
+            if target_system in layer.members:
+                required = root_prefixes[target_system] + ".api"
+                if target_module == required:
+                    continue
+                add(
+                    "layer_facade_internal_penetration",
+                    edge,
+                    source_layer=source_facade_layer,
+                    target_system=target_system,
+                    target_layer=system_layer.get(target_system),
+                    required_module=required,
+                )
+                continue
+            add(
+                "layer_facade_illegal_dependency",
+                edge,
+                source_layer=source_facade_layer,
+                target_system=target_system,
+                target_layer=(
+                    target_facade_layer
+                    or target_facade_child_layer
+                    or (system_layer.get(target_system) if target_system else None)
+                ),
+            )
+            continue
+
+        if source_composition_layer is not None:
+            layer = layers[source_composition_layer]
+            if (
+                layer.lower_layer_id is not None
+                and target_module == layers[layer.lower_layer_id].facade_module
+            ):
+                continue
+            if target_system in layer.members:
+                required = root_prefixes[target_system] + ".api"
+                if target_module == required:
+                    continue
+                add(
+                    "layer_composition_internal_penetration",
+                    edge,
+                    source_layer=source_composition_layer,
+                    target_system=target_system,
+                    target_layer=system_layer.get(target_system),
+                    required_module=required,
+                )
+                continue
+            add(
+                "layer_composition_illegal_dependency",
+                edge,
+                source_layer=source_composition_layer,
+                target_system=target_system,
+                target_layer=(
+                    target_facade_layer
+                    or target_facade_child_layer
+                    or (system_layer.get(target_system) if target_system else None)
+                ),
+            )
+            continue
+
+        if source_system is None:
+            continue
+
+        source_layer_id = system_layer[source_system]
+        source_layer = layers[source_layer_id]
+        lower_layer_id = source_layer.lower_layer_id
+        required_lower = (
+            None
+            if lower_layer_id is None
+            else layers[lower_layer_id].facade_module
+        )
+
+        if target_module == required_lower:
+            continue
+
+        if target_facade_child_layer is not None:
+            add(
+                "lower_layer_facade_internal_penetration",
+                edge,
+                source_system=source_system,
+                source_layer=source_layer_id,
+                target_layer=target_facade_child_layer,
+                required_module=required_lower,
+            )
+            continue
+
+        if target_facade_layer is not None:
+            add(
+                "non_adjacent_layer_facade_dependency",
+                edge,
+                source_system=source_system,
+                source_layer=source_layer_id,
+                target_layer=target_facade_layer,
+                required_module=required_lower,
+            )
+            continue
+
+        if target_system is None:
+            continue
+
+        target_layer_id = system_layer[target_system]
+        if target_layer_id == source_layer_id:
+            kind = "sibling_system_dependency"
+        elif layer_order[target_layer_id] > layer_order[source_layer_id]:
+            kind = "reverse_layer_dependency"
+        elif lower_layer_id == target_layer_id:
+            kind = "bypass_lower_layer_facade"
+        else:
+            kind = "skip_layer_dependency"
+
+        add(
+            kind,
+            edge,
+            source_system=source_system,
+            source_layer=source_layer_id,
+            target_system=target_system,
+            target_layer=target_layer_id,
+            required_module=required_lower,
+        )
+
+    return tuple(findings)
+
+
+def audit_system_dependency_invariants(root: Path) -> list[SourceInvariantViolation]:
+    root = Path(root).resolve()
     rows: list[SourceInvariantViolation] = []
-
-    catalog_path = root / "noetrium_platform/foundation/governance/system_registry/api/topology.py"
-    for component in _declared_system_cycles(descriptors):
-        rows.append(violation(
-            root,
-            catalog_path,
-            "system_dependency_cycle",
-            1,
-            "declared top-level system dependency cycle: " + " -> ".join(component),
-        ))
-
-    seen: set[tuple[str, str, str, int]] = set()
-    for edge in scan_imports(root, package_roots=("noetrium_platform",)):
-        if is_composition_module(edge.source_module):
-            continue
-        if any(
-            edge.target_module == prefix
-            or edge.target_module.startswith(prefix + ".")
-            for prefix in FOUNDATIONAL_MODULE_PREFIXES
-        ):
-            continue
-        source = _owner_for_module(descriptors, edge.source_module)
-        target = _owner_for_module(descriptors, edge.target_module)
-        if source is None or target is None:
-            continue
-        source_system = source.identity.system_id
-        target_system = target.identity.system_id
-        if source_system == target_system:
-            continue
-        target_key = target.identity.key
-        declared = (*top_level[source_system].requires, *source.requires)
-        if any(_declared_dependency_covers(item, target_key) for item in declared):
-            continue
-        key = (source_system, target_system, edge.path, edge.line)
-        if key in seen:
-            continue
-        seen.add(key)
-        rows.append(violation(
-            root,
-            root / edge.path,
-            "system_dependency_declaration",
-            edge.line,
-            f"{source.identity.key} depends on {target_system} but the dependency is not declared for the subsystem or its parent system",
-        ))
+    for finding in layer_dependency_findings(root):
+        required = (
+            ""
+            if finding.required_module is None
+            else f"; required facade={finding.required_module}"
+        )
+        rows.append(
+            violation(
+                root,
+                root / finding.path,
+                finding.kind,
+                finding.line,
+                f"{finding.source_module} -> {finding.target_module}{required}",
+            )
+        )
     return rows
 
 
-__all__ = ["audit_system_dependency_invariants"]
+__all__ = [
+    "LayerDependencyFinding",
+    "_declared_dependency_covers",
+    "audit_system_dependency_invariants",
+    "layer_dependency_findings",
+]

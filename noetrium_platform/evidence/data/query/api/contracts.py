@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-from noetrium_platform.foundation.scope.api import ScopeIdentity
+from noetrium_platform.foundation.api import ScopeIdentity
 
 
 class ResearchDimensionKind(StrEnum):

@@ -6,7 +6,7 @@ from enum import StrEnum
 from typing import Protocol
 
 from .capture_paths import ServiceCapturePaths
-from .environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 
 
 class ProcessReconcileStatus(StrEnum):
@@ -52,19 +52,9 @@ class ExactProcessBackend(Protocol):
     ) -> tuple[str, ...]: ...
 
 
-class ServiceReadinessProbe(Protocol):
-    def wait_ready(
-        self,
-        process: ServiceProcessIdentity,
-        contract: ServiceLaunchContract,
-        backend: ExactProcessBackend,
-    ) -> str: ...
-
-
 __all__ = [
     "ExactProcessBackend",
     "ProcessReconcileResult",
     "ProcessReconcileStatus",
     "ServiceProcessDrift",
-    "ServiceReadinessProbe",
 ]

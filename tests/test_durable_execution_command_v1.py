@@ -1,9 +1,9 @@
 from pathlib import Path
 import sqlite3
 
-from noetrium_platform.research.execution.command.api import CommandConflict, CommandCorruption, CommandId, ExecutionCommand
-from noetrium_platform.research.execution.command.providers import SQLiteCommandStore
-from noetrium_platform.research.execution.command.runtime import CommandIntentOwner
+from noetrium_platform.research.execution.operation.api import CommandConflict, CommandCorruption, CommandId, ExecutionCommand
+from noetrium_platform.research.execution.operation.command.providers import SQLiteCommandStore
+from noetrium_platform.research.execution.operation.command.runtime import CommandIntentOwner
 
 
 def _command(*, command_id: str = "cmd-1", command_type: str = "environment.action") -> ExecutionCommand:

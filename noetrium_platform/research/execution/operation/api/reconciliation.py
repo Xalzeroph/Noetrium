@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from noetrium_platform.foundation.kernel.kernel.operation import EffectCertainty
-from noetrium_platform.infrastructure.reliability.effect.api import (
+from noetrium_platform.capabilities.api import (
     EffectReconciliationDisposition,
     EffectReconciliationProof,
 )
