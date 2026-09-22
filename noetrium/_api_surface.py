@@ -10,7 +10,6 @@ UNIFIED_API_EXTRA_MODULES = (
     "noetrium_platform.platform",
     "components.api",
     "orchestration.api",
-    "noetrium_platform.research.experimentation.study.runtime",
     "noetrium_platform.research.experimentation.workbench.providers",
     "noetrium_platform.research.experimentation.workbench.runtime",
 )

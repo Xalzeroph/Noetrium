@@ -5,6 +5,7 @@ from noetrium_platform.capabilities.participant.core.api.contracts import (
     ParticipantImplementationIdentity, ParticipantRuntimeBinding, ParticipantSessionRuntimeIdentity,
 )
 from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
+from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
 
 
 def _digest_seed(value: str) -> str:
@@ -250,6 +251,16 @@ def environment_effect_intent(request, provider_component, *, operation_id: str,
         recovery_handle=recovery_handle,
         intent_namespace="environment-effect",
     )
+
+class NoOpTrialProtocol:
+    protocol_id = "test-noop.v1"
+    surface_id = "empty.operations.v1"
+    configuration_digest = "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+
+    def run(self, operations, context, *, task, input_kind, input_payload):
+        del operations, input_kind
+        return TrialCycleExecution(str(task), input_payload, context, ())
+
 
 class EmptyWorkflowSurfaceFactory:
     surface_id = "empty.operations.v1"

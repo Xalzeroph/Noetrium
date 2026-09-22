@@ -1,4 +1,5 @@
 from .contracts import (
+    StaticExperimentTaskProjection,
     WorkloadCompletionReceipt,
     WorkloadEvaluation,
     WorkloadMethodInvocation,
@@ -13,6 +14,7 @@ from .ports import (
 )
 
 __all__ = [
+    "StaticExperimentTaskProjection",
     "WorkloadCompletionReceipt",
     "WorkloadEvaluation",
     "WorkloadMethodCompilerPort",

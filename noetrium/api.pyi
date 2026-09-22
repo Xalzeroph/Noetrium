@@ -1596,6 +1596,10 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRunResult as MethodRunResult,
     MethodRunStatus as MethodRunStatus,
     MethodRuntimeContext as MethodRuntimeContext,
+    MethodRuntimePort as MethodRuntimePort,
+    MethodRuntimeRequirements as MethodRuntimeRequirements,
+    MethodSchemaPort as MethodSchemaPort,
+    MethodWorkflow as MethodWorkflow,
     OperationDispatchPort as OperationDispatchPort,
     OperationExecutionPort as OperationExecutionPort,
     TrialCycleExecution as TrialCycleExecution,
@@ -1606,6 +1610,7 @@ from noetrium_platform.research.execution.workflow.api import (
     WorkflowSurfaceBindingContext as WorkflowSurfaceBindingContext,
     WorkflowSurfaceFactory as WorkflowSurfaceFactory,
     WorkflowSurfaceReuseScope as WorkflowSurfaceReuseScope,
+    analyze_method_runtime_requirements as analyze_method_runtime_requirements,
     workflow_surface_id as workflow_surface_id,
     workflow_surface_reuse_scope as workflow_surface_reuse_scope,
 )
@@ -1613,7 +1618,6 @@ from noetrium_platform.research.execution.workflow.api import (
 from noetrium_platform.research.execution.workflow.api.method_machine import (
     MethodAuthoritativeState as MethodAuthoritativeState,
     MethodControlRecord as MethodControlRecord,
-    MethodSchemaPort as MethodSchemaPort,
     MethodTransitionAuthorityPort as MethodTransitionAuthorityPort,
     MethodTransitionRecord as MethodTransitionRecord,
 )
@@ -1632,7 +1636,6 @@ from noetrium_platform.research.experimentation.api import (
     CompiledResearchCampaign as CompiledResearchCampaign,
     CompiledResearchCampaignLane as CompiledResearchCampaignLane,
     CompiledResearchPlan as CompiledResearchPlan,
-    CompiledTrialExperimentProgram as CompiledTrialExperimentProgram,
     ExperimentBatch as ExperimentBatch,
     ExperimentBatchKind as ExperimentBatchKind,
     ExperimentBatchPlacement as ExperimentBatchPlacement,
@@ -1707,7 +1710,6 @@ from noetrium_platform.research.experimentation.api import (
     TrialExecutionReceipt as TrialExecutionReceipt,
     TrialExecutionRequest as TrialExecutionRequest,
     TrialExecutionStageReceipt as TrialExecutionStageReceipt,
-    TrialExperimentProgramBinding as TrialExperimentProgramBinding,
     TrialMatrixExecutionReport as TrialMatrixExecutionReport,
     TrialProviderPort as TrialProviderPort,
     compile_experiment_program as compile_experiment_program,
@@ -1715,11 +1717,9 @@ from noetrium_platform.research.experimentation.api import (
     compile_research_campaign as compile_research_campaign,
     compile_research_method as compile_research_method,
     compile_research_plan as compile_research_plan,
-    compile_trial_experiment_program as compile_trial_experiment_program,
     diff_research_plans as diff_research_plans,
     experiment_report_from_data as experiment_report_from_data,
     resolve_research_requirements as resolve_research_requirements,
-    trial_report_from_data as trial_report_from_data,
 )
 
 from noetrium_platform.research.experimentation.checkpoint.api import (
@@ -1894,6 +1894,8 @@ from noetrium_platform.research.experimentation.study.api import (
     StudyResearchReadPort as StudyResearchReadPort,
     StudyResearchReadSnapshot as StudyResearchReadSnapshot,
     StudyVariantSpec as StudyVariantSpec,
+    TrialMeasurementProjectionPort as TrialMeasurementProjectionPort,
+    TrialTaskProjectionPort as TrialTaskProjectionPort,
     VariantBinding as VariantBinding,
     VariantExecutionProvider as VariantExecutionProvider,
     VariantExecutionRequest as VariantExecutionRequest,
@@ -1912,19 +1914,6 @@ from noetrium_platform.research.experimentation.study.api.benchmark import (
 from noetrium_platform.research.experimentation.study.api.materialization import (
     MaterializedTaskVerifierArchive as MaterializedTaskVerifierArchive,
     TaskVerifierArchiveMaterializationPort as TaskVerifierArchiveMaterializationPort,
-)
-
-from noetrium_platform.research.experimentation.study.runtime import (
-    BasicStudyMetricAggregator as BasicStudyMetricAggregator,
-    DeterministicStudyAssignment as DeterministicStudyAssignment,
-    DoctorReport as DoctorReport,
-    ExperimentDoctor as ExperimentDoctor,
-    InMemoryObservationProjection as InMemoryObservationProjection,
-    MetricEngine as MetricEngine,
-    StudyMatrixUniversalProjection as StudyMatrixUniversalProjection,
-    TrialVerifierOrchestrator as TrialVerifierOrchestrator,
-    UniversalExperimentKernel as UniversalExperimentKernel,
-    project_experiment_run_report as project_experiment_run_report,
 )
 
 from noetrium_platform.research.experimentation.workbench.api import (

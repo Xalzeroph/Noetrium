@@ -6,6 +6,9 @@ from .matrix import (
 )
 from .trial import (
     CompiledTrialExperimentProgram,
+    StandardWorkloadMeasurementProjection,
+    StaticExperimentTaskProjection,
+    WorkloadTrialProvider,
     TrialExperimentProgramBinding,
     TrialVerifierOrchestrator,
     compile_trial_experiment_program,
@@ -14,6 +17,8 @@ from .trial import (
 
 __all__ = [
     "CompiledTrialExperimentProgram", "TrialExperimentProgramBinding",
+    "StandardWorkloadMeasurementProjection", "StaticExperimentTaskProjection",
+    "WorkloadTrialProvider",
     "TrialVerifierOrchestrator", "compile_trial_experiment_program",
     "trial_report_from_data", "BasicStudyMetricAggregator", "DeterministicStudyAssignment",
 "StudyMatrixUniversalProjection", "InMemoryObservationProjection",

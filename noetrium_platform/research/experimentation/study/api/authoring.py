@@ -284,6 +284,21 @@ class AgentStudySpec:
     capabilities: tuple[str, ...] = ()
     configurations: tuple[str, ...] = ()
     model_role: str = "agent_model"
+    benchmark: BenchmarkTaskSet | None = None
+    benchmark_split_id: str | None = None
+    trial: ExperimentTrialProtocolIdentity | None = None
+    limits: TrialBudget | None = None
+    repetitions: int = 1
+    seeds: tuple[str, ...] | None = None
+    benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK
+    experiment_id: str | None = None
+    workload_id: str = "method-program"
+    trial_provider_requirement_id: str = "trial.method-program"
+    replay_level: ReplayLevel = ReplayLevel.OBSERVATIONAL
+    repetition_timeout_seconds: float = 3600.0
+    concurrency_policy: StudyConcurrencyPolicy | None = None
+    factors: tuple[StudyFactorSpec, ...] = ()
+    revision: ResearchRevision | None = None
 
     def __post_init__(self) -> None:
         _text(self.method_id, "agent study method_id")
@@ -319,6 +334,38 @@ class AgentStudySpec:
                 "agent study measurements must be None, MeasurementProtocol or a "
                 "non-empty tuple of MeasurementDefinition"
             )
+        if self.benchmark is not None and not isinstance(self.benchmark, BenchmarkTaskSet):
+            raise TypeError("agent study benchmark must be BenchmarkTaskSet or None")
+        if self.benchmark_split_id is not None:
+            _text(self.benchmark_split_id, "agent study benchmark_split_id")
+        if self.trial is not None and not isinstance(
+            self.trial, ExperimentTrialProtocolIdentity
+        ):
+            raise TypeError("agent study trial must be ExperimentTrialProtocolIdentity or None")
+        if self.limits is not None and not isinstance(self.limits, TrialBudget):
+            raise TypeError("agent study limits must be TrialBudget or None")
+        if type(self.repetitions) is not int or self.repetitions <= 0:
+            raise ValueError("agent study repetitions must be positive")
+        if self.seeds is not None:
+            object.__setattr__(self, "seeds", _tokens(self.seeds, "agent study seeds"))
+        if not isinstance(self.benchmark_assignment_mode, BenchmarkAssignmentMode):
+            raise TypeError("agent study benchmark_assignment_mode must be BenchmarkAssignmentMode")
+        if self.experiment_id is not None:
+            _text(self.experiment_id, "agent study experiment_id")
+        _text(self.workload_id, "agent study workload_id")
+        _text(self.trial_provider_requirement_id, "agent study trial_provider_requirement_id")
+        if not isinstance(self.replay_level, ReplayLevel):
+            raise TypeError("agent study replay_level must be ReplayLevel")
+        if isinstance(self.repetition_timeout_seconds, bool) or not isinstance(
+            self.repetition_timeout_seconds, (int, float)
+        ) or self.repetition_timeout_seconds <= 0:
+            raise ValueError("agent study repetition_timeout_seconds must be positive")
+        if type(self.factors) is not tuple or any(
+            not isinstance(row, StudyFactorSpec) for row in self.factors
+        ):
+            raise TypeError("agent study factors must be StudyFactorSpec tuple")
+        if self.revision is not None and not isinstance(self.revision, ResearchRevision):
+            raise TypeError("agent study revision must be ResearchRevision or None")
         object.__setattr__(
             self,
             "benchmark_ids",
@@ -337,47 +384,98 @@ class AgentStudySpec:
 
     def build(
         self,
-        benchmark: BenchmarkTaskSet,
+        benchmark: BenchmarkTaskSet | None = None,
         *,
-        trial: ExperimentTrialProtocolIdentity,
-        limits: TrialBudget,
+        trial: ExperimentTrialProtocolIdentity | None = None,
+        limits: TrialBudget | None = None,
         model: str | StudyModel | None = None,
         measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...] | None = None,
         benchmark_split_id: str | None = None,
-        repetitions: int = 1,
+        repetitions: int | None = None,
         seeds: tuple[str, ...] | None = None,
-        benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK,
+        benchmark_assignment_mode: BenchmarkAssignmentMode | None = None,
         experiment_id: str | None = None,
-        workload_id: str = "method-program",
-        trial_provider_requirement_id: str = "trial.method-program",
-        replay_level: ReplayLevel = ReplayLevel.OBSERVATIONAL,
-        repetition_timeout_seconds: float = 3600.0,
+        workload_id: str | None = None,
+        trial_provider_requirement_id: str | None = None,
+        replay_level: ReplayLevel | None = None,
+        repetition_timeout_seconds: float | None = None,
         concurrency_policy: StudyConcurrencyPolicy | None = None,
-        factors: tuple[StudyFactorSpec, ...] = (),
+        factors: tuple[StudyFactorSpec, ...] | None = None,
         revision: ResearchRevision | None = None,
     ) -> ResearchStudyDefinition:
-        if not isinstance(benchmark, BenchmarkTaskSet):
-            raise TypeError("agent study benchmark must be BenchmarkTaskSet")
+        resolved_benchmark = self.benchmark if benchmark is None else benchmark
+        if not isinstance(resolved_benchmark, BenchmarkTaskSet):
+            raise ValueError(
+                "agent study benchmark must be declared on the spec or supplied to build"
+            )
+        resolved_trial = self.trial if trial is None else trial
+        if not isinstance(resolved_trial, ExperimentTrialProtocolIdentity):
+            raise ValueError(
+                "agent study trial must be declared on the spec or supplied to build"
+            )
+        resolved_limits = self.limits if limits is None else limits
+        if not isinstance(resolved_limits, TrialBudget):
+            raise ValueError(
+                "agent study limits must be declared on the spec or supplied to build"
+            )
         resolved_model = self.model if model is None else model
         if resolved_model is None:
             raise ValueError("agent study model must be declared before build")
         resolved_measurements = self.measurements if measurements is None else measurements
         if resolved_measurements is None:
             raise ValueError("agent study measurements must be declared before build")
-        if self.benchmark_ids and benchmark.benchmark_id not in self.benchmark_ids:
+        if self.benchmark_ids and resolved_benchmark.benchmark_id not in self.benchmark_ids:
             raise ValueError(
-                f"benchmark {benchmark.benchmark_id!r} is outside declared agent study "
+                f"benchmark {resolved_benchmark.benchmark_id!r} is outside declared agent study "
                 f"benchmarks {self.benchmark_ids!r}"
             )
-        if seeds is None:
-            if type(repetitions) is not int or repetitions <= 0:
-                raise ValueError("agent study repetitions must be positive")
-            seeds = tuple(f"repetition-{index}" for index in range(repetitions))
+
+        resolved_repetitions = self.repetitions if repetitions is None else repetitions
+        if type(resolved_repetitions) is not int or resolved_repetitions <= 0:
+            raise ValueError("agent study repetitions must be positive")
+        resolved_seeds = self.seeds if seeds is None else seeds
+        if resolved_seeds is None:
+            resolved_seeds = tuple(
+                f"repetition-{index}" for index in range(resolved_repetitions)
+            )
+        resolved_split = (
+            self.benchmark_split_id
+            if benchmark_split_id is None
+            else benchmark_split_id
+        )
+        resolved_assignment_mode = (
+            self.benchmark_assignment_mode
+            if benchmark_assignment_mode is None
+            else benchmark_assignment_mode
+        )
+        resolved_experiment_id = (
+            self.experiment_id if experiment_id is None else experiment_id
+        )
+        resolved_workload_id = self.workload_id if workload_id is None else workload_id
+        resolved_trial_requirement = (
+            self.trial_provider_requirement_id
+            if trial_provider_requirement_id is None
+            else trial_provider_requirement_id
+        )
+        resolved_replay = self.replay_level if replay_level is None else replay_level
+        resolved_timeout = (
+            self.repetition_timeout_seconds
+            if repetition_timeout_seconds is None
+            else repetition_timeout_seconds
+        )
+        resolved_concurrency = (
+            self.concurrency_policy
+            if concurrency_policy is None
+            else concurrency_policy
+        )
+        resolved_factors = self.factors if factors is None else factors
+        resolved_revision = self.revision if revision is None else revision
+
         return Study(
             project_id=self.project_id,
             study_id=self.study_id,
-            benchmark=benchmark,
-            benchmark_split_id=benchmark_split_id,
+            benchmark=resolved_benchmark,
+            benchmark_split_id=resolved_split,
             method=StudyParticipant(
                 role="agent",
                 kind=self.participant_kind,
@@ -388,20 +486,21 @@ class AgentStudySpec:
             ),
             models={self.model_role: resolved_model},
             measurements=resolved_measurements,
-            trial=trial,
-            repetitions=repetitions,
-            seeds=seeds,
-            limits=limits,
-            benchmark_assignment_mode=benchmark_assignment_mode,
-            experiment_id=experiment_id,
-            workload_id=workload_id,
-            trial_provider_requirement_id=trial_provider_requirement_id,
-            replay_level=replay_level,
-            repetition_timeout_seconds=repetition_timeout_seconds,
-            concurrency_policy=concurrency_policy,
-            factors=factors,
-            revision=revision,
+            trial=resolved_trial,
+            repetitions=resolved_repetitions,
+            seeds=resolved_seeds,
+            limits=resolved_limits,
+            benchmark_assignment_mode=resolved_assignment_mode,
+            experiment_id=resolved_experiment_id,
+            workload_id=resolved_workload_id,
+            trial_provider_requirement_id=resolved_trial_requirement,
+            replay_level=resolved_replay,
+            repetition_timeout_seconds=resolved_timeout,
+            concurrency_policy=resolved_concurrency,
+            factors=resolved_factors,
+            revision=resolved_revision,
         ).build()
+
 
 
 __all__ = ["AgentStudySpec", "Study", "StudyModel", "StudyParticipant"]

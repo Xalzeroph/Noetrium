@@ -22,7 +22,7 @@
       "noetrium_platform.infrastructure.lifecycle.api.contracts"
     ]
   },
-  "catalog_digest": "176374b50053df367a16772be458ad56ef9d52c5cf5478fd41a151f6d5ee61fc",
+  "catalog_digest": "5d92ed9611598ee69b0aff70c446d1751a043e0948e6dc8cb26f649a83208bb8",
   "direct_symbol_sources": {
     "ActionIdentityViolation": "noetrium_platform.capabilities.environment.api",
     "ActionKind": "noetrium_platform.capabilities.environment.embodied.api",
@@ -153,7 +153,6 @@
     "BackendCandidatePlan": "noetrium_platform.capabilities.model.qualification.api.qualification",
     "BaselineRegistryPort": "noetrium_platform.research.experimentation.workbench.api",
     "BaselineSpec": "noetrium_platform.research.experimentation.workbench.api",
-    "BasicStudyMetricAggregator": "noetrium_platform.research.experimentation.study.runtime",
     "BatchCapableRegisteredChildResearchMachineExecutor": "noetrium_platform.research.execution.machines.api",
     "BenchmarkAssignmentMode": "noetrium_platform.research.experimentation.api",
     "BenchmarkCutSpec": "noetrium_platform.research.experimentation.study.api.benchmark",
@@ -257,7 +256,6 @@
     "CompiledResearchCampaign": "noetrium_platform.research.experimentation.api",
     "CompiledResearchCampaignLane": "noetrium_platform.research.experimentation.api",
     "CompiledResearchPlan": "noetrium_platform.research.experimentation.api",
-    "CompiledTrialExperimentProgram": "noetrium_platform.research.experimentation.api",
     "CompositionPlanReference": "noetrium_platform.research.experimentation.run.manifest.api",
     "ComputeAllocation": "noetrium_platform.infrastructure.resources.compute.api",
     "ComputeCandidatePort": "noetrium_platform.infrastructure.resources.compute.api",
@@ -322,7 +320,6 @@
     "DeploymentRuntimeQualificationStatus": "noetrium_platform.capabilities.model.qualification.api.qualification",
     "DeploymentStatusIdentity": "noetrium_platform.research.execution.api",
     "DerivedEvidenceArtifact": "noetrium_platform.research.experimentation.run.manifest.api",
-    "DeterministicStudyAssignment": "noetrium_platform.research.experimentation.study.runtime",
     "DigestValidationError": "noetrium.contracts.json",
     "DirectoryCleanupCandidate": "noetrium_platform.infrastructure.resources.directory.api",
     "DirectoryCleanupPort": "noetrium_platform.infrastructure.resources.directory.api",
@@ -337,7 +334,6 @@
     "DirectoryUsage": "noetrium_platform.infrastructure.resources.directory.api",
     "DiscoveryReport": "noetrium_platform.foundation.governance.evolution.api",
     "DoctorFinding": "noetrium_platform.research.experimentation.experiment.api",
-    "DoctorReport": "noetrium_platform.research.experimentation.study.runtime",
     "DomainProgramBuilder": "noetrium_platform.research.execution.machines.api",
     "DownstreamSurfaceMode": "noetrium_platform.foundation.governance.system_registry.api",
     "DriftKind": "noetrium_platform.foundation.governance.evolution.api",
@@ -491,7 +487,6 @@
     "ExperimentComponentBindingPort": "noetrium_platform.research.experimentation.experiment.api",
     "ExperimentConcern": "noetrium_platform.research.execution.machines.api",
     "ExperimentDefinition": "noetrium_platform.research.experimentation.experiment.api",
-    "ExperimentDoctor": "noetrium_platform.research.experimentation.study.runtime",
     "ExperimentDoctorPort": "noetrium_platform.research.experimentation.experiment.api.contracts",
     "ExperimentLifecycleState": "noetrium_platform.research.experimentation.experiment.api",
     "ExperimentModePort": "noetrium_platform.research.experimentation.experiment.api",
@@ -576,7 +571,6 @@
     "ImprovementSignal": "noetrium_platform.foundation.governance.evolution.api",
     "InMemoryBaselineRegistry": "noetrium_platform.research.experimentation.workbench.runtime",
     "InMemoryBenchmarkSource": "noetrium_platform.research.experimentation.api",
-    "InMemoryObservationProjection": "noetrium_platform.research.experimentation.study.runtime",
     "InferenceResult": "noetrium_platform.research.experimentation.workbench.api",
     "InstallPackage": "noetrium_platform.capabilities.model.qualification.api.qualification",
     "InterventionDecider": "noetrium_platform.research.execution.machines.api",
@@ -686,7 +680,9 @@
     "MethodRuntimeBinding": "noetrium_platform.capabilities.participant.method.api",
     "MethodRuntimeContext": "noetrium_platform.research.execution.workflow.api",
     "MethodRuntimeIdentity": "noetrium_platform.capabilities.participant.method.api",
-    "MethodSchemaPort": "noetrium_platform.research.execution.workflow.api.method_machine",
+    "MethodRuntimePort": "noetrium_platform.research.execution.workflow.api",
+    "MethodRuntimeRequirements": "noetrium_platform.research.execution.workflow.api",
+    "MethodSchemaPort": "noetrium_platform.research.execution.workflow.api",
     "MethodServices": "noetrium_platform.capabilities.participant.method.api",
     "MethodSession": "noetrium_platform.capabilities.participant.method.api",
     "MethodSessionRuntime": "noetrium_platform.capabilities.participant.method.api",
@@ -696,9 +692,9 @@
     "MethodTaskOutcome": "noetrium_platform.capabilities.participant.method.api",
     "MethodTransitionAuthorityPort": "noetrium_platform.research.execution.workflow.api.method_machine",
     "MethodTransitionRecord": "noetrium_platform.research.execution.workflow.api.method_machine",
+    "MethodWorkflow": "noetrium_platform.research.execution.workflow.api",
     "MetricAggregation": "noetrium_platform.research.experimentation.experiment.api",
     "MetricDefinition": "noetrium_platform.research.experimentation.experiment.api",
-    "MetricEngine": "noetrium_platform.research.experimentation.study.runtime",
     "MetricMissingPolicy": "noetrium_platform.research.experimentation.experiment.api",
     "MetricPredicate": "noetrium_platform.research.experimentation.experiment.api",
     "MetricReport": "noetrium_platform.research.experimentation.experiment.api",
@@ -1395,7 +1391,6 @@
     "StudyFactorSpec": "noetrium_platform.research.experimentation.api",
     "StudyIntervention": "noetrium_platform.research.experimentation.api",
     "StudyMatrixExecutionReport": "noetrium_platform.research.experimentation.study.api",
-    "StudyMatrixUniversalProjection": "noetrium_platform.research.experimentation.study.runtime",
     "StudyMetricAggregate": "noetrium_platform.research.experimentation.study.api",
     "StudyMetricAggregationPort": "noetrium_platform.research.experimentation.study.api",
     "StudyMetricObservation": "noetrium_platform.research.experimentation.study.api",
@@ -1494,16 +1489,15 @@
     "TrialExecutionReceipt": "noetrium_platform.research.experimentation.api",
     "TrialExecutionRequest": "noetrium_platform.research.experimentation.api",
     "TrialExecutionStageReceipt": "noetrium_platform.research.experimentation.api",
-    "TrialExperimentProgramBinding": "noetrium_platform.research.experimentation.api",
     "TrialMatrixExecutionReport": "noetrium_platform.research.experimentation.api",
+    "TrialMeasurementProjectionPort": "noetrium_platform.research.experimentation.study.api",
     "TrialProviderPort": "noetrium_platform.research.experimentation.api",
-    "TrialVerifierOrchestrator": "noetrium_platform.research.experimentation.study.runtime",
+    "TrialTaskProjectionPort": "noetrium_platform.research.experimentation.study.api",
     "TypedCapabilityCarrierCodec": "noetrium_platform.capabilities.participant.capability.api",
     "TypedCarrierReference": "noetrium_platform.capabilities.participant.capability.api",
     "UnhandledEventPolicy": "noetrium_platform.research.execution.machines.api",
     "UnitOutcome": "noetrium_platform.research.experimentation.experiment.api.contracts",
     "UnitOutcomeState": "noetrium_platform.research.experimentation.experiment.api.contracts",
-    "UniversalExperimentKernel": "noetrium_platform.research.experimentation.study.runtime",
     "UnknownRequiredFact": "noetrium_platform.evidence.data.fact.api",
     "ValueInferenceInput": "noetrium_platform.capabilities.model.api",
     "ValueInferenceOutput": "noetrium_platform.capabilities.model.api",
@@ -1553,6 +1547,7 @@
     "action_result_from_payload": "noetrium_platform.capabilities.environment.api",
     "action_result_payload": "noetrium_platform.capabilities.environment.api",
     "action_summary_payload": "noetrium_platform.capabilities.participant.agent.api",
+    "analyze_method_runtime_requirements": "noetrium_platform.research.execution.workflow.api",
     "attach_cleanup_note": "noetrium_platform.research.experimentation.run.lifecycle.api",
     "audit_system_topology_source": "noetrium_platform.foundation.governance.system_registry.api",
     "bind_bundled_minecraft_environment": "noetrium_platform.platform",
@@ -1599,7 +1594,6 @@
     "compile_research_method": "noetrium_platform.research.experimentation.api",
     "compile_research_plan": "noetrium_platform.research.experimentation.api",
     "compile_rule_program": "noetrium_platform.research.execution.machines.api",
-    "compile_trial_experiment_program": "noetrium_platform.research.experimentation.api",
     "complete_project_model": "noetrium_platform.platform",
     "consumed_transition": "noetrium_platform.infrastructure.reliability.effect.api",
     "consumption_digest": "noetrium_platform.infrastructure.reliability.effect.api",
@@ -1664,7 +1658,6 @@
     "process_environment_digest": "noetrium_platform.infrastructure.lifecycle.session.api",
     "program_handler_binding_digest": "noetrium_platform.research.execution.machines.api",
     "project_effect_reconciliation": "noetrium_platform.research.execution.operation.api",
-    "project_experiment_run_report": "noetrium_platform.research.experimentation.study.runtime",
     "project_manifest_document": "noetrium_platform.foundation.portfolio.api",
     "project_manifest_identity_facets": "noetrium_platform.foundation.portfolio.api",
     "query_document": "noetrium_platform.evidence.data.query.api.identity",
@@ -1702,7 +1695,6 @@
     "system_catalog": "noetrium_platform.foundation.governance.system_registry.api",
     "thaw_json_mapping": "noetrium_platform.capabilities.environment.api",
     "transition_operation": "noetrium_platform.research.execution.operation.api",
-    "trial_report_from_data": "noetrium_platform.research.experimentation.api",
     "validate_participant_kind": "noetrium_platform.capabilities.participant.core.api.runtime_operations",
     "validate_task_graph": "noetrium_platform.research.experimentation.experiment.api",
     "verify_environment_provider_conformance": "noetrium_platform.capabilities.environment.api",
@@ -2404,9 +2396,6 @@
       "experimentation"
     ],
     "CompiledResearchPlan": [
-      "experimentation"
-    ],
-    "CompiledTrialExperimentProgram": [
       "experimentation"
     ],
     "CompositionPlanReference": [
@@ -3646,6 +3635,12 @@
     "MethodRuntimeIdentity": [
       "participant/method"
     ],
+    "MethodRuntimePort": [
+      "execution/workflow"
+    ],
+    "MethodRuntimeRequirements": [
+      "execution/workflow"
+    ],
     "MethodSchemaPort": [
       "execution/workflow"
     ],
@@ -3674,6 +3669,9 @@
       "execution/workflow"
     ],
     "MethodTransitionRecord": [
+      "execution/workflow"
+    ],
+    "MethodWorkflow": [
       "execution/workflow"
     ],
     "MetricAggregation": [
@@ -5974,15 +5972,18 @@
       "experimentation",
       "experimentation/study"
     ],
-    "TrialExperimentProgramBinding": [
-      "experimentation"
-    ],
     "TrialMatrixExecutionReport": [
       "experimentation",
       "experimentation/study"
     ],
+    "TrialMeasurementProjectionPort": [
+      "experimentation/study"
+    ],
     "TrialProviderPort": [
       "experimentation",
+      "experimentation/study"
+    ],
+    "TrialTaskProjectionPort": [
       "experimentation/study"
     ],
     "TypedCapabilityCarrierCodec": [
@@ -6138,6 +6139,9 @@
     "action_summary_payload": [
       "participant/agent"
     ],
+    "analyze_method_runtime_requirements": [
+      "execution/workflow"
+    ],
     "attach_cleanup_note": [
       "experimentation/run/lifecycle"
     ],
@@ -6212,9 +6216,6 @@
     ],
     "compile_rule_program": [
       "execution/research_program"
-    ],
-    "compile_trial_experiment_program": [
-      "experimentation"
     ],
     "consumed_transition": [
       "reliability/effect"
@@ -6491,9 +6492,6 @@
     ],
     "transition_operation": [
       "execution/operation"
-    ],
-    "trial_report_from_data": [
-      "experimentation"
     ],
     "validate_participant_kind": [
       "participant/core"
@@ -8499,6 +8497,7 @@
           "symbols": [
             "AgentMethodSpec",
             "AgentPhaseSpec",
+            "MethodWorkflow",
             "EffectIntentOperationPort",
             "OperationDispatchPort",
             "OperationExecutionPort",
@@ -8540,7 +8539,11 @@
             "MethodProgramBuilder",
             "MethodRunResult",
             "MethodRunStatus",
-            "MethodRuntimeContext"
+            "MethodRuntimeContext",
+            "MethodRuntimePort",
+            "MethodRuntimeRequirements",
+            "MethodSchemaPort",
+            "analyze_method_runtime_requirements"
           ]
         },
         {
@@ -8612,11 +8615,20 @@
             "MethodMachinePort",
             "MethodRunStatus",
             "MethodRuntimeContext",
+            "MethodRuntimePort",
             "MethodSchemaPort",
             "MethodAuthoritativeState",
             "MethodControlRecord",
             "MethodTransitionAuthorityPort",
             "MethodTransitionRecord"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.workflow.api.runtime_requirements",
+          "source": "noetrium_platform/research/execution/workflow/api/runtime_requirements.py",
+          "symbols": [
+            "MethodRuntimeRequirements",
+            "analyze_method_runtime_requirements"
           ]
         },
         {
@@ -8642,7 +8654,7 @@
       "canonical_authority": "execution",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.execution__workflow",
-      "interface_digest": "a01bf43b8842244c315022e29b2f248bc255b5a2a8f9f19a0ebe1431a6a2ef0a",
+      "interface_digest": "601cd35135c875d26f307e174668314cf2db519f9d67dc7e0213443e1877e736",
       "must_not_own": "process supervision",
       "node_kind": "facet",
       "owns": "workflow definitions, universal method-machine orchestration, and resumable control semantics",
@@ -8721,10 +8733,6 @@
             "ExperimentBatchPlacement",
             "ExperimentShard",
             "compile_experiment_shard_plan",
-            "CompiledTrialExperimentProgram",
-            "TrialExperimentProgramBinding",
-            "compile_trial_experiment_program",
-            "trial_report_from_data",
             "CompiledExperimentProgram",
             "ExperimentBatch",
             "ExperimentBatchKind",
@@ -8842,7 +8850,7 @@
       "canonical_authority": "experimentation",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation",
-      "interface_digest": "e99d0f7123c85f56a9d0b288063c5d9fc3c2ed5a0d3b0f23ef9fb69c890c0575",
+      "interface_digest": "a0bc7b997f09e357fc250fb7cbc3d884ffe1da650d238c6a1e138b98bc80e65e",
       "must_not_own": "server/process control and model serving",
       "node_kind": "authority",
       "owns": "study, experiment, run, branch and checkpoint semantics",
@@ -9586,9 +9594,11 @@
             "TaskVerifierReceipt",
             "TaskVerifierRequest",
             "TrialProviderPort",
+            "TrialTaskProjectionPort",
             "StudyResearchReadPort",
             "StudyResearchReadSnapshot",
             "TrialMatrixExecutionReport",
+            "TrialMeasurementProjectionPort",
             "TrialExecutionRequest",
             "TrialExecutionReceipt",
             "TrialExecutionStageReceipt",
@@ -9785,7 +9795,9 @@
             "TrialExecutionRequest",
             "TrialExecutionStageReceipt",
             "TrialMatrixExecutionReport",
-            "TrialProviderPort"
+            "TrialMeasurementProjectionPort",
+            "TrialProviderPort",
+            "TrialTaskProjectionPort"
           ]
         }
       ],
@@ -9793,7 +9805,7 @@
       "canonical_authority": "experimentation",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.experimentation__study",
-      "interface_digest": "9539a1bc028e40011f46d9898d92caedb5c01f268b430d9c5c982f0a470921ba",
+      "interface_digest": "4368ec513974693e5dd400e0cc000c4e333241af4be012ab06f126e30ce2532c",
       "must_not_own": "method implementation internals",
       "node_kind": "facet",
       "owns": "study definitions, hypotheses and study lifecycle",

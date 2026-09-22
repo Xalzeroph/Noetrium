@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "182a2fd25be7561e7859ad61fb2dab2b1dc6d4cbfd01ab4adb369e1417503b49",
+  "interface_digest": "c6b5aae55c99d752501b3eb3f3d720921d1f13b6f5d2fe269d24927b2d03d16d",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -20509,6 +20509,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "MethodWorkflow",
+              "origin_module": ".authoring",
+              "origin_name": "MethodWorkflow",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "EffectIntentOperationPort",
               "origin_module": ".effect_intents",
               "origin_name": "EffectIntentOperationPort",
@@ -20883,11 +20892,48 @@
               "origin_name": "MethodRuntimeContext",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodRuntimePort",
+              "origin_module": ".method_machine",
+              "origin_name": "MethodRuntimePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodRuntimeRequirements",
+              "origin_module": ".runtime_requirements",
+              "origin_name": "MethodRuntimeRequirements",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodSchemaPort",
+              "origin_module": ".method_machine",
+              "origin_name": "MethodSchemaPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "analyze_method_runtime_requirements",
+              "origin_module": ".runtime_requirements",
+              "origin_name": "analyze_method_runtime_requirements",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
             "AgentMethodSpec",
             "AgentPhaseSpec",
+            "MethodWorkflow",
             "EffectIntentOperationPort",
             "OperationDispatchPort",
             "OperationExecutionPort",
@@ -20929,7 +20975,11 @@
             "MethodProgramBuilder",
             "MethodRunResult",
             "MethodRunStatus",
-            "MethodRuntimeContext"
+            "MethodRuntimeContext",
+            "MethodRuntimePort",
+            "MethodRuntimeRequirements",
+            "MethodSchemaPort",
+            "analyze_method_runtime_requirements"
           ]
         },
         {
@@ -23261,6 +23311,11 @@
                   "name": "required_capabilities"
                 },
                 {
+                  "annotation": "tuple[MethodRuntimePort, ...]",
+                  "default": "()",
+                  "name": "required_runtime_ports"
+                },
+                {
                   "annotation": "MethodExecutionClass",
                   "default": "MethodExecutionClass.EFFECT_RECORDED",
                   "name": "execution_class"
@@ -24101,6 +24156,14 @@
                       "required": false
                     },
                     {
+                      "annotation": "tuple[MethodRuntimePort, ...]",
+                      "default": "()",
+                      "kind": "keyword_only",
+                      "name": "required_runtime_ports",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
                       "annotation": "MethodExecutionClass",
                       "default": "MethodExecutionClass.EFFECT_RECORDED",
                       "kind": "keyword_only",
@@ -24136,7 +24199,7 @@
                   "return_annotation": "MethodProgram",
                   "schema_id": "noetrium.interface-schema",
                   "schema_version": "1",
-                  "signature": "def build(self, *, configuration: Mapping[str, JsonValue] | None=None, state_schema: str='json', input_schema: str='json', output_schema: str='json', required_capabilities: tuple[str, ...]=(), execution_class: MethodExecutionClass=MethodExecutionClass.EFFECT_RECORDED, evidence_obligations: tuple[str, ...]=(), metric_names: tuple[str, ...]=(), artifact_kinds: tuple[str, ...]=()) -> MethodProgram:"
+                  "signature": "def build(self, *, configuration: Mapping[str, JsonValue] | None=None, state_schema: str='json', input_schema: str='json', output_schema: str='json', required_capabilities: tuple[str, ...]=(), required_runtime_ports: tuple[MethodRuntimePort, ...]=(), execution_class: MethodExecutionClass=MethodExecutionClass.EFFECT_RECORDED, evidence_obligations: tuple[str, ...]=(), metric_names: tuple[str, ...]=(), artifact_kinds: tuple[str, ...]=()) -> MethodProgram:"
                 }
               ],
               "name": "MethodProgramBuilder",
@@ -24650,6 +24713,25 @@
                 }
               ],
               "name": "MethodRuntimeContext",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "StrEnum"
+              ],
+              "decorators": [],
+              "doc": "Semantic runtime dependencies visible in the immutable MethodProgram ABI.",
+              "fields": [],
+              "kind": "class",
+              "members": [
+                "AGENT_LOOP",
+                "CAPABILITIES",
+                "CHILD_MACHINES",
+                "SCHEMAS"
+              ],
+              "methods": [],
+              "name": "MethodRuntimePort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -25169,11 +25251,159 @@
             "MethodMachinePort",
             "MethodRunStatus",
             "MethodRuntimeContext",
+            "MethodRuntimePort",
             "MethodSchemaPort",
             "MethodAuthoritativeState",
             "MethodControlRecord",
             "MethodTransitionAuthorityPort",
             "MethodTransitionRecord"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.execution.workflow.api.runtime_requirements",
+          "source": "noetrium_platform/research/execution/workflow/api/runtime_requirements.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Complete statically knowable runtime closure for one MethodProgram.",
+              "fields": [
+                {
+                  "annotation": "tuple[MethodRuntimePort, ...]",
+                  "default": null,
+                  "name": "ports"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "agent_ids"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "capability_ids"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "evidence_obligations"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "missing_ports",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "MethodRuntimeContext",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "runtime",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "tuple[MethodRuntimePort, ...]",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def missing_ports(self, runtime: MethodRuntimeContext) -> tuple[MethodRuntimePort, ...]:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "require",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "MethodRuntimeContext",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "runtime",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def require(self, runtime: MethodRuntimeContext) -> None:"
+                }
+              ],
+              "name": "MethodRuntimeRequirements",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "decorators": [],
+              "doc": null,
+              "kind": "function",
+              "name": "analyze_method_runtime_requirements",
+              "parameters": [
+                {
+                  "annotation": "MethodProgram",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "program",
+                  "receiver": false,
+                  "required": true
+                }
+              ],
+              "return_annotation": "MethodRuntimeRequirements",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1",
+              "signature": "def analyze_method_runtime_requirements(program: MethodProgram) -> MethodRuntimeRequirements:"
+            }
+          ],
+          "symbols": [
+            "MethodRuntimeRequirements",
+            "analyze_method_runtime_requirements"
           ]
         },
         {
@@ -25926,42 +26156,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "CompiledTrialExperimentProgram",
-              "origin_module": "noetrium_platform.research.experimentation.study.runtime.trial",
-              "origin_name": "CompiledTrialExperimentProgram",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "TrialExperimentProgramBinding",
-              "origin_module": "noetrium_platform.research.experimentation.study.runtime.trial",
-              "origin_name": "TrialExperimentProgramBinding",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "compile_trial_experiment_program",
-              "origin_module": "noetrium_platform.research.experimentation.study.runtime.trial",
-              "origin_name": "compile_trial_experiment_program",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "trial_report_from_data",
-              "origin_module": "noetrium_platform.research.experimentation.study.runtime.trial",
-              "origin_name": "trial_report_from_data",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "CompiledExperimentProgram",
               "origin_module": ".program",
               "origin_name": "CompiledExperimentProgram",
@@ -26412,10 +26606,6 @@
             "ExperimentBatchPlacement",
             "ExperimentShard",
             "compile_experiment_shard_plan",
-            "CompiledTrialExperimentProgram",
-            "TrialExperimentProgramBinding",
-            "compile_trial_experiment_program",
-            "trial_report_from_data",
             "CompiledExperimentProgram",
             "ExperimentBatch",
             "ExperimentBatchKind",
@@ -39273,6 +39463,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "TrialTaskProjectionPort",
+              "origin_module": ".trial",
+              "origin_name": "TrialTaskProjectionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "StudyResearchReadPort",
               "origin_module": ".research_read",
               "origin_name": "StudyResearchReadPort",
@@ -39294,6 +39493,15 @@
               "name": "TrialMatrixExecutionReport",
               "origin_module": ".trial",
               "origin_name": "TrialMatrixExecutionReport",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TrialMeasurementProjectionPort",
+              "origin_module": ".trial",
+              "origin_name": "TrialMeasurementProjectionPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -39788,9 +39996,11 @@
             "TaskVerifierReceipt",
             "TaskVerifierRequest",
             "TrialProviderPort",
+            "TrialTaskProjectionPort",
             "StudyResearchReadPort",
             "StudyResearchReadSnapshot",
             "TrialMatrixExecutionReport",
+            "TrialMeasurementProjectionPort",
             "TrialExecutionRequest",
             "TrialExecutionReceipt",
             "TrialExecutionStageReceipt",
@@ -40261,6 +40471,81 @@
                   "annotation": "str",
                   "default": "'agent_model'",
                   "name": "model_role"
+                },
+                {
+                  "annotation": "BenchmarkTaskSet | None",
+                  "default": "None",
+                  "name": "benchmark"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "benchmark_split_id"
+                },
+                {
+                  "annotation": "ExperimentTrialProtocolIdentity | None",
+                  "default": "None",
+                  "name": "trial"
+                },
+                {
+                  "annotation": "TrialBudget | None",
+                  "default": "None",
+                  "name": "limits"
+                },
+                {
+                  "annotation": "int",
+                  "default": "1",
+                  "name": "repetitions"
+                },
+                {
+                  "annotation": "tuple[str, ...] | None",
+                  "default": "None",
+                  "name": "seeds"
+                },
+                {
+                  "annotation": "BenchmarkAssignmentMode",
+                  "default": "BenchmarkAssignmentMode.TASK",
+                  "name": "benchmark_assignment_mode"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "experiment_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": "'method-program'",
+                  "name": "workload_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": "'trial.method-program'",
+                  "name": "trial_provider_requirement_id"
+                },
+                {
+                  "annotation": "ReplayLevel",
+                  "default": "ReplayLevel.OBSERVATIONAL",
+                  "name": "replay_level"
+                },
+                {
+                  "annotation": "float",
+                  "default": "3600.0",
+                  "name": "repetition_timeout_seconds"
+                },
+                {
+                  "annotation": "StudyConcurrencyPolicy | None",
+                  "default": "None",
+                  "name": "concurrency_policy"
+                },
+                {
+                  "annotation": "tuple[StudyFactorSpec, ...]",
+                  "default": "()",
+                  "name": "factors"
+                },
+                {
+                  "annotation": "ResearchRevision | None",
+                  "default": "None",
+                  "name": "revision"
                 }
               ],
               "kind": "class",
@@ -40301,28 +40586,28 @@
                       "required": false
                     },
                     {
-                      "annotation": "BenchmarkTaskSet",
-                      "default": null,
+                      "annotation": "BenchmarkTaskSet | None",
+                      "default": "None",
                       "kind": "positional_or_keyword",
                       "name": "benchmark",
                       "receiver": false,
-                      "required": true
+                      "required": false
                     },
                     {
-                      "annotation": "ExperimentTrialProtocolIdentity",
-                      "default": null,
+                      "annotation": "ExperimentTrialProtocolIdentity | None",
+                      "default": "None",
                       "kind": "keyword_only",
                       "name": "trial",
                       "receiver": false,
-                      "required": true
+                      "required": false
                     },
                     {
-                      "annotation": "TrialBudget",
-                      "default": null,
+                      "annotation": "TrialBudget | None",
+                      "default": "None",
                       "kind": "keyword_only",
                       "name": "limits",
                       "receiver": false,
-                      "required": true
+                      "required": false
                     },
                     {
                       "annotation": "str | StudyModel | None",
@@ -40349,8 +40634,8 @@
                       "required": false
                     },
                     {
-                      "annotation": "int",
-                      "default": "1",
+                      "annotation": "int | None",
+                      "default": "None",
                       "kind": "keyword_only",
                       "name": "repetitions",
                       "receiver": false,
@@ -40365,8 +40650,8 @@
                       "required": false
                     },
                     {
-                      "annotation": "BenchmarkAssignmentMode",
-                      "default": "BenchmarkAssignmentMode.TASK",
+                      "annotation": "BenchmarkAssignmentMode | None",
+                      "default": "None",
                       "kind": "keyword_only",
                       "name": "benchmark_assignment_mode",
                       "receiver": false,
@@ -40381,32 +40666,32 @@
                       "required": false
                     },
                     {
-                      "annotation": "str",
-                      "default": "'method-program'",
+                      "annotation": "str | None",
+                      "default": "None",
                       "kind": "keyword_only",
                       "name": "workload_id",
                       "receiver": false,
                       "required": false
                     },
                     {
-                      "annotation": "str",
-                      "default": "'trial.method-program'",
+                      "annotation": "str | None",
+                      "default": "None",
                       "kind": "keyword_only",
                       "name": "trial_provider_requirement_id",
                       "receiver": false,
                       "required": false
                     },
                     {
-                      "annotation": "ReplayLevel",
-                      "default": "ReplayLevel.OBSERVATIONAL",
+                      "annotation": "ReplayLevel | None",
+                      "default": "None",
                       "kind": "keyword_only",
                       "name": "replay_level",
                       "receiver": false,
                       "required": false
                     },
                     {
-                      "annotation": "float",
-                      "default": "3600.0",
+                      "annotation": "float | None",
+                      "default": "None",
                       "kind": "keyword_only",
                       "name": "repetition_timeout_seconds",
                       "receiver": false,
@@ -40421,8 +40706,8 @@
                       "required": false
                     },
                     {
-                      "annotation": "tuple[StudyFactorSpec, ...]",
-                      "default": "()",
+                      "annotation": "tuple[StudyFactorSpec, ...] | None",
+                      "default": "None",
                       "kind": "keyword_only",
                       "name": "factors",
                       "receiver": false,
@@ -40440,7 +40725,7 @@
                   "return_annotation": "ResearchStudyDefinition",
                   "schema_id": "noetrium.interface-schema",
                   "schema_version": "1",
-                  "signature": "def build(self, benchmark: BenchmarkTaskSet, *, trial: ExperimentTrialProtocolIdentity, limits: TrialBudget, model: str | StudyModel | None=None, measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...] | None=None, benchmark_split_id: str | None=None, repetitions: int=1, seeds: tuple[str, ...] | None=None, benchmark_assignment_mode: BenchmarkAssignmentMode=BenchmarkAssignmentMode.TASK, experiment_id: str | None=None, workload_id: str='method-program', trial_provider_requirement_id: str='trial.method-program', replay_level: ReplayLevel=ReplayLevel.OBSERVATIONAL, repetition_timeout_seconds: float=3600.0, concurrency_policy: StudyConcurrencyPolicy | None=None, factors: tuple[StudyFactorSpec, ...]=(), revision: ResearchRevision | None=None) -> ResearchStudyDefinition:"
+                  "signature": "def build(self, benchmark: BenchmarkTaskSet | None=None, *, trial: ExperimentTrialProtocolIdentity | None=None, limits: TrialBudget | None=None, model: str | StudyModel | None=None, measurements: MeasurementProtocol | tuple[MeasurementDefinition, ...] | None=None, benchmark_split_id: str | None=None, repetitions: int | None=None, seeds: tuple[str, ...] | None=None, benchmark_assignment_mode: BenchmarkAssignmentMode | None=None, experiment_id: str | None=None, workload_id: str | None=None, trial_provider_requirement_id: str | None=None, replay_level: ReplayLevel | None=None, repetition_timeout_seconds: float | None=None, concurrency_policy: StudyConcurrencyPolicy | None=None, factors: tuple[StudyFactorSpec, ...] | None=None, revision: ResearchRevision | None=None) -> ResearchStudyDefinition:"
                 }
               ],
               "name": "AgentStudySpec",
@@ -45761,6 +46046,81 @@
               "bases": [
                 "Protocol"
               ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": "Project extension seam from an execution result into frozen Study measurements.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "identity_digest",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "str",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "project",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "TrialExecutionRequest",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "request",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "object",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "result",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "tuple[MeasurementRecord, ...]",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def project(self, request: TrialExecutionRequest, result: object) -> tuple[MeasurementRecord, ...]:"
+                }
+              ],
+              "name": "TrialMeasurementProjectionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
               "decorators": [],
               "doc": null,
               "fields": [
@@ -45805,6 +46165,73 @@
               "name": "TrialProviderPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [
+                "runtime_checkable"
+              ],
+              "doc": "Project extension seam from frozen Trial identity to an execution task.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "identity_digest",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "str",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "task",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "task_id",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "object",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def task(self, task_id: str) -> object:"
+                }
+              ],
+              "name": "TrialTaskProjectionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -45816,7 +46243,9 @@
             "TrialExecutionRequest",
             "TrialExecutionStageReceipt",
             "TrialMatrixExecutionReport",
-            "TrialProviderPort"
+            "TrialMeasurementProjectionPort",
+            "TrialProviderPort",
+            "TrialTaskProjectionPort"
           ]
         }
       ],
@@ -61384,6 +61813,21 @@
                   "annotation": "ModelBindingSelectionReceipt | None",
                   "default": "None",
                   "name": "selection_receipt"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "operational_deployment_id"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "operational_deployment_generation"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": "None",
+                  "name": "operational_dispatch_digest"
                 }
               ],
               "kind": "class",

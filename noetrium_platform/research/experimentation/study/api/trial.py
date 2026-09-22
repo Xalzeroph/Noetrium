@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from noetrium_platform.evidence.artifact.reference.api import ArtifactReference
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
@@ -493,6 +493,30 @@ class TrialExecutionReceipt:
         )
 
 
+@runtime_checkable
+class TrialTaskProjectionPort(Protocol):
+    """Project extension seam from frozen Trial identity to an execution task."""
+
+    @property
+    def identity_digest(self) -> str: ...
+
+    def task(self, task_id: str) -> object: ...
+
+
+@runtime_checkable
+class TrialMeasurementProjectionPort(Protocol):
+    """Project extension seam from an execution result into frozen Study measurements."""
+
+    @property
+    def identity_digest(self) -> str: ...
+
+    def project(
+        self,
+        request: TrialExecutionRequest,
+        result: object,
+    ) -> tuple[MeasurementRecord, ...]: ...
+
+
 class TrialProviderPort(Protocol):
     protocol_identity: ExperimentTrialProtocolIdentity
 
@@ -552,5 +576,7 @@ __all__ = [
     "TrialExecutionRequest",
     "TrialExecutionStageReceipt",
     "TrialMatrixExecutionReport",
+    "TrialMeasurementProjectionPort",
     "TrialProviderPort",
+    "TrialTaskProjectionPort",
 ]

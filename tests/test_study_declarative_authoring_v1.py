@@ -284,3 +284,31 @@ def test_declarative_study_requires_explicit_schedule_measurements_and_limits() 
         Study(measurements=(), seeds=("seed",), **common)
     with pytest.raises(TypeError, match="seeds"):
         Study(measurements=(_success(),), seeds=(), **common)
+
+
+def test_agent_study_spec_can_fully_declare_common_study_and_build_zero_arg() -> None:
+    spec = AgentStudySpec(
+        project_id="zero-glue-project",
+        study_id="zero-glue-study",
+        method_id="zero-glue-method",
+        benchmark=_benchmark(),
+        benchmark_split_id="eval",
+        model=StudyModel("model.zero-glue", prompt="prompt.zero-glue"),
+        measurements=(_success(),),
+        trial=ExperimentTrialProtocolIdentity("trial.zero-glue", "6" * 64),
+        limits=TrialBudget("zero-glue-budget", max_turns=8),
+        repetitions=3,
+        capabilities=("environment.act",),
+        configurations=("prompt.zero-glue",),
+    )
+
+    study = spec.build()
+
+    assert study.project_id == "zero-glue-project"
+    assert study.study_id == "zero-glue-study"
+    assert study.benchmark.cut_digest == spec.benchmark.cut_digest
+    assert study.benchmark_split_id == "eval"
+    assert study.repetitions == 3
+    assert study.seeds == ("repetition-0", "repetition-1", "repetition-2")
+    assert study.execution_policy.trial_budget.budget_id == "zero-glue-budget"
+    assert study.binding_requirements.model_role("agent_model").requirement_id == "model.zero-glue"

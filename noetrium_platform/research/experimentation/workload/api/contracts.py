@@ -4,9 +4,18 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 import math
 
-from noetrium_platform.research.experimentation.experiment.api import ExperimentWorkloadFailure, FailureScope
+from noetrium_platform.research.experimentation.experiment.api import (
+    ExperimentTaskSpec,
+    ExperimentWorkloadFailure,
+    FailureScope,
+)
 from noetrium_platform.research.execution.workflow.api import MethodProgram, MethodRuntimeContext
-from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, freeze_json
+from noetrium_platform.foundation.kernel.kernel import (
+    JsonObject,
+    JsonValue,
+    canonical_digest,
+    freeze_json,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -138,6 +147,37 @@ class WorkloadTaskResult:
         object.__setattr__(self, "diagnostics", _freeze_mapping(self.diagnostics, field_name="workload diagnostics"))
 
 
+@dataclass(frozen=True, slots=True)
+class StaticExperimentTaskProjection:
+    """Study-agnostic lookup over already-authored ExperimentTaskSpec values."""
+
+    tasks: tuple[ExperimentTaskSpec, ...]
+
+    def __post_init__(self) -> None:
+        if type(self.tasks) is not tuple or not self.tasks:
+            raise TypeError("static task projection requires a non-empty task tuple")
+        if any(not isinstance(row, ExperimentTaskSpec) for row in self.tasks):
+            raise TypeError("static task projection tasks must be ExperimentTaskSpec")
+        ids = tuple(row.task_id for row in self.tasks)
+        if len(ids) != len(set(ids)):
+            raise ValueError("static task projection task ids must be unique")
+
+    @property
+    def identity_digest(self) -> str:
+        return canonical_digest({
+            "projection": "static-experiment-task.v1",
+            "tasks": self.tasks,
+        })
+
+    def task(self, task_id: str) -> ExperimentTaskSpec:
+        if type(task_id) is not str or not task_id.strip():
+            raise ValueError("static task projection task_id must be non-empty")
+        matches = tuple(row for row in self.tasks if row.task_id == task_id)
+        if len(matches) != 1:
+            raise KeyError(f"static task projection has no unique task {task_id!r}")
+        return matches[0]
+
+
 class WorkloadTaskRunError(ExperimentWorkloadFailure):
     def __init__(self, phase: str, code: str, message: str, *, scope: FailureScope) -> None:
         super().__init__(phase, code, message, scope=scope)
@@ -145,6 +185,7 @@ class WorkloadTaskRunError(ExperimentWorkloadFailure):
 
 __all__ = [
     "WorkloadCompletionReceipt",
+    "StaticExperimentTaskProjection",
     "WorkloadEvaluation", "WorkloadMethodInvocation", "WorkloadMethodReceipt",
     "WorkloadTaskResult", "WorkloadTaskRunError",
 ]

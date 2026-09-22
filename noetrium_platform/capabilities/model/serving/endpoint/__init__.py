@@ -1,52 +1,6 @@
-from .runtime import (
-    AdaptiveLeastPressureReplicaSelectionPolicy,
-    AdaptiveOperationalModelEndpointPool,
-    AdaptiveQualifiedModelEndpointPool,
-    ModelEndpointPoolUnavailable,
-    PinnedReplicaSelectionPolicy,
-)
-from .api import (
-    AdaptiveModelEndpointPoolPort,
-    ModelEndpointDispatchPoolPort,
-    ModelEndpointDispatchResult,
-    ModelEndpointPoolSnapshot,
-    ModelEndpointReplicaSelectionCandidate,
-    ModelEndpointReplicaSelectionPolicyPort,
-    ModelEndpointReplicaSnapshot,
-    OperationalModelEndpointReplica,
-    OperationalModelEndpointReplicaSet,
-    OperationalModelServingInventory,
-    QualifiedModelEndpointReplicaBindingPort,
-    QualifiedModelEndpointReplicaSet,
-    AsyncJsonHttpTransportPort,
-    JsonHttpResponse,
-    ModelEndpointError,
-    ModelEndpointFactoryPort,
-    ModelEndpointPort,
-    ModelEndpointRequest,
-    ModelEndpointResponse,
-    ModelEndpointRoute,
-    QualifiedModelClosurePublication,
-    QualifiedModelClosurePublicationReceipt,
-    QualifiedModelEndpointBinding,
-    QualifiedModelEndpointBindingPort,
-)
+"""Public endpoint contract surface; runtime implementations stay in explicit layers."""
 
-__all__ = [
-    "AdaptiveLeastPressureReplicaSelectionPolicy",
-    "AdaptiveModelEndpointPoolPort", "AdaptiveOperationalModelEndpointPool", "AdaptiveQualifiedModelEndpointPool",
-    "ModelEndpointDispatchPoolPort",
-    "AsyncJsonHttpTransportPort", "JsonHttpResponse", "ModelEndpointDispatchResult",
-    "ModelEndpointError", "ModelEndpointPoolSnapshot", "ModelEndpointPoolUnavailable",
-    "ModelEndpointReplicaSelectionCandidate", "ModelEndpointReplicaSelectionPolicyPort",
-    "ModelEndpointReplicaSnapshot", "OperationalModelEndpointReplica",
-    "OperationalModelEndpointReplicaSet", "OperationalModelServingInventory",
-    "QualifiedModelEndpointReplicaBindingPort",
-    "QualifiedModelEndpointReplicaSet",
-    "ModelEndpointFactoryPort", "ModelEndpointPort", "ModelEndpointRequest",
-    "ModelEndpointResponse", "ModelEndpointRoute", "QualifiedModelClosurePublication",
-    "AdaptiveQualifiedModelEndpointPool", "ModelEndpointPoolUnavailable",
-    "QualifiedModelClosurePublicationReceipt", "QualifiedModelEndpointBinding",
-    "QualifiedModelEndpointBindingPort",
-    "PinnedReplicaSelectionPolicy",
-]
+from .api import *  # noqa: F401,F403
+from .api import __all__ as _API_ALL
+
+__all__ = _API_ALL

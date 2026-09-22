@@ -11,6 +11,7 @@ This module is regenerated from the canonical registry and API exports.
 from noetrium_platform.research.execution.workflow.api import (
     AgentMethodSpec,
     AgentPhaseSpec,
+    MethodWorkflow,
     EffectIntentOperationPort,
     OperationDispatchPort,
     OperationExecutionPort,
@@ -53,6 +54,10 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRunResult,
     MethodRunStatus,
     MethodRuntimeContext,
+    MethodRuntimePort,
+    MethodRuntimeRequirements,
+    MethodSchemaPort,
+    analyze_method_runtime_requirements,
 )
 
 from noetrium_platform.research.execution.workflow.api.authoring import (
@@ -106,11 +111,17 @@ from noetrium_platform.research.execution.workflow.api.method_machine import (
     MethodMachinePort as method_machine__MethodMachinePort,
     MethodRunStatus as method_machine__MethodRunStatus,
     MethodRuntimeContext as method_machine__MethodRuntimeContext,
-    MethodSchemaPort,
+    MethodRuntimePort as method_machine__MethodRuntimePort,
+    MethodSchemaPort as method_machine__MethodSchemaPort,
     MethodAuthoritativeState,
     MethodControlRecord,
     MethodTransitionAuthorityPort,
     MethodTransitionRecord,
+)
+
+from noetrium_platform.research.execution.workflow.api.runtime_requirements import (
+    MethodRuntimeRequirements as runtime_requirements__MethodRuntimeRequirements,
+    analyze_method_runtime_requirements as runtime_requirements__analyze_method_runtime_requirements,
 )
 
 from noetrium_platform.research.execution.workflow.api.surfaces import (
@@ -127,4 +138,4 @@ from noetrium_platform.research.execution.workflow.api.trial import (
 
 SYSTEM_KEY = 'execution/workflow'
 PACKAGE_PREFIX = 'noetrium_platform.research.execution.workflow'
-__all__ = ('AgentMethodSpec', 'AgentPhaseSpec', 'EffectIntentOperationPort', 'OperationDispatchPort', 'OperationExecutionPort', 'TrialCycleExecution', 'WorkflowGraph', 'WorkflowGraphError', 'WorkflowParticipantRequirementError', 'WorkflowStep', 'WorkflowSurfaceBindingContext', 'WorkflowSurfaceFactory', 'WorkflowSurfaceReuseScope', 'workflow_surface_id', 'workflow_surface_reuse_scope', 'AsyncMethodAgentLoopPort', 'AsyncOperationDispatchPort', 'MethodAgentLoopPort', 'MethodAgentRequest', 'MethodAgentResult', 'MethodAgentTargetHandler', 'MethodCapabilityTargetHandler', 'MethodAgentViewHandler', 'MethodCheckpoint', 'MethodCheckpointStorePort', 'MethodEvidenceStatus', 'MethodExecutionClass', 'MethodEvidencePort', 'MethodEvent', 'MethodGraph', 'MethodInterrupt', 'MethodMachinePort', 'MethodChildMachinePort', 'MethodNodeHandler', 'MethodNodeKind', 'MethodNodeRequest', 'MethodNodeResult', 'MethodNodeSpec', 'MethodObservationPort', 'MethodProgram', 'MethodProgramBuilder', 'MethodRunResult', 'MethodRunStatus', 'MethodRuntimeContext', 'authoring__AgentMethodSpec', 'authoring__AgentPhaseSpec', 'dispatch__OperationDispatchPort', 'dispatch__OperationExecutionPort', 'effect_intents__EffectIntentOperationPort', 'errors__WorkflowParticipantRequirementError', 'graph__WorkflowGraph', 'graph__WorkflowGraphError', 'graph__WorkflowStep', 'method_machine__AsyncMethodAgentLoopPort', 'method_machine__AsyncOperationDispatchPort', 'method_machine__MethodAgentLoopPort', 'method_machine__MethodAgentRequest', 'method_machine__MethodAgentResult', 'method_machine__MethodCheckpoint', 'method_machine__MethodCheckpointStorePort', 'method_machine__MethodEvidencePort', 'method_machine__MethodEvent', 'method_machine__MethodEvidenceStatus', 'method_machine__MethodExecutionClass', 'method_machine__MethodGraph', 'method_machine__MethodInterrupt', 'method_machine__MethodNodeHandler', 'method_machine__MethodNodeKind', 'method_machine__MethodNodeRequest', 'method_machine__MethodNodeResult', 'method_machine__MethodNodeSpec', 'method_machine__MethodObservationPort', 'method_machine__MethodProgram', 'method_machine__MethodProgramBuilder', 'method_machine__MethodChildMachinePort', 'method_machine__MethodRunResult', 'method_machine__MethodMachinePort', 'method_machine__MethodRunStatus', 'method_machine__MethodRuntimeContext', 'MethodSchemaPort', 'MethodAuthoritativeState', 'MethodControlRecord', 'MethodTransitionAuthorityPort', 'MethodTransitionRecord', 'surfaces__WorkflowSurfaceBindingContext', 'surfaces__WorkflowSurfaceFactory', 'surfaces__WorkflowSurfaceReuseScope', 'surfaces__workflow_surface_reuse_scope', 'surfaces__workflow_surface_id', 'trial__TrialCycleExecution')
+__all__ = ('AgentMethodSpec', 'AgentPhaseSpec', 'MethodWorkflow', 'EffectIntentOperationPort', 'OperationDispatchPort', 'OperationExecutionPort', 'TrialCycleExecution', 'WorkflowGraph', 'WorkflowGraphError', 'WorkflowParticipantRequirementError', 'WorkflowStep', 'WorkflowSurfaceBindingContext', 'WorkflowSurfaceFactory', 'WorkflowSurfaceReuseScope', 'workflow_surface_id', 'workflow_surface_reuse_scope', 'AsyncMethodAgentLoopPort', 'AsyncOperationDispatchPort', 'MethodAgentLoopPort', 'MethodAgentRequest', 'MethodAgentResult', 'MethodAgentTargetHandler', 'MethodCapabilityTargetHandler', 'MethodAgentViewHandler', 'MethodCheckpoint', 'MethodCheckpointStorePort', 'MethodEvidenceStatus', 'MethodExecutionClass', 'MethodEvidencePort', 'MethodEvent', 'MethodGraph', 'MethodInterrupt', 'MethodMachinePort', 'MethodChildMachinePort', 'MethodNodeHandler', 'MethodNodeKind', 'MethodNodeRequest', 'MethodNodeResult', 'MethodNodeSpec', 'MethodObservationPort', 'MethodProgram', 'MethodProgramBuilder', 'MethodRunResult', 'MethodRunStatus', 'MethodRuntimeContext', 'MethodRuntimePort', 'MethodRuntimeRequirements', 'MethodSchemaPort', 'analyze_method_runtime_requirements', 'authoring__AgentMethodSpec', 'authoring__AgentPhaseSpec', 'dispatch__OperationDispatchPort', 'dispatch__OperationExecutionPort', 'effect_intents__EffectIntentOperationPort', 'errors__WorkflowParticipantRequirementError', 'graph__WorkflowGraph', 'graph__WorkflowGraphError', 'graph__WorkflowStep', 'method_machine__AsyncMethodAgentLoopPort', 'method_machine__AsyncOperationDispatchPort', 'method_machine__MethodAgentLoopPort', 'method_machine__MethodAgentRequest', 'method_machine__MethodAgentResult', 'method_machine__MethodCheckpoint', 'method_machine__MethodCheckpointStorePort', 'method_machine__MethodEvidencePort', 'method_machine__MethodEvent', 'method_machine__MethodEvidenceStatus', 'method_machine__MethodExecutionClass', 'method_machine__MethodGraph', 'method_machine__MethodInterrupt', 'method_machine__MethodNodeHandler', 'method_machine__MethodNodeKind', 'method_machine__MethodNodeRequest', 'method_machine__MethodNodeResult', 'method_machine__MethodNodeSpec', 'method_machine__MethodObservationPort', 'method_machine__MethodProgram', 'method_machine__MethodProgramBuilder', 'method_machine__MethodChildMachinePort', 'method_machine__MethodRunResult', 'method_machine__MethodMachinePort', 'method_machine__MethodRunStatus', 'method_machine__MethodRuntimeContext', 'method_machine__MethodRuntimePort', 'method_machine__MethodSchemaPort', 'MethodAuthoritativeState', 'MethodControlRecord', 'MethodTransitionAuthorityPort', 'MethodTransitionRecord', 'runtime_requirements__MethodRuntimeRequirements', 'runtime_requirements__analyze_method_runtime_requirements', 'surfaces__WorkflowSurfaceBindingContext', 'surfaces__WorkflowSurfaceFactory', 'surfaces__WorkflowSurfaceReuseScope', 'surfaces__workflow_surface_reuse_scope', 'surfaces__workflow_surface_id', 'trial__TrialCycleExecution')

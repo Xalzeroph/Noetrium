@@ -37,7 +37,8 @@ from .measurement import (
 from .trial import (
     TaskVerifierArtifact, TaskVerifierPort, TaskVerifierReceipt,
     TaskVerifierRequest, TrialExecutionReceipt, TrialExecutionRequest,
-    TrialExecutionStageReceipt, TrialMatrixExecutionReport, TrialProviderPort,
+    TrialExecutionStageReceipt, TrialMatrixExecutionReport,
+    TrialMeasurementProjectionPort, TrialProviderPort, TrialTaskProjectionPort,
 )
 from .research_read import StudyResearchReadPort, StudyResearchReadSnapshot
 from .ports import (
@@ -66,9 +67,11 @@ __all__ = [
     "TaskVerifierReceipt",
     "TaskVerifierRequest",
     "TrialProviderPort",
+    "TrialTaskProjectionPort",
     "StudyResearchReadPort",
     "StudyResearchReadSnapshot",
     "TrialMatrixExecutionReport",
+    "TrialMeasurementProjectionPort",
     "TrialExecutionRequest",
     "TrialExecutionReceipt",
     "TrialExecutionStageReceipt",

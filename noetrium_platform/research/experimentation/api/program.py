@@ -7,6 +7,7 @@ uncommitted batch rather than replaying an opaque matrix runner.
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from uuid import uuid4
@@ -241,7 +242,7 @@ def _observation_json(observation: StudyMetricObservation) -> JsonObject:
 
 
 def _observation_from_json(value: object) -> StudyMetricObservation:
-    if not isinstance(value, dict):
+    if not isinstance(value, Mapping):
         raise TypeError("experiment observation state row must be an object")
     assignment = StudyAssignment(
         study_id=value["study_id"],

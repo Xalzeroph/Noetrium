@@ -17,6 +17,8 @@ from noetrium_platform.capabilities.model.serving.endpoint import (
     OperationalModelEndpointReplica,
     OperationalModelEndpointReplicaSet,
     OperationalModelServingInventory,
+)
+from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
     PinnedReplicaSelectionPolicy,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.composition import (

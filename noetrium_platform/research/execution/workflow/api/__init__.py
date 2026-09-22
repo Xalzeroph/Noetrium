@@ -1,4 +1,4 @@
-from .authoring import AgentMethodSpec, AgentPhaseSpec
+from .authoring import AgentMethodSpec, AgentPhaseSpec, MethodWorkflow
 from .trial import TrialCycleExecution
 from .errors import WorkflowParticipantRequirementError
 from .surfaces import (
@@ -52,7 +52,7 @@ from .runtime_requirements import (
 )
 
 __all__ = [
-    "AgentMethodSpec", "AgentPhaseSpec",
+    "AgentMethodSpec", "AgentPhaseSpec", "MethodWorkflow",
 "EffectIntentOperationPort", "OperationDispatchPort", "OperationExecutionPort", "TrialCycleExecution", "WorkflowGraph",
     "WorkflowGraphError", "WorkflowParticipantRequirementError", "WorkflowStep", "WorkflowSurfaceBindingContext", "WorkflowSurfaceFactory",
     "WorkflowSurfaceReuseScope", "workflow_surface_id", "workflow_surface_reuse_scope",

@@ -26,12 +26,6 @@ from .sharding import (
     ExperimentShard,
     compile_experiment_shard_plan,
 )
-from noetrium_platform.research.experimentation.study.runtime.trial import (
-    CompiledTrialExperimentProgram,
-    TrialExperimentProgramBinding,
-    compile_trial_experiment_program,
-    trial_report_from_data,
-)
 from .program import (
     CompiledExperimentProgram,
     ExperimentBatch,
@@ -128,10 +122,6 @@ __all__ = [
     "ExperimentBatchPlacement",
     "ExperimentShard",
     "compile_experiment_shard_plan",
-    "CompiledTrialExperimentProgram",
-    "TrialExperimentProgramBinding",
-    "compile_trial_experiment_program",
-    "trial_report_from_data",
     "CompiledExperimentProgram",
     "ExperimentBatch",
     "ExperimentBatchKind",
