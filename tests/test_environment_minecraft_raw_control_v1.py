@@ -110,7 +110,8 @@ def test_minecraft_raw_control_provider_preserves_low_level_controls() -> None:
     assert result.observation.payload["reward"] == 1.0
     assert result.observation.payload["success"] is True
     assert result.observation.payload["done"] is True
-    assert backend.commands[0].controls == controls
+    assert dict(backend.commands[0].controls["buttons"]) == controls["buttons"]
+    assert backend.commands[0].controls["camera"] == tuple(controls["camera"])
     assert result.effect is not None
     assert session.reconcile(result.effect, _context()) == result.effect
 

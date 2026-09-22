@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "swe_agent_swebench",
-  "package_digest": "ce57495dae21ce845641b66378eb91b6fcb65b3ccfa788b21c1b9a4125e8c5d7",
+  "package_digest": "5ea19521f3275aedc674a34814ce5cb92cb0049ad2474e85778a379d8cab0fb0",
   "definition_digest": "d6899a777308625ae9a8a58dc21b4a5c440efae4f3f1f4c1a50499d967ab2acc",
   "source_registry_digest": "00d44a186c1cdf9c7c0a7a546005f4f887b308f8096c14115aa63208447f17d3",
   "lifecycle": "protocol_bound",
@@ -78,7 +78,7 @@
       "kind": "study",
       "path": "research/reproductions/swe_agent_swebench/study.py",
       "declaration_digest": "e4af5af79b89b46ce7ca389081d802b5ca6db16b5252122612ddc62b51ee8940",
-      "content_sha256": "9bf0af8592ca4f2728d3314ceb5704919e0051d9a55dd45189343812311d02f3"
+      "content_sha256": "afd8a0f08da566bb4ca8e16a7d5ce8efe030010abde703106006d742e4aa6075"
     },
     {
       "kind": "support",

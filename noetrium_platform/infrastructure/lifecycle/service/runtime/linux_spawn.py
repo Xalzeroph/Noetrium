@@ -7,7 +7,7 @@ import signal
 import subprocess
 
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessSupervisorPort, ProcessTerminationPolicy
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessSupervisorPort, ProcessTerminationPolicy
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
 
 from .capture_paths import ServiceCapturePaths

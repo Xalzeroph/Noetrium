@@ -9,7 +9,7 @@ from noetrium_platform.evidence.data.query.api import (
     ResearchSourceDisposition,
     ResearchSourceSnapshot,
 )
-from noetrium_platform.evidence.data.query.api.identity import source_cut
+from noetrium_platform.evidence.data.query.api import source_cut
 
 __all__ = [
     "ResearchDimension",

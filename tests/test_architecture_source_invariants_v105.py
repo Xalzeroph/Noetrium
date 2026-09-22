@@ -133,7 +133,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); api=root/'noetrium_platform/capabilities/participant/core/api'; api.mkdir(parents=True)
             (api/'bad.py').write_text(
-                'from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec\n', encoding='utf-8'
+                'from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='participant_api_orchestration_firewall' for x in rows))
@@ -193,7 +193,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); workflow=root/'noetrium_platform/composition/workflows/context_action'; workflow.mkdir(parents=True)
             (workflow/'bad.py').write_text(
-                'from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime\n', encoding='utf-8'
+                'from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='workflow_contract_dependency_direction' for x in rows))

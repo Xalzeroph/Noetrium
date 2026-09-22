@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "os_symphony_acl2026",
-  "package_digest": "1490b90461ee71b1be9571c9392d768bed4291e9443bbc3e0ae331e6f3cc3b8a",
+  "package_digest": "aa8ba0e075252a204068cb12bbddfc9db74461bd88a445f69786437d805cd37c",
   "definition_digest": "e2d24990280c12b84e4f26ba275a4b56032a08ec0986276bea064ad6e03c3d86",
   "source_registry_digest": "fc096b46d72730d9dfe7cca9c304958c130cbd6207015f6b6fd8d51ca25b7584",
   "lifecycle": "protocol_bound",
@@ -101,7 +101,7 @@
       "kind": "study",
       "path": "research/reproductions/os_symphony_acl2026/study.py",
       "declaration_digest": "b9271c869d3aebc4d001d76b7299769ce029e54bb9590d016fbf8aefbd3bdb9a",
-      "content_sha256": "fc96dc344f05b03d787c879115a42bf7f31f99d8ca5a0d77bdeb0c1ac1f52580"
+      "content_sha256": "a5e0636c1edf9e5c74d42eb3f4eb88d6989dcb2387f9b466e032e91cd5590ff2"
     }
   ],
   "primary_executable": "research/reproductions/os_symphony_acl2026/program.py",

@@ -7,11 +7,11 @@ from noetrium_platform.composition.participants.capability import capability_par
 from noetrium_platform.composition.participants.generic import generic_participant_adapter
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntentJournal
 from noetrium_platform.foundation.kernel.kernel import OperationExecutor
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantResolverPort
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
-from noetrium_platform.research.experimentation.checkpoint import RunCheckpointStore
+from noetrium_platform.capabilities.participant.core.api import ParticipantResolverPort
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.lifecycle.checkpoint import RunCheckpointStore
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentityProvider
-from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantLifecycleAdapter
+from noetrium_platform.capabilities.participant.core.api import ParticipantLifecycleAdapter
 from noetrium_platform.research.execution.workflow.api import WorkflowSurfaceFactory
 from noetrium_platform.composition.workflows.agent_turn import AgentTurnSurfaceFactory, agent_turn_trial_protocol
 from noetrium_platform.composition.workflows.agent_turn.failure_classifier import AgentTurnFailureClassifier

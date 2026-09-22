@@ -259,16 +259,12 @@
     "package_prefix": "noetrium_platform.capabilities.environment.runtime",
     "node_kind": "adapter",
     "canonical_authority": "environment",
-    "owns": "environment runtime adapter contracts",
-    "must_not_own": "environment catalog authority",
-    "shape": [
-      "api"
-    ],
+    "owns": "internal environment runtime adapters",
+    "must_not_own": "environment family contracts or environment catalog authority",
+    "shape": [],
     "downstream_surface": "metadata_only",
     "requires": [],
-    "provides": [
-      "environment.contract"
-    ],
+    "provides": [],
     "components": []
   },
   "environment/specification": {
@@ -390,158 +386,110 @@
     ],
     "components": []
   },
-  "experimentation/catalog": {
+  "experimentation/lifecycle": {
     "system": "experimentation",
     "parent": "experimentation",
-    "package_prefix": "noetrium_platform.research.experimentation.catalog",
-    "node_kind": "projection",
-    "canonical_authority": "experimentation",
-    "owns": "typed experiment catalog views, implementation candidates, slot health and catalog publication/query contracts",
-    "must_not_own": "experiment execution, study measurement truth, run lifecycle or benchmark implementation runtime",
-    "shape": [
-      "api",
-      "runtime"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [
-      "experimentation/experiment",
-      "experimentation/run",
-      "experimentation/study",
-      "scope"
-    ],
-    "provides": [
-      "experiment.catalog"
-    ],
-    "components": []
-  },
-  "experimentation/checkpoint": {
-    "system": "experimentation",
-    "parent": "experimentation",
-    "package_prefix": "noetrium_platform.research.experimentation.checkpoint",
+    "package_prefix": "noetrium_platform.research.experimentation.lifecycle",
     "node_kind": "facet",
     "canonical_authority": "experimentation",
-    "owns": "checkpoint identity, binding and lifecycle",
-    "must_not_own": "artifact content storage",
+    "owns": "study design, experiment definition, run lifecycle, checkpointing and evaluation semantics",
+    "must_not_own": "execution-machine internals, provider effects or scientific claim acceptance",
     "shape": [
-      "api",
-      "runtime",
-      "providers"
-    ],
-    "downstream_surface": "public",
-    "requires": [],
-    "provides": [
-      "run.checkpoint"
-    ],
-    "components": []
-  },
-  "experimentation/evaluation": {
-    "system": "experimentation",
-    "parent": "experimentation",
-    "package_prefix": "noetrium_platform.research.experimentation.evaluation",
-    "node_kind": "facet",
-    "canonical_authority": "experimentation",
-    "owns": "evaluation contracts, execution-neutral evaluators and evaluation composition",
-    "must_not_own": "experiment execution lifecycle or scientific claim acceptance",
-    "shape": [
-      "api",
-      "runtime",
-      "composition"
-    ],
-    "downstream_surface": "public",
-    "requires": [],
-    "provides": [],
-    "components": []
-  },
-  "experimentation/experiment": {
-    "system": "experimentation",
-    "parent": "experimentation",
-    "package_prefix": "noetrium_platform.research.experimentation.experiment",
-    "node_kind": "facet",
-    "canonical_authority": "experimentation",
-    "owns": "experiment definitions, variants and experiment lifecycle",
-    "must_not_own": "runtime process state",
-    "shape": [
-      "api",
-      "runtime"
-    ],
-    "downstream_surface": "public",
-    "requires": [],
-    "provides": [
-      "experiment.definition",
-      "experiment.runtime"
-    ],
-    "components": []
-  },
-  "experimentation/resource": {
-    "system": "experimentation",
-    "parent": "experimentation",
-    "package_prefix": "noetrium_platform.research.experimentation.resource",
-    "node_kind": "facet",
-    "canonical_authority": "experimentation",
-    "owns": "typed experiment resource policy identity, placement requirements and allocation receipts",
-    "must_not_own": "physical compute truth, model-serving capacity or execution scheduling policy",
-    "shape": [
-      "api",
-      "runtime",
-      "composition"
+      "api"
     ],
     "downstream_surface": "public",
     "requires": [
-      "experimentation/experiment",
+      "artifact",
       "resource/compute",
       "scope"
     ],
     "provides": [
-      "experiment.resource-policy"
-    ],
-    "components": []
-  },
-  "experimentation/run": {
-    "system": "experimentation",
-    "parent": "experimentation",
-    "package_prefix": "noetrium_platform.research.experimentation.run",
-    "node_kind": "facet",
-    "canonical_authority": "experimentation",
-    "owns": "run identity, frozen run contract and run lifecycle",
-    "must_not_own": "server supervision internals",
-    "shape": [
-      "api",
-      "runtime",
-      "providers",
-      "composition"
-    ],
-    "downstream_surface": "public",
-    "requires": [],
-    "provides": [
+      "experiment.definition",
+      "experiment.resource-policy",
+      "experiment.runtime",
+      "run.checkpoint",
       "run.control",
       "run.decision",
       "run.identity",
       "run.lifecycle",
-      "run.manifest"
-    ],
-    "components": []
-  },
-  "experimentation/study": {
-    "system": "experimentation",
-    "parent": "experimentation",
-    "package_prefix": "noetrium_platform.research.experimentation.study",
-    "node_kind": "facet",
-    "canonical_authority": "experimentation",
-    "owns": "study definitions, hypotheses and study lifecycle",
-    "must_not_own": "method implementation internals",
-    "shape": [
-      "api",
-      "providers",
-      "composition"
-    ],
-    "downstream_surface": "public",
-    "requires": [
-      "artifact"
-    ],
-    "provides": [
+      "run.manifest",
       "study.definition"
     ],
-    "components": []
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "experimentation/lifecycle/checkpoint",
+        "package_prefix": "noetrium_platform.research.experimentation.lifecycle.checkpoint",
+        "node_kind": "facet",
+        "owns": "checkpoint identity, binding and lifecycle",
+        "must_not_own": "artifact content storage",
+        "shape": [
+          "api",
+          "runtime",
+          "providers"
+        ]
+      },
+      {
+        "key": "experimentation/lifecycle/evaluation",
+        "package_prefix": "noetrium_platform.research.experimentation.lifecycle.evaluation",
+        "node_kind": "facet",
+        "owns": "evaluation contracts, execution-neutral evaluators and evaluation composition",
+        "must_not_own": "experiment execution lifecycle or scientific claim acceptance",
+        "shape": [
+          "api",
+          "runtime",
+          "composition"
+        ]
+      },
+      {
+        "key": "experimentation/lifecycle/experiment",
+        "package_prefix": "noetrium_platform.research.experimentation.lifecycle.experiment",
+        "node_kind": "facet",
+        "owns": "experiment definitions, variants and experiment lifecycle",
+        "must_not_own": "runtime process state",
+        "shape": [
+          "api",
+          "runtime"
+        ]
+      },
+      {
+        "key": "experimentation/lifecycle/resource",
+        "package_prefix": "noetrium_platform.research.experimentation.lifecycle.experiment.resource",
+        "node_kind": "policy",
+        "owns": "typed experiment resource policy identity, placement requirements and allocation receipts",
+        "must_not_own": "physical compute truth, model-serving capacity or execution scheduling policy",
+        "shape": [
+          "api",
+          "runtime",
+          "composition"
+        ]
+      },
+      {
+        "key": "experimentation/lifecycle/run",
+        "package_prefix": "noetrium_platform.research.experimentation.lifecycle.run",
+        "node_kind": "facet",
+        "owns": "run identity, frozen run contract and run lifecycle",
+        "must_not_own": "server supervision internals",
+        "shape": [
+          "api",
+          "runtime",
+          "providers",
+          "composition"
+        ]
+      },
+      {
+        "key": "experimentation/lifecycle/study",
+        "package_prefix": "noetrium_platform.research.experimentation.lifecycle.study",
+        "node_kind": "facet",
+        "owns": "study definitions, hypotheses and study lifecycle",
+        "must_not_own": "method implementation internals",
+        "shape": [
+          "api",
+          "providers",
+          "composition"
+        ]
+      }
+    ]
   },
   "experimentation/workbench": {
     "system": "experimentation",
@@ -591,24 +539,64 @@
     ],
     "components": []
   },
-  "governance/algorithm": {
+  "governance/analysis": {
     "system": "governance",
     "parent": "governance",
-    "package_prefix": "noetrium_platform.foundation.governance.algorithm",
+    "package_prefix": "noetrium_platform.foundation.governance.analysis",
     "node_kind": "tool",
-    "canonical_authority": null,
-    "owns": "repository-wide algorithm inventory, complexity baselines and regression gates",
-    "must_not_own": "runtime execution or scientific result semantics",
+    "canonical_authority": "governance",
+    "owns": "source-level algorithm, concurrency and performance analysis, baselines and reports",
+    "must_not_own": "runtime execution state, business state or scientific acceptance",
     "shape": [
       "api",
       "runtime",
-      "providers",
       "composition"
     ],
     "downstream_surface": "metadata_only",
     "requires": [],
     "provides": [],
-    "components": []
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "governance/analysis/algorithm",
+        "package_prefix": "noetrium_platform.foundation.governance.analysis.algorithm",
+        "node_kind": "tool",
+        "owns": "repository-wide algorithm inventory, complexity baselines and regression gates",
+        "must_not_own": "runtime execution or scientific result semantics",
+        "shape": [
+          "api",
+          "runtime",
+          "providers",
+          "composition"
+        ]
+      },
+      {
+        "key": "governance/analysis/concurrency",
+        "package_prefix": "noetrium_platform.foundation.governance.analysis.concurrency",
+        "node_kind": "tool",
+        "owns": "repository-wide concurrency topology findings, reviewed debt baselines and concurrency regression gates",
+        "must_not_own": "runtime task scheduling or mutable execution state",
+        "shape": [
+          "api",
+          "runtime",
+          "providers",
+          "composition"
+        ]
+      },
+      {
+        "key": "governance/analysis/performance",
+        "package_prefix": "noetrium_platform.foundation.governance.analysis.performance",
+        "node_kind": "tool",
+        "owns": "repository-wide performance hotspots, reviewed debt baselines and performance regression gates",
+        "must_not_own": "runtime resource scheduling or business execution",
+        "shape": [
+          "api",
+          "runtime",
+          "providers",
+          "composition"
+        ]
+      }
+    ]
   },
   "governance/architecture": {
     "system": "governance",
@@ -616,8 +604,8 @@
     "package_prefix": "noetrium_platform.foundation.governance.architecture",
     "node_kind": "tool",
     "canonical_authority": null,
-    "owns": "architecture rules, dependencies and invariants",
-    "must_not_own": "business state",
+    "owns": "architecture rules, dependency invariants, recursive governance gates and quality audit policy",
+    "must_not_own": "business state, runtime execution or scientific acceptance",
     "shape": [
       "api",
       "runtime",
@@ -628,28 +616,45 @@
       "scope"
     ],
     "provides": [
-      "architecture.audit"
+      "architecture.audit",
+      "quality.audit"
     ],
-    "components": []
-  },
-  "governance/concurrency": {
-    "system": "governance",
-    "parent": "governance",
-    "package_prefix": "noetrium_platform.foundation.governance.concurrency",
-    "node_kind": "tool",
-    "canonical_authority": null,
-    "owns": "repository-wide concurrency topology findings, reviewed debt baselines and concurrency regression gates",
-    "must_not_own": "runtime task scheduling or mutable execution state",
-    "shape": [
-      "api",
-      "runtime",
-      "providers",
-      "composition"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [],
-    "provides": [],
-    "components": []
+    "components": [],
+    "internal_facets": [
+      {
+        "key": "governance/architecture/gating",
+        "package_prefix": "noetrium_platform.foundation.governance.architecture.gating",
+        "node_kind": "policy",
+        "owns": "recursive governance gates and descriptive policy composition",
+        "must_not_own": "business state, runtime execution or scientific acceptance",
+        "shape": [
+          "api",
+          "runtime",
+          "composition"
+        ]
+      },
+      {
+        "key": "governance/architecture/gating/quality",
+        "package_prefix": "noetrium_platform.foundation.governance.architecture.gating.quality",
+        "node_kind": "policy",
+        "owns": "quality audits and no-degradation/silent-failure evidence",
+        "must_not_own": "runtime business control",
+        "shape": [
+          "api"
+        ]
+      },
+      {
+        "key": "governance/architecture/repository_boundary",
+        "package_prefix": "noetrium_platform.foundation.governance.architecture.repository_boundary",
+        "node_kind": "tool",
+        "owns": "enforce reusable upstream repository/package/release boundary",
+        "must_not_own": "downstream project scientific or deployment policy",
+        "shape": [
+          "api",
+          "runtime"
+        ]
+      }
+    ]
   },
   "governance/evolution": {
     "system": "governance",
@@ -672,77 +677,6 @@
     "provides": [
       "governance.evolution"
     ],
-    "components": []
-  },
-  "governance/gate": {
-    "system": "governance",
-    "parent": "governance",
-    "package_prefix": "noetrium_platform.foundation.governance.gate",
-    "node_kind": "policy",
-    "canonical_authority": null,
-    "owns": "recursive gate contracts and composition semantics",
-    "must_not_own": "business state, runtime execution or scientific acceptance",
-    "shape": [
-      "api",
-      "runtime"
-    ],
-    "downstream_surface": "public",
-    "requires": [],
-    "provides": [],
-    "components": []
-  },
-  "governance/performance": {
-    "system": "governance",
-    "parent": "governance",
-    "package_prefix": "noetrium_platform.foundation.governance.performance",
-    "node_kind": "tool",
-    "canonical_authority": null,
-    "owns": "repository-wide performance hotspots, reviewed debt baselines and performance regression gates",
-    "must_not_own": "runtime resource scheduling or business execution",
-    "shape": [
-      "api",
-      "runtime",
-      "providers",
-      "composition"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [],
-    "provides": [],
-    "components": []
-  },
-  "governance/quality": {
-    "system": "governance",
-    "parent": "governance",
-    "package_prefix": "noetrium_platform.foundation.governance.quality",
-    "node_kind": "tool",
-    "canonical_authority": null,
-    "owns": "quality gates, audits and invariants as descriptive policy",
-    "must_not_own": "runtime business control",
-    "shape": [
-      "api"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [],
-    "provides": [
-      "quality.audit"
-    ],
-    "components": []
-  },
-  "governance/repository_boundary": {
-    "system": "governance",
-    "parent": "governance",
-    "package_prefix": "noetrium_platform.foundation.governance.repository_boundary",
-    "node_kind": "tool",
-    "canonical_authority": null,
-    "owns": "enforce reusable upstream repository/package/release boundary",
-    "must_not_own": "downstream project scientific or deployment policy",
-    "shape": [
-      "api",
-      "runtime"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [],
-    "provides": [],
     "components": []
   },
   "model/asset": {

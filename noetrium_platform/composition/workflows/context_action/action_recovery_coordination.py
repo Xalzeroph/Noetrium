@@ -15,6 +15,11 @@ class ActionCommittedRecoveryCoordinator:
         if existing is None or self._recovery is None: raise ActionRecoveryRequired("committed-method recovery requires a non-terminal action intent")
         if existing.intent.recovery_handle is None: raise ActionRecoveryRequired("committed-method recovery requires a durable provider recovery handle")
         execution=self._recovery.recover_durable(existing,context)
-        return SafeActionExecution(execution.result,inspection.operation_results+execution.operation_results,replayed_from_intent=True)
+        return SafeActionExecution(
+            execution.result,
+            inspection.operation_results + execution.operation_results,
+            replayed_from_intent=True,
+            durable_intent=execution.durable_intent,
+        )
 
 __all__=["ActionCommittedRecoveryCoordinator"]

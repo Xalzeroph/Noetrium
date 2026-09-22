@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "moviechat_memory",
-  "package_digest": "e7c2af4bd5c079d18fff90f4a61f8026a0a1432e17b9e3bca1c4b367ce8d55c3",
+  "package_digest": "10d45ac103aa0d6d9c8ace60fd827caba82131963462f6f56272f43d9837cd1b",
   "definition_digest": "0e54dfdc27ebb7abf80a8c406e7ab0b3cca264c2ec6bbb4d957486f6a4cb71d8",
   "source_registry_digest": "2cef17c8d328384849759d7e5d19d69f4b2d8cee4baf1d186f767e439b1fd60c",
   "lifecycle": "protocol_bound",
@@ -104,7 +104,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/moviechat_memory/benchmark.py",
       "declaration_digest": "60fed04d892465410ec91b702e1d38dc3f615d0b3c5da923078b38d813ab37ba",
-      "content_sha256": "63efe381bc7e8cee2c906f139dafefe2ccd70bea6814321effbb77d607cff21b"
+      "content_sha256": "8871976fa2807a810bcc3a5c9ab2644df85ca275e7882abb87f666e2da8ab565"
     },
     {
       "kind": "fidelity",
@@ -116,13 +116,13 @@
       "kind": "research_program",
       "path": "research/reproductions/moviechat_memory/memory.py",
       "declaration_digest": "761366a1cf00d2344580d8ced2ab2a676260708a59a30bd268cbda51c1a771dd",
-      "content_sha256": "d6e003d654f5002326d0113fb434a988fc80b456c14568e7bc0119ac514d8a6c"
+      "content_sha256": "20bf7e70002c7197da12e5b71d4001bfe08c42da524e4b06171ffdd5f164df0d"
     },
     {
       "kind": "study",
       "path": "research/reproductions/moviechat_memory/study.py",
       "declaration_digest": "0d79b248ef07a24d9673db8f437368d23f448617fdbd1f4d23e28d505f18732c",
-      "content_sha256": "b788ae8064892ae07930cd5ca290df606f0fb3a3ca3ec3662e851b4d0afee14b"
+      "content_sha256": "cdbf45d91b99f22c304c1db8071a12082840346a59fc38c763769cf0ac11ef37"
     },
     {
       "kind": "support",

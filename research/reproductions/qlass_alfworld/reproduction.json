@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "qlass_alfworld",
-  "package_digest": "8be4d50fd5e5c2f566c7f01958f7ab5281548a4624e461aaf8563607c1cd8bc3",
+  "package_digest": "39dd12a2d71315a376391e049010f4ec46f9c6452a0dc0973ea5803cae4fe860",
   "definition_digest": "018d222a2bfe76cad3902422017f980e6f98f678e48ff828fa13e5962d6dcae0",
   "source_registry_digest": "819fd0e885a29c9300eee6b6c1b86d1cea8854f8e10d988bf56fb3022f71ed29",
   "lifecycle": "protocol_bound",
@@ -92,13 +92,13 @@
       "kind": "method_program",
       "path": "research/reproductions/qlass_alfworld/program.py",
       "declaration_digest": "e4522932c78db1d96a6a71e417332c218b46e1b501328a14347dc56281c04680",
-      "content_sha256": "25c0f6124f00bd8501614f1938d9404b1ca9b2ad01bda2415229bd2436ce5999"
+      "content_sha256": "04c1bc228c759a05cb124899625a9e118eb60b8819f8a90c80c6c2eabefa48d2"
     },
     {
       "kind": "study",
       "path": "research/reproductions/qlass_alfworld/study.py",
       "declaration_digest": "6db408004daff0eeefcbfdec27dd76481084f3594c37d35dec94880b018a4027",
-      "content_sha256": "5725de9de3324d2799d1b203feaefe7bb3199937f07f2b25bd73036769e78852"
+      "content_sha256": "e370b57e705b40f44c631314858369efe0d737dff6a92269cdf53abb70d8eea6"
     },
     {
       "kind": "support",

@@ -21,13 +21,33 @@ from noetrium_platform.research.experimentation.api.campaign import (
     ResearchCampaignStudy,
     ResearchCampaignStudyBinding,
 )
-from noetrium_platform.research.experimentation.study.algorithms import (
+from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
     BasicStudyMetricAggregator,
 )
 from noetrium_platform.research.experimentation.api.program import (
     ExperimentProgramBinding,
     compile_experiment_program,
 )
+
+
+
+def _reportable_failure(exc: BaseException) -> BaseException:
+    # Collapse structured-concurrency wrappers when they contain one semantic failure.
+    def leaves(value: BaseException) -> list[BaseException]:
+        if isinstance(value, BaseExceptionGroup):
+            rows: list[BaseException] = []
+            for child in value.exceptions:
+                rows.extend(leaves(child))
+            return rows
+        return [value]
+
+    rows = leaves(exc)
+    if not rows:
+        return exc
+    unique = {(type(row), str(row)) for row in rows}
+    if len(unique) == 1:
+        return rows[0]
+    return exc
 
 
 class ResearchCampaignBinding:
@@ -177,17 +197,18 @@ class ResearchCampaignBinding:
                     )
                 except BaseException as exc:
                     handle.cancel()
-                    description = describe_exception(exc)
+                    failure = _reportable_failure(exc)
+                    description = describe_exception(failure)
                     results.append(
                         ResearchCampaignLaneResult(
                             lane_id=study.lane_id,
                             research_plan_digest=study.research_plan_digest,
                             study_plan_digest=study.plan.plan_digest,
                             state=ResearchCampaignLaneState.FAILED,
-                            failure_type=type(exc).__name__,
+                            failure_type=type(failure).__name__,
                             failure_message=(
                                 description.safe_message.strip()
-                                or type(exc).__name__
+                                or type(failure).__name__
                             ),
                         )
                     )

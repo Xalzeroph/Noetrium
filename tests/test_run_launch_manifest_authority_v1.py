@@ -7,7 +7,7 @@ import unittest
 
 import pytest
 
-from noetrium_platform.research.experimentation.run.api.manifest import CompositionPlanReference
+from noetrium_platform.research.experimentation.lifecycle.api import CompositionPlanReference
 from noetrium_platform.infrastructure.lifecycle.launch_control import RunLaunchIdentity
 from tests_support import frozen_runtime_manifest
 
@@ -22,7 +22,7 @@ class RunLaunchManifestAuthorityV1Tests(unittest.TestCase):
                 definitions.append(path.relative_to(root).as_posix())
         self.assertEqual(
             definitions,
-            ["noetrium_platform/research/experimentation/run/api/manifest.py"],
+            ["noetrium_platform/research/experimentation/lifecycle/run/api/manifest.py"],
         )
 
     def test_composition_plan_is_required_and_changes_run_process_generation(self):

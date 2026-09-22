@@ -37,7 +37,7 @@ def audit_failure_dependency_invariants(root: Path) -> list[SourceInvariantViola
     forbidden_domain_prefixes = (
         "noetrium_platform.infrastructure.lifecycle.service.runtime", "noetrium_platform.capabilities.participant.method.api", "noetrium_platform.capabilities.environment.api",
         "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api", "noetrium_platform.composition.workflows",
-        "noetrium_platform.research.experimentation.study", "noetrium_platform.capabilities.model.serving", "noetrium_platform.infrastructure.lifecycle.launch_control", "projects",
+        "noetrium_platform.research.experimentation.lifecycle.study", "noetrium_platform.capabilities.model.serving", "noetrium_platform.infrastructure.lifecycle.launch_control", "projects",
     )
     for path in sorted(forensics.rglob("*.py")):
         for module, line in imports(path):

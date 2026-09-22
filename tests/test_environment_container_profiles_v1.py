@@ -57,9 +57,10 @@ def test_environment_compose_overlays_have_profile_doctors() -> None:
 
 def test_base_compose_does_not_rebuild_mutable_checkout() -> None:
     text = (ROOT / "deploy" / "compose.yaml").read_text(encoding="utf-8")
-    assert "build:" not in text
-    assert "PLATFORM_IMAGE" in text
-    assert "/usr/local/bin/noetrium-entrypoint" in text
+    runtime_block = text.split("  platform-runtime:", 1)[1].split("\n  platform-test:", 1)[0]
+    assert "build:" not in runtime_block
+    assert "PLATFORM_IMAGE" in runtime_block
+    assert "/usr/local/bin/noetrium-entrypoint" in runtime_block
 
 
 def test_environment_catalog_keeps_scientific_assets_downstream() -> None:

@@ -87,6 +87,23 @@ class ArchitectureAnalyzerTests(unittest.TestCase):
             (root/"noetrium_platform"/"b"/"y.py").write_text("from noetrium_platform.a import x\n")
             self.assertTrue(package_cycles(scan_imports(root),depth=2))
 
+    def test_hierarchical_aggregate_facade_reexports_do_not_form_physical_cycles(self):
+        edges = (
+            ImportEdge(
+                "noetrium_platform.foundation.api",
+                "noetrium_platform.evidence.artifact.api",
+                "noetrium_platform/foundation/api.py",
+                1,
+            ),
+            ImportEdge(
+                "noetrium_platform.evidence.artifact.api",
+                "noetrium_platform.foundation.kernel.kernel",
+                "noetrium_platform/evidence/artifact/api.py",
+                1,
+            ),
+        )
+        self.assertEqual(package_cycles(edges, depth=2), ())
+
     def test_hotspot_analysis_surfaces_large_branchy_module(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); (root/"projects").mkdir(); (root/"projects"/"__init__.py").write_text(""); (root/"projects"/"x.py").write_text("def f(x):\n"+"    if x: x+=1\n"*30+"    return x\n")

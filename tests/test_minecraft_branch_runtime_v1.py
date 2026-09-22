@@ -15,7 +15,7 @@ from noetrium_platform.capabilities.environment.minecraft.api import (
     MinecraftRconEndpoint,
     MinecraftWorldBranch,
 )
-from noetrium_platform.composition.minecraft_agent import (
+from noetrium_platform.capabilities.environment.minecraft.composition import (
     MinecraftBranchRuntimeFactory,
     MinecraftEnvironmentAssembly,
 )

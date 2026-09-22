@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "self_consistency_gsm8k",
-  "package_digest": "21e51309fc3ed56e049a1ebffc065f9a195658a8dccf731bc3fedfb963b639dd",
+  "package_digest": "9eac5cb52501411eae05373ec497c1d07171572ce8e48ef882535d25923b374b",
   "definition_digest": "dd971605ffea4fd0accfeb00e14ef57803ca4769be221a9092fe90a47c01162d",
   "source_registry_digest": "72ea8a4a07d5b07a444cd7d422268751cc97e457ce8b1d3bf424098892c6205f",
   "lifecycle": "protocol_bound",
@@ -80,13 +80,13 @@
       "kind": "method_program",
       "path": "research/reproductions/self_consistency_gsm8k/program.py",
       "declaration_digest": "8a0e0c3a859b215fb5d93cb3d5325d7145a18e1851f027e74f2c78c4db032ced",
-      "content_sha256": "9d61a0da003387db62b2978f1ae00ce5a762e40df8269f24a5186b79887fa0f3"
+      "content_sha256": "eada7006eef22e512a3899e7e88c99166bc2c5c3e3b8f892f9f52f805299a11a"
     },
     {
       "kind": "study",
       "path": "research/reproductions/self_consistency_gsm8k/study.py",
       "declaration_digest": "d366ae76f9b5a81557b8b9ab0368a4f7fc77f4605eeeb7d7c31f7a57b46b474f",
-      "content_sha256": "437f6a5c285934af11efb10de82e94120021a653abd54bcdbadbcd37c75ae20b"
+      "content_sha256": "aeed803d6c734e01c96e091b8b96c7c2c5351f08ee92d279c7238d346dacf895"
     }
   ],
   "primary_executable": "research/reproductions/self_consistency_gsm8k/program.py",
@@ -147,11 +147,11 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_gsm8k_cut_v1.py",
-      "content_sha256": "593a3793fc73eedab6662f15a35fae13f4752294c0ca61f1c0cdbaf08d68e177"
+      "content_sha256": "2eb8c88dd0cfa686ed3b0ad005f034dd3f26d557b322394c57f611847335297c"
     },
     {
       "path": "tests/test_scientific_self_consistency_gsm8k_v1.py",
-      "content_sha256": "012c9de42aeb311ed747e959fdc6c2f20e67f8b637ed67a553b8c1d6ce72726e"
+      "content_sha256": "42ab85bba5f2e9a65822629c9279edae413acc068b30585e3f56c1a088c1e82d"
     }
   ]
 }

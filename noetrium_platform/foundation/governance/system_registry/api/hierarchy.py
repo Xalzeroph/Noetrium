@@ -5,7 +5,7 @@ from functools import lru_cache
 from importlib.resources import files
 import json
 
-LAYER_HIERARCHY_SCHEMA = "noetrium-layer-hierarchy.v3"
+LAYER_HIERARCHY_SCHEMA = "noetrium-layer-hierarchy.v4"
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,11 +18,21 @@ class LayerDescriptor:
 
 
 @dataclass(frozen=True, slots=True)
+class SideplaneDescriptor:
+    sideplane_id: str
+    system_id: str
+    base_layer_id: str
+    facade_module: str
+    attachment_mode: str = "application_composition"
+
+
+@dataclass(frozen=True, slots=True)
 class LayerHierarchy:
     layers: tuple[LayerDescriptor, ...]
     global_contract_prefixes: tuple[str, ...]
     application_composition_prefix: str
     global_systems: tuple[str, ...] = ()
+    sideplanes: tuple[SideplaneDescriptor, ...] = ()
 
     def __post_init__(self) -> None:
         ids = tuple(layer.layer_id for layer in self.layers)
@@ -42,7 +52,29 @@ class LayerHierarchy:
                 + ", ".join(sorted(overlap))
             )
 
+        sideplane_ids = tuple(row.sideplane_id for row in self.sideplanes)
+        sideplane_systems = tuple(row.system_id for row in self.sideplanes)
+        if len(sideplane_ids) != len(set(sideplane_ids)):
+            raise ValueError("sideplane ids must be unique")
+        if len(sideplane_systems) != len(set(sideplane_systems)):
+            raise ValueError("a system may belong to only one sideplane")
+        illegal = set(sideplane_systems).intersection(set(members) | set(self.global_systems))
+        if illegal:
+            raise ValueError(
+                "sideplane systems cannot also be layered/global: "
+                + ", ".join(sorted(illegal))
+            )
+
         known = set(ids)
+        for sideplane in self.sideplanes:
+            if sideplane.base_layer_id not in known:
+                raise ValueError(
+                    f"unknown sideplane base layer: {sideplane.base_layer_id}"
+                )
+            if sideplane.attachment_mode != "application_composition":
+                raise ValueError(
+                    f"unsupported sideplane attachment mode: {sideplane.attachment_mode}"
+                )
         for layer in self.layers:
             if (
                 layer.lower_layer_id is not None
@@ -87,6 +119,15 @@ class LayerHierarchy:
 
     def is_global_system(self, system_id: str) -> bool:
         return system_id in self.global_systems
+
+    def is_sideplane_system(self, system_id: str) -> bool:
+        return any(row.system_id == system_id for row in self.sideplanes)
+
+    def sideplane_for_system(self, system_id: str) -> SideplaneDescriptor:
+        for row in self.sideplanes:
+            if row.system_id == system_id:
+                return row
+        raise KeyError(system_id)
 
     def lower_layer(self, system_id: str) -> LayerDescriptor | None:
         if self.is_global_system(system_id):
@@ -143,6 +184,25 @@ def layer_hierarchy() -> LayerHierarchy:
             )
         )
 
+    sideplanes_raw = raw.get("sideplanes", ())
+    if not isinstance(sideplanes_raw, list):
+        raise RuntimeError("layer hierarchy sideplanes must be a list")
+    sideplanes: list[SideplaneDescriptor] = []
+    for row in sideplanes_raw:
+        if not isinstance(row, dict):
+            raise RuntimeError("invalid sideplane descriptor")
+        sideplanes.append(
+            SideplaneDescriptor(
+                sideplane_id=str(row["id"]),
+                system_id=str(row["system"]),
+                base_layer_id=str(row["base"]),
+                facade_module=str(row["facade"]),
+                attachment_mode=str(
+                    row.get("attachment", "application_composition")
+                ),
+            )
+        )
+
     return LayerHierarchy(
         layers=tuple(parsed),
         global_contract_prefixes=tuple(
@@ -157,6 +217,7 @@ def layer_hierarchy() -> LayerHierarchy:
         global_systems=tuple(
             str(x) for x in raw.get("global_systems", ())
         ),
+        sideplanes=tuple(sideplanes),
     )
 
 
@@ -164,5 +225,6 @@ __all__ = [
     "LAYER_HIERARCHY_SCHEMA",
     "LayerDescriptor",
     "LayerHierarchy",
+    "SideplaneDescriptor",
     "layer_hierarchy",
 ]

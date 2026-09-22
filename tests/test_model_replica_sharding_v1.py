@@ -20,8 +20,8 @@ from noetrium_platform.research.experimentation.composition import (
     compile_model_replica_shard_plan,
     qualified_replica_capacity_units,
 )
-from noetrium_platform.research.experimentation.study.api import (
-    ExperimentPlan,
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    StudyExecutionPlan,
     StudyAssignment,
     StudyConcurrencyPolicy,
     StudyProtocol,
@@ -127,7 +127,7 @@ def _compiled():
         for index in range(6)
     )
     return compile_experiment_program(
-        ExperimentPlan.compile(protocol, (binding,), assignments)
+        StudyExecutionPlan.compile(protocol, (binding,), assignments)
     )
 
 

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ma_lmm_memory",
-  "package_digest": "947642276cb8ee48e72f98b883f222ebba9f756006af98f9ca7a4113ac2f01ec",
+  "package_digest": "439eb762214ef6be86274de56c7bfcc6b9ff3d2bb20808dee0ac04359ce5ea06",
   "definition_digest": "9c2f0e4cf9ab3fc9c12fd8ec320e3fc18b5abb5813dc8b785c12382b667e9b3f",
   "source_registry_digest": "5f3d368fdee5eea455e920c9272f4c9bd9feddccd71af306baeaab1137bdff7e",
   "lifecycle": "protocol_bound",
@@ -101,7 +101,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/ma_lmm_memory/benchmark.py",
       "declaration_digest": "c6c600a3b29a2fe50943a0b86eafb5eb016b1dfcfe687d67ade111f1e345aa10",
-      "content_sha256": "42baef81105dfb9b1f767da8cac245f150b140b9aa8edcd1bb89c719ac7ed391"
+      "content_sha256": "7ff79e642b08de33ffb3022dde223bca55c98a65518a4c81ad22a81c370f0d20"
     },
     {
       "kind": "fidelity",
@@ -113,13 +113,13 @@
       "kind": "research_program",
       "path": "research/reproductions/ma_lmm_memory/memory.py",
       "declaration_digest": "6e7103bc1fb6d71bd11e3ce80e879b283ad31d29ffdb68337207032bf2610310",
-      "content_sha256": "b1d4fd607968bbd4c9a3871c1cc4474902755af79e707c559b7b20c4fc5dfb5b"
+      "content_sha256": "e3ee13bfe68f5558602c0a545fa0e6e9a7f4bbedb1053b243bbdb8f48b6fbef2"
     },
     {
       "kind": "study",
       "path": "research/reproductions/ma_lmm_memory/study.py",
       "declaration_digest": "94b64a35a1bd6c11b7e87572bfefd55c6c232774e6c11d8c5f85bd061db9c7b9",
-      "content_sha256": "9a14b4e4e7f93aa36c05328ae38752288e7e8bb482d5fc93ecf0ab3090e26e22"
+      "content_sha256": "989c3449ae8705b741fe890ba757f800f09ba06830e750eee19cc4a9a3784603"
     },
     {
       "kind": "support",

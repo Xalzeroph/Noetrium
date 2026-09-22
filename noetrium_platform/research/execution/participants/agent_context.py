@@ -5,7 +5,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_bytes, canonical_digest, freeze_json
-from noetrium_platform.research.execution.machines import (
+from noetrium_platform.research.execution.machines.api import (
     ContextBlockProgram,
     ContextBudgetExceeded,
     ContextProgram,

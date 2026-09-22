@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_bytes
 from noetrium_platform.evidence.observability.capture.api import RawObservationEnvelope
-from noetrium_platform.evidence.observability.capture.runtime import (
-    RegistryBoundRawObservationGateway,
-)
+from noetrium_platform.evidence.observability.capture.api import RawObservationSinkPort
 from noetrium_platform.evidence.observability.logging.record.api import LogRecord
 from noetrium_platform.evidence.observability.logging.sink.api import LogSinkPort
 
@@ -14,7 +12,7 @@ class RegistryBoundRawLogSink(LogSinkPort):
 
     producer_id = "observability.logging.raw-mirror.v1"
 
-    def __init__(self, sink: LogSinkPort, gateway: RegistryBoundRawObservationGateway) -> None:
+    def __init__(self, sink: LogSinkPort, gateway: RawObservationSinkPort) -> None:
         self._sink = sink
         self._gateway = gateway
 

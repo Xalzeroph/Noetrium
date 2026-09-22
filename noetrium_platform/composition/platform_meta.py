@@ -18,8 +18,8 @@ from noetrium_platform.evidence.data.query.api import ResearchResultQueryPort
 from noetrium_platform.evidence.data.query.cross.composition import (
     compose_builtin_research_result_query,
 )
-from noetrium_platform.research.experimentation.catalog.api import ExperimentationCatalogPort
-from noetrium_platform.research.experimentation.catalog.runtime import (
+from noetrium_platform.research.experimentation.api import ExperimentationCatalogPort
+from noetrium_platform.research.experimentation.runtime import (
     InMemoryExperimentationCatalog,
     SQLiteExperimentationCatalog,
 )

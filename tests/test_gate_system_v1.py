@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-import noetrium_platform.foundation.governance.gate.composition as gate_composition
-from noetrium_platform.foundation.governance.gate.api import GateFinding, GateReport, GateRequest, GateSeverity
-from noetrium_platform.foundation.governance.gate.composition import build_platform_gate
-from noetrium_platform.foundation.governance.gate.runtime import CompositeGate
+import noetrium_platform.foundation.governance.architecture.gating.composition as gate_composition
+from noetrium_platform.foundation.governance.architecture.gating.api import GateFinding, GateReport, GateRequest, GateSeverity
+from noetrium_platform.foundation.governance.architecture.gating.composition import build_platform_gate
+from noetrium_platform.foundation.governance.architecture.gating.runtime import CompositeGate
 
 
 @dataclass(frozen=True, slots=True)

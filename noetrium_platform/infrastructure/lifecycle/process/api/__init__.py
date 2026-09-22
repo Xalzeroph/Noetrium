@@ -28,4 +28,19 @@ __all__ = [
     "LocalCommandStartError",
     "LocalCommandTimeoutError",
     "ProcessByteCapturePort",
+    "ProcessCommandResult",
+    "ProcessCommandRunnerPort",
+    "ProcessExitReceipt",
+    "ProcessSupervisorPort",
+    "ProcessTerminationPolicy",
+    "SupervisedProcessPort",
 ]
+
+from noetrium_platform.infrastructure.lifecycle.process.supervision.api import (
+    ProcessCommandResult,
+    ProcessCommandRunnerPort,
+    ProcessExitReceipt,
+    ProcessSupervisorPort,
+    ProcessTerminationPolicy,
+    SupervisedProcessPort,
+)

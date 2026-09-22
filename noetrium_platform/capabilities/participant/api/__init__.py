@@ -58,56 +58,58 @@ from .revision import (
 )
 
 __all__ = [
-    "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
-    "ParticipantMessageFactBinding",
-    "ParticipantMessageKind",
-    "ParticipantMessageRecipientReceipt",
-    "ParticipantMessageRouteReceipt",
-    "ParticipantMessageRouteRequest",
-    "ParticipantMessageRouterPort",
-    "participant_message_content_digest",
-    "AgentProjectDefinition",
-    "MethodProjectDefinition",
-    "method_program_identity_for_requirement",
-    "method_program_identity_for_runtime_binding",
-    "require_method_program_runtime_binding",
-    "ArchitectureChangeKind",
-    "ParticipantArchitectureChange",
-    "ParticipantArchitectureComponent",
-    "ParticipantArchitectureRevision",
-    "ParticipantArchitectureTransition",
-    "ParticipantBindingDiagnostic",
-    "ParticipantBindingDiagnosticCode",
-    "ParticipantBindingDiagnosticSeverity",
-    "ParticipantMessageSchedule",
-    "ParticipantMessageScheduleEntry",
-    "ParticipantProjectBindingError",
-    "ParticipantProviderProfile",
-    "ParticipantRequirement",
-    "ParticipantRequirementContribution",
-    "ParticipantRevisionAuthorityPort",
-    "ParticipantRevisionAuthoritySnapshot",
-    "ParticipantRevisionCommit",
-    "ParticipantRevisionConflictError",
-    "ParticipantRevisionEvidence",
-    "ParticipantRevisionEvidenceKind",
-    "ParticipantRevisionIntegrityError",
-    "ParticipantRevisionProposal",
-    "ParticipantRevisionStateError",
-    "ParticipantRevisionValue",
-    "ParticipantStateCompatibility",
-    "ParticipantStateRevision",
-    "ParticipantStateTransition",
-    "ParticipantTransitionValue",
-    "PreparedParticipantRevision",
-    "ParticipantTopology",
-    "ParticipantTopologyChange",
-    "ParticipantTopologyMember",
-    "ParticipantTopologyTransition",
-    "ProjectParticipantBinding",
-    "ProjectParticipantProviderPort",
-    "TopologyChangeKind",
+    'PARTICIPANT_MESSAGE_ROUTE_SCHEMA',
+    'ParticipantMessageFactBinding',
+    'ParticipantMessageKind',
+    'ParticipantMessageRecipientReceipt',
+    'ParticipantMessageRouteReceipt',
+    'ParticipantMessageRouteRequest',
+    'ParticipantMessageRouterPort',
+    'participant_message_content_digest',
+    'AgentProjectDefinition',
+    'MethodProjectDefinition',
+    'method_program_identity_for_requirement',
+    'method_program_identity_for_runtime_binding',
+    'require_method_program_runtime_binding',
+    'ArchitectureChangeKind',
+    'ParticipantArchitectureChange',
+    'ParticipantArchitectureComponent',
+    'ParticipantArchitectureRevision',
+    'ParticipantArchitectureTransition',
+    'ParticipantBindingDiagnostic',
+    'ParticipantBindingDiagnosticCode',
+    'ParticipantBindingDiagnosticSeverity',
+    'ParticipantMessageSchedule',
+    'ParticipantMessageScheduleEntry',
+    'ParticipantProjectBindingError',
+    'ParticipantProviderProfile',
+    'ParticipantRequirement',
+    'ParticipantRequirementContribution',
+    'ParticipantRevisionAuthorityPort',
+    'ParticipantRevisionAuthoritySnapshot',
+    'ParticipantRevisionCommit',
+    'ParticipantRevisionConflictError',
+    'ParticipantRevisionEvidence',
+    'ParticipantRevisionEvidenceKind',
+    'ParticipantRevisionIntegrityError',
+    'ParticipantRevisionProposal',
+    'ParticipantRevisionStateError',
+    'ParticipantRevisionValue',
+    'ParticipantStateCompatibility',
+    'ParticipantStateRevision',
+    'ParticipantStateTransition',
+    'ParticipantTransitionValue',
+    'PreparedParticipantRevision',
+    'ParticipantTopology',
+    'ParticipantTopologyChange',
+    'ParticipantTopologyMember',
+    'ParticipantTopologyTransition',
+    'ProjectParticipantBinding',
+    'ProjectParticipantProviderPort',
+    'TopologyChangeKind',
+    'MethodRuntimeIdentity',
 ]
+
 
 # Parent-facing Participant contracts. Higher systems import only this facade.
 from noetrium_platform.capabilities.participant.agent.api.cognition import (
@@ -130,6 +132,7 @@ from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityPort,
     CapabilityRequest,
     CapabilityResult,
+    GuardDecision,
     GuardVerdict,
     capability_effect_request_id,
     capability_request_digest,
@@ -137,18 +140,26 @@ from noetrium_platform.capabilities.participant.capability.api import (
 from noetrium_platform.capabilities.participant.core.api import (
     BoundParticipant,
     BoundParticipants,
+    ParticipantCheckpoint,
+    ParticipantCheckpointOperationsPort,
+    ParticipantCheckpointRef,
+    ParticipantCheckpointRuntimePort,
+    ParticipantImplementationIdentity,
+    ParticipantLifecycleAdapterRegistry,
+    ParticipantResolutionPort,
+    ParticipantRuntimeBinding,
+    ParticipantRuntimeHandle,
     ParticipantSessionBinding,
-)
-from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantRuntimeBinding
-from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantLifecycleAdapterRegistry
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
-from noetrium_platform.capabilities.participant.core.api.runtime_operations import (
+    ParticipantSessionLifecyclePort,
+    ParticipantSessionRuntimeIdentity,
     participant_operation_type,
     participant_operation_verb,
 )
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import ParticipantCheckpointRuntimePort
-from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodProgramIdentity
+from noetrium_platform.capabilities.participant.method.api import (
+    MethodIdentity,
+    MethodProgramIdentity,
+    MethodRuntimeIdentity,
+)
 
 _PARENT_FACADE_EXPORTS = (
     "AGENT_ACTION_HISTORY_VIEW_SCHEMA",
@@ -185,27 +196,27 @@ _PARENT_FACADE_EXPORTS = (
 
 __all__ = tuple(__all__) + _PARENT_FACADE_EXPORTS
 
-from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpointRef
-from noetrium_platform.capabilities.participant.core.api.contracts import (
-    ParticipantImplementationIdentity,
-    ParticipantSessionRuntimeIdentity,
-)
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import (
-    ParticipantCheckpointOperationsPort,
-    ParticipantResolutionPort,
-    ParticipantSessionLifecyclePort,
-)
 
 _PARTICIPANT_PARENT_EXTRA_EXPORTS = (
+    "ParticipantSessionRuntimeIdentity",
+    "AgentTurnResult",
+    "AgentSession",
+    "AgentIdentity",
     "ParticipantCheckpointOperationsPort",
     "ParticipantCheckpointRef",
     "ParticipantImplementationIdentity",
     "ParticipantResolutionPort",
     "ParticipantSessionLifecyclePort",
-    "ParticipantSessionRuntimeIdentity",
 )
 
 __all__ = tuple(__all__) + _PARTICIPANT_PARENT_EXTRA_EXPORTS
 
 from noetrium_platform.capabilities.participant.capability.api import GuardDecision
 __all__ += ("GuardDecision",)
+
+
+from noetrium_platform.capabilities.participant.agent.api import (
+    AgentIdentity,
+    AgentSession,
+    AgentTurnResult,
+)

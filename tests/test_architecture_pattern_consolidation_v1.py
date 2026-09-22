@@ -18,10 +18,16 @@ def test_runtime_topology_uses_closed_authority_vocabulary() -> None:
     assert all(row["node_kind"] != "reference" for row in catalog.values())
 
 
-def test_execution_command_is_a_facet_not_a_second_truth_authority() -> None:
-    command = json.loads(CATALOG.read_text(encoding="utf-8"))["execution/command"]
-    assert command["node_kind"] == "facet"
-    assert command["canonical_authority"] == "execution"
+def test_execution_command_is_internal_to_operation_authority() -> None:
+    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    assert "execution/command" not in catalog
+    operation = catalog["execution/operation"]
+    assert operation["node_kind"] == "authority"
+    assert operation["canonical_authority"] == "execution/operation"
+    assert "command intent" in operation["owns"]
+    assert (
+        ROOT / "noetrium_platform/research/execution/operation/command"
+    ).is_dir()
 
 
 def test_core_never_imports_public_noetrium_facade() -> None:

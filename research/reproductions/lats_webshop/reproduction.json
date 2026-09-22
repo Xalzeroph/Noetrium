@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lats_webshop",
-  "package_digest": "eb82846cc12ce30c7f50a19eced323322611713a51dbc57c61840b2ec15a4f69",
+  "package_digest": "4a5750744ce4f5505bd61a87ede6119bdf34616c3683f006223d507bf7d334dc",
   "definition_digest": "17ccc90fdba1d3447c4f2cbd1a6f5cd739b2fe4266ee32b59c0adbd6f861231d",
   "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
   "lifecycle": "protocol_bound",
@@ -78,13 +78,13 @@
       "kind": "method_program",
       "path": "research/reproductions/lats_webshop/program.py",
       "declaration_digest": "7f7cf9987b3fa32dee860d29b42d0701f1a77addba002fed90c9c9a9a7e78fd7",
-      "content_sha256": "80cd0e7ea29d8e56007b4abc84ca6fc4b70447fc1ff7fd0d35a1584b03c07354"
+      "content_sha256": "e58710c4c398b3ea3f30d48ed4b4f0bd266d88dde044a7ff69e4e5aba936d0b0"
     },
     {
       "kind": "study",
       "path": "research/reproductions/lats_webshop/study.py",
       "declaration_digest": "4af48b66163b64c9523672787dc94a839abc3020119df67c93e59877d1c08ec6",
-      "content_sha256": "b9c68d7cedfd36c55d65f3edf58a9826ad5dc25f6c0b12a920590f5d74e0e863"
+      "content_sha256": "524704ea467d7e6124aa82325eb4ba3a8704fb77416c39eb6519d9ae84d7d5ad"
     },
     {
       "kind": "support",

@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import tomllib
 
-from noetrium_platform.foundation.governance.repository_boundary.api import (
+from noetrium_platform.foundation.governance.architecture.repository_boundary.api import (
     RepositoryBoundaryAuditor,
 )
 from noetrium_platform.product.operator.api import (

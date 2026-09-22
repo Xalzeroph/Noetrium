@@ -22,7 +22,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskGroupPort,
     StructuredConcurrencyRuntimePort,
 )
-from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
+from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime as _build_kernel_concurrency_runtime
 
 
 @dataclass(slots=True)
@@ -107,6 +107,25 @@ def _default_admission_budget(concurrency: ConcurrencyBudget) -> AdmissionBudget
     )
 
 
+def build_structured_concurrency_runtime(
+    *,
+    budget: ConcurrencyBudget | None = None,
+    blocking_io_thread_name_prefix: str = "platform-blocking-io",
+    timer_name: str = "platform-timer",
+    permits=None,
+) -> StructuredConcurrencyRuntimePort:
+    """Application-composition boundary for the Kernel concurrency implementation."""
+
+    kwargs = {
+        "budget": budget or ConcurrencyBudget(),
+        "blocking_io_thread_name_prefix": blocking_io_thread_name_prefix,
+        "timer_name": timer_name,
+    }
+    if permits is not None:
+        kwargs["permits"] = permits
+    return _build_kernel_concurrency_runtime(**kwargs)
+
+
 def build_execution_concurrency_runtime(
     *,
     concurrency_budget: ConcurrencyBudget | None = None,
@@ -124,7 +143,7 @@ def build_execution_concurrency_runtime(
         budget=resolved_admission,
         scheduling=scheduling,
     )
-    concurrency = build_concurrency_runtime(
+    concurrency = build_structured_concurrency_runtime(
         budget=resolved_concurrency,
         blocking_io_thread_name_prefix=blocking_io_thread_name_prefix,
         timer_name=timer_name,
@@ -133,4 +152,8 @@ def build_execution_concurrency_runtime(
     return ExecutionConcurrencyAuthorities(concurrency=concurrency, admission=admission)
 
 
-__all__ = ["ExecutionConcurrencyAuthorities", "build_execution_concurrency_runtime"]
+__all__ = [
+    "ExecutionConcurrencyAuthorities",
+    "build_execution_concurrency_runtime",
+    "build_structured_concurrency_runtime",
+]

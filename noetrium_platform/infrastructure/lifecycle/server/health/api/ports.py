@@ -4,7 +4,7 @@ from typing import Protocol
 
 from noetrium_platform.infrastructure.lifecycle.server.api import ServerOperationRecord
 
-from noetrium_platform.infrastructure.lifecycle.server.identity.api import ServerConnectionPort
+from noetrium_platform.infrastructure.lifecycle.server.api import ServerConnectionPort
 
 from .contracts import (
     ServerDiagnosticReport,

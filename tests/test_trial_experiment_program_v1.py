@@ -10,11 +10,11 @@ from noetrium_platform.research.experimentation.api import (
     compile_research_plan,
     resolve_research_requirements,
 )
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentParticipantSpec,
     ExperimentTrialProtocolIdentity,
 )
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkTaskSet,
     FactorLevelSpec,
     MeasurementDefinition,
@@ -31,7 +31,7 @@ from noetrium_platform.research.experimentation.study.api import (
     TrialBudget,
     TrialExecutionReceipt,
 )
-from noetrium_platform.research.experimentation.run.runtime.trial import (
+from noetrium_platform.research.experimentation.lifecycle.run.runtime.trial import (
     TrialExperimentProgramBinding,
     compile_trial_experiment_program,
 )
@@ -42,7 +42,7 @@ from noetrium_platform.capabilities.participant.api.project import (
     ParticipantRequirement,
     ProjectParticipantBinding,
 )
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantImplementationIdentity,
     ParticipantSessionRuntimeIdentity,
 )

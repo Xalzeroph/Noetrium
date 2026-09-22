@@ -157,6 +157,26 @@ def audit_layer_dag(root: Path, edges: tuple[ImportEdge, ...] | None = None) -> 
     return tuple(rows)
 
 
+
+
+_HIERARCHICAL_AGGREGATE_FACADES = frozenset({
+    "noetrium_platform.foundation.api",
+    "noetrium_platform.substrate.api",
+    "noetrium_platform.capabilities.api",
+    "noetrium_platform.product.api",
+})
+
+
+def _is_hierarchical_aggregate_facade_edge(edge: ImportEdge) -> bool:
+    """Exclude parent-layer facade re-exports from physical package SCCs.
+
+    These modules are generated parent-facing aggregation surfaces. Their
+    imports describe facade composition, not a runtime dependency from the
+    parent's kernel/implementation back into a child system.
+    """
+
+    return edge.source_module in _HIERARCHICAL_AGGREGATE_FACADES
+
 def package_cycles(edges: tuple[ImportEdge,...], depth: int=2) -> tuple[tuple[str,...],...]:
     def bucket(name: str) -> str:
         # Platform is a hierarchical root.  Its foundational kernel and composition
@@ -177,7 +197,7 @@ def package_cycles(edges: tuple[ImportEdge,...], depth: int=2) -> tuple[tuple[st
         # Aggregate facades intentionally re-export downstream public APIs.
         # Their allowed seam must not be treated as a package cycle when the
         # downstream implementation imports leaf Noe contracts.
-        if _is_allowed_downstream_api_edge(e):
+        if _is_allowed_downstream_api_edge(e) or _is_hierarchical_aggregate_facade_edge(e):
             continue
         a,b=bucket(e.source_module),bucket(e.target_module)
         if a!=b: graph.setdefault(a,set()).add(b); graph.setdefault(b,set())
@@ -217,9 +237,9 @@ DEFAULT_IMPORT_RULES=(
     ImportRule("noetrium_platform.infrastructure.lifecycle.service.runtime","noetrium_platform.infrastructure.lifecycle.launch_control","Service OS cannot depend upward on Runtime Manager"),
     ImportRule("noetrium_platform.infrastructure.reliability.primitives","noetrium_platform.infrastructure.lifecycle.launch_control","Reliability contracts cannot depend on Runtime Manager"),
     ImportRule("noetrium_platform.infrastructure.reliability.primitives","noetrium_platform.infrastructure.lifecycle.service.runtime","Reliability contracts cannot depend on Service OS"),
-    ImportRule("noetrium_platform.research.experimentation.study","noetrium_platform.capabilities.participant.definition.runtime","Study execution cannot import participant definition factories"),
-    ImportRule("noetrium_platform.research.experimentation.study","noetrium_platform.capabilities.participant.binding.runtime","Study execution cannot import participant binding runtime"),
-    ImportRule("noetrium_platform.research.experimentation.study","noetrium_platform.capabilities.participant.session.runtime","Study execution cannot import participant session runtime"),
+    ImportRule("noetrium_platform.research.experimentation.lifecycle.study","noetrium_platform.capabilities.participant.definition.runtime","Study execution cannot import participant definition factories"),
+    ImportRule("noetrium_platform.research.experimentation.lifecycle.study","noetrium_platform.capabilities.participant.binding.runtime","Study execution cannot import participant binding runtime"),
+    ImportRule("noetrium_platform.research.experimentation.lifecycle.study","noetrium_platform.capabilities.participant.session.runtime","Study execution cannot import participant session runtime"),
     ImportRule("noetrium_platform.research.execution.workflow.implementations","noetrium_platform.capabilities.participant.definition.runtime","Workflow execution cannot import participant definition factories"),
     ImportRule("noetrium_platform.research.execution.workflow.implementations","noetrium_platform.capabilities.participant.binding.runtime","Workflow execution cannot import participant binding runtime"),
     ImportRule("noetrium_platform.research.execution.workflow.implementations","noetrium_platform.capabilities.participant.session.runtime","Workflow execution cannot import participant session runtime"),
@@ -241,21 +261,21 @@ DEFAULT_IMPORT_RULES=(
     ImportRule("noetrium_platform.foundation.governance.release.runtime","noetrium_platform.capabilities.participant.session.runtime","Release identity layer cannot import participant session runtime"),
     ImportRule("noetrium_platform.capabilities.participant.agent.api","noetrium_platform.capabilities.environment.api","Agent ABI cannot depend on Environment ABI"),
     ImportRule("noetrium_platform.capabilities.participant.agent.api","noetrium_platform.capabilities.participant.method.api","Agent ABI cannot depend on Method ABI"),
-    ImportRule("noetrium_platform.capabilities.participant.agent.api","noetrium_platform.research.experimentation.study","Agent ABI cannot depend upward on Study runtime"),
+    ImportRule("noetrium_platform.capabilities.participant.agent.api","noetrium_platform.research.experimentation.lifecycle.study","Agent ABI cannot depend upward on Study runtime"),
     ImportRule("noetrium_platform.capabilities.participant.capability.api","noetrium_platform.capabilities.participant.agent.api","Capability ABI cannot depend upward on Agent ABI"),
     ImportRule("noetrium_platform.capabilities.participant.capability.api","noetrium_platform.capabilities.environment.api","Capability ABI cannot depend on Environment ABI"),
     ImportRule("noetrium_platform.capabilities.participant.capability.api","noetrium_platform.capabilities.participant.method.api","Capability ABI cannot depend on Method ABI"),
-    ImportRule("noetrium_platform.capabilities.participant.capability.api","noetrium_platform.research.experimentation.study","Capability ABI cannot depend upward on Study runtime"),
+    ImportRule("noetrium_platform.capabilities.participant.capability.api","noetrium_platform.research.experimentation.lifecycle.study","Capability ABI cannot depend upward on Study runtime"),
     ImportRule("noetrium_platform.infrastructure.reliability.effect.api","noetrium_platform.capabilities.participant.agent.api","Effect ABI cannot depend upward on Agent ABI"),
     ImportRule("noetrium_platform.infrastructure.reliability.effect.api","noetrium_platform.capabilities.participant.capability.api","Effect ABI cannot depend upward on Capability ABI"),
     ImportRule("noetrium_platform.infrastructure.reliability.effect.api","noetrium_platform.capabilities.environment.api","Effect ABI cannot depend on Environment ABI"),
     ImportRule("noetrium_platform.infrastructure.reliability.effect.api","noetrium_platform.capabilities.participant.method.api","Effect ABI cannot depend on Method ABI"),
-    ImportRule("noetrium_platform.infrastructure.reliability.effect.api","noetrium_platform.research.experimentation.study","Effect ABI cannot depend upward on Study runtime"),
+    ImportRule("noetrium_platform.infrastructure.reliability.effect.api","noetrium_platform.research.experimentation.lifecycle.study","Effect ABI cannot depend upward on Study runtime"),
     ImportRule("noetrium_platform.capabilities.participant.core.api","noetrium_platform.capabilities.participant.agent.api","Participant ABI cannot depend on Agent ABI"),
     ImportRule("noetrium_platform.capabilities.participant.core.api","noetrium_platform.capabilities.participant.capability.api","Participant ABI cannot depend on Capability ABI"),
     ImportRule("noetrium_platform.capabilities.participant.core.api","noetrium_platform.capabilities.environment.api","Participant ABI cannot depend on Environment ABI"),
     ImportRule("noetrium_platform.capabilities.participant.core.api","noetrium_platform.capabilities.participant.method.api","Participant ABI cannot depend on Method ABI"),
-    ImportRule("noetrium_platform.capabilities.participant.core.api","noetrium_platform.research.experimentation.study","Participant ABI cannot depend upward on Study runtime"),
+    ImportRule("noetrium_platform.capabilities.participant.core.api","noetrium_platform.research.experimentation.lifecycle.study","Participant ABI cannot depend upward on Study runtime"),
 )
 
 

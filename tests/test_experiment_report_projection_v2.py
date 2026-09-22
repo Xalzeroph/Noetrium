@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExecutionMode, ExperimentDefinition, ExperimentLifecycleState, ExperimentUnit,
     ExperimentUnitKind, ObservationEnvelope, ObservationKind, UnitOutcome, UnitOutcomeState,
 )
-from noetrium_platform.research.experimentation.experiment.runtime.matrix import (
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix import (
     UniversalExperimentKernel,
     project_experiment_run_report,
 )

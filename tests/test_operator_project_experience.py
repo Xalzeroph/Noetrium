@@ -7,7 +7,7 @@ import subprocess
 
 import pytest
 
-from noetrium_platform.foundation.governance.repository_boundary.runtime import (
+from noetrium_platform.foundation.governance.architecture.repository_boundary.runtime import (
     audit_downstream_project_imports,
 )
 from noetrium_platform.foundation.portfolio.api import (
@@ -22,7 +22,7 @@ from noetrium_platform.product.operator.api import (
     ProjectTestStage,
 )
 from noetrium_platform.composition.operator.wiring.research import main
-from noetrium_platform.product.operator.runtime import (
+from noetrium_platform.composition.operator.project import (
     project_doctor,
     project_scaffold,
     project_testing,

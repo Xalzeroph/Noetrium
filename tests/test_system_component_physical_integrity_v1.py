@@ -45,3 +45,18 @@ def test_registered_components_are_single_bounded_context_level() -> None:
         .read_text(encoding="utf-8")
     )
     assert all(key.count("/") == 1 for key in raw)
+
+
+def test_every_registry_node_has_a_real_package() -> None:
+    catalog = json.loads(
+        files("noetrium_platform.foundation.governance.system_registry")
+        .joinpath("catalog.json")
+        .read_text(encoding="utf-8")
+    )
+    missing = []
+    for key, row in catalog.items():
+        package = ROOT.joinpath(*row["package_prefix"].split("."))
+        module = package.with_suffix(".py")
+        if not package.is_dir() and not module.is_file():
+            missing.append((key, row["package_prefix"]))
+    assert missing == []

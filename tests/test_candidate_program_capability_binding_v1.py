@@ -12,6 +12,8 @@ from noetrium_platform.research.experimentation.workbench.api import (
 )
 from noetrium_platform.research.experimentation.workbench.runtime import (
     CandidateProgramCapabilityBinding,
+)
+from noetrium_platform.research.experimentation.workbench.api import (
     candidate_program_capability_payload,
 )
 

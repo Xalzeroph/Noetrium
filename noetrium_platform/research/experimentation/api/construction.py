@@ -3,12 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
-from noetrium_platform.research.experimentation.run.api import ExperimentRunSpec
-from noetrium_platform.research.experimentation.run.api.control import RunControlTarget
-from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.run.api.manifest import RunLaunchManifest
-from noetrium_platform.research.experimentation.study.api import StudyProtocol
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentRunSpec
+from noetrium_platform.research.experimentation.lifecycle.api import RunControlTarget
+from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
+from noetrium_platform.research.experimentation.lifecycle.api import RunLaunchManifest
+from noetrium_platform.research.experimentation.lifecycle.api import StudyProtocol
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
 _HEX = frozenset("0123456789abcdef")

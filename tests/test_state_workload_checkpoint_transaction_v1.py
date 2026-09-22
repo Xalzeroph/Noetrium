@@ -4,13 +4,13 @@ from dataclasses import dataclass
 
 import pytest
 
-from noetrium_platform.research.experimentation.checkpoint.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     WorkloadCheckpointRestoreError,
     WorkloadExecutionCut,
     WorkloadRestoreStateCertainty,
 )
-from noetrium_platform.research.experimentation.checkpoint.providers import DirectoryWorkloadCheckpointStore
-from noetrium_platform.research.experimentation.checkpoint.runtime import WorkloadCheckpointCoordinator
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers import DirectoryWorkloadCheckpointStore
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime import WorkloadCheckpointCoordinator
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 

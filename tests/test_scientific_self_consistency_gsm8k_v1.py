@@ -172,5 +172,5 @@ def test_episode_helper_executes_full_40_path_runtime_and_evidence(tmp_path) -> 
     assert episode.method_result.value["selected_answer"] == "9"
     request_files = tuple((tmp_path / "model-requests" / "requests").glob("*.json"))
     assert len(request_files) == 40
-    blob_files = tuple((tmp_path / "model-requests" / "blobs").rglob("*"))
+    blob_files = tuple((tmp_path / "model-requests" / "content").rglob("*"))
     assert any(path.is_file() for path in blob_files)

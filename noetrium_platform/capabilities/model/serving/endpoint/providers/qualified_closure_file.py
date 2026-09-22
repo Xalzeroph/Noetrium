@@ -4,10 +4,8 @@ from collections.abc import Callable
 import json
 from pathlib import Path
 
-from noetrium_platform.capabilities.model.serving.api import (
-    RuntimeCanaryEvidenceStorePort,
-    RuntimeQualificationEvidenceStorePort,
-)
+from noetrium_platform.capabilities.model.serving.api.runtime_canary_ports import RuntimeCanaryEvidenceStorePort
+from noetrium_platform.capabilities.model.serving.api.runtime_qualification_ports import RuntimeQualificationEvidenceStorePort
 
 from .qualified_binding import QualifiedModelDeploymentClosure
 from .qualified_closure_codec import QualifiedClosureCodecError, decode_qualified_closure

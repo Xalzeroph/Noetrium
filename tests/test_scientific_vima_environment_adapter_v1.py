@@ -3,9 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium_platform.capabilities.environment.api import ActionRequest
-from noetrium_platform.capabilities.environment.embodied.composition import (
-    EmbodiedEnvironmentProviderAdapter,
-)
+from noetrium_platform.capabilities.environment.embodied.composition import EmbodiedEnvironmentProviderAdapter
 from noetrium_platform.capabilities.environment.embodied.providers import (
     EmbodiedSimulatorEnvironment,
 )

@@ -101,7 +101,7 @@ def test_unknown_runtime_node_becomes_explicit_topology_signal() -> None:
 def test_failure_cluster_generates_digest_bound_proposal() -> None:
     registry = build_default_system_registry()
     controller = RegistryDrivenEvolutionController(registry, minimum_samples=3)
-    system = SystemIdentity("observability", ("logging",))
+    system = SystemIdentity("observability")
 
     for index in range(3):
         controller.observe(
@@ -134,7 +134,7 @@ def test_failure_cluster_generates_digest_bound_proposal() -> None:
 def test_proposal_rejects_stale_topology() -> None:
     registry = build_default_system_registry()
     controller = RegistryDrivenEvolutionController(registry, minimum_samples=1)
-    system = SystemIdentity("observability", ("logging",))
+    system = SystemIdentity("observability")
     controller.observe(_observation(controller, system, ObservationOutcome.FAILURE, 0.2, 1))
     signal = controller.assess().signals[0]
 
@@ -168,7 +168,7 @@ def test_sqlite_evolution_store_rehydrates_observations_and_proposals(tmp_path) 
     registry = build_default_system_registry()
     store = SQLiteEvolutionStore(tmp_path / "evolution.sqlite")
     controller = RegistryDrivenEvolutionController(registry, store=store, minimum_samples=3)
-    system = SystemIdentity("observability", ("logging",))
+    system = SystemIdentity("observability")
     for index in range(3):
         controller.observe(
             _observation(controller, system, ObservationOutcome.FAILURE, 0.2, index)
@@ -224,7 +224,7 @@ def test_sqlite_evolution_store_rejects_conflicting_immutable_records(tmp_path) 
 
     registry = build_default_system_registry()
     store = SQLiteEvolutionStore(tmp_path / "evolution.sqlite")
-    system = SystemIdentity("observability", ("logging",))
+    system = SystemIdentity("observability")
     first = _observation(
         RegistryDrivenEvolutionController(registry),
         system,
@@ -260,7 +260,7 @@ def test_sqlite_evolution_store_fails_closed_on_corrupt_payload(tmp_path) -> Non
     registry = build_default_system_registry()
     observation = _observation(
         RegistryDrivenEvolutionController(registry),
-        SystemIdentity("observability", ("logging",)),
+        SystemIdentity("observability"),
         ObservationOutcome.SUCCESS,
         0.1,
         1,
@@ -280,7 +280,7 @@ def test_sqlite_evolution_store_fails_closed_on_corrupt_payload(tmp_path) -> Non
 def test_evolution_lifecycle_requires_evidence_and_supports_rollback() -> None:
     registry = build_default_system_registry()
     controller = RegistryDrivenEvolutionController(registry, minimum_samples=3)
-    system = SystemIdentity("observability", ("logging",))
+    system = SystemIdentity("observability")
     for index in range(3):
         controller.observe(
             _observation(controller, system, ObservationOutcome.FAILURE, 0.2, index)
@@ -350,7 +350,7 @@ def test_persisted_evolution_transitions_rehydrate_contiguous_state(tmp_path) ->
     registry = build_default_system_registry()
     store = SQLiteEvolutionStore(tmp_path / "evolution.sqlite")
     controller = RegistryDrivenEvolutionController(registry, store=store, minimum_samples=1)
-    system = SystemIdentity("observability", ("logging",))
+    system = SystemIdentity("observability")
     controller.observe(_observation(controller, system, ObservationOutcome.FAILURE, 0.2, 1))
     signal = next(
         item for item in controller.assess().signals if item.kind is SignalKind.FAILURE_CLUSTER
@@ -392,7 +392,7 @@ def test_operation_bridge_records_all_outcomes_and_reraises_failures(tmp_path) -
     registry = build_default_system_registry()
     store = SQLiteEvolutionStore(tmp_path / "operation-observations.sqlite")
     controller = RegistryDrivenEvolutionController(registry, store=store)
-    system = SystemIdentity("observability", ("logging",))
+    system = SystemIdentity("observability")
 
     with controller.operation(system, "success", evidence_refs=("trace-success",)):
         pass
@@ -425,7 +425,7 @@ def test_operation_bridge_records_all_outcomes_and_reraises_failures(tmp_path) -
 def test_operation_bridge_binds_observation_to_entry_topology() -> None:
     registry = build_default_system_registry()
     controller = RegistryDrivenEvolutionController(registry)
-    system = SystemIdentity("observability", ("logging",))
+    system = SystemIdentity("observability")
     with controller.operation(system, "topology-sensitive"):
         registry.register(_synthetic_descriptor())
 
@@ -444,7 +444,7 @@ def test_parallel_operation_observations_are_isolated(tmp_path) -> None:
     registry = build_default_system_registry()
     store = SQLiteEvolutionStore(tmp_path / "parallel-observations.sqlite")
     controller = RegistryDrivenEvolutionController(registry, store=store)
-    system = SystemIdentity("observability", ("logging",))
+    system = SystemIdentity("observability")
 
     def run(index: int) -> None:
         with controller.operation(system, f"parallel-{index}"):

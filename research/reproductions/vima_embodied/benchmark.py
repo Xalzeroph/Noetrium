@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.study.api import BenchmarkTaskSet
+from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkTaskSet
 from research.benchmarks.vima_bench import (
     VIMA_BENCHMARK_ID,
     VIMA_PARTITION_TASKS,

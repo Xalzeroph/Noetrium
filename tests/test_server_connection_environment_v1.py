@@ -6,7 +6,8 @@ from unittest.mock import patch
 
 import pytest
 
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessCommandResult
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessCommandResult
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_command_runner
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from noetrium_platform.infrastructure.lifecycle.server.identity.api import (
     ServerCommandResult,
@@ -66,7 +67,7 @@ def test_server_identity_composition_records_the_host_route_binding() -> None:
         operating_system=host.operating_system,
         host_operating_system_offer=host.operating_system_offer,
         planner=meta.capability_composition,
-        task_group=task_group,
+        process_runner=build_process_command_runner(task_group),
     )
     connection = composed.connection_factory.from_environment(
         "server-a",

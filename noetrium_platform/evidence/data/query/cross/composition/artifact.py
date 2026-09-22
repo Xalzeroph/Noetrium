@@ -17,7 +17,7 @@ from noetrium_platform.evidence.data.query.api import (
     ResearchSourceDisposition,
     ResearchSourceSnapshot,
 )
-from noetrium_platform.evidence.data.query.api.identity import source_cut
+from noetrium_platform.evidence.data.query.api import source_cut
 from noetrium_platform.foundation.api import ScopeRegistryPort
 
 from noetrium_platform.evidence.data.query.cross.providers._common import matches_query, scope_dimensions

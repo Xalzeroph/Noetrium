@@ -5,7 +5,7 @@ import os
 import signal
 
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import (
+from noetrium_platform.infrastructure.lifecycle.process.api import (
     ProcessSupervisorPort,
     ProcessTerminationPolicy,
 )

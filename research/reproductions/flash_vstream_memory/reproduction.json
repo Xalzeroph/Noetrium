@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flash_vstream_memory",
-  "package_digest": "be7d29fda80d07fd0cf70ac72d873da34d075e7a9aa51eba7388b424f6390295",
+  "package_digest": "46a719ea5f631f09462deceb99f4c60604b91155dc92f18c4b0f6b2cc58c3104",
   "definition_digest": "dfa95056daad131a020784cbf7ae38cf3fb3b20cbde00cc136e2f48f447f2b19",
   "source_registry_digest": "7d6fdeedd563fb8fff5cec18bda0051a643425a48a5a9943c6d5cddb34c9f8a9",
   "lifecycle": "protocol_bound",
@@ -105,7 +105,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/flash_vstream_memory/benchmark.py",
       "declaration_digest": "cab3cebd7c4a1539af696eebbc83db225b48d34325b8f3e2c65c74adcb19a8d6",
-      "content_sha256": "193a7f5dc61a43a6b46f16fd2cfb79152661a301b4795a90f66b9eb1dd696a60"
+      "content_sha256": "31916eedaefd62dd05248dd052c94c66fb0a450a3957a892545e4c3ea109ba06"
     },
     {
       "kind": "fidelity",
@@ -123,7 +123,7 @@
       "kind": "study",
       "path": "research/reproductions/flash_vstream_memory/study.py",
       "declaration_digest": "7e49631c462841adedd1d11c3ffff5f218bb68a4eb38cfb7241ab9c6b228a21f",
-      "content_sha256": "ca668f0939da98dc07bb6e1b00025bf4a5dde957839015e6fc7e8b80bfdf8a03"
+      "content_sha256": "15715b03985184e1e045eeab77909892878d46ccc4bb189b1d97df70d186f57e"
     },
     {
       "kind": "support",

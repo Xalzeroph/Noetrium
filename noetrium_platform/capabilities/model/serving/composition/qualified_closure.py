@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.capabilities.model.serving.endpoint.api import (
+from noetrium_platform.capabilities.model.serving.api import (
     QualifiedModelClosurePublication,
     QualifiedModelClosurePublicationReceipt,
 )

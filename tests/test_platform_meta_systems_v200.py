@@ -54,5 +54,15 @@ def test_architecture_exposes_system_and_subsystem_graphs() -> None:
     systems = declared_system_graph()
     subsystems = declared_subsystem_graph()
     assert any(row.source == "model" and row.target == "resource" for row in systems)
-    assert any(row.target == "resource/compute" for row in subsystems)
-    assert any(row.target == "data/dataset" for row in subsystems)
+    assert any(
+        row.source == "execution" and row.target == "execution/operation"
+        for row in subsystems
+    )
+    assert any(
+        row.source == "governance" and row.target == "governance/system_registry"
+        for row in subsystems
+    )
+    assert any(
+        row.source == "environment" and row.target == "environment/minecraft"
+        for row in subsystems
+    )

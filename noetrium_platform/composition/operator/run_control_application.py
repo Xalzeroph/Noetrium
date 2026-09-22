@@ -100,7 +100,7 @@ def _restore_cycle(value: object) -> DecisionCycleIdentity:
 def _load_run_control_contracts() -> Any:
     try:
         return importlib.import_module(
-            "noetrium_platform.research.experimentation.run.api.control"
+            "noetrium_platform.research.experimentation.lifecycle.run.api.control"
         )
     except ImportError as exc:
         raise ValueError(

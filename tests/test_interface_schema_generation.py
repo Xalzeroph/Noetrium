@@ -43,7 +43,7 @@ def test_generated_interface_schema_exposes_protocol_methods_and_reexports() -> 
     # a genuinely public downstream surface instead of reaching into provider internals.
     module = "noetrium_platform.infrastructure.resources.compute.api.ports"
     schema = find_downstream_symbol_schema(
-        "resource/compute",
+        "resource",
         module,
         "ComputeSchedulerPort",
     )
@@ -52,7 +52,7 @@ def test_generated_interface_schema_exposes_protocol_methods_and_reexports() -> 
     assert any(method["name"] == "release" for method in schema["methods"])
 
     reexport = find_downstream_symbol_schema(
-        "resource/compute",
+        "resource",
         "noetrium_platform.infrastructure.resources.compute.api",
         "ComputeSchedulerPort",
     )

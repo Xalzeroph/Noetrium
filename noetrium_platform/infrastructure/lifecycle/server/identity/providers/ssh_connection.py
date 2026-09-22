@@ -4,7 +4,7 @@ import math
 import time
 
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessCommandRunnerPort
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessCommandRunnerPort
 from noetrium_platform.infrastructure.lifecycle.server.api import ServerOperationEffect
 
 from ..api import ServerCommandResult, ServerConnectionPort, ServerConnectionProfile, ServerTransportFailureKind

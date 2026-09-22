@@ -4,7 +4,7 @@ import time
 from collections.abc import Mapping
 from threading import RLock
 
-from noetrium_platform.capabilities.model.serving.endpoint.api import (
+from noetrium_platform.capabilities.model.serving.api import (
     JsonHttpResponse,
     ModelEndpointObserverPort,
     ModelEndpointRequest,
@@ -26,7 +26,7 @@ class RawLakeModelEndpointObserver(ModelEndpointObserverPort):
         self,
         gateway: RegistryBoundRawObservationGateway,
         *,
-        system: SystemIdentity = SystemIdentity("model", ("serving", "endpoint")),
+        system: SystemIdentity = SystemIdentity("model"),
         producer_version: str = "model-endpoint.v1",
     ) -> None:
         self._gateway = gateway

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessTerminationPolicy
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessTerminationPolicy
 from noetrium_platform.infrastructure.lifecycle.process.supervision.runtime import (
     AsyncLocalCommandRunner,
     AsyncProcessCommandRunner,

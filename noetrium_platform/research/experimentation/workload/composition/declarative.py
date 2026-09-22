@@ -31,7 +31,7 @@ from noetrium_platform.research.execution.api import (
     MethodRuntimePortInventory,
     plan_method_runtime_binding,
 )
-from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 
 from ..api import WorkloadMethodInvocation
 

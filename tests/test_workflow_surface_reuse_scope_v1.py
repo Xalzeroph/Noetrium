@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.research.execution.workflow.api import (
+    ExecutionTrialProtocolKind,
     TrialCycleExecution,
     WorkflowSurfaceBindingContext,
     WorkflowSurfaceReuseScope,
@@ -8,7 +9,7 @@ from noetrium_platform.research.execution.workflow.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.capabilities.participant.core.api import BoundParticipants
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentTrialCycleExecutor
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentTrialCycleExecutor
 
 
 class _DefaultFactory:
@@ -32,8 +33,10 @@ def test_surface_factory_can_explicitly_opt_into_run_scope() -> None:
 
 
 class _Protocol:
+    protocol_kind = ExecutionTrialProtocolKind.RUNTIME_PROGRAM
     protocol_id = "reuse-test.v1"
     surface_id = "reuse-test.surface.v1"
+    configuration_digest = "1" * 64
 
     def run(self, surface, context, *, task, input_kind, input_payload):
         del surface, task, input_kind, input_payload

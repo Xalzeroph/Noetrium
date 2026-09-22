@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from noetrium_platform.capabilities.participant.capability.api import CapabilityRequest
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, EffectClass
-from noetrium_platform.research.experimentation.run.api import RunArtifactKind
-from noetrium_platform.research.experimentation.run.composition import (
+from noetrium_platform.research.experimentation.lifecycle.api import RunArtifactKind
+from noetrium_platform.research.experimentation.lifecycle.run.composition import (
     RunArtifactPublishCapabilityBinding,
 )
-from noetrium_platform.research.experimentation.run.runtime import DirectoryRunArtifactStore
+from noetrium_platform.research.experimentation.lifecycle.run.runtime import DirectoryRunArtifactStore
 
 
 class _Actor:

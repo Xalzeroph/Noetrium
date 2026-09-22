@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
+from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
 from noetrium_platform.foundation.governance.api import ScopeIdentity
 
 

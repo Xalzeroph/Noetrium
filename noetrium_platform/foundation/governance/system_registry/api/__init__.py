@@ -8,7 +8,7 @@ from .contracts import (
     SystemRegistryChange,
 )
 from .ports import SystemRegistryObserver, SystemRegistryPort
-from .topology import SYSTEM_CATALOG, TopologySourceAudit, audit_system_topology_source, system_catalog
+from .topology import ComponentDescriptor, SYSTEM_CATALOG, TopologySourceAudit, audit_system_topology_source, component_catalog, system_catalog
 
 __all__ = [
     "AuthorityDescriptor",
@@ -27,11 +27,11 @@ __all__ = [
 ]
 
 
-from .hierarchy import LayerDescriptor, LayerHierarchy, layer_hierarchy
-__all__ += ("LayerDescriptor", "LayerHierarchy", "layer_hierarchy")
+from .hierarchy import LayerDescriptor, LayerHierarchy, SideplaneDescriptor, layer_hierarchy
+__all__ += ("LayerDescriptor", "LayerHierarchy", "SideplaneDescriptor", "layer_hierarchy")
 
 # Canonical static ABI for downstream contract generation.
-__all__ = ['AuthorityDescriptor', 'DownstreamSurfaceMode', 'SYSTEM_CATALOG', 'SystemDescriptor', 'SystemIdentity', 'SystemLayer', 'SystemNodeKind', 'SystemRegistryChange', 'SystemRegistryObserver', 'SystemRegistryPort', 'TopologySourceAudit', 'audit_system_topology_source', 'system_catalog', 'LayerDescriptor', 'LayerHierarchy', 'layer_hierarchy']
+__all__ = ['AuthorityDescriptor', 'ComponentDescriptor', 'DownstreamSurfaceMode', 'SYSTEM_CATALOG', 'SystemDescriptor', 'SystemIdentity', 'SystemLayer', 'SystemNodeKind', 'SystemRegistryChange', 'SystemRegistryObserver', 'SystemRegistryPort', 'TopologySourceAudit', 'audit_system_topology_source', 'component_catalog', 'system_catalog', 'LayerDescriptor', 'LayerHierarchy', 'SideplaneDescriptor', 'layer_hierarchy']
 
 # Canonical static ABI.
-__all__ = ['AuthorityDescriptor', 'DownstreamSurfaceMode', 'SYSTEM_CATALOG', 'SystemDescriptor', 'SystemIdentity', 'SystemLayer', 'SystemNodeKind', 'SystemRegistryChange', 'SystemRegistryObserver', 'SystemRegistryPort', 'TopologySourceAudit', 'audit_system_topology_source', 'system_catalog', 'LayerDescriptor', 'LayerHierarchy', 'layer_hierarchy']
+__all__ = ['AuthorityDescriptor', 'ComponentDescriptor', 'DownstreamSurfaceMode', 'SYSTEM_CATALOG', 'SystemDescriptor', 'SystemIdentity', 'SystemLayer', 'SystemNodeKind', 'SystemRegistryChange', 'SystemRegistryObserver', 'SystemRegistryPort', 'TopologySourceAudit', 'audit_system_topology_source', 'component_catalog', 'system_catalog', 'LayerDescriptor', 'LayerHierarchy', 'SideplaneDescriptor', 'layer_hierarchy']

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
+from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
 from noetrium_platform.foundation.kernel.kernel import strict_finite_json_digest as canonical_digest
 
 

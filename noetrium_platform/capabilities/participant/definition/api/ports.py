@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantImplementationIdentity
+from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity
 from .contracts import ParticipantImplementationFactory, RegisteredParticipantImplementation
 
 

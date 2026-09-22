@@ -29,7 +29,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     GpuSharingMode,
 )
 from noetrium_platform.infrastructure.resources.lease.api import ResourceOwnership
-from noetrium_platform.infrastructure.resources.resolution import (
+from noetrium_platform.infrastructure.resources.resolution.api import (
     HierarchicalResourceResolver,
     ResolutionPolicy,
     ScopedValue,

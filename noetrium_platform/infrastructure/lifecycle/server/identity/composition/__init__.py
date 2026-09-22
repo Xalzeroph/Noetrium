@@ -20,8 +20,7 @@ from noetrium_platform.foundation.api import (
     CapabilityCompositionPlannerPort,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
-from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_command_runner
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessCommandRunnerPort
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
 from noetrium_platform.infrastructure.lifecycle.server.identity.api import (
     ServerConnectionFactoryPort,
@@ -35,7 +34,7 @@ from noetrium_platform.infrastructure.lifecycle.server.identity.providers import
 )
 
 
-_SERVER_IDENTITY_SYSTEM = SystemIdentity("runtime", ("server", "identity"))
+_SERVER_IDENTITY_SYSTEM = SystemIdentity("runtime")
 _SERVER_IDENTITY_SUBJECT = CompositionSubject.system_subject(_SERVER_IDENTITY_SYSTEM)
 
 
@@ -55,7 +54,7 @@ def compose_environment_server_identity(
     operating_system: OperatingSystemRoute,
     host_operating_system_offer: CapabilityOffer,
     planner: CapabilityCompositionPlannerPort,
-    task_group: TaskGroupPort,
+    process_runner: ProcessCommandRunnerPort,
     scope: ScopeIdentity = PLATFORM_SCOPE,
     parent_plan_digest: str | None = None,
 ) -> ServerIdentityComposition:
@@ -106,7 +105,6 @@ def compose_environment_server_identity(
         ),
         imported_offers=(host_operating_system_offer,),
     )
-    process_runner = build_process_command_runner(task_group)
     factory = EnvironmentSSHServerConnectionFactory(
         operating_system,
         process_runner=process_runner,

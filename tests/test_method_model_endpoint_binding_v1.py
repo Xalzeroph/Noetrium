@@ -1,5 +1,5 @@
-from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 
 from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
@@ -137,8 +137,8 @@ def test_endpoint_agent_closes_machine_journal_and_method_evidence(tmp_path) -> 
         MethodEvidenceStatus,
         MethodRuntimeContext,
     )
-    from noetrium_platform.research.execution.workflow.composition import (
-        bind_machine_method_runtime,
+    from noetrium_platform.composition.method_runtime import (
+        bind_standard_method_runtime,
     )
     from noetrium_platform.research.execution.workflow.providers import (
         DirectoryEventMethodEvidence,

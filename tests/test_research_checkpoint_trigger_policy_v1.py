@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.research.experimentation.checkpoint.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     CheckpointCapturePolicy,
     CheckpointTrigger,
 )

@@ -10,8 +10,8 @@ from noetrium_platform.research.experimentation.api import (
     compile_experiment_program,
     compile_experiment_shard_plan,
 )
-from noetrium_platform.research.experimentation.study.api import (
-    ExperimentPlan,
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    StudyExecutionPlan,
     StudyAssignment,
     StudyConcurrencyPolicy,
     StudyProtocol,
@@ -31,7 +31,7 @@ def _variant(variant_id: str, kind: VariantKind) -> StudyVariantSpec:
     )
 
 
-def _plan() -> ExperimentPlan:
+def _plan() -> StudyExecutionPlan:
     variants = (
         _variant("control", VariantKind.CONTROL),
         _variant("treatment", VariantKind.TREATMENT),
@@ -78,7 +78,7 @@ def _plan() -> ExperimentPlan:
         for repetition in range(3)
         for variant in variants
     )
-    return ExperimentPlan.compile(protocol, bindings, assignments)
+    return StudyExecutionPlan.compile(protocol, bindings, assignments)
 
 
 def _compiled() -> CompiledExperimentProgram:

@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 import math
 
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTaskSpec,
     ExperimentWorkloadFailure,
     FailureScope,

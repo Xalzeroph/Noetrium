@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.study.api import BenchmarkTaskSet
+from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkTaskSet
 from research.benchmarks.steve1_paper_prompts import (
     STEVE1_ALL_SPLIT,
     STEVE1_PAPER_PROMPTS_BENCHMARK_ID,

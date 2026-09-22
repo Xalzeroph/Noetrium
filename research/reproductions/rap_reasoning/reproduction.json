@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rap_reasoning",
-  "package_digest": "65250babbb1817e91d4937286fb5a71a7e896179c48d8589bbc863e7aba14e64",
+  "package_digest": "68ac83534097830b9c0568249cad10f2a3d4815611db823ba7e171ab0d1c351b",
   "definition_digest": "f58198941a817385b78c646778221978096ca460b26bb477ac3e69ef0f157ed1",
   "source_registry_digest": "ced15295ec849f883db78704fb7a1e4351e59bd9ff1229c652b243f23abfdff2",
   "lifecycle": "protocol_bound",
@@ -83,7 +83,7 @@
       "kind": "study",
       "path": "research/reproductions/rap_reasoning/study.py",
       "declaration_digest": "d969ffcb041c8fd22dd72b0f9e6a5e0a0979f20b350bf3167bf058a346656136",
-      "content_sha256": "101cf0158647c72057aa057af0c6b31104e256fbea6a2084016c3458a2fa7b2c"
+      "content_sha256": "e4c760f49f7bccdd5baaa3761de451591b75b0d6d26c094782d9461b6d3ea8ef"
     },
     {
       "kind": "support",

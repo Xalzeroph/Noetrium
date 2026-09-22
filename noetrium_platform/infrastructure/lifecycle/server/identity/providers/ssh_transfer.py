@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import durable_replace_file
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessCommandRunnerPort
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessCommandRunnerPort
 
 from ..api import ServerConnectionProfile, ServerFileTransferPort, ServerFileTransferResult, ServerTransportFailureKind
 from .ssh_policy import OpenSSHArgumentPolicy

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "orbit_acl2026",
-  "package_digest": "d57da0a598bd5bc274e26e768c3042331492e16e5e03c3055ee06a47fc96f52c",
+  "package_digest": "b8773a8624ae3231324b4323added4e205f3bbad3228245c006c00bfa6902072",
   "definition_digest": "15720e37389bbc73d08c4dded95a5d1c1782311dfec02f99c94ea2b8aaee84b8",
   "source_registry_digest": "f4d993f22dde65b3c172032c7553b1c4cd9fa0d2095143a46cca690494315612",
   "lifecycle": "protocol_bound",
@@ -99,7 +99,7 @@
       "kind": "study",
       "path": "research/reproductions/orbit_acl2026/study.py",
       "declaration_digest": "3fb0074e72a6ab1772be78865ff4c5db2f103e11246e8bd150b23d66c6cff284",
-      "content_sha256": "b454a669f0999e54087f53810c0fe0f1a02a9d5f9062ff9afc63dcb63960aa4c"
+      "content_sha256": "39a5dde37524f0a90f9510ed66f04ac2f9389300852eb0b2c5488931e2914f2b"
     }
   ],
   "primary_executable": "research/reproductions/orbit_acl2026/program.py",

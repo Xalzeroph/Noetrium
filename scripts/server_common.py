@@ -20,7 +20,7 @@ from noetrium_platform.infrastructure.lifecycle.server.identity.api import Serve
 from noetrium_platform.infrastructure.lifecycle.server.identity.providers import (
     build_server_profile_catalog,
 )
-from noetrium_platform.infrastructure.lifecycle.server.lifecycle.composition import compose_ssh_server_session_control
+from noetrium_platform.infrastructure.lifecycle.session.providers import SSHRemoteTmuxSessionControl
 from noetrium_platform.infrastructure.lifecycle.session.api import PersistentSessionSpec
 from noetrium_platform.infrastructure.lifecycle.session.api import PersistentSessionControlPort
 from noetrium_platform.infrastructure.lifecycle.session.runtime import (
@@ -133,9 +133,16 @@ def compose_server_operator_session(
 
     profile = server.remote_profile
     selected_name = session_name or profile.session_name
-    control = compose_ssh_server_session_control(
-        connection=server.connection,
-        profile=profile,
+    control = SSHRemoteTmuxSessionControl(
+        server.connection,
+        tmux_executable=profile.tmux_executable,
+        binary_identity_digest=profile.tmux_binary_sha256,
+        server_label=profile.tmux_server_label,
+        config_file=profile.tmux_config_file,
+        socket_directory=profile.tmux_socket_directory,
+        remote_env_executable=profile.remote_env_executable,
+        sha256sum_executable=profile.sha256sum_executable,
+        session_environment=profile.session_environment,
         interactive=interactive,
     )
     profile.local_binding_root.mkdir(parents=True, exist_ok=True)

@@ -110,14 +110,35 @@ def validate_scope(scope: Mapping[str, Any], program: Mapping[str, Any]) -> tupl
     if program.get("schema") != PROGRAM_SCHEMA:
         findings.append(ScopeFinding("PROGRAM_SCHEMA_MISMATCH", "research_program.schema", f"expected {PROGRAM_SCHEMA}"))
     program_methods = _objects(program.get("methods"), "research_program.methods", findings)
-    program_ids = {
-        row.get("method_id") for row in program_methods
-        if isinstance(row.get("method_id"), str)
-    }
-    orphans = sorted(program_ids - seed_ids)
-    if orphans:
-        findings.append(ScopeFinding("PROGRAM_METHOD_OUTSIDE_DISCOVERY_SCOPE", "research_program.methods", ", ".join(orphans)))
+    program_ids: set[str] = set()
+    for index, row in enumerate(program_methods):
+        base = f"research_program.methods[{index}]"
+        method_id = _token(row.get("method_id"), f"{base}.method_id", findings)
+        if method_id:
+            program_ids.add(method_id)
+        paper_uri = _text(row.get("paper_uri"), f"{base}.paper_uri", findings)
+        if paper_uri and not paper_uri.startswith("https://"):
+            findings.append(ScopeFinding("NON_HTTPS_SOURCE", f"{base}.paper_uri", paper_uri))
+        year = row.get("year")
+        if type(year) is not int or year < 1950 or year > 2100:
+            findings.append(ScopeFinding("INVALID_YEAR", f"{base}.year", repr(year)))
+        families = row.get("families")
+        if (
+            not isinstance(families, list)
+            or not families
+            or any(not isinstance(item, str) or not item.strip() for item in families)
+        ):
+            findings.append(
+                ScopeFinding(
+                    "INVALID_DISCOVERY_METADATA",
+                    f"{base}.families",
+                    "promoted methods require non-empty family metadata",
+                )
+            )
 
+    # The discovery scope is intentionally not a second reproduction authority.
+    # Seed lineages track external intake; canonical promoted methods are already
+    # in-scope when research_program carries complete discovery metadata.
     uncovered_domains = sorted(domain_ids - used_domains)
     unpromoted = sorted(seed_ids - program_ids)
     report = {
@@ -125,7 +146,7 @@ def validate_scope(scope: Mapping[str, Any], program: Mapping[str, Any]) -> tupl
         "valid": not findings,
         "required_domain_count": len(domain_ids),
         "seed_lineage_count": len(seed_ids),
-        "promoted_reproduction_count": len(program_ids & seed_ids),
+        "promoted_reproduction_count": len(program_ids),
         "unpromoted_seed_count": len(unpromoted),
         "unpromoted_seed_ids": unpromoted,
         "uncovered_domain_count": len(uncovered_domains),

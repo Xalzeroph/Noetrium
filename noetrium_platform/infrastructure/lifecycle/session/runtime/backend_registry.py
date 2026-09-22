@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
-from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_command_runner
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessCommandRunnerPort
 
 from noetrium_platform.infrastructure.lifecycle.session.api import (
     PersistentSessionBackendConfig,
@@ -51,7 +50,7 @@ class PersistentSessionBackendRegistry:
 def _tmux_factory(
     config: PersistentSessionBackendConfig,
     *,
-    task_group: TaskGroupPort,
+    process_runner: ProcessCommandRunnerPort,
 ) -> PersistentSessionControlPort:
     options = config.as_dict()
     allowed = {
@@ -71,15 +70,15 @@ def _tmux_factory(
         socket_directory=options.get("tmpdir", "/tmp"),
         binary_identity_digest=options.get("binary_identity_digest"),
         command_timeout_s=timeout,
-        process_runner=build_process_command_runner(task_group),
+        process_runner=process_runner,
     )
 
 
 def default_persistent_session_backend_registry(
-    task_group: TaskGroupPort,
+    process_runner: ProcessCommandRunnerPort,
 ) -> PersistentSessionBackendRegistry:
     return PersistentSessionBackendRegistry(
-        {"tmux": lambda config: _tmux_factory(config, task_group=task_group)}
+        {"tmux": lambda config: _tmux_factory(config, process_runner=process_runner)}
     )
 
 

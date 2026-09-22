@@ -19,11 +19,11 @@ from noetrium_platform.research.execution.workflow.runtime.program_trial import 
     RuntimeProgramTrialProtocol,
     TrialProgramOperation,
 )
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentSpec,
     ExperimentTrialProtocolIdentityMismatch,
 )
-from noetrium_platform.research.experimentation.experiment.runtime import (
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
     trial_protocol_identity,
     verify_trial_protocol_identity,
 )
@@ -113,5 +113,5 @@ def test_arbitrary_python_trial_runner_is_rejected() -> None:
             del args, kwargs
             return object()
 
-    with pytest.raises(TypeError, match="RuntimeProgramTrialProtocol"):
+    with pytest.raises(TypeError, match="ExecutionTrialProtocolPort"):
         trial_protocol_identity(LegacyRunner())  # type: ignore[arg-type]

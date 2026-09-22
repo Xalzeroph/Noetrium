@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.model.serving.api import ModelAdmissionRegistryPort
+from noetrium_platform.capabilities.model.serving.api.admission import ModelAdmissionRegistryPort
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     OperationalModelEndpointReplicaSet,
     QualifiedModelEndpointReplicaSet,

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.research.execution.machines.session import ResearchMachineSession
+
 from noetrium_platform.foundation.kernel.kernel import (
     InMemoryMachineJournal,
     MachineExecutor,

@@ -3,6 +3,8 @@ from __future__ import annotations
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from enum import StrEnum
+
+from ..identity.api.contracts import ServerOperationEffect
 from typing import Protocol
 
 
@@ -19,13 +21,6 @@ class ServerOperationState(StrEnum):
     FAILED = "failed"
     TIMED_OUT = "timed_out"
 
-
-class ServerOperationEffect(StrEnum):
-    """What the caller knows about an operation's possible side effect."""
-
-    OBSERVATION = "observation"
-    MUTATION = "mutation"
-    UNKNOWN = "unknown"
 
 
 class ServerOperationResolution(StrEnum):

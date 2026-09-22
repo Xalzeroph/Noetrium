@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentless_swebench",
-  "package_digest": "8968e14831654cbc95c1280e161acd76af3d1af1d55ec70e7b905bcf8f843168",
+  "package_digest": "4dd73f929827fdef842d7d73c8a4eeca827e1f6dc23c531be49e15c059e41344",
   "definition_digest": "a54a5de13a8faddd6f3a763667237cb3a13907a9664b7beacdc0f759568b0fc4",
   "source_registry_digest": "6c3f3a35e76b0138dfbc16be29a802509c86aa537b696a15da6f10d9b8a8dedf",
   "lifecycle": "protocol_bound",
@@ -102,7 +102,7 @@
       "kind": "study",
       "path": "research/reproductions/agentless_swebench/study.py",
       "declaration_digest": "7a13492a0a96db23163b6a3816773ae352ec79bfcb180a0ec880214e6ca9c479",
-      "content_sha256": "dd7d68da22228fec69e44b761a77595279a07fd86a89ca854a544cb778fde8f4"
+      "content_sha256": "68c90e14046fd5da9735a000d8bd6381039cae4051a370af78246a069aa74a2c"
     }
   ],
   "primary_executable": "research/reproductions/agentless_swebench/program.py",

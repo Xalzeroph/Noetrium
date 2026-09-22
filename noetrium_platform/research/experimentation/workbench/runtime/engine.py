@@ -799,7 +799,7 @@ class ResearchLifecycle:
 
         if type(records) is not tuple or not records:
             raise ValueError("measurement records must be a non-empty tuple")
-        from ...study.api import MeasurementRecord
+        from noetrium_platform.research.experimentation.lifecycle.api import MeasurementRecord
 
         if any(type(record) is not MeasurementRecord for record in records):
             raise TypeError("measurement records must contain MeasurementRecord")

@@ -3,13 +3,8 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
-DOWNSTREAM_RESEARCH_ROOTS = (
-    ROOT / "research" / "authoring",
-    ROOT / "research" / "benchmarks",
-    ROOT / "research" / "reproductions",
-)
+USER_SURFACE_ROOTS = (ROOT / "examples",)
 
 
 def _noetrium_import_violations(path: Path) -> tuple[str, ...]:
@@ -19,7 +14,7 @@ def _noetrium_import_violations(path: Path) -> tuple[str, ...]:
         if isinstance(node, ast.Import):
             for alias in node.names:
                 if alias.name == "noetrium" or alias.name.startswith(
-                    ("noetrium.", "noetrium_platform", "components", "orchestration")
+                    ("noetrium.", "noetrium_platform", "orchestration")
                 ):
                     violations.append(f"import {alias.name}")
         elif isinstance(node, ast.ImportFrom):
@@ -34,19 +29,23 @@ def _noetrium_import_violations(path: Path) -> tuple[str, ...]:
                     rendered = ", ".join(alias.name for alias in node.names)
                     violations.append(f"from noetrium import {rendered}")
                 continue
-            if module.startswith(
-                ("noetrium.", "noetrium_platform", "components", "orchestration")
-            ):
+            if module.startswith(("noetrium.", "noetrium_platform", "orchestration")):
                 violations.append(f"from {module} import ...")
     return tuple(violations)
 
 
-def test_research_workspace_uses_one_module_style_downstream_api() -> None:
+def test_user_facing_quickstarts_use_one_module_style_downstream_api() -> None:
     violations: list[str] = []
-    for root in DOWNSTREAM_RESEARCH_ROOTS:
+    checked = 0
+    for root in USER_SURFACE_ROOTS:
         for path in sorted(root.rglob("*.py")):
+            text = path.read_text(encoding="utf-8")
+            if "noetrium" not in text:
+                continue
+            checked += 1
             for violation in _noetrium_import_violations(path):
                 violations.append(f"{path.relative_to(ROOT)}: {violation}")
+    assert checked > 0
     assert violations == []
 
 

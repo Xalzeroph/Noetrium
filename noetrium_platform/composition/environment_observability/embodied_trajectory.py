@@ -20,7 +20,7 @@ class RegistryBoundEmbodiedTrajectorySink:
     """Lossless embodied trajectory adapter backed by the platform raw lake."""
 
     FAMILY = "embodied.trajectory.raw"
-    SYSTEM = SystemIdentity("environment", ("embodied",))
+    SYSTEM = SystemIdentity("environment")
 
     def __init__(
         self,

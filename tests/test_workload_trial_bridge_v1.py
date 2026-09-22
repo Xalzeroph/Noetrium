@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTaskSpec,
     ExperimentTrialProtocolIdentity,
 )
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     MeasurementDefinition,
     MeasurementProtocol,
     MeasurementValueKind,
@@ -24,7 +24,7 @@ from noetrium_platform.research.experimentation.workload.api import (
     WorkloadMethodReceipt,
     WorkloadTaskResult,
 )
-from noetrium_platform.research.experimentation.run.runtime.trial import (
+from noetrium_platform.research.experimentation.lifecycle.run.runtime.trial import (
     StandardWorkloadMeasurementProjection,
     WorkloadTrialProvider,
 )

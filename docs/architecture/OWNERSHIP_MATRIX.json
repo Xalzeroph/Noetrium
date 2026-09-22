@@ -1,5 +1,5 @@
 {
-  "matrix_digest": "a230d6b4871502c638ce10afa646e6bd690b4e951b6143e1380ed75293ecd8d7",
+  "matrix_digest": "aaff4830474ff100a12a84c6fb17d461ce299633ac1d326e43c90e8f1f076f29",
   "rows": [
     {
       "audit_required": [],
@@ -13,14 +13,13 @@
         "artifact.registry"
       ],
       "public_abi": [
-        "api",
-        "runtime"
+        "api"
       ],
       "requires": [
         "platform",
         "scope"
       ],
-      "row_digest": "c87938f13a8fa34a5ec543bd7f15162ca05180735151bfafbf810c396ebf2698",
+      "row_digest": "1e4fe7c8413b2c8532e381babc14c59b432374426ee2b5638d6576c122585a76",
       "state_authority": "artifact_identity",
       "system_id": "artifact"
     },
@@ -108,7 +107,6 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
         "providers",
         "composition"
       ],
@@ -120,7 +118,7 @@
         "runtime",
         "scope"
       ],
-      "row_digest": "d7ebd94d61cc6effa38925aee954035b0f38c10d3d57e04b6ae8370c3db3917a",
+      "row_digest": "f436d402bacb94d2c1dbf4b1b9b6a150467994dc1b41be6496523f80798d1f24",
       "state_authority": "environment_state",
       "system_id": "environment"
     },
@@ -294,11 +292,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [],
-      "row_digest": "a60f078addbce8581fa8bffb1913dc2fcc9af8532be6e8ee9a483ff31195ef7b",
+      "row_digest": "4d1b9fa92490a0dd04fa674c740ffb6a4525a239501ab72b6fd94b320d9dbfe4",
       "state_authority": "operation_state",
       "system_id": "execution/operation"
     },
@@ -465,12 +462,10 @@
         "api"
       ],
       "requires": [
-        "data",
         "governance",
-        "platform",
-        "scope"
+        "platform"
       ],
-      "row_digest": "7d90b484a2dc87fedf32ab370ac6e268e1ae27e3d05cf90fbebb45e95ba0f732",
+      "row_digest": "f9072d9737d732bcd73dd61422fd3b2d9460a8ca72f32502e187491ff79f3b06",
       "state_authority": "none",
       "system_id": "observability"
     },
@@ -492,26 +487,6 @@
       "row_digest": "05b794ddeb5dc7fac88872a0f6b0027c28f55917a04d928bf90c6c7315464d08",
       "state_authority": "none",
       "system_id": "observability/logging/storage"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "provider",
-      "parent": "observability",
-      "plane": "evidence",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "8d6a464f3beadae6272f41b1a1ce9dfc3b03fe1bbf6ce624582e9ab53f74ca44",
-      "state_authority": "none",
-      "system_id": "observability/tracing/storage"
     },
     {
       "audit_required": [],
@@ -587,11 +562,10 @@
       "plane": "foundation",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime"
+        "api"
       ],
       "requires": [],
-      "row_digest": "2277f98307975fd1d7cd5df084cc6c37297c59d6d666f8ba48e250c07f55911c",
+      "row_digest": "42ed0d714c242a3265ea3f4cd9a710f936b18f9387a6879524c1e0eef5e7722e",
       "state_authority": "platform_identity",
       "system_id": "platform"
     },
@@ -796,5 +770,5 @@
     }
   ],
   "schema": "noetrium.ownership-matrix.v2",
-  "source_digest": "32417b6ec809150c7246db43d3b822ab999ac9ac7d0a3dfda83b9414126f3bb7"
+  "source_digest": "e8b5c76efc480dab2647c61ff1a5c4653fa51d1b293e71c966e793578a299846"
 }

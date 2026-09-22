@@ -20,7 +20,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodProgram,
     MethodProgramBuilder,
 )
-from noetrium_platform.research.experimentation.workbench.runtime import (
+from noetrium_platform.research.experimentation.workbench.api import (
     candidate_program_capability_payload,
 )
 

@@ -10,7 +10,7 @@ from noetrium.api import (
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.compute.api import ComputeGPU, ComputeHost, ComputeLeasePolicy, GpuSharingMode
 from noetrium_platform.infrastructure.resources.compute.runtime import InMemoryComputeInventory
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExecutionMode,
     ExperimentDefinition,
     ExperimentUnitKind,

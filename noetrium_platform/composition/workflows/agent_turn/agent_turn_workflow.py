@@ -14,6 +14,7 @@ from noetrium_platform.research.execution.workflow.runtime.program_trial import 
     RuntimeProgramTrialProtocol,
     TrialProgramFrame,
     TrialProgramOperation,
+    runtime_program_trial_configuration_digest,
 )
 from .contracts import AgentTurnOperationPort
 
@@ -69,18 +70,24 @@ def _execute_agent_turn(request, surface: object, frame: TrialProgramFrame) -> P
     )
 
 
-AGENT_TURN_TRIAL_CONFIGURATION_DIGEST = canonical_digest({
-    "program_digest": AGENT_TURN_TRIAL_PROGRAM.program_digest,
-    "surface_id": "agent_turn.operations.v1",
-    "max_steps": 8,
-    "operation_implementations": ((
+_AGENT_TURN_OPERATIONS = (
+    TrialProgramOperation(
         "workflow.agent-turn.execute",
+        _execute_agent_turn,
         canonical_digest({
             "operation": "workflow.agent-turn.execute",
             "implementation_revision": 1,
         }),
-    ),),
-})
+    ),
+)
+
+AGENT_TURN_TRIAL_CONFIGURATION_DIGEST = runtime_program_trial_configuration_digest(
+    program=AGENT_TURN_TRIAL_PROGRAM,
+    surface_id="agent_turn.operations.v1",
+    max_steps=8,
+    operations=_AGENT_TURN_OPERATIONS,
+)
+
 
 
 def agent_turn_trial_protocol(
@@ -92,16 +99,7 @@ def agent_turn_trial_protocol(
         protocol_id="agent_turn.v2",
         surface_id="agent_turn.operations.v1",
         program=AGENT_TURN_TRIAL_PROGRAM,
-        operations=(
-            TrialProgramOperation(
-                "workflow.agent-turn.execute",
-                _execute_agent_turn,
-                canonical_digest({
-                    "operation": "workflow.agent-turn.execute",
-                    "implementation_revision": 1,
-                }),
-            ),
-        ),
+        operations=_AGENT_TURN_OPERATIONS,
         max_steps=8,
         journal=journal,
         snapshot_store=snapshot_store,

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "saycan",
-  "package_digest": "1736823b19eaf4870635fb4a0554682ff371ff16f6b3ba0c08fd2613ff26fb03",
+  "package_digest": "43870f09de828d69374dc048ec7569554ba893911f7595995a5a68507962d3fd",
   "definition_digest": "b100e320de333ae8abff3f334ee038f4f54a3ac480d07b55fdf1266ad687f4c9",
   "source_registry_digest": "358acfb9456c29c701634acb64fbce6b2a866522c9060ca11b081e7effdeec4f",
   "lifecycle": "protocol_bound",
@@ -87,7 +87,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/saycan/benchmark.py",
       "declaration_digest": "385c5092478b610a77618df585e02ed719bdca0a077529157f6c2c5a859bda1c",
-      "content_sha256": "7e2131add608c01a4bc545bbfaa9673a8432fd6a378e2b702e50f46466ba8861"
+      "content_sha256": "0186bdc3628d346792dfe2b0841950d7fe5ea889f0dcd4b081329b63f6038c89"
     },
     {
       "kind": "fidelity",
@@ -99,13 +99,13 @@
       "kind": "method_program",
       "path": "research/reproductions/saycan/program.py",
       "declaration_digest": "75cb4168637e3a919fad3fa969dc86059ce79ad434c28f54fd799d231133a6f5",
-      "content_sha256": "8d4a50934bc75eec1d3f0a018995352bef2755d8b3fd4bd5c848d499a77f8d2f"
+      "content_sha256": "26c5df7d356384b2271a498851308f0104314e44630e9a8040ac60f151c6d0c1"
     },
     {
       "kind": "study",
       "path": "research/reproductions/saycan/study.py",
       "declaration_digest": "3934d34d5344a73aa383b1387dacc256fc0ebc9c2c5db1371170f028f7af0e3f",
-      "content_sha256": "006b2d626dd91eccabcf79249016f96f3bf0a419bae29e809c2b1255b8b23f45"
+      "content_sha256": "e78894d8bb701717ab401e19ae904654f4a93788e103859dab618018e8101437"
     },
     {
       "kind": "support",

@@ -22,7 +22,7 @@ from ..api import OperatingSystemRoute
 from ..providers import LocalOperatingSystemRoute
 
 
-_HOST_SYSTEM = SystemIdentity("runtime", ("host",))
+_HOST_SYSTEM = SystemIdentity("runtime")
 _HOST_SUBJECT = CompositionSubject.system_subject(_HOST_SYSTEM)
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from noetrium_platform.infrastructure.lifecycle.service.api import MaterializedServiceEnvironment, ServiceLaunchContract
 from noetrium_platform.foundation.kernel.concurrency.api import TaskFailurePolicy
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
 from service_os_test_support import make_service_supervisor
 
 from dataclasses import replace
@@ -59,7 +60,7 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                 {"RP_SENTINEL":"frozen-value"}, "env:evidence"
             )
             c=contract(root,environment)
-            backend=LinuxProcessBackend(self._task_group)
+            backend=LinuxProcessBackend(build_process_supervisor(self._task_group))
             adapter=LocalServiceProcessAdapter(
                 StaticServiceEnvironmentProvider((environment,)),
                 DirectoryCapturePathProvider(root/"captures"),
@@ -95,7 +96,7 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                 def resolve(self,digest): return wrong
 
             adapter=LocalServiceProcessAdapter(
-                LyingProvider(),DirectoryCapturePathProvider(root/"captures"),LinuxProcessBackend(self._task_group),ProcessAliveReadinessProbe(self._task_group)
+                LyingProvider(),DirectoryCapturePathProvider(root/"captures"),LinuxProcessBackend(build_process_supervisor(self._task_group)),ProcessAliveReadinessProbe(self._task_group)
             )
             with self.assertRaises(ServiceProcessDrift):
                 adapter.start(contract(root,good))
@@ -106,7 +107,7 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
             root=Path(td)
             environment=MaterializedServiceEnvironment.from_mapping({"A":"1"},"env")
             c=contract(root,environment)
-            backend=LinuxProcessBackend(self._task_group)
+            backend=LinuxProcessBackend(build_process_supervisor(self._task_group))
             adapter=LocalServiceProcessAdapter(
                 StaticServiceEnvironmentProvider((environment,)),DirectoryCapturePathProvider(root/"captures"),backend,ProcessAliveReadinessProbe(self._task_group)
             )

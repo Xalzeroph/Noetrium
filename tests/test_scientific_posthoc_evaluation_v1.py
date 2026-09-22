@@ -4,11 +4,11 @@ from dataclasses import replace
 
 import pytest
 
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentModelRoleSpec,
 )
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     MeasurementCut,
     MeasurementDefinition,
     MeasurementProtocol,

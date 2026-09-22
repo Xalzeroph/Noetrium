@@ -5,15 +5,15 @@ from tests_support import participant, model_role_for_test
 from dataclasses import replace
 
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity
-from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
-from noetrium_platform.research.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
+from noetrium_platform.capabilities.participant.core.api import ParticipantCheckpoint
+from noetrium_platform.capabilities.participant.core.api import ParticipantRuntimeHandle
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
-from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantTopology
-from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
-from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantTopology
+from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolKind, TrialCycleExecution
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantSpec, ExperimentSpec
 
 
 class SidecarPlugin:
@@ -75,6 +75,7 @@ class SidecarAdapter:
 
 
 class NoOpTrialProtocol:
+    protocol_kind = ExecutionTrialProtocolKind.RUNTIME_PROGRAM
     protocol_id = "no_op.v1"
     surface_id = "empty.operations.v1"
     configuration_digest = "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"

@@ -68,7 +68,7 @@ from noetrium_platform.foundation.governance.architecture.api import (
     interface_contract_digest,
     require_production_qualification,
 )
-from noetrium_platform.foundation.governance.architecture.api.capabilities import (
+from noetrium_platform.foundation.governance.architecture.api import (
     EXCEPTION_DESCRIPTOR_V1,
     HOST_OPERATING_SYSTEM_ROUTE_V1,
     LOGGING_SYSTEM_V1,
@@ -80,10 +80,12 @@ from noetrium_platform.foundation.governance.architecture.api.capabilities impor
 )
 from noetrium_platform.foundation.governance.release.api import ReleasePinStorePort
 from noetrium_platform.foundation.governance.system_registry.api import (
+    ComponentDescriptor,
     SystemDescriptor,
     SystemIdentity,
     SystemRegistryChange,
     SystemRegistryPort,
+    component_catalog,
     system_catalog,
 )
 
@@ -100,6 +102,7 @@ _GOVERNANCE_EXPORTS = (
     "CapabilityCompositionPlannerPort",
     "CapabilityOffer",
     "CapabilityRequirement",
+    "ComponentDescriptor",
     "CompositionContract",
     "CompositionIdentity",
     "CompositionSubject",
@@ -130,6 +133,7 @@ _GOVERNANCE_EXPORTS = (
     "SystemIdentity",
     "SystemRegistryChange",
     "SystemRegistryPort",
+    "component_catalog",
     "governance_baseline_semantic_digest",
     "interface_contract_digest",
     "repository_source_scope_digest",
@@ -196,4 +200,6 @@ __all__ = [
     'repository_source_scope_text_digest',
     'require_production_qualification',
     'system_catalog',
+    'ComponentDescriptor',
+    'component_catalog',
 ]

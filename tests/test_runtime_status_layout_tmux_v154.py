@@ -7,6 +7,7 @@ import unittest
 
 from noetrium_platform.composition.runtime_status_config import load_runtime_status_layout
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_command_runner
 from noetrium_platform.infrastructure.lifecycle.session.runtime import default_persistent_session_backend_registry
 
 
@@ -49,7 +50,7 @@ class RuntimeStatusPersistentSessionLayoutTests(unittest.TestCase):
             concurrency_runtime = build_concurrency_runtime()
             task_group = concurrency_runtime.open_task_group("test-runtime-status-layout")
             try:
-                probe = default_persistent_session_backend_registry(task_group).build_status_probe(layout.server_session)
+                probe = default_persistent_session_backend_registry(build_process_command_runner(task_group)).build_status_probe(layout.server_session)
                 self.assertEqual(probe.control.server_label, "rp")
                 self.assertEqual(probe.control.socket_directory, "/tmp/rp")
             finally:

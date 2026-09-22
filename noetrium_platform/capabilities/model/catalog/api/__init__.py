@@ -1,1 +1,47 @@
-"""model.catalog api boundary."""
+"""Stable model catalog contracts."""
+
+from ..revision.api import (
+    ModelPromotionDecision,
+    ModelPromotionDisposition,
+    ModelPromotionReceipt,
+    ModelRevisionAuthorityPort,
+    ModelRevisionAuthoritySnapshot,
+    ModelRevisionCommit,
+    ModelRevisionConflictError,
+    ModelRevisionEvidence,
+    ModelRevisionEvidenceKind,
+    ModelRevisionIdentity,
+    ModelRevisionIntegrityError,
+    ModelRevisionStateError,
+    ModelRollbackReceipt,
+    ModelUpdateBuildEvidence,
+    ModelUpdateBuildReceipt,
+    ModelUpdatePlan,
+    ModelUpdateProducerPort,
+    ModelUpdateProposal,
+    ModelUpdateSource,
+    PreparedModelRevision,
+)
+
+__all__ = [
+    "ModelPromotionDecision",
+    "ModelPromotionDisposition",
+    "ModelPromotionReceipt",
+    "ModelRevisionAuthorityPort",
+    "ModelRevisionAuthoritySnapshot",
+    "ModelRevisionCommit",
+    "ModelRevisionConflictError",
+    "ModelRevisionEvidence",
+    "ModelRevisionEvidenceKind",
+    "ModelRevisionIdentity",
+    "ModelRevisionIntegrityError",
+    "ModelRevisionStateError",
+    "ModelRollbackReceipt",
+    "ModelUpdateBuildEvidence",
+    "ModelUpdateBuildReceipt",
+    "ModelUpdatePlan",
+    "ModelUpdateProducerPort",
+    "ModelUpdateProposal",
+    "ModelUpdateSource",
+    "PreparedModelRevision",
+]

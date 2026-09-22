@@ -13,6 +13,7 @@ class SafeActionExecution:
     result: ActionResult
     operation_results: tuple[OperationResult[JsonValue], ...]
     replayed_from_intent: bool = False
+    durable_intent: EffectIntent | None = None
 
 
 @dataclass(frozen=True, slots=True)

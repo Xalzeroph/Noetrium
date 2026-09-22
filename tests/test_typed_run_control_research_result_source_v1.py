@@ -13,11 +13,11 @@ from noetrium_platform.evidence.data.query.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import MachineCut
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
-from noetrium_platform.research.experimentation.run.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunArtifactKind,
     RunArtifactSnapshotReceipt,
 )
-from noetrium_platform.research.experimentation.run.api.control import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunControlAction,
     RunControlNotFound,
     RunControlPhase,
@@ -29,10 +29,10 @@ from noetrium_platform.research.experimentation.run.api.control import (
     RunScientificValidity,
     RunTaskOutcome,
 )
-from noetrium_platform.research.experimentation.run.composition import (
+from noetrium_platform.research.experimentation.lifecycle.run.composition import (
     RunControlResearchResultSource,
 )
-from noetrium_platform.research.experimentation.run.api.manifest_evidence import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     EvidenceBundleReceipt,
 )
 

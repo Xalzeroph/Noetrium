@@ -14,8 +14,8 @@ from noetrium_platform.research.experimentation.api import (
     diff_research_plans,
     resolve_research_requirements,
 )
-from noetrium_platform.research.experimentation.experiment.api import ExperimentTrialProtocolIdentity
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTrialProtocolIdentity
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkTaskSet,
     FactorLevelSpec,
     MeasurementDefinition,
@@ -38,7 +38,7 @@ from noetrium_platform.capabilities.participant.api.project import (
     ParticipantRequirement,
     ProjectParticipantBinding,
 )
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantImplementationIdentity,
     ParticipantRuntimeBinding,
     ParticipantSessionRuntimeIdentity,
@@ -422,6 +422,7 @@ def test_non_generation_model_binding_is_proof_backed_without_fake_prompt() -> N
         runtime_qualification_digest="9" * 64, host_identity_digest="a" * 64,
         prompt_generation_id=None, prompt_id=None, prompt_digest=None,
         capabilities=profile.capabilities, runtime_canary_evidence_digests=("b" * 64,),
+        request_tokenization_digest=None,
         capability_id="embedding", input_schema_id="model.embedding.input.v1",
         output_schema_id="model.embedding.output.v1",
     )

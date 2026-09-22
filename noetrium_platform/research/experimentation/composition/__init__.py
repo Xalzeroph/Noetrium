@@ -26,7 +26,7 @@ __all__ += [
     "qualified_replica_capacity_units",
 ]
 
-from noetrium_platform.research.experimentation.evaluation.composition import (
+from noetrium_platform.research.experimentation.lifecycle.composition import (
     bind_paired_evaluation_host,
 )
 from noetrium_platform.research.experimentation.workload.composition import (

@@ -15,7 +15,7 @@ from noetrium_platform.infrastructure.reliability.forensics.runtime import Failu
 from noetrium_platform.infrastructure.reliability.forensics.composition import ForensicStore
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, OperationAuxiliaryFailure, OperationRequest, OperationSemanticPolicyViolation
 from noetrium_platform.foundation.kernel.kernel.failure_materialization import FailureRecordReceipt
-from noetrium_platform.capabilities.participant.core.api.runtime_operations import participant_operation_verb
+from noetrium_platform.capabilities.participant.core.api import participant_operation_verb
 
 
 class CoreOperationFailureClassifier:

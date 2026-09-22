@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantConfigurationArtifact,
     ParticipantImplementationIdentity,
 )

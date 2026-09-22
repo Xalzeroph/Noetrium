@@ -115,7 +115,7 @@ class _InlineSerialActor:
 
 
 def run_artifact_store(path: Path):
-    from noetrium_platform.research.experimentation.run.runtime import DirectoryRunArtifactStore
+    from noetrium_platform.research.experimentation.lifecycle.run.runtime import DirectoryRunArtifactStore
 
     return DirectoryRunArtifactStore(path, writer_actor=_InlineSerialActor())
 

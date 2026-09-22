@@ -166,6 +166,52 @@ def _reachable(graph: dict[str, set[str]], roots: set[str]) -> set[str]:
     return _package_parent_closure(seen, set(graph))
 
 
+def _modules_under(prefix: str, known: set[str]) -> set[str]:
+    return {
+        module
+        for module in known
+        if module == prefix or module.startswith(prefix + ".")
+    }
+
+
+def _composition_attachment_roots(
+    *,
+    known: set[str],
+    catalog: dict[str, object],
+    components: dict[str, object],
+    hierarchy: dict[str, object],
+) -> set[str]:
+    """Return declared composition roots that legitimately attach implementations."""
+
+    roots: set[str] = set()
+
+    def add_package(prefix: str) -> None:
+        module = prefix + ".composition"
+        if module in known:
+            roots.add(module)
+
+    for raw in catalog.values():
+        if isinstance(raw, dict) and isinstance(raw.get("package_prefix"), str):
+            add_package(str(raw["package_prefix"]))
+    for raw in components.values():
+        if isinstance(raw, dict) and isinstance(raw.get("package_prefix"), str):
+            add_package(str(raw["package_prefix"]))
+
+    layers = hierarchy.get("layers", [])
+    if isinstance(layers, list):
+        for row in layers:
+            if not isinstance(row, dict):
+                continue
+            prefix = row.get("composition")
+            if isinstance(prefix, str):
+                roots.update(_modules_under(prefix, known))
+
+    application = hierarchy.get("application_composition")
+    if isinstance(application, str):
+        roots.update(_modules_under(application, known))
+    return roots
+
+
 def _architecture_metadata(module: str) -> bool:
     return (
         module.endswith(".boundary")
@@ -194,6 +240,18 @@ def _hierarchy() -> dict[str, object]:
         / "governance"
         / "system_registry"
         / "hierarchy.json"
+    )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _components() -> dict[str, object]:
+    path = (
+        ROOT
+        / "noetrium_platform"
+        / "foundation"
+        / "governance"
+        / "system_registry"
+        / "components.json"
     )
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -330,6 +388,7 @@ def audit(extra_roots: tuple[str, ...] = ()) -> dict[str, object]:
     graph, parse_errors = _graph(sources)
     known = set(sources)
     catalog = _catalog()
+    components = _components()
     hierarchy = _hierarchy()
     prefixes = _root_prefixes(catalog)
 
@@ -346,6 +405,13 @@ def audit(extra_roots: tuple[str, ...] = ()) -> dict[str, object]:
         f"{prefix}.api"
         for prefix in prefixes.values()
         if f"{prefix}.api" in known
+    }
+    component_root_apis = {
+        f"{row['package_prefix']}.api"
+        for row in components.values()
+        if isinstance(row, dict)
+        and isinstance(row.get("package_prefix"), str)
+        and f"{row['package_prefix']}.api" in known
     }
     script_roots = _script_roots(known)
     product_roots = {
@@ -365,8 +431,20 @@ def audit(extra_roots: tuple[str, ...] = ()) -> dict[str, object]:
     if product_layer is not None:
         product_roots.add(product_layer)
 
-    attachment_roots = system_root_apis | layer_facades | product_roots
-    attached = _reachable(graph, attachment_roots)
+    api_roots = system_root_apis | component_root_apis | layer_facades
+    composition_roots = _composition_attachment_roots(
+        known=known,
+        catalog=catalog,
+        components=components,
+        hierarchy=hierarchy,
+    )
+    entrypoint_roots = set(product_roots)
+
+    api_attached = _reachable(graph, api_roots)
+    composition_attached = _reachable(graph, composition_roots)
+    entrypoint_attached = _reachable(graph, entrypoint_roots)
+    attachment_roots = api_roots | composition_roots | entrypoint_roots
+    attached = api_attached | composition_attached | entrypoint_attached
 
     external_direct: dict[str, set[str]] = {}
     external_parse_errors: dict[str, dict[str, str]] = {}
@@ -407,6 +485,45 @@ def audit(extra_roots: tuple[str, ...] = ()) -> dict[str, object]:
         if not graph[name] and not reverse.get(name)
     }
 
+    sideplane_attachment_missing: list[dict[str, str]] = []
+    application_prefix = hierarchy.get("application_composition")
+    application_targets: set[str] = set()
+    if isinstance(application_prefix, str):
+        for module in _modules_under(application_prefix, known):
+            application_targets.update(graph.get(module, set()))
+    sideplanes = hierarchy.get("sideplanes", ())
+    if not isinstance(sideplanes, list):
+        raise RuntimeError("hierarchy sideplanes must be a list")
+    for row in sideplanes:
+        if not isinstance(row, dict):
+            raise RuntimeError("invalid hierarchy sideplane descriptor")
+        system = str(row["system"])
+        facade = str(row["facade"])
+        mode = str(row.get("attachment", "application_composition"))
+        if mode != "application_composition":
+            sideplane_attachment_missing.append({
+                "sideplane": str(row["id"]),
+                "system": system,
+                "reason": "unsupported_attachment_mode",
+                "required_module": facade,
+            })
+            continue
+        if facade not in known:
+            sideplane_attachment_missing.append({
+                "sideplane": str(row["id"]),
+                "system": system,
+                "reason": "sideplane_facade_missing",
+                "required_module": facade,
+            })
+            continue
+        if facade not in application_targets:
+            sideplane_attachment_missing.append({
+                "sideplane": str(row["id"]),
+                "system": system,
+                "reason": "application_composition_does_not_import_sideplane_facade",
+                "required_module": facade,
+            })
+
     layer_member_missing: list[dict[str, str]] = []
     for row in layers:
         if not isinstance(row, dict):
@@ -427,11 +544,17 @@ def audit(extra_roots: tuple[str, ...] = ()) -> dict[str, object]:
                 continue
             if facade == root_api:
                 continue
-            if root_api not in graph.get(facade, set()):
+            facade_targets = graph.get(facade, set())
+            composition_prefix = row.get("composition")
+            composition_targets: set[str] = set()
+            if isinstance(composition_prefix, str):
+                for module in _modules_under(composition_prefix, known):
+                    composition_targets.update(graph.get(module, set()))
+            if root_api not in facade_targets and root_api not in composition_targets:
                 layer_member_missing.append({
                     "layer": str(row["id"]),
                     "system": str(member),
-                    "reason": "layer_facade_does_not_import_system_root_api",
+                    "reason": "layer_neither_facade_nor_composition_imports_system_root_api",
                     "required_module": root_api,
                 })
 
@@ -447,13 +570,20 @@ def audit(extra_roots: tuple[str, ...] = ()) -> dict[str, object]:
     lower_public_sources = _public_index_lower_layer_sources(catalog, hierarchy)
 
     return {
-        "schema": "noetrium.hierarchical-reachability-audit.v2",
+        "schema": "noetrium.hierarchical-reachability-audit.v3",
         "module_count": len(sources),
         "import_edge_count": sum(len(rows) for rows in graph.values()),
         "parse_error_count": len(parse_errors),
         "system_root_api_count": len(system_root_apis),
+        "component_root_api_count": len(component_root_apis),
         "layer_facade_count": len(layer_facades),
         "product_entrypoint_count": len(product_roots),
+        "api_attachment_root_count": len(api_roots),
+        "composition_attachment_root_count": len(composition_roots),
+        "entrypoint_attachment_root_count": len(entrypoint_roots),
+        "api_attached_count": len(api_attached),
+        "composition_attached_count": len(composition_attached),
+        "entrypoint_attached_count": len(entrypoint_attached),
         "attached_count": len(attached),
         "unattached_count": len(unattached),
         "external_only_count": len(external_only),
@@ -466,6 +596,7 @@ def audit(extra_roots: tuple[str, ...] = ()) -> dict[str, object]:
         "unattached_runtime_provider_composition_count": len(unattached_runtime),
         "isolated_module_count": len(isolated),
         "layer_member_attachment_missing_count": len(layer_member_missing),
+        "sideplane_attachment_missing_count": len(sideplane_attachment_missing),
         "unified_api_lower_layer_source_count": len(lower_public_sources),
         "orphan_kind_counts": dict(sorted(Counter(_kind(x) for x in orphan).items())),
         "orphan_system_counts": dict(
@@ -474,8 +605,12 @@ def audit(extra_roots: tuple[str, ...] = ()) -> dict[str, object]:
         "unattached_kind_counts": dict(
             sorted(Counter(_kind(x) for x in unattached).items())
         ),
+        "api_attachment_roots": sorted(api_roots),
+        "composition_attachment_roots": sorted(composition_roots),
+        "entrypoint_attachment_roots": sorted(entrypoint_roots),
         "attachment_roots": sorted(attachment_roots),
         "layer_member_attachment_missing": layer_member_missing,
+        "sideplane_attachment_missing": sideplane_attachment_missing,
         "orphan_modules": sorted(orphan),
         "external_only_modules": sorted(external_only),
         "research_only_modules": sorted(research_only),
@@ -510,8 +645,15 @@ def main() -> int:
         "import_edge_count",
         "parse_error_count",
         "system_root_api_count",
+        "component_root_api_count",
         "layer_facade_count",
         "product_entrypoint_count",
+        "api_attachment_root_count",
+        "composition_attachment_root_count",
+        "entrypoint_attachment_root_count",
+        "api_attached_count",
+        "composition_attached_count",
+        "entrypoint_attached_count",
         "attached_count",
         "unattached_count",
         "external_only_count",
@@ -524,6 +666,7 @@ def main() -> int:
         "unattached_runtime_provider_composition_count",
         "isolated_module_count",
         "layer_member_attachment_missing_count",
+        "sideplane_attachment_missing_count",
         "unified_api_lower_layer_source_count",
         "orphan_kind_counts",
         "orphan_system_counts",
@@ -534,6 +677,7 @@ def main() -> int:
     return 1 if (
         report["orphan_count"]
         or report["layer_member_attachment_missing_count"]
+        or report["sideplane_attachment_missing_count"]
         or report["unified_api_lower_layer_source_count"]
         or report["parse_error_count"]
     ) else 0

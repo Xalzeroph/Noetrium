@@ -6,8 +6,8 @@ import math
 from pathlib import PurePosixPath
 from typing import Any
 
-from noetrium_platform.capabilities.model.serving.api import (
-    DeploymentPlacement,
+from noetrium_platform.capabilities.model.serving.api.placement import DeploymentPlacement
+from noetrium_platform.capabilities.model.serving.api.qualified_deployment import (
     QualificationCertificate,
     QualifiedDeploymentManifest,
     ResourceEnvelope,

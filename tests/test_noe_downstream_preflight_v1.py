@@ -76,6 +76,6 @@ def test_minecraft_preflight_derives_prepared_server_files(tmp_path: Path) -> No
     )
     preflight = build_minecraft_server_preflight(spec)
     assert preflight.required_paths == (
-        str(tmp_path / "eula.txt"),
-        str(tmp_path / "server.properties"),
+        tmp_path / "eula.txt",
+        tmp_path / "server.properties",
     )

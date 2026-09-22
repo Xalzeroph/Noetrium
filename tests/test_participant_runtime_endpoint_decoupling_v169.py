@@ -9,16 +9,16 @@ from typing import get_type_hints
 import pytest
 
 from noetrium_platform.composition.participants.generic import generic_participant_adapter
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantImplementationIdentity,
     ParticipantRuntimeBinding,
     )
 from noetrium_platform.capabilities.participant.binding.api.contracts import ParticipantBindingResolverPort
-from noetrium_platform.capabilities.participant.core.api.bound import BoundParticipant
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeEndpoint, ParticipantRuntimeHandle
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
-from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
-from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.capabilities.participant.core.api import BoundParticipant
+from noetrium_platform.capabilities.participant.core.api import ParticipantRuntimeEndpoint, ParticipantRuntimeHandle
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolKind, TrialCycleExecution
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantSpec, ExperimentSpec
 from tests_support import EmptyWorkflowSurfaceFactory, frozen_runtime_manifest, run_launch_manifest, runtime_identity_for_test
 
 
@@ -62,6 +62,7 @@ class RemoteResolver:
 
 
 class NoOpTrialProtocol:
+    protocol_kind = ExecutionTrialProtocolKind.RUNTIME_PROGRAM
     protocol_id = "remote-noop.v1"
     surface_id = "empty.operations.v1"
     configuration_digest = "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"

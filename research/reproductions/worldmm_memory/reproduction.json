@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "worldmm_memory",
-  "package_digest": "f20262724274fb07a99607f209939977e0913da5beb4bfa4f8e1c768c18ce3e9",
+  "package_digest": "4523349f9c1410b8df7386c7e85949648a5c05191bbe28f9831695e2b4157b79",
   "definition_digest": "bd806ccfa9d1f50a6d52b9a79be8e37fc5388b3316e23eb8b0756af748cce682",
   "source_registry_digest": "59fad67df15f1fffd4579cda87465a6feb1607352e4bdf24806f77c92a06dc6e",
   "lifecycle": "protocol_bound",
@@ -112,7 +112,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/worldmm_memory/benchmark.py",
       "declaration_digest": "a8329d0d869493d59faa39fd8f4babf7e83f5140476fe253a568f1c5dccea4c4",
-      "content_sha256": "a30d02d686900c3df6dad4e42d51f6023a5ae46565c44db0e49fa2a43d030747"
+      "content_sha256": "a191b712b98214bc6312cc345e98aeefa8322444f4c943468499286a39e98ef3"
     },
     {
       "kind": "fidelity",
@@ -124,19 +124,19 @@
       "kind": "method_program",
       "path": "research/reproductions/worldmm_memory/program.py",
       "declaration_digest": "694d5449c06960b2c03e1523c5de5536207872c8ccc1a89651fffa8a14605724",
-      "content_sha256": "e5ff76b18b37d355b02aaeec15070ba05a7670af34a84dc2bc03a4c3d2516dd3"
+      "content_sha256": "39d0c891c7a7b919fd7a42634faf629845aa7080fa94c3330297981f1379351a"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/worldmm_memory/memory.py",
       "declaration_digest": "fd579eee24b1474717507e20ae245ebc29c2231b91c3824c4dd7edfb6def5ac5",
-      "content_sha256": "433e17d18df07772c407bd627d88d7f344bfe8a711a7b5d9c4c81b67a4ab5261"
+      "content_sha256": "475a22cd6f4e5f2205b3ec72c6399e4c5ba39ff6d7caf73c296260dd507e737b"
     },
     {
       "kind": "study",
       "path": "research/reproductions/worldmm_memory/study.py",
       "declaration_digest": "fce9ee65a8e1e216ddcef47c38df4d8fc83c409c6d008a51cb7a2ca60db32deb",
-      "content_sha256": "876781ee8cd24faf7058384cd02b5ba08c85347d1cccd8000f4b7ffcdd7146c9"
+      "content_sha256": "57e31dc7fe8761439ad2288821e808e6d1cb06501e425bcbe78ba45dfd29357d"
     },
     {
       "kind": "support",
@@ -188,7 +188,7 @@
     },
     {
       "path": "tests/test_scientific_worldmm_memory_v1.py",
-      "content_sha256": "a02c5403a94445704370fd736ec7939ca2bdfe6f644da20736562872e985cf01"
+      "content_sha256": "c079c479fa819cafca05cf8fba727af32845fcbe72d75044dc9f808f9461ff7a"
     }
   ]
 }

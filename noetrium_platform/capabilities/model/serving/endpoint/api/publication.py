@@ -2,12 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.capabilities.model.serving.api import (
-    QualifiedDeploymentManifest,
-    RoleModelManifest,
-    RuntimeCanaryEvidence,
-    RuntimeQualificationReceipt,
-)
+from noetrium_platform.capabilities.model.serving.api.qualified_deployment import QualifiedDeploymentManifest, RoleModelManifest
+from noetrium_platform.capabilities.model.serving.api.runtime_canary import RuntimeCanaryEvidence
+from noetrium_platform.capabilities.model.serving.api.runtime_qualification import RuntimeQualificationReceipt
 
 from .contracts import ModelEndpointRoute
 

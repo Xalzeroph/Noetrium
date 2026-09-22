@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "providellm_memory",
-  "package_digest": "a0bd1a8e97f9876dba145ca8042c77040f133b525c43a3894a5553645a227844",
+  "package_digest": "09b2bd6b2e1c25fa7cd8cc1cbf0ff226d252d3c01085eb7536d514421b85aefd",
   "definition_digest": "b4fe876168e17e4253100af2bb48e2de529679b551d8bacd411cd09882f24a64",
   "source_registry_digest": "9e2a5d1186f95a8f45699ceebf02fe6c91c0af32ce912a7e1d4f40d4192a3979",
   "lifecycle": "protocol_bound",
@@ -92,7 +92,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/providellm_memory/benchmark.py",
       "declaration_digest": "e9907ce9ef38fea0675b2746fdf345cecf79e0421b5e2ea6c9c5ef6107fdd496",
-      "content_sha256": "06a665d599cf1065d9377e80aa05c8e29389c8c9aa70bd08d444fec4d14981c8"
+      "content_sha256": "ccbe52474581656e3d97c4c71905f728fbbe5e3664b02da70df8fc036f42e93b"
     },
     {
       "kind": "fidelity",
@@ -104,13 +104,13 @@
       "kind": "research_program",
       "path": "research/reproductions/providellm_memory/memory.py",
       "declaration_digest": "bd8af3b23a07f48e04cf30cfe795cb0d517d4323b46bfa688f336041f404d323",
-      "content_sha256": "45032bcf99fdd246a30cbf72f121499e1c18037898f226bede6569b0075ce0ab"
+      "content_sha256": "d3a4287b0f5caeb264c12a8bba0f2481f29b249dbeeef5c488fad09af1ad3a29"
     },
     {
       "kind": "study",
       "path": "research/reproductions/providellm_memory/study.py",
       "declaration_digest": "ee7ebcf23658701fd3688bded57b5056227e038ac7d39b2c2d090b5ccbb59b00",
-      "content_sha256": "b117695ec9a0ac79345a2723afb01165f589af0c69e489780d9653bf55593bc3"
+      "content_sha256": "86ea682bcfde7d8f15d907c453c3f123657fe31ad46c60c85a2fa560522442a2"
     },
     {
       "kind": "support",

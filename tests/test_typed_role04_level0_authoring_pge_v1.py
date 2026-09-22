@@ -17,7 +17,7 @@ from noetrium_platform.capabilities.participant.api import (
     ParticipantRequirementContribution,
 )
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantImplementationIdentity
+from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity
 
 
 def _prompt(*, version: str = "1", role: str = "planner") -> PromptSpec:

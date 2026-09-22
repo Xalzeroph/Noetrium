@@ -6,7 +6,7 @@ scientific backend; provider packages may re-export them for compatibility.
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     MeasurementRecord, MeasurementValueKind, StudyMetricObservation,
 )
 from .contracts import DataColumn, DataTable

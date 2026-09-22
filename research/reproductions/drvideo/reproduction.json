@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "drvideo",
-  "package_digest": "3131178908be1e990959034886399a575383ea1da11a904ed5562814b89e43f1",
+  "package_digest": "1f6c4664ff3aa747583b65486fa7f10ad8edbee63ffc30273b98659fde6c035c",
   "definition_digest": "c467be4797ee695948ea3a94e2b0bc8ede9df373abe09248e27175ebb6f6c276",
   "source_registry_digest": "7fefca6637ec616d0b9bca8e3d69771815436472b8f69bb31f15efe37cd0d68c",
   "lifecycle": "protocol_bound",
@@ -96,7 +96,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/drvideo/benchmark.py",
       "declaration_digest": "0777d687777b35c882d6f0545a67fc4a7ce60c2c491a75e82235c586d34efe4a",
-      "content_sha256": "6243fdf6b7483fe3c25d5d46893a4484d2d01a08934161a815a94be89c7e79fe"
+      "content_sha256": "48ddd259a7011ac77a6a668f0166338aeddd20e92292d4d72e8099ae907a1c1e"
     },
     {
       "kind": "fidelity",
@@ -114,7 +114,7 @@
       "kind": "study",
       "path": "research/reproductions/drvideo/study.py",
       "declaration_digest": "cd0decac8df47526002be04df2c8565568544a5066eacd3e449a770f6a94fffb",
-      "content_sha256": "0aa016e8ce76ec11e60118fbd8fdad438ca8d8336f7a1da705fa34ceec4e89a0"
+      "content_sha256": "33a7f386ba8f3bb5a6809c976f336a2f5670c4040f8808982e831151f7a6b5e9"
     },
     {
       "kind": "support",

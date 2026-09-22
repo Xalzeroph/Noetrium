@@ -9,7 +9,7 @@ from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceLaunchPreflightPort,
     ServiceReadinessProbePort,
 )
-from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessSupervisorPort
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemFamily, OperatingSystemRoute
 from noetrium_platform.foundation.api import is_absolute_target_path
 from noetrium_platform.infrastructure.lifecycle.service.runtime.capture_paths import DirectoryCapturePathProvider
@@ -32,7 +32,7 @@ class UnsupportedHostProcessBackend(RuntimeError):
 def compose_local_process_backend(
     operating_system: OperatingSystemRoute,
     *,
-    task_group: TaskGroupPort,
+    process_supervisor: ProcessSupervisorPort,
 ) -> ExactProcessBackend:
     """Route local process supervision to the host-specific provider.
 
@@ -43,7 +43,7 @@ def compose_local_process_backend(
     """
 
     if operating_system.identity.family is OperatingSystemFamily.LINUX:
-        return LinuxProcessBackend(task_group)
+        return LinuxProcessBackend(process_supervisor)
     raise UnsupportedHostProcessBackend(
         "no exact local service process provider for host OS "
         f"{operating_system.identity.family.value}"
@@ -66,7 +66,7 @@ class LocalServiceRuntimeComposer:
         intent_root: Path,
         capture_root: Path,
         operating_system: OperatingSystemRoute,
-        task_group: TaskGroupPort,
+        process_supervisor: ProcessSupervisorPort,
         process_backend: ExactProcessBackend | None = None,
     ) -> None:
         self.state_root = state_root.resolve()
@@ -75,7 +75,7 @@ class LocalServiceRuntimeComposer:
         if any(not is_absolute_target_path(root) for root in (self.state_root, self.intent_root, self.capture_root)):
             raise ValueError("local service runtime roots must be absolute")
         self._operating_system = operating_system
-        self._task_group = task_group
+        self._process_supervisor = process_supervisor
         self._process_backend = process_backend
 
     @staticmethod
@@ -100,7 +100,7 @@ class LocalServiceRuntimeComposer:
         provider = StaticServiceEnvironmentProvider((environment,))
         backend = self._process_backend or compose_local_process_backend(
             self._operating_system,
-            task_group=self._task_group,
+            process_supervisor=self._process_supervisor,
         )
         adapter = LocalServiceProcessAdapter(
             provider,

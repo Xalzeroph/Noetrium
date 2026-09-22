@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "voyager_minecraft",
-  "package_digest": "217a6aa92ef678bb187503cbfdee3b7eb3386c21509bdd6fef53e995a296e074",
+  "package_digest": "f143b5d5a3e9c0a9ad48162abd6eb96ec2fd1890e9deb29bc26711fd52df156b",
   "definition_digest": "eab60b402b1b344a21057545661fe6f79af8a0c11b8b996cbc554be142093c95",
   "source_registry_digest": "f1ab1828eec1ae53b63ea726f5a6a82721010fa6108cb609089c7bb1b4d5420b",
   "lifecycle": "protocol_bound",
@@ -117,7 +117,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/voyager_minecraft/benchmark.py",
       "declaration_digest": "37ce346ce07d2b358a99fd6645f68140dae894c8473dc42724ff2f5ea89ccf7c",
-      "content_sha256": "6a8360c981af7ba91d2a64f26a2dba506136a400427d349504fa249c22a307d8"
+      "content_sha256": "0960d477fdb8f08585c341ef70dd663e3880ef2dab3137c9b7ac80ec89b3d197"
     },
     {
       "kind": "fidelity",
@@ -129,31 +129,31 @@
       "kind": "method_program",
       "path": "research/reproductions/voyager_minecraft/program.py",
       "declaration_digest": "ffcf35749c06e5b1ec19466ccffb3be209f0a26a426f44e9f6f6dbe1a64ba78f",
-      "content_sha256": "b3690fc49a7e5db60e5d17c58ddbb6c8ec995146cb1d7aabebb834a3fc321d9d"
+      "content_sha256": "1d52b10a967f15bdf4c3f93edba6bb5a88fe5c1781df60f3691180744ee18e0d"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/voyager_minecraft/chest_memory.py",
       "declaration_digest": "7d9b323435b33c8b71875d57de122d558176bb9724f7255ad18b02a549ec84ba",
-      "content_sha256": "e56501c231a64c076f3265168b35e2baddf1871a6d350c6278955600b769c97d"
+      "content_sha256": "a836d03599b5045c6f9d013241bb8be9946fceeb1c3b4d80229b2b6d70159d7e"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/voyager_minecraft/curriculum_memory.py",
       "declaration_digest": "83f30b47264ea951218e4684dc8a317907da853ca594c4460a76222d4255359e",
-      "content_sha256": "3c147d1001ed2645e0461e846937d02f33b710d64981815316326edfc64dee44"
+      "content_sha256": "624968fa6399cf356fe66e5a73e625dadf09f1acf42cb2685132fa18a7d63170"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/voyager_minecraft/skill_memory.py",
       "declaration_digest": "da2f587fb34a70b329575107aea0f8a2f39665d3c657eaf5290e0a7f2200f73b",
-      "content_sha256": "b0af920f0eb795682469378d76a4fdb7d197dfb35daac85365a318867660a1e9"
+      "content_sha256": "3a34fdf5fd98cb412ae239416441cda70b5e8779a364d7b398cb4a953a7caaf2"
     },
     {
       "kind": "study",
       "path": "research/reproductions/voyager_minecraft/study.py",
       "declaration_digest": "c292ce512d0a20016b7c5e598fbc7d6d7704d526e7f81372f1fb32d03af7e7d1",
-      "content_sha256": "1009e63e0518af802289267f0f9ef622d73488bcdfa2f35831a62db7ffd143e3"
+      "content_sha256": "2cf9dde573bc1130e04fafc86bdc84de40c4b77ef9e7ae69f5d3fa0b44932a18"
     },
     {
       "kind": "support",
@@ -240,7 +240,7 @@
     },
     {
       "path": "tests/test_scientific_voyager_method_program_v1.py",
-      "content_sha256": "21572381d69ff7291914840591e97a78561d5f3e95bd2d668f75620bde30acba"
+      "content_sha256": "97859bb93c6e3cf2bbaed0e76a7a2e1ac5e4fee45b58a51dc0c1d69b0a05d3ac"
     },
     {
       "path": "tests/test_scientific_voyager_skill_memory_v1.py",

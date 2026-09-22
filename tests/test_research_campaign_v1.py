@@ -16,8 +16,8 @@ from noetrium_platform.research.experimentation.api import (
     ResearchCampaignStudy,
     ResearchCampaignStudyBinding,
 )
-from noetrium_platform.research.experimentation.study.api import (
-    ExperimentPlan,
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    StudyExecutionPlan,
     StudyConcurrencyPolicy,
     StudyMetricObservation,
     StudyProtocol,
@@ -25,12 +25,12 @@ from noetrium_platform.research.experimentation.study.api import (
     VariantBinding,
     VariantKind,
 )
-from noetrium_platform.research.experimentation.study.algorithms import (
+from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
     DeterministicStudyAssignment,
 )
 
 
-def _plan(study_id: str) -> ExperimentPlan:
+def _plan(study_id: str) -> StudyExecutionPlan:
     policy = replace(
         StudyConcurrencyPolicy.serial_shared_v1(
             repetition_timeout_seconds=30.0,
@@ -64,7 +64,7 @@ def _plan(study_id: str) -> ExperimentPlan:
             "treatment",
         ),
     )
-    return ExperimentPlan.compile(
+    return StudyExecutionPlan.compile(
         protocol,
         bindings,
         DeterministicStudyAssignment().assignments(protocol),
@@ -110,7 +110,7 @@ def test_campaign_identity_is_canonical_over_lane_order() -> None:
 
 def test_campaign_rejects_duplicate_scientific_plan_under_multiple_lanes() -> None:
     plan = _plan("same-study")
-    with pytest.raises(ValueError, match="duplicate scientific plans"):
+    with pytest.raises(ValueError, match="duplicate compiled research plans"):
         ResearchCampaignPlan(
             "invalid-campaign",
             (

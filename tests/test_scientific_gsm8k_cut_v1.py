@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.research.experimentation.study.api import TaskVerifierIsolation
+from noetrium_platform.research.experimentation.lifecycle.api import TaskVerifierIsolation
 from research.benchmarks.gsm8k import (
     GSM8K_ARCHIVED_COMMIT,
     GSM8K_BENCHMARK_ID,

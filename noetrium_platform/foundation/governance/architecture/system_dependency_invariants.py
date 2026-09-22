@@ -74,12 +74,17 @@ def layer_dependency_findings(
         for system_id in row.members
     }
     global_systems = set(hierarchy.global_systems)
+    sideplanes = {
+        row.system_id: row
+        for row in hierarchy.sideplanes
+    }
+    sideplane_systems = set(sideplanes)
     catalog_systems = {
         row.identity.system_id
         for row in descriptors
         if row.identity.is_system
     }
-    declared_systems = set(system_layer) | global_systems
+    declared_systems = set(system_layer) | global_systems | sideplane_systems
     if declared_systems != catalog_systems:
         missing = sorted(catalog_systems - declared_systems)
         extra = sorted(declared_systems - catalog_systems)
@@ -189,6 +194,43 @@ def layer_dependency_findings(
                 ),
                 target_system=target_system,
                 required_module="global_contract_prefixes",
+            )
+            continue
+
+        if source_system in sideplane_systems:
+            descriptor = sideplanes[source_system]
+            required = layers[descriptor.base_layer_id].facade_module
+            if target_module == required:
+                continue
+            add(
+                "sideplane_illegal_dependency",
+                edge,
+                source_system=source_system,
+                source_layer=f"sideplane:{descriptor.sideplane_id}",
+                target_system=target_system,
+                target_layer=(
+                    system_layer.get(target_system)
+                    if target_system is not None
+                    else None
+                ),
+                required_module=required,
+            )
+            continue
+
+        if target_system in sideplane_systems:
+            descriptor = sideplanes[target_system]
+            add(
+                "direct_sideplane_dependency",
+                edge,
+                source_system=source_system,
+                source_layer=(
+                    system_layer.get(source_system)
+                    if source_system is not None
+                    else None
+                ),
+                target_system=target_system,
+                target_layer=f"sideplane:{descriptor.sideplane_id}",
+                required_module=hierarchy.application_composition_prefix,
             )
             continue
 

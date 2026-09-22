@@ -21,8 +21,8 @@ from noetrium_platform.capabilities.environment.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, ExecutionContext, OperationFailure
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
-from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 from noetrium_platform.research.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
 
 

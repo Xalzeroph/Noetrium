@@ -101,7 +101,9 @@ class ParticipantMessageFactBinding:
         if not isinstance(entry, ParticipantMessageScheduleEntry):
             raise TypeError("participant message entry must be typed")
         scheduled = next((row for row in schedule.entries if row.message_id == entry.message_id), None)
-        if scheduled is None or scheduled.digest() != entry.digest():
+        if scheduled is None:
+            raise ValueError("participant message entry is not present in schedule")
+        if scheduled.digest() != entry.digest():
             raise ValueError("participant message entry does not match scheduled identity")
         return cls(
             schedule_id=schedule.schedule_id,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from noetrium_platform.capabilities.model.catalog.revision.api import (
+from noetrium_platform.capabilities.model.catalog.api import (
     ModelRevisionIdentity,
     ModelUpdateBuildEvidence,
     ModelUpdateBuildReceipt,

@@ -27,8 +27,8 @@ from noetrium_platform.research.experimentation.api import (
     compile_research_plan,
     resolve_research_requirements,
 )
-from noetrium_platform.research.experimentation.experiment.api import ExperimentTrialProtocolIdentity
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTrialProtocolIdentity
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkTaskSet,
     MeasurementDefinition,
     MeasurementProtocol,

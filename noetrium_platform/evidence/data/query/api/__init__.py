@@ -25,6 +25,8 @@ from .semantic import (
     SemanticSimilarityResult,
 )
 
+from .identity import source_cut
+
 __all__ = [
     "ResearchDimension", "ResearchDimensionKind", "ResearchQueryGap",
     "ResearchQueryGapKind", "ResearchQuerySourceError", "ResearchResultKind",
@@ -33,4 +35,5 @@ __all__ = [
     "ResearchSourceCut", "ResearchSourceDisposition", "ResearchSourceSnapshot",
     "ResearchSourceStatus", "SemanticSimilarityMatch", "SemanticSimilarityMetric",
     "SemanticSimilarityQuery", "SemanticSimilarityQueryPort", "SemanticSimilarityResult",
+    "source_cut",
 ]

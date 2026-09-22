@@ -45,29 +45,38 @@ class SystemLeafContractTests(unittest.TestCase):
             self.assertEqual(contract.package_prefix, descriptor.package_prefix)
             self.assertEqual(len(contract.digest), 64)
             self.assertEqual(contract.api_module, descriptor.package_prefix + ".api")
-            self.assertEqual(contract.runtime_module, descriptor.package_prefix + ".runtime")
             self.assertTrue((package / "api").is_dir())
-            self.assertTrue((package / "runtime").is_dir())
-            self.assertTrue((package / "providers").is_dir())
-            self.assertTrue((package / "composition").is_dir())
+            if "runtime" in descriptor.shape:
+                self.assertEqual(contract.runtime_module, descriptor.package_prefix + ".runtime")
+                self.assertTrue((package / "runtime").is_dir())
+            for plane in ("providers", "composition"):
+                if plane in descriptor.shape:
+                    self.assertTrue((package / plane).is_dir())
         # Architecture convergence may delete generic shells; retained leaves must all conform.
         self.assertGreater(migrated, 0)
 
     def test_generic_leaf_runtime_cannot_create_an_independent_state_authority(self) -> None:
-        descriptor = next(
+        candidates = [
             row for row in system_catalog()
             if row.node_kind.value != "authority"
             and row.package_prefix.startswith("noetrium_platform.")
             and (ROOT.joinpath(*row.package_prefix.split(".")) / "runtime" / "owner.py").is_file()
-        )
-        owner_module = __import__(descriptor.package_prefix + ".runtime.owner", fromlist=["owner"])
-        owner = owner_module.owner()
-        with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaisesRegex(
-                LeafExecutionError,
-                "generic leaf-local state is forbidden",
-            ):
-                owner.bind(lambda _operation, _payload: None, Path(directory) / "state.json")
+        ]
+        for descriptor in candidates:
+            owner_module = __import__(
+                descriptor.package_prefix + ".runtime.owner",
+                fromlist=["owner"],
+            )
+            owner = owner_module.owner()
+            with tempfile.TemporaryDirectory() as directory:
+                with self.assertRaisesRegex(
+                    LeafExecutionError,
+                    "generic leaf-local state is forbidden",
+                ):
+                    owner.bind(
+                        lambda _operation, _payload: None,
+                        Path(directory) / "state.json",
+                    )
 
 
 if __name__ == "__main__":

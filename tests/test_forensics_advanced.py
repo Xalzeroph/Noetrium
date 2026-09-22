@@ -11,7 +11,7 @@ from noetrium_platform.infrastructure.reliability.forensics.api import MutationR
 from noetrium_platform.infrastructure.reliability.failure.api import build_failure
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception, redact_text, redact_value
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
-from noetrium_platform.foundation.governance.quality import scan_silent_failures
+from noetrium_platform.foundation.governance.architecture.gating.quality import scan_silent_failures
 
 
 class ForensicsAdvancedTests(unittest.TestCase):

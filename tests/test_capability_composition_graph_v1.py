@@ -103,8 +103,8 @@ def _system(system_id: str, path: tuple[str, ...] = ()) -> CompositionSubject:
 def test_plan_is_stable_metadata_and_never_a_runtime_container() -> None:
     systems = build_default_system_registry()
     scopes = _scope_registry()
-    host = _system("runtime", ("host",))
-    server = _system("runtime", ("server",))
+    host = _system("environment", ("minecraft",))
+    server = _system("environment", ("web",))
     offer = _offer(
         offer_id="local.host-route",
         owner=host,
@@ -119,7 +119,7 @@ def test_plan_is_stable_metadata_and_never_a_runtime_container() -> None:
     )
     planner = CapabilityCompositionPlanner(systems=systems, scopes=scopes)
     plan = planner.freeze(
-        CompositionIdentity("runtime.infrastructure", PLATFORM_SCOPE, _system("runtime")),
+        CompositionIdentity("environment.providers", PLATFORM_SCOPE, _system("environment")),
         (
             CompositionContract(host, PLATFORM_SCOPE, offers=(offer,)),
             CompositionContract(server, PLATFORM_SCOPE, requirements=(requirement,)),
@@ -135,8 +135,8 @@ def test_plan_is_stable_metadata_and_never_a_runtime_container() -> None:
 def test_ambiguous_provider_requires_explicit_selection() -> None:
     systems = build_default_system_registry()
     scopes = _scope_registry()
-    host = _system("runtime", ("host",))
-    server = _system("runtime", ("server",))
+    host = _system("environment", ("minecraft",))
+    server = _system("environment", ("web",))
     requirement = _requirement(
         consumer=server,
         requirement_id="host-route",
@@ -155,7 +155,7 @@ def test_ambiguous_provider_requires_explicit_selection() -> None:
         CompositionContract(server, PLATFORM_SCOPE, requirements=(requirement,)),
     )
     planner = CapabilityCompositionPlanner(systems=systems, scopes=scopes)
-    identity = CompositionIdentity("runtime.infrastructure", PLATFORM_SCOPE, _system("runtime"))
+    identity = CompositionIdentity("environment.providers", PLATFORM_SCOPE, _system("environment"))
 
     with pytest.raises(AmbiguousCapabilityProvider) as raised:
         planner.freeze(identity, contracts)
@@ -176,8 +176,8 @@ def test_ambiguous_provider_requires_explicit_selection() -> None:
 def test_incompatible_interface_digest_fails_before_binding() -> None:
     systems = build_default_system_registry()
     scopes = _scope_registry()
-    host = _system("runtime", ("host",))
-    server = _system("runtime", ("server",))
+    host = _system("environment", ("minecraft",))
+    server = _system("environment", ("web",))
     offer = _offer(
         offer_id="local.host-route",
         owner=host,
@@ -194,7 +194,7 @@ def test_incompatible_interface_digest_fails_before_binding() -> None:
 
     with pytest.raises(CapabilityInterfaceMismatch) as raised:
         planner.freeze(
-            CompositionIdentity("runtime.infrastructure", PLATFORM_SCOPE, _system("runtime")),
+            CompositionIdentity("environment.providers", PLATFORM_SCOPE, _system("environment")),
             (
                 CompositionContract(host, PLATFORM_SCOPE, offers=(offer,)),
                 CompositionContract(server, PLATFORM_SCOPE, requirements=(requirement,)),
@@ -209,7 +209,7 @@ def test_incompatible_interface_digest_fails_before_binding() -> None:
 def test_missing_provider_failure_carries_typed_machine_diagnostic() -> None:
     systems = build_default_system_registry()
     scopes = _scope_registry()
-    server = _system("runtime", ("server",))
+    server = _system("environment", ("web",))
     requirement = _requirement(
         consumer=server, requirement_id="host-route",
         capability=HOST_ROUTE, interface=OperatingSystemRoute,
@@ -217,13 +217,13 @@ def test_missing_provider_failure_carries_typed_machine_diagnostic() -> None:
     planner = CapabilityCompositionPlanner(systems=systems, scopes=scopes)
     with pytest.raises(MissingCapabilityProvider) as raised:
         planner.freeze(
-            CompositionIdentity("runtime.infrastructure", PLATFORM_SCOPE, _system("runtime")),
+            CompositionIdentity("environment.providers", PLATFORM_SCOPE, _system("environment")),
             (CompositionContract(server, PLATFORM_SCOPE, requirements=(requirement,)),),
         )
     diagnostic = raised.value.diagnostic
     assert diagnostic.code.value == "governance.binding.provider-missing"
     assert diagnostic.blocking
-    assert diagnostic.owner == _system("governance", ("architecture",))
+    assert diagnostic.owner == _system("governance")
     assert diagnostic.subject == server
     assert diagnostic.provider_identity is None
     assert diagnostic.remediation is BindingRemediationCategory.CAPABILITY
@@ -232,8 +232,8 @@ def test_missing_provider_failure_carries_typed_machine_diagnostic() -> None:
 def test_plan_rejects_cycles_and_nonlocal_child_composition() -> None:
     systems = build_default_system_registry()
     scopes = _scope_registry()
-    host = _system("runtime", ("host",))
-    server = _system("runtime", ("server",))
+    host = _system("environment", ("minecraft",))
+    server = _system("environment", ("web",))
     host_offer = _offer(
         offer_id="host.route",
         owner=host,
@@ -247,7 +247,7 @@ def test_plan_rejects_cycles_and_nonlocal_child_composition() -> None:
         interface=ServerConnectionFactoryPort,
     )
     planner = CapabilityCompositionPlanner(systems=systems, scopes=scopes)
-    identity = CompositionIdentity("runtime.infrastructure", PLATFORM_SCOPE, _system("runtime"))
+    identity = CompositionIdentity("environment.providers", PLATFORM_SCOPE, _system("environment"))
     with pytest.raises(CapabilityDependencyCycle):
         planner.freeze(
             identity,
@@ -286,7 +286,7 @@ def test_project_subject_binds_imported_system_offer_without_becoming_a_system_n
     systems = build_default_system_registry()
     scopes = _scope_registry()
     project_scope = ScopeIdentity(ScopeKind.PROJECT, "project")
-    logging = _system("observability", ("logging",))
+    logging = _system("observability")
     project = CompositionSubject.project_subject("example-project", "1")
     logging_capability = CapabilityKey("observability.logging", "system", 1)
     logging_offer = _offer(
@@ -319,16 +319,16 @@ def test_project_subject_binds_imported_system_offer_without_becoming_a_system_n
             CompositionIdentity("project.example-project", project_scope, project),
             (
                 CompositionContract(project, project_scope),
-                CompositionContract(_system("runtime", ("host",)), project_scope),
+                CompositionContract(_system("environment", ("minecraft",)), project_scope),
             ),
         )
 
     with pytest.raises(CompositionTopologyError):
         planner.freeze(
-            CompositionIdentity("runtime.infrastructure", PLATFORM_SCOPE, _system("runtime")),
+            CompositionIdentity("environment.providers", PLATFORM_SCOPE, _system("environment")),
             (
                 CompositionContract(
-                    _system("runtime", ("server", "identity")),
+                    _system("model"),
                     PLATFORM_SCOPE,
                 ),
             ),
@@ -360,8 +360,8 @@ def test_imported_offer_must_belong_to_a_registered_system() -> None:
 def test_large_plan_is_order_invariant_and_binds_by_capability() -> None:
     systems = build_default_system_registry()
     scopes = _scope_registry()
-    host = _system("runtime", ("host",))
-    server = _system("runtime", ("server",))
+    host = _system("environment", ("minecraft",))
+    server = _system("environment", ("web",))
     rows = []
     for index in range(128):
         capability = CapabilityKey("runtime.scale", f"cap-{index:03d}", 1)
@@ -380,7 +380,7 @@ def test_large_plan_is_order_invariant_and_binds_by_capability() -> None:
             ),
         ))
     planner = CapabilityCompositionPlanner(systems=systems, scopes=scopes)
-    identity = CompositionIdentity("runtime.scale-plan", PLATFORM_SCOPE, _system("runtime"))
+    identity = CompositionIdentity("environment.scale-plan", PLATFORM_SCOPE, _system("environment"))
     def freeze(items):
         return planner.freeze(
             identity,

@@ -22,7 +22,7 @@ def test_registry_bound_gateway_preserves_source_bytes_and_topology() -> None:
             lake = raw_observation_lake(Path(td))
             systems = build_default_system_registry()
             gateway = RegistryBoundRawObservationGateway(lake, systems)
-            system = SystemIdentity("model", ("serving", "endpoint"))
+            system = SystemIdentity("model")
             source = b"{" + b'"token":1' + b"}\x00"
             context = ExecutionContext("run-capture", "trace-capture", "span-capture")
             receipt = gateway.capture(

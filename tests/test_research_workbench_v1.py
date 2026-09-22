@@ -9,13 +9,23 @@ from noetrium.api import (
     AggregationFunction, AggregationSpec, BaselineSpec, DataColumn, DataTable,
     EvaluationContext, EvaluationStage, FigureCell, FigureKind, FigureOutputFormat, FigurePoint,
     FigureSeries, FigureSpec, FigureStyle, MissingValuePolicy, MultipleComparisonMethod,
-    ResearchFigureFactory, ResearchLifecycle, ScientificStatistics, SplitStrategy, StandardTableRenderer,
-    PdfFigureRenderer, PublicationFigureRenderer, StudyObservationTableAdapter,
-    SvgFigureRenderer, TablePipeline,
+    SplitStrategy, StudyObservationTableAdapter,
+)
+from noetrium_platform.research.experimentation.workbench.runtime import (
+    ResearchFigureFactory,
+    ResearchLifecycle,
+    ScientificStatistics,
+    TablePipeline,
+)
+from noetrium_platform.research.experimentation.workbench.providers import (
+    CsvTableReader,
+    PdfFigureRenderer,
+    PublicationFigureRenderer,
+    StandardTableRenderer,
+    SvgFigureRenderer,
 )
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
-from noetrium_platform.research.experimentation.workbench.providers import CsvTableReader
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     MeasurementRecord, MeasurementValue, MeasurementValueKind,
     StudyAssignment, StudyMetricObservation,
 )

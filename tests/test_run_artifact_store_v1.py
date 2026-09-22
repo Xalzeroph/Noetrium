@@ -8,14 +8,14 @@ from pathlib import Path
 
 import pytest
 
-from noetrium_platform.research.experimentation.run.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunArtifactFinalizationError,
     RunArtifactKind,
     RunArtifactSealedError,
     RunArtifactSnapshotReceipt,
     RunArtifactVerificationError,
 )
-from noetrium_platform.research.experimentation.run.runtime import DirectoryRunArtifactStore
+from noetrium_platform.research.experimentation.lifecycle.run.runtime import DirectoryRunArtifactStore
 
 
 class _InlineSerialActor:
@@ -161,7 +161,7 @@ def test_finalization_seals_writes_across_reopen(tmp_path: Path) -> None:
 
 
 def test_finalize_failure_before_seal_commit_leaves_artifact_writable(tmp_path: Path, monkeypatch) -> None:
-    import noetrium_platform.research.experimentation.run.runtime.artifacts as artifacts_runtime
+    import noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts as artifacts_runtime
 
     root = tmp_path / "run"
     store = _store(root)
@@ -182,7 +182,7 @@ def test_finalize_failure_before_seal_commit_leaves_artifact_writable(tmp_path: 
 
 
 def test_finalize_failure_after_seal_commit_blocks_writes_and_recovers(tmp_path: Path, monkeypatch) -> None:
-    import noetrium_platform.research.experimentation.run.runtime.artifacts as artifacts_runtime
+    import noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts as artifacts_runtime
     from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes as durable_atomic_replace
 
     root = tmp_path / "run"
@@ -249,7 +249,7 @@ def test_snapshot_receipt_requires_canonical_lowercase_sha256(tmp_path: Path) ->
 
 
 def test_finalize_uses_platform_atomic_replace_for_ledger_and_seal(tmp_path: Path, monkeypatch) -> None:
-    import noetrium_platform.research.experimentation.run.runtime.artifacts as artifacts_runtime
+    import noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts as artifacts_runtime
     from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes as platform_atomic_replace_bytes
 
     calls: list[Path] = []

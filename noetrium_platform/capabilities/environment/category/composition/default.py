@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from importlib import import_module
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.substrate.api import system_catalog
+from noetrium_platform.substrate.api import component_catalog, system_catalog
 
 from ..api.contracts import (
     EnvironmentCategoryDescriptor,
@@ -18,28 +18,45 @@ from ..runtime.catalog import (
 
 
 def _validate_registered_environment_families() -> None:
-    """Fail closed unless every registered environment family exposes API and composition.
+    """Fail closed against the declared topology shape of every environment family."""
 
-    Environment families are discovered through the canonical system registry rather
-    than a hard-coded import list. Contract-only families still need a composition
-    boundary so downstream code never has to special-case their package topology.
-    """
+    rows = []
     for descriptor in system_catalog():
-        if descriptor.parent_key != "environment":
-            continue
+        if descriptor.parent_key == "environment":
+            rows.append(
+                (
+                    descriptor.identity.key,
+                    descriptor.package_prefix,
+                    descriptor.provides,
+                    descriptor.shape,
+                )
+            )
+    for component in component_catalog():
+        if component.parent == "environment":
+            rows.append(
+                (
+                    component.key,
+                    component.package_prefix,
+                    component.provides,
+                    component.shape,
+                )
+            )
+
+    for key, package_prefix, provides, shape in rows:
         contract_capabilities = tuple(
             capability
-            for capability in descriptor.provides
+            for capability in provides
             if capability.startswith("environment.") and capability.endswith(".contract")
         )
         if not contract_capabilities:
             continue
         try:
-            import_module(descriptor.package_prefix + ".api")
-            import_module(descriptor.package_prefix + ".composition")
+            import_module(package_prefix + ".api")
+            if "composition" in shape:
+                import_module(package_prefix + ".composition")
         except ImportError as exc:
             raise RuntimeError(
-                f"registered environment family is not composable: {descriptor.identity.key}"
+                f"environment family declared plane is not importable: {key}"
             ) from exc
 
 

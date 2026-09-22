@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import math
 
-from noetrium_platform.capabilities.model.serving.api import (
-    ModelAdmissionRegistryPort,
-    QualifiedDeploymentManifest,
-)
+from noetrium_platform.capabilities.model.serving.api.admission import ModelAdmissionRegistryPort
+from noetrium_platform.capabilities.model.serving.api.qualified_deployment import QualifiedDeploymentManifest
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     AsyncJsonHttpTransportPort,
     ModelEndpointPort,

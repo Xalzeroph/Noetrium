@@ -6,8 +6,7 @@
     "package_prefix": "noetrium_platform.evidence.artifact",
     "parent": null,
     "shape": [
-      "api",
-      "runtime"
+      "api"
     ],
     "requires": [
       "platform",
@@ -104,7 +103,6 @@
     "parent": null,
     "shape": [
       "api",
-      "runtime",
       "providers",
       "composition"
     ],
@@ -300,8 +298,7 @@
     "shape": [
       "api",
       "runtime",
-      "providers",
-      "composition"
+      "providers"
     ],
     "requires": [],
     "provides": [],
@@ -348,13 +345,7 @@
       "study.definition"
     ],
     "components": [
-      "experimentation/catalog",
-      "experimentation/checkpoint",
-      "experimentation/evaluation",
-      "experimentation/experiment",
-      "experimentation/resource",
-      "experimentation/run",
-      "experimentation/study",
+      "experimentation/lifecycle",
       "experimentation/workbench",
       "experimentation/workload"
     ],
@@ -385,14 +376,9 @@
       "quality.audit"
     ],
     "components": [
-      "governance/algorithm",
+      "governance/analysis",
       "governance/architecture",
-      "governance/concurrency",
-      "governance/evolution",
-      "governance/gate",
-      "governance/performance",
-      "governance/quality",
-      "governance/repository_boundary"
+      "governance/evolution"
     ],
     "node_kind": "facet",
     "canonical_authority": null,
@@ -488,10 +474,8 @@
       "api"
     ],
     "requires": [
-      "data",
       "governance",
-      "platform",
-      "scope"
+      "platform"
     ],
     "provides": [
       "logging.observation",
@@ -520,25 +504,6 @@
     "shape": [
       "api",
       "runtime",
-      "composition"
-    ],
-    "requires": [],
-    "provides": [],
-    "components": [],
-    "node_kind": "provider",
-    "canonical_authority": null,
-    "downstream_surface": "metadata_only"
-  },
-  "observability/tracing/storage": {
-    "authority": "trace_storage",
-    "must_not_own": "trace identity semantics",
-    "owns": "trace/span storage backends",
-    "package_prefix": "noetrium_platform.evidence.observability.tracing.storage",
-    "parent": "observability",
-    "shape": [
-      "api",
-      "runtime",
-      "providers",
       "composition"
     ],
     "requires": [],
@@ -629,8 +594,7 @@
     "package_prefix": "noetrium_platform.foundation.kernel",
     "parent": null,
     "shape": [
-      "api",
-      "runtime"
+      "api"
     ],
     "requires": [],
     "provides": [],

@@ -10,7 +10,7 @@ import time
 from threading import Lock
 from urllib.parse import urlsplit
 
-from noetrium_platform.capabilities.model.serving.api import (
+from noetrium_platform.capabilities.model.serving.api.admission import (
     ModelAdmissionClosed,
     ModelAdmissionLeasePort,
     ModelAdmissionPort,

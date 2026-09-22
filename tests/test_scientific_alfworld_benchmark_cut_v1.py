@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.research.experimentation.study.api import BenchmarkSourceKind
+from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkSourceKind
 from research.benchmarks.alfworld import (
     ALFWORLD_BENCHMARK_ID,
     ALFWORLD_PAPER_EVAL_DATASET_PATH,

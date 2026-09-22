@@ -12,16 +12,14 @@ from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
 )
 from noetrium_platform.research.execution.api import (
+    program_execution_capability_payload,
     PublishedExecutableProgramSource,
     ProgramExecutionReceipt,
     ProgramExecutionReconciliationDisposition,
     ProgramExecutionReconciliationResult,
     ProgramExecutionStatus,
 )
-from noetrium_platform.research.execution.runtime import (
-    ProgramExecutionCapabilityBinding,
-    program_execution_capability_payload,
-)
+from noetrium_platform.research.execution.runtime import ProgramExecutionCapabilityBinding
 
 
 class _SourcePublisher:

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lits_math500",
-  "package_digest": "be68cecb8f104a39402816b9f477a69aef1d2a1f7b1bc043b3a63687094ef034",
+  "package_digest": "6bcbb0f66735e14ab94b67de2f3249815a11c5a885c9a7774a7ae46ea06abc21",
   "definition_digest": "1872d21311a5e175496735542625d6b2d3bd16877631dc6ee9b8bc1d323e908f",
   "source_registry_digest": "a7690832f13476ee4b23d5467a46ea3041e9a9bc011a9268b12aee7a7ade8709",
   "lifecycle": "protocol_bound",
@@ -81,7 +81,7 @@
       "kind": "study",
       "path": "research/reproductions/lits_math500/study.py",
       "declaration_digest": "d8ff589b2c868062190b411a48aee1cb05922ba1ab2484091dc81782bfe0934f",
-      "content_sha256": "305009e2820d9f496fab4521c7daffdae34b719491c140b4a54d033a509f5e64"
+      "content_sha256": "da8e2cbca3738a9846563e31c6d78a7730305e36a2e883154d934accbfca34d1"
     }
   ],
   "primary_executable": null,

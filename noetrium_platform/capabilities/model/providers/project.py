@@ -22,7 +22,7 @@ from noetrium_platform.capabilities.model.api.tokenization import (
     ModelRequestTokenizationPort,
     ModelRequestTokenizationProviderPort,
 )
-from noetrium_platform.capabilities.model.serving.endpoint.api import (
+from noetrium_platform.capabilities.model.serving.api import (
     AdaptiveModelEndpointPoolPort,
     ModelEndpointPort,
     ModelEndpointRequest,

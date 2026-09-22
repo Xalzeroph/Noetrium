@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.project_root import discover_project_root
-from noetrium_platform.foundation.governance.gate.api import GateRequest
-from noetrium_platform.foundation.governance.gate.composition import build_platform_gate
+from noetrium_platform.foundation.governance.architecture.gating.api import GateRequest
+from noetrium_platform.foundation.governance.architecture.gating.composition import build_platform_gate
 
 def main() -> int:
     root = discover_project_root(__file__)

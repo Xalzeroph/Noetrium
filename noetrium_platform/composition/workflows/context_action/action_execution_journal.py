@@ -71,7 +71,7 @@ class JournaledActionExecutor:
             request.context,
         )
         rows.append(operation)
-        return SafeActionExecution(result, tuple(rows), replayed_from_intent=True)
+        return SafeActionExecution(result, tuple(rows), replayed_from_intent=True, durable_intent=intent)
 
     def _execute_new(
         self,
@@ -109,7 +109,7 @@ class JournaledActionExecutor:
                 context,
             )
             rows.append(operation)
-        return SafeActionExecution(result, tuple(rows))
+        return SafeActionExecution(result, tuple(rows), durable_intent=intent)
 
     def _resolve_missing_effect(
         self,
@@ -131,7 +131,7 @@ class JournaledActionExecutor:
             request.context,
         )
         rows.append(operation)
-        return SafeActionExecution(result, tuple(rows))
+        return SafeActionExecution(result, tuple(rows), durable_intent=intent)
 
     def _record_reconciliation(
         self,

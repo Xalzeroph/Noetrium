@@ -12,8 +12,8 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 from noetrium_platform.foundation.kernel.concurrency.composition import (
     build_concurrency_runtime,
 )
-from noetrium_platform.research.experimentation.study.api import (
-    ExperimentPlan,
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    StudyExecutionPlan,
     StudyConcurrencyPolicy,
     StudyMetricObservation,
     StudyProtocol,
@@ -21,7 +21,7 @@ from noetrium_platform.research.experimentation.study.api import (
     VariantBinding,
     VariantKind,
 )
-from noetrium_platform.research.experimentation.study.algorithms import (
+from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
     BasicStudyMetricAggregator,
     DeterministicStudyAssignment,
 )
@@ -54,7 +54,7 @@ def _protocol(
     )
 
 
-def _plan(protocol: StudyProtocol | None = None) -> ExperimentPlan:
+def _plan(protocol: StudyProtocol | None = None) -> StudyExecutionPlan:
     protocol = protocol or _protocol()
     bindings = tuple(
         VariantBinding(
@@ -67,10 +67,10 @@ def _plan(protocol: StudyProtocol | None = None) -> ExperimentPlan:
         for variant in protocol.variants
     )
     assignments = DeterministicStudyAssignment().assignments(protocol)
-    return ExperimentPlan.compile(protocol, bindings, assignments)
+    return StudyExecutionPlan.compile(protocol, bindings, assignments)
 
 
-def _execute(plan: ExperimentPlan, adapter, *, task_group=None):
+def _execute(plan: StudyExecutionPlan, adapter, *, task_group=None):
     return ExperimentProgramBinding(
         compile_experiment_program(plan),
         adapter,
@@ -188,7 +188,7 @@ def test_scientific_concurrency_policy_is_part_of_protocol_identity() -> None:
 def test_experiment_program_uses_binding_index_not_repeated_linear_lookup() -> None:
     plan = _plan()
     with patch.object(
-        ExperimentPlan,
+        StudyExecutionPlan,
         "binding_for",
         side_effect=AssertionError("matrix execution performed a linear binding scan"),
     ):
@@ -210,7 +210,7 @@ def test_plan_rejects_binding_order_that_diverges_from_protocol() -> None:
     )
     assignments = DeterministicStudyAssignment().assignments(protocol)
     with pytest.raises(ValueError, match="variant order"):
-        ExperimentPlan.compile(protocol, tuple(reversed(bindings)), assignments)
+        StudyExecutionPlan.compile(protocol, tuple(reversed(bindings)), assignments)
 
 
 def test_assignment_order_is_frozen_plan_authority() -> None:
@@ -226,8 +226,8 @@ def test_assignment_order_is_frozen_plan_authority() -> None:
         for variant in protocol.variants
     )
     assignments = DeterministicStudyAssignment().assignments(protocol)
-    forward = ExperimentPlan.compile(protocol, bindings, assignments)
-    reverse = ExperimentPlan.compile(protocol, bindings, tuple(reversed(assignments)))
+    forward = StudyExecutionPlan.compile(protocol, bindings, assignments)
+    reverse = StudyExecutionPlan.compile(protocol, bindings, tuple(reversed(assignments)))
     assert forward.assignment_digest != reverse.assignment_digest
     assert forward.plan_digest != reverse.plan_digest
 

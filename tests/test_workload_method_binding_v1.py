@@ -12,7 +12,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRuntimeContext,
 )
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
-from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 from noetrium_platform.research.experimentation.workload.api import (
     WorkloadEvaluation,
     WorkloadMethodInvocation,

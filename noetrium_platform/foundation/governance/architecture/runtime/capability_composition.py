@@ -41,7 +41,7 @@ from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeRegistryP
 
 
 _ARCHITECTURE_SUBJECT = CompositionSubject.system_subject(
-    SystemIdentity("governance", ("architecture",))
+    SystemIdentity("governance")
 )
 
 

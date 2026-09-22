@@ -208,5 +208,5 @@ def test_route_preflight_is_atomic_for_disconnected_recipient() -> None:
         raise AssertionError("disconnected recipient must fail before any route commit")
 
     assert machine.inspect().revision == 1
-    state = thaw_json(machine.inspect().state)["_program"]["data"]
+    state = thaw_json(machine.checkpoint().state)["_program"]["data"]
     assert state["inboxes"]["b"] == []

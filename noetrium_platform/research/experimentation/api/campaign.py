@@ -17,9 +17,9 @@ from noetrium_platform.research.experimentation.binding import (
     ResearchBindingContribution,
     ResearchRequirementResolution,
 )
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BoundStudyExecutionPort,
-    ExperimentPlan,
+    StudyExecutionPlan,
     ResearchStudyDefinition,
     StudyMatrixExecutionReport,
     StudyMetricAggregationPort,
@@ -39,14 +39,14 @@ def _token(value: object, field_name: str) -> str:
 class ResearchCampaignStudy:
     lane_id: str
     research_plan_digest: str
-    plan: ExperimentPlan
+    plan: StudyExecutionPlan
     study_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         _token(self.lane_id, "campaign lane_id")
         require_sha256(self.research_plan_digest, "campaign research_plan_digest")
-        if type(self.plan) is not ExperimentPlan:
-            raise TypeError("campaign study plan must be ExperimentPlan")
+        if type(self.plan) is not StudyExecutionPlan:
+            raise TypeError("campaign study plan must be StudyExecutionPlan")
         self.plan.assert_consistent()
         object.__setattr__(
             self,

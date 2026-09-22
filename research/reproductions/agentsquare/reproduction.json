@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentsquare",
-  "package_digest": "9d2c078177a96d701fced07fd90e51aedded74b2603bbeea671f017da3b5049c",
+  "package_digest": "66f448124bda7ff227ab0acab517bc5492c4389ad6c2dbbd0460468ad7f6f77e",
   "definition_digest": "7a28adc381ac559387f01015d08ae15ad26c548ef93de9662c7a88c33fad1e95",
   "source_registry_digest": "7b145319e1ac2f8a0a7f4f82a53ec059ffbca8e90126ab15ca7742977508805d",
   "lifecycle": "protocol_bound",
@@ -110,7 +110,7 @@
       "kind": "study",
       "path": "research/reproductions/agentsquare/study.py",
       "declaration_digest": "2b561627a5beec587556ec385b02d5d0e19720549040513ef468a6894701cb01",
-      "content_sha256": "6c32f51a9ebbec40190380884aeaf7f6ccc68f93ac123613fb477c94139c5577"
+      "content_sha256": "aaa6ac850c3396f23143fe1cb93064ecf3053bb2a0a016894596d393a39a19b2"
     }
   ],
   "primary_executable": "research/reproductions/agentsquare/program.py",
@@ -221,7 +221,7 @@
     },
     {
       "path": "tests/test_scientific_agentsquare_six_benchmark_studies_v1.py",
-      "content_sha256": "2a0018b67e2c51c7280f7eca2e54293a5bc469a83a42fe2048780cdff96368d8"
+      "content_sha256": "03f38b6974b5a4106b7f9608218e610c039a082fae15b5fe973eb6ccce74d549"
     },
     {
       "path": "tests/test_scientific_agentsquare_webshop_cut_v1.py",

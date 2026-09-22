@@ -2,7 +2,7 @@ from dataclasses import replace
 
 import pytest
 
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     AnalysisPlan,
     ExecutionMode,
     ExperimentDefinition,
@@ -12,7 +12,7 @@ from noetrium_platform.research.experimentation.experiment.api import (
     ObservationEnvelope,
     ObservationKind,
 )
-from noetrium_platform.research.experimentation.experiment.runtime.matrix import (
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix import (
     InMemoryObservationProjection,
     UniversalExperimentKernel,
 )

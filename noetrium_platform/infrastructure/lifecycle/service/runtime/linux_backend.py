@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
-from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessSupervisorPort
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
 
 from .capture_paths import ServiceCapturePaths
@@ -23,14 +22,13 @@ class LinuxProcessBackend:
 
     def __init__(
         self,
-        task_group: TaskGroupPort,
+        process_supervisor: ProcessSupervisorPort,
         *,
         proc_root: Path = Path("/proc"),
         procfs: LinuxProcfsReader | None = None,
     ) -> None:
         self._procfs = procfs or LinuxProcfsReader(proc_root)
         children = LinuxChildRegistry()
-        process_supervisor = build_process_supervisor(task_group)
         self._verifier = LinuxExactProcessVerifier(self._procfs)
         self._spawner = LinuxProcessSpawner(self._procfs, children, process_supervisor)
         self._signaler = LinuxProcessSignaler(self._procfs, children, process_supervisor)

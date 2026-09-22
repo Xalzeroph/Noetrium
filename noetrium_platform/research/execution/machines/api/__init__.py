@@ -6,6 +6,12 @@ MachineExecutor + Machine Journal remain the scientific transition authority.
 """
 from __future__ import annotations
 
+from .host_runtime import (
+    ResearchMachineRunPort,
+    ResearchMachineSessionPort,
+    ResearchProgramHostFactoryPort,
+    ResearchProgramHostPort,
+)
 from ..program import (
     ProgramHandlerRegistry,
     ProgramHandlerRegistryPort,
@@ -57,7 +63,6 @@ from ..program_host import (
     ResearchHostExecution,
     ResearchHostHandler,
     ResearchHostOperation,
-    ResearchProgramHost,
 )
 from ..child_machine_batch import (
     BatchCapableRegisteredChildResearchMachineExecutor,
@@ -115,6 +120,7 @@ from ..capability_program import (
     capability_mediator_binding_digest,
     capability_program_from_policy,
     capability_runtime_module,
+    capability_runtime_operations,
 )
 from ..model_invocation_program import (
     FunctionalModelInvocationRequestFactory,
@@ -212,6 +218,7 @@ from ..memory_program import (
     MemoryPresetSpec,
     MemoryRecord,
     compile_memory_program,
+    default_memory_handlers,
     memory_initial_data,
     memory_rule_set,
 )
@@ -222,6 +229,7 @@ from ..environment_program import (
     environment_rule_set,
     execution_context_from_payload,
     execution_context_payload,
+    state_machine_environment_handlers,
 )
 from ..optimization_program import (
     ObjectiveDirection,
@@ -237,6 +245,10 @@ from ..agent_turn import (
     participant_turn_initial_data,
     participant_turn_program,
 )
+
+from ..program_host import ResearchProgramHost
+from ..environment_program import state_machine_environment_host
+from ..memory_program import default_memory_host
 
 __all__ = [
     "CapabilityMediationDenied",
@@ -357,7 +369,6 @@ __all__ = [
     "ResearchHostOperation",
     "ResearchProgram",
     "ResearchProgramBuilder",
-    "ResearchProgramHost",
     "ResearchRunProgramBuilder",
     "RuleDispatchMode",
     "RunConcern",
@@ -430,4 +441,14 @@ __all__ = [
     "synchronization_runtime_module",
     "visibility_initial_data",
     "visibility_runtime_module",
+    "ResearchMachineRunPort",
+    "ResearchMachineSessionPort",
+    "ResearchProgramHostFactoryPort",
+    "ResearchProgramHostPort",
+    "capability_runtime_operations",
+    "default_memory_handlers",
+    "state_machine_environment_handlers",
+    "ResearchProgramHost",
+    "state_machine_environment_host",
+    "default_memory_host",
 ]

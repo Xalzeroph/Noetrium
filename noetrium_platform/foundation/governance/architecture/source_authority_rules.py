@@ -80,7 +80,7 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[_AuthorityRule, ...] = (
     SourceAuthorityRule(
         "study.checkpoint_publish",
         "store.publish",
-        ("noetrium_platform.research.experimentation.checkpoint.runtime.capture",),
+        ("noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.capture",),
         suffix_call("store.publish", "_store.publish"),
     ),
     SourceAuthorityRule(

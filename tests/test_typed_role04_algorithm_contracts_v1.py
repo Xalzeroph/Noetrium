@@ -68,6 +68,8 @@ def test_qualified_binding_checks_last_canary_digest() -> None:
             runtime_qualification_digest="4" * 64, host_identity_digest="5" * 64,
             prompt_generation="prompt-v1", max_admitted_concurrency=1,
             runtime_canary_evidence_digests=("6" * 64, "7" * 64, "bad"),
+            tokenizer_sha256="8" * 64,
+            chat_template_sha256=None,
         )
 
 

@@ -24,6 +24,7 @@ from noetrium_platform.research.execution.workflow.runtime.program_trial import 
     TrialProgramFrame,
     TrialProgramOperation,
     TrialProgramRestorer,
+    runtime_program_trial_configuration_digest,
 )
 from .action_contracts import ActionPreflightProof
 from .contracts import ContextActionOperationPort
@@ -376,19 +377,19 @@ _CONTEXT_ACTION_OPERATIONS = (
     ),
 )
 
-CONTEXT_ACTION_TRIAL_CONFIGURATION_DIGEST = canonical_digest({
-    "program_digest": CONTEXT_ACTION_TRIAL_PROGRAM.program_digest,
-    "surface_id": "context_action.operations.v1",
-    "max_steps": 32,
-    "operation_implementations": tuple(
-        (item.operation, item.implementation_digest)
-        for item in _CONTEXT_ACTION_OPERATIONS
-    ),
-    "restorer_implementation_digest": canonical_digest({
-        "restorer": "workflow.context-action.restore",
-        "implementation_revision": 1,
-    }),
+_CONTEXT_ACTION_RESTORER_IMPLEMENTATION_DIGEST = canonical_digest({
+    "restorer": "workflow.context-action.restore",
+    "implementation_revision": 1,
 })
+
+CONTEXT_ACTION_TRIAL_CONFIGURATION_DIGEST = runtime_program_trial_configuration_digest(
+    program=CONTEXT_ACTION_TRIAL_PROGRAM,
+    surface_id="context_action.operations.v1",
+    max_steps=32,
+    operations=_CONTEXT_ACTION_OPERATIONS,
+    restorer_implementation_digest=_CONTEXT_ACTION_RESTORER_IMPLEMENTATION_DIGEST,
+)
+
 
 
 def context_action_trial_protocol(
@@ -405,10 +406,7 @@ def context_action_trial_protocol(
         journal=journal,
         snapshot_store=snapshot_store,
         restorer=_restore_context_action,
-        restorer_implementation_digest=canonical_digest({
-            "restorer": "workflow.context-action.restore",
-            "implementation_revision": 1,
-        }),
+        restorer_implementation_digest=_CONTEXT_ACTION_RESTORER_IMPLEMENTATION_DIGEST,
     )
 
 

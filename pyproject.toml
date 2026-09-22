@@ -32,9 +32,9 @@ noetrium = "noetrium_platform.product.operator.composition.research:main"
 noetrium-forensics = "noetrium_platform.product.operator.composition.cli:main"
 noetrium-architecture-gate = "noetrium_platform.foundation.governance.architecture.gate:main"
 noetrium-manage = "noetrium_platform.product.operator.maintenance.runtime.management_cli:main"
-noetrium-algorithm = "noetrium_platform.foundation.governance.algorithm.cli:main"
-noetrium-concurrency = "noetrium_platform.foundation.governance.concurrency.cli:main"
-noetrium-performance = "noetrium_platform.foundation.governance.performance.cli:main"
+noetrium-algorithm = "noetrium_platform.foundation.governance.analysis.algorithm.cli:main"
+noetrium-concurrency = "noetrium_platform.foundation.governance.analysis.concurrency.cli:main"
+noetrium-performance = "noetrium_platform.foundation.governance.analysis.performance.cli:main"
 noetrium-repository-boundary = "noetrium_platform.foundation.governance.repository_boundary.cli:main"
 
 [tool.setuptools.packages.find]

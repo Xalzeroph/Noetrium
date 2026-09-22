@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimus1_minecraft",
-  "package_digest": "461269f505e15c3a861c5d77861f8b6bbab65f70bb38df3edf3f2898eef51b9f",
+  "package_digest": "61b034496f4e0ce6a694bff56f15dc8f6e2b548fb06e5c1c8ae5d5e1dfb8f899",
   "definition_digest": "01bdb975a7aa764bb4e645b5b65837f76725210438d24c2ce8ab6d37b79bf8b5",
   "source_registry_digest": "a3acfe40764ad2d81394436f3bd10ed392d9c039e7f7dd83810b26b7bffbf7fe",
   "lifecycle": "protocol_bound",
@@ -103,7 +103,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/optimus1_minecraft/benchmark.py",
       "declaration_digest": "60093beaf0e23dcd714b2a8517e3241b4783209020fd884d4247e8a860d4b03a",
-      "content_sha256": "07066f2927be89a57c0c682cb17066409c90624acc041c295da9c27b286ac19c"
+      "content_sha256": "4c6a7e9bbe885409150ad0005cbb4db241fb20e58cc47b9b728f36488c444e74"
     },
     {
       "kind": "fidelity",
@@ -115,19 +115,19 @@
       "kind": "method_program",
       "path": "research/reproductions/optimus1_minecraft/program.py",
       "declaration_digest": "933f6ee7d053cc455e0dc540c61ecbdebc5af0b2e05b708aea49c4c9a44ecfef",
-      "content_sha256": "b36b5f3de2c3916b911d67118f9268408e2e20e8d74b68e91cdf351c7ce1eaae"
+      "content_sha256": "cac6b6505b2ceae89afaedbbab2dd7283fbf6217dfd153dba346aa32aea3a831"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/optimus1_minecraft/memory.py",
       "declaration_digest": "95cf8bca4d80c759237c2e81b7ddf3e57b04150e15d6056d7c7132feb0532c87",
-      "content_sha256": "b43332f8c18abc5be621b551f1459e423ce830e1c0fe5b8b1268da7471f453a6"
+      "content_sha256": "23c56e963b7dfa461dd0a0637bf321ac0835bdaa982b52a13a12bb54df629b99"
     },
     {
       "kind": "study",
       "path": "research/reproductions/optimus1_minecraft/study.py",
       "declaration_digest": "4727bef3dbd5ed894003ddb4a09d5cbaf4a2af2d06a8badb77e17d23c96e6633",
-      "content_sha256": "387268a38b38fd4dd66b20ba64979d7b91a0a1c0713cdc6eae20a84788906676"
+      "content_sha256": "344f7ab317a4d161173613a505f7dbcf0175ea76488ea986b09f3961f7d0ddbb"
     },
     {
       "kind": "support",

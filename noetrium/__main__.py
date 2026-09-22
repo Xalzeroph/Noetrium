@@ -7,5 +7,5 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "nsh":
         from .nsh import main as nsh_main
         raise SystemExit(nsh_main(sys.argv[2:]))
-    from noetrium_platform.product.operator.composition.research import main
+    from noetrium_platform.composition.operator.wiring.research import main
     raise SystemExit(main())

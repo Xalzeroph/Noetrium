@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.foundation.governance.repository_boundary.api import RepositoryBoundaryAuditor
+from noetrium_platform.foundation.governance.architecture.repository_boundary.api import RepositoryBoundaryAuditor
 from noetrium_platform.product.operator.api import (
     ProjectCreateReceipt,
     ProjectCreateRequest,

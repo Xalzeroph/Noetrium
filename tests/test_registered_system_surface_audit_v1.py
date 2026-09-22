@@ -67,7 +67,7 @@ def test_product_authoring_contracts_are_reachable_through_unified_api() -> None
         "noetrium_platform.research.execution.workflow.api"
     )
     assert Study.__module__.startswith(
-        "noetrium_platform.research.experimentation.study"
+        "noetrium_platform.research.experimentation.lifecycle.study"
     )
     for private_name in ("DeploymentStatusIdentity", "LocalCommandRunnerPort"):
         assert api.owners(private_name) == ()

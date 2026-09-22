@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from typing import Mapping
 
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessCommandRunnerPort
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessCommandRunnerPort
 
 from .tmux_contracts import TmuxCommandResult, TmuxCommandTimeout
 

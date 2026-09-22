@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chatdev_v1",
-  "package_digest": "e6d9aa5e95e65ae2fabe57942ea731f8fea6c42e71451f38d4e08d8d1cf91baf",
+  "package_digest": "c2ae5efc96a79a85a928a6e3ae30124b8f46bcfa719c7bd975da27da68b41ecb",
   "definition_digest": "dc8c73c41472cca6782492175e4c021eb185498a0b316ff0cd820a281161b143",
   "source_registry_digest": "ef8ddd9ce1f6e9a889a6c727ad6145b62925d7559d7022c815721004d1c57702",
   "lifecycle": "protocol_bound",
@@ -102,7 +102,7 @@
       "kind": "method_program",
       "path": "research/reproductions/chatdev_v1/program.py",
       "declaration_digest": "48f8fe7c09d9686c1e7b154acc7738b706846aba9ef263c81d1b5e286e396242",
-      "content_sha256": "3c4bb686e562164df6898e210b54d7e1d700d16e8c062f73448cdc5b4daac55f"
+      "content_sha256": "412f0532fbd3c200822a908e97f997dd32160a3d1597316d342137be5d03a96c"
     },
     {
       "kind": "research_program",
@@ -120,7 +120,7 @@
       "kind": "study",
       "path": "research/reproductions/chatdev_v1/study.py",
       "declaration_digest": "37320fc0759d79f291c09466826f67cb178053bd988fd206ee61719771a71d2e",
-      "content_sha256": "61bca01623d8e6aa682a6659ee39de5a459501a98b4a34f18a0f45eedd8d9b7f"
+      "content_sha256": "5b3f14777a793af7a2e9afaeab2cf4d764d2ba9baf11591fdbe95667dc9c7642"
     },
     {
       "kind": "support",
@@ -160,7 +160,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_chatdev_method_program_v1.py",
-      "content_sha256": "a36e30f2fdf481f71699b389ef288500df935f95649fc7e193c0c809d1523984"
+      "content_sha256": "a1b489988d8436ec6525da319bd623e3e556f5058c214035021e0393de1dac76"
     },
     {
       "path": "tests/test_scientific_chatdev_phase_runtime_v1.py",

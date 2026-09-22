@@ -6,11 +6,11 @@ import pytest
 
 from noetrium_platform.evidence.artifact.reference.api import ArtifactReference
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTrialProtocolIdentity,
 )
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     MeasurementDefinition,
     MeasurementProtocol,
     MeasurementValue,
@@ -30,7 +30,7 @@ from noetrium_platform.research.experimentation.study.api import (
     VariantBinding,
     VariantKind,
 )
-from noetrium_platform.research.experimentation.run.runtime.trial import (
+from noetrium_platform.research.experimentation.lifecycle.run.runtime.trial import (
     TrialVerifierOrchestrator,
     _require_measurements,
 )

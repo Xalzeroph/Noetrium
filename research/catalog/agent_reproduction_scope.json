@@ -1,6 +1,6 @@
 {
   "schema": "noetrium.agent-reproduction-scope.v1",
-  "updated_at": "2026-09-19",
+  "updated_at": "2026-09-22",
   "authority": "discovery_scope_only",
   "reproduction_authority": "research/catalog/research_program.json",
   "scope": "all_agent_related_research",
@@ -136,6 +136,29 @@
       ]
     },
     {
+      "id": "adacm2",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "self-improvement",
+        "evaluation-benchmarks"
+      ]
+    },
+    {
+      "id": "adaptagent",
+      "year": 2025,
+      "source": "https://aclanthology.org/2025.acl-long.1008/",
+      "domains": [
+        "multimodal",
+        "web-agents",
+        "self-improvement",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
       "id": "adas-meta-agent-search",
       "year": 2025,
       "source": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/36b7acf6f6010652b3f2a433774a66fe-Abstract-Conference.html",
@@ -153,6 +176,20 @@
         "planning-search",
         "runtime-systems",
         "self-improvement"
+      ]
+    },
+    {
+      "id": "agemem_acl2026",
+      "year": 2026,
+      "source": "https://aclanthology.org/2026.acl-long.981/",
+      "domains": [
+        "memory",
+        "context-management",
+        "tool-use",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop",
+        "environment-interfaces"
       ]
     },
     {
@@ -193,6 +230,20 @@
       "source": "https://arxiv.org/abs/2407.01489",
       "domains": [
         "software-engineering"
+      ]
+    },
+    {
+      "id": "agentsquare",
+      "year": 2025,
+      "source": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/0ae94013da7cd459402fd77874e09ee3-Abstract-Conference.html",
+      "domains": [
+        "memory",
+        "web-agents",
+        "tool-use",
+        "planning-search",
+        "self-improvement",
+        "agent-loop",
+        "environment-interfaces"
       ]
     },
     {
@@ -251,6 +302,18 @@
       ]
     },
     {
+      "id": "astranav_memory_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Hu_AstraNav-Memory_Contexts_Compression_for_Long_Memory_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "context-management",
+        "embodied-robotics",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
       "id": "autocoderover",
       "year": 2024,
       "source": "https://arxiv.org/abs/2404.05427",
@@ -273,6 +336,20 @@
       "source": "https://arxiv.org/abs/2303.17760",
       "domains": [
         "multi-agent"
+      ]
+    },
+    {
+      "id": "ces_gui_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Deng_Training_High-Level_Schedulers_with_Execution-Feedback_Reinforcement_Learning_for_Long-Horizon_GUI_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "context-management",
+        "gui-computer-use",
+        "multi-agent",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop"
       ]
     },
     {
@@ -311,6 +388,30 @@
       ]
     },
     {
+      "id": "cogagent",
+      "year": 2024,
+      "source": "https://openaccess.thecvf.com/content/CVPR2024/html/Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024_paper.html",
+      "domains": [
+        "multimodal",
+        "gui-computer-use",
+        "web-agents",
+        "agent-loop",
+        "environment-interfaces"
+      ]
+    },
+    {
+      "id": "contextual-experience-replay",
+      "year": 2025,
+      "source": "https://aclanthology.org/2025.acl-long.694/",
+      "domains": [
+        "context-management",
+        "web-agents",
+        "self-improvement",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
       "id": "crag",
       "year": 2024,
       "source": "https://arxiv.org/abs/2401.15884",
@@ -329,6 +430,130 @@
       ]
     },
     {
+      "id": "crossha_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/He_Training_One_Model_to_Master_Cross-Level_Agentic_Actions_via_Reinforcement_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "context-management",
+        "game-worlds",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "d3d_vlp_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_D3D-VLP_Dynamic_3D_Vision-Language-Planning_Model_for_Embodied_Grounding_and_Navigation_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "retrieval-knowledge",
+        "multimodal",
+        "embodied-robotics",
+        "reasoning",
+        "planning-search",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "dars",
+      "year": 2025,
+      "source": "https://aclanthology.org/2025.acl-long.973/",
+      "domains": [
+        "software-engineering",
+        "self-improvement",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "dejavu_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_Dejavu_Towards_Experience_Feedback_Learning_for_Embodied_Intelligence_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "embodied-robotics",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "deps-minecraft",
+      "year": 2023,
+      "source": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html",
+      "domains": [
+        "game-worlds",
+        "planning-search",
+        "evaluation-benchmarks",
+        "agent-loop",
+        "environment-interfaces"
+      ]
+    },
+    {
+      "id": "drvideo",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/CVPR2025/html/Ma_DrVideo_Document_Retrieval_Based_Long_Video_Understanding_CVPR_2025_paper.html",
+      "domains": [
+        "retrieval-knowledge",
+        "multimodal",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "eaglet_acl2026",
+      "year": 2026,
+      "source": "https://aclanthology.org/2026.acl-long.597/",
+      "domains": [
+        "context-management",
+        "web-agents",
+        "planning-search",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop",
+        "environment-interfaces"
+      ]
+    },
+    {
+      "id": "echotrail_gui_cvprf2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026F/html/Li_EchoTrail-GUI_Building_Actionable_Memory_for_GUI_Agents_via_Critic-Guided_Self-Exploration_CVPRF_2026_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "gui-computer-use",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "ego2web_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Yu_Ego2Web_A_Web_Agent_Benchmark_Grounded_in_Egocentric_Videos_CVPR_2026_paper.html",
+      "domains": [
+        "multimodal",
+        "web-agents",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "embodied-videoagent",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/ICCV2025/html/Fan_Embodied_VideoAgent_Persistent_Memory_from_Egocentric_Videos_and_Embodied_Sensors_ICCV_2025_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "embodied-robotics",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
       "id": "exact",
       "year": 2024,
       "source": "https://arxiv.org/abs/2410.02052",
@@ -337,6 +562,39 @@
         "reflection-self-correction",
         "self-improvement",
         "web-agents"
+      ]
+    },
+    {
+      "id": "flash-vstream",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Flash-VStream_Efficient_Real-Time_Understanding_for_Long_Video_Streams_ICCV_2025_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "evaluation-benchmarks"
+      ]
+    },
+    {
+      "id": "flow-modularized-agentic-workflow",
+      "year": 2025,
+      "source": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html",
+      "domains": [
+        "planning-search",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "foreact_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Zhang_ForeAct_Steering_Your_VLA_with_Efficient_Visual_Foresight_Planning_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "embodied-robotics",
+        "planning-search",
+        "world-models",
+        "evaluation-benchmarks",
+        "agent-loop"
       ]
     },
     {
@@ -378,6 +636,17 @@
       ]
     },
     {
+      "id": "hats_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Shao_HATS_Hardness-Aware_Trajectory_Synthesis_for_GUI_Agents_CVPR_2026_paper.html",
+      "domains": [
+        "gui-computer-use",
+        "web-agents",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
       "id": "hugginggpt",
       "year": 2023,
       "source": "https://arxiv.org/abs/2303.17580",
@@ -389,12 +658,50 @@
       ]
     },
     {
+      "id": "implement_acl2026",
+      "year": 2026,
+      "source": "https://aclanthology.org/2026.acl-long.827/",
+      "domains": [
+        "embodied-robotics",
+        "planning-search",
+        "world-models",
+        "evaluation-benchmarks",
+        "agent-loop",
+        "environment-interfaces"
+      ]
+    },
+    {
       "id": "inner-monologue",
       "year": 2022,
       "source": "https://arxiv.org/abs/2207.05608",
       "domains": [
         "embodied-robotics",
         "reasoning"
+      ]
+    },
+    {
+      "id": "ishift_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Mehrotra_iSHIFT_Lightweight_Slow-Fast_GUI_Agent_with_Adaptive_Perception_CVPR_2026_paper.html",
+      "domains": [
+        "gui-computer-use",
+        "reasoning",
+        "self-improvement",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "jarvis1",
+      "year": 2025,
+      "source": "https://ieeexplore.ieee.org/document/10778628/",
+      "domains": [
+        "memory",
+        "multimodal",
+        "game-worlds",
+        "embodied-robotics",
+        "agent-loop",
+        "environment-interfaces"
       ]
     },
     {
@@ -436,6 +743,29 @@
       ]
     },
     {
+      "id": "lmee_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_Explore_with_Long-term_Memory_A_Benchmark_and_Multimodal_LLM-based_Reinforcement_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "embodied-robotics",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "lvagent",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/ICCV2025/html/Chen_LVAgent_Long_Video_Understanding_by_Multi-Round_Dynamical_Collaboration_of_MLLM_ICCV_2025_paper.html",
+      "domains": [
+        "multimodal",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
       "id": "ma-lmm",
       "year": 2024,
       "source": "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html",
@@ -463,6 +793,17 @@
         "protocols-interoperability",
         "tool-use",
         "runtime-systems"
+      ]
+    },
+    {
+      "id": "mem_gallery_acl2026",
+      "year": 2026,
+      "source": "https://aclanthology.org/2026.acl-long.1892/",
+      "domains": [
+        "memory",
+        "multimodal",
+        "evaluation-benchmarks",
+        "agent-loop"
       ]
     },
     {
@@ -515,6 +856,29 @@
       ]
     },
     {
+      "id": "mm_mem_acl2026",
+      "year": 2026,
+      "source": "https://aclanthology.org/2026.acl-long.533/",
+      "domains": [
+        "memory",
+        "context-management",
+        "multimodal",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "mmbench_gui_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_MMBench-GUI_A_Unified_Hierarchical_Evaluation_Framework_for_Multi-Platform_GUI_Agents_CVPR_2026_paper.html",
+      "domains": [
+        "gui-computer-use",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
       "id": "mobile-agent",
       "year": 2024,
       "source": "https://arxiv.org/abs/2401.16158",
@@ -531,6 +895,19 @@
         "multi-agent",
         "embodied-robotics",
         "planning-search"
+      ]
+    },
+    {
+      "id": "motus_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Bi_Motus_A_Unified_Latent_Action_World_Model_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "embodied-robotics",
+        "world-models",
+        "evaluation-benchmarks",
+        "agent-loop"
       ]
     },
     {
@@ -576,6 +953,83 @@
       "domains": [
         "embodied-robotics",
         "multimodal"
+      ]
+    },
+    {
+      "id": "openwebvoyager",
+      "year": 2025,
+      "source": "https://aclanthology.org/2025.acl-long.1336/",
+      "domains": [
+        "multimodal",
+        "web-agents",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "optimus1-minecraft",
+      "year": 2024,
+      "source": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+      "domains": [
+        "memory",
+        "context-management",
+        "multimodal",
+        "game-worlds",
+        "planning-search",
+        "reflection-self-correction",
+        "agent-loop",
+        "environment-interfaces"
+      ]
+    },
+    {
+      "id": "optimus2-minecraft",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html",
+      "domains": [
+        "context-management",
+        "multimodal",
+        "game-worlds",
+        "agent-loop",
+        "environment-interfaces"
+      ]
+    },
+    {
+      "id": "optimusvla_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Li_Global_Prior_Meets_Local_Consistency_Dual-Memory_Augmented_Vision-Language-Action_Model_for_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "embodied-robotics",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "orbit_acl2026",
+      "year": 2026,
+      "source": "https://aclanthology.org/2026.acl-long.1822/",
+      "domains": [
+        "multimodal",
+        "embodied-robotics",
+        "planning-search",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "os_symphony_acl2026",
+      "year": 2026,
+      "source": "https://aclanthology.org/2026.acl-long.1021/",
+      "domains": [
+        "memory",
+        "context-management",
+        "multimodal",
+        "gui-computer-use",
+        "tool-use",
+        "evaluation-benchmarks",
+        "agent-loop"
       ]
     },
     {
@@ -636,6 +1090,16 @@
       ]
     },
     {
+      "id": "providellm",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "evaluation-benchmarks"
+      ]
+    },
+    {
       "id": "qlass",
       "year": 2025,
       "source": "https://arxiv.org/abs/2502.02584",
@@ -643,6 +1107,17 @@
         "evaluation-benchmarks",
         "planning-search",
         "training"
+      ]
+    },
+    {
+      "id": "r2d2",
+      "year": 2025,
+      "source": "https://aclanthology.org/2025.acl-long.1464/",
+      "domains": [
+        "memory",
+        "web-agents",
+        "evaluation-benchmarks",
+        "agent-loop"
       ]
     },
     {
@@ -666,6 +1141,19 @@
       ]
     },
     {
+      "id": "refact_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_ReFAct_Empowering_Multimodal_Web_Agents_with_Visual_and_Context_Focusing_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "context-management",
+        "multimodal",
+        "web-agents",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
       "id": "reflexion",
       "year": 2023,
       "source": "https://arxiv.org/abs/2303.11366",
@@ -673,6 +1161,30 @@
         "memory",
         "reflection-self-correction",
         "self-improvement"
+      ]
+    },
+    {
+      "id": "rewind",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/CVPR2025/html/Diko_ReWind_Understanding_Long_Videos_with_Instructed_Learnable_Memory_CVPR_2025_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "evaluation-benchmarks"
+      ]
+    },
+    {
+      "id": "roboagent_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Xu_RoboAgent_Chaining_Basic_Capabilities_for_Embodied_Task_Planning_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "embodied-robotics",
+        "planning-search",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop",
+        "environment-interfaces"
       ]
     },
     {
@@ -713,6 +1225,17 @@
       ]
     },
     {
+      "id": "seeclick",
+      "year": 2024,
+      "source": "https://aclanthology.org/2024.acl-long.505/",
+      "domains": [
+        "multimodal",
+        "gui-computer-use",
+        "agent-loop",
+        "environment-interfaces"
+      ]
+    },
+    {
       "id": "self-consistency",
       "year": 2023,
       "source": "https://openreview.net/forum?id=1PL1NIMMrw",
@@ -737,6 +1260,29 @@
       "domains": [
         "reflection-self-correction",
         "self-improvement"
+      ]
+    },
+    {
+      "id": "star_toggle_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_See_Think_Act_Teaching_Multimodal_Agents_to_Effectively_Interact_with_CVPR_2026_paper.html",
+      "domains": [
+        "multimodal",
+        "gui-computer-use",
+        "reasoning",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "steve-1",
+      "year": 2023,
+      "source": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/dd03f856fc7f2efeec8b1c796284561d-Abstract-Conference.html",
+      "domains": [
+        "multimodal",
+        "game-worlds",
+        "agent-loop",
+        "environment-interfaces"
       ]
     },
     {
@@ -814,6 +1360,72 @@
       ]
     },
     {
+      "id": "ui_agile_cvprf2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026F/html/Lian_UI-AGILE_Advancing_GUI_Agents_with_Effective_Reinforcement_Learning_and_Precise_CVPRF_2026_paper.html",
+      "domains": [
+        "gui-computer-use",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "vca-video",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "planning-search",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "videoagent-memory",
+      "year": 2024,
+      "source": "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/3241_ECCV_2024_paper.php",
+      "domains": [
+        "memory",
+        "multimodal",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "videoarm",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Yin_VideoARM_Agentic_Reasoning_over_Hierarchical_Memory_for_Long-Form_Video_Understanding_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "reasoning",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "videollamb",
+      "year": 2025,
+      "source": "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "evaluation-benchmarks"
+      ]
+    },
+    {
+      "id": "vilomem_cvpr2026",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Bo_ViLoMem_Agentic_Learner_with_Grow-and-Refine_Multimodal_Semantic_Memory_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "multimodal",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
       "id": "vima",
       "year": 2023,
       "source": "https://proceedings.mlr.press/v202/jiang23b.html",
@@ -840,6 +1452,28 @@
         "game-worlds",
         "memory",
         "self-improvement"
+      ]
+    },
+    {
+      "id": "watch-and-learn",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Song_Watch_and_Learn_Learning_to_Use_Computers_from_Online_Videos_CVPR_2026_paper.html",
+      "domains": [
+        "multimodal",
+        "gui-computer-use",
+        "evaluation-benchmarks",
+        "agent-loop"
+      ]
+    },
+    {
+      "id": "webagent-r1",
+      "year": 2025,
+      "source": "https://aclanthology.org/2025.emnlp-main.401/",
+      "domains": [
+        "web-agents",
+        "training",
+        "evaluation-benchmarks",
+        "agent-loop"
       ]
     },
     {
@@ -871,6 +1505,19 @@
         "memory",
         "planning-search",
         "self-improvement"
+      ]
+    },
+    {
+      "id": "worldmm",
+      "year": 2026,
+      "source": "https://openaccess.thecvf.com/content/CVPR2026/html/Yeo_WorldMM_Dynamic_Multimodal_Memory_Agent_for_Long_Video_Reasoning_CVPR_2026_paper.html",
+      "domains": [
+        "memory",
+        "retrieval-knowledge",
+        "multimodal",
+        "reasoning",
+        "evaluation-benchmarks",
+        "agent-loop"
       ]
     }
   ],

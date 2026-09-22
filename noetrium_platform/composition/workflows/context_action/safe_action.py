@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.reliability.effect.api import EffectCompletionEvidence, EffectIntentPhase
+from noetrium_platform.infrastructure.reliability.effect.api import EffectCompletionEvidence, EffectIntent, EffectIntentPhase
 from noetrium_platform.capabilities.environment.api import ActionNotApplied, ActionRecoveryRequired
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
 
@@ -62,14 +62,31 @@ class SafeEnvironmentActionExecutor:
     def confirm_trial_commit(
         self, *, action_type: str, action_payload: object,
         context: ExecutionContext, consumption: EffectCompletionEvidence,
+        durable_intent: EffectIntent | None = None,
     ) -> tuple[OperationResult[JsonValue], ...]:
         if self._effect_intents is None:
             return ()
-        prepared=self.prepare_action(action_type=action_type,action_payload=action_payload,context=context,capability_checked=True)
+        if durable_intent is not None:
+            _, consumed = self._effect_intents.record_consumed(
+                durable_intent,
+                consumption,
+                context,
+            )
+            return (consumed,)
+        prepared = self.prepare_action(
+            action_type=action_type,
+            action_payload=action_payload,
+            context=context,
+            capability_checked=True,
+        )
         if prepared.intent is None:
             return tuple(prepared.operation_results)
-        _,consumed=self._effect_intents.record_consumed(prepared.intent,consumption,context)
-        return tuple(prepared.operation_results)+(consumed,)
+        _, consumed = self._effect_intents.record_consumed(
+            prepared.intent,
+            consumption,
+            context,
+        )
+        return tuple(prepared.operation_results) + (consumed,)
 
     def recover_committed_action(
         self,

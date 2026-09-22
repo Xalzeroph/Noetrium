@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from noetrium_platform.infrastructure.lifecycle.host.bootstrap.api import ServerBootstrapTransactionPort
+from noetrium_platform.infrastructure.lifecycle.host.api import ServerBootstrapTransactionPort
 from noetrium_platform.infrastructure.lifecycle.session.api import (
     PersistentSessionHostPort,
     PersistentSessionReport,

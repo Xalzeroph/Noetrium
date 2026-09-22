@@ -21,6 +21,14 @@ class ServerAuthenticationUnavailable(RuntimeError):
     """The requested non-interactive connection has no usable SSH identity."""
 
 
+class ServerOperationEffect(StrEnum):
+    """Caller knowledge about a server operation side effect."""
+
+    OBSERVATION = "observation"
+    MUTATION = "mutation"
+    UNKNOWN = "unknown"
+
+
 class ServerTransportFailureKind(StrEnum):
     """Stable classification of an SSH/SCP transport result."""
 

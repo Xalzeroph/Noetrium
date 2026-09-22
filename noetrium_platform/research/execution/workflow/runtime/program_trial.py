@@ -23,7 +23,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
     require_sha256,
 )
-from noetrium_platform.research.execution.machines import (
+from noetrium_platform.research.execution.machines.api import (
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchProgram,
@@ -92,6 +92,26 @@ class TrialProgramOperation:
         )
 
 
+
+def runtime_program_trial_configuration_digest(
+    *,
+    program: ResearchProgram,
+    surface_id: str,
+    max_steps: int,
+    operations: tuple[TrialProgramOperation, ...],
+    restorer_implementation_digest: str | None = None,
+) -> str:
+    return canonical_digest({
+        "program_digest": program.program_digest,
+        "surface_id": surface_id,
+        "max_steps": max_steps,
+        "operation_implementations": tuple(
+            (item.operation, item.implementation_digest) for item in operations
+        ),
+        "restorer_implementation_digest": restorer_implementation_digest,
+    })
+
+
 @dataclass(slots=True)
 class _TrialBinding:
     surface: object
@@ -153,6 +173,7 @@ class RuntimeProgramTrialProtocol:
         self.operations = operations
         self.max_steps = max_steps
         owned_journal = journal if journal is not None else InMemoryMachineJournal()
+        self._journal = owned_journal
         runtime_operations: list[ResearchHostOperation] = []
         for item in operations:
             def invoke(
@@ -209,16 +230,36 @@ class RuntimeProgramTrialProtocol:
             },
             binding_restorer=binding_restorer,
         )
-        self.configuration_digest = canonical_digest({
-            "program_digest": program.program_digest,
-            "surface_id": self.surface_id,
-            "max_steps": max_steps,
-            "operation_implementations": tuple(
-                (item.operation, item.implementation_digest)
-                for item in operations
-            ),
-            "restorer_implementation_digest": restorer_implementation_digest,
-        })
+        self.configuration_digest = runtime_program_trial_configuration_digest(
+            program=program,
+            surface_id=self.surface_id,
+            max_steps=max_steps,
+            operations=operations,
+            restorer_implementation_digest=restorer_implementation_digest,
+        )
+
+    def _attempt_machine_id(
+        self,
+        context: ExecutionContext,
+    ) -> str:
+        cycle_id = context.decision_cycle_id or context.span_id
+        base = (
+            f"trial-runtime:{context.run_id}:{cycle_id}:"
+            f"{self.program.program_digest[:16]}"
+        )
+        for attempt in range(4096):
+            machine_id = f"{base}:attempt:{attempt}"
+            latest = self._journal.latest(machine_id)
+            if latest is None:
+                return machine_id
+            if latest.accepted_status not in {
+                MachineStatus.COMPLETED,
+                MachineStatus.FAILED,
+            }:
+                return machine_id
+        raise RuntimeError(
+            "trial RuntimeProgram attempt space exhausted; refusing ambiguous replay"
+        )
 
     @staticmethod
     def _initial_data(
@@ -252,10 +293,7 @@ class RuntimeProgramTrialProtocol:
         if not isinstance(context, ExecutionContext):
             raise TypeError("trial RuntimeProgram requires ExecutionContext")
         cycle_id = context.decision_cycle_id or context.span_id
-        machine_id = (
-            f"trial-runtime:{context.run_id}:{cycle_id}:"
-            f"{self.program.program_digest[:16]}"
-        )
+        machine_id = self._attempt_machine_id(context)
         frame = TrialProgramFrame(context, task, input_kind, input_payload)
         execution = self._host.execute(
             machine_id=machine_id,
@@ -291,6 +329,7 @@ class RuntimeProgramTrialProtocol:
 
 __all__ = [
     "RuntimeProgramTrialProtocol",
+    "runtime_program_trial_configuration_digest",
     "TrialProgramFrame",
     "TrialProgramHandler",
     "TrialProgramOperation",

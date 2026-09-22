@@ -10,9 +10,7 @@ from noetrium_platform.capabilities.environment.embodied.api import (
     SensorModality,
     SensorSpec,
 )
-from noetrium_platform.capabilities.environment.embodied.composition import (
-    EmbodiedEnvironmentProviderAdapter,
-)
+from noetrium_platform.capabilities.environment.embodied.composition import EmbodiedEnvironmentProviderAdapter
 from noetrium_platform.capabilities.environment.embodied.providers import (
     EmbodiedSimulatorEnvironment,
     SimulatorObservation,

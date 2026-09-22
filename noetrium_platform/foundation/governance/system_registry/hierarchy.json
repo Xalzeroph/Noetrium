@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium-layer-hierarchy.v3",
+  "schema": "noetrium-layer-hierarchy.v4",
   "global_contract_prefixes": [
     "noetrium_platform.foundation.kernel.kernel",
     "noetrium_platform.foundation.kernel.record_plane",
@@ -30,7 +30,6 @@
       "members": [
         "artifact",
         "resource",
-        "observability",
         "reliability"
       ],
       "facade": "noetrium_platform.foundation.api",
@@ -89,5 +88,14 @@
   "application_composition": "noetrium_platform.composition",
   "global_systems": [
     "platform"
+  ],
+  "sideplanes": [
+    {
+      "id": "observability",
+      "system": "observability",
+      "base": "governance",
+      "facade": "noetrium_platform.evidence.observability.api",
+      "attachment": "application_composition"
+    }
   ]
 }

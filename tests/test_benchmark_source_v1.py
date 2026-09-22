@@ -1,6 +1,6 @@
 import pytest
 
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkCutSpec,
     BenchmarkSourceKind,
     BenchmarkSourceSpec,

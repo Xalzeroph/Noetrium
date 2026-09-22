@@ -15,7 +15,7 @@ def audit_effect_dependency_invariants(root: Path) -> list[SourceInvariantViolat
         forbidden_prefixes = (
             "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api",
             "noetrium_platform.capabilities.environment.api", "noetrium_platform.capabilities.participant.method.api",
-            "noetrium_platform.research.experimentation.study", "noetrium_platform.composition.workflows",
+            "noetrium_platform.research.experimentation.lifecycle.study", "noetrium_platform.composition.workflows",
             "projects",
         )
         for path in sorted(journal.rglob("*.py")):

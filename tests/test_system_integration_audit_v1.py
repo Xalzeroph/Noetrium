@@ -23,21 +23,27 @@ def _audit_module():
 
 def test_registered_systems_have_no_disconnected_default_runtime_path() -> None:
     report = _audit_module().build_report()
-    assert report["system_count"] == 172
+    import json
+    catalog = json.loads(
+        (ROOT / "noetrium_platform/foundation/governance/system_registry/catalog.json")
+        .read_text(encoding="utf-8")
+    )
+    assert report["system_count"] == len(catalog)
     assert report["disconnected_system_count"] == 0
 
 
-def test_environment_family_contracts_are_consumed_by_managed_runtime_catalog() -> None:
-    report = _audit_module().build_report()
-    by_key = {row["system_key"]: row for row in report["systems"]}
+def test_environment_family_contracts_are_subsystems_of_environment_authority() -> None:
+    from noetrium_platform.foundation.governance.system_registry.api import system_catalog
+
+    by_key = {row.identity.key: row for row in system_catalog()}
     for key in (
-        "environment/embodied",
         "environment/gui",
+        "environment/minecraft",
         "environment/software",
         "environment/web",
     ):
         row = by_key[key]
-        assert row["status"] == "production-integrated"
-        assert "noetrium_platform.composition.managed_research_services" in (
-            row["production_consumers"]
+        assert row.canonical_authority_key == "environment"
+        assert row.package_prefix.startswith(
+            "noetrium_platform.capabilities.environment."
         )

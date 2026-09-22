@@ -1,14 +1,16 @@
+from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolKind
 from noetrium_platform.composition.experiment_runtime import build_experiment_runtime
 from tests_support import FakeParticipantResolver
 from tests_support import EmptyWorkflowSurfaceFactory, context_action_spec
 import unittest
 
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
-from noetrium_platform.research.experimentation.experiment.api import ExperimentTrialProtocolIdentityMismatch
-from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTrialProtocolIdentityMismatch
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 
 
 class AlternateTrialProtocol:
+    protocol_kind = ExecutionTrialProtocolKind.RUNTIME_PROGRAM
     protocol_id = "alternate.v1"
     surface_id = "empty.operations.v1"
     configuration_digest = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
@@ -44,7 +46,7 @@ class ExperimentTrialProtocolIdentityV127Tests(unittest.TestCase):
             configuration_digest = "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
             def run(self, operations, context, *, task, input_kind, input_payload):
                 return None
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             build_experiment_runtime(participant_adapters=(), trial_protocol=Anonymous(), workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),))
 
 

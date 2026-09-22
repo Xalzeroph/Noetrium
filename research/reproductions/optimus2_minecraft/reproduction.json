@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimus2_minecraft",
-  "package_digest": "7373ab9e0b56155c53925738095194d388e326bef3b5ed8c00078f67938b8c4b",
+  "package_digest": "9c803adf99727d5bf3bc19d1a4a94c603514a743d91c1df128764110c7a868c1",
   "definition_digest": "5bdadcd8893ce02793fd07aa9205d71c92e5b229cfecdb32bc57fd54f0717c76",
   "source_registry_digest": "fc349c4a36d38cb8541352f436038b853fa4237fa54f9f5e475cf987b8603ed0",
   "lifecycle": "protocol_bound",
@@ -97,7 +97,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/optimus2_minecraft/benchmark.py",
       "declaration_digest": "962c808686b320ed15793bbd1c6d01155c632db777d338e846fefc3144c4c28f",
-      "content_sha256": "daad15535306612bb5059757d7d1aaed03c8d335617ef699f6b49ee8dfd191d7"
+      "content_sha256": "79fa198e65013ace459c7301b76b896ff29cc8dc9d8f2f408c5247167409a8a6"
     },
     {
       "kind": "fidelity",
@@ -109,13 +109,13 @@
       "kind": "method_program",
       "path": "research/reproductions/optimus2_minecraft/program.py",
       "declaration_digest": "95e564d47da581562b5a492ecf021dd5258a887f0f74c1bec838c7a173126d5f",
-      "content_sha256": "108bd7e7ba9e555bfd64084568c7317a7bd3a8c3d564309093f104c802b8e3f5"
+      "content_sha256": "801504398a0212d45374045a53327866ef58ac0cea8d1a9c9186c98a0f9c7875"
     },
     {
       "kind": "study",
       "path": "research/reproductions/optimus2_minecraft/study.py",
       "declaration_digest": "7231724e32022bc95ba3552cfb1659ad49ae5933c39fb236040af0d65d1d3ba2",
-      "content_sha256": "de7fc9786cd384fc833432aab5e2fe7490cced094b27b3f1ad57a723c11aad79"
+      "content_sha256": "37e6fd4c934c019c4c4ced1efadf237ee6b9fb43dd64a6b11a73e194a27ec2cc"
     },
     {
       "kind": "support",

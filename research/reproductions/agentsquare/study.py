@@ -3,10 +3,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTrialProtocolIdentity,
 )
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkTaskSet,
     MeasurementDefinition,
     ReplayLevel,

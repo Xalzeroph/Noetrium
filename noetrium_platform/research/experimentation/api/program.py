@@ -1,4 +1,4 @@
-"""ExperimentPlan -> ExperimentProgram compilation and execution.
+"""StudyExecutionPlan -> ExperimentProgram compilation and execution.
 
 Each concurrency-preserving batch is one Machine transition. Observations are
 stored in serializable Program state, so crash recovery resumes at the next
@@ -33,14 +33,14 @@ from noetrium_platform.research.execution.api import (
     ProgramHandlerRegistry,
     ProgramNodeRequest,
     ProgramNodeResult,
-    ResearchMachineSession,
+    ResearchMachineSessionPort,
     ResearchProgram,
     ResearchProgramHost,
     core_program_handlers,
 )
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BoundStudyExecutionPort,
-    ExperimentPlan,
+    StudyExecutionPlan,
     StudyAssignment,
     StudyExecutionUnit,
     StudyMatrixExecutionReport,
@@ -110,7 +110,7 @@ class ExperimentBatch:
 
 @dataclass(frozen=True, slots=True)
 class CompiledExperimentProgram:
-    plan: ExperimentPlan
+    plan: StudyExecutionPlan
     program: ResearchProgram
     batches: tuple[ExperimentBatch, ...]
     batch_plan_digest: str
@@ -125,7 +125,7 @@ class CompiledExperimentProgram:
         }
 
 
-def _units(plan: ExperimentPlan) -> tuple[StudyExecutionUnit, ...]:
+def _units(plan: StudyExecutionPlan) -> tuple[StudyExecutionUnit, ...]:
     grouped: dict[int, list[StudyAssignment]] = defaultdict(list)
     for assignment in plan.assignments:
         grouped[assignment.repetition].append(assignment)
@@ -139,7 +139,7 @@ def _units(plan: ExperimentPlan) -> tuple[StudyExecutionUnit, ...]:
     )
 
 
-def _compile_batches(plan: ExperimentPlan) -> tuple[ExperimentBatch, ...]:
+def _compile_batches(plan: StudyExecutionPlan) -> tuple[ExperimentBatch, ...]:
     units = _units(plan)
     policy = plan.protocol.concurrency_policy
     batches: list[ExperimentBatch] = []
@@ -189,9 +189,9 @@ def _compile_batches(plan: ExperimentPlan) -> tuple[ExperimentBatch, ...]:
     return tuple(batches)
 
 
-def compile_experiment_program(plan: ExperimentPlan) -> CompiledExperimentProgram:
-    if type(plan) is not ExperimentPlan:
-        raise TypeError("compile_experiment_program requires ExperimentPlan")
+def compile_experiment_program(plan: StudyExecutionPlan) -> CompiledExperimentProgram:
+    if type(plan) is not StudyExecutionPlan:
+        raise TypeError("compile_experiment_program requires StudyExecutionPlan")
     plan.assert_consistent()
     batches = _compile_batches(plan)
     if not batches:
@@ -386,7 +386,7 @@ class ExperimentProgramBinding:
         journal: MachineJournalPort | None = None,
         snapshot_store: MachineSnapshotStorePort | None = None,
         machine_id: str | None = None,
-    ) -> ResearchMachineSession:
+    ) -> ResearchMachineSessionPort:
         owned_journal = journal if journal is not None else InMemoryMachineJournal()
         host = ResearchProgramHost(
             host_id="experiment.program",

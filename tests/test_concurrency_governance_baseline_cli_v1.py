@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 
 def test_algorithm_baseline_cli_routes_historical_revision(monkeypatch, tmp_path: Path) -> None:
-    import noetrium_platform.foundation.governance.algorithm.cli as cli
+    import noetrium_platform.foundation.governance.analysis.algorithm.cli as cli
 
     calls = {}
     class Service:
@@ -22,7 +22,7 @@ def test_algorithm_baseline_cli_routes_historical_revision(monkeypatch, tmp_path
 
 
 def test_concurrency_baseline_cli_routes_historical_revision(monkeypatch, tmp_path: Path) -> None:
-    import noetrium_platform.foundation.governance.concurrency.cli as cli
+    import noetrium_platform.foundation.governance.analysis.concurrency.cli as cli
 
     calls = {}
     class Service:
@@ -39,7 +39,7 @@ def test_concurrency_baseline_cli_routes_historical_revision(monkeypatch, tmp_pa
 
 
 def test_performance_baseline_cli_routes_historical_revision(monkeypatch, tmp_path: Path) -> None:
-    import noetrium_platform.foundation.governance.performance.cli as cli
+    import noetrium_platform.foundation.governance.analysis.performance.cli as cli
 
     calls = {}
     class Service:

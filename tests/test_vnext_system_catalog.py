@@ -94,8 +94,10 @@ def test_trial_study_convergence_keeps_study_as_experimentation_component():
     assert "scientific" not in by_key
     assert not any(key.startswith("scientific/") for key in by_key)
     assert "scientific" not in {layer.value for layer in SystemLayer}
-    assert components["experimentation/study"]["system"] == "experimentation"
-    assert components["experimentation/study"]["node_kind"] == "facet"
+    lifecycle = components["experimentation/lifecycle"]
+    assert lifecycle["system"] == "experimentation"
+    facets = {row["key"] for row in lifecycle.get("internal_facets", ())}
+    assert "experimentation/lifecycle/study" in facets
 
 def test_logging_is_one_bounded_context_with_internal_facets():
     keys={row.identity.key for row in system_catalog()}

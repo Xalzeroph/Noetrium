@@ -33,7 +33,10 @@ if sys.version_info < (3, 11):
 
 from scripts.server_common import compose_script_server, server_cli_concurrency_scope
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
-from noetrium_platform.research.experimentation.run.runtime.manifest_codec import load_run_launch_manifest
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    RunLaunchManifestDecodeError,
+    decode_run_launch_manifest,
+)
 from noetrium_platform.foundation.governance.release.runtime.active_pin_store import ActiveReleasePinStore
 from noetrium_platform.infrastructure.lifecycle.host.bootstrap.runtime import (
     DirectoryServerBootstrapStateStore,
@@ -42,7 +45,9 @@ from noetrium_platform.infrastructure.lifecycle.host.bootstrap.runtime import (
 from noetrium_platform.infrastructure.lifecycle.server.lifecycle.api import ServerReleaseLayout
 from noetrium_platform.infrastructure.lifecycle.server.lifecycle.composition import (
     compose_ssh_server_release_directory,
-    compose_ssh_server_session_control,
+)
+from noetrium_platform.infrastructure.lifecycle.session.providers import (
+    SSHRemoteTmuxSessionControl,
 )
 from noetrium_platform.infrastructure.lifecycle.server.lifecycle.runtime import ServerRuntimeBootstrap
 from noetrium_platform.infrastructure.lifecycle.session.api import ServerSessionPolicy
@@ -54,19 +59,41 @@ from noetrium_platform.infrastructure.lifecycle.session.runtime import (
 )
 
 
+
+def _load_run_launch_manifest(path: str | Path):
+    manifest_path = Path(path).expanduser().resolve()
+    if not manifest_path.is_file():
+        raise RunLaunchManifestDecodeError(
+            f"run launch manifest is not a regular file: {manifest_path}"
+        )
+    try:
+        return decode_run_launch_manifest(manifest_path.read_bytes())
+    except OSError as exc:
+        raise RunLaunchManifestDecodeError(
+            f"run launch manifest cannot be read: {manifest_path}"
+        ) from exc
+
+
 def _runtime(args, task_group) -> int:
     _environ, server = compose_script_server(
         args.server_id, profile_file=args.profile_file, task_group=task_group
     )
-    manifest = load_run_launch_manifest(args.manifest_file)
+    manifest = _load_run_launch_manifest(args.manifest_file)
     controller_environment = load_controller_environment(args.controller_environment_file)
     profile = server.remote_profile
     effective_control_id = f"{args.control_id}:server-profile:{server.profile_digest}"
     runtime_root = profile.local_binding_root / "runtime-controller"
     bindings = DirectoryPersistentSessionBindingStore(runtime_root / "session-bindings")
-    control = compose_ssh_server_session_control(
-        connection=server.connection,
-        profile=profile,
+    control = SSHRemoteTmuxSessionControl(
+        server.connection,
+        tmux_executable=profile.tmux_executable,
+        binary_identity_digest=profile.tmux_binary_sha256,
+        server_label=profile.tmux_server_label,
+        config_file=profile.tmux_config_file,
+        socket_directory=profile.tmux_socket_directory,
+        remote_env_executable=profile.remote_env_executable,
+        sha256sum_executable=profile.sha256sum_executable,
+        session_environment=profile.session_environment,
         interactive=False,
     )
     sessions = PersistentSessionManager(control, bindings)

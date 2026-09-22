@@ -3,9 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Protocol
 
-from noetrium_platform.infrastructure.lifecycle.server.api import ServerOperationEffect
-
-from .contracts import ServerCommandResult, ServerConnectionProfile, ServerFileTransferResult
+from .contracts import ServerCommandResult, ServerConnectionProfile, ServerFileTransferResult, ServerOperationEffect
 
 
 class ServerConnectionPort(Protocol):

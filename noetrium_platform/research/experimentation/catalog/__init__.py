@@ -1,1 +1,0 @@
-"""Experimentation hierarchy catalog subsystem."""

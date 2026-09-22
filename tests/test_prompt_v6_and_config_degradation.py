@@ -4,7 +4,7 @@ import tempfile
 import unittest
 
 from noetrium_platform.capabilities.model.request.prompt.runtime import PromptRegistry, default_prompt_specs
-from noetrium_platform.foundation.governance.quality.no_degradation import scan_no_degradation
+from noetrium_platform.foundation.governance.architecture.gating.quality.no_degradation import scan_no_degradation
 
 
 class PromptV6Tests(unittest.TestCase):

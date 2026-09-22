@@ -35,11 +35,11 @@ from noetrium_platform.capabilities.participant.api import (
     ParticipantRequirement,
     ProjectParticipantProviderPort,
 )
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantRuntimeBinding,
     ParticipantSessionRuntimeIdentity,
 )
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
+from noetrium_platform.capabilities.participant.core.api import ParticipantRuntimeHandle
 from noetrium_platform.capabilities.participant.providers import RuntimeParticipantProjectProvider
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity, canonical_digest
 from tests._model_tokenization_support import FixedModelRequestTokenizationProvider
@@ -535,7 +535,7 @@ def test_common_public_modules_do_not_export_provider_runtime_constructors() -> 
     assert not hasattr(model_api, "EndpointFactory")
     assert not hasattr(participant_api, "RuntimeParticipantProjectProvider")
     assert not hasattr(participant_api, "RuntimeSelector")
-    assert not hasattr(participant_api, "ParticipantSessionRuntimeIdentity")
+    assert hasattr(participant_api, "ParticipantSessionRuntimeIdentity")
 
 
 def test_project_client_does_not_expose_endpoint_authority() -> None:

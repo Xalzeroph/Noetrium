@@ -24,16 +24,16 @@ from noetrium_platform.research.execution.decision.cycle_identity import (
 from noetrium_platform.research.execution.operation.api import (
     project_effect_reconciliation,
 )
-from noetrium_platform.research.experimentation.checkpoint.api.contracts import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunCheckpointBundle,
     RunCheckpointManifest,
 )
-from noetrium_platform.research.experimentation.run.api.artifacts import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunArtifactKind,
     RunArtifactSnapshotReceipt,
     RunArtifactVerificationError,
 )
-from noetrium_platform.research.experimentation.run.api.control import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunControlAction,
     RunControlActionFailure,
     RunControlConflict,
@@ -44,11 +44,11 @@ from noetrium_platform.research.experimentation.run.api.control import (
     RunControlTarget,
     RunControlTransitionOutcome,
 )
-from noetrium_platform.research.experimentation.run.composition.control import (
+from noetrium_platform.research.experimentation.lifecycle.run.composition.control import (
     build_durable_run_control,
 )
-from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.run.api.manifest_evidence import (
+from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
+from noetrium_platform.research.experimentation.lifecycle.api import (
     EvidenceBundleReceipt,
 )
 

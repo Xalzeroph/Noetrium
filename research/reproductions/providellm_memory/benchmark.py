@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.study.api import BenchmarkTaskSet
+from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkTaskSet
 from research.benchmarks.ego4d_goalstep import (
     EGO4D_GOALSTEP_BENCHMARK_ID,
     Ego4DGoalStepVideoRecord,

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium_platform.foundation.governance.concurrency.api import ConcurrencyDocument, ConcurrencyLanguage
-from noetrium_platform.foundation.governance.concurrency.composition import build_concurrency_governance
-from noetrium_platform.foundation.governance.concurrency.runtime import PythonConcurrencyAnalyzer
+from noetrium_platform.foundation.governance.analysis.concurrency.api import ConcurrencyDocument, ConcurrencyLanguage
+from noetrium_platform.foundation.governance.analysis.concurrency.composition import build_concurrency_governance
+from noetrium_platform.foundation.governance.analysis.concurrency.runtime import PythonConcurrencyAnalyzer
 
 
 def _analyze(text: str, path: str = "noetrium_platform/example/runtime/x.py"):
@@ -184,7 +184,7 @@ async def stop(process):
 
 
 def test_concurrency_inventory_excludes_local_server_state(tmp_path: Path) -> None:
-    from noetrium_platform.foundation.governance.concurrency.providers import RepositoryConcurrencySourceInventory
+    from noetrium_platform.foundation.governance.analysis.concurrency.providers import RepositoryConcurrencySourceInventory
     from noetrium_platform.foundation.governance.providers import RepositorySourceTree
     (tmp_path / "noetrium_platform").mkdir()
     (tmp_path / ".server-state").mkdir()

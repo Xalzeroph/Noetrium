@@ -1,5 +1,5 @@
-from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 
 import asyncio
 import multiprocessing
@@ -24,8 +24,8 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodProgramBuilder,
     MethodRuntimeContext,
 )
-from noetrium_platform.research.execution.workflow.composition import (
-    bind_machine_method_runtime,
+from noetrium_platform.composition.method_runtime import (
+    bind_standard_method_runtime,
 )
 from noetrium_platform.research.execution.workflow.runtime import (
     InMemoryMethodCheckpointStore,
@@ -319,16 +319,16 @@ def test_resume_is_explicit_when_checkpoint_is_unavailable():
 
 
 def test_public_facade_binds_durable_checkpoint_store(tmp_path) -> None:
-    store = noetrium_platform.bind_method_checkpoint_store(tmp_path / "checkpoints")
+    store = noetrium_api.bind_method_checkpoint_store(tmp_path / "checkpoints")
     checkpoint = _checkpoint_receipt("durable-run", marker="durable")
     store.save(checkpoint)
-    restored = noetrium_platform.bind_method_checkpoint_store(tmp_path / "checkpoints")
+    restored = noetrium_api.bind_method_checkpoint_store(tmp_path / "checkpoints")
     assert restored.load("durable-run") == checkpoint
 
 
 def test_durable_checkpoint_corruption_fails_closed(tmp_path) -> None:
     root = tmp_path / "checkpoints"
-    store = noetrium_platform.bind_method_checkpoint_store(root)
+    store = noetrium_api.bind_method_checkpoint_store(root)
     checkpoint = _checkpoint_receipt("corrupt-run", marker="corrupt")
     store.save(checkpoint)
     (root / "corrupt-run.json").write_text("{", encoding="utf-8")

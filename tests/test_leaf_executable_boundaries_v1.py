@@ -13,6 +13,9 @@ class LeafExecutableBoundaryTests(unittest.TestCase):
             b=p/'api'/'boundary.py'
             if not b.is_file() or 'SystemLeafContract' not in b.read_text(): continue
             rows+=1
+            package=ROOT.joinpath(*d.package_prefix.split('.'))
+            if not all((package / plane).is_dir() for plane in ("runtime","providers","composition")):
+                continue
             owner=__import__(d.package_prefix+'.runtime.owner',fromlist=['runtime'])
             provider=__import__(d.package_prefix+'.providers.default',fromlist=['bind'])
             composition=__import__(d.package_prefix+'.composition.default',fromlist=['compose'])

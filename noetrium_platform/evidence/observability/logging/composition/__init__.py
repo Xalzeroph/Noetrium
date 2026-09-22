@@ -20,7 +20,7 @@ from noetrium_platform.evidence.observability.logging.record.runtime import (
 )
 from noetrium_platform.evidence.observability.logging.sink.api import LogSinkPort
 from noetrium_platform.evidence.observability.logging.composition.raw_sink import RegistryBoundRawLogSink
-from noetrium_platform.evidence.observability.capture.runtime import RegistryBoundRawObservationGateway
+from noetrium_platform.evidence.observability.capture.api import RawObservationSinkPort
 from noetrium_platform.evidence.observability.api import ContextMetricSink
 from noetrium_platform.foundation.governance.api import (
     EXCEPTION_DESCRIPTOR_V1,
@@ -43,12 +43,8 @@ from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
 
 
-_LOGGING_SYSTEM = SystemIdentity("observability", ("logging",))
-_LOGGING_RECORD_SYSTEM = SystemIdentity("observability", ("logging", "record"))
-_LOGGING_STORAGE_SYSTEM = SystemIdentity("observability", ("logging", "storage"))
-_LOGGING_SUBJECT = CompositionSubject.system_subject(_LOGGING_SYSTEM)
-_LOGGING_RECORD_SUBJECT = CompositionSubject.system_subject(_LOGGING_RECORD_SYSTEM)
-_LOGGING_STORAGE_SUBJECT = CompositionSubject.system_subject(_LOGGING_STORAGE_SYSTEM)
+_OBSERVABILITY_SYSTEM = SystemIdentity("observability")
+_LOGGING_SUBJECT = CompositionSubject.system_subject(_OBSERVABILITY_SYSTEM)
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,7 +84,7 @@ def compose_logging_system(
     exception_descriptor: ExceptionDescriptorBinding | None = None,
     parent_plan_digest: str | None = None,
     metrics: ContextMetricSink | None = None,
-    raw_gateway: RegistryBoundRawObservationGateway | None = None,
+    raw_gateway: RawObservationSinkPort | None = None,
 ) -> LoggingSystemBinding:
     """Compose logging without a container or a hidden default runtime dependency.
 
@@ -103,7 +99,7 @@ def compose_logging_system(
     )
     sink_offer = CapabilityOffer(
         offer_id="observability.logging.sink-provider",
-        owner=_LOGGING_STORAGE_SUBJECT,
+        owner=_LOGGING_SUBJECT,
         scope=scope,
         capability=LOG_SINK_V1,
         interface_digest=interface_contract_digest(LogSinkPort),
@@ -112,7 +108,7 @@ def compose_logging_system(
     )
     query_offer = CapabilityOffer(
         offer_id="observability.logging.query-provider",
-        owner=_LOGGING_STORAGE_SUBJECT,
+        owner=_LOGGING_SUBJECT,
         scope=scope,
         capability=LOG_QUERY_V1,
         interface_digest=interface_contract_digest(LogQueryPort),
@@ -121,7 +117,7 @@ def compose_logging_system(
     )
     descriptor_offer = CapabilityOffer(
         offer_id="observability.logging.exception-descriptor-provider",
-        owner=_LOGGING_RECORD_SUBJECT,
+        owner=_LOGGING_SUBJECT,
         scope=scope,
         capability=EXCEPTION_DESCRIPTOR_V1,
         interface_digest=interface_contract_digest(ExceptionDescriptorPort),
@@ -172,18 +168,8 @@ def compose_logging_system(
             CompositionContract(
                 _LOGGING_SUBJECT,
                 scope,
-                offers=(logging_offer,),
+                offers=(logging_offer, descriptor_offer, sink_offer, query_offer),
                 requirements=(sink_requirement, query_requirement, descriptor_requirement),
-            ),
-            CompositionContract(
-                _LOGGING_RECORD_SUBJECT,
-                scope,
-                offers=(descriptor_offer,),
-            ),
-            CompositionContract(
-                _LOGGING_STORAGE_SUBJECT,
-                scope,
-                offers=(sink_offer, query_offer),
             ),
         ),
     )

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.experiment.api import ExperimentModelRoleSpec, ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentModelRoleSpec, ExperimentParticipantSpec, ExperimentSpec
 from noetrium_platform.capabilities.participant.core.api.contracts import (
     ParticipantImplementationIdentity, ParticipantRuntimeBinding, ParticipantSessionRuntimeIdentity,
 )
 from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
-from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
+from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolKind, TrialCycleExecution
 
 
 def _digest_seed(value: str) -> str:
@@ -239,7 +239,7 @@ def participant_component(spec):
 
 def environment_effect_intent(request, provider_component, *, operation_id: str, recovery_handle=None):
     from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent
-    from noetrium_platform.capabilities.environment.runtime.api import action_request_digest
+    from noetrium_platform.capabilities.environment.api import action_request_digest
 
     return EffectIntent.build(
         request_id=request.action_id,
@@ -253,6 +253,7 @@ def environment_effect_intent(request, provider_component, *, operation_id: str,
     )
 
 class NoOpTrialProtocol:
+    protocol_kind = ExecutionTrialProtocolKind.RUNTIME_PROGRAM
     protocol_id = "test-noop.v1"
     surface_id = "empty.operations.v1"
     configuration_digest = "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
@@ -381,7 +382,7 @@ def frozen_runtime_manifest(
         ReplayLevel,
         RunResearchSemanticsReference,
     )
-    from noetrium_platform.research.experimentation.run.api.manifest import (
+    from noetrium_platform.research.experimentation.lifecycle.api import (
         CompositionPlanReference,
         RunLaunchManifest,
     )

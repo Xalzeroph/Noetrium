@@ -1,8 +1,8 @@
-from noetrium_platform.research.experimentation.study.api import StudyAssignment
-from noetrium_platform.research.experimentation.experiment.runtime.matrix import (
+from noetrium_platform.research.experimentation.lifecycle.api import StudyAssignment
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix import (
     StudyMatrixUniversalProjection,
 )
-from noetrium_platform.research.experimentation.experiment.api import ExperimentUnitKind
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentUnitKind
 
 SHA = "a" * 64
 

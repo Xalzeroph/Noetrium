@@ -10,7 +10,7 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocationRequest,
 )
 from noetrium_platform.infrastructure.resources.compute.api import ComputeRequirement
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import (
+from noetrium_platform.infrastructure.lifecycle.process.api import (
     ProcessCommandRunnerPort,
     ProcessSupervisorPort,
 )

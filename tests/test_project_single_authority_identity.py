@@ -4,14 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from noetrium_platform.foundation.governance.repository_boundary.runtime import (
+from noetrium_platform.foundation.governance.architecture.repository_boundary.runtime import (
     audit_downstream_project_imports,
 )
 from noetrium_platform.product.operator.api import (
     ProjectCreateRequest,
     ProjectDoctorDisposition,
 )
-from noetrium_platform.product.operator.runtime import project_doctor, project_scaffold
+from noetrium_platform.composition.operator.project import project_doctor, project_scaffold
 from noetrium_platform.composition.operator.project.project_platform_identity import (
     InstalledPlatformIdentity,
 )

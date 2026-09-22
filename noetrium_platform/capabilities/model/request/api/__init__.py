@@ -10,6 +10,8 @@ from .contracts import (
     ReconstructedModelRequest,
 )
 
+from ..prompt.api import PromptSelectionPort
+
 __all__ = [
     "ExecutionContext",
     "ImmutableModelIdentity",
@@ -17,4 +19,5 @@ __all__ = [
     "ModelRequestLedgerPort",
     "ModelRequestRecorderPort",
     "ReconstructedModelRequest",
+    "PromptSelectionPort",
 ]

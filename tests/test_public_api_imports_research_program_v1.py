@@ -48,13 +48,14 @@ def test_research_program_public_api_exposes_authoring_not_interpreter_internals
         "RecoveryProgram",
         "InterventionProgram",
         "VisibilityProgram",
+        "ResearchMachineSessionPort",
+        "ResearchMachineRunPort",
     }
     forbidden = {
         "PROGRAM_COMMANDS",
         "PROGRAMMABLE_MACHINE_KINDS",
         "ProgrammableMachineInterpreter",
         "ResearchMachineRun",
-        "ResearchMachineSession",
         "core_program_handlers",
         "programmable_machine_families",
         "programmable_machine_family",

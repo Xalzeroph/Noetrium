@@ -14,7 +14,9 @@ from noetrium_platform.foundation.kernel.kernel import (
     JsonValue,
     MachineCommand,
     MachineCommit,
+    MachineCut,
     MachineExecutor,
+    MachineKind,
     MachineSnapshot,
     MachineStatus,
     thaw_json,
@@ -70,6 +72,10 @@ class ResearchMachineSession:
     @property
     def machine_id(self) -> str:
         return self.machine.machine_id
+
+    @property
+    def kind(self) -> MachineKind:
+        return self.machine.identity.kind
 
     @property
     def revision(self) -> int:
@@ -215,6 +221,10 @@ class ResearchMachineSession:
     def checkpoint(self) -> MachineSnapshot:
         self._snapshot = self.machine.checkpoint()
         return self._snapshot
+
+    def cut(self) -> MachineCut | None:
+        head = self.machine.journal.latest(self.machine_id)
+        return None if head is None else MachineCut.from_commit(head)
 
 
 __all__ = ["ResearchMachineRun", "ResearchMachineSession"]

@@ -20,6 +20,7 @@ from noetrium_platform.capabilities.participant.capability.api import (
 from noetrium_platform.research.execution.capability.runtime import CapabilityInvocationPipelineFactory
 from noetrium_platform.research.execution.machines import (
     CapabilityMediationDenied,
+    CapabilityRuntimeBinding,
     capability_mediator_binding_digest,
     capability_program_from_policy,
 )
@@ -187,25 +188,40 @@ class HarnessPatternsV190Tests(unittest.TestCase):
         pipeline=CapabilityInvocationPipelineFactory(journal).create(
             CapabilityPolicySet(guards=(_Deny(),_Allow()))
         )
+        def execute(mediated):
+            called.append(1)
+            return CapabilityResult(mediated.capability_id, {})
+
+        binding = CapabilityRuntimeBinding(
+            pipeline._program,
+            pipeline._mediators,
+            descriptor,
+            request,
+            execute,
+        )
+        invocation_id = "dc190:capability.test:0"
+        invocation_digest = canonical_digest({
+            "invocation_id": invocation_id,
+            "run_id": request.context.run_id,
+            "capability_id": request.capability_id,
+            "program_digest": pipeline._program.program_digest,
+            "program_binding_digest": pipeline._program_binding_digest,
+            "binding_digest": binding.binding_digest,
+        })
+        machine_id = pipeline._host.terminal_replay_machine_id(
+            f"runtime-capability:{request.context.run_id}:{invocation_digest[:24]}"
+        )
         with self.assertRaises(CapabilityMediationDenied) as caught:
             pipeline.invoke(
-                invocation_id="dc190:capability.test:0",
+                invocation_id=invocation_id,
                 descriptor=descriptor,
                 request=request,
-                execute=lambda mediated: (
-                    called.append(1)
-                    or CapabilityResult(mediated.capability_id,{})
-                ),
+                execute=execute,
             )
         self.assertEqual(called,[])
         self.assertEqual(caught.exception.stage.value,"pre")
         self.assertFalse(caught.exception.execution_completed)
-        commits=journal.commits("runtime-capability:r190:" + canonical_digest({
-            "invocation_id":"dc190:capability.test:0",
-            "run_id":"r190",
-            "capability_id":"capability.test",
-            "program_digest":pipeline._program.program_digest,
-        })[:24])
+        commits=journal.commits(machine_id)
         self.assertGreaterEqual(len(commits),2)
         self.assertEqual(commits[-1].accepted_status.value,"failed")
 

@@ -10,7 +10,7 @@ from noetrium_platform.evidence.observability.capture.api import RawObservationE
 from noetrium_platform.evidence.observability.capture.runtime import (
     RegistryBoundRawObservationGateway,
 )
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ObservationEnvelope,
     ObservationSinkPort,
     RawRecord,
@@ -25,7 +25,7 @@ class LakeBackedExperimentObservationLedger(ObservationSinkPort):
         self,
         gateway: RegistryBoundRawObservationGateway,
         *,
-        system: SystemIdentity = SystemIdentity("experimentation", ("experiment",)),
+        system: SystemIdentity = SystemIdentity("experimentation"),
         producer_id: str = "experimentation.observation-ledger.v1",
     ) -> None:
         self._gateway = gateway
@@ -82,7 +82,7 @@ class LakeBackedRawRecordStore(RawRecordStorePort):
         self,
         gateway: RegistryBoundRawObservationGateway,
         *,
-        system: SystemIdentity = SystemIdentity("experimentation", ("experiment",)),
+        system: SystemIdentity = SystemIdentity("experimentation"),
     ) -> None:
         self._gateway = gateway
         self._system = system

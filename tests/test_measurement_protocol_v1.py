@@ -6,7 +6,7 @@ import pytest
 
 from noetrium_platform.evidence.artifact.reference.api import ArtifactReference
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     MeasurementContentReference,
     MeasurementDefinition,
     MeasurementProtocol,

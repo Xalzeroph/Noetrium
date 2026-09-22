@@ -16,6 +16,8 @@ from .operations import (
     ServerTransportBusy,
 )
 
+from ..identity.api import ServerConnectionPort
+
 __all__ = [
     "ServerOperationEffect",
     "ServerOperationFinished",
@@ -30,4 +32,5 @@ __all__ = [
     "ServerOperationResolution",
     "ServerOperationStarted",
     "ServerOperationState",
+    "ServerConnectionPort",
 ]

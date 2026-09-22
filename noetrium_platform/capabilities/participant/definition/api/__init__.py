@@ -1,6 +1,6 @@
 """Participant implementation-definition contracts."""
 
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantConfigurationArtifact,
     ParticipantImplementationIdentity,
 )

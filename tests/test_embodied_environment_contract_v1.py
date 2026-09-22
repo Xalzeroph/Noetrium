@@ -22,13 +22,14 @@ from noetrium_platform.capabilities.environment.embodied.api import (
     SensorModality,
     SensorSpec,
 )
-from noetrium_platform.capabilities.environment.embodied.composition import (
-    EmbodiedEnvironmentProviderAdapter,
+from noetrium_platform.capabilities.environment.embodied.composition import EmbodiedEnvironmentProviderAdapter
+from noetrium_platform.composition.environment_observability import (
     RegistryBoundEmbodiedTrajectorySink,
 )
 from noetrium_platform.evidence.observability.capture.runtime import (
     RegistryBoundRawObservationGateway,
 )
+from noetrium_platform.foundation.governance.system_registry.api import component_catalog
 from noetrium_platform.foundation.governance.system_registry.runtime import (
     build_default_system_registry,
 )
@@ -103,7 +104,7 @@ def test_embodied_provider_is_generic_to_upstream_and_captures_raw_events() -> N
                 trajectory_sink=sink,
             )
             assert isinstance(provider, EnvironmentProviderPort)
-            assert systems.contains("environment/embodied")
+            assert any(row.key == "environment/embodied" for row in component_catalog())
             context = ExecutionContext("run-embodied", "trace", "span")
             session = provider.open_session(session_id="episode-1", services=object())
             observation = session.observe(context)
@@ -121,7 +122,7 @@ def test_embodied_provider_is_generic_to_upstream_and_captures_raw_events() -> N
             assert len(rows) == 2
             capture = rows[0]["payload"]["__capture"]
             assert base64.b64decode(capture["raw_payload_b64"]) == b"raw-reset"
-            assert capture["system"] == "environment/embodied"
+            assert capture["system"] == "environment"
             session.close()
             lake.close()
     finally:

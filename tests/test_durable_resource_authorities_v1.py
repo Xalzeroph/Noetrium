@@ -37,9 +37,9 @@ from noetrium_platform.foundation.portfolio.api import (
     ProjectToolProvenance,
     WorkspaceSpec,
 )
-from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.study import StudySpec
-from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
+from noetrium_platform.research.experimentation.lifecycle.study import StudySpec
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 
 
 class _AvailableProbe:

@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import Protocol
 
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity
-from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantImplementationIdentity, ParticipantRuntimeBinding
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantResolverPort, ParticipantRuntimeHandle
-from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantIdentityMismatch
+from noetrium_platform.capabilities.participant.core.api import ParticipantCheckpoint
+from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity, ParticipantRuntimeBinding
+from noetrium_platform.capabilities.participant.core.api import ParticipantResolverPort, ParticipantRuntimeHandle
+from noetrium_platform.capabilities.participant.core.api import ParticipantIdentityMismatch
 
 
 class ParticipantDomainPolicy(Protocol):

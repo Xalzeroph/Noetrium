@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkSourceKind,
     BenchmarkSourceResolution,
     BenchmarkSourceSpec,

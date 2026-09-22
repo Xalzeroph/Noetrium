@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "cogagent",
-  "package_digest": "26f83b3db13dbe5ffb955d78c978c4aef507df8f1955435cfe5ca8a298f07a2a",
+  "package_digest": "5309a0764738d917e484613086bd4b1b07ecf86aacb35f50e8dcdb158e970cfb",
   "definition_digest": "35a9a6105e4b2c229cd722c6927fb37246e3f0697f647adc3f0fa283f66ed782",
   "source_registry_digest": "98cd238a80201177669fbbf1b36bc4033d8d0220869f0f27a93b8ff6efb05cb3",
   "lifecycle": "protocol_bound",
@@ -81,7 +81,7 @@
       "kind": "study",
       "path": "research/reproductions/cogagent/study.py",
       "declaration_digest": "1a29e55934234270552cb80f38086aa4060b2c714948bcbe287a3e368afa997e",
-      "content_sha256": "3c4b72783c14a4bd2d9f2354e6c26d0b428d07ffe7a167de614857bc20d66e2a"
+      "content_sha256": "9a29f9e94c3fbcaa61d5283301f6a2e2cec43b7926076eeabe16a4bc77138f9c"
     }
   ],
   "primary_executable": "research/reproductions/cogagent/program.py",

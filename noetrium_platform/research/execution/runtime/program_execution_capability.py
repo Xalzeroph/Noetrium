@@ -121,54 +121,6 @@ def _source_from_document(
     )
 
 
-def program_execution_capability_payload(
-    *,
-    program_id: str,
-    source_text: str,
-    language: str,
-    entrypoint: str,
-    interface_schema_id: str,
-    invocation: JsonInput,
-    parent_program_digests: tuple[str, ...] = (),
-    input_artifacts: tuple[ArtifactContentIdentity, ...] = (),
-) -> dict[str, JsonInput]:
-    """Authoring helper for one generated executable-program request.
-
-    This common path accepts source text because downstream paper code often
-    receives generated code directly from a model. The binding immediately
-    publishes those bytes into immutable Artifact authority before execution.
-    """
-
-    _text(program_id, "program execution program_id")
-    if type(source_text) is not str or not source_text:
-        raise ValueError("program execution source_text must be non-empty text")
-    _text(language, "program execution language")
-    _text(entrypoint, "program execution entrypoint")
-    _text(interface_schema_id, "program execution interface_schema_id")
-    parents = _string_tuple(
-        parent_program_digests,
-        "program execution parent_program_digests",
-    )
-    if type(input_artifacts) is not tuple or any(
-        type(row) is not ArtifactContentIdentity for row in input_artifacts
-    ):
-        raise TypeError(
-            "program execution input_artifacts must be ArtifactContentIdentity tuple"
-        )
-    return {
-        "program_id": program_id,
-        "source_text": source_text,
-        "language": language,
-        "entrypoint": entrypoint,
-        "interface_schema_id": interface_schema_id,
-        "invocation": invocation,
-        "parent_program_digests": parents,
-        "input_artifacts": tuple(
-            _artifact_document(row) for row in input_artifacts
-        ),
-    }
-
-
 def _execution_request_document(
     request: ProgramExecutionRequest,
 ) -> dict[str, JsonInput]:
@@ -668,5 +620,4 @@ class ProgramExecutionCapabilityBinding:
 
 __all__ = [
     "ProgramExecutionCapabilityBinding",
-    "program_execution_capability_payload",
 ]

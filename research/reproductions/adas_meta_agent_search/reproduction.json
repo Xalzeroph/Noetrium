@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adas_meta_agent_search",
-  "package_digest": "61da69ab2d11f6b732d6a3a6be81994d7d263c3bfa6a94292acf17751edb867f",
+  "package_digest": "121e942b79223a9e8bd25e220b9a6e380dc742a04ad08f33c4ec1de7db8b72cf",
   "definition_digest": "e80683e0219fb5051990d41c19b7e3a8babaf68581c67e6a5f7f97dc366b6133",
   "source_registry_digest": "0c0b03477d5254347c34f420f4354bb8acbacc56f34dd4a40275e1d128b71eef",
   "lifecycle": "protocol_bound",
@@ -79,13 +79,13 @@
       "kind": "method_program",
       "path": "research/reproductions/adas_meta_agent_search/program.py",
       "declaration_digest": "ebeae2fe01ef278506a93a321f22cf9b51b3b5a0cf9d1812ed994150ca010bb4",
-      "content_sha256": "7acb2ccc02e53d57b448831f1fc30ee86ae7c963ac94afe41622f103a55493c7"
+      "content_sha256": "684ba636349e2a2df7b4948d97ccf7a6fd8eae9f81f3b122d4beb5b5c8ebc410"
     },
     {
       "kind": "study",
       "path": "research/reproductions/adas_meta_agent_search/study.py",
       "declaration_digest": "88045ec7767c8d4c6bb0dbc97645bc9eef81135024246b6049a9ba139ef8427e",
-      "content_sha256": "ecc40c6c4f33491b2dffa7c93e07d0dd89c6295d882050118328d1e760c24639"
+      "content_sha256": "33da3ad616787407cc00b3bbe9872e0ca28767cd8d3f53734b166bab4f6682d1"
     }
   ],
   "primary_executable": "research/reproductions/adas_meta_agent_search/program.py",
@@ -132,7 +132,7 @@
     },
     {
       "path": "tests/test_scientific_adas_mgsm_study_v1.py",
-      "content_sha256": "5de137a3337e4b165e758fbe7cf187688b4603c5456cd429bc8de91f2f1b8fa2"
+      "content_sha256": "401202f4106088716210a93be04545575bfbae56309f4f47ba14eb6dab38c0da"
     },
     {
       "path": "tests/test_scientific_self_evolution_fidelity_v1.py",

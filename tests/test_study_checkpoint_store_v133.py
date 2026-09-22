@@ -5,15 +5,15 @@ import tempfile
 import pytest
 
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity
-from noetrium_platform.capabilities.participant.core.api.checkpoint import ParticipantCheckpoint
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantImplementationIdentity, ParticipantRuntimeBinding
-from noetrium_platform.research.experimentation.checkpoint.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import ParticipantCheckpoint
+from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity, ParticipantRuntimeBinding
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunCheckpointConflict,
     RunCheckpointManifest,
     RunParticipantPayload,
     RunParticipantSnapshotRef,
 )
-from noetrium_platform.research.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
 from tests_support import runtime_identity_for_test
 
 

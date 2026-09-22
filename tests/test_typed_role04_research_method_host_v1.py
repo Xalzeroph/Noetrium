@@ -9,7 +9,7 @@ from noetrium_platform.capabilities.participant.api import (
     method_program_identity_for_runtime_binding,
     require_method_program_runtime_binding,
 )
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantImplementationIdentity,
     ParticipantRuntimeBinding,
     ParticipantSessionRuntimeIdentity,

@@ -327,5 +327,7 @@ def test_qualified_binding_rejects_non_finite_timeout(value: float) -> None:
             prompt_generation="prompt-gen",
             max_admitted_concurrency=1,
             runtime_canary_evidence_digests=("f" * 64,),
+            tokenizer_sha256="1" * 64,
+            chat_template_sha256=None,
             timeout_s=value,
         )

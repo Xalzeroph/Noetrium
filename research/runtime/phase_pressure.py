@@ -18,7 +18,7 @@ import time
 from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
-from noetrium_platform.capabilities.model.serving.endpoint import (
+from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointRoute,
     OperationalModelEndpointReplica,
     OperationalModelEndpointReplicaSet,
@@ -46,7 +46,7 @@ from noetrium_platform.research.execution.workflow.composition import (
     StructuredViewChatRequestFactory,
 )
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
-from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 from noetrium_platform.research.experimentation.workload.composition import (
     DeclarativeWorkloadMethodCompiler,
     compose_method_runtime_bindings,
@@ -242,6 +242,8 @@ def _run_episode(
     runtime = compose_method_runtime_bindings(
         program,
         MethodRuntimePortInventory(agent_loop=router),
+        runtime_binder=standard_method_runtime_binder(),
+        evidence_factory=standard_method_evidence_factory(),
         state_root=output / "state",
     )
     compiler = DeclarativeWorkloadMethodCompiler(program=program, runtime=runtime)

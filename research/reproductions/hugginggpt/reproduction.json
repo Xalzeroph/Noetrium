@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "hugginggpt",
-  "package_digest": "bf6fbfaeda2a7c8624c0d0c44c53076a6d4b372fc75349df1338c5f9c606e6b9",
+  "package_digest": "32c9951f5366226ddb6ddb508b6b75ae7e4fb2dcfe2dde6ef73583827500f350",
   "definition_digest": "71d31b8f9e4c47070c2ae5ce9768da058d859c3546aa779e4df2501825d6d36c",
   "source_registry_digest": "694e1acf36f5bdc067e93ab86f80e49a41f98113ac5297bc5380a4dc00ad4428",
   "lifecycle": "protocol_bound",
@@ -84,7 +84,7 @@
       "kind": "study",
       "path": "research/reproductions/hugginggpt/study.py",
       "declaration_digest": "ecd6a486a16df6a678ae3b81a5e038253805d211354b3a5c0e29bfd349a9d496",
-      "content_sha256": "df85395a5af1ff7b3c03e5e5e366d30c7a5dd6bb4c494ee4c3840e52d1d2807a"
+      "content_sha256": "e53a70e112519336bf38a9f2d90807a7d9ff0acd1f1fac5cdc84b9ce1e12a2dc"
     },
     {
       "kind": "support",

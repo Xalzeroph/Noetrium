@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoagent_memory",
-  "package_digest": "18fb53bd3dba1a559727294b640f2497e8c5262891dbf7d7a2082071e8f02cce",
+  "package_digest": "f56ef7dd170b7697f5abc2137d1363a86f11f82fac281b00521f1ad8bc2b7225",
   "definition_digest": "0aaabb72e5eb61f7d63bdee971cf3574e0816cc3b4d615294d8e995ecf5ce89d",
   "source_registry_digest": "2c4ad0c7f51054bfd49d84df431ced1c43641a42cd98243c8343899ebc7ce56e",
   "lifecycle": "protocol_bound",
@@ -125,7 +125,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/videoagent_memory/benchmark.py",
       "declaration_digest": "3532fc85c6b33131c7e3d9ec79a9f95a6c8393ff1d9e65d0f1721c0ffc834e16",
-      "content_sha256": "b797cde315ce0150544dc9bae0b5a0f75114a02e3963e6706b1b6a7f849cc353"
+      "content_sha256": "963ea6dbab341b59175534d9681848cc2936a38d7d3b6207cffc1095ae81ac20"
     },
     {
       "kind": "fidelity",
@@ -137,19 +137,19 @@
       "kind": "method_program",
       "path": "research/reproductions/videoagent_memory/program.py",
       "declaration_digest": "7bbf279e6c62f1cea91e90c38ba30f7749a13cb185ab54fd015247a1524d3067",
-      "content_sha256": "2e8f8191b20295830ff90f30e9173447c3b96096f2200b98282cc49733508905"
+      "content_sha256": "104d1d98f4b8227eb993787f1f2add54526696555692991f148a292ec1303418"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/videoagent_memory/memory.py",
       "declaration_digest": "2c2806369379898635c6a1bde4d8c1535d25f50c66678cfa326ab5565c577eed",
-      "content_sha256": "f1d3b74ab0ca563617cbb9ea1ce765493759d2ada09756f16bb37ba20a7286bf"
+      "content_sha256": "4ed26eb0b218cdf5392a6dae9e4f99c6c81641f2f5794296e072f800ceffce0d"
     },
     {
       "kind": "study",
       "path": "research/reproductions/videoagent_memory/study.py",
       "declaration_digest": "07181cc47ffd0d86afee8c7b883d640f92b0805040c0103284f5296f747bf31b",
-      "content_sha256": "e5c1f3851724983917f36a22a56393004c302f1d431438974ee064d55111f495"
+      "content_sha256": "725d41ea26914cded9c2a072f5cf4e81bfbb3e43afdafe07e98b9559d6e5b535"
     },
     {
       "kind": "support",
@@ -213,7 +213,7 @@
     },
     {
       "path": "tests/test_scientific_videoagent_memory_v1.py",
-      "content_sha256": "719956d342e969e93d4ccbff4d77d8a4ca3c930de9565872cc5a46881b3e301b"
+      "content_sha256": "776b6f6664331b182e2a08d2269b5dfb508b1589d8a56a785dc4dc8775c4e44d"
     }
   ]
 }

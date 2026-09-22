@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memgpt_classic",
-  "package_digest": "523f9c7cb6ab3b21e26a932629be80d0b2da0baac461f07d1b8d08e44f9725c3",
+  "package_digest": "d042f151dd8505d80a76b49355f6dcb9b80cbbf43635e0c9e1b2207f9cf335a8",
   "definition_digest": "78d4819b2b7b9ef14b6bf80e5d64cc2c88e60f2eed9cc82f5d4dcfed94b04a02",
   "source_registry_digest": "a344ec7fde772c9140ac33832d9b9438b417ea0804035281115501feecff9998",
   "lifecycle": "protocol_bound",
@@ -96,7 +96,7 @@
       "kind": "study",
       "path": "research/reproductions/memgpt_classic/study.py",
       "declaration_digest": "742d43ba37c0df09b4ab52bc481fa43ccfad8dc9ec980c5cf0b0ba5b62656159",
-      "content_sha256": "d9468c5cb62e00b7df98750d19b5f8fe2bfec68241ec914c04d668d31db510b7"
+      "content_sha256": "15f3142626dc8065027689de9495fcb67f5d7961f7557fb7c807ce5a901dfc0c"
     }
   ],
   "primary_executable": "research/reproductions/memgpt_classic/program.py",

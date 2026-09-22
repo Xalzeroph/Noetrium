@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "reflexion_alfworld",
-  "package_digest": "8e470d7edaa57a5b8d965179071e4731490ccaa812596b874ba65ad7320e5e46",
+  "package_digest": "37a6c6cc13c32e987cb0bba90745f81209df7e5ebd3cd0fbc53d918b5c150044",
   "definition_digest": "907ae95b3839c95ac99f5a7c97adffbbd1d1163a7177b329e7523756c10563a5",
   "source_registry_digest": "1ba271f6cca205054b041cb9ec92d5169ccecee597816374a82a9a19a1b0c81e",
   "lifecycle": "protocol_bound",
@@ -79,7 +79,7 @@
       "kind": "method_program",
       "path": "research/reproductions/reflexion_alfworld/program.py",
       "declaration_digest": "10ab90a13e79996c32bdc9c51139c9e164c1ea9a1137f3b0855076494703fd5f",
-      "content_sha256": "9e1ae01f7230e9146f64b62c2ef9f9d4e4e21b2e7e09e0b5ed8c79b53a9b5308"
+      "content_sha256": "fe744d5b05ca010b79ff334306fec93725c58301bf2936bc7d9213efff3d3e4a"
     },
     {
       "kind": "semantics",
@@ -91,7 +91,7 @@
       "kind": "study",
       "path": "research/reproductions/reflexion_alfworld/study.py",
       "declaration_digest": "91d7b3166188dbd63760882f4468e02cdd5c1ec5ef1710ca8a685397195f4651",
-      "content_sha256": "5ff1c5a62720865dfb838a745e5a984b9ceb2ddb132f235963c4216b31a5a47b"
+      "content_sha256": "e2c3ff03f65b2c01a97224490d73b9a371987478bbfc92c4d2445dd0f62bfaa2"
     },
     {
       "kind": "support",

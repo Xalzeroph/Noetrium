@@ -33,10 +33,10 @@ from noetrium_platform.capabilities.environment.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, MethodTaskCompletionReceipt, RecallResult
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
-from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
-from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.checkpoint.providers import DirectoryRunCheckpointStore
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers import DirectoryRunCheckpointStore
 
 
 class MethodSession:
@@ -225,7 +225,7 @@ def test_checkpoint_restore_plus_action_wal_recovers_applied_effect_without_seco
         # Construct the exact journal identity without relying on private runtime objects.
         # The action is authorized by the last verified joint checkpoint; environment
         # generation is deliberately not part of the stable action identity.
-        from noetrium_platform.research.experimentation.run.runtime.decision_coordination import identity_context
+        from noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime import identity_context
         context = replace(identity_context(c2, spec()), checkpoint_id=checkpoint1)
         request = ActionRequest("action_dc2", "move", {"n": 2}, context)
         intent = environment_effect_intent(request, participant_component(next(row for row in spec().participants if row.role == "environment")), operation_id="dc2:environment.act")

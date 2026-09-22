@@ -14,7 +14,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineStatus,
     canonical_digest,
 )
-from noetrium_platform.research.execution.machines import (
+from noetrium_platform.research.execution.machines.api import (
     CapabilityMediationDenied,
     CapabilityMediatorRegistryPort,
     CapabilityProgram,
@@ -115,11 +115,12 @@ class CapabilityInvocationPipeline:
             "program_binding_digest": self._program_binding_digest,
             "binding_digest": binding_digest,
         })
+        base_machine_id = (
+            f"runtime-capability:{request.context.run_id}:"
+            f"{invocation_digest[:24]}"
+        )
         execution = self._host.execute(
-            machine_id=(
-                f"runtime-capability:{request.context.run_id}:"
-                f"{invocation_digest[:24]}"
-            ),
+            machine_id=self._host.terminal_replay_machine_id(base_machine_id),
             instance_identity={
                 "invocation_id": invocation_id,
                 "invocation_digest": invocation_digest,
@@ -154,7 +155,7 @@ class CapabilityInvocationPipeline:
                 and type(stage) is str
                 and isinstance(completed, bool)
             ):
-                from noetrium_platform.research.execution.machines import (
+                from noetrium_platform.research.execution.machines.api import (
                     CapabilityMediationStage,
                 )
                 raise CapabilityMediationDenied(

@@ -19,7 +19,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     strict_finite_json_text,
     strict_json_loads,
 )
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
+from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
 from noetrium_platform.evidence.artifact._sqlite_connection import connect_artifact_reader, connect_artifact_writer, rollback_artifact_writer
 from noetrium_platform.evidence.artifact._sqlite_types import require_optional_text, require_text
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind

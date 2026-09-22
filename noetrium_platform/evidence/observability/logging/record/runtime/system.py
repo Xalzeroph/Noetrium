@@ -43,14 +43,16 @@ class StructuredLoggingSystem(LoggingSystemPort):
         self._exception_descriptor = exception_descriptor
 
     def _validate_address(self, address: DiagnosticAddress) -> None:
-        previous: SystemIdentity | None = None
+        previous = None
         for identity in address.system_path:
-            self._systems.validate(identity)
-            if previous is not None and identity.parent_key != previous.key:
+            descriptor = self._systems.validate(identity)
+            if previous is not None and descriptor.parent_key != previous.identity.key:
                 raise ValueError(
-                    f"diagnostic system path is not contiguous: {previous.key!r} -> {identity.key!r}"
+                    f"diagnostic system path is not contiguous: "
+                    f"{previous.identity.key!r} -> {descriptor.identity.key!r}"
                 )
-            previous = identity
+            previous = descriptor
+
 
     def bind(
         self,

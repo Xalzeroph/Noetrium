@@ -11,8 +11,8 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineSnapshotStorePort,
     OperationExecutor,
 )
-from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantLifecycleAdapter, ParticipantLifecycleAdapterRegistry
-from noetrium_platform.research.experimentation.experiment.runtime import (
+from noetrium_platform.capabilities.participant.core.api import ParticipantLifecycleAdapter, ParticipantLifecycleAdapterRegistry
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
     ExperimentComponentBinder,
     ExperimentRuntime,
     ExperimentRuntimeComponents,
@@ -25,23 +25,22 @@ from noetrium_platform.research.execution.participants import (
     ParticipantResolutionOperations,
     ParticipantSessionLifecycle,
 )
-from noetrium_platform.research.experimentation.checkpoint.api.contracts import RunCheckpointStore
-from noetrium_platform.research.experimentation.checkpoint.composition import build_project_run_checkpoint_store
-from noetrium_platform.research.experimentation.checkpoint.runtime.coordination import RunCheckpointCoordinator
-from noetrium_platform.research.experimentation.run.runtime.decision_runtime import DecisionCycleRuntime
-from noetrium_platform.research.experimentation.run.api.identity_ports import RunIdentityProvider
-from noetrium_platform.research.experimentation.run.providers.identity import RandomRunIdentityProvider
+from noetrium_platform.research.experimentation.lifecycle.api import RunCheckpointStore
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.composition import build_project_run_checkpoint_store
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.coordination import RunCheckpointCoordinator
+from noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime import DecisionCycleRuntime
+from noetrium_platform.research.experimentation.lifecycle.api import RunIdentityProvider
+from noetrium_platform.research.experimentation.lifecycle.run.providers.identity import RandomRunIdentityProvider
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentityProvider, RandomDecisionCycleIdentityProvider
-from noetrium_platform.research.experimentation.run.runtime.run_runtime import RunRuntime
-from noetrium_platform.research.execution.workflow.runtime.program_trial import RuntimeProgramTrialProtocol
-from noetrium_platform.research.execution.workflow.api import WorkflowSurfaceFactory
+from noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime import RunRuntime
+from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolPort, WorkflowSurfaceFactory
 from noetrium_platform.research.execution.workflow.runtime import EffectIntentOperations, KernelOperationDispatcher, WORKFLOW_RUNTIME_IDENTITY
 
 
 def build_experiment_runtime_components(
     *,
     participant_adapters: tuple[ParticipantLifecycleAdapter, ...],
-    trial_protocol: RuntimeProgramTrialProtocol,
+    trial_protocol: ExecutionTrialProtocolPort,
     workflow_surface_factories: tuple[WorkflowSurfaceFactory, ...],
     services: object = None,
     operation_executor: OperationExecutor | None = None,
@@ -100,7 +99,7 @@ def build_experiment_runtime_components(
 def build_experiment_runtime(
     *,
     participant_adapters: tuple[ParticipantLifecycleAdapter, ...],
-    trial_protocol: RuntimeProgramTrialProtocol,
+    trial_protocol: ExecutionTrialProtocolPort,
     workflow_surface_factories: tuple[WorkflowSurfaceFactory, ...],
     services: object = None,
     operation_executor: OperationExecutor | None = None,

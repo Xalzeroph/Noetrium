@@ -7,7 +7,7 @@ from noetrium_platform.capabilities.environment.api import action_request_digest
 from noetrium_platform.foundation.kernel.kernel import EffectReceipt, EffectClass, EffectCertainty
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, RecallResult
 from noetrium_platform.capabilities.participant.binding.runtime.configuration import ParticipantConfigurationCatalog
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantConfigurationArtifact, ParticipantImplementationIdentity
+from noetrium_platform.capabilities.participant.core.api import ParticipantConfigurationArtifact, ParticipantImplementationIdentity
 from noetrium_platform.capabilities.participant.definition.runtime.catalog import ParticipantImplementationCatalog
 from noetrium_platform.capabilities.participant.binding.runtime import LocalParticipantResolver
 from noetrium_platform.capabilities.participant.session.runtime.runtime_catalog import ParticipantSessionRuntimeCatalog

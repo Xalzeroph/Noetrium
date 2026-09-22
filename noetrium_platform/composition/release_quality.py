@@ -35,7 +35,7 @@ def _not_applicable_digest(system: str) -> str:
 
 
 def _quality_guard_lane(root_text: str, source_index: RepositorySourceIndexPort) -> tuple[int, int]:
-    from noetrium_platform.foundation.governance.quality import scan_no_degradation, scan_silent_failures
+    from noetrium_platform.foundation.governance.architecture.gating.quality import scan_no_degradation, scan_silent_failures
 
     root = Path(root_text)
     silent = len(scan_silent_failures(
@@ -47,8 +47,8 @@ def _quality_guard_lane(root_text: str, source_index: RepositorySourceIndexPort)
 
 
 def _algorithm_lane(root_text: str, source_index: RepositorySourceIndexPort) -> tuple[str, bool, int]:
-    from noetrium_platform.foundation.governance.algorithm.composition import build_algorithm_governance
-    from noetrium_platform.foundation.governance.algorithm.runtime import AlgorithmBaselineMissing
+    from noetrium_platform.foundation.governance.analysis.composition import build_algorithm_governance
+    from noetrium_platform.foundation.governance.analysis.runtime import AlgorithmBaselineMissing
 
     root = Path(root_text)
     if not (root / "noetrium_platform" / "foundation" / "governance" / "algorithm").exists():
@@ -63,8 +63,8 @@ def _algorithm_lane(root_text: str, source_index: RepositorySourceIndexPort) -> 
 
 
 def _concurrency_lane(root_text: str, source_index: RepositorySourceIndexPort) -> tuple[str, bool, int]:
-    from noetrium_platform.foundation.governance.concurrency.composition import build_concurrency_governance
-    from noetrium_platform.foundation.governance.concurrency.runtime import ConcurrencyBaselineMissing
+    from noetrium_platform.foundation.governance.analysis.composition import build_concurrency_governance
+    from noetrium_platform.foundation.governance.analysis.runtime import ConcurrencyBaselineMissing
 
     root = Path(root_text)
     if not (root / "noetrium_platform" / "foundation" / "governance" / "concurrency").exists():
@@ -79,8 +79,8 @@ def _concurrency_lane(root_text: str, source_index: RepositorySourceIndexPort) -
 
 
 def _performance_lane(root_text: str, source_index: RepositorySourceIndexPort) -> tuple[str, bool, int]:
-    from noetrium_platform.foundation.governance.performance.composition import build_performance_governance
-    from noetrium_platform.foundation.governance.performance.runtime import PerformanceBaselineMissing
+    from noetrium_platform.foundation.governance.analysis.composition import build_performance_governance
+    from noetrium_platform.foundation.governance.analysis.runtime import PerformanceBaselineMissing
 
     root = Path(root_text)
     if not (root / "noetrium_platform" / "foundation" / "governance" / "performance").exists():

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "code_as_policies",
-  "package_digest": "796a6aaa65a5cbdbfd6ccebc92d71f5807e0406dbd27ce6d02a3516bbd069e28",
+  "package_digest": "18a6f32540e96b7db0641c9d41e559f9fa037cb283e607e22e60a8e6c991b8b7",
   "definition_digest": "792b4326e59ab9c8bba4c3ae77d98381d8a8237635321834eb72e0d27fedf172",
   "source_registry_digest": "e1872de17b63bc7ff35434899df6e865b802ced52f48f4b8b3757d34b8c9f15d",
   "lifecycle": "protocol_bound",
@@ -132,7 +132,7 @@
       "kind": "method_program",
       "path": "research/reproductions/code_as_policies/program.py",
       "declaration_digest": "cf7888757baf793ef4738bfea7f799a48524d626c71341deaa402cdb79691b24",
-      "content_sha256": "1c5dfbd0a104bcc7fae4b49ae7f2280d6bbced5208da7104d29a41c7f942adfb"
+      "content_sha256": "90eaded8a0573136a151b11e1e838a8aa878368fa0017f7698d204bc0a8b7a42"
     },
     {
       "kind": "semantics",
@@ -144,7 +144,7 @@
       "kind": "study",
       "path": "research/reproductions/code_as_policies/study.py",
       "declaration_digest": "d614c87f5c66abe78e4ea8d57c037a9581641dc867d3b6889be7d4a79957fb20",
-      "content_sha256": "41e1d0bd79f7f0810ae0097a85c618b8ebf6b1b8ca42b633a7dc6181104929dc"
+      "content_sha256": "dcfe368efdebd11789380060b5cc926f6789601c194f1cf1f0692c0ea241a460"
     },
     {
       "kind": "support",

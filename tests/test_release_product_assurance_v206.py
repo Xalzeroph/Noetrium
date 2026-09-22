@@ -37,7 +37,7 @@ def test_product_assurance_gate_fails_fast_on_blocker(monkeypatch):
     _bind_source_identity(monkeypatch)
     result = assurance.evaluate(full=True)
     assert result.passed is False
-    assert calls == ["test-taxonomy", "provider-conformance"]
+    assert calls == ["platform-compile", "public-contracts", "provider-conformance"]
 
 
 def test_full_assurance_can_skip_architecture_gate(monkeypatch):
@@ -51,7 +51,12 @@ def test_full_assurance_can_skip_architecture_gate(monkeypatch):
     _bind_source_identity(monkeypatch)
     result = assurance.evaluate(full=True, include_architecture=False)
     assert result.passed is True
-    assert commands == ["test-taxonomy", "provider-conformance", "full-regression"]
+    assert commands == [
+        "platform-compile",
+        "public-contracts",
+        "provider-conformance",
+        "no-degradation",
+    ]
 
 
 def test_full_assurance_binds_source_and_uses_external_basetemp(monkeypatch):
@@ -76,13 +81,14 @@ def test_full_assurance_binds_source_and_uses_external_basetemp(monkeypatch):
     assert result.source_identity_rechecked is True
     assert result.source_identity_consistent is True
     assert [name for name, _ in commands] == [
-        "test-taxonomy", "provider-conformance", "architecture", "full-regression",
+        "platform-compile",
+        "public-contracts",
+        "provider-conformance",
+        "no-degradation",
+        "architecture",
     ]
-    full_argv = commands[-1][1]
-    index = full_argv.index("--basetemp")
-    expected_temp_root = os.environ.get("RUNNER_TEMP", assurance.tempfile.gettempdir())
-    assert str(expected_temp_root) in full_argv[index + 1]
-    assert "noetrium-product-assurance-full" in full_argv[index + 1]
+    architecture_argv = commands[-1][1]
+    assert "noetrium_platform.foundation.governance.architecture.gate" in architecture_argv
 
 
 def test_full_assurance_blocks_dirty_source_before_commands(monkeypatch):

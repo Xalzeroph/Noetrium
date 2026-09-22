@@ -81,7 +81,10 @@ class CommittedActionRecovery:
         diagnostics["study_recovery"] = "method_completion_already_committed"
         diagnostics["action_recovery_source"] = "durable_provider_handle"
         return SafeActionExecution(
-            replace(result, diagnostics=diagnostics), tuple(rows), replayed_from_intent=True
+            replace(result, diagnostics=diagnostics),
+            tuple(rows),
+            replayed_from_intent=True,
+            durable_intent=intent,
         )
 
 

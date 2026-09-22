@@ -88,10 +88,9 @@ def test_container_smoke_verifies_wheel_record_and_effective_identity():
     assert "os.getegid()" in script
     assert "installed RECORD digest mismatch" in script
     assert script.index("installed RECORD digest mismatch") < script.index("noetrium --help")
-    continuation = [line for line in script.splitlines() if "build_reference_application" in line]
-    assert len(continuation) == 1
-    assert continuation[0].endswith("\\")
-    assert not continuation[0].endswith("\\\\")
+    assert "ResearchFacade" in script
+    assert "ReferenceResearchApplication" in script
+    assert 'for action in ("run", "inspect", "stop", "resume", "reconcile", "evidence")' in script
     for action in container._ACTIONS:
         assert action in script
 
@@ -254,7 +253,7 @@ def test_prepare_context_uses_exact_git_blobs_not_mutable_checkout(monkeypatch):
 def test_ci_builds_container_from_formal_distribution_context():
     workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     assert "scripts/prepare_container_context.py" in workflow
-    assert '"$RUNNER_TEMP/research-container-context"' in workflow
+    assert '"$RUNNER_TEMP/platform-container-context"' in workflow
     assert 'docker build \\' in workflow
     assert '--build-arg PLATFORM_WHEEL_SHA256="${ROLE06_WHEEL_SHA256}"' in workflow
     assert '--expected-wheel-sha256 "${ROLE06_WHEEL_SHA256}"' in workflow

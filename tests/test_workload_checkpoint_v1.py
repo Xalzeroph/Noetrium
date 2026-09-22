@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.research.experimentation.checkpoint.api import WorkloadExecutionCut
-from noetrium_platform.research.experimentation.checkpoint.providers import DirectoryWorkloadCheckpointStore
-from noetrium_platform.research.experimentation.checkpoint.runtime import (
+from noetrium_platform.research.experimentation.lifecycle.api import WorkloadExecutionCut
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers import DirectoryWorkloadCheckpointStore
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime import (
     WorkloadCheckpointCoordinator,
     WorkloadCheckpointIdentityMismatch,
 )

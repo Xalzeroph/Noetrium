@@ -5,15 +5,15 @@ from types import SimpleNamespace
 import pytest
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_digest
-from noetrium_platform.research.experimentation.run.api import ExperimentRunSpec
-from noetrium_platform.research.experimentation.run.runtime import ExperimentRunApplication
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentRunSpec
+from noetrium_platform.research.experimentation.lifecycle.run.runtime import ExperimentRunApplication
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.experimentation.run.runtime.decision_runtime import (
+from noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime import (
     DecisionCycleRuntime,
 )
-from noetrium_platform.research.experimentation.run.runtime.resources import RunResourceAcquirer
-from noetrium_platform.research.experimentation.study.api import (
-    ExperimentPlan,
+from noetrium_platform.research.experimentation.lifecycle.run.runtime.resources import RunResourceAcquirer
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    StudyExecutionPlan,
     StudyConcurrencyPolicy,
     StudyMetricObservation,
     StudyProtocol,
@@ -21,7 +21,7 @@ from noetrium_platform.research.experimentation.study.api import (
     VariantBinding,
     VariantKind,
 )
-from noetrium_platform.research.experimentation.study.algorithms import (
+from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
     BasicStudyMetricAggregator,
     DeterministicStudyAssignment,
 )
@@ -63,7 +63,7 @@ class _BoundAdapter:
         return StudyMetricObservation(assignment, (("score", 1.0),))
 
 
-def _plan() -> ExperimentPlan:
+def _plan() -> StudyExecutionPlan:
     protocol = StudyProtocol(
         study_id="study-1",
         workload_id="workload-1",
@@ -91,7 +91,7 @@ def _plan() -> ExperimentPlan:
         )
         for variant in protocol.variants
     )
-    return ExperimentPlan.compile(protocol, bindings, assignments)
+    return StudyExecutionPlan.compile(protocol, bindings, assignments)
 
 
 def test_run_parent_executes_and_publishes_only_compiled_plan() -> None:
@@ -108,6 +108,7 @@ def test_run_parent_executes_and_publishes_only_compiled_plan() -> None:
         repetitions=protocol.repetitions,
         artifact_root="runs/run-1",
         environment_identity_digest=canonical_digest("environment"),
+        model_roles_digest=canonical_digest("model-roles"),
     )
     publication = _Publication()
     application = ExperimentRunApplication(
@@ -134,7 +135,7 @@ def test_experiment_run_rejects_non_plan_before_execution() -> None:
         aggregation=BasicStudyMetricAggregator(),
         publication=object(),
     )
-    with pytest.raises(TypeError, match="ExperimentPlan"):
+    with pytest.raises(TypeError, match="StudyExecutionPlan"):
         application.execute(
             run_spec=object(),
             plan=SimpleNamespace(),

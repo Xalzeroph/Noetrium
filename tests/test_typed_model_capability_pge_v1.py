@@ -103,6 +103,7 @@ def _binding(requirement: ModelCapabilityRequirement) -> ProjectModelBinding:
         prompt_digest=None,
         capabilities=profile.capabilities,
         runtime_canary_evidence_digests=(D["canary"],),
+        request_tokenization_digest=None,
         capability_id=requirement.capability_id,
         input_schema_id=requirement.input_schema_id,
         output_schema_id=requirement.output_schema_id,
@@ -419,7 +420,8 @@ def _structured_binding(requirement: ModelCapabilityRequirement) -> ProjectModel
         runtime_qualification_digest=D["runtime"], host_identity_digest=D["host"],
         prompt_generation_id=requirement.prompt_generation_id, prompt_id=requirement.prompt_id,
         prompt_digest=requirement.prompt_digest, capabilities=profile.capabilities,
-        runtime_canary_evidence_digests=(D["canary"],), capability_id=requirement.capability_id,
+        runtime_canary_evidence_digests=(D["canary"],), request_tokenization_digest="9" * 64,
+        capability_id=requirement.capability_id,
         input_schema_id=requirement.input_schema_id, output_schema_id=requirement.output_schema_id,
     )
 

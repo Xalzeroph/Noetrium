@@ -49,7 +49,7 @@ def _audit_release_quality_boundary(root: Path) -> list[SourceInvariantViolation
     if not release.exists():
         return []
     rows: list[SourceInvariantViolation] = []
-    forbidden = ("noetrium_platform.foundation.governance.architecture", "noetrium_platform.foundation.governance.quality")
+    forbidden = ("noetrium_platform.foundation.governance.architecture", "noetrium_platform.foundation.governance.architecture.gating.quality")
     for path in sorted(release.rglob("*.py")):
         for module, line in imports(path):
             if any(module == prefix or module.startswith(prefix + ".") for prefix in forbidden):

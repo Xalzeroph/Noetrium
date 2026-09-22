@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "watch_learn_cvpr2026",
-  "package_digest": "dfdbc7a3ec3a11a37050548e853879cc9214af8a4e7c28ce126e37a367be2497",
+  "package_digest": "40b1adce5b4543b42ef99da32652f20ca1d99404bffda2534596a93179a0d56b",
   "definition_digest": "688884b01c13fff25066c33f06a13baedc941f170c2b04ed97fef2465f4132f2",
   "source_registry_digest": "9377a15bf9b58f568842cac30b7cb6e1418ed33e0be6323790688bf0eebdb8e8",
   "lifecycle": "protocol_bound",
@@ -72,7 +72,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/watch_learn_cvpr2026/benchmark.py",
       "declaration_digest": "12c94534dbbfeba25a555783b606d1c2ff620cde9036a01b1dea787743b65417",
-      "content_sha256": "76494f24b0068d0d7cbb2abdc82a8e3f589fcc85b3189dabd8f5a70ef8660220"
+      "content_sha256": "6a01343927a0840b3cc0ec475f504657c3dcdd03d413f954890bf92371c763cb"
     },
     {
       "kind": "fidelity",
@@ -90,7 +90,7 @@
       "kind": "study",
       "path": "research/reproductions/watch_learn_cvpr2026/study.py",
       "declaration_digest": "a02c8b8e80449c8759bcf1f8aa7441d51febee4ee1e40548e5cde4bb90c03553",
-      "content_sha256": "83a16ce5ac0bc31bfdd5ea464f705c007445f67fcf66b7de769f79b1a78416e6"
+      "content_sha256": "2ac3c9cc2bf02462f7edd4181e7098da0a46d88e9732b363a990a4adb8b087d4"
     }
   ],
   "primary_executable": "research/reproductions/watch_learn_cvpr2026/program.py",

@@ -1229,7 +1229,7 @@ def test_minecraft_server_runtime_uses_generic_service_composer(tmp_path) -> Non
         capture_root=tmp_path / "captures",
         operating_system=TEST_OPERATING_SYSTEM,
         process_backend=_ComposedServiceBackend(),
-        task_group=task_group,
+        process_supervisor=build_process_supervisor(task_group),
     )
     runtime = compose_minecraft_server_service_runtime(
         spec,

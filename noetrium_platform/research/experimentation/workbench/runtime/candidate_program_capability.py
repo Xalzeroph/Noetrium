@@ -24,42 +24,6 @@ _REQUEST_SCHEMA = "noetrium.candidate-program-capability.request.v1"
 _RESULT_SCHEMA = "noetrium.candidate-program-capability.result.v1"
 
 
-def candidate_program_capability_payload(
-    *,
-    candidate_id: str,
-    generation: int,
-    source_text: str,
-    language: str,
-    entrypoint: str,
-    interface_schema_id: str,
-    parent_candidate_digests: tuple[str, ...] = (),
-) -> dict[str, object]:
-    if not isinstance(candidate_id, str) or not candidate_id.strip():
-        raise ValueError("candidate program candidate_id must be non-empty")
-    if type(generation) is not int or generation < 0:
-        raise ValueError("candidate program generation must be non-negative")
-    for name, value in (
-        ("source_text", source_text),
-        ("language", language),
-        ("entrypoint", entrypoint),
-        ("interface_schema_id", interface_schema_id),
-    ):
-        if not isinstance(value, str) or not value.strip():
-            raise ValueError(f"candidate program {name} must be non-empty")
-    if type(parent_candidate_digests) is not tuple:
-        raise TypeError("candidate program parent digests must be a tuple")
-    for digest in parent_candidate_digests:
-        require_sha256(digest, "candidate program parent digest")
-    return {
-        "candidate_id": candidate_id,
-        "generation": generation,
-        "source_text": source_text,
-        "language": language,
-        "entrypoint": entrypoint,
-        "interface_schema_id": interface_schema_id,
-        "parent_candidate_digests": parent_candidate_digests,
-    }
-
 
 class CandidateProgramCapabilityBinding:
     """Bind immutable source publication + isolated execution to MethodProgram.
@@ -265,5 +229,4 @@ class CandidateProgramCapabilityBinding:
 
 __all__ = [
     "CandidateProgramCapabilityBinding",
-    "candidate_program_capability_payload",
 ]

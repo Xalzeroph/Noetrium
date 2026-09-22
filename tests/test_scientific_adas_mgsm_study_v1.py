@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.api.research_compiler import _assignments
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkAssignmentMode,
     BenchmarkTaskSet,
     StudyVariantSpec,

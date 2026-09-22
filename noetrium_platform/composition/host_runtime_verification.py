@@ -8,7 +8,7 @@ from noetrium_platform.capabilities.model.serving.api.host_verification_ports im
     HostInventoryEvidenceStorePort,
     HostInventoryProvider,
 )
-from noetrium_platform.research.experimentation.run.api.manifest import RunLaunchManifest
+from noetrium_platform.research.experimentation.lifecycle.api import RunLaunchManifest
 
 
 class HostInventoryRuntimeVerification:

@@ -5,7 +5,7 @@ import re
 import shlex
 
 from noetrium_platform.infrastructure.lifecycle.server.api import ServerOperationEffect
-from noetrium_platform.infrastructure.lifecycle.server.identity.api import ServerConnectionPort
+from noetrium_platform.infrastructure.lifecycle.server.api import ServerConnectionPort
 
 from ..api import (
     ServerRepositorySyncError,

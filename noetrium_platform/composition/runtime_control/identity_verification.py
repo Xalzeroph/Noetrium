@@ -4,7 +4,7 @@ from noetrium_platform.capabilities.model.request.prompt.api import ActivePrompt
 from noetrium_platform.foundation.governance.release.api import ReleaseVerificationEvidencePort, ReleaseVerificationIntegrityError
 from noetrium_platform.infrastructure.lifecycle.api.errors import FrozenRuntimeIdentityViolation
 
-from noetrium_platform.capabilities.participant.core.api.frozen_manifests import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantImplementationInventory, ParticipantRuntimeBindingManifest, ParticipantRuntimeInventory,
 )
 

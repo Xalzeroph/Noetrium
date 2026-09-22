@@ -55,12 +55,12 @@ def test_system_bound_metric_sink_adds_topology_identity() -> None:
     bound = SystemBoundMetricSink(
         sink,
         registry,
-        SystemIdentity("observability", ("logging",)),
+        SystemIdentity("observability"),
     )
     context = ExecutionContext("run", "trace", "span")
     bound.observe(context, "runtime.control.action.count", 1.0)
     assert sink.rows[0][3] == {
-        "system": "observability/logging",
+        "system": "observability",
         "topology_generation": str(registry.generation),
     }
     assert bound.topology_digest == registry.topology_digest
@@ -81,7 +81,7 @@ def test_metric_registry_accepts_reserved_topology_dimensions() -> None:
         "test.latency",
         0.25,
         {
-            "system": "observability/logging",
+            "system": "observability",
             "topology_generation": "160",
         },
     )
@@ -109,10 +109,9 @@ def test_observation_factory_binds_the_complete_registered_topology() -> None:
     assert bindings[0].topology_generation == systems.generation
     assert bindings[0].topology_digest == systems.topology_digest
     assert bindings[0].address.system_path[-1] == bindings[0].descriptor.identity
-    child = factory.bind(SystemIdentity("observability", ("logging",)))
-    assert tuple(item.key for item in child.address.system_path) == (
+    observability = factory.bind(SystemIdentity("observability"))
+    assert tuple(item.key for item in observability.address.system_path) == (
         "observability",
-        "observability/logging",
     )
 
 

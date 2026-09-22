@@ -11,11 +11,11 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineSnapshotStorePort,
     canonical_digest,
 )
-from noetrium_platform.research.execution.machines import (
+from noetrium_platform.research.execution.machines.api import (
     MachineEvent,
     MemoryPresetSpec,
     MemoryRecord,
-    ResearchMachineSession,
+    ResearchMachineSessionPort,
     default_memory_host,
     memory_initial_data,
 )
@@ -57,13 +57,13 @@ class MachineAgentMemory(AgentMemoryPort):
 
     def __init__(
         self,
-        session: ResearchMachineSession,
+        session: ResearchMachineSessionPort,
         *,
         preset: MemoryPresetSpec = MemoryPresetSpec(),
     ) -> None:
-        if not isinstance(session, ResearchMachineSession):
-            raise TypeError("agent memory requires ResearchMachineSession")
-        if session.machine.identity.kind is not MachineKind.MEMORY:
+        if not isinstance(session, ResearchMachineSessionPort):
+            raise TypeError("agent memory requires ResearchMachineSessionPort")
+        if session.kind is not MachineKind.MEMORY:
             raise ValueError("agent memory session must bind a MEMORY machine")
         if not isinstance(preset, MemoryPresetSpec):
             raise TypeError("agent memory preset must be MemoryPresetSpec")
@@ -108,7 +108,7 @@ class MachineAgentMemory(AgentMemoryPort):
         return cls(session, preset=preset)
 
     @property
-    def session(self) -> ResearchMachineSession:
+    def session(self) -> ResearchMachineSessionPort:
         return self._session
 
     @property
@@ -119,8 +119,7 @@ class MachineAgentMemory(AgentMemoryPort):
         return tuple(MemoryRecord.from_payload(row) for row in rows)
 
     def cut(self) -> MachineCut | None:
-        head = self._session.machine.journal.latest(self._session.machine_id)
-        return None if head is None else MachineCut.from_commit(head)
+        return self._session.cut()
 
     @staticmethod
     def _artifact_refs(receipt: AgentStepReceipt) -> tuple[str, ...]:

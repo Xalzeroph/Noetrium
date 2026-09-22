@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.research.experimentation.study.api import BenchmarkSourceResolution
+from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkSourceResolution
 
 from .authority import (
     ALFWORLD_RELEASE_AUTHORITY_DIGEST,

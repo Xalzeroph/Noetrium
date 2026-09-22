@@ -22,7 +22,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 from noetrium_platform.foundation.portfolio.project.api import ProjectIdentity
 from noetrium_platform.research.execution.machines import ResearchProgramHost
 from noetrium_platform.research.execution.workflow.api import MethodMachinePort
-from noetrium_platform.research.experimentation.evaluation.composition import (
+from noetrium_platform.research.experimentation.lifecycle.evaluation.composition import (
     bind_paired_evaluation_host,
 )
 from noetrium_platform.research.experimentation.workload.api import (

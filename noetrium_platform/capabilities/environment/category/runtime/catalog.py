@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from noetrium_platform.substrate.api import system_catalog
+from dataclasses import dataclass
+
+from noetrium_platform.substrate.api import component_catalog, system_catalog
 
 from noetrium_platform.capabilities.environment.category.api.contracts import (
     EnvironmentCategoryDescriptor,
@@ -10,27 +12,58 @@ from noetrium_platform.capabilities.environment.category.api.contracts import (
 )
 
 
-def _environment_family_descriptor(category_id: EnvironmentCategoryId):
+@dataclass(frozen=True, slots=True)
+class _EnvironmentFamilyTopology:
+    key: str
+    package_prefix: str
+    provides: tuple[str, ...]
+
+
+def _environment_topology() -> dict[str, _EnvironmentFamilyTopology]:
+    rows: dict[str, _EnvironmentFamilyTopology] = {}
+    for descriptor in system_catalog():
+        rows[descriptor.identity.key] = _EnvironmentFamilyTopology(
+            descriptor.identity.key,
+            descriptor.package_prefix,
+            descriptor.provides,
+        )
+    for component in component_catalog():
+        rows.setdefault(
+            component.key,
+            _EnvironmentFamilyTopology(
+                component.key,
+                component.package_prefix,
+                component.provides,
+            ),
+        )
+    return rows
+
+
+def _environment_family_descriptor(
+    category_id: EnvironmentCategoryId,
+) -> _EnvironmentFamilyTopology:
     key = f"environment/{category_id.value}"
-    by_key = {row.identity.key: row for row in system_catalog()}
+    by_key = _environment_topology()
     try:
         descriptor = by_key[key]
     except KeyError as exc:
-        raise RuntimeError(f"environment category is not registered as a system: {key}") from exc
+        raise RuntimeError(
+            f"environment category is not declared in topology: {key}"
+        ) from exc
     expected_capability = f"environment.{category_id.value}.contract"
     if expected_capability not in descriptor.provides:
         raise RuntimeError(
-            f"environment category system {key} must provide {expected_capability}"
+            f"environment category topology {key} must provide {expected_capability}"
         )
     return descriptor
 
 
 def _registered_environment_category_ids() -> frozenset[str]:
     rows = set()
-    for descriptor in system_catalog():
-        if descriptor.parent_key != "environment":
+    for key, descriptor in _environment_topology().items():
+        if not key.startswith("environment/") or key.count("/") != 1:
             continue
-        segment = descriptor.identity.subsystem_path[-1]
+        segment = key.split("/", 1)[1]
         if f"environment.{segment}.contract" in descriptor.provides:
             rows.add(segment)
     return frozenset(rows)
@@ -49,7 +82,7 @@ def _category(
     return EnvironmentCategoryDescriptor(
         category_id=category_id,
         version="1",
-        package=descriptor.identity.key.replace("/", "."),
+        package=descriptor.key.replace("/", "."),
         description=description,
         modalities=modalities,
         interaction_surfaces=surfaces,

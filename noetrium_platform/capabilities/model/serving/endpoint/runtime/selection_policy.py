@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.capabilities.model.serving.endpoint.api import (
+from noetrium_platform.capabilities.model.serving.endpoint.api.replica import (
     ModelEndpointReplicaSelectionCandidate,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest

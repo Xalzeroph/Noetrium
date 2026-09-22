@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from itertools import product
 
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentModelRoleSpec,
     ExperimentParticipantSpec,
     ExperimentParticipantTopology,
@@ -17,17 +17,17 @@ from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.api import ProjectManifest, ProjectRequirementCardinality
 
 from noetrium_platform.research.experimentation.binding import ResearchBindingContribution, ResearchRequirementResolution
-from noetrium_platform.research.experimentation.study.api.contracts import StudyAssignment, StudyProtocol, StudyVariantSpec, VariantKind
-from noetrium_platform.research.experimentation.study.api.design import (
+from noetrium_platform.research.experimentation.lifecycle.api import StudyAssignment, StudyProtocol, StudyVariantSpec, VariantKind
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkAssignmentMode,
     FactorSelection,
     ParticipantSchedule,
     ResearchStudyDefinition,
     StudyIntervention,
 )
-from noetrium_platform.research.experimentation.study.api.benchmark import TaskDefinition
-from noetrium_platform.research.experimentation.study.api.measurement import MeasurementProtocol, MeasurementValueKind
-from noetrium_platform.research.experimentation.study.api.plan import ExperimentPlan, VariantBinding
+from noetrium_platform.research.experimentation.lifecycle.api import TaskDefinition
+from noetrium_platform.research.experimentation.lifecycle.api import MeasurementProtocol, MeasurementValueKind
+from noetrium_platform.research.experimentation.lifecycle.api import StudyExecutionPlan, VariantBinding
 
 
 def _unique_preserving_order(values):
@@ -157,7 +157,7 @@ class CompiledResearchPlan:
     task_definitions: tuple[TaskDefinition, ...]
     interventions: tuple[StudyIntervention, ...]
     protocol: StudyProtocol
-    experiment_plan: ExperimentPlan
+    experiment_plan: StudyExecutionPlan
     experiment: ExperimentSpec
     measurement_protocol: MeasurementProtocol
     participant_schedule: ParticipantSchedule | None
@@ -593,7 +593,7 @@ def compile_research_plan(
     )
     assignments = _assignments(definition, variants)
     protocol = _protocol(definition, variants, assignments)
-    experiment_plan = ExperimentPlan.compile(
+    experiment_plan = StudyExecutionPlan.compile(
         protocol, _bindings(variants, provider_id), assignments
     )
     experiment = _experiment(definition, protocol, binding)

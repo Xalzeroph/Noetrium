@@ -7,7 +7,7 @@ from noetrium_platform.capabilities.environment.api import (
     EnvironmentAssignmentIsolationPort,
 )
 from noetrium_platform.capabilities.environment.minecraft.api import MinecraftWorldBranch
-from noetrium_platform.composition.minecraft_agent import (
+from noetrium_platform.capabilities.environment.minecraft.composition import (
     MinecraftBranchAssignmentIsolation,
 )
 

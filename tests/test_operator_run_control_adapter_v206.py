@@ -13,7 +13,7 @@ from noetrium_platform.product.operator.api import (
 from noetrium_platform.composition.operator.run_control_application import (
     bind_run_control_application,
 )
-from noetrium_platform.research.experimentation.run.api.control import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunControlActionFailure,
     RunControlPhase,
     RunControlReceipt,

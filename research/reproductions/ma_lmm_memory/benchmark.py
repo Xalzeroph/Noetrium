@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.research.experimentation.study.api import BenchmarkTaskSet
+from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkTaskSet
 from research.benchmarks.lvu import (
     LVU_BENCHMARK_ID,
     LVUVideoRecord,

@@ -5,18 +5,18 @@ from dataclasses import replace
 import pytest
 
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity
-from noetrium_platform.capabilities.participant.core.api.checkpoint import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantCheckpoint,
     ParticipantCheckpointIdentityMismatch,
 )
 from noetrium_platform.capabilities.participant.session.runtime.checkpoint_runtime import ParticipantCheckpointRuntime
 
 CHECKPOINT_RUNTIME = ParticipantCheckpointRuntime()
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantImplementationIdentity,
     ParticipantRuntimeBinding,
 )
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantRuntimeHandle
+from noetrium_platform.capabilities.participant.core.api import ParticipantRuntimeHandle
 from tests_support import runtime_identity_for_test
 
 

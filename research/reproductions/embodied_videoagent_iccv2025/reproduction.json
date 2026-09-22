@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "embodied_videoagent_iccv2025",
-  "package_digest": "0d0d3df1d3c0a733d7d7e2ac3ec7edd85741100feb8fdbf64fcf1bd4d5678428",
+  "package_digest": "24b6a14c8e24e0559c5c2a986c5c5b356deaf8d9607c1a1b2df2a16ba9a51d26",
   "definition_digest": "273a178fd6b6dfbacbde9b53bf66a9f669920bd8b5c9b3fc2780a1f2f6744ad2",
   "source_registry_digest": "02d0e0637b0b444d9c44e4be5e0d96c4e51df06bfe95c4adec1184fc215fecb6",
   "lifecycle": "protocol_bound",
@@ -74,7 +74,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/embodied_videoagent_iccv2025/benchmark.py",
       "declaration_digest": "f24ab51862e1464192f496b048e997e85b011ac470a6e30d365a3f843d250bc3",
-      "content_sha256": "039e3aed7d83f98fd7dab8ddb78648e1edcf820c277a14db1b9eec2b3f546bae"
+      "content_sha256": "c4700e7cf50cd939b5ed989b43efeee02ddcf68bd690daec267e50bc4ecb48ee"
     },
     {
       "kind": "fidelity",
@@ -92,7 +92,7 @@
       "kind": "study",
       "path": "research/reproductions/embodied_videoagent_iccv2025/study.py",
       "declaration_digest": "605bf49d8f58d632164f80e937b9e9b9c549da90058bbd26ec716263af4e75ae",
-      "content_sha256": "5ad0db21537543a4f32c44da8a16c173217f03942497bd89f7fdd1e2d20d718f"
+      "content_sha256": "b19fe38279d9312bc66755f1cd9bd63fa9d4a481026f0ffad9d2018837d85f05"
     }
   ],
   "primary_executable": "research/reproductions/embodied_videoagent_iccv2025/program.py",

@@ -21,6 +21,7 @@ from .candidate_program import (
     CandidateProgramMeasurementProjection,
     CandidateProgramMeasurementProjectionPort,
     CandidateProgramSourcePublicationPort,
+    candidate_program_capability_payload,
 )
 from .adapters import MeasurementRecordTableAdapter, StudyObservationTableAdapter
 from .contracts import (
@@ -54,6 +55,7 @@ __all__ = [
     "CandidateProgramIdentity",
     "CandidateProgramMeasurementProjection", "CandidateProgramMeasurementProjectionPort",
     "CandidateProgramSourcePublicationPort",
+    "candidate_program_capability_payload",
     "DataColumn", "DataTable", "EvaluationContext", "EvaluationStage",
     "FigureCategory", "FigureCell", "FigureKind", "FigureOutputFormat", "FigurePoint", "FigureRendererPort",
     "FigureSeries", "FigureSpec", "FigureStyle", "GroupComparison", "InferenceResult", "MetricSummary",

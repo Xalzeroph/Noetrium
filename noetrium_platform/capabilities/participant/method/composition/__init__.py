@@ -33,7 +33,7 @@ from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.substrate.api import PLATFORM_SCOPE, ScopeIdentity
 
 
-_METHOD_SYSTEM = SystemIdentity("participant", ("method",))
+_METHOD_SYSTEM = SystemIdentity("participant")
 _METHOD_SUBJECT = CompositionSubject.system_subject(_METHOD_SYSTEM)
 
 

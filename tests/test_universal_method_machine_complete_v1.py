@@ -1,5 +1,5 @@
-from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 
 import asyncio
 from dataclasses import replace
@@ -32,8 +32,8 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodProgramBuilder,
     MethodRuntimeContext,
 )
-from noetrium_platform.research.execution.workflow.composition import (
-    bind_machine_method_runtime,
+from noetrium_platform.composition.method_runtime import (
+    bind_standard_method_runtime,
 )
 from noetrium_platform.research.execution.workflow.runtime import (
     InMemoryMethodCheckpointStore,

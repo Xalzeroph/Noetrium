@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import pytest
 
 from noetrium_platform.capabilities.participant.binding.runtime.configuration import ParticipantConfigurationCatalog
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantConfigurationArtifact,
     ParticipantImplementationIdentity,
     ParticipantRuntimeBinding,

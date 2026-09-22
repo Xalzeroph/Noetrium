@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "openwebvoyager_acl2025",
-  "package_digest": "ccab517a44c71c3fc37ebd4e8f4ca94a8f9ca323caac3c9537fb8b2432a40667",
+  "package_digest": "bd2de2d259aaae2397f11f46a55e61c4879e2619186d520a8608028b62116f6d",
   "definition_digest": "5260fc8138ae30927aa7d293b041e86635a75dce28b41191c313720354202387",
   "source_registry_digest": "2786a755ecfaf94cc7a57d6cbb3293d435778d7369320d104cb57d3f0c44c4f4",
   "lifecycle": "protocol_bound",
@@ -73,7 +73,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/openwebvoyager_acl2025/benchmark.py",
       "declaration_digest": "4a30e0d84ea4bf8a416e21902dcb8a01500af7057c2f8bb4515cf9979159d8cb",
-      "content_sha256": "48da47585e500fae5eaa66085a61ddeb01181c9681e480e586f5576901c7cef7"
+      "content_sha256": "c2afe282e5540dbfe14c040042395b27455fb0fdbd182a8916d1a99babcf3d4e"
     },
     {
       "kind": "fidelity",
@@ -91,7 +91,7 @@
       "kind": "study",
       "path": "research/reproductions/openwebvoyager_acl2025/study.py",
       "declaration_digest": "d4cd29f5d857ba8d55e51f2a603f8bed32065eab82dc14bdb15212bde27e25db",
-      "content_sha256": "e81eb68504c3c1e9d88e005e06db9f9cf4ef8202e0000a6362f3c4b603cc30e5"
+      "content_sha256": "14b160eaf7dcbded9af6c02ab43984541cd2129f1d7cf60ef9e6220aa7e33231"
     }
   ],
   "primary_executable": "research/reproductions/openwebvoyager_acl2025/program.py",

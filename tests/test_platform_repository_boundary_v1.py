@@ -5,8 +5,8 @@ from pathlib import Path
 
 from scripts.release_distribution import _project_platform_source
 
-from noetrium_platform.foundation.governance.repository_boundary.api import DownstreamImportKind
-from noetrium_platform.foundation.governance.repository_boundary.runtime import (
+from noetrium_platform.foundation.governance.architecture.repository_boundary.api import DownstreamImportKind
+from noetrium_platform.foundation.governance.architecture.repository_boundary.runtime import (
     audit_downstream_project_imports,
     audit_repository_boundary,
 )

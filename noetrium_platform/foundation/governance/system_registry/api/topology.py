@@ -33,6 +33,26 @@ class _CatalogSemantics:
     canonical_authority: str | None
 
 
+
+
+@dataclass(frozen=True, slots=True)
+class ComponentDescriptor:
+    """Typed projection of one non-system bounded context/component."""
+
+    key: str
+    system: str
+    parent: str
+    package_prefix: str
+    node_kind: SystemNodeKind
+    canonical_authority: str | None
+    owns: str
+    must_not_own: str
+    shape: tuple[str, ...]
+    downstream_surface: DownstreamSurfaceMode
+    requires: tuple[str, ...]
+    provides: tuple[str, ...]
+    internal_facets: tuple[str, ...] = ()
+
 @dataclass(frozen=True, slots=True)
 class TopologySourceAudit:
     """Deterministic runtime evidence that the catalog owns the source topology."""
@@ -135,6 +155,57 @@ def _load_component_catalog() -> dict[str, dict[str, object]]:
         raise RuntimeError("packaged system component catalog must be an object")
     return raw
 
+
+
+
+@lru_cache(maxsize=1)
+def component_catalog() -> tuple[ComponentDescriptor, ...]:
+    """Return the canonical typed component catalog.
+
+    Components are bounded contexts/facets owned by a registered system; they
+    are intentionally not promoted to SystemIdentity nodes.
+    """
+
+    rows: list[ComponentDescriptor] = []
+    for key, value in sorted(_load_component_catalog().items()):
+        if not isinstance(value, dict):
+            raise RuntimeError(f"invalid component descriptor for {key!r}")
+        try:
+            node_kind = SystemNodeKind(value["node_kind"])
+            downstream_surface = DownstreamSurfaceMode(
+                value.get("downstream_surface", "metadata_only")
+            )
+        except (KeyError, ValueError) as exc:
+            raise RuntimeError(f"invalid component enum metadata for {key!r}") from exc
+        facets_raw = value.get("internal_facets", [])
+        if not isinstance(facets_raw, list):
+            raise RuntimeError(f"invalid internal_facets for {key!r}")
+        facets = tuple(
+            str(row["key"])
+            for row in facets_raw
+            if isinstance(row, dict) and isinstance(row.get("key"), str)
+        )
+        rows.append(
+            ComponentDescriptor(
+                key=key,
+                system=str(value["system"]),
+                parent=str(value["parent"]),
+                package_prefix=str(value["package_prefix"]),
+                node_kind=node_kind,
+                canonical_authority=(
+                    str(value["canonical_authority"])
+                    if value.get("canonical_authority") is not None else None
+                ),
+                owns=str(value["owns"]),
+                must_not_own=str(value["must_not_own"]),
+                shape=_string_tuple(value.get("shape", []), field="shape", key=key),
+                downstream_surface=downstream_surface,
+                requires=_string_tuple(value.get("requires", []), field="requires", key=key),
+                provides=_string_tuple(value.get("provides", []), field="provides", key=key),
+                internal_facets=facets,
+            )
+        )
+    return tuple(rows)
 
 @lru_cache(maxsize=1)
 def _load_catalog_semantics() -> dict[str, _CatalogSemantics]:
@@ -325,4 +396,4 @@ def audit_system_topology_source(
     )
 
 
-__all__ = ["SYSTEM_CATALOG", "TopologySourceAudit", "audit_system_topology_source", "system_catalog"]
+__all__ = ["ComponentDescriptor", "SYSTEM_CATALOG", "TopologySourceAudit", "audit_system_topology_source", "component_catalog", "system_catalog"]

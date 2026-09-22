@@ -5,7 +5,7 @@ import os
 import shutil
 
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessCommandRunnerPort
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessCommandRunnerPort
 
 from ..api import server_environment_prefix
 from .ssh_connection import SSHServerConnection

@@ -9,6 +9,7 @@ This module is regenerated from the canonical registry and API exports.
 """
 
 from noetrium_platform.research.experimentation.api import (
+    ExperimentationCatalogPort,
     MachineCut,
     ResearchBindingContribution,
     ResearchCapabilityBinding,
@@ -38,6 +39,7 @@ from noetrium_platform.research.experimentation.api import (
     StudyModel,
     StudyParticipant,
     BenchmarkAssignmentMode,
+    BenchmarkCutSpec,
     BenchmarkTaskSet,
     BenchmarkSourceKind,
     BenchmarkSourcePort,
@@ -134,6 +136,40 @@ from noetrium_platform.research.experimentation.api import (
     TableProgram,
     TableProjectStep,
     TableStepKind,
+    CapabilityDescriptor,
+    CapabilityRequest,
+    EnvironmentCapability,
+    EnvironmentProviderPort,
+    ExecutionContext,
+    MethodIdentity,
+    MethodRuntimeIdentity,
+    AgentStudySpec,
+    AggregationFunction,
+    AggregationSpec,
+    BaselineSpec,
+    DataColumn,
+    DataTable,
+    EvaluationContext,
+    EvaluationStage,
+    FigureCell,
+    FigureKind,
+    FigureOutputFormat,
+    FigurePoint,
+    FigureSeries,
+    FigureSpec,
+    FigureStyle,
+    MissingValuePolicy,
+    MultipleComparisonMethod,
+    SplitStrategy,
+    StudyObservationTableAdapter,
+    RunCheckpointManifest,
+    StudyVariantSpec,
+    VariantKind,
+    StudyProtocol,
+    StudyConcurrencyPolicy,
+    VariantBinding,
+    StudyAssignment,
+    ExperimentPlan,
 )
 
 from noetrium_platform.research.experimentation.api.campaign import (
@@ -148,6 +184,10 @@ from noetrium_platform.research.experimentation.api.campaign import (
     ResearchCampaignStudy as campaign__ResearchCampaignStudy,
     ResearchCampaignStudyBinding as campaign__ResearchCampaignStudyBinding,
     compile_research_campaign as campaign__compile_research_campaign,
+)
+
+from noetrium_platform.research.experimentation.api.catalog import (
+    ExperimentationCatalogPort as catalog__ExperimentationCatalogPort,
 )
 
 from noetrium_platform.research.experimentation.api.construction import (
@@ -184,241 +224,121 @@ from noetrium_platform.research.experimentation.api.sharding import (
     compile_experiment_shard_plan as sharding__compile_experiment_shard_plan,
 )
 
-from noetrium_platform.research.experimentation.catalog.api import (
-    ExperimentationCatalogPort,
-)
-
-from noetrium_platform.research.experimentation.catalog.api.ports import (
-    ExperimentationCatalogPort as ports__ExperimentationCatalogPort,
-)
-
-from noetrium_platform.research.experimentation.checkpoint.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    TaskVerifierArchiveMaterializationPort,
+    MaterializedTaskVerifierArchive,
+    encode_run_launch_manifest,
+    decode_run_launch_manifest,
+    RunLaunchManifestDecodeError,
+    RUN_LAUNCH_MANIFEST_SCHEMA_VERSION,
+    StudySpec,
+    AgentStudySpec as api__AgentStudySpec,
+    AnalysisDefinition as api__AnalysisDefinition,
+    AnalysisPlan,
+    AnalysisResult as api__AnalysisResult,
+    BenchmarkAssignmentMode as api__BenchmarkAssignmentMode,
+    BenchmarkCutSpec as api__BenchmarkCutSpec,
+    BenchmarkSourceKind as api__BenchmarkSourceKind,
+    BenchmarkSourcePort as api__BenchmarkSourcePort,
+    BenchmarkSourceResolution as api__BenchmarkSourceResolution,
+    BenchmarkSourceSpec as api__BenchmarkSourceSpec,
+    BenchmarkTaskSet as api__BenchmarkTaskSet,
+    BoundStudyExecutionPort,
+    BranchReceipt,
     CheckpointCapturePolicy,
     CheckpointTrigger,
     CheckpointTriggerKind,
-    RunCheckpointBundle,
-    RunCheckpointConflict,
-    RunCheckpointCoordinatorPort,
-    RunCheckpointIntegrityError,
-    RunCheckpointManifest,
-    RunCheckpointResult,
-    RunCheckpointStore,
-    RunParticipantPayload,
-    RunParticipantSnapshotRef,
-    RunRestoreResult,
-    WorkloadCheckpointBindingPort,
-    WorkloadCheckpointBundle,
-    WorkloadCheckpointRestoreError,
-    WorkloadCheckpointComponentPort,
-    WorkloadCheckpointComponentRef,
-    WorkloadCheckpointManifest,
-    WorkloadCheckpointPayload,
-    WorkloadCheckpointStore,
-    WorkloadExecutionCut,
-    WorkloadRestoreStateCertainty,
-    build_workload_checkpoint_manifest,
-    WorkloadCheckpointCoordinatorPort,
-    WorkloadCheckpointPublicationPort,
-)
-
-from noetrium_platform.research.experimentation.checkpoint.api.contracts import (
-    RunCheckpointBundle as contracts__RunCheckpointBundle,
-    RunCheckpointConflict as contracts__RunCheckpointConflict,
-    RunCheckpointIntegrityError as contracts__RunCheckpointIntegrityError,
-    RunCheckpointManifest as contracts__RunCheckpointManifest,
-    RunCheckpointStore as contracts__RunCheckpointStore,
-    RunParticipantPayload as contracts__RunParticipantPayload,
-    RunParticipantSnapshotRef as contracts__RunParticipantSnapshotRef,
-)
-
-from noetrium_platform.research.experimentation.checkpoint.api.policy import (
-    CheckpointCapturePolicy as policy__CheckpointCapturePolicy,
-    CheckpointTrigger as policy__CheckpointTrigger,
-    CheckpointTriggerKind as policy__CheckpointTriggerKind,
-)
-
-from noetrium_platform.research.experimentation.checkpoint.api.ports import (
-    RunCheckpointCoordinatorPort as ports__RunCheckpointCoordinatorPort,
-)
-
-from noetrium_platform.research.experimentation.checkpoint.api.results import (
-    RunCheckpointResult as results__RunCheckpointResult,
-    RunRestoreResult as results__RunRestoreResult,
-)
-
-from noetrium_platform.research.experimentation.checkpoint.api.workload import (
-    WorkloadCheckpointBindingPort as workload__WorkloadCheckpointBindingPort,
-    WorkloadCheckpointRestoreError as workload__WorkloadCheckpointRestoreError,
-    WorkloadCheckpointBundle as workload__WorkloadCheckpointBundle,
-    WorkloadCheckpointComponentPort as workload__WorkloadCheckpointComponentPort,
-    WorkloadCheckpointComponentRef as workload__WorkloadCheckpointComponentRef,
-    WorkloadCheckpointManifest as workload__WorkloadCheckpointManifest,
-    WorkloadCheckpointPayload as workload__WorkloadCheckpointPayload,
-    WorkloadCheckpointStore as workload__WorkloadCheckpointStore,
-    WorkloadExecutionCut as workload__WorkloadExecutionCut,
-    WorkloadRestoreStateCertainty as workload__WorkloadRestoreStateCertainty,
-    build_workload_checkpoint_manifest as workload__build_workload_checkpoint_manifest,
-)
-
-from noetrium_platform.research.experimentation.checkpoint.api.workload_ports import (
-    WorkloadCheckpointCoordinatorPort as workload_ports__WorkloadCheckpointCoordinatorPort,
-    WorkloadCheckpointPublicationPort as workload_ports__WorkloadCheckpointPublicationPort,
-)
-
-from noetrium_platform.research.experimentation.evaluation.api import (
-    BranchReceipt,
     ComparabilityProof,
-    PairedEvaluationResult,
-    build_comparability_proof,
-)
-
-from noetrium_platform.research.experimentation.evaluation.api.contracts import (
-    BranchReceipt as contracts__BranchReceipt,
-    ComparabilityProof as contracts__ComparabilityProof,
-    PairedEvaluationResult as contracts__PairedEvaluationResult,
-    build_comparability_proof as contracts__build_comparability_proof,
-)
-
-from noetrium_platform.research.experimentation.experiment.api import (
-    ExperimentComponentBindingPort,
-    AnalysisPlan,
+    CompositionPlanReference,
+    ComputeDemand,
+    DecisionCycleRuntimePort,
+    DerivedEvidenceArtifact,
     DoctorFinding,
+    EVIDENCE_BUNDLE_SCHEMA_VERSION,
+    EvidenceBundleManifest,
+    EvidenceBundlePublisherPort,
+    EvidenceBundleReceipt,
+    EvidenceBundleStatus,
+    EvidenceStreamDescriptor,
+    ExecutionMode,
+    ExperimentComponentBindingPort,
     ExperimentDefinition,
     ExperimentLifecycleState,
     ExperimentModePort,
-    ExecutionMode,
     ExperimentModelRoleSpec,
     ExperimentParticipantSpec,
-    ExperimentPlan,
+    ExperimentParticipantTopology,
+    ExperimentPlan as api__ExperimentPlan,
+    ExperimentRunExecutionPort,
     ExperimentRunReport,
+    ExperimentRunResult,
+    ExperimentRunSpec,
+    ExperimentSpec,
+    ExperimentTaskSpec,
     ExperimentTransition,
+    ExperimentTrialCycleExecutorPort,
+    ExperimentTrialProtocolIdentity,
+    ExperimentTrialProtocolIdentityMismatch,
     ExperimentUnit,
     ExperimentUnitExecutorPort,
     ExperimentUnitKind,
     ExperimentUnitPlannerPort,
-    RawRecordStorePort,
-    RawRecord,
-    MetricAggregation,
-    MetricMissingPolicy,
-    MetricPredicate,
-    MetricDefinition,
-    MetricValue,
-    MetricReport,
-    ExperimentParticipantTopology,
-    ExperimentTrialCycleExecutorPort,
-    ExperimentTaskSpec,
     ExperimentWorkloadFailure,
-    ExperimentSpec,
-    ExperimentTrialProtocolIdentity,
-    ExperimentTrialProtocolIdentityMismatch,
+    FactorLevelSpec as api__FactorLevelSpec,
+    FactorSelection as api__FactorSelection,
     FailureScope,
     FailureScopeRank,
-    failure_scope_rank,
-    validate_task_graph,
-)
-
-from noetrium_platform.research.experimentation.experiment.api.contracts import (
-    ExperimentParticipantSpec as contracts__ExperimentParticipantSpec,
-    ExperimentModelRoleSpec as contracts__ExperimentModelRoleSpec,
-    ExperimentSpec as contracts__ExperimentSpec,
-    AnalysisPlan as contracts__AnalysisPlan,
-    DoctorFinding as contracts__DoctorFinding,
-    ExecutionMode as contracts__ExecutionMode,
-    ExperimentDefinition as contracts__ExperimentDefinition,
-    ExperimentLifecycleState as contracts__ExperimentLifecycleState,
-    ExperimentModePort as contracts__ExperimentModePort,
-    ExperimentPlan as contracts__ExperimentPlan,
-    ExperimentRunReport as contracts__ExperimentRunReport,
-    ExperimentTransition as contracts__ExperimentTransition,
-    ExperimentUnit as contracts__ExperimentUnit,
-    ExperimentUnitExecutorPort as contracts__ExperimentUnitExecutorPort,
-    ExperimentUnitKind as contracts__ExperimentUnitKind,
-    ExperimentUnitPlannerPort as contracts__ExperimentUnitPlannerPort,
     FindingSeverity,
+    InMemoryBenchmarkSource as api__InMemoryBenchmarkSource,
+    MeasurementContentReference as api__MeasurementContentReference,
+    MeasurementCut as api__MeasurementCut,
+    MeasurementDefinition as api__MeasurementDefinition,
+    MeasurementProtocol as api__MeasurementProtocol,
+    MeasurementRecord as api__MeasurementRecord,
+    MeasurementValue as api__MeasurementValue,
+    MeasurementValueKind as api__MeasurementValueKind,
+    MetricAggregation,
+    MetricDefinition,
+    MetricMissingPolicy,
+    MetricPredicate,
+    MetricReport,
+    MetricValue,
     ObservationEnvelope,
     ObservationKind,
     ObservationSinkPort,
-    ExperimentDoctorPort,
-    UnitOutcome,
-    UnitOutcomeState,
-    RawRecordStorePort as contracts__RawRecordStorePort,
-    RawRecord as contracts__RawRecord,
-    MetricAggregation as contracts__MetricAggregation,
-    MetricMissingPolicy as contracts__MetricMissingPolicy,
-    MetricPredicate as contracts__MetricPredicate,
-    MetricDefinition as contracts__MetricDefinition,
-    MetricValue as contracts__MetricValue,
-    MetricReport as contracts__MetricReport,
-)
-
-from noetrium_platform.research.experimentation.experiment.api.failure import (
-    ExperimentWorkloadFailure as failure__ExperimentWorkloadFailure,
-    FailureScope as failure__FailureScope,
-    FailureScopeRank as failure__FailureScopeRank,
-    failure_scope_rank as failure__failure_scope_rank,
-)
-
-from noetrium_platform.research.experimentation.experiment.api.ports import (
-    ExperimentComponentBindingPort as ports__ExperimentComponentBindingPort,
-    ExperimentTrialCycleExecutorPort as ports__ExperimentTrialCycleExecutorPort,
-)
-
-from noetrium_platform.research.experimentation.experiment.api.tasks import (
-    ExperimentTaskSpec as tasks__ExperimentTaskSpec,
-    validate_task_graph as tasks__validate_task_graph,
-)
-
-from noetrium_platform.research.experimentation.experiment.api.topology import (
-    ExperimentParticipantTopology as topology__ExperimentParticipantTopology,
-)
-
-from noetrium_platform.research.experimentation.experiment.api.trial_protocol import (
-    ExperimentTrialProtocolIdentity as trial_protocol__ExperimentTrialProtocolIdentity,
-    ExperimentTrialProtocolIdentityMismatch as trial_protocol__ExperimentTrialProtocolIdentityMismatch,
-)
-
-from noetrium_platform.research.experimentation.resource.api import (
-    ComputeDemand,
-    ModelCapacityMode,
+    PairedEvaluationResult,
+    ParticipantImplementationIdentity,
+    ParticipantSchedule as api__ParticipantSchedule,
+    ParticipantSessionRuntimeIdentity,
+    PostHocEvaluationDefinition as api__PostHocEvaluationDefinition,
+    PostHocEvaluationResult as api__PostHocEvaluationResult,
+    RawRecord,
+    RawRecordStorePort,
+    ReplayLevel as api__ReplayLevel,
+    ResearchRevision as api__ResearchRevision,
+    ResearchStudyDefinition as api__ResearchStudyDefinition,
+    ResourceAllocationLeasePort,
     ResourceAllocationReceipt,
     ResourcePolicy,
-    ExperimentResourceBinderPort,
-    ResourceAllocationLeasePort,
-)
-
-from noetrium_platform.research.experimentation.resource.api.contracts import (
-    ComputeDemand as contracts__ComputeDemand,
-    ModelCapacityMode as contracts__ModelCapacityMode,
-    ResourceAllocationReceipt as contracts__ResourceAllocationReceipt,
-    ResourcePolicy as contracts__ResourcePolicy,
-)
-
-from noetrium_platform.research.experimentation.resource.api.ports import (
-    ExperimentResourceBinderPort as ports__ExperimentResourceBinderPort,
-    ResourceAllocationLeasePort as ports__ResourceAllocationLeasePort,
-)
-
-from noetrium_platform.research.experimentation.run.api import (
-    RunIdentity,
-    RunIdentityProvider,
+    RunArtifactFinalizationError,
+    RunArtifactFinalizationPort,
+    RunArtifactKind,
+    RunArtifactSealedError,
+    RunArtifactSnapshotReceipt,
+    RunArtifactStorePort,
+    RunArtifactVerificationError,
+    RunArtifactVerificationPort,
+    RunArtifactWriteActorPort,
+    RunCheckpointBundle,
+    RunCheckpointConflict,
+    RunCheckpointCoordinatorPort,
+    RunCheckpointIntegrityError,
+    RunCheckpointManifest as api__RunCheckpointManifest,
+    RunCheckpointResult,
+    RunCheckpointStore,
     RunCleanupFailure,
     RunCleanupReport,
     RunClosed,
-    RunRecoveryRequired,
-    attach_cleanup_note,
-    RunCycleExecutionPort,
-    RunCycleExecutorPort,
-    RunLifetimePort,
-    CompositionPlanReference,
-    RunLaunchManifest,
-    RunResearchSemanticsReference,
-    DerivedEvidenceArtifact,
-    EVIDENCE_BUNDLE_SCHEMA_VERSION,
-    EvidenceBundleManifest,
-    EvidenceBundleReceipt,
-    EvidenceBundleStatus,
-    EvidenceStreamDescriptor,
-    EvidenceBundlePublisherPort,
     RunControlAction as api__RunControlAction,
     RunControlActionFailure,
     RunControlCheckpointBundlePort,
@@ -438,31 +358,369 @@ from noetrium_platform.research.experimentation.run.api import (
     RunControlStaleRevision,
     RunControlTarget as api__RunControlTarget,
     RunControlTransitionOutcome,
+    RunCycleExecutionPort,
+    RunCycleExecutorPort,
+    RunDiagnosticsPort,
     RunEvidenceValidity as api__RunEvidenceValidity,
     RunExecutionOutcome as api__RunExecutionOutcome,
+    RunIdentity,
+    RunIdentityProvider,
+    RunLaunchManifest,
+    RunLifetimePort,
     RunOutcomeProjection as api__RunOutcomeProjection,
-    RunScientificValidity as api__RunScientificValidity,
-    RunTaskOutcome as api__RunTaskOutcome,
-    DecisionCycleRuntimePort,
-    RunArtifactFinalizationError,
-    RunArtifactFinalizationPort,
-    RunArtifactKind,
-    RunArtifactSnapshotReceipt,
-    RunArtifactSealedError,
-    RunArtifactStorePort,
-    RunArtifactVerificationError,
-    RunArtifactVerificationPort,
-    RunArtifactWriteActorPort,
+    RunParticipantPayload,
+    RunParticipantSnapshotRef,
+    RunRecoveryRequired,
+    RunResearchSemanticsReference,
+    RunRestoreResult,
     RunRuntimePort,
-    RunDiagnosticsPort,
-    RunSessionPort,
+    RunScientificValidity as api__RunScientificValidity,
     RunSessionFactoryPort,
-    ExperimentRunSpec,
-    ExperimentRunExecutionPort,
-    ExperimentRunResult,
+    RunSessionPort,
+    RunTaskOutcome as api__RunTaskOutcome,
+    Study as api__Study,
+    StudyArtifactPublicationPort,
+    StudyAssignment as api__StudyAssignment,
+    StudyAssignmentPort,
+    StudyConcurrencyPolicy as api__StudyConcurrencyPolicy,
+    StudyExecutionPlan,
+    StudyExecutionPolicy as api__StudyExecutionPolicy,
+    StudyExecutionUnit,
+    StudyFactorSpec as api__StudyFactorSpec,
+    StudyIntervention as api__StudyIntervention,
+    StudyMatrixExecutionReport,
+    StudyMetricAggregate,
+    StudyMetricAggregationPort,
+    StudyMetricObservation,
+    StudyModel as api__StudyModel,
+    StudyParticipant as api__StudyParticipant,
+    StudyProtocol as api__StudyProtocol,
+    StudyResearchReadPort,
+    StudyResearchReadSnapshot,
+    StudyVariantSpec as api__StudyVariantSpec,
+    TaskArtifactSpec as api__TaskArtifactSpec,
+    TaskDefinition as api__TaskDefinition,
+    TaskGraph as api__TaskGraph,
+    TaskGraphEdge as api__TaskGraphEdge,
+    TaskGraphRelation as api__TaskGraphRelation,
+    TaskPackageSpec as api__TaskPackageSpec,
+    TaskSetSplit as api__TaskSetSplit,
+    TaskVerifierArtifact as api__TaskVerifierArtifact,
+    TaskVerifierIsolation as api__TaskVerifierIsolation,
+    TaskVerifierPort as api__TaskVerifierPort,
+    TaskVerifierReceipt as api__TaskVerifierReceipt,
+    TaskVerifierRequest as api__TaskVerifierRequest,
+    TrialBudget as api__TrialBudget,
+    TrialExecutionReceipt as api__TrialExecutionReceipt,
+    TrialExecutionRequest as api__TrialExecutionRequest,
+    TrialExecutionStageReceipt as api__TrialExecutionStageReceipt,
+    TrialMatrixExecutionReport as api__TrialMatrixExecutionReport,
+    TrialMeasurementProjectionPort,
+    TrialProviderPort as api__TrialProviderPort,
+    TrialTaskProjectionPort,
+    UnitOutcome,
+    UnitOutcomeState,
+    VariantBinding as api__VariantBinding,
+    VariantExecutionProvider,
+    VariantExecutionRequest,
+    VariantKind as api__VariantKind,
+    WorkloadCheckpointBindingPort,
+    WorkloadCheckpointBundle,
+    WorkloadCheckpointComponentPort,
+    WorkloadCheckpointComponentRef,
+    WorkloadCheckpointCoordinatorPort,
+    WorkloadCheckpointManifest,
+    WorkloadCheckpointPayload,
+    WorkloadCheckpointPublicationPort,
+    WorkloadCheckpointRestoreError,
+    WorkloadCheckpointStore,
+    WorkloadExecutionCut,
+    WorkloadRestoreStateCertainty,
+    attach_cleanup_note,
+    build_comparability_proof,
+    build_workload_checkpoint_manifest,
+    failure_scope_rank,
+    validate_task_graph,
 )
 
-from noetrium_platform.research.experimentation.run.api.artifacts import (
+from noetrium_platform.research.experimentation.lifecycle.api.manifest_codec import (
+    RUN_LAUNCH_MANIFEST_SCHEMA_VERSION as manifest_codec__RUN_LAUNCH_MANIFEST_SCHEMA_VERSION,
+    RunLaunchManifestDecodeError as manifest_codec__RunLaunchManifestDecodeError,
+    decode_run_launch_manifest as manifest_codec__decode_run_launch_manifest,
+    encode_run_launch_manifest as manifest_codec__encode_run_launch_manifest,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.api import (
+    CheckpointCapturePolicy as api__CheckpointCapturePolicy,
+    CheckpointTrigger as api__CheckpointTrigger,
+    CheckpointTriggerKind as api__CheckpointTriggerKind,
+    RunCheckpointBundle as api__RunCheckpointBundle,
+    RunCheckpointConflict as api__RunCheckpointConflict,
+    RunCheckpointCoordinatorPort as api__RunCheckpointCoordinatorPort,
+    RunCheckpointIntegrityError as api__RunCheckpointIntegrityError,
+    RunCheckpointManifest as api2__RunCheckpointManifest,
+    RunCheckpointResult as api__RunCheckpointResult,
+    RunCheckpointStore as api__RunCheckpointStore,
+    RunParticipantPayload as api__RunParticipantPayload,
+    RunParticipantSnapshotRef as api__RunParticipantSnapshotRef,
+    RunRestoreResult as api__RunRestoreResult,
+    WorkloadCheckpointBindingPort as api__WorkloadCheckpointBindingPort,
+    WorkloadCheckpointBundle as api__WorkloadCheckpointBundle,
+    WorkloadCheckpointRestoreError as api__WorkloadCheckpointRestoreError,
+    WorkloadCheckpointComponentPort as api__WorkloadCheckpointComponentPort,
+    WorkloadCheckpointComponentRef as api__WorkloadCheckpointComponentRef,
+    WorkloadCheckpointManifest as api__WorkloadCheckpointManifest,
+    WorkloadCheckpointPayload as api__WorkloadCheckpointPayload,
+    WorkloadCheckpointStore as api__WorkloadCheckpointStore,
+    WorkloadExecutionCut as api__WorkloadExecutionCut,
+    WorkloadRestoreStateCertainty as api__WorkloadRestoreStateCertainty,
+    build_workload_checkpoint_manifest as api__build_workload_checkpoint_manifest,
+    WorkloadCheckpointCoordinatorPort as api__WorkloadCheckpointCoordinatorPort,
+    WorkloadCheckpointPublicationPort as api__WorkloadCheckpointPublicationPort,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts import (
+    RunCheckpointBundle as contracts__RunCheckpointBundle,
+    RunCheckpointConflict as contracts__RunCheckpointConflict,
+    RunCheckpointIntegrityError as contracts__RunCheckpointIntegrityError,
+    RunCheckpointManifest as contracts__RunCheckpointManifest,
+    RunCheckpointStore as contracts__RunCheckpointStore,
+    RunParticipantPayload as contracts__RunParticipantPayload,
+    RunParticipantSnapshotRef as contracts__RunParticipantSnapshotRef,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.api.policy import (
+    CheckpointCapturePolicy as policy__CheckpointCapturePolicy,
+    CheckpointTrigger as policy__CheckpointTrigger,
+    CheckpointTriggerKind as policy__CheckpointTriggerKind,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.api.ports import (
+    RunCheckpointCoordinatorPort as ports__RunCheckpointCoordinatorPort,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.api.results import (
+    RunCheckpointResult as results__RunCheckpointResult,
+    RunRestoreResult as results__RunRestoreResult,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.api.workload import (
+    WorkloadCheckpointBindingPort as workload__WorkloadCheckpointBindingPort,
+    WorkloadCheckpointRestoreError as workload__WorkloadCheckpointRestoreError,
+    WorkloadCheckpointBundle as workload__WorkloadCheckpointBundle,
+    WorkloadCheckpointComponentPort as workload__WorkloadCheckpointComponentPort,
+    WorkloadCheckpointComponentRef as workload__WorkloadCheckpointComponentRef,
+    WorkloadCheckpointManifest as workload__WorkloadCheckpointManifest,
+    WorkloadCheckpointPayload as workload__WorkloadCheckpointPayload,
+    WorkloadCheckpointStore as workload__WorkloadCheckpointStore,
+    WorkloadExecutionCut as workload__WorkloadExecutionCut,
+    WorkloadRestoreStateCertainty as workload__WorkloadRestoreStateCertainty,
+    build_workload_checkpoint_manifest as workload__build_workload_checkpoint_manifest,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.api.workload_ports import (
+    WorkloadCheckpointCoordinatorPort as workload_ports__WorkloadCheckpointCoordinatorPort,
+    WorkloadCheckpointPublicationPort as workload_ports__WorkloadCheckpointPublicationPort,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.evaluation.api import (
+    BranchReceipt as api__BranchReceipt,
+    ComparabilityProof as api__ComparabilityProof,
+    PairedEvaluationResult as api__PairedEvaluationResult,
+    build_comparability_proof as api__build_comparability_proof,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.evaluation.api.contracts import (
+    BranchReceipt as contracts__BranchReceipt,
+    ComparabilityProof as contracts__ComparabilityProof,
+    PairedEvaluationResult as contracts__PairedEvaluationResult,
+    build_comparability_proof as contracts__build_comparability_proof,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.api import (
+    ExperimentComponentBindingPort as api__ExperimentComponentBindingPort,
+    AnalysisPlan as api__AnalysisPlan,
+    DoctorFinding as api__DoctorFinding,
+    ExperimentDefinition as api__ExperimentDefinition,
+    ExperimentLifecycleState as api__ExperimentLifecycleState,
+    ExperimentModePort as api__ExperimentModePort,
+    ExecutionMode as api__ExecutionMode,
+    ExperimentModelRoleSpec as api__ExperimentModelRoleSpec,
+    ExperimentParticipantSpec as api__ExperimentParticipantSpec,
+    ExperimentPlan as api2__ExperimentPlan,
+    ExperimentRunReport as api__ExperimentRunReport,
+    ExperimentTransition as api__ExperimentTransition,
+    ExperimentUnit as api__ExperimentUnit,
+    ExperimentUnitExecutorPort as api__ExperimentUnitExecutorPort,
+    ExperimentUnitKind as api__ExperimentUnitKind,
+    ExperimentUnitPlannerPort as api__ExperimentUnitPlannerPort,
+    RawRecordStorePort as api__RawRecordStorePort,
+    RawRecord as api__RawRecord,
+    MetricAggregation as api__MetricAggregation,
+    MetricMissingPolicy as api__MetricMissingPolicy,
+    MetricPredicate as api__MetricPredicate,
+    MetricDefinition as api__MetricDefinition,
+    MetricValue as api__MetricValue,
+    MetricReport as api__MetricReport,
+    ExperimentParticipantTopology as api__ExperimentParticipantTopology,
+    ExperimentTrialCycleExecutorPort as api__ExperimentTrialCycleExecutorPort,
+    ExperimentTaskSpec as api__ExperimentTaskSpec,
+    ExperimentWorkloadFailure as api__ExperimentWorkloadFailure,
+    ExperimentSpec as api__ExperimentSpec,
+    ExperimentTrialProtocolIdentity as api__ExperimentTrialProtocolIdentity,
+    ExperimentTrialProtocolIdentityMismatch as api__ExperimentTrialProtocolIdentityMismatch,
+    FailureScope as api__FailureScope,
+    FailureScopeRank as api__FailureScopeRank,
+    failure_scope_rank as api__failure_scope_rank,
+    validate_task_graph as api__validate_task_graph,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.api.contracts import (
+    ExperimentParticipantSpec as contracts__ExperimentParticipantSpec,
+    ExperimentModelRoleSpec as contracts__ExperimentModelRoleSpec,
+    ExperimentSpec as contracts__ExperimentSpec,
+    AnalysisPlan as contracts__AnalysisPlan,
+    DoctorFinding as contracts__DoctorFinding,
+    ExecutionMode as contracts__ExecutionMode,
+    ExperimentDefinition as contracts__ExperimentDefinition,
+    ExperimentLifecycleState as contracts__ExperimentLifecycleState,
+    ExperimentModePort as contracts__ExperimentModePort,
+    ExperimentPlan as contracts__ExperimentPlan,
+    ExperimentRunReport as contracts__ExperimentRunReport,
+    ExperimentTransition as contracts__ExperimentTransition,
+    ExperimentUnit as contracts__ExperimentUnit,
+    ExperimentUnitExecutorPort as contracts__ExperimentUnitExecutorPort,
+    ExperimentUnitKind as contracts__ExperimentUnitKind,
+    ExperimentUnitPlannerPort as contracts__ExperimentUnitPlannerPort,
+    FindingSeverity as contracts__FindingSeverity,
+    ObservationEnvelope as contracts__ObservationEnvelope,
+    ObservationKind as contracts__ObservationKind,
+    ObservationSinkPort as contracts__ObservationSinkPort,
+    ExperimentDoctorPort,
+    UnitOutcome as contracts__UnitOutcome,
+    UnitOutcomeState as contracts__UnitOutcomeState,
+    RawRecordStorePort as contracts__RawRecordStorePort,
+    RawRecord as contracts__RawRecord,
+    MetricAggregation as contracts__MetricAggregation,
+    MetricMissingPolicy as contracts__MetricMissingPolicy,
+    MetricPredicate as contracts__MetricPredicate,
+    MetricDefinition as contracts__MetricDefinition,
+    MetricValue as contracts__MetricValue,
+    MetricReport as contracts__MetricReport,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.api.failure import (
+    ExperimentWorkloadFailure as failure__ExperimentWorkloadFailure,
+    FailureScope as failure__FailureScope,
+    FailureScopeRank as failure__FailureScopeRank,
+    failure_scope_rank as failure__failure_scope_rank,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.api.ports import (
+    ExperimentComponentBindingPort as ports__ExperimentComponentBindingPort,
+    ExperimentTrialCycleExecutorPort as ports__ExperimentTrialCycleExecutorPort,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.api.tasks import (
+    ExperimentTaskSpec as tasks__ExperimentTaskSpec,
+    validate_task_graph as tasks__validate_task_graph,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.api.topology import (
+    ExperimentParticipantTopology as topology__ExperimentParticipantTopology,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.api.trial_protocol import (
+    ExperimentTrialProtocolIdentity as trial_protocol__ExperimentTrialProtocolIdentity,
+    ExperimentTrialProtocolIdentityMismatch as trial_protocol__ExperimentTrialProtocolIdentityMismatch,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.resource.api import (
+    ComputeDemand as api__ComputeDemand,
+    ModelCapacityMode,
+    ResourceAllocationReceipt as api__ResourceAllocationReceipt,
+    ResourcePolicy as api__ResourcePolicy,
+    ExperimentResourceBinderPort,
+    ResourceAllocationLeasePort as api__ResourceAllocationLeasePort,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.resource.api.contracts import (
+    ComputeDemand as contracts__ComputeDemand,
+    ModelCapacityMode as contracts__ModelCapacityMode,
+    ResourceAllocationReceipt as contracts__ResourceAllocationReceipt,
+    ResourcePolicy as contracts__ResourcePolicy,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.experiment.resource.api.ports import (
+    ExperimentResourceBinderPort as ports__ExperimentResourceBinderPort,
+    ResourceAllocationLeasePort as ports__ResourceAllocationLeasePort,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.run.api import (
+    RunIdentity as api__RunIdentity,
+    RunIdentityProvider as api__RunIdentityProvider,
+    RunCleanupFailure as api__RunCleanupFailure,
+    RunCleanupReport as api__RunCleanupReport,
+    RunClosed as api__RunClosed,
+    RunRecoveryRequired as api__RunRecoveryRequired,
+    attach_cleanup_note as api__attach_cleanup_note,
+    RunCycleExecutionPort as api__RunCycleExecutionPort,
+    RunCycleExecutorPort as api__RunCycleExecutorPort,
+    RunLifetimePort as api__RunLifetimePort,
+    CompositionPlanReference as api__CompositionPlanReference,
+    RunLaunchManifest as api__RunLaunchManifest,
+    RunResearchSemanticsReference as api__RunResearchSemanticsReference,
+    DerivedEvidenceArtifact as api__DerivedEvidenceArtifact,
+    EVIDENCE_BUNDLE_SCHEMA_VERSION as api__EVIDENCE_BUNDLE_SCHEMA_VERSION,
+    EvidenceBundleManifest as api__EvidenceBundleManifest,
+    EvidenceBundleReceipt as api__EvidenceBundleReceipt,
+    EvidenceBundleStatus as api__EvidenceBundleStatus,
+    EvidenceStreamDescriptor as api__EvidenceStreamDescriptor,
+    EvidenceBundlePublisherPort as api__EvidenceBundlePublisherPort,
+    RunControlAction as api2__RunControlAction,
+    RunControlActionFailure as api__RunControlActionFailure,
+    RunControlCheckpointBundlePort as api__RunControlCheckpointBundlePort,
+    RunControlCheckpointStorePort as api__RunControlCheckpointStorePort,
+    RunControlConflict as api__RunControlConflict,
+    RunControlError as api__RunControlError,
+    RunControlEvidencePort as api__RunControlEvidencePort,
+    RunControlIntegrityError as api__RunControlIntegrityError,
+    RunControlLifecyclePort as api__RunControlLifecyclePort,
+    RunControlNotFound as api__RunControlNotFound,
+    RunControlPhase as api__RunControlPhase,
+    RunControlPort as api2__RunControlPort,
+    RunControlPreparedOperation as api2__RunControlPreparedOperation,
+    RunControlReceipt as api2__RunControlReceipt,
+    RunControlReconciliationPort as api__RunControlReconciliationPort,
+    RunControlRequest as api2__RunControlRequest,
+    RunControlStaleRevision as api__RunControlStaleRevision,
+    RunControlTarget as api2__RunControlTarget,
+    RunControlTransitionOutcome as api__RunControlTransitionOutcome,
+    RunEvidenceValidity as api2__RunEvidenceValidity,
+    RunExecutionOutcome as api2__RunExecutionOutcome,
+    RunOutcomeProjection as api2__RunOutcomeProjection,
+    RunScientificValidity as api2__RunScientificValidity,
+    RunTaskOutcome as api2__RunTaskOutcome,
+    DecisionCycleRuntimePort as api__DecisionCycleRuntimePort,
+    RunArtifactFinalizationError as api__RunArtifactFinalizationError,
+    RunArtifactFinalizationPort as api__RunArtifactFinalizationPort,
+    RunArtifactKind as api__RunArtifactKind,
+    RunArtifactSnapshotReceipt as api__RunArtifactSnapshotReceipt,
+    RunArtifactSealedError as api__RunArtifactSealedError,
+    RunArtifactStorePort as api__RunArtifactStorePort,
+    RunArtifactVerificationError as api__RunArtifactVerificationError,
+    RunArtifactVerificationPort as api__RunArtifactVerificationPort,
+    RunArtifactWriteActorPort as api__RunArtifactWriteActorPort,
+    RunRuntimePort as api__RunRuntimePort,
+    RunDiagnosticsPort as api__RunDiagnosticsPort,
+    RunSessionPort as api__RunSessionPort,
+    RunSessionFactoryPort as api__RunSessionFactoryPort,
+    ExperimentRunSpec as api__ExperimentRunSpec,
+    ExperimentRunExecutionPort as api__ExperimentRunExecutionPort,
+    ExperimentRunResult as api__ExperimentRunResult,
+)
+
+from noetrium_platform.research.experimentation.lifecycle.run.api.artifacts import (
     RunArtifactFinalizationError as artifacts__RunArtifactFinalizationError,
     RunArtifactFinalizationPort as artifacts__RunArtifactFinalizationPort,
     RunArtifactKind as artifacts__RunArtifactKind,
@@ -474,11 +732,11 @@ from noetrium_platform.research.experimentation.run.api.artifacts import (
     RunArtifactWriteActorPort as artifacts__RunArtifactWriteActorPort,
 )
 
-from noetrium_platform.research.experimentation.run.api.cleanup import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.cleanup import (
     attach_cleanup_note as cleanup__attach_cleanup_note,
 )
 
-from noetrium_platform.research.experimentation.run.api.control import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.control import (
     RunIdentity as control__RunIdentity,
     RunLaunchManifest as control__RunLaunchManifest,
     RunControlAction as control__RunControlAction,
@@ -507,31 +765,31 @@ from noetrium_platform.research.experimentation.run.api.control import (
     RunControlEvidencePort as control__RunControlEvidencePort,
 )
 
-from noetrium_platform.research.experimentation.run.api.diagnostics import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.diagnostics import (
     RunDiagnosticsPort as diagnostics__RunDiagnosticsPort,
 )
 
-from noetrium_platform.research.experimentation.run.api.execution import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.execution import (
     ExperimentRunExecutionPort as execution__ExperimentRunExecutionPort,
     ExperimentRunResult as execution__ExperimentRunResult,
 )
 
-from noetrium_platform.research.experimentation.run.api.identity import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.identity import (
     RunIdentity as identity__RunIdentity,
 )
 
-from noetrium_platform.research.experimentation.run.api.identity_ports import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports import (
     RunIdentityProvider as identity_ports__RunIdentityProvider,
 )
 
-from noetrium_platform.research.experimentation.run.api.lifecycle import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle import (
     RunCleanupFailure as lifecycle__RunCleanupFailure,
     RunCleanupReport as lifecycle__RunCleanupReport,
     RunClosed as lifecycle__RunClosed,
     RunRecoveryRequired as lifecycle__RunRecoveryRequired,
 )
 
-from noetrium_platform.research.experimentation.run.api.lifecycle_ports import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports import (
     RunCycleExecutionPort as lifecycle_ports__RunCycleExecutionPort,
     RunCycleExecutorPort as lifecycle_ports__RunCycleExecutorPort,
     RunLifetimePort as lifecycle_ports__RunLifetimePort,
@@ -539,13 +797,13 @@ from noetrium_platform.research.experimentation.run.api.lifecycle_ports import (
     RunSessionFactoryPort as lifecycle_ports__RunSessionFactoryPort,
 )
 
-from noetrium_platform.research.experimentation.run.api.manifest import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.manifest import (
     CompositionPlanReference as manifest__CompositionPlanReference,
     RunLaunchManifest as manifest__RunLaunchManifest,
     RunResearchSemanticsReference as manifest__RunResearchSemanticsReference,
 )
 
-from noetrium_platform.research.experimentation.run.api.manifest_evidence import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence import (
     DerivedEvidenceArtifact as manifest_evidence__DerivedEvidenceArtifact,
     EVIDENCE_BUNDLE_SCHEMA_VERSION as manifest_evidence__EVIDENCE_BUNDLE_SCHEMA_VERSION,
     EvidenceBundleManifest as manifest_evidence__EvidenceBundleManifest,
@@ -554,95 +812,97 @@ from noetrium_platform.research.experimentation.run.api.manifest_evidence import
     EvidenceStreamDescriptor as manifest_evidence__EvidenceStreamDescriptor,
 )
 
-from noetrium_platform.research.experimentation.run.api.manifest_ports import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.manifest_ports import (
     EvidenceBundlePublisherPort as manifest_ports__EvidenceBundlePublisherPort,
 )
 
-from noetrium_platform.research.experimentation.run.api.ports import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.ports import (
     DecisionCycleRuntimePort as ports__DecisionCycleRuntimePort,
     RunRuntimePort as ports__RunRuntimePort,
     RunSessionPort as ports__RunSessionPort,
 )
 
-from noetrium_platform.research.experimentation.run.api.spec import (
+from noetrium_platform.research.experimentation.lifecycle.run.api.spec import (
     ExperimentRunSpec as spec__ExperimentRunSpec,
 )
 
-from noetrium_platform.research.experimentation.study.api import (
-    AgentStudySpec,
-    Study as api__Study,
-    BenchmarkAssignmentMode as api__BenchmarkAssignmentMode,
-    StudyModel as api__StudyModel,
-    StudyParticipant as api__StudyParticipant,
-    PostHocEvaluationDefinition as api__PostHocEvaluationDefinition,
-    PostHocEvaluationResult as api__PostHocEvaluationResult,
-    TaskVerifierArtifact as api__TaskVerifierArtifact,
-    TaskVerifierPort as api__TaskVerifierPort,
-    TaskVerifierReceipt as api__TaskVerifierReceipt,
-    TaskVerifierRequest as api__TaskVerifierRequest,
-    TrialProviderPort as api__TrialProviderPort,
-    TrialTaskProjectionPort,
-    StudyResearchReadPort,
-    StudyResearchReadSnapshot,
-    TrialMatrixExecutionReport as api__TrialMatrixExecutionReport,
-    TrialMeasurementProjectionPort,
-    TrialExecutionRequest as api__TrialExecutionRequest,
-    TrialExecutionReceipt as api__TrialExecutionReceipt,
-    TrialExecutionStageReceipt as api__TrialExecutionStageReceipt,
-    ReplayLevel as api__ReplayLevel,
-    AnalysisDefinition as api__AnalysisDefinition,
-    AnalysisResult as api__AnalysisResult,
-    MeasurementCut as api__MeasurementCut,
-    BenchmarkCutSpec,
-    BenchmarkTaskSet as api__BenchmarkTaskSet,
-    BenchmarkSourceKind as api__BenchmarkSourceKind,
-    BenchmarkSourcePort as api__BenchmarkSourcePort,
-    BenchmarkSourceResolution as api__BenchmarkSourceResolution,
-    BenchmarkSourceSpec as api__BenchmarkSourceSpec,
-    InMemoryBenchmarkSource as api__InMemoryBenchmarkSource,
-    TaskArtifactSpec as api__TaskArtifactSpec,
-    TaskDefinition as api__TaskDefinition,
-    TaskPackageSpec as api__TaskPackageSpec,
-    TaskVerifierIsolation as api__TaskVerifierIsolation,
-    TaskGraph as api__TaskGraph,
-    TaskGraphEdge as api__TaskGraphEdge,
-    TaskGraphRelation as api__TaskGraphRelation,
-    TaskSetSplit as api__TaskSetSplit,
-    TrialBudget as api__TrialBudget,
-    StudyIntervention as api__StudyIntervention,
-    StudyFactorSpec as api__StudyFactorSpec,
-    ResearchStudyDefinition as api__ResearchStudyDefinition,
-    StudyExecutionPolicy as api__StudyExecutionPolicy,
-    ResearchRevision as api__ResearchRevision,
-    ParticipantSchedule as api__ParticipantSchedule,
-    FactorSelection as api__FactorSelection,
-    FactorLevelSpec as api__FactorLevelSpec,
-    StudyConcurrencyPolicy,
-    MeasurementContentReference as api__MeasurementContentReference,
-    MeasurementDefinition as api__MeasurementDefinition,
-    MeasurementProtocol as api__MeasurementProtocol,
-    MeasurementRecord as api__MeasurementRecord,
-    MeasurementValue as api__MeasurementValue,
-    MeasurementValueKind as api__MeasurementValueKind,
-    StudyAssignment,
-    StudyExecutionUnit,
-    StudyArtifactPublicationPort,
-    StudyAssignmentPort,
-    StudyMetricAggregate,
-    StudyMatrixExecutionReport,
-    StudyMetricAggregationPort,
-    StudyMetricObservation,
-    StudyProtocol,
-    StudyVariantSpec,
-    VariantKind,
-    ExperimentPlan as api__ExperimentPlan,
-    VariantBinding,
-    VariantExecutionProvider,
-    VariantExecutionRequest,
-    BoundStudyExecutionPort,
+from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    AgentStudySpec as api2__AgentStudySpec,
+    Study as api2__Study,
+    BenchmarkAssignmentMode as api2__BenchmarkAssignmentMode,
+    StudyModel as api2__StudyModel,
+    StudyParticipant as api2__StudyParticipant,
+    PostHocEvaluationDefinition as api2__PostHocEvaluationDefinition,
+    PostHocEvaluationResult as api2__PostHocEvaluationResult,
+    TaskVerifierArtifact as api2__TaskVerifierArtifact,
+    TaskVerifierPort as api2__TaskVerifierPort,
+    TaskVerifierReceipt as api2__TaskVerifierReceipt,
+    TaskVerifierRequest as api2__TaskVerifierRequest,
+    TrialProviderPort as api2__TrialProviderPort,
+    TrialTaskProjectionPort as api__TrialTaskProjectionPort,
+    StudyResearchReadPort as api__StudyResearchReadPort,
+    StudyResearchReadSnapshot as api__StudyResearchReadSnapshot,
+    TrialMatrixExecutionReport as api2__TrialMatrixExecutionReport,
+    TrialMeasurementProjectionPort as api__TrialMeasurementProjectionPort,
+    TrialExecutionRequest as api2__TrialExecutionRequest,
+    TrialExecutionReceipt as api2__TrialExecutionReceipt,
+    TrialExecutionStageReceipt as api2__TrialExecutionStageReceipt,
+    ReplayLevel as api2__ReplayLevel,
+    AnalysisDefinition as api2__AnalysisDefinition,
+    AnalysisResult as api2__AnalysisResult,
+    MeasurementCut as api2__MeasurementCut,
+    BenchmarkCutSpec as api2__BenchmarkCutSpec,
+    BenchmarkTaskSet as api2__BenchmarkTaskSet,
+    BenchmarkSourceKind as api2__BenchmarkSourceKind,
+    BenchmarkSourcePort as api2__BenchmarkSourcePort,
+    BenchmarkSourceResolution as api2__BenchmarkSourceResolution,
+    BenchmarkSourceSpec as api2__BenchmarkSourceSpec,
+    InMemoryBenchmarkSource as api2__InMemoryBenchmarkSource,
+    TaskArtifactSpec as api2__TaskArtifactSpec,
+    TaskDefinition as api2__TaskDefinition,
+    TaskPackageSpec as api2__TaskPackageSpec,
+    TaskVerifierIsolation as api2__TaskVerifierIsolation,
+    TaskGraph as api2__TaskGraph,
+    TaskGraphEdge as api2__TaskGraphEdge,
+    TaskGraphRelation as api2__TaskGraphRelation,
+    TaskSetSplit as api2__TaskSetSplit,
+    TrialBudget as api2__TrialBudget,
+    StudyIntervention as api2__StudyIntervention,
+    StudyFactorSpec as api2__StudyFactorSpec,
+    ResearchStudyDefinition as api2__ResearchStudyDefinition,
+    StudyExecutionPolicy as api2__StudyExecutionPolicy,
+    ResearchRevision as api2__ResearchRevision,
+    ParticipantSchedule as api2__ParticipantSchedule,
+    FactorSelection as api2__FactorSelection,
+    FactorLevelSpec as api2__FactorLevelSpec,
+    StudyConcurrencyPolicy as api2__StudyConcurrencyPolicy,
+    MeasurementContentReference as api2__MeasurementContentReference,
+    MeasurementDefinition as api2__MeasurementDefinition,
+    MeasurementProtocol as api2__MeasurementProtocol,
+    MeasurementRecord as api2__MeasurementRecord,
+    MeasurementValue as api2__MeasurementValue,
+    MeasurementValueKind as api2__MeasurementValueKind,
+    StudyAssignment as api2__StudyAssignment,
+    StudyExecutionUnit as api__StudyExecutionUnit,
+    StudyArtifactPublicationPort as api__StudyArtifactPublicationPort,
+    StudyAssignmentPort as api__StudyAssignmentPort,
+    StudyMetricAggregate as api__StudyMetricAggregate,
+    StudyMatrixExecutionReport as api__StudyMatrixExecutionReport,
+    StudyMetricAggregationPort as api__StudyMetricAggregationPort,
+    StudyMetricObservation as api__StudyMetricObservation,
+    StudyProtocol as api2__StudyProtocol,
+    StudyVariantSpec as api2__StudyVariantSpec,
+    VariantKind as api2__VariantKind,
+    StudyExecutionPlan as api__StudyExecutionPlan,
+    VariantBinding as api2__VariantBinding,
+    VariantExecutionProvider as api__VariantExecutionProvider,
+    VariantExecutionRequest as api__VariantExecutionRequest,
+    BoundStudyExecutionPort as api__BoundStudyExecutionPort,
+    MaterializedTaskVerifierArchive as api__MaterializedTaskVerifierArchive,
+    TaskVerifierArchiveMaterializationPort as api__TaskVerifierArchiveMaterializationPort,
 )
 
-from noetrium_platform.research.experimentation.study.api.analysis import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.analysis import (
     AnalysisDefinition as analysis__AnalysisDefinition,
     AnalysisResult as analysis__AnalysisResult,
     DatasetVersionProjection,
@@ -650,14 +910,14 @@ from noetrium_platform.research.experimentation.study.api.analysis import (
     MeasurementCut as analysis__MeasurementCut,
 )
 
-from noetrium_platform.research.experimentation.study.api.authoring import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.authoring import (
     AgentStudySpec as authoring__AgentStudySpec,
     Study as authoring__Study,
     StudyModel as authoring__StudyModel,
     StudyParticipant as authoring__StudyParticipant,
 )
 
-from noetrium_platform.research.experimentation.study.api.benchmark import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.benchmark import (
     BenchmarkCutSpec as benchmark__BenchmarkCutSpec,
     BenchmarkTaskSet as benchmark__BenchmarkTaskSet,
     TaskDefinition as benchmark__TaskDefinition,
@@ -676,7 +936,7 @@ from noetrium_platform.research.experimentation.study.api.benchmark import (
     InMemoryBenchmarkSource as benchmark__InMemoryBenchmarkSource,
 )
 
-from noetrium_platform.research.experimentation.study.api.contracts import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.contracts import (
     StudyConcurrencyPolicy as contracts__StudyConcurrencyPolicy,
     StudyAssignment as contracts__StudyAssignment,
     StudyExecutionUnit as contracts__StudyExecutionUnit,
@@ -688,7 +948,7 @@ from noetrium_platform.research.experimentation.study.api.contracts import (
     VariantKind as contracts__VariantKind,
 )
 
-from noetrium_platform.research.experimentation.study.api.design import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.design import (
     BenchmarkAssignmentMode as design__BenchmarkAssignmentMode,
     FactorLevelSpec as design__FactorLevelSpec,
     FactorSelection as design__FactorSelection,
@@ -700,17 +960,17 @@ from noetrium_platform.research.experimentation.study.api.design import (
     StudyIntervention as design__StudyIntervention,
 )
 
-from noetrium_platform.research.experimentation.study.api.evaluation import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.evaluation import (
     PostHocEvaluationDefinition as evaluation__PostHocEvaluationDefinition,
     PostHocEvaluationResult as evaluation__PostHocEvaluationResult,
 )
 
-from noetrium_platform.research.experimentation.study.api.materialization import (
-    MaterializedTaskVerifierArchive,
-    TaskVerifierArchiveMaterializationPort,
+from noetrium_platform.research.experimentation.lifecycle.study.api.materialization import (
+    MaterializedTaskVerifierArchive as materialization__MaterializedTaskVerifierArchive,
+    TaskVerifierArchiveMaterializationPort as materialization__TaskVerifierArchiveMaterializationPort,
 )
 
-from noetrium_platform.research.experimentation.study.api.measurement import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.measurement import (
     MeasurementContentReference as measurement__MeasurementContentReference,
     MeasurementDefinition as measurement__MeasurementDefinition,
     MeasurementProtocol as measurement__MeasurementProtocol,
@@ -719,26 +979,26 @@ from noetrium_platform.research.experimentation.study.api.measurement import (
     MeasurementValueKind as measurement__MeasurementValueKind,
 )
 
-from noetrium_platform.research.experimentation.study.api.plan import (
-    ExperimentPlan as plan__ExperimentPlan,
+from noetrium_platform.research.experimentation.lifecycle.study.api.plan import (
+    StudyExecutionPlan as plan__StudyExecutionPlan,
     VariantBinding as plan__VariantBinding,
     VariantExecutionProvider as plan__VariantExecutionProvider,
     VariantExecutionRequest as plan__VariantExecutionRequest,
 )
 
-from noetrium_platform.research.experimentation.study.api.ports import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.ports import (
     BoundStudyExecutionPort as ports__BoundStudyExecutionPort,
     StudyArtifactPublicationPort as ports__StudyArtifactPublicationPort,
     StudyAssignmentPort as ports__StudyAssignmentPort,
     StudyMetricAggregationPort as ports__StudyMetricAggregationPort,
 )
 
-from noetrium_platform.research.experimentation.study.api.research_read import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.research_read import (
     StudyResearchReadPort as research_read__StudyResearchReadPort,
     StudyResearchReadSnapshot as research_read__StudyResearchReadSnapshot,
 )
 
-from noetrium_platform.research.experimentation.study.api.trial import (
+from noetrium_platform.research.experimentation.lifecycle.study.api.trial import (
     TaskVerifierArtifact as trial__TaskVerifierArtifact,
     TaskVerifierPort as trial__TaskVerifierPort,
     TaskVerifierReceipt as trial__TaskVerifierReceipt,
@@ -765,10 +1025,10 @@ from noetrium_platform.research.experimentation.workbench.api import (
     TableProgramExecutionPort,
     TableProjectStep as api__TableProjectStep,
     TableStepKind as api__TableStepKind,
-    AggregationFunction,
-    AggregationSpec,
+    AggregationFunction as api__AggregationFunction,
+    AggregationSpec as api__AggregationSpec,
     BaselineRegistryPort,
-    BaselineSpec,
+    BaselineSpec as api__BaselineSpec,
     CandidateProgramExecutionPort,
     CandidateProgramExecutionReceipt,
     CandidateProgramExecutionRequest,
@@ -777,24 +1037,25 @@ from noetrium_platform.research.experimentation.workbench.api import (
     CandidateProgramMeasurementProjection,
     CandidateProgramMeasurementProjectionPort,
     CandidateProgramSourcePublicationPort,
-    DataColumn,
-    DataTable,
-    EvaluationContext,
-    EvaluationStage,
+    candidate_program_capability_payload,
+    DataColumn as api__DataColumn,
+    DataTable as api__DataTable,
+    EvaluationContext as api__EvaluationContext,
+    EvaluationStage as api__EvaluationStage,
     FigureCategory,
-    FigureCell,
-    FigureKind,
-    FigureOutputFormat,
-    FigurePoint,
+    FigureCell as api__FigureCell,
+    FigureKind as api__FigureKind,
+    FigureOutputFormat as api__FigureOutputFormat,
+    FigurePoint as api__FigurePoint,
     FigureRendererPort,
-    FigureSeries,
-    FigureSpec,
-    FigureStyle,
+    FigureSeries as api__FigureSeries,
+    FigureSpec as api__FigureSpec,
+    FigureStyle as api__FigureStyle,
     GroupComparison,
     InferenceResult,
     MetricSummary,
-    MissingValuePolicy,
-    MultipleComparisonMethod,
+    MissingValuePolicy as api__MissingValuePolicy,
+    MultipleComparisonMethod as api__MultipleComparisonMethod,
     MultipleComparisonResult,
     PairedComparison,
     RenderedResearchPackage,
@@ -805,12 +1066,12 @@ from noetrium_platform.research.experimentation.workbench.api import (
     ResearchStatisticsPort,
     ResearchTablePipelinePort,
     ReportTableRendererPort,
-    SplitStrategy,
+    SplitStrategy as api__SplitStrategy,
     TableAnalysisPort,
     TableReaderPort,
     TableTransformPort,
     MeasurementRecordTableAdapter,
-    StudyObservationTableAdapter,
+    StudyObservationTableAdapter as api__StudyObservationTableAdapter,
 )
 
 from noetrium_platform.research.experimentation.workbench.api.adapters import (
@@ -827,6 +1088,7 @@ from noetrium_platform.research.experimentation.workbench.api.candidate_program 
     CandidateProgramMeasurementProjection as candidate_program__CandidateProgramMeasurementProjection,
     CandidateProgramMeasurementProjectionPort as candidate_program__CandidateProgramMeasurementProjectionPort,
     CandidateProgramSourcePublicationPort as candidate_program__CandidateProgramSourcePublicationPort,
+    candidate_program_capability_payload as candidate_program__candidate_program_capability_payload,
 )
 
 from noetrium_platform.research.experimentation.workbench.api.contracts import (
@@ -915,4 +1177,4 @@ from noetrium_platform.research.experimentation.workload.api.ports import (
 
 SYSTEM_KEY = 'experimentation'
 PACKAGE_PREFIX = 'noetrium_platform.research.experimentation'
-__all__ = ('MachineCut', 'ResearchBindingContribution', 'ResearchCapabilityBinding', 'ResearchModelRoleBinding', 'ResearchModelRoleRequirement', 'ResearchParticipantBinding', 'ResearchBindingRequirements', 'ResearchParticipantRequirement', 'ResearchRequirementResolution', 'resolve_research_requirements', 'TaskVerifierArtifact', 'TaskVerifierPort', 'TaskVerifierReceipt', 'TaskVerifierRequest', 'TrialProviderPort', 'TrialMatrixExecutionReport', 'TrialExecutionRequest', 'TrialExecutionReceipt', 'TrialExecutionStageReceipt', 'ModelRoleUsage', 'ReplayLevel', 'AnalysisDefinition', 'AnalysisResult', 'PostHocEvaluationDefinition', 'PostHocEvaluationResult', 'Study', 'StudyModel', 'StudyParticipant', 'BenchmarkAssignmentMode', 'BenchmarkTaskSet', 'BenchmarkSourceKind', 'BenchmarkSourcePort', 'BenchmarkSourceResolution', 'BenchmarkSourceSpec', 'InMemoryBenchmarkSource', 'MeasurementContentReference', 'MeasurementCut', 'TaskArtifactSpec', 'TaskDefinition', 'TaskPackageSpec', 'TaskVerifierIsolation', 'TaskGraph', 'TaskGraphEdge', 'TaskGraphRelation', 'TaskSetSplit', 'TrialBudget', 'diff_research_plans', 'compile_research_plan', 'ResearchPlanDiff', 'CompiledResearchPlan', 'compile_research_method', 'CompiledExperimentShardPlan', 'ExperimentBatchPlacement', 'ExperimentShard', 'compile_experiment_shard_plan', 'CompiledExperimentProgram', 'ExperimentBatch', 'ExperimentBatchKind', 'ExperimentProgramBinding', 'compile_experiment_program', 'experiment_report_from_data', 'CompiledResearchCampaign', 'CompiledResearchCampaignLane', 'ResearchCampaignCompilationUnit', 'compile_research_campaign', 'ResearchCampaignExecutionPort', 'ResearchCampaignExecutionReport', 'ResearchCampaignLaneResult', 'ResearchCampaignLaneState', 'ResearchCampaignPlan', 'ResearchCampaignStudy', 'ResearchCampaignStudyBinding', 'StudyIntervention', 'StudyFactorSpec', 'ResearchStudyDefinition', 'StudyExecutionPolicy', 'ResearchRevision', 'ParticipantSchedule', 'MeasurementValueKind', 'MeasurementValue', 'MeasurementRecord', 'MeasurementProtocol', 'MeasurementDefinition', 'FactorSelection', 'FactorLevelSpec', 'ProjectIdentityProjection', 'ProjectManifestProjection', 'ProjectRunDefinition', 'RunControlAction', 'RunControlPort', 'RunControlPreparedOperation', 'RunControlReceipt', 'RunControlRequest', 'RunControlTarget', 'RunEvidenceValidity', 'RunExecutionOutcome', 'RunOutcomeProjection', 'RunScientificValidity', 'RunTaskOutcome', 'ActionKind', 'ActionSpec', 'AgentGoal', 'AgentMethodSpec', 'AgentPhaseSpec', 'EmbodiedActionCommand', 'EmbodimentKind', 'EmbodimentSpec', 'EnvironmentSpec', 'ExecutionEnvironmentKind', 'GuardDecision', 'GuardVerdict', 'MethodProgram', 'MethodProgramBuilder', 'MethodWorkflow', 'SensorModality', 'SensorSpec', 'TableAggregateStep', 'TableDeriveStep', 'TableExpression', 'TableExpressionKind', 'TableFilterStep', 'TableJoinStep', 'TableProgram', 'TableProjectStep', 'TableStepKind', 'campaign__CompiledResearchCampaign', 'campaign__CompiledResearchCampaignLane', 'campaign__ResearchCampaignCompilationUnit', 'campaign__ResearchCampaignExecutionPort', 'campaign__ResearchCampaignExecutionReport', 'campaign__ResearchCampaignLaneResult', 'campaign__ResearchCampaignLaneState', 'campaign__ResearchCampaignPlan', 'campaign__ResearchCampaignStudy', 'campaign__ResearchCampaignStudyBinding', 'campaign__compile_research_campaign', 'construction__ProjectIdentityProjection', 'construction__ProjectManifestProjection', 'construction__ProjectRunDefinition', 'method_host__compile_research_method', 'program__CompiledExperimentProgram', 'program__ExperimentBatch', 'program__ExperimentBatchKind', 'program__ExperimentProgramBinding', 'program__compile_experiment_program', 'program__experiment_report_from_data', 'research_compiler__CompiledResearchPlan', 'research_compiler__ResearchPlanDiff', 'research_compiler__compile_research_plan', 'research_compiler__resolve_research_requirements', 'research_compiler__diff_research_plans', 'sharding__CompiledExperimentShardPlan', 'sharding__ExperimentBatchPlacement', 'sharding__ExperimentShard', 'sharding__compile_experiment_shard_plan', 'ExperimentationCatalogPort', 'ports__ExperimentationCatalogPort', 'CheckpointCapturePolicy', 'CheckpointTrigger', 'CheckpointTriggerKind', 'RunCheckpointBundle', 'RunCheckpointConflict', 'RunCheckpointCoordinatorPort', 'RunCheckpointIntegrityError', 'RunCheckpointManifest', 'RunCheckpointResult', 'RunCheckpointStore', 'RunParticipantPayload', 'RunParticipantSnapshotRef', 'RunRestoreResult', 'WorkloadCheckpointBindingPort', 'WorkloadCheckpointBundle', 'WorkloadCheckpointRestoreError', 'WorkloadCheckpointComponentPort', 'WorkloadCheckpointComponentRef', 'WorkloadCheckpointManifest', 'WorkloadCheckpointPayload', 'WorkloadCheckpointStore', 'WorkloadExecutionCut', 'WorkloadRestoreStateCertainty', 'build_workload_checkpoint_manifest', 'WorkloadCheckpointCoordinatorPort', 'WorkloadCheckpointPublicationPort', 'contracts__RunCheckpointBundle', 'contracts__RunCheckpointConflict', 'contracts__RunCheckpointIntegrityError', 'contracts__RunCheckpointManifest', 'contracts__RunCheckpointStore', 'contracts__RunParticipantPayload', 'contracts__RunParticipantSnapshotRef', 'policy__CheckpointCapturePolicy', 'policy__CheckpointTrigger', 'policy__CheckpointTriggerKind', 'ports__RunCheckpointCoordinatorPort', 'results__RunCheckpointResult', 'results__RunRestoreResult', 'workload__WorkloadCheckpointBindingPort', 'workload__WorkloadCheckpointRestoreError', 'workload__WorkloadCheckpointBundle', 'workload__WorkloadCheckpointComponentPort', 'workload__WorkloadCheckpointComponentRef', 'workload__WorkloadCheckpointManifest', 'workload__WorkloadCheckpointPayload', 'workload__WorkloadCheckpointStore', 'workload__WorkloadExecutionCut', 'workload__WorkloadRestoreStateCertainty', 'workload__build_workload_checkpoint_manifest', 'workload_ports__WorkloadCheckpointCoordinatorPort', 'workload_ports__WorkloadCheckpointPublicationPort', 'BranchReceipt', 'ComparabilityProof', 'PairedEvaluationResult', 'build_comparability_proof', 'contracts__BranchReceipt', 'contracts__ComparabilityProof', 'contracts__PairedEvaluationResult', 'contracts__build_comparability_proof', 'ExperimentComponentBindingPort', 'AnalysisPlan', 'DoctorFinding', 'ExperimentDefinition', 'ExperimentLifecycleState', 'ExperimentModePort', 'ExecutionMode', 'ExperimentModelRoleSpec', 'ExperimentParticipantSpec', 'ExperimentPlan', 'ExperimentRunReport', 'ExperimentTransition', 'ExperimentUnit', 'ExperimentUnitExecutorPort', 'ExperimentUnitKind', 'ExperimentUnitPlannerPort', 'RawRecordStorePort', 'RawRecord', 'MetricAggregation', 'MetricMissingPolicy', 'MetricPredicate', 'MetricDefinition', 'MetricValue', 'MetricReport', 'ExperimentParticipantTopology', 'ExperimentTrialCycleExecutorPort', 'ExperimentTaskSpec', 'ExperimentWorkloadFailure', 'ExperimentSpec', 'ExperimentTrialProtocolIdentity', 'ExperimentTrialProtocolIdentityMismatch', 'FailureScope', 'FailureScopeRank', 'failure_scope_rank', 'validate_task_graph', 'contracts__ExperimentParticipantSpec', 'contracts__ExperimentModelRoleSpec', 'contracts__ExperimentSpec', 'contracts__AnalysisPlan', 'contracts__DoctorFinding', 'contracts__ExecutionMode', 'contracts__ExperimentDefinition', 'contracts__ExperimentLifecycleState', 'contracts__ExperimentModePort', 'contracts__ExperimentPlan', 'contracts__ExperimentRunReport', 'contracts__ExperimentTransition', 'contracts__ExperimentUnit', 'contracts__ExperimentUnitExecutorPort', 'contracts__ExperimentUnitKind', 'contracts__ExperimentUnitPlannerPort', 'FindingSeverity', 'ObservationEnvelope', 'ObservationKind', 'ObservationSinkPort', 'ExperimentDoctorPort', 'UnitOutcome', 'UnitOutcomeState', 'contracts__RawRecordStorePort', 'contracts__RawRecord', 'contracts__MetricAggregation', 'contracts__MetricMissingPolicy', 'contracts__MetricPredicate', 'contracts__MetricDefinition', 'contracts__MetricValue', 'contracts__MetricReport', 'failure__ExperimentWorkloadFailure', 'failure__FailureScope', 'failure__FailureScopeRank', 'failure__failure_scope_rank', 'ports__ExperimentComponentBindingPort', 'ports__ExperimentTrialCycleExecutorPort', 'tasks__ExperimentTaskSpec', 'tasks__validate_task_graph', 'topology__ExperimentParticipantTopology', 'trial_protocol__ExperimentTrialProtocolIdentity', 'trial_protocol__ExperimentTrialProtocolIdentityMismatch', 'ComputeDemand', 'ModelCapacityMode', 'ResourceAllocationReceipt', 'ResourcePolicy', 'ExperimentResourceBinderPort', 'ResourceAllocationLeasePort', 'contracts__ComputeDemand', 'contracts__ModelCapacityMode', 'contracts__ResourceAllocationReceipt', 'contracts__ResourcePolicy', 'ports__ExperimentResourceBinderPort', 'ports__ResourceAllocationLeasePort', 'RunIdentity', 'RunIdentityProvider', 'RunCleanupFailure', 'RunCleanupReport', 'RunClosed', 'RunRecoveryRequired', 'attach_cleanup_note', 'RunCycleExecutionPort', 'RunCycleExecutorPort', 'RunLifetimePort', 'CompositionPlanReference', 'RunLaunchManifest', 'RunResearchSemanticsReference', 'DerivedEvidenceArtifact', 'EVIDENCE_BUNDLE_SCHEMA_VERSION', 'EvidenceBundleManifest', 'EvidenceBundleReceipt', 'EvidenceBundleStatus', 'EvidenceStreamDescriptor', 'EvidenceBundlePublisherPort', 'api__RunControlAction', 'RunControlActionFailure', 'RunControlCheckpointBundlePort', 'RunControlCheckpointStorePort', 'RunControlConflict', 'RunControlError', 'RunControlEvidencePort', 'RunControlIntegrityError', 'RunControlLifecyclePort', 'RunControlNotFound', 'RunControlPhase', 'api__RunControlPort', 'api__RunControlPreparedOperation', 'api__RunControlReceipt', 'RunControlReconciliationPort', 'api__RunControlRequest', 'RunControlStaleRevision', 'api__RunControlTarget', 'RunControlTransitionOutcome', 'api__RunEvidenceValidity', 'api__RunExecutionOutcome', 'api__RunOutcomeProjection', 'api__RunScientificValidity', 'api__RunTaskOutcome', 'DecisionCycleRuntimePort', 'RunArtifactFinalizationError', 'RunArtifactFinalizationPort', 'RunArtifactKind', 'RunArtifactSnapshotReceipt', 'RunArtifactSealedError', 'RunArtifactStorePort', 'RunArtifactVerificationError', 'RunArtifactVerificationPort', 'RunArtifactWriteActorPort', 'RunRuntimePort', 'RunDiagnosticsPort', 'RunSessionPort', 'RunSessionFactoryPort', 'ExperimentRunSpec', 'ExperimentRunExecutionPort', 'ExperimentRunResult', 'artifacts__RunArtifactFinalizationError', 'artifacts__RunArtifactFinalizationPort', 'artifacts__RunArtifactKind', 'artifacts__RunArtifactSnapshotReceipt', 'artifacts__RunArtifactSealedError', 'artifacts__RunArtifactStorePort', 'artifacts__RunArtifactVerificationError', 'artifacts__RunArtifactVerificationPort', 'artifacts__RunArtifactWriteActorPort', 'cleanup__attach_cleanup_note', 'control__RunIdentity', 'control__RunLaunchManifest', 'control__RunControlAction', 'control__RunControlPhase', 'control__RunControlTarget', 'control__RunControlRequest', 'control__RunControlPreparedOperation', 'control__RunExecutionOutcome', 'control__RunTaskOutcome', 'control__RunEvidenceValidity', 'control__RunScientificValidity', 'control__RunOutcomeProjection', 'control__RunControlReceipt', 'control__RunControlTransitionOutcome', 'control__RunControlError', 'control__RunControlNotFound', 'control__RunControlConflict', 'control__RunControlStaleRevision', 'control__RunControlIntegrityError', 'control__RunControlActionFailure', 'control__RunControlPort', 'control__RunControlCheckpointBundlePort', 'control__RunControlCheckpointStorePort', 'control__RunControlLifecyclePort', 'control__RunControlReconciliationPort', 'control__RunControlEvidencePort', 'diagnostics__RunDiagnosticsPort', 'execution__ExperimentRunExecutionPort', 'execution__ExperimentRunResult', 'identity__RunIdentity', 'identity_ports__RunIdentityProvider', 'lifecycle__RunCleanupFailure', 'lifecycle__RunCleanupReport', 'lifecycle__RunClosed', 'lifecycle__RunRecoveryRequired', 'lifecycle_ports__RunCycleExecutionPort', 'lifecycle_ports__RunCycleExecutorPort', 'lifecycle_ports__RunLifetimePort', 'lifecycle_ports__RunSessionPort', 'lifecycle_ports__RunSessionFactoryPort', 'manifest__CompositionPlanReference', 'manifest__RunLaunchManifest', 'manifest__RunResearchSemanticsReference', 'manifest_evidence__DerivedEvidenceArtifact', 'manifest_evidence__EVIDENCE_BUNDLE_SCHEMA_VERSION', 'manifest_evidence__EvidenceBundleManifest', 'manifest_evidence__EvidenceBundleReceipt', 'manifest_evidence__EvidenceBundleStatus', 'manifest_evidence__EvidenceStreamDescriptor', 'manifest_ports__EvidenceBundlePublisherPort', 'ports__DecisionCycleRuntimePort', 'ports__RunRuntimePort', 'ports__RunSessionPort', 'spec__ExperimentRunSpec', 'AgentStudySpec', 'api__Study', 'api__BenchmarkAssignmentMode', 'api__StudyModel', 'api__StudyParticipant', 'api__PostHocEvaluationDefinition', 'api__PostHocEvaluationResult', 'api__TaskVerifierArtifact', 'api__TaskVerifierPort', 'api__TaskVerifierReceipt', 'api__TaskVerifierRequest', 'api__TrialProviderPort', 'TrialTaskProjectionPort', 'StudyResearchReadPort', 'StudyResearchReadSnapshot', 'api__TrialMatrixExecutionReport', 'TrialMeasurementProjectionPort', 'api__TrialExecutionRequest', 'api__TrialExecutionReceipt', 'api__TrialExecutionStageReceipt', 'api__ReplayLevel', 'api__AnalysisDefinition', 'api__AnalysisResult', 'api__MeasurementCut', 'BenchmarkCutSpec', 'api__BenchmarkTaskSet', 'api__BenchmarkSourceKind', 'api__BenchmarkSourcePort', 'api__BenchmarkSourceResolution', 'api__BenchmarkSourceSpec', 'api__InMemoryBenchmarkSource', 'api__TaskArtifactSpec', 'api__TaskDefinition', 'api__TaskPackageSpec', 'api__TaskVerifierIsolation', 'api__TaskGraph', 'api__TaskGraphEdge', 'api__TaskGraphRelation', 'api__TaskSetSplit', 'api__TrialBudget', 'api__StudyIntervention', 'api__StudyFactorSpec', 'api__ResearchStudyDefinition', 'api__StudyExecutionPolicy', 'api__ResearchRevision', 'api__ParticipantSchedule', 'api__FactorSelection', 'api__FactorLevelSpec', 'StudyConcurrencyPolicy', 'api__MeasurementContentReference', 'api__MeasurementDefinition', 'api__MeasurementProtocol', 'api__MeasurementRecord', 'api__MeasurementValue', 'api__MeasurementValueKind', 'StudyAssignment', 'StudyExecutionUnit', 'StudyArtifactPublicationPort', 'StudyAssignmentPort', 'StudyMetricAggregate', 'StudyMatrixExecutionReport', 'StudyMetricAggregationPort', 'StudyMetricObservation', 'StudyProtocol', 'StudyVariantSpec', 'VariantKind', 'api__ExperimentPlan', 'VariantBinding', 'VariantExecutionProvider', 'VariantExecutionRequest', 'BoundStudyExecutionPort', 'analysis__AnalysisDefinition', 'analysis__AnalysisResult', 'DatasetVersionProjection', 'EvidenceManifestProjection', 'analysis__MeasurementCut', 'authoring__AgentStudySpec', 'authoring__Study', 'authoring__StudyModel', 'authoring__StudyParticipant', 'benchmark__BenchmarkCutSpec', 'benchmark__BenchmarkTaskSet', 'benchmark__TaskDefinition', 'benchmark__TaskPackageSpec', 'benchmark__TaskArtifactSpec', 'benchmark__TaskVerifierIsolation', 'benchmark__TaskGraph', 'benchmark__TaskGraphEdge', 'benchmark__TaskGraphRelation', 'benchmark__TaskSetSplit', 'benchmark__TrialBudget', 'benchmark__BenchmarkSourceKind', 'benchmark__BenchmarkSourceSpec', 'benchmark__BenchmarkSourceResolution', 'benchmark__BenchmarkSourcePort', 'benchmark__InMemoryBenchmarkSource', 'contracts__StudyConcurrencyPolicy', 'contracts__StudyAssignment', 'contracts__StudyExecutionUnit', 'contracts__StudyMatrixExecutionReport', 'contracts__StudyMetricAggregate', 'contracts__StudyMetricObservation', 'contracts__StudyProtocol', 'contracts__StudyVariantSpec', 'contracts__VariantKind', 'design__BenchmarkAssignmentMode', 'design__FactorLevelSpec', 'design__FactorSelection', 'design__ParticipantSchedule', 'design__ResearchRevision', 'design__ResearchStudyDefinition', 'design__StudyExecutionPolicy', 'design__StudyFactorSpec', 'design__StudyIntervention', 'evaluation__PostHocEvaluationDefinition', 'evaluation__PostHocEvaluationResult', 'MaterializedTaskVerifierArchive', 'TaskVerifierArchiveMaterializationPort', 'measurement__MeasurementContentReference', 'measurement__MeasurementDefinition', 'measurement__MeasurementProtocol', 'measurement__MeasurementRecord', 'measurement__MeasurementValue', 'measurement__MeasurementValueKind', 'plan__ExperimentPlan', 'plan__VariantBinding', 'plan__VariantExecutionProvider', 'plan__VariantExecutionRequest', 'ports__BoundStudyExecutionPort', 'ports__StudyArtifactPublicationPort', 'ports__StudyAssignmentPort', 'ports__StudyMetricAggregationPort', 'research_read__StudyResearchReadPort', 'research_read__StudyResearchReadSnapshot', 'trial__TaskVerifierArtifact', 'trial__TaskVerifierPort', 'trial__TaskVerifierReceipt', 'trial__TaskVerifierRequest', 'trial__TrialExecutionReceipt', 'trial__TrialExecutionRequest', 'trial__TrialExecutionStageReceipt', 'trial__TrialMatrixExecutionReport', 'trial__TrialMeasurementProjectionPort', 'trial__TrialProviderPort', 'trial__TrialTaskProjectionPort', 'api__TableAggregateStep', 'api__TableDeriveStep', 'TableExecutionReceipt', 'TableExecutionResult', 'api__TableExpression', 'api__TableExpressionKind', 'api__TableFilterStep', 'api__TableJoinStep', 'api__TableProgram', 'TableProgramExecutionPort', 'api__TableProjectStep', 'api__TableStepKind', 'AggregationFunction', 'AggregationSpec', 'BaselineRegistryPort', 'BaselineSpec', 'CandidateProgramExecutionPort', 'CandidateProgramExecutionReceipt', 'CandidateProgramExecutionRequest', 'CandidateProgramExecutionStatus', 'CandidateProgramIdentity', 'CandidateProgramMeasurementProjection', 'CandidateProgramMeasurementProjectionPort', 'CandidateProgramSourcePublicationPort', 'DataColumn', 'DataTable', 'EvaluationContext', 'EvaluationStage', 'FigureCategory', 'FigureCell', 'FigureKind', 'FigureOutputFormat', 'FigurePoint', 'FigureRendererPort', 'FigureSeries', 'FigureSpec', 'FigureStyle', 'GroupComparison', 'InferenceResult', 'MetricSummary', 'MissingValuePolicy', 'MultipleComparisonMethod', 'MultipleComparisonResult', 'PairedComparison', 'RenderedResearchPackage', 'ResearchEvaluation', 'ResearchFigureFactoryPort', 'ResearchLifecyclePort', 'ResearchReport', 'ResearchStatisticsPort', 'ResearchTablePipelinePort', 'ReportTableRendererPort', 'SplitStrategy', 'TableAnalysisPort', 'TableReaderPort', 'TableTransformPort', 'MeasurementRecordTableAdapter', 'StudyObservationTableAdapter', 'adapters__MeasurementRecordTableAdapter', 'adapters__StudyObservationTableAdapter', 'candidate_program__CandidateProgramExecutionPort', 'candidate_program__CandidateProgramExecutionReceipt', 'candidate_program__CandidateProgramExecutionRequest', 'candidate_program__CandidateProgramExecutionStatus', 'candidate_program__CandidateProgramIdentity', 'candidate_program__CandidateProgramMeasurementProjection', 'candidate_program__CandidateProgramMeasurementProjectionPort', 'candidate_program__CandidateProgramSourcePublicationPort', 'contracts__AggregationFunction', 'contracts__AggregationSpec', 'contracts__BaselineRegistryPort', 'contracts__BaselineSpec', 'contracts__DataColumn', 'contracts__DataTable', 'contracts__EvaluationContext', 'contracts__EvaluationStage', 'contracts__FigureCategory', 'contracts__FigureCell', 'contracts__FigureKind', 'contracts__FigureOutputFormat', 'contracts__FigurePoint', 'contracts__FigureRendererPort', 'contracts__FigureSeries', 'contracts__FigureSpec', 'contracts__FigureStyle', 'contracts__GroupComparison', 'contracts__InferenceResult', 'contracts__MetricSummary', 'contracts__MissingValuePolicy', 'contracts__MultipleComparisonMethod', 'contracts__MultipleComparisonResult', 'contracts__PairedComparison', 'contracts__RenderedResearchPackage', 'contracts__ResearchEvaluation', 'contracts__ResearchFigureFactoryPort', 'contracts__ResearchLifecyclePort', 'contracts__ResearchReport', 'contracts__ResearchStatisticsPort', 'contracts__ResearchTablePipelinePort', 'contracts__ReportTableRendererPort', 'contracts__SplitStrategy', 'contracts__TableAnalysisPort', 'contracts__TableReaderPort', 'contracts__TableTransformPort', 'table_program__TableAggregateStep', 'table_program__TableDeriveStep', 'table_program__TableExecutionReceipt', 'table_program__TableExecutionResult', 'table_program__TableExpression', 'table_program__TableExpressionKind', 'table_program__TableFilterStep', 'table_program__TableJoinStep', 'table_program__TableProgram', 'table_program__TableProgramExecutionPort', 'TableProgramStep', 'table_program__TableProjectStep', 'table_program__TableStepKind', 'StaticExperimentTaskProjection', 'WorkloadCompletionReceipt', 'WorkloadEvaluation', 'WorkloadMethodCompilerPort', 'WorkloadMethodInvocation', 'WorkloadMethodReceipt', 'WorkloadMethodResultAdapterPort', 'WorkloadTaskExecutionPort', 'WorkloadTaskResult', 'WorkloadTaskRunError', 'contracts__WorkloadCompletionReceipt', 'contracts__StaticExperimentTaskProjection', 'contracts__WorkloadEvaluation', 'contracts__WorkloadMethodInvocation', 'contracts__WorkloadMethodReceipt', 'contracts__WorkloadTaskResult', 'contracts__WorkloadTaskRunError', 'ports__WorkloadMethodCompilerPort', 'ports__WorkloadMethodResultAdapterPort', 'ports__WorkloadTaskExecutionPort')
+__all__ = ('ExperimentationCatalogPort', 'MachineCut', 'ResearchBindingContribution', 'ResearchCapabilityBinding', 'ResearchModelRoleBinding', 'ResearchModelRoleRequirement', 'ResearchParticipantBinding', 'ResearchBindingRequirements', 'ResearchParticipantRequirement', 'ResearchRequirementResolution', 'resolve_research_requirements', 'TaskVerifierArtifact', 'TaskVerifierPort', 'TaskVerifierReceipt', 'TaskVerifierRequest', 'TrialProviderPort', 'TrialMatrixExecutionReport', 'TrialExecutionRequest', 'TrialExecutionReceipt', 'TrialExecutionStageReceipt', 'ModelRoleUsage', 'ReplayLevel', 'AnalysisDefinition', 'AnalysisResult', 'PostHocEvaluationDefinition', 'PostHocEvaluationResult', 'Study', 'StudyModel', 'StudyParticipant', 'BenchmarkAssignmentMode', 'BenchmarkCutSpec', 'BenchmarkTaskSet', 'BenchmarkSourceKind', 'BenchmarkSourcePort', 'BenchmarkSourceResolution', 'BenchmarkSourceSpec', 'InMemoryBenchmarkSource', 'MeasurementContentReference', 'MeasurementCut', 'TaskArtifactSpec', 'TaskDefinition', 'TaskPackageSpec', 'TaskVerifierIsolation', 'TaskGraph', 'TaskGraphEdge', 'TaskGraphRelation', 'TaskSetSplit', 'TrialBudget', 'diff_research_plans', 'compile_research_plan', 'ResearchPlanDiff', 'CompiledResearchPlan', 'compile_research_method', 'CompiledExperimentShardPlan', 'ExperimentBatchPlacement', 'ExperimentShard', 'compile_experiment_shard_plan', 'CompiledExperimentProgram', 'ExperimentBatch', 'ExperimentBatchKind', 'ExperimentProgramBinding', 'compile_experiment_program', 'experiment_report_from_data', 'CompiledResearchCampaign', 'CompiledResearchCampaignLane', 'ResearchCampaignCompilationUnit', 'compile_research_campaign', 'ResearchCampaignExecutionPort', 'ResearchCampaignExecutionReport', 'ResearchCampaignLaneResult', 'ResearchCampaignLaneState', 'ResearchCampaignPlan', 'ResearchCampaignStudy', 'ResearchCampaignStudyBinding', 'StudyIntervention', 'StudyFactorSpec', 'ResearchStudyDefinition', 'StudyExecutionPolicy', 'ResearchRevision', 'ParticipantSchedule', 'MeasurementValueKind', 'MeasurementValue', 'MeasurementRecord', 'MeasurementProtocol', 'MeasurementDefinition', 'FactorSelection', 'FactorLevelSpec', 'ProjectIdentityProjection', 'ProjectManifestProjection', 'ProjectRunDefinition', 'RunControlAction', 'RunControlPort', 'RunControlPreparedOperation', 'RunControlReceipt', 'RunControlRequest', 'RunControlTarget', 'RunEvidenceValidity', 'RunExecutionOutcome', 'RunOutcomeProjection', 'RunScientificValidity', 'RunTaskOutcome', 'ActionKind', 'ActionSpec', 'AgentGoal', 'AgentMethodSpec', 'AgentPhaseSpec', 'EmbodiedActionCommand', 'EmbodimentKind', 'EmbodimentSpec', 'EnvironmentSpec', 'ExecutionEnvironmentKind', 'GuardDecision', 'GuardVerdict', 'MethodProgram', 'MethodProgramBuilder', 'MethodWorkflow', 'SensorModality', 'SensorSpec', 'TableAggregateStep', 'TableDeriveStep', 'TableExpression', 'TableExpressionKind', 'TableFilterStep', 'TableJoinStep', 'TableProgram', 'TableProjectStep', 'TableStepKind', 'CapabilityDescriptor', 'CapabilityRequest', 'EnvironmentCapability', 'EnvironmentProviderPort', 'ExecutionContext', 'MethodIdentity', 'MethodRuntimeIdentity', 'AgentStudySpec', 'AggregationFunction', 'AggregationSpec', 'BaselineSpec', 'DataColumn', 'DataTable', 'EvaluationContext', 'EvaluationStage', 'FigureCell', 'FigureKind', 'FigureOutputFormat', 'FigurePoint', 'FigureSeries', 'FigureSpec', 'FigureStyle', 'MissingValuePolicy', 'MultipleComparisonMethod', 'SplitStrategy', 'StudyObservationTableAdapter', 'RunCheckpointManifest', 'StudyVariantSpec', 'VariantKind', 'StudyProtocol', 'StudyConcurrencyPolicy', 'VariantBinding', 'StudyAssignment', 'ExperimentPlan', 'campaign__CompiledResearchCampaign', 'campaign__CompiledResearchCampaignLane', 'campaign__ResearchCampaignCompilationUnit', 'campaign__ResearchCampaignExecutionPort', 'campaign__ResearchCampaignExecutionReport', 'campaign__ResearchCampaignLaneResult', 'campaign__ResearchCampaignLaneState', 'campaign__ResearchCampaignPlan', 'campaign__ResearchCampaignStudy', 'campaign__ResearchCampaignStudyBinding', 'campaign__compile_research_campaign', 'catalog__ExperimentationCatalogPort', 'construction__ProjectIdentityProjection', 'construction__ProjectManifestProjection', 'construction__ProjectRunDefinition', 'method_host__compile_research_method', 'program__CompiledExperimentProgram', 'program__ExperimentBatch', 'program__ExperimentBatchKind', 'program__ExperimentProgramBinding', 'program__compile_experiment_program', 'program__experiment_report_from_data', 'research_compiler__CompiledResearchPlan', 'research_compiler__ResearchPlanDiff', 'research_compiler__compile_research_plan', 'research_compiler__resolve_research_requirements', 'research_compiler__diff_research_plans', 'sharding__CompiledExperimentShardPlan', 'sharding__ExperimentBatchPlacement', 'sharding__ExperimentShard', 'sharding__compile_experiment_shard_plan', 'TaskVerifierArchiveMaterializationPort', 'MaterializedTaskVerifierArchive', 'encode_run_launch_manifest', 'decode_run_launch_manifest', 'RunLaunchManifestDecodeError', 'RUN_LAUNCH_MANIFEST_SCHEMA_VERSION', 'StudySpec', 'api__AgentStudySpec', 'api__AnalysisDefinition', 'AnalysisPlan', 'api__AnalysisResult', 'api__BenchmarkAssignmentMode', 'api__BenchmarkCutSpec', 'api__BenchmarkSourceKind', 'api__BenchmarkSourcePort', 'api__BenchmarkSourceResolution', 'api__BenchmarkSourceSpec', 'api__BenchmarkTaskSet', 'BoundStudyExecutionPort', 'BranchReceipt', 'CheckpointCapturePolicy', 'CheckpointTrigger', 'CheckpointTriggerKind', 'ComparabilityProof', 'CompositionPlanReference', 'ComputeDemand', 'DecisionCycleRuntimePort', 'DerivedEvidenceArtifact', 'DoctorFinding', 'EVIDENCE_BUNDLE_SCHEMA_VERSION', 'EvidenceBundleManifest', 'EvidenceBundlePublisherPort', 'EvidenceBundleReceipt', 'EvidenceBundleStatus', 'EvidenceStreamDescriptor', 'ExecutionMode', 'ExperimentComponentBindingPort', 'ExperimentDefinition', 'ExperimentLifecycleState', 'ExperimentModePort', 'ExperimentModelRoleSpec', 'ExperimentParticipantSpec', 'ExperimentParticipantTopology', 'api__ExperimentPlan', 'ExperimentRunExecutionPort', 'ExperimentRunReport', 'ExperimentRunResult', 'ExperimentRunSpec', 'ExperimentSpec', 'ExperimentTaskSpec', 'ExperimentTransition', 'ExperimentTrialCycleExecutorPort', 'ExperimentTrialProtocolIdentity', 'ExperimentTrialProtocolIdentityMismatch', 'ExperimentUnit', 'ExperimentUnitExecutorPort', 'ExperimentUnitKind', 'ExperimentUnitPlannerPort', 'ExperimentWorkloadFailure', 'api__FactorLevelSpec', 'api__FactorSelection', 'FailureScope', 'FailureScopeRank', 'FindingSeverity', 'api__InMemoryBenchmarkSource', 'api__MeasurementContentReference', 'api__MeasurementCut', 'api__MeasurementDefinition', 'api__MeasurementProtocol', 'api__MeasurementRecord', 'api__MeasurementValue', 'api__MeasurementValueKind', 'MetricAggregation', 'MetricDefinition', 'MetricMissingPolicy', 'MetricPredicate', 'MetricReport', 'MetricValue', 'ObservationEnvelope', 'ObservationKind', 'ObservationSinkPort', 'PairedEvaluationResult', 'ParticipantImplementationIdentity', 'api__ParticipantSchedule', 'ParticipantSessionRuntimeIdentity', 'api__PostHocEvaluationDefinition', 'api__PostHocEvaluationResult', 'RawRecord', 'RawRecordStorePort', 'api__ReplayLevel', 'api__ResearchRevision', 'api__ResearchStudyDefinition', 'ResourceAllocationLeasePort', 'ResourceAllocationReceipt', 'ResourcePolicy', 'RunArtifactFinalizationError', 'RunArtifactFinalizationPort', 'RunArtifactKind', 'RunArtifactSealedError', 'RunArtifactSnapshotReceipt', 'RunArtifactStorePort', 'RunArtifactVerificationError', 'RunArtifactVerificationPort', 'RunArtifactWriteActorPort', 'RunCheckpointBundle', 'RunCheckpointConflict', 'RunCheckpointCoordinatorPort', 'RunCheckpointIntegrityError', 'api__RunCheckpointManifest', 'RunCheckpointResult', 'RunCheckpointStore', 'RunCleanupFailure', 'RunCleanupReport', 'RunClosed', 'api__RunControlAction', 'RunControlActionFailure', 'RunControlCheckpointBundlePort', 'RunControlCheckpointStorePort', 'RunControlConflict', 'RunControlError', 'RunControlEvidencePort', 'RunControlIntegrityError', 'RunControlLifecyclePort', 'RunControlNotFound', 'RunControlPhase', 'api__RunControlPort', 'api__RunControlPreparedOperation', 'api__RunControlReceipt', 'RunControlReconciliationPort', 'api__RunControlRequest', 'RunControlStaleRevision', 'api__RunControlTarget', 'RunControlTransitionOutcome', 'RunCycleExecutionPort', 'RunCycleExecutorPort', 'RunDiagnosticsPort', 'api__RunEvidenceValidity', 'api__RunExecutionOutcome', 'RunIdentity', 'RunIdentityProvider', 'RunLaunchManifest', 'RunLifetimePort', 'api__RunOutcomeProjection', 'RunParticipantPayload', 'RunParticipantSnapshotRef', 'RunRecoveryRequired', 'RunResearchSemanticsReference', 'RunRestoreResult', 'RunRuntimePort', 'api__RunScientificValidity', 'RunSessionFactoryPort', 'RunSessionPort', 'api__RunTaskOutcome', 'api__Study', 'StudyArtifactPublicationPort', 'api__StudyAssignment', 'StudyAssignmentPort', 'api__StudyConcurrencyPolicy', 'StudyExecutionPlan', 'api__StudyExecutionPolicy', 'StudyExecutionUnit', 'api__StudyFactorSpec', 'api__StudyIntervention', 'StudyMatrixExecutionReport', 'StudyMetricAggregate', 'StudyMetricAggregationPort', 'StudyMetricObservation', 'api__StudyModel', 'api__StudyParticipant', 'api__StudyProtocol', 'StudyResearchReadPort', 'StudyResearchReadSnapshot', 'api__StudyVariantSpec', 'api__TaskArtifactSpec', 'api__TaskDefinition', 'api__TaskGraph', 'api__TaskGraphEdge', 'api__TaskGraphRelation', 'api__TaskPackageSpec', 'api__TaskSetSplit', 'api__TaskVerifierArtifact', 'api__TaskVerifierIsolation', 'api__TaskVerifierPort', 'api__TaskVerifierReceipt', 'api__TaskVerifierRequest', 'api__TrialBudget', 'api__TrialExecutionReceipt', 'api__TrialExecutionRequest', 'api__TrialExecutionStageReceipt', 'api__TrialMatrixExecutionReport', 'TrialMeasurementProjectionPort', 'api__TrialProviderPort', 'TrialTaskProjectionPort', 'UnitOutcome', 'UnitOutcomeState', 'api__VariantBinding', 'VariantExecutionProvider', 'VariantExecutionRequest', 'api__VariantKind', 'WorkloadCheckpointBindingPort', 'WorkloadCheckpointBundle', 'WorkloadCheckpointComponentPort', 'WorkloadCheckpointComponentRef', 'WorkloadCheckpointCoordinatorPort', 'WorkloadCheckpointManifest', 'WorkloadCheckpointPayload', 'WorkloadCheckpointPublicationPort', 'WorkloadCheckpointRestoreError', 'WorkloadCheckpointStore', 'WorkloadExecutionCut', 'WorkloadRestoreStateCertainty', 'attach_cleanup_note', 'build_comparability_proof', 'build_workload_checkpoint_manifest', 'failure_scope_rank', 'validate_task_graph', 'manifest_codec__RUN_LAUNCH_MANIFEST_SCHEMA_VERSION', 'manifest_codec__RunLaunchManifestDecodeError', 'manifest_codec__decode_run_launch_manifest', 'manifest_codec__encode_run_launch_manifest', 'api__CheckpointCapturePolicy', 'api__CheckpointTrigger', 'api__CheckpointTriggerKind', 'api__RunCheckpointBundle', 'api__RunCheckpointConflict', 'api__RunCheckpointCoordinatorPort', 'api__RunCheckpointIntegrityError', 'api2__RunCheckpointManifest', 'api__RunCheckpointResult', 'api__RunCheckpointStore', 'api__RunParticipantPayload', 'api__RunParticipantSnapshotRef', 'api__RunRestoreResult', 'api__WorkloadCheckpointBindingPort', 'api__WorkloadCheckpointBundle', 'api__WorkloadCheckpointRestoreError', 'api__WorkloadCheckpointComponentPort', 'api__WorkloadCheckpointComponentRef', 'api__WorkloadCheckpointManifest', 'api__WorkloadCheckpointPayload', 'api__WorkloadCheckpointStore', 'api__WorkloadExecutionCut', 'api__WorkloadRestoreStateCertainty', 'api__build_workload_checkpoint_manifest', 'api__WorkloadCheckpointCoordinatorPort', 'api__WorkloadCheckpointPublicationPort', 'contracts__RunCheckpointBundle', 'contracts__RunCheckpointConflict', 'contracts__RunCheckpointIntegrityError', 'contracts__RunCheckpointManifest', 'contracts__RunCheckpointStore', 'contracts__RunParticipantPayload', 'contracts__RunParticipantSnapshotRef', 'policy__CheckpointCapturePolicy', 'policy__CheckpointTrigger', 'policy__CheckpointTriggerKind', 'ports__RunCheckpointCoordinatorPort', 'results__RunCheckpointResult', 'results__RunRestoreResult', 'workload__WorkloadCheckpointBindingPort', 'workload__WorkloadCheckpointRestoreError', 'workload__WorkloadCheckpointBundle', 'workload__WorkloadCheckpointComponentPort', 'workload__WorkloadCheckpointComponentRef', 'workload__WorkloadCheckpointManifest', 'workload__WorkloadCheckpointPayload', 'workload__WorkloadCheckpointStore', 'workload__WorkloadExecutionCut', 'workload__WorkloadRestoreStateCertainty', 'workload__build_workload_checkpoint_manifest', 'workload_ports__WorkloadCheckpointCoordinatorPort', 'workload_ports__WorkloadCheckpointPublicationPort', 'api__BranchReceipt', 'api__ComparabilityProof', 'api__PairedEvaluationResult', 'api__build_comparability_proof', 'contracts__BranchReceipt', 'contracts__ComparabilityProof', 'contracts__PairedEvaluationResult', 'contracts__build_comparability_proof', 'api__ExperimentComponentBindingPort', 'api__AnalysisPlan', 'api__DoctorFinding', 'api__ExperimentDefinition', 'api__ExperimentLifecycleState', 'api__ExperimentModePort', 'api__ExecutionMode', 'api__ExperimentModelRoleSpec', 'api__ExperimentParticipantSpec', 'api2__ExperimentPlan', 'api__ExperimentRunReport', 'api__ExperimentTransition', 'api__ExperimentUnit', 'api__ExperimentUnitExecutorPort', 'api__ExperimentUnitKind', 'api__ExperimentUnitPlannerPort', 'api__RawRecordStorePort', 'api__RawRecord', 'api__MetricAggregation', 'api__MetricMissingPolicy', 'api__MetricPredicate', 'api__MetricDefinition', 'api__MetricValue', 'api__MetricReport', 'api__ExperimentParticipantTopology', 'api__ExperimentTrialCycleExecutorPort', 'api__ExperimentTaskSpec', 'api__ExperimentWorkloadFailure', 'api__ExperimentSpec', 'api__ExperimentTrialProtocolIdentity', 'api__ExperimentTrialProtocolIdentityMismatch', 'api__FailureScope', 'api__FailureScopeRank', 'api__failure_scope_rank', 'api__validate_task_graph', 'contracts__ExperimentParticipantSpec', 'contracts__ExperimentModelRoleSpec', 'contracts__ExperimentSpec', 'contracts__AnalysisPlan', 'contracts__DoctorFinding', 'contracts__ExecutionMode', 'contracts__ExperimentDefinition', 'contracts__ExperimentLifecycleState', 'contracts__ExperimentModePort', 'contracts__ExperimentPlan', 'contracts__ExperimentRunReport', 'contracts__ExperimentTransition', 'contracts__ExperimentUnit', 'contracts__ExperimentUnitExecutorPort', 'contracts__ExperimentUnitKind', 'contracts__ExperimentUnitPlannerPort', 'contracts__FindingSeverity', 'contracts__ObservationEnvelope', 'contracts__ObservationKind', 'contracts__ObservationSinkPort', 'ExperimentDoctorPort', 'contracts__UnitOutcome', 'contracts__UnitOutcomeState', 'contracts__RawRecordStorePort', 'contracts__RawRecord', 'contracts__MetricAggregation', 'contracts__MetricMissingPolicy', 'contracts__MetricPredicate', 'contracts__MetricDefinition', 'contracts__MetricValue', 'contracts__MetricReport', 'failure__ExperimentWorkloadFailure', 'failure__FailureScope', 'failure__FailureScopeRank', 'failure__failure_scope_rank', 'ports__ExperimentComponentBindingPort', 'ports__ExperimentTrialCycleExecutorPort', 'tasks__ExperimentTaskSpec', 'tasks__validate_task_graph', 'topology__ExperimentParticipantTopology', 'trial_protocol__ExperimentTrialProtocolIdentity', 'trial_protocol__ExperimentTrialProtocolIdentityMismatch', 'api__ComputeDemand', 'ModelCapacityMode', 'api__ResourceAllocationReceipt', 'api__ResourcePolicy', 'ExperimentResourceBinderPort', 'api__ResourceAllocationLeasePort', 'contracts__ComputeDemand', 'contracts__ModelCapacityMode', 'contracts__ResourceAllocationReceipt', 'contracts__ResourcePolicy', 'ports__ExperimentResourceBinderPort', 'ports__ResourceAllocationLeasePort', 'api__RunIdentity', 'api__RunIdentityProvider', 'api__RunCleanupFailure', 'api__RunCleanupReport', 'api__RunClosed', 'api__RunRecoveryRequired', 'api__attach_cleanup_note', 'api__RunCycleExecutionPort', 'api__RunCycleExecutorPort', 'api__RunLifetimePort', 'api__CompositionPlanReference', 'api__RunLaunchManifest', 'api__RunResearchSemanticsReference', 'api__DerivedEvidenceArtifact', 'api__EVIDENCE_BUNDLE_SCHEMA_VERSION', 'api__EvidenceBundleManifest', 'api__EvidenceBundleReceipt', 'api__EvidenceBundleStatus', 'api__EvidenceStreamDescriptor', 'api__EvidenceBundlePublisherPort', 'api2__RunControlAction', 'api__RunControlActionFailure', 'api__RunControlCheckpointBundlePort', 'api__RunControlCheckpointStorePort', 'api__RunControlConflict', 'api__RunControlError', 'api__RunControlEvidencePort', 'api__RunControlIntegrityError', 'api__RunControlLifecyclePort', 'api__RunControlNotFound', 'api__RunControlPhase', 'api2__RunControlPort', 'api2__RunControlPreparedOperation', 'api2__RunControlReceipt', 'api__RunControlReconciliationPort', 'api2__RunControlRequest', 'api__RunControlStaleRevision', 'api2__RunControlTarget', 'api__RunControlTransitionOutcome', 'api2__RunEvidenceValidity', 'api2__RunExecutionOutcome', 'api2__RunOutcomeProjection', 'api2__RunScientificValidity', 'api2__RunTaskOutcome', 'api__DecisionCycleRuntimePort', 'api__RunArtifactFinalizationError', 'api__RunArtifactFinalizationPort', 'api__RunArtifactKind', 'api__RunArtifactSnapshotReceipt', 'api__RunArtifactSealedError', 'api__RunArtifactStorePort', 'api__RunArtifactVerificationError', 'api__RunArtifactVerificationPort', 'api__RunArtifactWriteActorPort', 'api__RunRuntimePort', 'api__RunDiagnosticsPort', 'api__RunSessionPort', 'api__RunSessionFactoryPort', 'api__ExperimentRunSpec', 'api__ExperimentRunExecutionPort', 'api__ExperimentRunResult', 'artifacts__RunArtifactFinalizationError', 'artifacts__RunArtifactFinalizationPort', 'artifacts__RunArtifactKind', 'artifacts__RunArtifactSnapshotReceipt', 'artifacts__RunArtifactSealedError', 'artifacts__RunArtifactStorePort', 'artifacts__RunArtifactVerificationError', 'artifacts__RunArtifactVerificationPort', 'artifacts__RunArtifactWriteActorPort', 'cleanup__attach_cleanup_note', 'control__RunIdentity', 'control__RunLaunchManifest', 'control__RunControlAction', 'control__RunControlPhase', 'control__RunControlTarget', 'control__RunControlRequest', 'control__RunControlPreparedOperation', 'control__RunExecutionOutcome', 'control__RunTaskOutcome', 'control__RunEvidenceValidity', 'control__RunScientificValidity', 'control__RunOutcomeProjection', 'control__RunControlReceipt', 'control__RunControlTransitionOutcome', 'control__RunControlError', 'control__RunControlNotFound', 'control__RunControlConflict', 'control__RunControlStaleRevision', 'control__RunControlIntegrityError', 'control__RunControlActionFailure', 'control__RunControlPort', 'control__RunControlCheckpointBundlePort', 'control__RunControlCheckpointStorePort', 'control__RunControlLifecyclePort', 'control__RunControlReconciliationPort', 'control__RunControlEvidencePort', 'diagnostics__RunDiagnosticsPort', 'execution__ExperimentRunExecutionPort', 'execution__ExperimentRunResult', 'identity__RunIdentity', 'identity_ports__RunIdentityProvider', 'lifecycle__RunCleanupFailure', 'lifecycle__RunCleanupReport', 'lifecycle__RunClosed', 'lifecycle__RunRecoveryRequired', 'lifecycle_ports__RunCycleExecutionPort', 'lifecycle_ports__RunCycleExecutorPort', 'lifecycle_ports__RunLifetimePort', 'lifecycle_ports__RunSessionPort', 'lifecycle_ports__RunSessionFactoryPort', 'manifest__CompositionPlanReference', 'manifest__RunLaunchManifest', 'manifest__RunResearchSemanticsReference', 'manifest_evidence__DerivedEvidenceArtifact', 'manifest_evidence__EVIDENCE_BUNDLE_SCHEMA_VERSION', 'manifest_evidence__EvidenceBundleManifest', 'manifest_evidence__EvidenceBundleReceipt', 'manifest_evidence__EvidenceBundleStatus', 'manifest_evidence__EvidenceStreamDescriptor', 'manifest_ports__EvidenceBundlePublisherPort', 'ports__DecisionCycleRuntimePort', 'ports__RunRuntimePort', 'ports__RunSessionPort', 'spec__ExperimentRunSpec', 'api2__AgentStudySpec', 'api2__Study', 'api2__BenchmarkAssignmentMode', 'api2__StudyModel', 'api2__StudyParticipant', 'api2__PostHocEvaluationDefinition', 'api2__PostHocEvaluationResult', 'api2__TaskVerifierArtifact', 'api2__TaskVerifierPort', 'api2__TaskVerifierReceipt', 'api2__TaskVerifierRequest', 'api2__TrialProviderPort', 'api__TrialTaskProjectionPort', 'api__StudyResearchReadPort', 'api__StudyResearchReadSnapshot', 'api2__TrialMatrixExecutionReport', 'api__TrialMeasurementProjectionPort', 'api2__TrialExecutionRequest', 'api2__TrialExecutionReceipt', 'api2__TrialExecutionStageReceipt', 'api2__ReplayLevel', 'api2__AnalysisDefinition', 'api2__AnalysisResult', 'api2__MeasurementCut', 'api2__BenchmarkCutSpec', 'api2__BenchmarkTaskSet', 'api2__BenchmarkSourceKind', 'api2__BenchmarkSourcePort', 'api2__BenchmarkSourceResolution', 'api2__BenchmarkSourceSpec', 'api2__InMemoryBenchmarkSource', 'api2__TaskArtifactSpec', 'api2__TaskDefinition', 'api2__TaskPackageSpec', 'api2__TaskVerifierIsolation', 'api2__TaskGraph', 'api2__TaskGraphEdge', 'api2__TaskGraphRelation', 'api2__TaskSetSplit', 'api2__TrialBudget', 'api2__StudyIntervention', 'api2__StudyFactorSpec', 'api2__ResearchStudyDefinition', 'api2__StudyExecutionPolicy', 'api2__ResearchRevision', 'api2__ParticipantSchedule', 'api2__FactorSelection', 'api2__FactorLevelSpec', 'api2__StudyConcurrencyPolicy', 'api2__MeasurementContentReference', 'api2__MeasurementDefinition', 'api2__MeasurementProtocol', 'api2__MeasurementRecord', 'api2__MeasurementValue', 'api2__MeasurementValueKind', 'api2__StudyAssignment', 'api__StudyExecutionUnit', 'api__StudyArtifactPublicationPort', 'api__StudyAssignmentPort', 'api__StudyMetricAggregate', 'api__StudyMatrixExecutionReport', 'api__StudyMetricAggregationPort', 'api__StudyMetricObservation', 'api2__StudyProtocol', 'api2__StudyVariantSpec', 'api2__VariantKind', 'api__StudyExecutionPlan', 'api2__VariantBinding', 'api__VariantExecutionProvider', 'api__VariantExecutionRequest', 'api__BoundStudyExecutionPort', 'api__MaterializedTaskVerifierArchive', 'api__TaskVerifierArchiveMaterializationPort', 'analysis__AnalysisDefinition', 'analysis__AnalysisResult', 'DatasetVersionProjection', 'EvidenceManifestProjection', 'analysis__MeasurementCut', 'authoring__AgentStudySpec', 'authoring__Study', 'authoring__StudyModel', 'authoring__StudyParticipant', 'benchmark__BenchmarkCutSpec', 'benchmark__BenchmarkTaskSet', 'benchmark__TaskDefinition', 'benchmark__TaskPackageSpec', 'benchmark__TaskArtifactSpec', 'benchmark__TaskVerifierIsolation', 'benchmark__TaskGraph', 'benchmark__TaskGraphEdge', 'benchmark__TaskGraphRelation', 'benchmark__TaskSetSplit', 'benchmark__TrialBudget', 'benchmark__BenchmarkSourceKind', 'benchmark__BenchmarkSourceSpec', 'benchmark__BenchmarkSourceResolution', 'benchmark__BenchmarkSourcePort', 'benchmark__InMemoryBenchmarkSource', 'contracts__StudyConcurrencyPolicy', 'contracts__StudyAssignment', 'contracts__StudyExecutionUnit', 'contracts__StudyMatrixExecutionReport', 'contracts__StudyMetricAggregate', 'contracts__StudyMetricObservation', 'contracts__StudyProtocol', 'contracts__StudyVariantSpec', 'contracts__VariantKind', 'design__BenchmarkAssignmentMode', 'design__FactorLevelSpec', 'design__FactorSelection', 'design__ParticipantSchedule', 'design__ResearchRevision', 'design__ResearchStudyDefinition', 'design__StudyExecutionPolicy', 'design__StudyFactorSpec', 'design__StudyIntervention', 'evaluation__PostHocEvaluationDefinition', 'evaluation__PostHocEvaluationResult', 'materialization__MaterializedTaskVerifierArchive', 'materialization__TaskVerifierArchiveMaterializationPort', 'measurement__MeasurementContentReference', 'measurement__MeasurementDefinition', 'measurement__MeasurementProtocol', 'measurement__MeasurementRecord', 'measurement__MeasurementValue', 'measurement__MeasurementValueKind', 'plan__StudyExecutionPlan', 'plan__VariantBinding', 'plan__VariantExecutionProvider', 'plan__VariantExecutionRequest', 'ports__BoundStudyExecutionPort', 'ports__StudyArtifactPublicationPort', 'ports__StudyAssignmentPort', 'ports__StudyMetricAggregationPort', 'research_read__StudyResearchReadPort', 'research_read__StudyResearchReadSnapshot', 'trial__TaskVerifierArtifact', 'trial__TaskVerifierPort', 'trial__TaskVerifierReceipt', 'trial__TaskVerifierRequest', 'trial__TrialExecutionReceipt', 'trial__TrialExecutionRequest', 'trial__TrialExecutionStageReceipt', 'trial__TrialMatrixExecutionReport', 'trial__TrialMeasurementProjectionPort', 'trial__TrialProviderPort', 'trial__TrialTaskProjectionPort', 'api__TableAggregateStep', 'api__TableDeriveStep', 'TableExecutionReceipt', 'TableExecutionResult', 'api__TableExpression', 'api__TableExpressionKind', 'api__TableFilterStep', 'api__TableJoinStep', 'api__TableProgram', 'TableProgramExecutionPort', 'api__TableProjectStep', 'api__TableStepKind', 'api__AggregationFunction', 'api__AggregationSpec', 'BaselineRegistryPort', 'api__BaselineSpec', 'CandidateProgramExecutionPort', 'CandidateProgramExecutionReceipt', 'CandidateProgramExecutionRequest', 'CandidateProgramExecutionStatus', 'CandidateProgramIdentity', 'CandidateProgramMeasurementProjection', 'CandidateProgramMeasurementProjectionPort', 'CandidateProgramSourcePublicationPort', 'candidate_program_capability_payload', 'api__DataColumn', 'api__DataTable', 'api__EvaluationContext', 'api__EvaluationStage', 'FigureCategory', 'api__FigureCell', 'api__FigureKind', 'api__FigureOutputFormat', 'api__FigurePoint', 'FigureRendererPort', 'api__FigureSeries', 'api__FigureSpec', 'api__FigureStyle', 'GroupComparison', 'InferenceResult', 'MetricSummary', 'api__MissingValuePolicy', 'api__MultipleComparisonMethod', 'MultipleComparisonResult', 'PairedComparison', 'RenderedResearchPackage', 'ResearchEvaluation', 'ResearchFigureFactoryPort', 'ResearchLifecyclePort', 'ResearchReport', 'ResearchStatisticsPort', 'ResearchTablePipelinePort', 'ReportTableRendererPort', 'api__SplitStrategy', 'TableAnalysisPort', 'TableReaderPort', 'TableTransformPort', 'MeasurementRecordTableAdapter', 'api__StudyObservationTableAdapter', 'adapters__MeasurementRecordTableAdapter', 'adapters__StudyObservationTableAdapter', 'candidate_program__CandidateProgramExecutionPort', 'candidate_program__CandidateProgramExecutionReceipt', 'candidate_program__CandidateProgramExecutionRequest', 'candidate_program__CandidateProgramExecutionStatus', 'candidate_program__CandidateProgramIdentity', 'candidate_program__CandidateProgramMeasurementProjection', 'candidate_program__CandidateProgramMeasurementProjectionPort', 'candidate_program__CandidateProgramSourcePublicationPort', 'candidate_program__candidate_program_capability_payload', 'contracts__AggregationFunction', 'contracts__AggregationSpec', 'contracts__BaselineRegistryPort', 'contracts__BaselineSpec', 'contracts__DataColumn', 'contracts__DataTable', 'contracts__EvaluationContext', 'contracts__EvaluationStage', 'contracts__FigureCategory', 'contracts__FigureCell', 'contracts__FigureKind', 'contracts__FigureOutputFormat', 'contracts__FigurePoint', 'contracts__FigureRendererPort', 'contracts__FigureSeries', 'contracts__FigureSpec', 'contracts__FigureStyle', 'contracts__GroupComparison', 'contracts__InferenceResult', 'contracts__MetricSummary', 'contracts__MissingValuePolicy', 'contracts__MultipleComparisonMethod', 'contracts__MultipleComparisonResult', 'contracts__PairedComparison', 'contracts__RenderedResearchPackage', 'contracts__ResearchEvaluation', 'contracts__ResearchFigureFactoryPort', 'contracts__ResearchLifecyclePort', 'contracts__ResearchReport', 'contracts__ResearchStatisticsPort', 'contracts__ResearchTablePipelinePort', 'contracts__ReportTableRendererPort', 'contracts__SplitStrategy', 'contracts__TableAnalysisPort', 'contracts__TableReaderPort', 'contracts__TableTransformPort', 'table_program__TableAggregateStep', 'table_program__TableDeriveStep', 'table_program__TableExecutionReceipt', 'table_program__TableExecutionResult', 'table_program__TableExpression', 'table_program__TableExpressionKind', 'table_program__TableFilterStep', 'table_program__TableJoinStep', 'table_program__TableProgram', 'table_program__TableProgramExecutionPort', 'TableProgramStep', 'table_program__TableProjectStep', 'table_program__TableStepKind', 'StaticExperimentTaskProjection', 'WorkloadCompletionReceipt', 'WorkloadEvaluation', 'WorkloadMethodCompilerPort', 'WorkloadMethodInvocation', 'WorkloadMethodReceipt', 'WorkloadMethodResultAdapterPort', 'WorkloadTaskExecutionPort', 'WorkloadTaskResult', 'WorkloadTaskRunError', 'contracts__WorkloadCompletionReceipt', 'contracts__StaticExperimentTaskProjection', 'contracts__WorkloadEvaluation', 'contracts__WorkloadMethodInvocation', 'contracts__WorkloadMethodReceipt', 'contracts__WorkloadTaskResult', 'contracts__WorkloadTaskRunError', 'ports__WorkloadMethodCompilerPort', 'ports__WorkloadMethodResultAdapterPort', 'ports__WorkloadTaskExecutionPort')

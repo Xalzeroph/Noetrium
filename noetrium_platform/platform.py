@@ -86,6 +86,7 @@ from noetrium_platform.capabilities.participant.agent.runtime import (
     AgentObservationPartSourcePort,
     MultimodalAgentObservationPort,
 )
+from noetrium_platform.foundation.portfolio.api import decode_project_manifest_bytes as _decode_project_manifest_bytes
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     JsonInput,
@@ -107,7 +108,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRuntimeContext,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
-from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
+from noetrium_platform.composition.concurrency import build_structured_concurrency_runtime
 from noetrium_platform.research.execution.policy.api import AdmissionBudget
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
@@ -120,38 +121,38 @@ from noetrium_platform.research.experimentation.api.campaign import (
     ResearchCampaignPlan,
     ResearchCampaignStudyBinding,
 )
-from noetrium_platform.research.experimentation.checkpoint.api import RunCheckpointStore
-from noetrium_platform.research.experimentation.checkpoint.composition import (
+from noetrium_platform.research.experimentation.lifecycle.api import RunCheckpointStore
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.composition import (
     build_project_run_checkpoint_store as _build_project_run_checkpoint_store,
 )
-from noetrium_platform.research.experimentation.run.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunArtifactKind,
     RunArtifactSnapshotReceipt,
     RunArtifactStorePort,
     RunArtifactVerificationPort,
 )
-from noetrium_platform.research.experimentation.run.composition.artifacts import (
+from noetrium_platform.research.experimentation.lifecycle.run.composition.artifacts import (
     build_directory_run_artifact_store as _build_directory_run_artifact_store,
 )
-from noetrium_platform.research.experimentation.run.api.control import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     RunControlCheckpointStorePort,
     RunControlEvidencePort,
     RunControlLifecyclePort,
     RunControlPort,
     RunControlReconciliationPort,
 )
-from noetrium_platform.research.experimentation.run.composition.control import (
+from noetrium_platform.research.experimentation.lifecycle.run.composition.control import (
     build_durable_run_control as _build_durable_run_control,
 )
-from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.experiment.api import ExperimentDefinition
-from noetrium_platform.research.experimentation.resource.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentDefinition
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ComputeDemand,
     ResourceAllocationLeasePort,
     ResourceAllocationReceipt,
     ResourcePolicy,
 )
-from noetrium_platform.research.experimentation.resource.composition import (
+from noetrium_platform.research.experimentation.lifecycle.experiment.resource.composition import (
     build_experiment_resource_binder as _build_experiment_resource_binder,
 )
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
@@ -161,15 +162,15 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     DEFAULT_COMPUTE_LEASE_POLICY,
 )
 from noetrium_platform.foundation.scope.api import ScopeIdentity
-from noetrium_platform.research.experimentation.run.api.manifest import RunLaunchManifest
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import RunLaunchManifest
+from noetrium_platform.research.experimentation.lifecycle.api import (
     BoundStudyExecutionPort,
-    ExperimentPlan,
+    StudyExecutionPlan,
     StudyAssignmentPort,
     StudyMatrixExecutionReport,
     StudyMetricAggregationPort,
 )
-from noetrium_platform.research.experimentation.study.algorithms import (
+from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
     BasicStudyMetricAggregator,
     DeterministicStudyAssignment,
 )
@@ -187,7 +188,7 @@ from noetrium_platform.research.experimentation.workbench.api import (
     TableReaderPort,
 )
 from noetrium_platform.research.experimentation.workbench.composition import (
-    compose_standard_research_workbench,
+    compose_standard_research_workbench as _compose_standard_research_workbench,
 )
 from noetrium_platform.composition.operator.run_control_application import (
     bind_run_control_application,
@@ -213,7 +214,7 @@ class DirectoryRunArtifactBinding:
         queue_capacity: int | None = None,
         task_group_id: str | None = None,
     ) -> None:
-        self._concurrency = build_concurrency_runtime()
+        self._concurrency = build_structured_concurrency_runtime()
         try:
             self._task_group = self._concurrency.open_task_group(
                 task_group_id or f"run-artifacts-{uuid4().hex}"
@@ -248,6 +249,13 @@ class DirectoryRunArtifactBinding:
 
     def __exit__(self, exc_type, exc, traceback) -> None:
         self.close()
+
+
+
+def decode_project_manifest_bytes(payload: bytes):
+    """Decode the canonical project manifest through the Level-0 product surface."""
+
+    return _decode_project_manifest_bytes(payload)
 
 
 def bind_directory_run_artifact_store(
@@ -522,11 +530,11 @@ class ExperimentBinding:
 
     def execute(
         self,
-        plan: ExperimentPlan,
+        plan: StudyExecutionPlan,
         adapter: BoundStudyExecutionPort,
     ) -> StudyMatrixExecutionReport:
-        if type(plan) is not ExperimentPlan:
-            raise TypeError("experiment execution requires ExperimentPlan")
+        if type(plan) is not StudyExecutionPlan:
+            raise TypeError("experiment execution requires StudyExecutionPlan")
         if not isinstance(adapter, BoundStudyExecutionPort):
             raise TypeError("experiment execution requires BoundStudyExecutionPort")
         group = self._task_group_for(plan.protocol.study_id)
@@ -678,7 +686,7 @@ class ResearchWorkbenchBinding:
     """Curated standard-library workbench with only public protocol-typed properties."""
 
     def __init__(self) -> None:
-        self._assembly = compose_standard_research_workbench()
+        self._assembly = _compose_standard_research_workbench()
 
     @property
     def lifecycle(self) -> ResearchLifecyclePort:
@@ -736,7 +744,7 @@ class MinecraftEnvironmentBinding:
     ) -> None:
         if not isinstance(spec, MinecraftEnvironmentSpec):
             raise TypeError("Minecraft environment binding requires MinecraftEnvironmentSpec")
-        self._concurrency = build_concurrency_runtime()
+        self._concurrency = build_structured_concurrency_runtime()
         self._task_group = self._concurrency.open_task_group(
             task_group_id or f"project-minecraft-{uuid4().hex}"
         )
@@ -1284,6 +1292,7 @@ __all__ = [
     "ResourceAllocationReceipt",
     "ResourcePolicy",
     "ExperimentBinding",
+    "decode_project_manifest_bytes",
     "ProjectTestStage", "ProjectTestStageReceipt", "ResearchAction",
     "ResearchApplicationPort", "ResearchFacade", "ResearchOperationFailure",
     "ResearchRequest", "ResearchResult", "bind_bundled_minecraft_environment",

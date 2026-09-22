@@ -14,7 +14,7 @@ __all__ = [
 
 # Parent-facing Runtime contracts and sanctioned factories.
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessSupervisorPort
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessSupervisorPort
 from noetrium_platform.infrastructure.lifecycle.process.api import (
     LocalCommandRunnerPort,
     LocalCommandStartError,

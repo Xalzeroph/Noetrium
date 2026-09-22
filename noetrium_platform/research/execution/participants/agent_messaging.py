@@ -9,8 +9,8 @@ from noetrium_platform.capabilities.api import (
     ParticipantMessageRouterPort,
 )
 from noetrium_platform.foundation.kernel.kernel import JsonObject, MachineKind, canonical_digest
-from noetrium_platform.research.execution.machines.program_host import ResearchProgramHost
-from noetrium_platform.research.execution.machines.rule_program import MachineEvent
+from noetrium_platform.research.execution.machines.api import ResearchProgramHostPort
+from noetrium_platform.research.execution.machines.api import MachineEvent
 
 
 class RuntimeParticipantMessageRouter(ParticipantMessageRouterPort):
@@ -18,13 +18,13 @@ class RuntimeParticipantMessageRouter(ParticipantMessageRouterPort):
 
     def __init__(
         self,
-        host: ResearchProgramHost,
+        host: ResearchProgramHostPort,
         *,
         machine_id: str,
         initial_data: JsonObject,
     ) -> None:
-        if not isinstance(host, ResearchProgramHost):
-            raise TypeError("participant message router requires ResearchProgramHost")
+        if not isinstance(host, ResearchProgramHostPort):
+            raise TypeError("participant message router requires ResearchProgramHostPort")
         if host.program.kind is not MachineKind.RUNTIME:
             raise ValueError("participant message router requires a RUNTIME Program host")
         if type(machine_id) is not str or not machine_id.strip():

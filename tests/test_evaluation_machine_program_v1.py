@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.research.execution.machines.session import ResearchMachineSession
+
 from noetrium_platform.foundation.kernel.kernel import (
     InMemoryMachineJournal,
     MachineExecutor,
@@ -14,7 +16,7 @@ from noetrium_platform.research.execution.machines import (
     ResearchMachineSession,
     programmable_machine_family,
 )
-from noetrium_platform.research.experimentation.evaluation.runtime import (
+from noetrium_platform.research.experimentation.lifecycle.evaluation.runtime import (
     compile_paired_evaluation_program,
     paired_evaluation_handlers,
     paired_evaluation_initial_data,

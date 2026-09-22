@@ -11,7 +11,7 @@ def audit_service_api_invariants(root: Path) -> list[SourceInvariantViolation]:
     forbidden_api = (
         "noetrium_platform.infrastructure.lifecycle.service.runtime",
         "noetrium_platform.infrastructure.lifecycle.launch_control",
-        "noetrium_platform.research.experimentation.study",
+        "noetrium_platform.research.experimentation.lifecycle.study",
         "noetrium_platform.composition",
         "noetrium_platform.infrastructure.reliability.forensics",
         "noetrium_platform.product.operator",

@@ -6,11 +6,11 @@ from noetrium_platform.composition.participants.environment import environment_p
 from noetrium_platform.composition.participants.method import method_participant_adapter
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntentJournal
 from noetrium_platform.foundation.kernel.kernel import OperationExecutor
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantResolverPort
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
-from noetrium_platform.research.experimentation.checkpoint import RunCheckpointStore
+from noetrium_platform.capabilities.participant.core.api import ParticipantResolverPort
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.lifecycle.checkpoint import RunCheckpointStore
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentityProvider
-from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantLifecycleAdapter
+from noetrium_platform.capabilities.participant.core.api import ParticipantLifecycleAdapter
 from noetrium_platform.research.execution.workflow.api import WorkflowSurfaceFactory
 from noetrium_platform.composition.workflows.context_action import ContextActionSurfaceFactory, context_action_trial_protocol
 from noetrium_platform.composition.workflows.context_action.failure_classifier import ContextActionFailureClassifier

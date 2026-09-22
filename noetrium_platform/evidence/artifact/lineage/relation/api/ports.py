@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
+from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
 
 from .contracts import ArtifactLineageEdge
 

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videollamb_memory",
-  "package_digest": "56e3565e7c16f22b8630c614e903c7f0612a3a18f77643f088710e544dedde10",
+  "package_digest": "47887b0b686c1050c25c79fd08640279e80f7f7cd9a53ea3026f05f8f8e5ea6c",
   "definition_digest": "556a0739d312b2077ba1dddf462b82ff32a1287382a99494d3b409dc0e14224b",
   "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
   "lifecycle": "protocol_bound",
@@ -97,7 +97,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/videollamb_memory/benchmark.py",
       "declaration_digest": "2c8d5686d014f954ce523701593603fc4c003254993cb9e5de64f53ba2184542",
-      "content_sha256": "43274a5a00da9f3cc56afff09d826e5790672341ad5bf77514c89d51c528098a"
+      "content_sha256": "08336ae69ee09d088e5641936660e04e94de34d2b2e2cdc814a71b1c438562f1"
     },
     {
       "kind": "fidelity",
@@ -109,13 +109,13 @@
       "kind": "research_program",
       "path": "research/reproductions/videollamb_memory/memory.py",
       "declaration_digest": "493715a6f1755df086e9d01a1dfe1056fdb67f1a8672ba3eefc708cad58a776a",
-      "content_sha256": "ae2463a0114fda9fc49e4d07066bca4b753118481837484cd15c34779b2f4deb"
+      "content_sha256": "c1e9921a4b642354e3bf72d7ee3502454e302741b78facd9dd51ae8794888c89"
     },
     {
       "kind": "study",
       "path": "research/reproductions/videollamb_memory/study.py",
       "declaration_digest": "50160674929c0fcb0b1a0905670f152695e6a3c6dd98eea35d0192cee110cfb7",
-      "content_sha256": "e3df7d04bb3f20ec3bc9d93b545903a527d94d7e265b78d99b648931b91335f5"
+      "content_sha256": "1e22bc52493e741ceae4e25db9a718ddcc21b655ca31a336dc99311777f2189f"
     },
     {
       "kind": "support",

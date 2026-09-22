@@ -22,12 +22,19 @@ def _owner_for_module(
 
 
 def _is_concrete_target(owner: SystemDescriptor, module: str) -> bool:
+    """Return whether a target penetrates any concrete implementation plane.
+
+    Registry consolidation removes many nested components from the live system
+    catalog, so concrete-plane detection must inspect every module segment below
+    the owning registered boundary.
+    """
+
     remainder = module[len(owner.package_prefix):].lstrip(".")
-    return (
-        remainder == "runtime"
-        or remainder.startswith("runtime.")
-        or remainder == "providers"
-        or remainder.startswith("providers.")
+    if not remainder:
+        return False
+    return any(
+        segment in {"runtime", "providers", "composition", "implementations"}
+        for segment in remainder.split(".")
     )
 
 

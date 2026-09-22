@@ -12,8 +12,8 @@ from noetrium_platform.capabilities.participant.api.project import (
     ProjectParticipantBinding,
     ProjectParticipantProviderPort,
 )
-from noetrium_platform.capabilities.participant.binding.api.contracts import ParticipantBindingResolverPort
-from noetrium_platform.capabilities.participant.core.api.contracts import (
+from noetrium_platform.capabilities.participant.binding.api import ParticipantBindingResolverPort
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantRuntimeBinding,
     ParticipantSessionRuntimeIdentity,
 )

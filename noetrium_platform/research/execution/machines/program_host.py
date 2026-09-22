@@ -205,6 +205,30 @@ class ResearchProgramHost:
             )
         return registry
 
+    def terminal_replay_machine_id(
+        self,
+        base_machine_id: str,
+        *,
+        max_attempts: int = 4096,
+    ) -> str:
+        if type(base_machine_id) is not str or not base_machine_id.strip():
+            raise ValueError("research base_machine_id is required")
+        if type(max_attempts) is not int or max_attempts < 1:
+            raise ValueError("research replay max_attempts must be positive")
+        for attempt in range(max_attempts):
+            machine_id = f"{base_machine_id}:attempt:{attempt}"
+            latest = self.journal.latest(machine_id)
+            if latest is None:
+                return machine_id
+            if latest.accepted_status not in {
+                MachineStatus.COMPLETED,
+                MachineStatus.FAILED,
+            }:
+                return machine_id
+        raise RuntimeError(
+            f"research host {self.host_id} exhausted terminal replay attempts"
+        )
+
     def open_session(
         self,
         *,

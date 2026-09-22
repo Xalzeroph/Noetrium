@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vima_embodied",
-  "package_digest": "2230af82c66ba00418b9c09d4e5e1921d809f2d8cd8b59728ee27d1989b123c4",
+  "package_digest": "74e909a6f5b03d0ad213ecb552d8498bb07154bcd32a6d661d82d358ad7b6eee",
   "definition_digest": "00eaa5c1480ed53594dae9c2bb14689b4f713dc1f117e3e1f5a5b4e9e7ba087f",
   "source_registry_digest": "bf35b8c87b325e6a50b501d4e2671f6c130a246df6340370de02382c8a31c33b",
   "lifecycle": "protocol_bound",
@@ -111,7 +111,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/vima_embodied/benchmark.py",
       "declaration_digest": "ec50fad6d922faead04028a97b6e898358702b2a404cbd66240c16265dc7b804",
-      "content_sha256": "044c0dc32e6e545ef9a562ceea4b34f28d9422d5f9206bf7725be30b4e2230d0"
+      "content_sha256": "033c2e5e6a70dd3495f8c20fd8f790222587da41ae2e8a58256d0e936289f0a6"
     },
     {
       "kind": "fidelity",
@@ -123,13 +123,13 @@
       "kind": "method_program",
       "path": "research/reproductions/vima_embodied/program.py",
       "declaration_digest": "c48b509179323a98d984b27a2db0ab077bb47dc6294e685d854911bcda4b2807",
-      "content_sha256": "630447806548c82cac747539fa69126a4eecddf953ad81e8ceca633d63c76674"
+      "content_sha256": "f822693c3b8c95213779e3a4fc131d046448dcc436d21aa428d558df39f14628"
     },
     {
       "kind": "study",
       "path": "research/reproductions/vima_embodied/study.py",
       "declaration_digest": "21412ffef47bbeae69b82812c3ab02453172e65eb77442fdde591e3ec4472ac3",
-      "content_sha256": "8863b85846e4e1d4d62c536a70e71cad3ee23033b272c9108d46a0fa72158dfb"
+      "content_sha256": "d48cf1a08779c78e6c8f320c64add0e9f9c540646d879da0c406053c40b1b4a8"
     },
     {
       "kind": "support",
@@ -214,7 +214,7 @@
     },
     {
       "path": "tests/test_scientific_vima_environment_adapter_v1.py",
-      "content_sha256": "dce109378f3158a653d1602e7c77af79fc58267bfad2bcc3735d5af19b97d8e7"
+      "content_sha256": "ab038d230f07d992152d1f93efcde9afcc9576eba9bf3fd2a378efe52f23ba5f"
     }
   ]
 }

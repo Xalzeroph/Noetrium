@@ -6,18 +6,18 @@ from pathlib import Path
 import pytest
 from tempfile import TemporaryDirectory
 
-from noetrium_platform.foundation.governance.algorithm.api import AlgorithmLanguage, SourceDocument
+from noetrium_platform.foundation.governance.analysis.algorithm.api import AlgorithmLanguage, SourceDocument
 from noetrium_platform.foundation.governance.api import (
     RepositorySourceFailureKind,
     RepositorySourceIncompleteError,
 )
-from noetrium_platform.foundation.governance.algorithm.providers import (
+from noetrium_platform.foundation.governance.analysis.algorithm.providers import (
     FilesystemAlgorithmSnapshotStore,
     FilesystemFileAnalysisCache,
     RepositorySourceInventory,
 )
 from noetrium_platform.foundation.governance.providers import RepositorySourceTree
-from noetrium_platform.foundation.governance.algorithm.runtime import (
+from noetrium_platform.foundation.governance.analysis.algorithm.runtime import (
     AlgorithmGovernanceService,
     AlgorithmScanner,
     JavaScriptAlgorithmAnalyzer,
@@ -385,9 +385,9 @@ def test_repository_source_snapshot_is_explicit_and_frozen() -> None:
 
 
 def test_governance_builders_accept_one_shared_source_snapshot() -> None:
-    from noetrium_platform.foundation.governance.algorithm.composition import build_algorithm_governance
-    from noetrium_platform.foundation.governance.concurrency.composition import build_concurrency_governance
-    from noetrium_platform.foundation.governance.performance.composition import build_performance_governance
+    from noetrium_platform.foundation.governance.analysis.algorithm.composition import build_algorithm_governance
+    from noetrium_platform.foundation.governance.analysis.concurrency.composition import build_concurrency_governance
+    from noetrium_platform.foundation.governance.analysis.performance.composition import build_performance_governance
 
     with TemporaryDirectory() as td:
         root = Path(td)
@@ -497,7 +497,7 @@ def test_python_analyzer_reuses_canonical_source_index_ast(
     index = RepositorySourceTree(tmp_path).index(suffixes={".py"})
     document = next(iter(RepositorySourceInventory(index).documents()))
 
-    import noetrium_platform.foundation.governance.algorithm.runtime.python_analyzer as analyzer_module
+    import noetrium_platform.foundation.governance.analysis.algorithm.runtime.python_analyzer as analyzer_module
     monkeypatch.setattr(
         analyzer_module.ast,
         "parse",

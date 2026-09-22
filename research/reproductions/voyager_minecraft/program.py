@@ -18,9 +18,7 @@ from noetrium_platform.research.execution.machines.api import (
     ChildResearchMachineExecution,
     ChildResearchMachineRequest,
 )
-from noetrium_platform.research.execution.runtime import (
-    program_execution_capability_payload,
-)
+from noetrium_platform.research.execution.api import program_execution_capability_payload
 from noetrium_platform.research.execution.workflow.api import (
     MethodEvent,
     MethodExecutionClass,

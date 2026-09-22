@@ -65,6 +65,7 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_sto
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
 
 from noetrium_platform.infrastructure.lifecycle.service.composition import compose_local_process_backend, build_service_supervisor
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
 from noetrium_platform.infrastructure.lifecycle.host.composition import HostComposition, compose_local_host
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.platform_meta import (
@@ -122,7 +123,7 @@ class LocalModelServiceRuntimeFactory:
         provider = StaticServiceEnvironmentProvider((materialized,))
         backend = compose_local_process_backend(
             self._operating_system,
-            task_group=self._task_group,
+            process_supervisor=build_process_supervisor(self._task_group),
         )
         readiness = (
             HttpEndpointReadinessProbe(self._task_group, readiness_url)
@@ -169,10 +170,14 @@ def build_local_management_plane(
         gpu_runtime_observer=gpu_runtime,
         host_runtime_observer=host_runtime,
     )
-    discovered_host = discover_local_compute_host(
-        gpu_runtime_observer=gpu_runtime,
-    )
-    meta.compute_inventory.register_host(discovered_host)
+    try:
+        discovered_host = discover_local_compute_host(
+            gpu_runtime_observer=gpu_runtime,
+        )
+    except RuntimeError:
+        discovered_host = None
+    if discovered_host is not None:
+        meta.compute_inventory.register_host(discovered_host)
     scopes = meta.scopes
     host = compose_local_host(planner=meta.capability_composition)
     runner = SubprocessEnvironmentCommandRunner(local_commands)

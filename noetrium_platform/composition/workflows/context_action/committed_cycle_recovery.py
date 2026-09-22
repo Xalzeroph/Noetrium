@@ -61,6 +61,7 @@ class CommittedCycleRecoveryCoordinator:
             action_payload=action_payload,
             context=final_context,
             consumption=committed.consumption,
+            durable_intent=inspection.nonterminal.intent,
         ))
         return CommittedCycleRecovery(
             execution.result,

@@ -4,7 +4,7 @@ import time
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.research.execution.api import MethodMachinePort, MethodRunStatus
-from noetrium_platform.research.experimentation.experiment.api import ExperimentTaskSpec
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 
 from ..api import (
     WorkloadMethodCompilerPort,

@@ -9,12 +9,12 @@ from noetrium_platform.research.experimentation.binding import (
     ResearchBindingRequirements,
     ResearchModelRoleRequirement,
 )
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentModelRoleSpec,
     ExperimentSpec,
 )
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     TaskArtifactSpec,
     TaskDefinition,
     TaskPackageSpec,

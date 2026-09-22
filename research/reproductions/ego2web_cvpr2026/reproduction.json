@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ego2web_cvpr2026",
-  "package_digest": "9bc9631f3ea2288a4ce7a5ae2b6e5df59ea931dc669a01d995e2db4995e77253",
+  "package_digest": "5e595ce9ea0d0a352e571dee557b41d2dd1e0bc631c3a7bd412e72286fd784c9",
   "definition_digest": "222f9637ab57a6a14fa6836546b02814d3e54238c5f60c67858a3e85f4964a8a",
   "source_registry_digest": "84b00b2edc21f7c1d1c11ea0e7d13884aa5ff6e9ae5b535407b5f2014d87c39d",
   "lifecycle": "protocol_bound",
@@ -87,7 +87,7 @@
       "kind": "study",
       "path": "research/reproductions/ego2web_cvpr2026/study.py",
       "declaration_digest": "4d000f9dfc2a6bfe21b797431914ea4bad712b966d30ce66c6bb1085aa484ff7",
-      "content_sha256": "00eb6985ecf18532812cb3542e2112901565abf06c33e04ab951277b1cdce6d8"
+      "content_sha256": "a8900f8593c1c3183bbcca4d7ff2d6d369e2e3d11ca4cc3955af335037719baa"
     }
   ],
   "primary_executable": "research/reproductions/ego2web_cvpr2026/program.py",

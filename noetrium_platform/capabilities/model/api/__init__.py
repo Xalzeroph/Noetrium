@@ -62,7 +62,7 @@ from .project import (
     StructuredGenerationInput,
 )
 
-from noetrium_platform.capabilities.model.catalog.revision.api import (
+from noetrium_platform.capabilities.model.catalog.api import (
     ModelPromotionDecision, ModelPromotionDisposition, ModelPromotionReceipt,
     ModelRevisionAuthorityPort, ModelRevisionAuthoritySnapshot, ModelRevisionCommit,
     ModelRevisionConflictError, ModelRevisionEvidence, ModelRevisionEvidenceKind,
@@ -72,7 +72,7 @@ from noetrium_platform.capabilities.model.catalog.revision.api import (
 )
 
 from noetrium_platform.capabilities.model.request.api import ModelRequestRecorderPort
-from noetrium_platform.capabilities.model.serving.endpoint.api import (
+from noetrium_platform.capabilities.model.serving.api import (
     ModelEndpointDispatchPoolPort,
     ModelEndpointPort,
     ModelEndpointRequest,
@@ -164,7 +164,7 @@ __all__ = [
 __all__ += ("ModelRequestRecorderPort", "ModelEndpointDispatchPoolPort", "ModelEndpointPort", "ModelEndpointRequest")
 
 from noetrium_platform.capabilities.model.request.api import ModelRequestRecorderPort
-from noetrium_platform.capabilities.model.serving.endpoint.api import (
+from noetrium_platform.capabilities.model.serving.api import (
     ModelEndpointDispatchPoolPort,
     ModelEndpointPort,
     ModelEndpointRequest,

@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "0994bcbab9e15f57adfb37290117535ed78fa1156cb81d2bbd5c9a46cf444a2c",
+          "package_digest": "f9ed01a3c90bfce15aec0ba6868eff2f048a73c45cb5d3514de6d4fd43de5010",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -32,17 +32,17 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/react_alfworld/program.py",
-              "content_sha256": "7bd1fd76fd1fe23a9d867c849c3704a3b2979e2df3cc238770bf62c4fd31b6df"
+              "content_sha256": "ccc9a37351078cfb9382e8614c151b25634361949dd5211c4339403a1803932a"
             },
             {
               "kind": "semantics",
               "path": "research/reproductions/react_alfworld/semantics.py",
-              "content_sha256": "5428212dc8232298a3dfcba7248979297df085d0a6de02ecff40442087413997"
+              "content_sha256": "d0c41d44d7edf57880dd8a81141038dd7ca7cfae6ef4617386fcdb3bf92a0473"
             },
             {
               "kind": "study",
               "path": "research/reproductions/react_alfworld/study.py",
-              "content_sha256": "2a8d2c3b7d65c36fb06db059905fcf45fc55c82403f852c5b0ca267deb2260b4"
+              "content_sha256": "ffdd531f97f9a83ba301c7de6844b2684318220ffede67a04b96f9eb2f8ac239"
             },
             {
               "kind": "support",
@@ -62,7 +62,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_react_alfworld_fidelity_v1.py",
-              "content_sha256": "ae4298d998b1fb6a15a34038c7501907d80df6e5ef6737ba24e1f2f6128b5462"
+              "content_sha256": "4bf82d92de46a99d791786f8ae2d99b4d1c272334f1a4852d50c5243c5f3fa2a"
             },
             {
               "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
@@ -81,7 +81,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "3dce5a521ebbaec09e67446ef8689a630aceb89c24a7683adf8e27536b4628f7",
+          "package_digest": "dc6c149cd21ebc60b7e84325c7f0f535bd91fdcc587f216ee4661b0b056854bf",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -108,7 +108,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/self_refine/study.py",
-              "content_sha256": "7a3a6b893f5ae7a7f58cfba7c6cb99b6a6bc4f3d6048300c81f91ffddeff9aef"
+              "content_sha256": "10386089e7b85bf4d5664fe070d7c3a15c826ae37463b8786728446a10b88011"
             }
           ],
           "blockers": [
@@ -145,7 +145,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "8e470d7edaa57a5b8d965179071e4731490ccaa812596b874ba65ad7320e5e46",
+          "package_digest": "37a6c6cc13c32e987cb0bba90745f81209df7e5ebd3cd0fbc53d918b5c150044",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -167,7 +167,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/reflexion_alfworld/program.py",
-              "content_sha256": "9e1ae01f7230e9146f64b62c2ef9f9d4e4e21b2e7e09e0b5ed8c79b53a9b5308"
+              "content_sha256": "fe744d5b05ca010b79ff334306fec93725c58301bf2936bc7d9213efff3d3e4a"
             },
             {
               "kind": "semantics",
@@ -177,7 +177,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/reflexion_alfworld/study.py",
-              "content_sha256": "5ff1c5a62720865dfb838a745e5a984b9ceb2ddb132f235963c4216b31a5a47b"
+              "content_sha256": "e2c3ff03f65b2c01a97224490d73b9a371987478bbfc92c4d2445dd0f62bfaa2"
             },
             {
               "kind": "support",
@@ -215,7 +215,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "7eec7f4d1816f0243d7c67fadb11239bf8c64404639a23aa4f4c13eb4be87298",
+          "package_digest": "203e5198f4d3ff9f108bdfb842048cc14bc2d8d1def8b1df0c8c0f2363c45e34",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -242,7 +242,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/tree_of_thoughts/study.py",
-              "content_sha256": "22030aaa07cd02969175bdf48ff8450f9339f3ba220a7bfa1f8115d4f91233bb"
+              "content_sha256": "30100c0755774665bb6446cef6412ab94e79f9cd241abb3416a9ca0d6dc757e4"
             },
             {
               "kind": "support",
@@ -275,7 +275,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "65250babbb1817e91d4937286fb5a71a7e896179c48d8589bbc863e7aba14e64",
+          "package_digest": "68ac83534097830b9c0568249cad10f2a3d4815611db823ba7e171ab0d1c351b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -302,7 +302,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/rap_reasoning/study.py",
-              "content_sha256": "101cf0158647c72057aa057af0c6b31104e256fbea6a2084016c3458a2fa7b2c"
+              "content_sha256": "e4c760f49f7bccdd5baaa3761de451591b75b0d6d26c094782d9461b6d3ea8ef"
             },
             {
               "kind": "support",
@@ -335,7 +335,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "eb82846cc12ce30c7f50a19eced323322611713a51dbc57c61840b2ec15a4f69",
+          "package_digest": "4a5750744ce4f5505bd61a87ede6119bdf34616c3683f006223d507bf7d334dc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -357,12 +357,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/lats_webshop/program.py",
-              "content_sha256": "80cd0e7ea29d8e56007b4abc84ca6fc4b70447fc1ff7fd0d35a1584b03c07354"
+              "content_sha256": "e58710c4c398b3ea3f30d48ed4b4f0bd266d88dde044a7ff69e4e5aba936d0b0"
             },
             {
               "kind": "study",
               "path": "research/reproductions/lats_webshop/study.py",
-              "content_sha256": "b9c68d7cedfd36c55d65f3edf58a9826ad5dc25f6c0b12a920590f5d74e0e863"
+              "content_sha256": "524704ea467d7e6124aa82325eb4ba3a8704fb77416c39eb6519d9ae84d7d5ad"
             },
             {
               "kind": "support",
@@ -411,7 +411,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "8be4d50fd5e5c2f566c7f01958f7ab5281548a4624e461aaf8563607c1cd8bc3",
+          "package_digest": "39dd12a2d71315a376391e049010f4ec46f9c6452a0dc0973ea5803cae4fe860",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -440,12 +440,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/qlass_alfworld/program.py",
-              "content_sha256": "25c0f6124f00bd8501614f1938d9404b1ca9b2ad01bda2415229bd2436ce5999"
+              "content_sha256": "04c1bc228c759a05cb124899625a9e118eb60b8819f8a90c80c6c2eabefa48d2"
             },
             {
               "kind": "study",
               "path": "research/reproductions/qlass_alfworld/study.py",
-              "content_sha256": "5725de9de3324d2799d1b203feaefe7bb3199937f07f2b25bd73036769e78852"
+              "content_sha256": "e370b57e705b40f44c631314858369efe0d737dff6a92269cdf53abb70d8eea6"
             },
             {
               "kind": "support",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "a5155a6aeac3ada2686e3f726b5fe0a24e1b9af34cbe8d52d56ad72b7e29ab71"
+  "projection_digest": "8d8ab130be6b3708fe77a4a99286a1477d8f03b67bf2b3c6db1e1367208ce424"
 }

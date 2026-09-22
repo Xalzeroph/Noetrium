@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "deps_minecraft",
-  "package_digest": "15e3a428ef2bb10b719270ae55eb517cbb76b06d7c7a07700b995fd54a70357c",
+  "package_digest": "43cbc94e9f6b895f19a650e4c2c6b3de120d18918c323d6e297e5fe83d3451fa",
   "definition_digest": "f75cf70e70c1e43a3b5fbda7b5ea294718b1a7a429c7440cd2e4d8833591ad09",
   "source_registry_digest": "b34ac82a645a66821c20029f19473c146715222483bfaf316120b963fd884a90",
   "lifecycle": "protocol_bound",
@@ -124,13 +124,13 @@
       "kind": "method_program",
       "path": "research/reproductions/deps_minecraft/program.py",
       "declaration_digest": "f77243075d34aa2e07dcdea11506713e2b771b821d7287e35e060a7eb855d0c9",
-      "content_sha256": "eba7c21e78da9c4c7d9f3d02ae3fd8acaa9c0852a0aca778a716c1d2e52e2b66"
+      "content_sha256": "ea2cae049be76e10139f55271bfe07345de13e96fab9b95a6b779bc6b8252290"
     },
     {
       "kind": "study",
       "path": "research/reproductions/deps_minecraft/study.py",
       "declaration_digest": "735ad684b39590c1b3de0ced1bd5b24011cf47d49fc26061212c31e56d92f79b",
-      "content_sha256": "e1c8440a7f2f62c62c6554e3798abb47883951fef284d09e3aa05c8f1c108883"
+      "content_sha256": "6c512e550ead4ee58ef7d0e8a246efdcca2f8e308156614e523414342c3ee9d9"
     },
     {
       "kind": "support",

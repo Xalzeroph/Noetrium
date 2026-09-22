@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantConfigurationArtifact
+from noetrium_platform.capabilities.participant.core.api import ParticipantConfigurationArtifact
 
 
 class ParticipantConfigurationCatalog:

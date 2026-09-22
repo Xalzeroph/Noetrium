@@ -5,8 +5,8 @@ import hashlib, unittest
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, RecallResult
 from noetrium_platform.capabilities.environment.api import action_request_digest, EnvironmentIdentity, Observation, ActionResult
 from noetrium_platform.foundation.kernel.kernel import EffectReceipt, EffectClass, EffectCertainty, OperationExecutor, OperationFailure
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
-from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 
 class MSession:
     def ingest(self,e,c): self.e=e

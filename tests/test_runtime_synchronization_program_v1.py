@@ -84,7 +84,7 @@ def test_barrier_waits_and_resumes_on_same_runtime_machine() -> None:
     assert waiting.status is MachineStatus.WAITING
     assert binding.decision is not None
     assert binding.decision.action is SynchronizationAction.WAIT
-    assert waiting.data["point"]["arrived_participant_ids"] == ("agent-a",)
+    assert waiting.data["point"]["arrived_participant_ids"] == ["agent-a"]
     assert len(journal.commits(waiting.machine_id)) == 2
 
     released = host.execute(
@@ -111,11 +111,11 @@ def test_barrier_waits_and_resumes_on_same_runtime_machine() -> None:
         "agent-b",
         "agent-c",
     )
-    assert released.data["point"]["arrived_participant_ids"] == (
+    assert released.data["point"]["arrived_participant_ids"] == [
         "agent-a",
         "agent-b",
         "agent-c",
-    )
+    ]
     assert len(released.data["prior_decision_digests"]) == 2
     assert len(journal.commits(released.machine_id)) == 4
 

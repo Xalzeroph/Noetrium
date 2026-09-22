@@ -8,12 +8,10 @@ from pathlib import Path
 from threading import Lock
 import time
 
-from noetrium_platform.capabilities.model.serving.api import (
-    RuntimeCanaryEvidenceStorePort,
-    RuntimeQualificationEvidenceStorePort,
-    ServiceHeartbeat,
-)
-from noetrium_platform.capabilities.model.serving.endpoint.api import (
+from noetrium_platform.capabilities.model.serving.api.runtime_canary_ports import RuntimeCanaryEvidenceStorePort
+from noetrium_platform.capabilities.model.serving.api.runtime_qualification_ports import RuntimeQualificationEvidenceStorePort
+from noetrium_platform.substrate.api import ServiceHeartbeat
+from noetrium_platform.capabilities.model.serving.endpoint.api.publication import (
     QualifiedModelClosurePublication,
     QualifiedModelClosurePublicationReceipt,
 )

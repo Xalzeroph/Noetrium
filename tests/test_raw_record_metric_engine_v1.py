@@ -1,13 +1,13 @@
 import pytest
 
-from noetrium_platform.research.experimentation.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     MetricAggregation,
     MetricDefinition,
     MetricMissingPolicy,
     MetricPredicate,
     RawRecord,
 )
-from noetrium_platform.research.experimentation.experiment.runtime.matrix import (
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix import (
     MetricEngine,
 )
 

@@ -4,7 +4,7 @@ from collections.abc import Mapping
 import re
 import shlex
 
-from noetrium_platform.infrastructure.lifecycle.server.identity.api import ServerConnectionPort
+from noetrium_platform.infrastructure.lifecycle.server.api import ServerConnectionPort
 from noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_contracts import TmuxCommandResult, TmuxCommandRunner
 from noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_identity import TmuxTransportIdentity
 from noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_transport import TmuxPersistentSessionControl

@@ -10,7 +10,7 @@ from noetrium_platform.evidence.artifact._sqlite_connection import (
     rollback_artifact_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_text
-from noetrium_platform.evidence.artifact.api import ArtifactContentIdentity
+from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
 from noetrium_platform.evidence.artifact.lineage.relation.api import (
     ArtifactLineageConflict,
     ArtifactLineageCorruptionError,

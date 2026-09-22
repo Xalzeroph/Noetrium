@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Protocol
 
 from noetrium_platform.research.execution.api import ArtifactContentIdentity
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 
 _HEX = frozenset("0123456789abcdef")
 
@@ -37,6 +37,45 @@ def _sha_tuple(
     if len(rows) != len(set(rows)):
         raise ValueError(f"{field_name} must be unique")
     return rows
+
+
+def candidate_program_capability_payload(
+    *,
+    candidate_id: str,
+    generation: int,
+    source_text: str,
+    language: str,
+    entrypoint: str,
+    interface_schema_id: str,
+    parent_candidate_digests: tuple[str, ...] = (),
+) -> dict[str, object]:
+    """Build the canonical public payload for candidate-program execution."""
+
+    if not isinstance(candidate_id, str) or not candidate_id.strip():
+        raise ValueError("candidate program candidate_id must be non-empty")
+    if type(generation) is not int or generation < 0:
+        raise ValueError("candidate program generation must be non-negative")
+    for name, value in (
+        ("source_text", source_text),
+        ("language", language),
+        ("entrypoint", entrypoint),
+        ("interface_schema_id", interface_schema_id),
+    ):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"candidate program {name} must be non-empty")
+    if type(parent_candidate_digests) is not tuple:
+        raise TypeError("candidate program parent digests must be a tuple")
+    for digest in parent_candidate_digests:
+        require_sha256(digest, "candidate program parent digest")
+    return {
+        "candidate_id": candidate_id,
+        "generation": generation,
+        "source_text": source_text,
+        "language": language,
+        "entrypoint": entrypoint,
+        "interface_schema_id": interface_schema_id,
+        "parent_candidate_digests": parent_candidate_digests,
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -318,4 +357,5 @@ __all__ = [
     "CandidateProgramMeasurementProjection",
     "CandidateProgramMeasurementProjectionPort",
     "CandidateProgramSourcePublicationPort",
+    "candidate_program_capability_payload",
 ]

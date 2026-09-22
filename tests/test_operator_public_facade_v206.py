@@ -76,7 +76,7 @@ def test_lifecycle_cli_routes_only_through_project_binding(capsys):
     app = _Application()
     loaded = type("Loaded", (), {"application": app, "default_target": "project-default"})()
     with patch(
-        "noetrium_platform.product.operator.runtime.research_cli.load_project_application",
+        "noetrium_platform.composition.operator.wiring.research.load_project_application",
         return_value=loaded,
     ):
         rc = main(["run", "run-7", "--project", ".", "--payload", '{"seed": 7}'])
@@ -106,7 +106,7 @@ def test_lifecycle_cli_preserves_authoritative_operation_failure(capsys):
         {"application": _FailingApplication(), "default_target": "run-7"},
     )()
     with patch(
-        "noetrium_platform.product.operator.runtime.research_cli.load_project_application",
+        "noetrium_platform.composition.operator.wiring.research.load_project_application",
         return_value=loaded,
     ):
         rc = main([

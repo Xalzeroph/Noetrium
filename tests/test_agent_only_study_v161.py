@@ -14,8 +14,8 @@ from noetrium_platform.capabilities.participant.capability.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import EffectClass, canonical_digest
 from noetrium_platform.composition.workflows.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
-from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantSpec, ExperimentSpec
 
 
 class EchoProviderSession:
@@ -122,9 +122,9 @@ def test_agent_only_long_run_keeps_agent_session_alive_across_cycles():
 
 
 def test_agent_only_joint_checkpoint_restores_agent_and_provider_state(tmp_path):
-    from noetrium_platform.research.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
+    from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
     from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-    from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
+    from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
 
     store = DirectoryRunCheckpointStore(tmp_path / "checkpoints")
     runtime = _runtime(store)

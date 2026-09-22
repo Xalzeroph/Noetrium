@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "webagent_r1_emnlp2025",
-  "package_digest": "c7ec50272ee7dc845eb5d8afec9057e2115cc11a93a9d6e5e6dc797972e1e4a6",
+  "package_digest": "a5ecdb760f72bd1656f06949b83a27b9e61ca65deff7ea9680b6743266ed304b",
   "definition_digest": "28da17098743d4c06b486ae9bafdcc23d96973ceca9a7f8cffe1b98636c0abb9",
   "source_registry_digest": "812fdc270db400cca7ccc3e29b724254c6f9efde819ff211c6f44a76a574f9e6",
   "lifecycle": "protocol_bound",
@@ -84,7 +84,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/webagent_r1_emnlp2025/benchmark.py",
       "declaration_digest": "720084a3ae76079ba9d76622fb9494daeb87e3d4721e83d7f91938558157e363",
-      "content_sha256": "b7fbeeb58c508118564c85ecba96f951d7f316e721f958770cef36b44b969307"
+      "content_sha256": "a5a31bd0f288e03ad60162cf363fb23042b84a77db0449e1c9e2e932595a6e55"
     },
     {
       "kind": "fidelity",
@@ -102,7 +102,7 @@
       "kind": "study",
       "path": "research/reproductions/webagent_r1_emnlp2025/study.py",
       "declaration_digest": "6650fa9256f1d61994dfa3c76b44b431b491e587fe2bc01b50d743c267a5633f",
-      "content_sha256": "62c6f6184b19cdccc3cde28815728a1421c2d558f30a6202f440c3aa2c6ec76e"
+      "content_sha256": "de6cd4fc3e52e94c0a106e66701226c9631a341ffa85915e304c994e9e328f18"
     }
   ],
   "primary_executable": "research/reproductions/webagent_r1_emnlp2025/program.py",

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.research.experimentation.experiment.runtime import ExperimentWorkflowSurfaceRegistry
+from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentWorkflowSurfaceRegistry
 
 
 def test_unknown_workflow_surface_fails_without_constructing_scientific_operations():

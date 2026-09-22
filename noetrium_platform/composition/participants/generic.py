@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantImplementationIdentity
-from noetrium_platform.capabilities.participant.core.api.runtime import ParticipantResolverPort, ParticipantRuntimeEndpoint
-from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantIdentityMismatch, ParticipantLifecycleAdapter
+from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity
+from noetrium_platform.capabilities.participant.core.api import ParticipantResolverPort, ParticipantRuntimeEndpoint
+from noetrium_platform.capabilities.participant.core.api import ParticipantIdentityMismatch, ParticipantLifecycleAdapter
 
 from .base import PolicyParticipantAdapter
 

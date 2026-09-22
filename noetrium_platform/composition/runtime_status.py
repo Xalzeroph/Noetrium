@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from noetrium_platform.composition.reliability_observability.forensic_status import ForensicStatusProbe
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_command_runner
 from noetrium_platform.infrastructure.reliability.diagnostics.api import DiagnosticEvidencePort
 from .runtime_status_contracts import RuntimeStatusLayout
 from noetrium_platform.evidence.observability.status.runtime import PlatformStatusService
@@ -47,7 +48,7 @@ def build_runtime_status_service(
         compose_recovery_lease_status_probe(compose_sqlite_recovery_lease(layout.resource_authority)),
     ]
 
-    registry = default_persistent_session_backend_registry(task_group)
+    registry = default_persistent_session_backend_registry(build_process_command_runner(task_group))
     if layout.server_session is not None:
         probes.insert(
             0,

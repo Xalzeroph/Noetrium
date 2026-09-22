@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flow_modularized_agentic_workflow",
-  "package_digest": "07586366ce193b5edb76efbaab48f548a259b1d45262062e28c3ed51afe5f209",
+  "package_digest": "4bedc87c502e9f7fe3f5e97f9e1eaf1b51f226d02f211c1dfc0b5b51bcce4fe0",
   "definition_digest": "d7dcb5f56811068501c262cdef4f58f4ddabdfe59d5b648f3050e90aff41eb4f",
   "source_registry_digest": "871ee9bf57337e607fa5a5ed65434e3cc122df43f3db5d6cca12cb61261175b4",
   "lifecycle": "protocol_bound",
@@ -107,7 +107,7 @@
       "kind": "method_program",
       "path": "research/reproductions/flow_modularized_agentic_workflow/program.py",
       "declaration_digest": "b23853deec72c22470ffc8faa73752f14810502848becd42856eae3632e7b79c",
-      "content_sha256": "949782cb662f3758d2e242607ce09a544c9ef180f68205c9211e812f31696408"
+      "content_sha256": "4af7f5d314fcf763ad888121aed5eea8b4323de44f99f4400ffe74dc1604a682"
     },
     {
       "kind": "research_program",
@@ -119,7 +119,7 @@
       "kind": "study",
       "path": "research/reproductions/flow_modularized_agentic_workflow/study.py",
       "declaration_digest": "9c20d9d1979920e7438767f0a88f7b5ebb36de9c6e4f90aef1f8205d8c19a663",
-      "content_sha256": "969185e041ae4896823e65616b517d869eb5f283788ff03a442a3262c11bd190"
+      "content_sha256": "c0ad421c08aefcd32244faacf3d31c53b40ffe3629f966429a32972c50138028"
     },
     {
       "kind": "support",

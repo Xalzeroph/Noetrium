@@ -8,28 +8,28 @@ import pytest
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.api import ProjectRunDefinition
-from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 from noetrium_platform.research.experimentation.identity import (
     OptionalIdentityFacet,
     ReplayLevel,
 )
-from noetrium_platform.research.experimentation.run.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentRunResult,
     ExperimentRunSpec,
 )
-from noetrium_platform.research.experimentation.run.composition import (
+from noetrium_platform.research.experimentation.lifecycle.run.composition import (
     ExperimentRunEvidenceFinalizer,
 )
-from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.run.api.manifest import (
+from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
+from noetrium_platform.research.experimentation.lifecycle.api import (
     CompositionPlanReference,
     RunLaunchManifest,
     RunResearchSemanticsReference,
 )
-from noetrium_platform.research.experimentation.run.runtime import (
+from noetrium_platform.research.experimentation.lifecycle.run.runtime import (
     DirectoryRunArtifactStore,
 )
-from noetrium_platform.research.experimentation.study.api import (
+from noetrium_platform.research.experimentation.lifecycle.api import (
     StudyAssignment,
     StudyConcurrencyPolicy,
     StudyMatrixExecutionReport,

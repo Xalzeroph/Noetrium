@@ -1,5 +1,5 @@
-from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from __future__ import annotations
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 
 from collections.abc import Mapping
 import argparse
@@ -12,7 +12,7 @@ import time
 from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
-from noetrium_platform.capabilities.model.serving.endpoint import ModelEndpointRoute
+from noetrium_platform.capabilities.model.serving.endpoint.api import ModelEndpointRoute
 from noetrium_platform.capabilities.model.serving.endpoint.providers import (
     AsyncioJsonTransport,
     OpenAICompatibleModelEndpoint,
@@ -35,7 +35,6 @@ from noetrium_platform.research.execution.workflow.composition import (
     EndpointBackedMethodAgentLoop,
     MethodModelEndpointBinding,
     PromptViewChatRequestFactory,
-    bind_machine_method_runtime,
 )
 from noetrium_platform.research.execution.workflow.providers import (
     DirectoryEventMethodEvidence,

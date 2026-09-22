@@ -165,6 +165,36 @@
       "family": "static-architecture"
     },
     {
+      "id": "binding-invariants-v1",
+      "pattern": "^test_binding_invariant_.*_v1\\.py$",
+      "family": "typed-contracts"
+    },
+    {
+      "id": "architecture-convergence-v1",
+      "pattern": "^test_(?:execution_participant_facade_v1|experimentation_execution_facade_v1|hierarchical_reachability_v1|layer_facade_contracts_v1|research_public_api_boundary_v1|resource_runtime_boundary_v1|system_component_physical_integrity_v1|system_hierarchy_contract_v1|system_integration_audit_v1|system_registry_parent_identity_v1|top_level_dependency_dag_v1)\\.py$",
+      "family": "static-architecture"
+    },
+    {
+      "id": "managed-runtime-convergence-v1",
+      "pattern": "^test_(?:declarative_workload_runtime_v1|local_compute_inventory_autodiscovery_v1|managed_observability_v1|managed_recovery_execution_v1|managed_research_runtime_v1|managed_research_services_v1|platform_meta_data_authorities_v1|project_single_authority_identity)\\.py$",
+      "family": "composition-integration"
+    },
+    {
+      "id": "compute-placement-unavailable-v1",
+      "pattern": "^test_compute_placement_unavailable_v1\\.py$",
+      "family": "concurrency-capacity"
+    },
+    {
+      "id": "reproduction-fleet-plan-v2",
+      "pattern": "^test_reproduction_fleet_plan_v2\\.py$",
+      "family": "scientific-domain"
+    },
+    {
+      "id": "agent-method-authoring-v1",
+      "pattern": "^test_agent_method_authoring_v1\\.py$",
+      "family": "typed-contracts"
+    },
+    {
       "id": "section42-scientific",
       "pattern": "^test_(?:benchmark_source|raw_record_metric_engine|universal_experiment|measurement_protocol|research_compiler|research_workbench|research_pressure|trial_(?:matrix_executor|experiment_program))_",
       "family": "scientific-domain"

@@ -6,11 +6,12 @@ import time
 
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
 from noetrium_platform.substrate.api import ArtifactBlobRef
-from noetrium_platform.capabilities.model.serving.api import (
+from noetrium_platform.capabilities.model.serving.api.qualified_deployment import (
     QualifiedDeploymentManifest,
+)
+from noetrium_platform.capabilities.model.serving.api.runtime_canary import (
     RuntimeCanaryEvidence,
     RuntimeCanaryProbe,
-    ServiceHeartbeat,
     evaluate_runtime_canary_contract,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
@@ -19,6 +20,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointResponse,
     ModelEndpointRoute,
 )
+from noetrium_platform.substrate.api import ServiceHeartbeat
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_bytes, canonical_digest
 
 

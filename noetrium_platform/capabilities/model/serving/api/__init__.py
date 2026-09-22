@@ -86,6 +86,22 @@ from .runtime_qualification_ports import RuntimeQualificationEvidenceStorePort
 from .state import ModelPhase, ModelRunState
 from .supervisor_ports import ModelSupervisorStateStorePort
 
+from ..endpoint.api import (
+    AsyncJsonHttpTransportPort,
+    ModelEndpointFactoryPort,
+    AdaptiveModelEndpointPoolPort,
+    ModelEndpointDispatchPoolPort,
+    ModelEndpointPort,
+    ModelEndpointRequest,
+    ModelEndpointResponse,
+    ModelEndpointRoute,
+    QualifiedModelClosurePublication,
+    QualifiedModelClosurePublicationReceipt,
+    QualifiedModelEndpointBinding,
+    QualifiedModelEndpointBindingPort,
+    QualifiedModelEndpointReplicaSet,
+)
+
 __all__ = [
     "CPUInventory", "CPUNode", "DeploymentPlacement", "GpuPlacementPolicyPort", "DurableRecoveryAttempt",
     "DurableRecoveryObserverFailureSink", "DurableRecoveryObserverPort", "DurableRecoveryPhase",
@@ -108,4 +124,17 @@ __all__ = [
     "decide_resume", "evaluate_qualification", "evaluate_runtime_canary_contract",
     "fail_recovery_step", "new_recovery_attempt",
     "recovery_plan_digest", "succeed_recovery",
+    "AsyncJsonHttpTransportPort",
+    "ModelEndpointFactoryPort",
+    "AdaptiveModelEndpointPoolPort",
+    "ModelEndpointDispatchPoolPort",
+    "ModelEndpointPort",
+    "ModelEndpointRequest",
+    "QualifiedModelClosurePublication",
+    "QualifiedModelClosurePublicationReceipt",
+    "QualifiedModelEndpointBinding",
+    "QualifiedModelEndpointBindingPort",
+    "QualifiedModelEndpointReplicaSet",
+    "ModelEndpointResponse",
+    "ModelEndpointRoute",
 ]

@@ -4,14 +4,14 @@ from dataclasses import dataclass
 
 import pytest
 
-from noetrium_platform.research.experimentation.checkpoint.api import WorkloadExecutionCut
-from noetrium_platform.research.experimentation.checkpoint.providers import DirectoryWorkloadCheckpointStore
-from noetrium_platform.research.experimentation.checkpoint.runtime import (
+from noetrium_platform.research.experimentation.lifecycle.api import WorkloadExecutionCut
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers import DirectoryWorkloadCheckpointStore
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime import (
     WorkloadCheckpointCoordinator,
     WorkloadCheckpointIdentityMismatch,
 )
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet, ReplayLevel
-from noetrium_platform.research.experimentation.run.api.manifest import RunResearchSemanticsReference
+from noetrium_platform.research.experimentation.lifecycle.api import RunResearchSemanticsReference
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 

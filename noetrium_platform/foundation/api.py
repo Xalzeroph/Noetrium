@@ -28,10 +28,6 @@ from noetrium_platform.evidence.artifact.api import (
     MultimodalPart,
 )
 
-from noetrium_platform.evidence.observability.api import (
-    ContextMetricSink,
-)
-
 from noetrium_platform.foundation.governance.api import (
     BindingDiagnostic,
     BindingDiagnosticCode,
@@ -62,6 +58,7 @@ from noetrium_platform.foundation.governance.api import (
     ScopeKind,
     ScopeRegistryPort,
     SystemIdentity,
+    component_catalog,
     interface_contract_digest,
     is_absolute_target_path,
     require_production_qualification,
@@ -78,8 +75,6 @@ from noetrium_platform.infrastructure.reliability.api import (
     EffectIntentRecord,
     EffectReconciliationDisposition,
     EffectReconciliationProof,
-    FailureEnvelope,
-    FailureLedgerPort,
     PendingEffectRecoveryRequired,
     PreparedEffectHandle,
 )
@@ -151,7 +146,6 @@ __all__ = (
     "ComputePlacementUnavailable",
     "ComputeRequirement",
     "ComputeSchedulerPort",
-    "ContextMetricSink",
     "DirectoryLayoutPort",
     "EffectCompletionEvidence",
     "EffectIntent",
@@ -169,8 +163,6 @@ __all__ = (
     "EndpointLeaseGuardFactoryPort",
     "EndpointLeaseGuardPort",
     "ExecutionQualificationPort",
-    "FailureEnvelope",
-    "FailureLedgerPort",
     "GpuDeviceStatus",
     "GpuProcessStatus",
     "GpuRuntimeObserverPort",
@@ -198,6 +190,7 @@ __all__ = (
     "ScopeRegistryPort",
     "ScopedValue",
     "SystemIdentity",
+    "component_catalog",
     "interface_contract_digest",
     "is_absolute_target_path",
     "require_production_qualification",

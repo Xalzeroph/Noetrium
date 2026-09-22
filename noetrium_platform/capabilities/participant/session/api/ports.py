@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantSessionRuntimeIdentity
+from noetrium_platform.capabilities.participant.core.api import ParticipantSessionRuntimeIdentity
 from .contracts import ParticipantSessionRuntimeFactory, RegisteredParticipantSessionRuntime
 
 

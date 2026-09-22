@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from noetrium_platform.research.execution.admission.api import AdmissionBudget
+from noetrium_platform.research.execution.policy.api import AdmissionBudget
 
 from noetrium_platform.foundation.governance.release.runtime.regression_state import (
     REGRESSION_STATE_SCHEMA_VERSION,

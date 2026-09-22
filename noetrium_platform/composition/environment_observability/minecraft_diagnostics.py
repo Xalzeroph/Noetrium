@@ -3,10 +3,10 @@ from __future__ import annotations
 from collections import deque
 from typing import Mapping, Protocol
 
-from noetrium_platform.substrate.api import ContextMetricSink
+from noetrium_platform.evidence.observability.api import ContextMetricSink
 from noetrium_platform.evidence.observability.logging.record.api import LogLevel, LogWriterPort
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue
-from noetrium_platform.substrate.api import FailureEnvelope, FailureLedgerPort
+from noetrium_platform.infrastructure.reliability.api import FailureEnvelope, FailureLedgerPort
 
 from noetrium_platform.capabilities.environment.minecraft.api import MinecraftDiagnosticsPort
 

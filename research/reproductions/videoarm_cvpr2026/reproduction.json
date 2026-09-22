@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoarm_cvpr2026",
-  "package_digest": "c24200fb24a4476cebaa7d60ae7426f2cc726cb29a1a3a2b4646831dcc3962ff",
+  "package_digest": "745e7092cf181790dc89b92544170e60e5f3f94d3d4a244e06ca319928b3e36f",
   "definition_digest": "61142dc7f03f9893ab43054787d50ea047a6c3605f67d42c67287ce69d2fe71f",
   "source_registry_digest": "dd8526fc8b15cc760274353f8a4c7bb10778f7149004af924220d6a2edcdd77e",
   "lifecycle": "protocol_bound",
@@ -84,7 +84,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/videoarm_cvpr2026/benchmark.py",
       "declaration_digest": "57fc994c56396baa25484ba1be5a2cae0bb4ff532cdf27e8012943ff4bbec046",
-      "content_sha256": "a9c93b8f335248dbea4ac273ec4f17348cac051436e93dc7944e72718daf9634"
+      "content_sha256": "5eaacd1e6aef962b822422d9f0f13c9b921748ec944463eaaeee194ac11574dc"
     },
     {
       "kind": "fidelity",
@@ -102,7 +102,7 @@
       "kind": "study",
       "path": "research/reproductions/videoarm_cvpr2026/study.py",
       "declaration_digest": "8b0bef6fc0456a28498a8061ca39dc3f8709b2e3fd4ff750a563737f188790e1",
-      "content_sha256": "bc5cce0bc3477e2392cf82b959854bbef0e8e07520531e7583224378595d124e"
+      "content_sha256": "a81512811486e3aafe23040f783b0d90d94d12b5e78e223781ff153eef806516"
     }
   ],
   "primary_executable": "research/reproductions/videoarm_cvpr2026/program.py",

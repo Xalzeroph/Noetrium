@@ -14,6 +14,7 @@ HIERARCHY = ROOT / "noetrium_platform/foundation/governance/system_registry/hier
 TARGET_LAYERS = ("foundation", "substrate", "capability")
 
 
+
 def module_name(path: Path) -> str:
     relative = path.relative_to(ROOT).with_suffix("")
     parts = list(relative.parts)
@@ -40,13 +41,57 @@ def system_roots(catalog: dict[str, dict[str, object]]) -> dict[str, str]:
     return roots
 
 
-def explicit_demands(facades: dict[str, str]) -> dict[str, set[str]]:
+def explicit_demands(
+    *,
+    facades: dict[str, str],
+    hierarchy_rows: list[dict[str, object]],
+    roots: dict[str, str],
+) -> dict[str, set[str]]:
+    """Collect only direct-upper-layer demand for each facade.
+
+    A facade exists for one adjacency boundary. Imports from the same layer,
+    lower layers, non-adjacent higher layers, application composition, tests,
+    or tooling must never enlarge that facade.
+    """
+
     by_facade = {value: key for key, value in facades.items()}
     generated_facades = {facades[layer_id] for layer_id in TARGET_LAYERS}
+    system_layer = {
+        str(system): str(row["id"])
+        for row in hierarchy_rows
+        for system in row.get("members", ())
+    }
+    upper_by_lower = {
+        str(row["lower"]): str(row["id"])
+        for row in hierarchy_rows
+        if row.get("lower") is not None
+    }
+    composition_layers = tuple(
+        (str(row["composition"]), str(row["id"]))
+        for row in hierarchy_rows
+        if row.get("composition")
+    )
+    root_rows = tuple(sorted(roots.items(), key=lambda item: -len(item[1])))
+
+    def same_or_child(module: str, prefix: str) -> bool:
+        return module == prefix or module.startswith(prefix + ".")
+
+    def source_layer(module: str) -> str | None:
+        for system, prefix in root_rows:
+            if same_or_child(module, prefix):
+                return system_layer.get(system)
+        for prefix, layer_id in composition_layers:
+            if same_or_child(module, prefix):
+                return layer_id
+        return None
+
     demand: dict[str, set[str]] = defaultdict(set)
     for path in (ROOT / "noetrium_platform").rglob("*.py"):
         source = module_name(path)
         if source in generated_facades:
+            continue
+        layer_id = source_layer(source)
+        if layer_id is None:
             continue
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -55,10 +100,12 @@ def explicit_demands(facades: dict[str, str]) -> dict[str, set[str]]:
         for node in ast.walk(tree):
             if not isinstance(node, ast.ImportFrom) or node.module not in by_facade:
                 continue
-            layer_id = by_facade[node.module]
+            target_layer = by_facade[node.module]
+            if upper_by_lower.get(target_layer) != layer_id:
+                continue
             for alias in node.names:
                 if alias.name not in {"*", "__all__"}:
-                    demand[layer_id].add(alias.name)
+                    demand[target_layer].add(alias.name)
     return demand
 
 
@@ -70,27 +117,43 @@ def resolve_contract(
     member_apis: tuple[str, ...],
     lower_facade: str | None,
 ) -> str:
-    if not hasattr(facade_module, name):
-        raise RuntimeError(f"{layer_id} facade does not expose demanded symbol {name}")
-    target = getattr(facade_module, name)
-    target_identity = semantic_identity(target)
+    """Resolve one demanded symbol without requiring the old facade to predeclare it.
 
-    matches: list[str] = []
+    Member-owned contracts win over lower-layer propagation. The current facade
+    is consulted only to disambiguate genuinely conflicting same-name symbols.
+    """
+
+    candidates: list[tuple[str, object]] = []
     for api_name in member_apis:
         api = importlib.import_module(api_name)
-        if hasattr(api, name) and semantic_identity(getattr(api, name)) == target_identity:
-            matches.append(api_name)
-    if matches:
-        return sorted(matches)[0]
+        if hasattr(api, name):
+            candidates.append((api_name, getattr(api, name)))
 
-    if lower_facade is None:
-        raise RuntimeError(f"{layer_id} cannot resolve demanded symbol {name}")
-    lower = importlib.import_module(lower_facade)
-    if not hasattr(lower, name) or semantic_identity(getattr(lower, name)) != target_identity:
+    if candidates:
+        identities = {semantic_identity(value) for _, value in candidates}
+        if len(identities) == 1:
+            return sorted(source for source, _ in candidates)[0]
+
+        if hasattr(facade_module, name):
+            target_identity = semantic_identity(getattr(facade_module, name))
+            matches = [
+                source
+                for source, value in candidates
+                if semantic_identity(value) == target_identity
+            ]
+            if matches:
+                return sorted(matches)[0]
         raise RuntimeError(
-            f"{layer_id} symbol {name} is neither member-owned nor exposed by {lower_facade}"
+            f"{layer_id} demanded symbol {name} is ambiguous across member APIs: "
+            + ", ".join(sorted(source for source, _ in candidates))
         )
-    return lower_facade
+
+    if lower_facade is not None:
+        # Propagate unresolved demand downward. The lower layer is processed
+        # later and must prove a concrete member-owned source or propagate again.
+        return lower_facade
+
+    raise RuntimeError(f"{layer_id} cannot resolve demanded symbol {name}")
 
 
 def render_layer_facade(
@@ -139,7 +202,11 @@ def main() -> int:
     order = [str(row["id"]) for row in rows]
     facades = {layer_id: str(by_id[layer_id]["facade"]) for layer_id in order}
     roots = system_roots(catalog)
-    demand = explicit_demands(facades)
+    demand = explicit_demands(
+        facades=facades,
+        hierarchy_rows=rows,
+        roots=roots,
+    )
     assignments: dict[str, dict[str, str]] = defaultdict(dict)
 
     for layer_id in reversed(order):

@@ -16,7 +16,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskFailureScope,
 )
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
-from noetrium_platform.infrastructure.lifecycle.process.supervision.api import ProcessTerminationPolicy
+from noetrium_platform.infrastructure.lifecycle.process.api import ProcessTerminationPolicy
 from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
 
 

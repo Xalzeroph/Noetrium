@@ -1,11 +1,11 @@
 """Participant session identity, runtime and lifecycle contracts."""
 
-from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantSessionRuntimeIdentity
-from noetrium_platform.capabilities.participant.core.api.runtime import (
+from noetrium_platform.capabilities.participant.core.api import ParticipantSessionRuntimeIdentity
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantRuntimeEndpoint,
     ParticipantSessionRuntime,
 )
-from noetrium_platform.capabilities.participant.core.api.runtime_ports import (
+from noetrium_platform.capabilities.participant.core.api import (
     ParticipantCheckpointRuntimePort,
     ParticipantSessionLifecyclePort,
 )
