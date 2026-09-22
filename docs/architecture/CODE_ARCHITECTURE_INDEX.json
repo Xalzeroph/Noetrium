@@ -31004,6 +31004,24 @@
     },
     {
       "bases": [
+        "ValueError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 23,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.providers.operational_inventory_file",
+      "name": "OperationalModelServingInventoryReadError",
+      "nesting": [
+        "OperationalModelServingInventoryReadError"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.serving.endpoint.providers.operational_inventory_file.OperationalModelServingInventoryReadError",
+      "system_key": "model",
+      "top_system": "model"
+    },
+    {
+      "bases": [
         "QualifiedModelEndpointBindingPort"
       ],
       "decorators": [],
@@ -98258,12 +98276,12 @@
   ],
   "counts": {
     "association_edges": 3209,
-    "classes": 3230,
+    "classes": 3231,
     "constructor_edges": 873,
     "inheritance_edges": 143,
-    "module_import_edges": 4990,
+    "module_import_edges": 4993,
     "parse_errors": 0,
-    "python_modules": 1935,
+    "python_modules": 1936,
     "registry_authorities": 20,
     "registry_nodes": 30,
     "top_level_systems": 16
@@ -102000,6 +102018,10 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.serving.endpoint.providers",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.operational_inventory_file"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.providers",
       "target": "noetrium_platform.capabilities.model.serving.endpoint.qualified_binding"
     },
     {
@@ -102024,6 +102046,14 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.serving.endpoint.providers.openai_compatible",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.providers.operational_inventory_file",
+      "target": "noetrium_platform.capabilities.model.serving.endpoint.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.endpoint.providers.operational_inventory_file",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
@@ -122071,6 +122101,7 @@
     {
       "imports": [
         "noetrium_platform.capabilities.model.serving.endpoint.openai_compatible",
+        "noetrium_platform.capabilities.model.serving.endpoint.operational_inventory_file",
         "noetrium_platform.capabilities.model.serving.endpoint.qualified_binding",
         "noetrium_platform.capabilities.model.serving.endpoint.qualified_closure_file",
         "noetrium_platform.capabilities.model.serving.endpoint.qualified_closure_publication"
@@ -122089,6 +122120,16 @@
       ],
       "module": "noetrium_platform.capabilities.model.serving.endpoint.providers.openai_compatible",
       "path": "noetrium_platform/capabilities/model/serving/endpoint/providers/openai_compatible.py",
+      "system_key": "model",
+      "top_system": "model"
+    },
+    {
+      "imports": [
+        "noetrium_platform.capabilities.model.serving.endpoint.api",
+        "noetrium_platform.foundation.kernel.kernel"
+      ],
+      "module": "noetrium_platform.capabilities.model.serving.endpoint.providers.operational_inventory_file",
+      "path": "noetrium_platform/capabilities/model/serving/endpoint/providers/operational_inventory_file.py",
       "system_key": "model",
       "top_system": "model"
     },
@@ -139085,7 +139126,7 @@
   "parse_errors": [],
   "registry_sha256": "aaab5b90bc9a5fde2121df4c1c6e70c9bb90f7f09d5f6eaaff61907eb06cb1d3",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "238e9e9b9676b1048582d2ab5aaf5fc76dd024dd",
+  "source_git_sha": "unknown",
   "system_import_edges": [
     {
       "count": 90,
@@ -139163,12 +139204,12 @@
       "target": "scope"
     },
     {
-      "count": 442,
+      "count": 444,
       "source": "model",
       "target": "model"
     },
     {
-      "count": 87,
+      "count": 88,
       "source": "model",
       "target": "platform"
     },
