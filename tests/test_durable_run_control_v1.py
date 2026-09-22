@@ -33,7 +33,7 @@ from noetrium_platform.research.experimentation.run.api.artifacts import (
     RunArtifactSnapshotReceipt,
     RunArtifactVerificationError,
 )
-from noetrium_platform.research.experimentation.run.control.api import (
+from noetrium_platform.research.experimentation.run.api.control import (
     RunControlAction,
     RunControlActionFailure,
     RunControlConflict,
@@ -44,11 +44,11 @@ from noetrium_platform.research.experimentation.run.control.api import (
     RunControlTarget,
     RunControlTransitionOutcome,
 )
-from noetrium_platform.research.experimentation.run.control.composition.factory import (
+from noetrium_platform.research.experimentation.run.composition.control import (
     build_durable_run_control,
 )
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
-from noetrium_platform.research.experimentation.run.manifest.api.evidence import (
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
+from noetrium_platform.research.experimentation.run.api.manifest_evidence import (
     EvidenceBundleReceipt,
 )
 

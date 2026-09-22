@@ -15,7 +15,7 @@ DEFAULT_ROOTS = (
     "noetrium_platform.composition.managed_research_services",
     "noetrium_platform.research.execution.workflow.api",
     "noetrium_platform.research.experimentation.api.program",
-    "noetrium_platform.research.experimentation.run.control.composition.factory",
+    "noetrium_platform.research.experimentation.run.composition.control",
     "noetrium_platform.research.experimentation.workload.composition",
 )
 

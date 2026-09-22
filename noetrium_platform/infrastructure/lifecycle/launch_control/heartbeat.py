@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.reliability.primitives.runtime_faults import (
+from noetrium_platform.infrastructure.lifecycle.api.errors import (
     FrozenRuntimeIdentityViolation,
     RuntimeOperationalHealthUnavailable,
 )
-from noetrium_platform.capabilities.model.serving.api import ServiceHeartbeat
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceHeartbeat
 
 
 def assert_exact_heartbeat(

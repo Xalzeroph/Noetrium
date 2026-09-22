@@ -25,7 +25,7 @@ from noetrium_platform.research.execution.machines import (
 )
 from noetrium_platform.evidence.data.fact.api import DurableFact, FactCriticality, UnknownRequiredFact
 from noetrium_platform.evidence.observability.api import EventEnvelope
-from noetrium_platform.evidence.data.record.api import ExecutionRecordPlane
+from noetrium_platform.foundation.kernel.record_plane import ExecutionRecordPlane
 from noetrium_platform.evidence.data.fact.runtime import FactDecoderRegistry
 from noetrium_platform.foundation.kernel.kernel import InMemoryMachineJournal, canonical_bytes, EffectClass, ExecutionContext, ImmutableModelIdentity, canonical_digest
 from noetrium_platform.evidence.artifact.content.providers import DirectoryArtifactBlobStore

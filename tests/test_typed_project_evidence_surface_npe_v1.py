@@ -11,7 +11,7 @@ from noetrium_platform.evidence.artifact.catalog.api import (
 from noetrium_platform.evidence.data.dataset.api import DatasetIdentity, DatasetVersion
 from noetrium_platform.evidence.data.fact.api import DurableFact, FactCriticality, FactDecoderPort, FactSchema
 from noetrium_platform.evidence.data.fact.runtime import FactDecoderRegistry
-from noetrium_platform.evidence.data.record.api import ExecutionRecordPlane
+from noetrium_platform.foundation.kernel.record_plane import ExecutionRecordPlane
 from noetrium_platform.evidence.observability.api import EventEnvelope
 from noetrium_platform.evidence.observability.status.api import HealthState, SubsystemSnapshot
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_bytes, canonical_digest

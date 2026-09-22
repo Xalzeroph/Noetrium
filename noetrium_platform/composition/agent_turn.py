@@ -13,8 +13,8 @@ from noetrium_platform.research.experimentation.checkpoint import RunCheckpointS
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentityProvider
 from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantLifecycleAdapter
 from noetrium_platform.research.execution.workflow.api import WorkflowSurfaceFactory
-from noetrium_platform.research.execution.workflow.implementations.agent_turn import AgentTurnSurfaceFactory, agent_turn_trial_protocol
-from noetrium_platform.research.execution.workflow.implementations.agent_turn.failure_classifier import AgentTurnFailureClassifier
+from noetrium_platform.composition.workflows.agent_turn import AgentTurnSurfaceFactory, agent_turn_trial_protocol
+from noetrium_platform.composition.workflows.agent_turn.failure_classifier import AgentTurnFailureClassifier
 from noetrium_platform.research.execution.capability.runtime import (
     ScopedRegistrationRuntimeFactory,
 )

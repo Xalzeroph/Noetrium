@@ -14,7 +14,7 @@ from noetrium_platform.capabilities.model.request.prompt.runtime import default_
 from noetrium_platform.capabilities.model.request.prompt.runtime.qualification import PromptQualification
 from noetrium_platform.foundation.governance.release.runtime.manifest import build_release_manifest
 from noetrium_platform.foundation.governance.release.runtime.verification import SourceTreeReleaseEvidenceReader
-from noetrium_platform.infrastructure.lifecycle.launch_control import (
+from noetrium_platform.composition.runtime_control import (
     ActivePromptPromotionVerifier,
     FrozenParticipantBindingVerificationPort,
     FrozenParticipantImplementationVerificationPort,

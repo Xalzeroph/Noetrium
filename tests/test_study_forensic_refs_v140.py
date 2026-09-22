@@ -12,7 +12,7 @@ from noetrium_platform.composition.operation_forensics import OperationForensicF
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent
 from noetrium_platform.capabilities.environment.runtime.api import ActionRequest, action_request_digest
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, ExecutionContext, OperationExecutor, OperationRequest
-from noetrium_platform.research.execution.workflow.implementations.context_action.forensic_refs import StudyOperationFailureReferenceProjector
+from noetrium_platform.composition.workflows.context_action.forensic_refs import StudyOperationFailureReferenceProjector
 
 
 def test_action_failure_projects_only_safe_digest_correlations_not_opaque_handle_material():

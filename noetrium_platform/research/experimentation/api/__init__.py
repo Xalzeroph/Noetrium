@@ -52,7 +52,7 @@ from .construction import (
     ProjectManifestProjection,
     ProjectRunDefinition,
 )
-from noetrium_platform.research.experimentation.run.control.api import (
+from noetrium_platform.research.experimentation.run.api.control import (
     RunControlAction,
     RunControlPort,
     RunControlPreparedOperation,

@@ -9,10 +9,10 @@ def audit_workflow_family_firewall(root: Path) -> list[SourceInvariantViolation]
     rows: list[SourceInvariantViolation] = []
     checks = (
         (root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations" / "agent_turn", "agent_turn_domain_firewall", (
-            "noetrium_platform.capabilities.environment.runtime.api", "noetrium_platform.capabilities.participant.method.api", "noetrium_platform.research.execution.workflow.implementations.context_action",
+            "noetrium_platform.capabilities.environment.runtime.api", "noetrium_platform.capabilities.participant.method.api", "noetrium_platform.composition.workflows.context_action",
         )),
         (root / "noetrium_platform" / "research" / "execution" / "workflow" / "implementations" / "context_action", "context_action_domain_firewall", (
-            "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api", "noetrium_platform.research.execution.workflow.implementations.agent_turn",
+            "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api", "noetrium_platform.composition.workflows.agent_turn",
         )),
     )
     for base, invariant, forbidden in checks:

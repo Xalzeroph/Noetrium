@@ -1,7 +1,7 @@
 from pathlib import Path
 import unittest
 
-from noetrium_platform.research.execution.workflow.implementations.context_action import (
+from noetrium_platform.composition.workflows.context_action import (
     context_action_trial_protocol,
 )
 from noetrium_platform.research.execution.workflow.runtime.program_trial import (

@@ -31,5 +31,4 @@ __all__ = [
     "environment_replay_action_payload",
     "environment_query_capability_payload",
     "environment_reset_capability_payload",
-    "reference_counter_environment",
 ]

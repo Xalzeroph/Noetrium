@@ -17,7 +17,7 @@ from noetrium_platform.product.operator.api import (
 )
 
 if TYPE_CHECKING:
-    from noetrium_platform.research.experimentation.run.control.api import (
+    from noetrium_platform.research.experimentation.run.api.control import (
         RunControlPort,
     )
 
@@ -100,7 +100,7 @@ def _restore_cycle(value: object) -> DecisionCycleIdentity:
 def _load_run_control_contracts() -> Any:
     try:
         return importlib.import_module(
-            "noetrium_platform.research.experimentation.run.control.api"
+            "noetrium_platform.research.experimentation.run.api.control"
         )
     except ImportError as exc:
         raise ValueError(

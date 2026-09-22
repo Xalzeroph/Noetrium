@@ -5,7 +5,7 @@ import time
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
-from noetrium_platform.evidence.data.record.api import ExecutionRecordPlane
+from noetrium_platform.foundation.kernel.record_plane import ExecutionRecordPlane
 
 
 @dataclass(frozen=True, slots=True)

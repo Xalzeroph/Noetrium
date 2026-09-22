@@ -1,1 +1,0 @@
-"""participant.capability runtime boundary."""

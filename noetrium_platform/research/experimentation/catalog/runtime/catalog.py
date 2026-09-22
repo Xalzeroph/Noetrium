@@ -13,7 +13,7 @@ from noetrium_platform.research.experimentation.experiment.api.contracts import 
     ParticipantImplementationIdentity,
     ParticipantSessionRuntimeIdentity,
 )
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage
 from noetrium_platform.research.experimentation.study import StudySpec
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind, ScopeRegistryPort

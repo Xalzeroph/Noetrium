@@ -5,7 +5,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentObservation,
     AgentStepReceipt,
 )
-from noetrium_platform.capabilities.participant.agent.runtime import MachineAgentMemory
+from noetrium_platform.research.execution.participants import MachineAgentMemory
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     InMemoryMachineJournal,

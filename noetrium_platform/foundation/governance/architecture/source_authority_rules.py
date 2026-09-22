@@ -38,31 +38,31 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[_AuthorityRule, ...] = (
     SourceAuthorityRule(
         "environment.external_action",
         "_environment_session.act",
-        ("noetrium_platform.research.execution.workflow.implementations.context_action.action_effect_provider",),
+        ("noetrium_platform.composition.workflows.context_action.action_effect_provider",),
         suffix_call("_environment_session.act"),
     ),
     SourceAuthorityRule(
         "environment.prepared_external_action",
         "_environment_session.execute_prepared_action",
-        ("noetrium_platform.research.execution.workflow.implementations.context_action.action_effect_provider",),
+        ("noetrium_platform.composition.workflows.context_action.action_effect_provider",),
         suffix_call("_environment_session.execute_prepared_action"),
     ),
     SourceAuthorityRule(
         "environment.effect_reconcile",
         "_environment_session.reconcile",
-        ("noetrium_platform.research.execution.workflow.implementations.context_action.action_effect_provider",),
+        ("noetrium_platform.composition.workflows.context_action.action_effect_provider",),
         suffix_call("_environment_session.reconcile"),
     ),
     SourceAuthorityRule(
         "environment.action_recovery_prepare",
         "_environment_session.prepare_action_recovery",
-        ("noetrium_platform.research.execution.workflow.implementations.context_action.action_authorization",),
+        ("noetrium_platform.composition.workflows.context_action.action_authorization",),
         suffix_call("_environment_session.prepare_action_recovery"),
     ),
     SourceAuthorityRule(
         "environment.action_recovery_reconcile",
         "_environment_session.reconcile_prepared_action",
-        ("noetrium_platform.research.execution.workflow.implementations.context_action.action_effect_provider",),
+        ("noetrium_platform.composition.workflows.context_action.action_effect_provider",),
         suffix_call("_environment_session.reconcile_prepared_action"),
     ),
     SourceAuthorityRule(
@@ -122,19 +122,19 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[_AuthorityRule, ...] = (
     SourceAuthorityRule(
         "capability.effect_prepare",
         "prepare_capability_effect",
-        ("noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_effect_provider",),
+        ("noetrium_platform.composition.workflows.agent_turn.capability_effect_provider",),
         suffix_call("prepare_capability_effect"),
     ),
     SourceAuthorityRule(
         "capability.effect_execute",
         "execute_prepared_capability",
-        ("noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_effect_provider",),
+        ("noetrium_platform.composition.workflows.agent_turn.capability_effect_provider",),
         suffix_call("execute_prepared_capability"),
     ),
     SourceAuthorityRule(
         "capability.effect_reconcile",
         "reconcile_prepared_capability",
-        ("noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_effect_provider",),
+        ("noetrium_platform.composition.workflows.agent_turn.capability_effect_provider",),
         suffix_call("reconcile_prepared_capability"),
     ),
 

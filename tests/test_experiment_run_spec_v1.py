@@ -6,9 +6,9 @@ from dataclasses import dataclass, replace
 from noetrium_platform.research.experimentation.api import ProjectRunDefinition
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 from noetrium_platform.research.experimentation.run.api import ExperimentRunSpec
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet, ReplayLevel
-from noetrium_platform.research.experimentation.run.manifest.api import CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference
+from noetrium_platform.research.experimentation.run.api.manifest import CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference
 from noetrium_platform.research.experimentation.study.api import StudyConcurrencyPolicy, StudyProtocol, StudyVariantSpec, VariantKind
 from tests_support import model_role_for_test
 

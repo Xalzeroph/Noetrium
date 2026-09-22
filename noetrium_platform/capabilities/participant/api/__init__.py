@@ -1,10 +1,12 @@
-from noetrium_platform.capabilities.participant.agent.api import (
-    AgentIdentity,
-    AgentImplementation,
-    AgentSession,
-    AgentSnapshot,
-    AgentTurnRequest,
-    AgentTurnResult,
+from .messaging import (
+    PARTICIPANT_MESSAGE_ROUTE_SCHEMA,
+    ParticipantMessageFactBinding,
+    ParticipantMessageKind,
+    ParticipantMessageRecipientReceipt,
+    ParticipantMessageRouteReceipt,
+    ParticipantMessageRouteRequest,
+    ParticipantMessageRouterPort,
+    participant_message_content_digest,
 )
 from .project import (
     AgentProjectDefinition,
@@ -56,17 +58,19 @@ from .revision import (
 )
 
 __all__ = [
-    "AgentIdentity",
-    "AgentImplementation",
+    "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
+    "ParticipantMessageFactBinding",
+    "ParticipantMessageKind",
+    "ParticipantMessageRecipientReceipt",
+    "ParticipantMessageRouteReceipt",
+    "ParticipantMessageRouteRequest",
+    "ParticipantMessageRouterPort",
+    "participant_message_content_digest",
     "AgentProjectDefinition",
     "MethodProjectDefinition",
     "method_program_identity_for_requirement",
     "method_program_identity_for_runtime_binding",
     "require_method_program_runtime_binding",
-    "AgentSession",
-    "AgentSnapshot",
-    "AgentTurnRequest",
-    "AgentTurnResult",
     "ArchitectureChangeKind",
     "ParticipantArchitectureChange",
     "ParticipantArchitectureComponent",

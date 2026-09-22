@@ -17,10 +17,10 @@ from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectCl
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, MethodTaskCompletionReceipt, RecallResult
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.checkpoint.providers import DirectoryRunCheckpointStore
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.experimentation.run.lifecycle.api import RunRecoveryRequired
+from noetrium_platform.research.experimentation.run.api.lifecycle import RunRecoveryRequired
 
 
 class MethodSession:

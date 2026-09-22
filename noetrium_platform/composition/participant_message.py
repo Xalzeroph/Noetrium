@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.capabilities.participant.agent.runtime import (
-    AgentTurnFact,
-    AgentTurnFactKind,
+from noetrium_platform.capabilities.participant.api import (
     ParticipantMessageRouteReceipt,
     ParticipantMessageRouteRequest,
     ParticipantMessageRouterPort,
+)
+from noetrium_platform.capabilities.participant.agent.runtime import (
+    AgentTurnFact,
+    AgentTurnFactKind,
     record_participant_message_dispatch,
 )
 from noetrium_platform.capabilities.participant.agent.runtime.turn_facts import AgentTurnFactSink

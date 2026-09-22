@@ -19,8 +19,9 @@ def test_topology_nodes_distinguish_direct_authority_from_other_roles():
     for row in system_catalog():
         assert row.package_prefix
         assert row.owns and row.must_not_own
-        assert row.shape and set(row.shape) <= allowed_planes
+        assert set(row.shape) <= allowed_planes
         if row.node_kind.value == 'authority':
+            assert row.shape
             assert len(row.authorities) == 1
             assert row.authority_id
             assert row.canonical_authority_key == row.identity.key

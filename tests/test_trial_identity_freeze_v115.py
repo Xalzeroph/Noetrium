@@ -11,10 +11,10 @@ from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectCl
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot, RecallResult
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
-from noetrium_platform.research.execution.workflow.implementations.context_action import CONTEXT_ACTION_TRIAL_CONFIGURATION_DIGEST
+from noetrium_platform.composition.workflows.context_action import CONTEXT_ACTION_TRIAL_CONFIGURATION_DIGEST
 from noetrium_platform.capabilities.participant.core.api.lifecycle import ParticipantIdentityMismatch
 from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec
-from noetrium_platform.research.execution.workflow.implementations.context_action import (
+from noetrium_platform.composition.workflows.context_action import (
     CONTEXT_ACTION_TRIAL_CONFIGURATION_DIGEST,
 )
 

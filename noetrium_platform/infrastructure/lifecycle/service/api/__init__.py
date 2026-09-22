@@ -1,3 +1,4 @@
+from .heartbeat import ServiceHeartbeat
 from .contracts import ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
 from .ports import (
     ExactServiceRuntimePort,
@@ -11,6 +12,7 @@ from .ports import (
 )
 
 __all__ = [
+    "ServiceHeartbeat",
     "ExactServiceRuntimePort",
     "ServiceEnvironmentPort",
     "ServiceLaunchPreflightPort",

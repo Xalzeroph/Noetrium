@@ -29,8 +29,8 @@ from noetrium_platform.research.experimentation.checkpoint.api.contracts import 
 from noetrium_platform.research.experimentation.checkpoint.composition import build_project_run_checkpoint_store
 from noetrium_platform.research.experimentation.checkpoint.runtime.coordination import RunCheckpointCoordinator
 from noetrium_platform.research.experimentation.run.runtime.decision_runtime import DecisionCycleRuntime
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentityProvider
-from noetrium_platform.research.experimentation.run.identity.providers import RandomRunIdentityProvider
+from noetrium_platform.research.experimentation.run.api.identity_ports import RunIdentityProvider
+from noetrium_platform.research.experimentation.run.providers.identity import RandomRunIdentityProvider
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentityProvider, RandomDecisionCycleIdentityProvider
 from noetrium_platform.research.experimentation.run.runtime.run_runtime import RunRuntime
 from noetrium_platform.research.execution.workflow.runtime.program_trial import RuntimeProgramTrialProtocol

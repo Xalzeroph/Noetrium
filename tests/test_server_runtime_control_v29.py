@@ -26,8 +26,14 @@ from noetrium_platform.capabilities.model.serving.api import FrozenDeploymentSet
 from noetrium_platform.capabilities.model.serving.api.host_verification import build_host_inventory_receipt
 from noetrium_platform.foundation.kernel.kernel.durability import decode_checksummed_document, encode_checksummed_document
 from noetrium_platform.infrastructure.lifecycle.launch_control import (
-    ExactRuntimeController, RuntimeAction,
-    RuntimeControlStore, RuntimePlatformAuthorities, ServerRuntimeAdapter, ServerRuntimeControlPlane,
+    ExactRuntimeController,
+    RuntimeAction,
+    RuntimeControlStore,
+)
+from noetrium_platform.composition.runtime_control import (
+    RuntimePlatformAuthorities,
+    ServerRuntimeAdapter,
+    ServerRuntimeControlPlane,
 )
 
 

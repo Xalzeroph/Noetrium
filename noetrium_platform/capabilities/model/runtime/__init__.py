@@ -1,1 +1,0 @@
-"""model system runtime boundary."""

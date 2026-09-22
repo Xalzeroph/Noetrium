@@ -8,7 +8,7 @@ from noetrium_platform.foundation.kernel.kernel import OperationFailure
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
-from noetrium_platform.research.experimentation.run.lifecycle.api import RunCleanupFailure
+from noetrium_platform.research.experimentation.run.api.lifecycle import RunCleanupFailure
 
 
 class MethodSession:

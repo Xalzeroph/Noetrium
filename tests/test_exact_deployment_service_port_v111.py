@@ -15,7 +15,7 @@ from noetrium_platform.foundation.kernel.kernel.identity import ImmutableModelId
 from noetrium_platform.capabilities.model.serving.api.qualified_deployment import QualificationCertificate, QualifiedDeploymentManifest, ResourceEnvelope, RoleModelAssignment, RoleModelManifest
 from noetrium_platform.capabilities.model.serving.api.placement import DeploymentPlacement
 from noetrium_platform.capabilities.model.stack.api import ModelArtifactClosure, ModelStackSpec, RuntimeBuildIdentity
-from noetrium_platform.infrastructure.lifecycle.launch_control import (
+from noetrium_platform.composition.runtime_control import (
     DeploymentServiceBinding,
     DeploymentServiceBindingError,
     ExactDeploymentServicePort,

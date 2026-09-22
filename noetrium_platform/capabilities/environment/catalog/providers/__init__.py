@@ -1,1 +1,0 @@
-"""environment.catalog providers boundary."""

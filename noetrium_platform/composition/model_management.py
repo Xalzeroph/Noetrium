@@ -34,6 +34,7 @@ from noetrium_platform.capabilities.model.qualification.composition import (
 )
 from noetrium_platform.infrastructure.resources.compute.api import ComputeSchedulerPort
 from noetrium_platform.infrastructure.resources.compute.providers import LocalHostRuntimeObserver, NvidiaSmiGpuRuntimeObserver
+from noetrium_platform.composition.resource_probes import LocalCommandResourceProbe
 from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentAuthorities
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
 from noetrium_platform.capabilities.environment.catalog.runtime import ExecutionEnvironmentCatalog
@@ -153,7 +154,7 @@ def build_local_management_plane(
     task_group: TaskGroupPort,
 ) -> ManagementPlaneAuthorities:
     local_commands = build_local_command_runner(task_group)
-    gpu_runtime = NvidiaSmiGpuRuntimeObserver(local_commands)
+    gpu_runtime = NvidiaSmiGpuRuntimeObserver(LocalCommandResourceProbe(local_commands))
     host_runtime = LocalHostRuntimeObserver()
     directories = build_local_directory_authorities(layout)
     directory_layout = directories.layout

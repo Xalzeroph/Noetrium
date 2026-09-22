@@ -17,30 +17,30 @@ Example:
     MethodSpec = api.AgentMethodSpec
     MinecraftBridgePort = api.MinecraftBridgePort
 
-- Registered systems: 172
-- Public API modules: 320
-- Public symbols: 2922
-- Registry digest: c4da8a78a00c12312ca68a1810040ec6762e8bd5a251a21a9fabb94d74ef93dd
+- Registered systems: 167
+- Public API modules: 318
+- Public symbols: 2937
+- Registry digest: a965a820bdd843c947fad442011c2a28258401976103fc017aad3dc3337138ad
 
 ## Capability domains
 
 | Domain | Systems | API modules | Symbols |
 | --- | ---: | ---: | ---: |
 | artifact | 7 | 23 | 110 |
-| data | 8 | 18 | 101 |
+| data | 7 | 16 | 97 |
 | environment | 18 | 22 | 203 |
 | execution | 8 | 31 | 438 |
-| experimentation | 16 | 63 | 652 |
+| experimentation | 12 | 59 | 650 |
 | governance | 13 | 16 | 126 |
 | model | 16 | 25 | 311 |
 | observability | 27 | 0 | 0 |
 | operator | 8 | 0 | 0 |
-| participant | 8 | 36 | 355 |
+| participant | 8 | 37 | 365 |
 | platform | 5 | 6 | 83 |
 | portfolio | 5 | 4 | 69 |
 | reliability | 7 | 15 | 87 |
-| resource | 6 | 17 | 132 |
-| runtime | 13 | 37 | 233 |
+| resource | 6 | 18 | 138 |
+| runtime | 13 | 39 | 238 |
 | scope | 7 | 7 | 22 |
 
 ## System surfaces
@@ -278,24 +278,6 @@ Example:
 #### API modules
 
 - noetrium_platform.evidence.data.query.cross.api ?w^~)?t ResearchResultQueryPort, ResearchResultSourcePort
-
-### data/record
-
-- Package: noetrium_platform.evidence.data.record
-- Authority: none
-- Canonical authority: data
-- Node kind: facet
-- Owns: generic record envelopes and record identity
-- Must not own: artifact content bytes
-- Requires: none
-- Provides: record.plane
-- Downstream surface: public
-- Facade: noetrium.contracts.systems.data__record
-
-#### API modules
-
-- noetrium_platform.evidence.data.record.api ?w^~)?t ExecutionRecordPlane, RecordPlaneTagged
-- noetrium_platform.evidence.data.record.api.contracts ?w^~)?t ExecutionRecordPlane, RecordPlaneTagged
 
 ### data/state
 
@@ -788,7 +770,7 @@ Example:
 - Node kind: projection
 - Owns: typed experiment catalog views, implementation candidates, slot health and catalog publication/query contracts
 - Must not own: experiment execution, study measurement truth, run lifecycle or benchmark implementation runtime
-- Requires: experimentation/experiment, experimentation/run/identity, experimentation/study, scope
+- Requires: experimentation/experiment, experimentation/run, experimentation/study, scope
 - Provides: experiment.catalog
 - Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.experimentation__catalog
@@ -885,95 +867,27 @@ Example:
 - Owns: run identity, frozen run contract and run lifecycle
 - Must not own: server supervision internals
 - Requires: none
-- Provides: run.lifecycle, run.decision
+- Provides: run.control, run.decision, run.identity, run.lifecycle, run.manifest
 - Downstream surface: public
 - Facade: noetrium.contracts.systems.experimentation__run
 
 #### API modules
 
-- noetrium_platform.research.experimentation.run.api ?w^~)?t DecisionCycleRuntimePort, RunArtifactFinalizationError, RunArtifactFinalizationPort, RunArtifactKind, RunArtifactSnapshotReceipt, RunArtifactSealedError, RunArtifactStorePort, RunArtifactVerificationError, RunArtifactVerificationPort, RunArtifactWriteActorPort, RunRuntimePort, RunDiagnosticsPort, RunSessionPort, ExperimentRunSpec, ExperimentRunExecutionPort, ExperimentRunResult
+- noetrium_platform.research.experimentation.run.api ?w^~)?t RunIdentity, RunIdentityProvider, RunCleanupFailure, RunCleanupReport, RunClosed, RunRecoveryRequired, attach_cleanup_note, RunCycleExecutionPort, RunCycleExecutorPort, RunLifetimePort, CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference, DerivedEvidenceArtifact, EVIDENCE_BUNDLE_SCHEMA_VERSION, EvidenceBundleManifest, EvidenceBundleReceipt, EvidenceBundleStatus, EvidenceStreamDescriptor, EvidenceBundlePublisherPort, RunControlAction, RunControlActionFailure, RunControlCheckpointBundlePort, RunControlCheckpointStorePort, RunControlConflict, RunControlError, RunControlEvidencePort, RunControlIntegrityError, RunControlLifecyclePort, RunControlNotFound, RunControlPhase, RunControlPort, RunControlPreparedOperation, RunControlReceipt, RunControlReconciliationPort, RunControlRequest, RunControlStaleRevision, RunControlTarget, RunControlTransitionOutcome, RunEvidenceValidity, RunExecutionOutcome, RunOutcomeProjection, RunScientificValidity, RunTaskOutcome, DecisionCycleRuntimePort, RunArtifactFinalizationError, RunArtifactFinalizationPort, RunArtifactKind, RunArtifactSnapshotReceipt, RunArtifactSealedError, RunArtifactStorePort, RunArtifactVerificationError, RunArtifactVerificationPort, RunArtifactWriteActorPort, RunRuntimePort, RunDiagnosticsPort, RunSessionPort, ExperimentRunSpec, ExperimentRunExecutionPort, ExperimentRunResult
 - noetrium_platform.research.experimentation.run.api.artifacts ?w^~)?t RunArtifactFinalizationError, RunArtifactFinalizationPort, RunArtifactKind, RunArtifactSnapshotReceipt, RunArtifactSealedError, RunArtifactStorePort, RunArtifactVerificationError, RunArtifactVerificationPort, RunArtifactWriteActorPort
+- noetrium_platform.research.experimentation.run.api.cleanup ?w^~)?t attach_cleanup_note
+- noetrium_platform.research.experimentation.run.api.control ?w^~)?t RunIdentity, RunLaunchManifest, RunControlAction, RunControlPhase, RunControlTarget, RunControlRequest, RunControlPreparedOperation, RunExecutionOutcome, RunTaskOutcome, RunEvidenceValidity, RunScientificValidity, RunOutcomeProjection, RunControlReceipt, RunControlTransitionOutcome, RunControlError, RunControlNotFound, RunControlConflict, RunControlStaleRevision, RunControlIntegrityError, RunControlActionFailure, RunControlPort, RunControlCheckpointBundlePort, RunControlCheckpointStorePort, RunControlLifecyclePort, RunControlReconciliationPort, RunControlEvidencePort
 - noetrium_platform.research.experimentation.run.api.diagnostics ?w^~)?t RunDiagnosticsPort
 - noetrium_platform.research.experimentation.run.api.execution ?w^~)?t ExperimentRunExecutionPort, ExperimentRunResult
+- noetrium_platform.research.experimentation.run.api.identity ?w^~)?t RunIdentity
+- noetrium_platform.research.experimentation.run.api.identity_ports ?w^~)?t RunIdentityProvider
+- noetrium_platform.research.experimentation.run.api.lifecycle ?w^~)?t RunCleanupFailure, RunCleanupReport, RunClosed, RunRecoveryRequired
+- noetrium_platform.research.experimentation.run.api.lifecycle_ports ?w^~)?t RunCycleExecutionPort, RunCycleExecutorPort, RunLifetimePort, RunSessionPort
+- noetrium_platform.research.experimentation.run.api.manifest ?w^~)?t CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference
+- noetrium_platform.research.experimentation.run.api.manifest_evidence ?w^~)?t DerivedEvidenceArtifact, EVIDENCE_BUNDLE_SCHEMA_VERSION, EvidenceBundleManifest, EvidenceBundleReceipt, EvidenceBundleStatus, EvidenceStreamDescriptor
+- noetrium_platform.research.experimentation.run.api.manifest_ports ?w^~)?t EvidenceBundlePublisherPort
 - noetrium_platform.research.experimentation.run.api.ports ?w^~)?t DecisionCycleRuntimePort, RunRuntimePort, RunSessionPort
 - noetrium_platform.research.experimentation.run.api.spec ?w^~)?t ExperimentRunSpec
-
-### experimentation/run/control
-
-- Package: noetrium_platform.research.experimentation.run.control
-- Authority: none
-- Canonical authority: experimentation
-- Node kind: facet
-- Owns: external run lifecycle effect coordination and read-only RunMachine projections
-- Must not own: run phase, control revision, checkpoint head, Machine Journal truth, operator product intents or server supervision internals
-- Requires: execution, execution/operation, experimentation/checkpoint, experimentation/run, experimentation/run/identity, experimentation/run/lifecycle, experimentation/run/manifest, platform
-- Provides: run.control
-- Downstream surface: public
-- Facade: noetrium.contracts.systems.experimentation__run__control
-
-#### API modules
-
-- noetrium_platform.research.experimentation.run.control.api ?w^~)?t MachineCut, RunControlAction, RunControlActionFailure, RunControlCheckpointBundlePort, RunControlCheckpointStorePort, RunControlConflict, RunControlError, RunControlEvidencePort, RunControlIntegrityError, RunControlLifecyclePort, RunControlNotFound, RunControlPhase, RunControlPort, RunControlPreparedOperation, RunControlReceipt, RunControlReconciliationPort, RunControlRequest, RunControlStaleRevision, RunControlTarget, RunControlTransitionOutcome, RunEvidenceValidity, RunExecutionOutcome, RunOutcomeProjection, RunScientificValidity, RunTaskOutcome
-- noetrium_platform.research.experimentation.run.control.api.contracts ?w^~)?t RunIdentity, RunLaunchManifest, RunControlAction, RunControlPhase, RunControlTarget, RunControlRequest, RunControlPreparedOperation, RunExecutionOutcome, RunTaskOutcome, RunEvidenceValidity, RunScientificValidity, RunOutcomeProjection, RunControlReceipt, RunControlTransitionOutcome, RunControlError, RunControlNotFound, RunControlConflict, RunControlStaleRevision, RunControlIntegrityError, RunControlActionFailure, RunControlPort, RunControlCheckpointBundlePort, RunControlCheckpointStorePort, RunControlLifecyclePort, RunControlReconciliationPort, RunControlEvidencePort
-
-### experimentation/run/identity
-
-- Package: noetrium_platform.research.experimentation.run.identity
-- Authority: none
-- Canonical authority: experimentation
-- Node kind: facet
-- Owns: run identity, immutable manifest and parent links
-- Must not own: live execution state
-- Requires: none
-- Provides: none
-- Downstream surface: public
-- Facade: noetrium.contracts.systems.experimentation__run__identity
-
-#### API modules
-
-- noetrium_platform.research.experimentation.run.identity.api ?w^~)?t RunIdentity, RunIdentityProvider
-- noetrium_platform.research.experimentation.run.identity.api.contracts ?w^~)?t RunIdentity
-- noetrium_platform.research.experimentation.run.identity.api.ports ?w^~)?t RunIdentityProvider
-
-### experimentation/run/lifecycle
-
-- Package: noetrium_platform.research.experimentation.run.lifecycle
-- Authority: none
-- Canonical authority: experimentation
-- Node kind: facet
-- Owns: run lifecycle state and transitions
-- Must not own: runtime server lifecycle
-- Requires: none
-- Provides: none
-- Downstream surface: public
-- Facade: noetrium.contracts.systems.experimentation__run__lifecycle
-
-#### API modules
-
-- noetrium_platform.research.experimentation.run.lifecycle.api ?w^~)?t attach_cleanup_note, RunCleanupFailure, RunCleanupReport, RunClosed, RunRecoveryRequired, RunCycleExecutionPort, RunCycleExecutorPort, RunLifetimePort, RunSessionPort
-- noetrium_platform.research.experimentation.run.lifecycle.api.cleanup ?w^~)?t attach_cleanup_note
-- noetrium_platform.research.experimentation.run.lifecycle.api.contracts ?w^~)?t RunCleanupFailure, RunCleanupReport, RunClosed, RunRecoveryRequired
-- noetrium_platform.research.experimentation.run.lifecycle.api.ports ?w^~)?t RunCycleExecutionPort, RunCycleExecutorPort, RunLifetimePort, RunSessionPort
-
-### experimentation/run/manifest
-
-- Package: noetrium_platform.research.experimentation.run.manifest
-- Authority: none
-- Canonical authority: experimentation
-- Node kind: facet
-- Owns: frozen run contract and exact dependencies
-- Must not own: runtime mutable state
-- Requires: none
-- Provides: none
-- Downstream surface: public
-- Facade: noetrium.contracts.systems.experimentation__run__manifest
-
-#### API modules
-
-- noetrium_platform.research.experimentation.run.manifest.api ?w^~)?t CompositionPlanReference, DerivedEvidenceArtifact, EVIDENCE_BUNDLE_SCHEMA_VERSION, EvidenceBundleManifest, EvidenceBundlePublisherPort, EvidenceBundleReceipt, EvidenceBundleStatus, EvidenceStreamDescriptor, RunLaunchManifest, RunResearchSemanticsReference
-- noetrium_platform.research.experimentation.run.manifest.api.contracts ?w^~)?t CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference
-- noetrium_platform.research.experimentation.run.manifest.api.evidence ?w^~)?t DerivedEvidenceArtifact, EVIDENCE_BUNDLE_SCHEMA_VERSION, EvidenceBundleManifest, EvidenceBundleReceipt, EvidenceBundleStatus, EvidenceStreamDescriptor
-- noetrium_platform.research.experimentation.run.manifest.api.evidence_ports ?w^~)?t EvidenceBundlePublisherPort
 
 ### experimentation/study
 
@@ -1228,7 +1142,7 @@ Example:
 #### API modules
 
 - noetrium_platform.foundation.governance.system_registry.api ?w^~)?t AuthorityDescriptor, DownstreamSurfaceMode, SYSTEM_CATALOG, SystemDescriptor, SystemIdentity, SystemLayer, SystemNodeKind, SystemRegistryChange, SystemRegistryObserver, SystemRegistryPort, TopologySourceAudit, audit_system_topology_source, system_catalog
-- noetrium_platform.foundation.governance.system_registry.api.contracts ?w^~)?t AuthorityDescriptor, DownstreamSurfaceMode, STANDARD_SYSTEM_SHAPE, SystemDescriptor, SystemIdentity, SystemNodeKind, SystemRegistryChange, SystemLayer
+- noetrium_platform.foundation.governance.system_registry.api.contracts ?w^~)?t AuthorityDescriptor, DownstreamSurfaceMode, SYSTEM_PLANES, SystemDescriptor, SystemIdentity, SystemNodeKind, SystemRegistryChange, SystemLayer
 - noetrium_platform.foundation.governance.system_registry.api.ports ?w^~)?t SystemRegistryObserver, SystemRegistryPort
 - noetrium_platform.foundation.governance.system_registry.api.topology ?w^~)?t SYSTEM_CATALOG, TopologySourceAudit, audit_system_topology_source, system_catalog
 
@@ -1981,7 +1895,8 @@ Example:
 
 #### API modules
 
-- noetrium_platform.capabilities.participant.api ?w^~)?t AgentIdentity, AgentImplementation, AgentProjectDefinition, MethodProjectDefinition, method_program_identity_for_requirement, method_program_identity_for_runtime_binding, require_method_program_runtime_binding, AgentSession, AgentSnapshot, AgentTurnRequest, AgentTurnResult, ArchitectureChangeKind, ParticipantArchitectureChange, ParticipantArchitectureComponent, ParticipantArchitectureRevision, ParticipantArchitectureTransition, ParticipantBindingDiagnostic, ParticipantBindingDiagnosticCode, ParticipantBindingDiagnosticSeverity, ParticipantMessageSchedule, ParticipantMessageScheduleEntry, ParticipantProjectBindingError, ParticipantProviderProfile, ParticipantRequirement, ParticipantRequirementContribution, ParticipantRevisionAuthorityPort, ParticipantRevisionAuthoritySnapshot, ParticipantRevisionCommit, ParticipantRevisionConflictError, ParticipantRevisionEvidence, ParticipantRevisionEvidenceKind, ParticipantRevisionIntegrityError, ParticipantRevisionProposal, ParticipantRevisionStateError, ParticipantRevisionValue, ParticipantStateCompatibility, ParticipantStateRevision, ParticipantStateTransition, ParticipantTransitionValue, PreparedParticipantRevision, ParticipantTopology, ParticipantTopologyChange, ParticipantTopologyMember, ParticipantTopologyTransition, ProjectParticipantBinding, ProjectParticipantProviderPort, TopologyChangeKind
+- noetrium_platform.capabilities.participant.api ?w^~)?t PARTICIPANT_MESSAGE_ROUTE_SCHEMA, ParticipantMessageFactBinding, ParticipantMessageKind, ParticipantMessageRecipientReceipt, ParticipantMessageRouteReceipt, ParticipantMessageRouteRequest, ParticipantMessageRouterPort, participant_message_content_digest, AgentProjectDefinition, MethodProjectDefinition, method_program_identity_for_requirement, method_program_identity_for_runtime_binding, require_method_program_runtime_binding, ArchitectureChangeKind, ParticipantArchitectureChange, ParticipantArchitectureComponent, ParticipantArchitectureRevision, ParticipantArchitectureTransition, ParticipantBindingDiagnostic, ParticipantBindingDiagnosticCode, ParticipantBindingDiagnosticSeverity, ParticipantMessageSchedule, ParticipantMessageScheduleEntry, ParticipantProjectBindingError, ParticipantProviderProfile, ParticipantRequirement, ParticipantRequirementContribution, ParticipantRevisionAuthorityPort, ParticipantRevisionAuthoritySnapshot, ParticipantRevisionCommit, ParticipantRevisionConflictError, ParticipantRevisionEvidence, ParticipantRevisionEvidenceKind, ParticipantRevisionIntegrityError, ParticipantRevisionProposal, ParticipantRevisionStateError, ParticipantRevisionValue, ParticipantStateCompatibility, ParticipantStateRevision, ParticipantStateTransition, ParticipantTransitionValue, PreparedParticipantRevision, ParticipantTopology, ParticipantTopologyChange, ParticipantTopologyMember, ParticipantTopologyTransition, ProjectParticipantBinding, ProjectParticipantProviderPort, TopologyChangeKind
+- noetrium_platform.capabilities.participant.api.messaging ?w^~)?t PARTICIPANT_MESSAGE_ROUTE_SCHEMA, ParticipantMessageFactBinding, ParticipantMessageKind, ParticipantMessageRecipientReceipt, ParticipantMessageRouteReceipt, ParticipantMessageRouteRequest, ParticipantMessageRouterPort, participant_message_content_digest
 - noetrium_platform.capabilities.participant.api.project ?w^~)?t AgentProjectDefinition, MethodProjectDefinition, method_program_identity_for_requirement, method_program_identity_for_runtime_binding, require_method_program_runtime_binding, ParticipantBindingDiagnostic, ParticipantBindingDiagnosticCode, ParticipantBindingDiagnosticSeverity, ParticipantProjectBindingError, ParticipantProviderProfile, ParticipantRequirementContribution, ParticipantRequirement, ProjectParticipantBinding, ProjectParticipantProviderPort
 - noetrium_platform.capabilities.participant.api.revision ?w^~)?t ParticipantRevisionAuthorityPort, ParticipantRevisionAuthoritySnapshot, ParticipantRevisionCommit, ParticipantRevisionConflictError, ParticipantRevisionEvidence, ParticipantRevisionEvidenceKind, ParticipantRevisionIntegrityError, ParticipantRevisionProposal, ParticipantRevisionStateError, ParticipantRevisionValue, ParticipantStateCompatibility, ParticipantStateRevision, ParticipantStateTransition, ParticipantTransitionValue, PreparedParticipantRevision
 - noetrium_platform.capabilities.participant.api.topology ?w^~)?t ArchitectureChangeKind, ParticipantArchitectureChange, ParticipantArchitectureComponent, ParticipantArchitectureRevision, ParticipantArchitectureTransition, ParticipantMessageSchedule, ParticipantMessageScheduleEntry, ParticipantTopology, ParticipantTopologyChange, ParticipantTopologyMember, ParticipantTopologyTransition, TopologyChangeKind
@@ -2441,9 +2356,10 @@ Example:
 
 #### API modules
 
-- noetrium_platform.infrastructure.resources.compute.api ?w^~)?t ComputeAllocation, ComputeCandidatePort, ComputeCluster, ComputeGPU, ComputeHost, ComputePlacementUnavailable, ComputeRequirement, ComputeLeasePolicy, DEFAULT_COMPUTE_LEASE_POLICY, ComputeInventoryPort, ComputeLeaseGuardFactoryPort, ComputeLeaseGuardPort, ComputeSchedulerPort, GpuSharingMode, GpuDeviceStatus, GpuProcessStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus
+- noetrium_platform.infrastructure.resources.compute.api ?w^~)?t ComputeAllocation, ComputeCandidatePort, ComputeCluster, ComputeGPU, ComputeHost, ComputePlacementUnavailable, ComputeRequirement, ComputeLeasePolicy, DEFAULT_COMPUTE_LEASE_POLICY, ComputeInventoryPort, ComputeLeaseGuardFactoryPort, ComputeLeaseGuardPort, ComputeSchedulerPort, GpuSharingMode, GpuDeviceStatus, GpuProcessStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus, CommandProbeError, CommandProbePort, CommandProbeResult
 - noetrium_platform.infrastructure.resources.compute.api.contracts ?w^~)?t ComputeAllocation, ComputeCluster, ComputeGPU, ComputeHost, ComputePlacementUnavailable, ComputeRequirement, ComputeLeasePolicy, DEFAULT_COMPUTE_LEASE_POLICY, GpuSharingMode
 - noetrium_platform.infrastructure.resources.compute.api.ports ?w^~)?t ComputeCandidatePort, ComputeInventoryPort, ComputeLeaseGuardFactoryPort, ComputeLeaseGuardPort, ComputeSchedulerPort
+- noetrium_platform.infrastructure.resources.compute.api.probe ?w^~)?t CommandProbeError, CommandProbePort, CommandProbeResult
 - noetrium_platform.infrastructure.resources.compute.api.runtime_status ?w^~)?t GpuDeviceStatus, GpuProcessStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus
 
 ### resource/directory
@@ -2522,6 +2438,7 @@ Example:
 - noetrium_platform.infrastructure.lifecycle.api ?w^~)?t LifecycleComponent, LifecycleEvidence, LifecyclePhase, LifecycleSpec, SystemIdentity, SystemPort, SystemSpec
 - noetrium_platform.infrastructure.lifecycle.api.component ?w^~)?t LifecycleComponent, LifecycleEvidence, LifecyclePhase, LifecycleSpec
 - noetrium_platform.infrastructure.lifecycle.api.contracts ?w^~)?t SystemIdentity, SystemPort, SystemSpec
+- noetrium_platform.infrastructure.lifecycle.api.errors ?w^~)?t FrozenRuntimeIdentityViolation, RuntimeLifecycleError, RuntimeOperationalHealthUnavailable
 - noetrium_platform.infrastructure.lifecycle.api.ports ?w^~)?t SystemPort, SystemSpec
 
 ### runtime/host
@@ -2688,8 +2605,9 @@ Example:
 
 #### API modules
 
-- noetrium_platform.infrastructure.lifecycle.service.api ?w^~)?t ExactServiceRuntimePort, ServiceEnvironmentPort, ServiceLaunchPreflightPort, ServiceLaunchPreflightReport, ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity, ServiceReadyObservation, ServiceReconcileObservation, ServiceStartOutcome, ServiceStopOutcome
+- noetrium_platform.infrastructure.lifecycle.service.api ?w^~)?t ServiceHeartbeat, ExactServiceRuntimePort, ServiceEnvironmentPort, ServiceLaunchPreflightPort, ServiceLaunchPreflightReport, ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity, ServiceReadyObservation, ServiceReconcileObservation, ServiceStartOutcome, ServiceStopOutcome
 - noetrium_platform.infrastructure.lifecycle.service.api.contracts ?w^~)?t ServiceContractDrift, ServiceLaunchContract, ServiceProcessIdentity
+- noetrium_platform.infrastructure.lifecycle.service.api.heartbeat ?w^~)?t ServiceHeartbeat
 - noetrium_platform.infrastructure.lifecycle.service.api.ports ?w^~)?t ExactServiceRuntimePort, ServiceEnvironmentPort, ServiceLaunchPreflightReport, ServiceLaunchPreflightPort, ServiceReadyObservation, ServiceReconcileObservation, ServiceStartOutcome, ServiceStopOutcome
 
 ### runtime/session

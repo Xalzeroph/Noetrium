@@ -1,3 +1,44 @@
+from .identity import RunIdentity
+from .identity_ports import RunIdentityProvider
+from .lifecycle import RunCleanupFailure, RunCleanupReport, RunClosed, RunRecoveryRequired
+from .cleanup import attach_cleanup_note
+from .lifecycle_ports import RunCycleExecutionPort, RunCycleExecutorPort, RunLifetimePort
+from .manifest import CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference
+from .manifest_evidence import (
+    DerivedEvidenceArtifact,
+    EVIDENCE_BUNDLE_SCHEMA_VERSION,
+    EvidenceBundleManifest,
+    EvidenceBundleReceipt,
+    EvidenceBundleStatus,
+    EvidenceStreamDescriptor,
+)
+from .manifest_ports import EvidenceBundlePublisherPort
+from .control import (
+    RunControlAction,
+    RunControlActionFailure,
+    RunControlCheckpointBundlePort,
+    RunControlCheckpointStorePort,
+    RunControlConflict,
+    RunControlError,
+    RunControlEvidencePort,
+    RunControlIntegrityError,
+    RunControlLifecyclePort,
+    RunControlNotFound,
+    RunControlPhase,
+    RunControlPort,
+    RunControlPreparedOperation,
+    RunControlReceipt,
+    RunControlReconciliationPort,
+    RunControlRequest,
+    RunControlStaleRevision,
+    RunControlTarget,
+    RunControlTransitionOutcome,
+    RunEvidenceValidity,
+    RunExecutionOutcome,
+    RunOutcomeProjection,
+    RunScientificValidity,
+    RunTaskOutcome,
+)
 from .ports import DecisionCycleRuntimePort, RunRuntimePort, RunSessionPort
 from .diagnostics import RunDiagnosticsPort
 from .artifacts import (
@@ -15,6 +56,50 @@ from .spec import ExperimentRunSpec
 from .execution import ExperimentRunExecutionPort, ExperimentRunResult
 
 __all__ = [
+    "RunIdentity",
+    "RunIdentityProvider",
+    "RunCleanupFailure",
+    "RunCleanupReport",
+    "RunClosed",
+    "RunRecoveryRequired",
+    "attach_cleanup_note",
+    "RunCycleExecutionPort",
+    "RunCycleExecutorPort",
+    "RunLifetimePort",
+    "CompositionPlanReference",
+    "RunLaunchManifest",
+    "RunResearchSemanticsReference",
+    "DerivedEvidenceArtifact",
+    "EVIDENCE_BUNDLE_SCHEMA_VERSION",
+    "EvidenceBundleManifest",
+    "EvidenceBundleReceipt",
+    "EvidenceBundleStatus",
+    "EvidenceStreamDescriptor",
+    "EvidenceBundlePublisherPort",
+    "RunControlAction",
+    "RunControlActionFailure",
+    "RunControlCheckpointBundlePort",
+    "RunControlCheckpointStorePort",
+    "RunControlConflict",
+    "RunControlError",
+    "RunControlEvidencePort",
+    "RunControlIntegrityError",
+    "RunControlLifecyclePort",
+    "RunControlNotFound",
+    "RunControlPhase",
+    "RunControlPort",
+    "RunControlPreparedOperation",
+    "RunControlReceipt",
+    "RunControlReconciliationPort",
+    "RunControlRequest",
+    "RunControlStaleRevision",
+    "RunControlTarget",
+    "RunControlTransitionOutcome",
+    "RunEvidenceValidity",
+    "RunExecutionOutcome",
+    "RunOutcomeProjection",
+    "RunScientificValidity",
+    "RunTaskOutcome",
     "DecisionCycleRuntimePort",
     "RunArtifactFinalizationError",
     "RunArtifactFinalizationPort",

@@ -152,7 +152,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); impl=root/'noetrium_platform/capabilities/participant/definition/runtime'; impl.mkdir(parents=True)
             (impl/'bad.py').write_text(
-                'from noetrium_platform.infrastructure.lifecycle.launch_control.control_plane import RuntimeControlPlane\n', encoding='utf-8'
+                'from noetrium_platform.composition.runtime_control.control_plane import RuntimeControlPlane\n', encoding='utf-8'
             )
             rows=audit_source_invariants(root)
             self.assertTrue(any(x.invariant=='participant_implementation_orchestration_firewall' for x in rows))
@@ -368,7 +368,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); diagnostics=root/'noetrium_platform/infrastructure/reliability/diagnostics/runtime'; diagnostics.mkdir(parents=True)
             (diagnostics/'runtime_recovery.py').write_text(
-                'from noetrium_platform.infrastructure.lifecycle.launch_control.one_click import OneClickRuntimeManager\n',
+                'from noetrium_platform.composition.runtime_control.one_click import OneClickRuntimeManager\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)

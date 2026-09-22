@@ -133,17 +133,17 @@ from noetrium_platform.research.experimentation.run.api import (
 from noetrium_platform.research.experimentation.run.composition.artifacts import (
     build_directory_run_artifact_store as _build_directory_run_artifact_store,
 )
-from noetrium_platform.research.experimentation.run.control.api import (
+from noetrium_platform.research.experimentation.run.api.control import (
     RunControlCheckpointStorePort,
     RunControlEvidencePort,
     RunControlLifecyclePort,
     RunControlPort,
     RunControlReconciliationPort,
 )
-from noetrium_platform.research.experimentation.run.control.composition.factory import (
+from noetrium_platform.research.experimentation.run.composition.control import (
     build_durable_run_control as _build_durable_run_control,
 )
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.experiment.api import ExperimentDefinition
 from noetrium_platform.research.experimentation.resource.api import (
     ComputeDemand,
@@ -161,7 +161,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     DEFAULT_COMPUTE_LEASE_POLICY,
 )
 from noetrium_platform.foundation.scope.api import ScopeIdentity
-from noetrium_platform.research.experimentation.run.manifest.api import RunLaunchManifest
+from noetrium_platform.research.experimentation.run.api.manifest import RunLaunchManifest
 from noetrium_platform.research.experimentation.study.api import (
     BoundStudyExecutionPort,
     ExperimentPlan,

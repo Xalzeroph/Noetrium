@@ -5,7 +5,7 @@ import unittest
 
 import pytest
 
-from noetrium_platform.research.experimentation.run.manifest.api import CompositionPlanReference
+from noetrium_platform.research.experimentation.run.api.manifest import CompositionPlanReference
 from noetrium_platform.infrastructure.lifecycle.launch_control import RunLaunchIdentity
 from tests_support import frozen_runtime_manifest
 

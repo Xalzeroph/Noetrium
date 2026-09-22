@@ -12,8 +12,8 @@ def test_unknown_workflow_surface_fails_without_constructing_scientific_operatio
 
 
 def test_builtin_workflows_declare_distinct_narrow_surfaces():
-    from noetrium_platform.research.execution.workflow.implementations.agent_turn import agent_turn_trial_protocol
-    from noetrium_platform.research.execution.workflow.implementations.context_action import context_action_trial_protocol
+    from noetrium_platform.composition.workflows.agent_turn import agent_turn_trial_protocol
+    from noetrium_platform.composition.workflows.context_action import context_action_trial_protocol
 
     agent_turn = agent_turn_trial_protocol()
     context_action = context_action_trial_protocol()

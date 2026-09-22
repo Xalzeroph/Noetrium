@@ -18,7 +18,7 @@ from noetrium_platform.capabilities.model.stack.api import ModelArtifactClosure,
 from noetrium_platform.capabilities.model.serving.api import ServiceHeartbeat
 from noetrium_platform.composition.model_deployments import freeze_model_deployment_set
 from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat_storage import FileServiceHeartbeatStore
-from noetrium_platform.infrastructure.lifecycle.launch_control import FrozenDeploymentVerificationPort, HeartbeatRuntimeQualificationVerifier
+from noetrium_platform.composition.runtime_control import FrozenDeploymentVerificationPort, HeartbeatRuntimeQualificationVerifier
 
 
 def h(v): return hashlib.sha256(v.encode()).hexdigest()

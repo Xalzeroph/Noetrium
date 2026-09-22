@@ -7,7 +7,7 @@ from importlib.resources import files
 from pathlib import Path
 
 from .contracts import (
-    STANDARD_SYSTEM_SHAPE,
+    SYSTEM_PLANES,
     AuthorityDescriptor,
     DownstreamSurfaceMode,
     SystemDescriptor,
@@ -92,7 +92,7 @@ def _parse_semantics(key: str, value: object) -> _CatalogSemantics:
     if not all(isinstance(value[field], str) and value[field].strip() for field in text_fields):
         raise RuntimeError(f"invalid ownership semantics for {key!r}")
     shape = _string_tuple(value["shape"], field="shape", key=key)
-    if not shape or any(plane not in STANDARD_SYSTEM_SHAPE for plane in shape):
+    if any(plane not in SYSTEM_PLANES for plane in shape):
         raise RuntimeError(f"unsupported packaged system shape for {key!r}")
     parent = value["parent"]
     if parent is not None and not isinstance(parent, str):
@@ -272,12 +272,12 @@ def _system_shape_candidates(
                 module += "." + ".".join(relative.parts)
             if (
                 module not in registered_packages
-                and any(part in STANDARD_SYSTEM_SHAPE for part in relative.parts)
+                and any(part in SYSTEM_PLANES for part in relative.parts)
             ):
                 continue
             if module in namespace_containers:
                 continue
-            plane_count = sum(_plane_exists(path, plane) for plane in STANDARD_SYSTEM_SHAPE)
+            plane_count = sum(_plane_exists(path, plane) for plane in SYSTEM_PLANES)
             if plane_count < 2:
                 continue
             discovered.append(module)

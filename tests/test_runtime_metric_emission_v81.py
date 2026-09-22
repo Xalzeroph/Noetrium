@@ -12,8 +12,10 @@ from noetrium_platform.composition.model_deployments import freeze_model_deploym
 from noetrium_platform.capabilities.model.serving.api.qualified_deployment import RoleModelAssignment, RoleModelManifest
 from noetrium_platform.infrastructure.lifecycle.launch_control import (
     ExactRuntimeController,
-    OneClickRuntimeManager,
     RuntimeControlStore,
+)
+from noetrium_platform.composition.runtime_control import (
+    OneClickRuntimeManager,
     ServerRuntimeAdapter,
     ServerRuntimeControlPlane,
 )

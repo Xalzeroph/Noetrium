@@ -5,7 +5,7 @@ from enum import StrEnum
 from collections.abc import Mapping
 from typing import Generic, Protocol, TypeAlias, TypeVar, runtime_checkable
 
-from noetrium_platform.evidence.data.record.api import ExecutionRecordPlane
+from noetrium_platform.foundation.kernel.record_plane import ExecutionRecordPlane
 
 JsonScalar: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonScalar | tuple["JsonValue", ...] | Mapping[str, "JsonValue"]

@@ -12,7 +12,7 @@ import tempfile
 
 import pytest
 
-from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent, EffectIntentConflict
+from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent, EffectIntentConflict, PendingEffectRecoveryRequired
 
 from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal, SQLiteEffectIntentJournal
 from noetrium_platform.capabilities.environment.runtime.api import action_request_digest, ActionReconciliationDisposition, ActionReconciliationResult, ActionRequest, ActionResult, ActionSafetyCapabilityMissing, EnvironmentIdentity, Observation
@@ -22,7 +22,7 @@ from noetrium_platform.capabilities.participant.method.api import MethodIdentity
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 from noetrium_platform.research.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
-from noetrium_platform.research.execution.workflow.implementations.context_action.safe_action import ActionRecoveryRequired
+from noetrium_platform.composition.workflows.context_action.safe_action import ActionRecoveryRequired
 
 
 def ctx() -> ExecutionContext:
@@ -172,5 +172,6 @@ def test_prepared_intent_fails_closed_without_prepared_reconciliation_capability
     rt = context_action_runtime(mr, er, cycle_identity_provider=FixedDecisionCycleIdentityProvider(identity), effect_journal=journal)
     with pytest.raises(OperationFailure) as exc:
         rt.execute_cycle(spec(), task="t", input_kind="move", input_payload={})
-    assert exc.value.result.operation_id.endswith("environment.action_safety_preflight")
-    assert isinstance(exc.value.__cause__, ActionSafetyCapabilityMissing)
+    assert "effect.intent.pending_check:preflight" in exc.value.result.operation_id
+    assert exc.value.result.diagnostics.get("exception_type") == "PendingEffectRecoveryRequired"
+    assert isinstance(exc.value.__cause__, PendingEffectRecoveryRequired)

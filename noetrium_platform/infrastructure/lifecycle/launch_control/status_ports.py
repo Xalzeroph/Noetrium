@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from noetrium_platform.foundation.kernel.kernel.errors import SafeExceptionDescriptor
-from noetrium_platform.capabilities.model.serving.api import ServiceHeartbeat
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceHeartbeat
 
 from .runtime_state_contracts import RuntimeControlState
 

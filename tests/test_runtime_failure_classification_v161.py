@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from noetrium_platform.infrastructure.reliability.primitives.runtime_faults import FrozenRuntimeIdentityViolation, RuntimeOperationalHealthUnavailable
+from noetrium_platform.infrastructure.lifecycle.api.errors import FrozenRuntimeIdentityViolation, RuntimeOperationalHealthUnavailable
 from noetrium_platform.infrastructure.lifecycle.launch_control import ExactRuntimeController, RuntimeAction, RuntimeControlError, RuntimeControlStore
 from tests_support import frozen_runtime_manifest
 

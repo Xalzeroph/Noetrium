@@ -1,5 +1,10 @@
 {
   "ambiguous_symbol_sources": {
+    "ComputeDemand": [
+      "noetrium_platform.platform",
+      "noetrium_platform.research.experimentation.resource.api",
+      "noetrium_platform.research.experimentation.resource.api.contracts"
+    ],
     "ExperimentPlan": [
       "noetrium_platform.research.experimentation.experiment.api",
       "noetrium_platform.research.experimentation.experiment.api.contracts",
@@ -10,6 +15,26 @@
       "noetrium_platform.infrastructure.reliability.failure.api",
       "noetrium_platform.infrastructure.reliability.failure.api.contracts",
       "noetrium_platform.research.execution.machines.api"
+    ],
+    "ResearchCampaignPlan": [
+      "noetrium_platform.platform",
+      "noetrium_platform.research.experimentation.api",
+      "noetrium_platform.research.experimentation.api.campaign"
+    ],
+    "ResearchCampaignStudyBinding": [
+      "noetrium_platform.platform",
+      "noetrium_platform.research.experimentation.api",
+      "noetrium_platform.research.experimentation.api.campaign"
+    ],
+    "ResourceAllocationReceipt": [
+      "noetrium_platform.platform",
+      "noetrium_platform.research.experimentation.resource.api",
+      "noetrium_platform.research.experimentation.resource.api.contracts"
+    ],
+    "ResourcePolicy": [
+      "noetrium_platform.platform",
+      "noetrium_platform.research.experimentation.resource.api",
+      "noetrium_platform.research.experimentation.resource.api.contracts"
     ],
     "SystemIdentity": [
       "noetrium_platform.capabilities.environment.api",
@@ -22,7 +47,7 @@
       "noetrium_platform.infrastructure.lifecycle.api.contracts"
     ]
   },
-  "catalog_digest": "5d92ed9611598ee69b0aff70c446d1751a043e0948e6dc8cb26f649a83208bb8",
+  "catalog_digest": "f80cc41bbcbdb3bd335fa0d0614440cdfbb60a8224284fbe7e6288e0d855680b",
   "direct_symbol_sources": {
     "ActionIdentityViolation": "noetrium_platform.capabilities.environment.api",
     "ActionKind": "noetrium_platform.capabilities.environment.embodied.api",
@@ -246,6 +271,9 @@
     "CommandDeduplicationKey": "noetrium_platform.research.execution.command.api",
     "CommandId": "noetrium_platform.research.execution.command.api",
     "CommandIntentPort": "noetrium_platform.research.execution.command.api",
+    "CommandProbeError": "noetrium_platform.infrastructure.resources.compute.api",
+    "CommandProbePort": "noetrium_platform.infrastructure.resources.compute.api",
+    "CommandProbeResult": "noetrium_platform.infrastructure.resources.compute.api",
     "CommandStorePort": "noetrium_platform.research.execution.command.api",
     "CommunicationEdge": "orchestration.api",
     "CommunicationRuntimeSpec": "noetrium_platform.research.execution.machines.api",
@@ -256,11 +284,10 @@
     "CompiledResearchCampaign": "noetrium_platform.research.experimentation.api",
     "CompiledResearchCampaignLane": "noetrium_platform.research.experimentation.api",
     "CompiledResearchPlan": "noetrium_platform.research.experimentation.api",
-    "CompositionPlanReference": "noetrium_platform.research.experimentation.run.manifest.api",
+    "CompositionPlanReference": "noetrium_platform.research.experimentation.run.api",
     "ComputeAllocation": "noetrium_platform.infrastructure.resources.compute.api",
     "ComputeCandidatePort": "noetrium_platform.infrastructure.resources.compute.api",
     "ComputeCluster": "noetrium_platform.infrastructure.resources.compute.api",
-    "ComputeDemand": "noetrium_platform.platform",
     "ComputeGPU": "noetrium_platform.infrastructure.resources.compute.api",
     "ComputeHost": "noetrium_platform.infrastructure.resources.compute.api",
     "ComputeInventoryPort": "noetrium_platform.infrastructure.resources.compute.api",
@@ -319,7 +346,7 @@
     "DeploymentQualificationRuntimeStorePort": "noetrium_platform.capabilities.model.qualification.api.qualification",
     "DeploymentRuntimeQualificationStatus": "noetrium_platform.capabilities.model.qualification.api.qualification",
     "DeploymentStatusIdentity": "noetrium_platform.research.execution.api",
-    "DerivedEvidenceArtifact": "noetrium_platform.research.experimentation.run.manifest.api",
+    "DerivedEvidenceArtifact": "noetrium_platform.research.experimentation.run.api",
     "DigestValidationError": "noetrium.contracts.json",
     "DirectoryCleanupCandidate": "noetrium_platform.infrastructure.resources.directory.api",
     "DirectoryCleanupPort": "noetrium_platform.infrastructure.resources.directory.api",
@@ -346,7 +373,7 @@
     "DurableFactStorePort": "noetrium_platform.evidence.data.fact.api",
     "DurablePreparedActionSession": "noetrium_platform.capabilities.environment.api",
     "DurablePreparedCapabilitySession": "noetrium_platform.capabilities.participant.capability.api",
-    "EVIDENCE_BUNDLE_SCHEMA_VERSION": "noetrium_platform.research.experimentation.run.manifest.api",
+    "EVIDENCE_BUNDLE_SCHEMA_VERSION": "noetrium_platform.research.experimentation.run.api",
     "EffectAlreadyConsumed": "noetrium_platform.infrastructure.reliability.effect.api",
     "EffectCertainty": "noetrium_platform.capabilities.environment.api",
     "EffectClass": "noetrium_platform.capabilities.environment.api",
@@ -447,12 +474,12 @@
     "EvaluationContext": "noetrium_platform.research.experimentation.workbench.api",
     "EvaluationProgramBuilder": "noetrium_platform.research.execution.machines.api",
     "EvaluationStage": "noetrium_platform.research.experimentation.workbench.api",
-    "EvidenceBundleManifest": "noetrium_platform.research.experimentation.run.manifest.api",
-    "EvidenceBundlePublisherPort": "noetrium_platform.research.experimentation.run.manifest.api",
-    "EvidenceBundleReceipt": "noetrium_platform.research.experimentation.run.manifest.api",
-    "EvidenceBundleStatus": "noetrium_platform.research.experimentation.run.manifest.api",
+    "EvidenceBundleManifest": "noetrium_platform.research.experimentation.run.api",
+    "EvidenceBundlePublisherPort": "noetrium_platform.research.experimentation.run.api",
+    "EvidenceBundleReceipt": "noetrium_platform.research.experimentation.run.api",
+    "EvidenceBundleStatus": "noetrium_platform.research.experimentation.run.api",
     "EvidenceManifestProjection": "noetrium_platform.research.experimentation.study.api.analysis",
-    "EvidenceStreamDescriptor": "noetrium_platform.research.experimentation.run.manifest.api",
+    "EvidenceStreamDescriptor": "noetrium_platform.research.experimentation.run.api",
     "EvolutionAssessment": "noetrium_platform.foundation.governance.evolution.api",
     "EvolutionProposal": "noetrium_platform.foundation.governance.evolution.api",
     "EvolutionStage": "noetrium_platform.foundation.governance.evolution.api",
@@ -476,7 +503,6 @@
     "ExecutionPermitPort": "noetrium_platform.foundation.kernel.concurrency.api",
     "ExecutionPermitRejected": "noetrium_platform.foundation.kernel.concurrency.api",
     "ExecutionPriority": "noetrium_platform.research.execution.admission.api.contracts",
-    "ExecutionRecordPlane": "noetrium_platform.evidence.data.record.api",
     "ExecutionSpec": "noetrium_platform.foundation.kernel.concurrency.api",
     "ExecutorPort": "noetrium_platform.foundation.kernel.concurrency.api",
     "ExecutorProviderPort": "noetrium_platform.foundation.kernel.concurrency.api.ports",
@@ -536,6 +562,7 @@
     "FigureStyle": "noetrium_platform.research.experimentation.workbench.api",
     "FileDigest": "noetrium_platform.foundation.governance.release.api",
     "FindingSeverity": "noetrium_platform.research.experimentation.experiment.api.contracts",
+    "FrozenRuntimeIdentityViolation": "noetrium_platform.infrastructure.lifecycle.api.errors",
     "FunctionalModelInvocationRequestFactory": "noetrium_platform.research.execution.machines.api",
     "GateCompositionPort": "noetrium_platform.foundation.governance.gate.api",
     "GateFinding": "noetrium_platform.foundation.governance.gate.api",
@@ -857,6 +884,7 @@
     "OptimizationObjective": "noetrium_platform.research.execution.machines.api",
     "OptimizationPresetSpec": "noetrium_platform.research.execution.machines.api",
     "OptimizationProgramBuilder": "noetrium_platform.research.execution.machines.api",
+    "PARTICIPANT_MESSAGE_ROUTE_SCHEMA": "noetrium_platform.capabilities.participant.api",
     "PARTICIPANT_OPERATION_VERBS": "noetrium_platform.capabilities.participant.core.api.runtime_operations",
     "PARTICIPANT_TURN_FACT_KINDS": "noetrium_platform.research.execution.machines.api",
     "PARTICIPANT_TURN_FACT_WIRE_SCHEMA": "noetrium_platform.research.execution.machines.api",
@@ -893,7 +921,12 @@
     "ParticipantImplementationResolverPort": "noetrium_platform.capabilities.participant.binding.api.contracts",
     "ParticipantLifecycleAdapter": "noetrium_platform.capabilities.participant.core.api.lifecycle",
     "ParticipantLifecycleAdapterRegistry": "noetrium_platform.capabilities.participant.core.api.lifecycle",
-    "ParticipantMessageKind": "noetrium_platform.research.execution.machines.api",
+    "ParticipantMessageFactBinding": "noetrium_platform.capabilities.participant.api",
+    "ParticipantMessageKind": "noetrium_platform.capabilities.participant.api",
+    "ParticipantMessageRecipientReceipt": "noetrium_platform.capabilities.participant.api",
+    "ParticipantMessageRouteReceipt": "noetrium_platform.capabilities.participant.api",
+    "ParticipantMessageRouteRequest": "noetrium_platform.capabilities.participant.api",
+    "ParticipantMessageRouterPort": "noetrium_platform.capabilities.participant.api",
     "ParticipantMessageSchedule": "noetrium_platform.capabilities.participant.api",
     "ParticipantMessageScheduleEntry": "noetrium_platform.capabilities.participant.api",
     "ParticipantOperationContractError": "noetrium_platform.capabilities.participant.core.api.runtime_operations",
@@ -1050,7 +1083,6 @@
     "RecallRequest": "noetrium_platform.capabilities.participant.method.api",
     "RecallResult": "noetrium_platform.capabilities.participant.method.api",
     "ReconstructedModelRequest": "noetrium_platform.capabilities.model.request.api",
-    "RecordPlaneTagged": "noetrium_platform.evidence.data.record.api",
     "RecoveryDecider": "noetrium_platform.research.execution.machines.api",
     "RecoveryDeciderRegistry": "noetrium_platform.research.execution.machines.api",
     "RecoveryDeciderRegistryPort": "noetrium_platform.research.execution.machines.api",
@@ -1125,9 +1157,7 @@
     "ResearchCampaignExecutionReport": "noetrium_platform.research.experimentation.api",
     "ResearchCampaignLaneResult": "noetrium_platform.research.experimentation.api",
     "ResearchCampaignLaneState": "noetrium_platform.research.experimentation.api",
-    "ResearchCampaignPlan": "noetrium_platform.platform",
     "ResearchCampaignStudy": "noetrium_platform.research.experimentation.api",
-    "ResearchCampaignStudyBinding": "noetrium_platform.platform",
     "ResearchCapabilityBinding": "noetrium_platform.research.experimentation.api",
     "ResearchDimension": "noetrium_platform.evidence.data.query.api",
     "ResearchDimensionKind": "noetrium_platform.evidence.data.query.api",
@@ -1179,7 +1209,6 @@
     "ResolvedResourceBinding": "noetrium_platform.infrastructure.resources.resolution.api",
     "ResourceAdmissionSnapshot": "noetrium_platform.research.execution.admission.api",
     "ResourceAllocationLeasePort": "noetrium_platform.research.experimentation.resource.api",
-    "ResourceAllocationReceipt": "noetrium_platform.platform",
     "ResourceIdentity": "noetrium_platform.infrastructure.resources.lease.api",
     "ResourceKind": "noetrium_platform.infrastructure.resources.lease.api",
     "ResourceLease": "noetrium_platform.infrastructure.resources.lease.api",
@@ -1190,7 +1219,6 @@
     "ResourceOwnership": "noetrium_platform.infrastructure.resources.lease.api",
     "ResourceOwnershipConflict": "noetrium_platform.infrastructure.resources.lease.api",
     "ResourceOwnershipPort": "noetrium_platform.infrastructure.resources.lease.api",
-    "ResourcePolicy": "noetrium_platform.platform",
     "ResourceResolutionPort": "noetrium_platform.infrastructure.resources.resolution.api",
     "ResourceResolutionRequest": "noetrium_platform.infrastructure.resources.resolution.api",
     "RiskLevel": "noetrium_platform.infrastructure.reliability.failure.api",
@@ -1211,43 +1239,43 @@
     "RunCheckpointManifest": "noetrium_platform.research.experimentation.checkpoint.api",
     "RunCheckpointResult": "noetrium_platform.research.experimentation.checkpoint.api",
     "RunCheckpointStore": "noetrium_platform.research.experimentation.checkpoint.api",
-    "RunCleanupFailure": "noetrium_platform.research.experimentation.run.lifecycle.api",
-    "RunCleanupReport": "noetrium_platform.research.experimentation.run.lifecycle.api",
-    "RunClosed": "noetrium_platform.research.experimentation.run.lifecycle.api",
+    "RunCleanupFailure": "noetrium_platform.research.experimentation.run.api",
+    "RunCleanupReport": "noetrium_platform.research.experimentation.run.api",
+    "RunClosed": "noetrium_platform.research.experimentation.run.api",
     "RunConcern": "noetrium_platform.research.execution.machines.api",
     "RunControlAction": "noetrium_platform.research.experimentation.api",
-    "RunControlActionFailure": "noetrium_platform.research.experimentation.run.control.api",
-    "RunControlCheckpointBundlePort": "noetrium_platform.research.experimentation.run.control.api",
-    "RunControlCheckpointStorePort": "noetrium_platform.research.experimentation.run.control.api",
-    "RunControlConflict": "noetrium_platform.research.experimentation.run.control.api",
-    "RunControlError": "noetrium_platform.research.experimentation.run.control.api",
-    "RunControlEvidencePort": "noetrium_platform.research.experimentation.run.control.api",
-    "RunControlIntegrityError": "noetrium_platform.research.experimentation.run.control.api",
-    "RunControlLifecyclePort": "noetrium_platform.research.experimentation.run.control.api",
-    "RunControlNotFound": "noetrium_platform.research.experimentation.run.control.api",
-    "RunControlPhase": "noetrium_platform.research.experimentation.run.control.api",
+    "RunControlActionFailure": "noetrium_platform.research.experimentation.run.api",
+    "RunControlCheckpointBundlePort": "noetrium_platform.research.experimentation.run.api",
+    "RunControlCheckpointStorePort": "noetrium_platform.research.experimentation.run.api",
+    "RunControlConflict": "noetrium_platform.research.experimentation.run.api",
+    "RunControlError": "noetrium_platform.research.experimentation.run.api",
+    "RunControlEvidencePort": "noetrium_platform.research.experimentation.run.api",
+    "RunControlIntegrityError": "noetrium_platform.research.experimentation.run.api",
+    "RunControlLifecyclePort": "noetrium_platform.research.experimentation.run.api",
+    "RunControlNotFound": "noetrium_platform.research.experimentation.run.api",
+    "RunControlPhase": "noetrium_platform.research.experimentation.run.api",
     "RunControlPort": "noetrium_platform.research.experimentation.api",
     "RunControlPreparedOperation": "noetrium_platform.research.experimentation.api",
     "RunControlReceipt": "noetrium_platform.research.experimentation.api",
-    "RunControlReconciliationPort": "noetrium_platform.research.experimentation.run.control.api",
+    "RunControlReconciliationPort": "noetrium_platform.research.experimentation.run.api",
     "RunControlRequest": "noetrium_platform.research.experimentation.api",
-    "RunControlStaleRevision": "noetrium_platform.research.experimentation.run.control.api",
+    "RunControlStaleRevision": "noetrium_platform.research.experimentation.run.api",
     "RunControlTarget": "noetrium_platform.research.experimentation.api",
-    "RunControlTransitionOutcome": "noetrium_platform.research.experimentation.run.control.api",
-    "RunCycleExecutionPort": "noetrium_platform.research.experimentation.run.lifecycle.api",
-    "RunCycleExecutorPort": "noetrium_platform.research.experimentation.run.lifecycle.api",
+    "RunControlTransitionOutcome": "noetrium_platform.research.experimentation.run.api",
+    "RunCycleExecutionPort": "noetrium_platform.research.experimentation.run.api",
+    "RunCycleExecutorPort": "noetrium_platform.research.experimentation.run.api",
     "RunDiagnosticsPort": "noetrium_platform.research.experimentation.run.api",
     "RunEvidenceValidity": "noetrium_platform.research.experimentation.api",
     "RunExecutionOutcome": "noetrium_platform.research.experimentation.api",
-    "RunIdentity": "noetrium_platform.research.experimentation.run.control.api.contracts",
-    "RunIdentityProvider": "noetrium_platform.research.experimentation.run.identity.api",
-    "RunLaunchManifest": "noetrium_platform.research.experimentation.run.control.api.contracts",
-    "RunLifetimePort": "noetrium_platform.research.experimentation.run.lifecycle.api",
+    "RunIdentity": "noetrium_platform.research.experimentation.run.api",
+    "RunIdentityProvider": "noetrium_platform.research.experimentation.run.api",
+    "RunLaunchManifest": "noetrium_platform.research.experimentation.run.api",
+    "RunLifetimePort": "noetrium_platform.research.experimentation.run.api",
     "RunOutcomeProjection": "noetrium_platform.research.experimentation.api",
     "RunParticipantPayload": "noetrium_platform.research.experimentation.checkpoint.api",
     "RunParticipantSnapshotRef": "noetrium_platform.research.experimentation.checkpoint.api",
-    "RunRecoveryRequired": "noetrium_platform.research.experimentation.run.lifecycle.api",
-    "RunResearchSemanticsReference": "noetrium_platform.research.experimentation.run.manifest.api",
+    "RunRecoveryRequired": "noetrium_platform.research.experimentation.run.api",
+    "RunResearchSemanticsReference": "noetrium_platform.research.experimentation.run.api",
     "RunRestoreResult": "noetrium_platform.research.experimentation.checkpoint.api",
     "RunRuntimePort": "noetrium_platform.research.experimentation.run.api",
     "RunScientificValidity": "noetrium_platform.research.experimentation.api",
@@ -1257,15 +1285,17 @@
     "RuntimeCheckReceipt": "noetrium_platform.capabilities.model.qualification.api.qualification",
     "RuntimeConcern": "noetrium_platform.research.execution.machines.api",
     "RuntimeControllerCommand": "noetrium_platform.infrastructure.lifecycle.session.api",
+    "RuntimeLifecycleError": "noetrium_platform.infrastructure.lifecycle.api.errors",
     "RuntimeModule": "noetrium_platform.research.execution.machines.api",
     "RuntimeModuleBuilder": "noetrium_platform.research.execution.machines.api",
     "RuntimeModuleLink": "noetrium_platform.research.execution.machines.api",
     "RuntimeModuleNode": "noetrium_platform.research.execution.machines.api",
+    "RuntimeOperationalHealthUnavailable": "noetrium_platform.infrastructure.lifecycle.api.errors",
     "RuntimeProgramBuilder": "noetrium_platform.research.execution.machines.api",
     "RuntimeProgramComposer": "noetrium_platform.research.execution.machines.api",
     "SQLiteMemoryPersistence": "components.api",
-    "STANDARD_SYSTEM_SHAPE": "noetrium_platform.foundation.governance.system_registry.api.contracts",
     "SYSTEM_CATALOG": "noetrium_platform.foundation.governance.system_registry.api",
+    "SYSTEM_PLANES": "noetrium_platform.foundation.governance.system_registry.api.contracts",
     "ScheduledTaskHandlePort": "noetrium_platform.foundation.kernel.concurrency.api",
     "ScheduledTaskSpec": "noetrium_platform.foundation.kernel.concurrency.api",
     "SchedulingCandidate": "noetrium_platform.research.execution.scheduling.api",
@@ -1358,6 +1388,7 @@
     "ServerTransportFailureKind": "noetrium_platform.infrastructure.lifecycle.server.identity.api",
     "ServiceContractDrift": "noetrium_platform.infrastructure.lifecycle.service.api",
     "ServiceEnvironmentPort": "noetrium_platform.infrastructure.lifecycle.service.api",
+    "ServiceHeartbeat": "noetrium_platform.infrastructure.lifecycle.service.api",
     "ServiceLaunchContract": "noetrium_platform.infrastructure.lifecycle.service.api",
     "ServiceLaunchPreflightPort": "noetrium_platform.infrastructure.lifecycle.service.api",
     "ServiceLaunchPreflightReport": "noetrium_platform.infrastructure.lifecycle.service.api",
@@ -1548,7 +1579,7 @@
     "action_result_payload": "noetrium_platform.capabilities.environment.api",
     "action_summary_payload": "noetrium_platform.capabilities.participant.agent.api",
     "analyze_method_runtime_requirements": "noetrium_platform.research.execution.workflow.api",
-    "attach_cleanup_note": "noetrium_platform.research.experimentation.run.lifecycle.api",
+    "attach_cleanup_note": "noetrium_platform.research.experimentation.run.api",
     "audit_system_topology_source": "noetrium_platform.foundation.governance.system_registry.api",
     "bind_bundled_minecraft_environment": "noetrium_platform.platform",
     "bind_directory_run_artifact_store": "noetrium_platform.platform",
@@ -1650,6 +1681,7 @@
     "observation_payload": "noetrium_platform.capabilities.environment.api",
     "optimization_initial_data": "noetrium_platform.research.execution.machines.api",
     "optimization_rule_set": "noetrium_platform.research.execution.machines.api",
+    "participant_message_content_digest": "noetrium_platform.capabilities.participant.api",
     "participant_operation_type": "noetrium_platform.capabilities.participant.core.api.runtime_operations",
     "participant_operation_verb": "noetrium_platform.capabilities.participant.core.api.runtime_operations",
     "participant_turn_initial_data": "noetrium_platform.research.execution.machines.api",
@@ -1810,11 +1842,9 @@
       "participant/agent"
     ],
     "AgentIdentity": [
-      "participant",
       "participant/agent"
     ],
     "AgentImplementation": [
-      "participant",
       "participant/agent"
     ],
     "AgentLoopCheckpoint": [
@@ -1878,7 +1908,6 @@
       "participant/agent"
     ],
     "AgentSession": [
-      "participant",
       "participant/agent"
     ],
     "AgentSkillCatalogPort": [
@@ -1894,7 +1923,6 @@
       "participant/agent"
     ],
     "AgentSnapshot": [
-      "participant",
       "participant/agent"
     ],
     "AgentStepReceipt": [
@@ -1904,11 +1932,9 @@
       "experimentation/study"
     ],
     "AgentTurnRequest": [
-      "participant",
       "participant/agent"
     ],
     "AgentTurnResult": [
-      "participant",
       "participant/agent"
     ],
     "AggregateValue": [
@@ -2374,6 +2400,15 @@
     "CommandIntentPort": [
       "execution/command"
     ],
+    "CommandProbeError": [
+      "resource/compute"
+    ],
+    "CommandProbePort": [
+      "resource/compute"
+    ],
+    "CommandProbeResult": [
+      "resource/compute"
+    ],
     "CommandStorePort": [
       "execution/command"
     ],
@@ -2399,7 +2434,7 @@
       "experimentation"
     ],
     "CompositionPlanReference": [
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "ComputeAllocation": [
       "resource/compute"
@@ -2586,7 +2621,7 @@
       "execution"
     ],
     "DerivedEvidenceArtifact": [
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "DirectoryCleanupCandidate": [
       "resource/directory"
@@ -2661,7 +2696,7 @@
       "participant/capability"
     ],
     "EVIDENCE_BUNDLE_SCHEMA_VERSION": [
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "EffectAlreadyConsumed": [
       "reliability/effect"
@@ -2964,22 +2999,22 @@
       "experimentation/workbench"
     ],
     "EvidenceBundleManifest": [
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "EvidenceBundlePublisherPort": [
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "EvidenceBundleReceipt": [
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "EvidenceBundleStatus": [
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "EvidenceManifestProjection": [
       "experimentation/study"
     ],
     "EvidenceStreamDescriptor": [
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "EvolutionAssessment": [
       "governance/evolution"
@@ -3058,9 +3093,6 @@
     "ExecutionPriority": [
       "execution/admission",
       "execution/scheduling"
-    ],
-    "ExecutionRecordPlane": [
-      "data/record"
     ],
     "ExecutionSpec": [
       "platform/concurrency"
@@ -3241,6 +3273,9 @@
     ],
     "FindingSeverity": [
       "experimentation/experiment"
+    ],
+    "FrozenRuntimeIdentityViolation": [
+      "runtime"
     ],
     "FunctionalModelInvocationRequestFactory": [
       "execution/research_program"
@@ -3439,8 +3474,7 @@
       "execution/research_program"
     ],
     "MachineCut": [
-      "experimentation",
-      "experimentation/run/control"
+      "experimentation"
     ],
     "MachineEvent": [
       "execution/research_program"
@@ -4146,6 +4180,9 @@
     "OptimizationProgramBuilder": [
       "execution/research_program"
     ],
+    "PARTICIPANT_MESSAGE_ROUTE_SCHEMA": [
+      "participant"
+    ],
     "PARTICIPANT_OPERATION_VERBS": [
       "participant/core"
     ],
@@ -4258,8 +4295,24 @@
     "ParticipantLifecycleAdapterRegistry": [
       "participant/core"
     ],
+    "ParticipantMessageFactBinding": [
+      "participant"
+    ],
     "ParticipantMessageKind": [
-      "execution/research_program"
+      "execution/research_program",
+      "participant"
+    ],
+    "ParticipantMessageRecipientReceipt": [
+      "participant"
+    ],
+    "ParticipantMessageRouteReceipt": [
+      "participant"
+    ],
+    "ParticipantMessageRouteRequest": [
+      "participant"
+    ],
+    "ParticipantMessageRouterPort": [
+      "participant"
     ],
     "ParticipantMessageSchedule": [
       "participant"
@@ -4735,9 +4788,6 @@
     "ReconstructedModelRequest": [
       "model/request"
     ],
-    "RecordPlaneTagged": [
-      "data/record"
-    ],
     "RecoveryAction": [
       "execution/research_program",
       "reliability/failure"
@@ -5138,114 +5188,112 @@
       "experimentation/checkpoint"
     ],
     "RunCleanupFailure": [
-      "experimentation/run/lifecycle"
+      "experimentation/run"
     ],
     "RunCleanupReport": [
-      "experimentation/run/lifecycle"
+      "experimentation/run"
     ],
     "RunClosed": [
-      "experimentation/run/lifecycle"
+      "experimentation/run"
     ],
     "RunConcern": [
       "execution/research_program"
     ],
     "RunControlAction": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlActionFailure": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlCheckpointBundlePort": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlCheckpointStorePort": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlConflict": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlError": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlEvidencePort": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlIntegrityError": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlLifecyclePort": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlNotFound": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlPhase": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlPort": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlPreparedOperation": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlReceipt": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlReconciliationPort": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlRequest": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlStaleRevision": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlTarget": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunControlTransitionOutcome": [
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunCycleExecutionPort": [
-      "experimentation/run/lifecycle"
+      "experimentation/run"
     ],
     "RunCycleExecutorPort": [
-      "experimentation/run/lifecycle"
+      "experimentation/run"
     ],
     "RunDiagnosticsPort": [
       "experimentation/run"
     ],
     "RunEvidenceValidity": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunExecutionOutcome": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunIdentity": [
-      "experimentation/run/control",
-      "experimentation/run/identity"
+      "experimentation/run"
     ],
     "RunIdentityProvider": [
-      "experimentation/run/identity"
+      "experimentation/run"
     ],
     "RunLaunchManifest": [
-      "experimentation/run/control",
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "RunLifetimePort": [
-      "experimentation/run/lifecycle"
+      "experimentation/run"
     ],
     "RunOutcomeProjection": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunParticipantPayload": [
       "experimentation/checkpoint"
@@ -5254,10 +5302,10 @@
       "experimentation/checkpoint"
     ],
     "RunRecoveryRequired": [
-      "experimentation/run/lifecycle"
+      "experimentation/run"
     ],
     "RunResearchSemanticsReference": [
-      "experimentation/run/manifest"
+      "experimentation/run"
     ],
     "RunRestoreResult": [
       "experimentation/checkpoint"
@@ -5267,15 +5315,14 @@
     ],
     "RunScientificValidity": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RunSessionPort": [
-      "experimentation/run",
-      "experimentation/run/lifecycle"
+      "experimentation/run"
     ],
     "RunTaskOutcome": [
       "experimentation",
-      "experimentation/run/control"
+      "experimentation/run"
     ],
     "RuntimeBuildIdentity": [
       "model/stack"
@@ -5289,6 +5336,9 @@
     "RuntimeControllerCommand": [
       "runtime/session"
     ],
+    "RuntimeLifecycleError": [
+      "runtime"
+    ],
     "RuntimeModule": [
       "execution/research_program"
     ],
@@ -5301,16 +5351,19 @@
     "RuntimeModuleNode": [
       "execution/research_program"
     ],
+    "RuntimeOperationalHealthUnavailable": [
+      "runtime"
+    ],
     "RuntimeProgramBuilder": [
       "execution/research_program"
     ],
     "RuntimeProgramComposer": [
       "execution/research_program"
     ],
-    "STANDARD_SYSTEM_SHAPE": [
+    "SYSTEM_CATALOG": [
       "governance/system_registry"
     ],
-    "SYSTEM_CATALOG": [
+    "SYSTEM_PLANES": [
       "governance/system_registry"
     ],
     "ScheduledTaskHandlePort": [
@@ -5584,6 +5637,9 @@
       "runtime/service"
     ],
     "ServiceEnvironmentPort": [
+      "runtime/service"
+    ],
+    "ServiceHeartbeat": [
       "runtime/service"
     ],
     "ServiceLaunchContract": [
@@ -6143,7 +6199,7 @@
       "execution/workflow"
     ],
     "attach_cleanup_note": [
-      "experimentation/run/lifecycle"
+      "experimentation/run"
     ],
     "audit_system_topology_source": [
       "governance/system_registry"
@@ -6367,6 +6423,9 @@
     ],
     "optimization_rule_set": [
       "execution/research_program"
+    ],
+    "participant_message_content_digest": [
+      "participant"
     ],
     "participant_operation_type": [
       "participant/core"
@@ -7140,40 +7199,6 @@
       "provides": [],
       "requires": [],
       "system_key": "data/query/cross"
-    },
-    {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.evidence.data.record.api",
-          "source": "noetrium_platform/evidence/data/record/api/__init__.py",
-          "symbols": [
-            "ExecutionRecordPlane",
-            "RecordPlaneTagged"
-          ]
-        },
-        {
-          "module": "noetrium_platform.evidence.data.record.api.contracts",
-          "source": "noetrium_platform/evidence/data/record/api/contracts.py",
-          "symbols": [
-            "ExecutionRecordPlane",
-            "RecordPlaneTagged"
-          ]
-        }
-      ],
-      "authority": null,
-      "canonical_authority": "data",
-      "downstream_surface": "public",
-      "facade_module": "noetrium.contracts.systems.data__record",
-      "interface_digest": "904bd8462e0acd9004b77dd1a6598f978d93f3d28faf7b6a87a715e826e00061",
-      "must_not_own": "artifact content bytes",
-      "node_kind": "facet",
-      "owns": "generic record envelopes and record identity",
-      "package_prefix": "noetrium_platform.evidence.data.record",
-      "provides": [
-        "record.plane"
-      ],
-      "requires": [],
-      "system_key": "data/record"
     },
     {
       "api_modules": [
@@ -8889,7 +8914,7 @@
       "canonical_authority": "experimentation",
       "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.experimentation__catalog",
-      "interface_digest": "1daa5f9f5f336c67d86ed34e014628323a5bc723f38e6687f4966c3ef4ed381b",
+      "interface_digest": "f2cd490ccae6603200f231f02d1e947377f0523ced36d3b0b5d178bd86420d22",
       "must_not_own": "experiment execution, study measurement truth, run lifecycle or benchmark implementation runtime",
       "node_kind": "projection",
       "owns": "typed experiment catalog views, implementation candidates, slot health and catalog publication/query contracts",
@@ -8899,7 +8924,7 @@
       ],
       "requires": [
         "experimentation/experiment",
-        "experimentation/run/identity",
+        "experimentation/run",
         "experimentation/study",
         "scope"
       ],
@@ -9249,6 +9274,50 @@
           "module": "noetrium_platform.research.experimentation.run.api",
           "source": "noetrium_platform/research/experimentation/run/api/__init__.py",
           "symbols": [
+            "RunIdentity",
+            "RunIdentityProvider",
+            "RunCleanupFailure",
+            "RunCleanupReport",
+            "RunClosed",
+            "RunRecoveryRequired",
+            "attach_cleanup_note",
+            "RunCycleExecutionPort",
+            "RunCycleExecutorPort",
+            "RunLifetimePort",
+            "CompositionPlanReference",
+            "RunLaunchManifest",
+            "RunResearchSemanticsReference",
+            "DerivedEvidenceArtifact",
+            "EVIDENCE_BUNDLE_SCHEMA_VERSION",
+            "EvidenceBundleManifest",
+            "EvidenceBundleReceipt",
+            "EvidenceBundleStatus",
+            "EvidenceStreamDescriptor",
+            "EvidenceBundlePublisherPort",
+            "RunControlAction",
+            "RunControlActionFailure",
+            "RunControlCheckpointBundlePort",
+            "RunControlCheckpointStorePort",
+            "RunControlConflict",
+            "RunControlError",
+            "RunControlEvidencePort",
+            "RunControlIntegrityError",
+            "RunControlLifecyclePort",
+            "RunControlNotFound",
+            "RunControlPhase",
+            "RunControlPort",
+            "RunControlPreparedOperation",
+            "RunControlReceipt",
+            "RunControlReconciliationPort",
+            "RunControlRequest",
+            "RunControlStaleRevision",
+            "RunControlTarget",
+            "RunControlTransitionOutcome",
+            "RunEvidenceValidity",
+            "RunExecutionOutcome",
+            "RunOutcomeProjection",
+            "RunScientificValidity",
+            "RunTaskOutcome",
             "DecisionCycleRuntimePort",
             "RunArtifactFinalizationError",
             "RunArtifactFinalizationPort",
@@ -9283,89 +9352,15 @@
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.api.diagnostics",
-          "source": "noetrium_platform/research/experimentation/run/api/diagnostics.py",
+          "module": "noetrium_platform.research.experimentation.run.api.cleanup",
+          "source": "noetrium_platform/research/experimentation/run/api/cleanup.py",
           "symbols": [
-            "RunDiagnosticsPort"
+            "attach_cleanup_note"
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.api.execution",
-          "source": "noetrium_platform/research/experimentation/run/api/execution.py",
-          "symbols": [
-            "ExperimentRunExecutionPort",
-            "ExperimentRunResult"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.experimentation.run.api.ports",
-          "source": "noetrium_platform/research/experimentation/run/api/ports.py",
-          "symbols": [
-            "DecisionCycleRuntimePort",
-            "RunRuntimePort",
-            "RunSessionPort"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.experimentation.run.api.spec",
-          "source": "noetrium_platform/research/experimentation/run/api/spec.py",
-          "symbols": [
-            "ExperimentRunSpec"
-          ]
-        }
-      ],
-      "authority": null,
-      "canonical_authority": "experimentation",
-      "downstream_surface": "public",
-      "facade_module": "noetrium.contracts.systems.experimentation__run",
-      "interface_digest": "6fb4a2b3906160c08b796ea25e94238f03333f6d80d39c713b8562ceb15a3295",
-      "must_not_own": "server supervision internals",
-      "node_kind": "facet",
-      "owns": "run identity, frozen run contract and run lifecycle",
-      "package_prefix": "noetrium_platform.research.experimentation.run",
-      "provides": [
-        "run.lifecycle",
-        "run.decision"
-      ],
-      "requires": [],
-      "system_key": "experimentation/run"
-    },
-    {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.run.control.api",
-          "source": "noetrium_platform/research/experimentation/run/control/api/__init__.py",
-          "symbols": [
-            "MachineCut",
-            "RunControlAction",
-            "RunControlActionFailure",
-            "RunControlCheckpointBundlePort",
-            "RunControlCheckpointStorePort",
-            "RunControlConflict",
-            "RunControlError",
-            "RunControlEvidencePort",
-            "RunControlIntegrityError",
-            "RunControlLifecyclePort",
-            "RunControlNotFound",
-            "RunControlPhase",
-            "RunControlPort",
-            "RunControlPreparedOperation",
-            "RunControlReceipt",
-            "RunControlReconciliationPort",
-            "RunControlRequest",
-            "RunControlStaleRevision",
-            "RunControlTarget",
-            "RunControlTransitionOutcome",
-            "RunEvidenceValidity",
-            "RunExecutionOutcome",
-            "RunOutcomeProjection",
-            "RunScientificValidity",
-            "RunTaskOutcome"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.experimentation.run.control.api.contracts",
-          "source": "noetrium_platform/research/experimentation/run/control/api/contracts.py",
+          "module": "noetrium_platform.research.experimentation.run.api.control",
+          "source": "noetrium_platform/research/experimentation/run/api/control.py",
           "symbols": [
             "RunIdentity",
             "RunLaunchManifest",
@@ -9394,97 +9389,39 @@
             "RunControlReconciliationPort",
             "RunControlEvidencePort"
           ]
-        }
-      ],
-      "authority": null,
-      "canonical_authority": "experimentation",
-      "downstream_surface": "public",
-      "facade_module": "noetrium.contracts.systems.experimentation__run__control",
-      "interface_digest": "079041d0cb4982c0aaca59d1513897fdbae521de5fd137d077b8490b9f4f0fcc",
-      "must_not_own": "run phase, control revision, checkpoint head, Machine Journal truth, operator product intents or server supervision internals",
-      "node_kind": "facet",
-      "owns": "external run lifecycle effect coordination and read-only RunMachine projections",
-      "package_prefix": "noetrium_platform.research.experimentation.run.control",
-      "provides": [
-        "run.control"
-      ],
-      "requires": [
-        "execution",
-        "execution/operation",
-        "experimentation/checkpoint",
-        "experimentation/run",
-        "experimentation/run/identity",
-        "experimentation/run/lifecycle",
-        "experimentation/run/manifest",
-        "platform"
-      ],
-      "system_key": "experimentation/run/control"
-    },
-    {
-      "api_modules": [
+        },
         {
-          "module": "noetrium_platform.research.experimentation.run.identity.api",
-          "source": "noetrium_platform/research/experimentation/run/identity/api/__init__.py",
+          "module": "noetrium_platform.research.experimentation.run.api.diagnostics",
+          "source": "noetrium_platform/research/experimentation/run/api/diagnostics.py",
           "symbols": [
-            "RunIdentity",
-            "RunIdentityProvider"
+            "RunDiagnosticsPort"
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.identity.api.contracts",
-          "source": "noetrium_platform/research/experimentation/run/identity/api/contracts.py",
+          "module": "noetrium_platform.research.experimentation.run.api.execution",
+          "source": "noetrium_platform/research/experimentation/run/api/execution.py",
+          "symbols": [
+            "ExperimentRunExecutionPort",
+            "ExperimentRunResult"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.run.api.identity",
+          "source": "noetrium_platform/research/experimentation/run/api/identity.py",
           "symbols": [
             "RunIdentity"
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.identity.api.ports",
-          "source": "noetrium_platform/research/experimentation/run/identity/api/ports.py",
+          "module": "noetrium_platform.research.experimentation.run.api.identity_ports",
+          "source": "noetrium_platform/research/experimentation/run/api/identity_ports.py",
           "symbols": [
             "RunIdentityProvider"
           ]
-        }
-      ],
-      "authority": null,
-      "canonical_authority": "experimentation",
-      "downstream_surface": "public",
-      "facade_module": "noetrium.contracts.systems.experimentation__run__identity",
-      "interface_digest": "f5477726f79009a42bffc4e423ea84494b1ddfec683d735eef81ce345c6bf40e",
-      "must_not_own": "live execution state",
-      "node_kind": "facet",
-      "owns": "run identity, immutable manifest and parent links",
-      "package_prefix": "noetrium_platform.research.experimentation.run.identity",
-      "provides": [],
-      "requires": [],
-      "system_key": "experimentation/run/identity"
-    },
-    {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.run.lifecycle.api",
-          "source": "noetrium_platform/research/experimentation/run/lifecycle/api/__init__.py",
-          "symbols": [
-            "attach_cleanup_note",
-            "RunCleanupFailure",
-            "RunCleanupReport",
-            "RunClosed",
-            "RunRecoveryRequired",
-            "RunCycleExecutionPort",
-            "RunCycleExecutorPort",
-            "RunLifetimePort",
-            "RunSessionPort"
-          ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.lifecycle.api.cleanup",
-          "source": "noetrium_platform/research/experimentation/run/lifecycle/api/cleanup.py",
-          "symbols": [
-            "attach_cleanup_note"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.experimentation.run.lifecycle.api.contracts",
-          "source": "noetrium_platform/research/experimentation/run/lifecycle/api/contracts.py",
+          "module": "noetrium_platform.research.experimentation.run.api.lifecycle",
+          "source": "noetrium_platform/research/experimentation/run/api/lifecycle.py",
           "symbols": [
             "RunCleanupFailure",
             "RunCleanupReport",
@@ -9493,50 +9430,18 @@
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.lifecycle.api.ports",
-          "source": "noetrium_platform/research/experimentation/run/lifecycle/api/ports.py",
+          "module": "noetrium_platform.research.experimentation.run.api.lifecycle_ports",
+          "source": "noetrium_platform/research/experimentation/run/api/lifecycle_ports.py",
           "symbols": [
             "RunCycleExecutionPort",
             "RunCycleExecutorPort",
             "RunLifetimePort",
             "RunSessionPort"
           ]
-        }
-      ],
-      "authority": null,
-      "canonical_authority": "experimentation",
-      "downstream_surface": "public",
-      "facade_module": "noetrium.contracts.systems.experimentation__run__lifecycle",
-      "interface_digest": "7ce302ab2edfaaa608cca31ac9456af66422ae125043a38fd10669f556e2a5a3",
-      "must_not_own": "runtime server lifecycle",
-      "node_kind": "facet",
-      "owns": "run lifecycle state and transitions",
-      "package_prefix": "noetrium_platform.research.experimentation.run.lifecycle",
-      "provides": [],
-      "requires": [],
-      "system_key": "experimentation/run/lifecycle"
-    },
-    {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.run.manifest.api",
-          "source": "noetrium_platform/research/experimentation/run/manifest/api/__init__.py",
-          "symbols": [
-            "CompositionPlanReference",
-            "DerivedEvidenceArtifact",
-            "EVIDENCE_BUNDLE_SCHEMA_VERSION",
-            "EvidenceBundleManifest",
-            "EvidenceBundlePublisherPort",
-            "EvidenceBundleReceipt",
-            "EvidenceBundleStatus",
-            "EvidenceStreamDescriptor",
-            "RunLaunchManifest",
-            "RunResearchSemanticsReference"
-          ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.manifest.api.contracts",
-          "source": "noetrium_platform/research/experimentation/run/manifest/api/contracts.py",
+          "module": "noetrium_platform.research.experimentation.run.api.manifest",
+          "source": "noetrium_platform/research/experimentation/run/api/manifest.py",
           "symbols": [
             "CompositionPlanReference",
             "RunLaunchManifest",
@@ -9544,8 +9449,8 @@
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.manifest.api.evidence",
-          "source": "noetrium_platform/research/experimentation/run/manifest/api/evidence.py",
+          "module": "noetrium_platform.research.experimentation.run.api.manifest_evidence",
+          "source": "noetrium_platform/research/experimentation/run/api/manifest_evidence.py",
           "symbols": [
             "DerivedEvidenceArtifact",
             "EVIDENCE_BUNDLE_SCHEMA_VERSION",
@@ -9556,25 +9461,47 @@
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.manifest.api.evidence_ports",
-          "source": "noetrium_platform/research/experimentation/run/manifest/api/evidence_ports.py",
+          "module": "noetrium_platform.research.experimentation.run.api.manifest_ports",
+          "source": "noetrium_platform/research/experimentation/run/api/manifest_ports.py",
           "symbols": [
             "EvidenceBundlePublisherPort"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.run.api.ports",
+          "source": "noetrium_platform/research/experimentation/run/api/ports.py",
+          "symbols": [
+            "DecisionCycleRuntimePort",
+            "RunRuntimePort",
+            "RunSessionPort"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.run.api.spec",
+          "source": "noetrium_platform/research/experimentation/run/api/spec.py",
+          "symbols": [
+            "ExperimentRunSpec"
           ]
         }
       ],
       "authority": null,
       "canonical_authority": "experimentation",
       "downstream_surface": "public",
-      "facade_module": "noetrium.contracts.systems.experimentation__run__manifest",
-      "interface_digest": "3291eb1399e6a69486f9e2832ef8b6448e0cb58e44127058cedfd5e4b269d94b",
-      "must_not_own": "runtime mutable state",
+      "facade_module": "noetrium.contracts.systems.experimentation__run",
+      "interface_digest": "403c7f1501cd5ec7b9776e5cb783b824d54e50f78067f05d885f0475d01c94b4",
+      "must_not_own": "server supervision internals",
       "node_kind": "facet",
-      "owns": "frozen run contract and exact dependencies",
-      "package_prefix": "noetrium_platform.research.experimentation.run.manifest",
-      "provides": [],
+      "owns": "run identity, frozen run contract and run lifecycle",
+      "package_prefix": "noetrium_platform.research.experimentation.run",
+      "provides": [
+        "run.control",
+        "run.decision",
+        "run.identity",
+        "run.lifecycle",
+        "run.manifest"
+      ],
       "requires": [],
-      "system_key": "experimentation/run/manifest"
+      "system_key": "experimentation/run"
     },
     {
       "api_modules": [
@@ -10343,7 +10270,7 @@
           "symbols": [
             "AuthorityDescriptor",
             "DownstreamSurfaceMode",
-            "STANDARD_SYSTEM_SHAPE",
+            "SYSTEM_PLANES",
             "SystemDescriptor",
             "SystemIdentity",
             "SystemNodeKind",
@@ -10374,7 +10301,7 @@
       "canonical_authority": "governance/system_registry",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.governance__system_registry",
-      "interface_digest": "7cf4b12d65d937daa98d633963e867626ffcbd6cf7111bf9b8713f1bc5b97330",
+      "interface_digest": "9c62040919a2c3bf5ac609d7247fc44f63d84a773e0f8e33a598ba5a853e396a",
       "must_not_own": "runtime orchestration",
       "node_kind": "authority",
       "owns": "recursive system topology and ownership declarations",
@@ -11736,17 +11663,19 @@
           "module": "noetrium_platform.capabilities.participant.api",
           "source": "noetrium_platform/capabilities/participant/api/__init__.py",
           "symbols": [
-            "AgentIdentity",
-            "AgentImplementation",
+            "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
+            "ParticipantMessageFactBinding",
+            "ParticipantMessageKind",
+            "ParticipantMessageRecipientReceipt",
+            "ParticipantMessageRouteReceipt",
+            "ParticipantMessageRouteRequest",
+            "ParticipantMessageRouterPort",
+            "participant_message_content_digest",
             "AgentProjectDefinition",
             "MethodProjectDefinition",
             "method_program_identity_for_requirement",
             "method_program_identity_for_runtime_binding",
             "require_method_program_runtime_binding",
-            "AgentSession",
-            "AgentSnapshot",
-            "AgentTurnRequest",
-            "AgentTurnResult",
             "ArchitectureChangeKind",
             "ParticipantArchitectureChange",
             "ParticipantArchitectureComponent",
@@ -11783,6 +11712,20 @@
             "ProjectParticipantBinding",
             "ProjectParticipantProviderPort",
             "TopologyChangeKind"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.api.messaging",
+          "source": "noetrium_platform/capabilities/participant/api/messaging.py",
+          "symbols": [
+            "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
+            "ParticipantMessageFactBinding",
+            "ParticipantMessageKind",
+            "ParticipantMessageRecipientReceipt",
+            "ParticipantMessageRouteReceipt",
+            "ParticipantMessageRouteRequest",
+            "ParticipantMessageRouterPort",
+            "participant_message_content_digest"
           ]
         },
         {
@@ -11849,7 +11792,7 @@
       "canonical_authority": "participant",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.participant",
-      "interface_digest": "e8fd534eba915d72851b0cb4a7633c501956d3aa1dd855da8d8b3ebca3f28482",
+      "interface_digest": "4e1b0d8e444f81773c53cc895dd19736f82abbba99e556e9f8bebc7ad7c7150b",
       "must_not_own": "server/process supervision and scientific truth",
       "node_kind": "authority",
       "owns": "participant definitions, bindings, sessions and participant capabilities",
@@ -13240,7 +13183,10 @@
             "GpuRuntimeSnapshot",
             "HostRuntimeObserverPort",
             "HostRuntimeSnapshot",
-            "HostRuntimeStatus"
+            "HostRuntimeStatus",
+            "CommandProbeError",
+            "CommandProbePort",
+            "CommandProbeResult"
           ]
         },
         {
@@ -13270,6 +13216,15 @@
           ]
         },
         {
+          "module": "noetrium_platform.infrastructure.resources.compute.api.probe",
+          "source": "noetrium_platform/infrastructure/resources/compute/api/probe.py",
+          "symbols": [
+            "CommandProbeError",
+            "CommandProbePort",
+            "CommandProbeResult"
+          ]
+        },
+        {
           "module": "noetrium_platform.infrastructure.resources.compute.api.runtime_status",
           "source": "noetrium_platform/infrastructure/resources/compute/api/runtime_status.py",
           "symbols": [
@@ -13287,7 +13242,7 @@
       "canonical_authority": "resource",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.resource__compute",
-      "interface_digest": "3787b738c3721c2d5bd25ac7f3b01fbc02686499ded0de1e74959682de74fdd7",
+      "interface_digest": "fa46b11935c6cb87005ef446c43a24477f5054cf4c1c5db119d31f822180bb46",
       "must_not_own": "environment packaging",
       "node_kind": "facet",
       "owns": "compute resource identity, capacities and provider facts",
@@ -13512,6 +13467,15 @@
           ]
         },
         {
+          "module": "noetrium_platform.infrastructure.lifecycle.api.errors",
+          "source": "noetrium_platform/infrastructure/lifecycle/api/errors.py",
+          "symbols": [
+            "FrozenRuntimeIdentityViolation",
+            "RuntimeLifecycleError",
+            "RuntimeOperationalHealthUnavailable"
+          ]
+        },
+        {
           "module": "noetrium_platform.infrastructure.lifecycle.api.ports",
           "source": "noetrium_platform/infrastructure/lifecycle/api/ports.py",
           "symbols": [
@@ -13524,7 +13488,7 @@
       "canonical_authority": "runtime",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime",
-      "interface_digest": "45db40d1fe1addf5cc7d07ea70c6047a9e1ae34c0036afbf7488922e46f15539",
+      "interface_digest": "fb55b8da8edec0e49d41372a8e67daca9957eaaf40976bf83acd54f1e179ddcd",
       "must_not_own": "experiment semantics and model catalog truth",
       "node_kind": "authority",
       "owns": "server, process, service and session orchestration",
@@ -13985,6 +13949,7 @@
           "module": "noetrium_platform.infrastructure.lifecycle.service.api",
           "source": "noetrium_platform/infrastructure/lifecycle/service/api/__init__.py",
           "symbols": [
+            "ServiceHeartbeat",
             "ExactServiceRuntimePort",
             "ServiceEnvironmentPort",
             "ServiceLaunchPreflightPort",
@@ -14008,6 +13973,13 @@
           ]
         },
         {
+          "module": "noetrium_platform.infrastructure.lifecycle.service.api.heartbeat",
+          "source": "noetrium_platform/infrastructure/lifecycle/service/api/heartbeat.py",
+          "symbols": [
+            "ServiceHeartbeat"
+          ]
+        },
+        {
           "module": "noetrium_platform.infrastructure.lifecycle.service.api.ports",
           "source": "noetrium_platform/infrastructure/lifecycle/service/api/ports.py",
           "symbols": [
@@ -14026,7 +13998,7 @@
       "canonical_authority": "runtime",
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.runtime__service",
-      "interface_digest": "e001c2c861508c358a6a06f21ff30bbf646fa87ac12644c183beb8f95296d16d",
+      "interface_digest": "74531a4578a0af56549ecd659dad44e047f0924256b3d438b82aa3a90b600dc8",
       "must_not_own": "scientific truth",
       "node_kind": "facet",
       "owns": "managed service identity, registration and lifecycle",
@@ -14347,5 +14319,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "c4da8a78a00c12312ca68a1810040ec6762e8bd5a251a21a9fabb94d74ef93dd"
+  "topology_digest": "a965a820bdd843c947fad442011c2a28258401976103fc017aad3dc3337138ad"
 }

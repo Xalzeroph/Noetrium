@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
 from .contracts import CapabilityDescriptor, CapabilityRequest, CapabilityResult
-from noetrium_platform.evidence.data.record.api import ExecutionRecordPlane
+from noetrium_platform.foundation.kernel.record_plane import ExecutionRecordPlane
 from noetrium_platform.foundation.kernel.kernel import require_sha256
 
 

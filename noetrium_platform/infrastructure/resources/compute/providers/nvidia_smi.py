@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import shutil
 
-from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandRunnerPort, LocalCommandStartError, LocalCommandTimeoutError
+from noetrium_platform.infrastructure.resources.compute.api.probe import CommandProbeError, CommandProbePort
 from noetrium_platform.infrastructure.resources.compute.api import (
     GpuDeviceStatus,
     GpuProcessStatus,
@@ -21,7 +21,7 @@ class NvidiaSmiGpuRuntimeObserver:
 
     def __init__(
         self,
-        command_runner: LocalCommandRunnerPort,
+        command_runner: CommandProbePort,
         *,
         executable: str = "nvidia-smi",
         command_timeout_seconds: float = 5.0,
@@ -38,7 +38,7 @@ class NvidiaSmiGpuRuntimeObserver:
                 argv,
                 timeout_seconds=self._command_timeout_seconds,
             )
-        except (LocalCommandStartError, LocalCommandTimeoutError, OSError):
+        except (CommandProbeError, OSError):
             return None
         if completed.returncode != 0:
             return None

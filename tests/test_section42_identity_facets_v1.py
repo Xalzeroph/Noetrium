@@ -9,7 +9,7 @@ from noetrium_platform.evidence.artifact.content.api import ArtifactStorageBindi
 from noetrium_platform.evidence.artifact.content.providers import FilesystemArtifactStoragePlacementVerifier
 from noetrium_platform.evidence.data.dataset.api import DatasetIdentity, DatasetVersion
 from noetrium_platform.research.experimentation.run.api import RunArtifactKind, RunArtifactSnapshotReceipt
-from noetrium_platform.research.experimentation.run.manifest.api import EvidenceBundleManifest, EvidenceBundleStatus, EvidenceStreamDescriptor
+from noetrium_platform.research.experimentation.run.api.manifest import EvidenceBundleManifest, EvidenceBundleStatus, EvidenceStreamDescriptor
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 
 from noetrium_platform.research.experimentation.run.api import ExperimentRunSpec

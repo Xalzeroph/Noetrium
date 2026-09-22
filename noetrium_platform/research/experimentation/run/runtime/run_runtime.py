@@ -46,13 +46,13 @@ from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentSpec,
     ExperimentTrialCycleExecutorPort,
 )
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
-from noetrium_platform.research.experimentation.run.lifecycle.api import (
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
+from noetrium_platform.research.experimentation.run.api.lifecycle import (
     RunCleanupFailure,
     RunCleanupReport,
     RunSessionPort,
 )
-from noetrium_platform.research.experimentation.run.lifecycle.runtime.session import (
+from noetrium_platform.research.experimentation.run.runtime.lifecycle_session.session import (
     RunSession,
 )
 from .cycle import RunCycleExecutor

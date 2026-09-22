@@ -11,7 +11,7 @@ from noetrium_platform.evidence.data.projection.api import (
     SemanticSourceReference,
 )
 from noetrium_platform.evidence.data.query.api import SemanticSimilarityMetric
-from noetrium_platform.evidence.data.query.composition import (
+from noetrium_platform.composition.semantic_capability import (
     SemanticSimilarityCapabilityBinding,
     semantic_similarity_capability_payload,
 )

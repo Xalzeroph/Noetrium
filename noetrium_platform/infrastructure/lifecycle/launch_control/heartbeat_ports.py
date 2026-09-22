@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from noetrium_platform.capabilities.model.serving.api import ServiceHeartbeat
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceHeartbeat
 
 
 class ServiceHeartbeatReadPort(Protocol):

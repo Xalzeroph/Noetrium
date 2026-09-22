@@ -12,7 +12,6 @@ from .binding import (
 )
 from .manager import PersistentSessionManager
 from .status import BoundPersistentSessionStatusProbe
-from .health_projection import PersistentSessionHealthProbe
 from .environment import ControllerEnvironmentFileError, load_controller_environment
 from .tmux_commands import TmuxCommandCodec
 from .tmux_contracts import TmuxCommandResult, TmuxCommandRunner, TmuxCommandTimeout
@@ -23,7 +22,6 @@ from .tmux_transport import TmuxBinaryIdentityMismatch, TmuxPersistentSessionCon
 __all__ = [
     "BoundPersistentSessionStatusProbe",
     "ControllerEnvironmentFileError",
-    "PersistentSessionHealthProbe",
     "RuntimePersistentSessionHost",
     "PersistentSessionBackendRegistry",
     "DirectoryPersistentSessionBindingStore",

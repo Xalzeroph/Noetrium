@@ -1,1 +1,0 @@
-"""model.assignment providers boundary."""

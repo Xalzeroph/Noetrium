@@ -7,7 +7,7 @@ from noetrium_platform.composition.participants.generic import generic_participa
 from noetrium_platform.capabilities.participant.core.api.contracts import ParticipantImplementationIdentity
 from noetrium_platform.research.experimentation.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
 from noetrium_platform.research.execution.workflow.api import TrialCycleExecution
 from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec

@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
-from noetrium_platform.capabilities.model.serving.api import ServiceHeartbeat
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceHeartbeat
 
 from .heartbeat_codec import ServiceHeartbeatCodec
 

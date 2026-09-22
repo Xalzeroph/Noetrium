@@ -25,7 +25,7 @@ from noetrium_platform.infrastructure.reliability.effect.api import EffectReconc
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntentPhase
 from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, canonical_digest
-from noetrium_platform.research.execution.workflow.implementations.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
+from noetrium_platform.composition.workflows.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
 from noetrium_platform.research.experimentation.experiment.api import ExperimentParticipantSpec, ExperimentSpec

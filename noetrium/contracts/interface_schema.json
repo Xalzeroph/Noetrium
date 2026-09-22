@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "c6b5aae55c99d752501b3eb3f3d720921d1f13b6f5d2fe269d24927b2d03d16d",
+  "interface_digest": "5c13d59c0ff63896e6d1d813d6289cbc0c3afd650c0d9cc3f342ed886f63c8f0",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -6089,108 +6089,6 @@
       "facade_module": "noetrium.contracts.systems.data__query__cross",
       "package_prefix": "noetrium_platform.evidence.data.query.cross",
       "system_key": "data/query/cross"
-    },
-    {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.evidence.data.record.api",
-          "source": "noetrium_platform/evidence/data/record/api/__init__.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "ExecutionRecordPlane",
-              "origin_module": ".contracts",
-              "origin_name": "ExecutionRecordPlane",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RecordPlaneTagged",
-              "origin_module": ".contracts",
-              "origin_name": "RecordPlaneTagged",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            }
-          ],
-          "symbols": [
-            "ExecutionRecordPlane",
-            "RecordPlaneTagged"
-          ]
-        },
-        {
-          "module": "noetrium_platform.evidence.data.record.api.contracts",
-          "source": "noetrium_platform/evidence/data/record/api/contracts.py",
-          "symbol_schemas": [
-            {
-              "bases": [
-                "StrEnum"
-              ],
-              "decorators": [],
-              "doc": "Semantic plane of a runtime record.\n\nDURABLE_FACT may participate in deterministic reconstruction/replay.\nLIVE_INTERCEPTION may affect only the current execution and must leave a\ndurable fact when it changes model-visible or side-effecting behavior.\nSIDE_PLANE_OBSERVATION is diagnostic/telemetry output and must never be used\nas primary operational or scientific authority.",
-              "fields": [],
-              "kind": "class",
-              "members": [
-                "DURABLE_FACT",
-                "LIVE_INTERCEPTION",
-                "SIDE_PLANE_OBSERVATION"
-              ],
-              "methods": [],
-              "name": "ExecutionRecordPlane",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "bases": [
-                "Protocol"
-              ],
-              "decorators": [
-                "runtime_checkable"
-              ],
-              "doc": null,
-              "fields": [],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [
-                    "property"
-                  ],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "record_plane",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "ExecutionRecordPlane",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "@property"
-                }
-              ],
-              "name": "RecordPlaneTagged",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            }
-          ],
-          "symbols": [
-            "ExecutionRecordPlane",
-            "RecordPlaneTagged"
-          ]
-        }
-      ],
-      "facade_module": "noetrium.contracts.systems.data__record",
-      "package_prefix": "noetrium_platform.evidence.data.record",
-      "system_key": "data/record"
     },
     {
       "api_modules": [
@@ -26454,7 +26352,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunControlAction",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunControlAction",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26463,7 +26361,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunControlPort",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunControlPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26472,7 +26370,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunControlPreparedOperation",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunControlPreparedOperation",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26481,7 +26379,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunControlReceipt",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunControlReceipt",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26490,7 +26388,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunControlRequest",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunControlRequest",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26499,7 +26397,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunControlTarget",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunControlTarget",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26508,7 +26406,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunEvidenceValidity",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunEvidenceValidity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26517,7 +26415,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunExecutionOutcome",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunExecutionOutcome",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26526,7 +26424,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunOutcomeProjection",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunOutcomeProjection",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26535,7 +26433,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunScientificValidity",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunScientificValidity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -26544,7 +26442,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunTaskOutcome",
-              "origin_module": "noetrium_platform.research.experimentation.run.control.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.control",
               "origin_name": "RunTaskOutcome",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -34868,6 +34766,402 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "RunIdentity",
+              "origin_module": ".identity",
+              "origin_name": "RunIdentity",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunIdentityProvider",
+              "origin_module": ".identity_ports",
+              "origin_name": "RunIdentityProvider",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunCleanupFailure",
+              "origin_module": ".lifecycle",
+              "origin_name": "RunCleanupFailure",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunCleanupReport",
+              "origin_module": ".lifecycle",
+              "origin_name": "RunCleanupReport",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunClosed",
+              "origin_module": ".lifecycle",
+              "origin_name": "RunClosed",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunRecoveryRequired",
+              "origin_module": ".lifecycle",
+              "origin_name": "RunRecoveryRequired",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "attach_cleanup_note",
+              "origin_module": ".cleanup",
+              "origin_name": "attach_cleanup_note",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunCycleExecutionPort",
+              "origin_module": ".lifecycle_ports",
+              "origin_name": "RunCycleExecutionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunCycleExecutorPort",
+              "origin_module": ".lifecycle_ports",
+              "origin_name": "RunCycleExecutorPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunLifetimePort",
+              "origin_module": ".lifecycle_ports",
+              "origin_name": "RunLifetimePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CompositionPlanReference",
+              "origin_module": ".manifest",
+              "origin_name": "CompositionPlanReference",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunLaunchManifest",
+              "origin_module": ".manifest",
+              "origin_name": "RunLaunchManifest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunResearchSemanticsReference",
+              "origin_module": ".manifest",
+              "origin_name": "RunResearchSemanticsReference",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "DerivedEvidenceArtifact",
+              "origin_module": ".manifest_evidence",
+              "origin_name": "DerivedEvidenceArtifact",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EVIDENCE_BUNDLE_SCHEMA_VERSION",
+              "origin_module": ".manifest_evidence",
+              "origin_name": "EVIDENCE_BUNDLE_SCHEMA_VERSION",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EvidenceBundleManifest",
+              "origin_module": ".manifest_evidence",
+              "origin_name": "EvidenceBundleManifest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EvidenceBundleReceipt",
+              "origin_module": ".manifest_evidence",
+              "origin_name": "EvidenceBundleReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EvidenceBundleStatus",
+              "origin_module": ".manifest_evidence",
+              "origin_name": "EvidenceBundleStatus",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EvidenceStreamDescriptor",
+              "origin_module": ".manifest_evidence",
+              "origin_name": "EvidenceStreamDescriptor",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EvidenceBundlePublisherPort",
+              "origin_module": ".manifest_ports",
+              "origin_name": "EvidenceBundlePublisherPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlAction",
+              "origin_module": ".control",
+              "origin_name": "RunControlAction",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlActionFailure",
+              "origin_module": ".control",
+              "origin_name": "RunControlActionFailure",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlCheckpointBundlePort",
+              "origin_module": ".control",
+              "origin_name": "RunControlCheckpointBundlePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlCheckpointStorePort",
+              "origin_module": ".control",
+              "origin_name": "RunControlCheckpointStorePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlConflict",
+              "origin_module": ".control",
+              "origin_name": "RunControlConflict",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlError",
+              "origin_module": ".control",
+              "origin_name": "RunControlError",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlEvidencePort",
+              "origin_module": ".control",
+              "origin_name": "RunControlEvidencePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlIntegrityError",
+              "origin_module": ".control",
+              "origin_name": "RunControlIntegrityError",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlLifecyclePort",
+              "origin_module": ".control",
+              "origin_name": "RunControlLifecyclePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlNotFound",
+              "origin_module": ".control",
+              "origin_name": "RunControlNotFound",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlPhase",
+              "origin_module": ".control",
+              "origin_name": "RunControlPhase",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlPort",
+              "origin_module": ".control",
+              "origin_name": "RunControlPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlPreparedOperation",
+              "origin_module": ".control",
+              "origin_name": "RunControlPreparedOperation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlReceipt",
+              "origin_module": ".control",
+              "origin_name": "RunControlReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlReconciliationPort",
+              "origin_module": ".control",
+              "origin_name": "RunControlReconciliationPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlRequest",
+              "origin_module": ".control",
+              "origin_name": "RunControlRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlStaleRevision",
+              "origin_module": ".control",
+              "origin_name": "RunControlStaleRevision",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlTarget",
+              "origin_module": ".control",
+              "origin_name": "RunControlTarget",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunControlTransitionOutcome",
+              "origin_module": ".control",
+              "origin_name": "RunControlTransitionOutcome",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunEvidenceValidity",
+              "origin_module": ".control",
+              "origin_name": "RunEvidenceValidity",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunExecutionOutcome",
+              "origin_module": ".control",
+              "origin_name": "RunExecutionOutcome",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunOutcomeProjection",
+              "origin_module": ".control",
+              "origin_name": "RunOutcomeProjection",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunScientificValidity",
+              "origin_module": ".control",
+              "origin_name": "RunScientificValidity",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunTaskOutcome",
+              "origin_module": ".control",
+              "origin_name": "RunTaskOutcome",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "DecisionCycleRuntimePort",
               "origin_module": ".ports",
               "origin_name": "DecisionCycleRuntimePort",
@@ -35011,6 +35305,50 @@
             }
           ],
           "symbols": [
+            "RunIdentity",
+            "RunIdentityProvider",
+            "RunCleanupFailure",
+            "RunCleanupReport",
+            "RunClosed",
+            "RunRecoveryRequired",
+            "attach_cleanup_note",
+            "RunCycleExecutionPort",
+            "RunCycleExecutorPort",
+            "RunLifetimePort",
+            "CompositionPlanReference",
+            "RunLaunchManifest",
+            "RunResearchSemanticsReference",
+            "DerivedEvidenceArtifact",
+            "EVIDENCE_BUNDLE_SCHEMA_VERSION",
+            "EvidenceBundleManifest",
+            "EvidenceBundleReceipt",
+            "EvidenceBundleStatus",
+            "EvidenceStreamDescriptor",
+            "EvidenceBundlePublisherPort",
+            "RunControlAction",
+            "RunControlActionFailure",
+            "RunControlCheckpointBundlePort",
+            "RunControlCheckpointStorePort",
+            "RunControlConflict",
+            "RunControlError",
+            "RunControlEvidencePort",
+            "RunControlIntegrityError",
+            "RunControlLifecyclePort",
+            "RunControlNotFound",
+            "RunControlPhase",
+            "RunControlPort",
+            "RunControlPreparedOperation",
+            "RunControlReceipt",
+            "RunControlReconciliationPort",
+            "RunControlRequest",
+            "RunControlStaleRevision",
+            "RunControlTarget",
+            "RunControlTransitionOutcome",
+            "RunEvidenceValidity",
+            "RunExecutionOutcome",
+            "RunOutcomeProjection",
+            "RunScientificValidity",
+            "RunTaskOutcome",
             "DecisionCycleRuntimePort",
             "RunArtifactFinalizationError",
             "RunArtifactFinalizationPort",
@@ -35577,927 +35915,51 @@
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.api.diagnostics",
-          "source": "noetrium_platform/research/experimentation/run/api/diagnostics.py",
+          "module": "noetrium_platform.research.experimentation.run.api.cleanup",
+          "source": "noetrium_platform/research/experimentation/run/api/cleanup.py",
           "symbol_schemas": [
             {
-              "bases": [
-                "Protocol"
-              ],
               "decorators": [],
-              "doc": "Durable run diagnostics seam shared by all experiment environments.",
-              "fields": [],
-              "kind": "class",
-              "members": [],
-              "methods": [
+              "doc": "Attach stable cleanup diagnostics without exposing Lifecycle runtime internals.",
+              "kind": "function",
+              "name": "attach_cleanup_note",
+              "parameters": [
                 {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "event",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    },
-                    {
-                      "annotation": "str",
-                      "default": "''",
-                      "kind": "positional_or_keyword",
-                      "name": "event",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "str",
-                      "default": "'workload'",
-                      "kind": "keyword_only",
-                      "name": "phase",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "Mapping[str, JsonValue] | None",
-                      "default": "None",
-                      "kind": "keyword_only",
-                      "name": "attributes",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "str",
-                      "default": "'DEBUG'",
-                      "kind": "keyword_only",
-                      "name": "level",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "tuple[str, ...]",
-                      "default": "()",
-                      "kind": "keyword_only",
-                      "name": "correlation_refs",
-                      "receiver": false,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "None",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def event(self, event: str='', *, phase: str='workload', attributes: Mapping[str, JsonValue] | None=None, level: str='DEBUG', correlation_refs: tuple[str, ...]=()) -> None:"
+                  "annotation": "BaseException",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "exc",
+                  "receiver": false,
+                  "required": true
                 },
                 {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "metric",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    },
-                    {
-                      "annotation": "str",
-                      "default": "''",
-                      "kind": "positional_or_keyword",
-                      "name": "name",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "float",
-                      "default": "0.0",
-                      "kind": "positional_or_keyword",
-                      "name": "value",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "Mapping[str, str] | None",
-                      "default": "None",
-                      "kind": "keyword_only",
-                      "name": "labels",
-                      "receiver": false,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "None",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def metric(self, name: str='', value: float=0.0, *, labels: Mapping[str, str] | None=None) -> None:"
-                },
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "failure",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    },
-                    {
-                      "annotation": "str",
-                      "default": "''",
-                      "kind": "positional_or_keyword",
-                      "name": "code",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "str",
-                      "default": "''",
-                      "kind": "positional_or_keyword",
-                      "name": "message",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "str",
-                      "default": "'workload'",
-                      "kind": "keyword_only",
-                      "name": "phase",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "BaseException | None",
-                      "default": "None",
-                      "kind": "keyword_only",
-                      "name": "exception",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "Mapping[str, JsonValue] | None",
-                      "default": "None",
-                      "kind": "keyword_only",
-                      "name": "attributes",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "tuple[str, ...]",
-                      "default": "()",
-                      "kind": "keyword_only",
-                      "name": "correlation_refs",
-                      "receiver": false,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "None",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def failure(self, code: str='', message: str='', *, phase: str='workload', exception: BaseException | None=None, attributes: Mapping[str, JsonValue] | None=None, correlation_refs: tuple[str, ...]=()) -> None:"
+                  "annotation": "RunCleanupReport",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "report",
+                  "receiver": false,
+                  "required": true
                 }
               ],
-              "name": "RunDiagnosticsPort",
+              "return_annotation": "None",
               "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
+              "schema_version": "1",
+              "signature": "def attach_cleanup_note(exc: BaseException, report: RunCleanupReport) -> None:"
             }
           ],
           "symbols": [
-            "RunDiagnosticsPort"
+            "attach_cleanup_note"
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.api.execution",
-          "source": "noetrium_platform/research/experimentation/run/api/execution.py",
-          "symbol_schemas": [
-            {
-              "bases": [
-                "Protocol"
-              ],
-              "decorators": [],
-              "doc": "Run-layer execution of one frozen, fully-bound scientific plan.",
-              "fields": [],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "execute",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    },
-                    {
-                      "annotation": "ExperimentRunSpec",
-                      "default": null,
-                      "kind": "keyword_only",
-                      "name": "run_spec",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "ExperimentPlan",
-                      "default": null,
-                      "kind": "keyword_only",
-                      "name": "plan",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "BoundStudyExecutionPort",
-                      "default": null,
-                      "kind": "keyword_only",
-                      "name": "unit_adapter",
-                      "receiver": false,
-                      "required": true
-                    }
-                  ],
-                  "return_annotation": "ExperimentRunResult",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def execute(self, *, run_spec: ExperimentRunSpec, plan: ExperimentPlan, unit_adapter: BoundStudyExecutionPort) -> ExperimentRunResult:"
-                }
-              ],
-              "name": "ExperimentRunExecutionPort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "bases": [],
-              "decorators": [
-                "dataclass(frozen=True, slots=True)"
-              ],
-              "doc": "Run-owned envelope around execution of one authoritative ExperimentPlan.",
-              "fields": [
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "run_spec_digest"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "protocol_digest"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "plan_digest"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "binding_digest"
-                },
-                {
-                  "annotation": "StudyMatrixExecutionReport",
-                  "default": null,
-                  "name": "study_report"
-                }
-              ],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "__post_init__",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "None",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def __post_init__(self) -> None:"
-                }
-              ],
-              "name": "ExperimentRunResult",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            }
-          ],
-          "symbols": [
-            "ExperimentRunExecutionPort",
-            "ExperimentRunResult"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.experimentation.run.api.ports",
-          "source": "noetrium_platform/research/experimentation/run/api/ports.py",
-          "symbol_schemas": [
-            {
-              "bases": [
-                "Protocol"
-              ],
-              "decorators": [],
-              "doc": "Parent-facing programmable one-cycle Runtime port.",
-              "fields": [],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "run",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    },
-                    {
-                      "annotation": "ExperimentSpec",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "spec",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "DecisionCycleIdentity",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "identity",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "TaskT",
-                      "default": null,
-                      "kind": "keyword_only",
-                      "name": "task",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "str",
-                      "default": null,
-                      "kind": "keyword_only",
-                      "name": "input_kind",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "JsonInput",
-                      "default": null,
-                      "kind": "keyword_only",
-                      "name": "input_payload",
-                      "receiver": false,
-                      "required": true
-                    }
-                  ],
-                  "return_annotation": "DecisionCycleResult",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def run(self, spec: ExperimentSpec, identity: DecisionCycleIdentity, *, task: TaskT, input_kind: str, input_payload: JsonInput) -> DecisionCycleResult:"
-                }
-              ],
-              "name": "DecisionCycleRuntimePort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "bases": [
-                "Protocol"
-              ],
-              "decorators": [],
-              "doc": "Parent-facing programmable Runtime port for opening a long-lived run.",
-              "fields": [],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "open",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    },
-                    {
-                      "annotation": "ExperimentSpec",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "spec",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "RunIdentity",
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "identity",
-                      "receiver": false,
-                      "required": true
-                    },
-                    {
-                      "annotation": "str | None",
-                      "default": "None",
-                      "kind": "keyword_only",
-                      "name": "restore_checkpoint_id",
-                      "receiver": false,
-                      "required": false
-                    },
-                    {
-                      "annotation": "DecisionCycleIdentity | None",
-                      "default": "None",
-                      "kind": "keyword_only",
-                      "name": "restore_cycle_identity",
-                      "receiver": false,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "RunSessionPort",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def open(self, spec: ExperimentSpec, identity: RunIdentity, *, restore_checkpoint_id: str | None=None, restore_cycle_identity: DecisionCycleIdentity | None=None) -> RunSessionPort:"
-                }
-              ],
-              "name": "RunRuntimePort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunSessionPort",
-              "origin_module": "noetrium_platform.research.experimentation.run.lifecycle.api",
-              "origin_name": "RunSessionPort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            }
-          ],
-          "symbols": [
-            "DecisionCycleRuntimePort",
-            "RunRuntimePort",
-            "RunSessionPort"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.experimentation.run.api.spec",
-          "source": "noetrium_platform/research/experimentation/run/api/spec.py",
-          "symbol_schemas": [
-            {
-              "bases": [],
-              "decorators": [
-                "dataclass(frozen=True, slots=True)"
-              ],
-              "doc": "Immutable, environment-neutral identity of one experiment run.\n\nThe specification deliberately contains no server, model-client, process\nor filesystem-provider object. Those are selected by an outer composition\nroot and are represented here only by frozen identities/digests. MC and\nnon-MC adapters therefore consume the same run identity without sharing\nprovider details.",
-              "fields": [
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "run_id"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "project_id"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "experiment_id"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "study_id"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "execution_profile"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "task_manifest_digest"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "seed_schedule_digest"
-                },
-                {
-                  "annotation": "int",
-                  "default": null,
-                  "name": "repetitions"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "artifact_root"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "environment_identity_digest"
-                },
-                {
-                  "annotation": "str",
-                  "default": null,
-                  "name": "model_roles_digest"
-                }
-              ],
-              "kind": "class",
-              "members": [],
-              "methods": [
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "__post_init__",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "None",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def __post_init__(self) -> None:"
-                },
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "scientific_identity_digest",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "str",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def scientific_identity_digest(self) -> str:"
-                },
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "execution_placement_digest",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "str",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def execution_placement_digest(self) -> str:"
-                },
-                {
-                  "decorators": [],
-                  "doc": null,
-                  "kind": "method",
-                  "name": "identity_digest",
-                  "parameters": [
-                    {
-                      "annotation": null,
-                      "default": null,
-                      "kind": "positional_or_keyword",
-                      "name": "self",
-                      "receiver": true,
-                      "required": false
-                    }
-                  ],
-                  "return_annotation": "str",
-                  "schema_id": "noetrium.interface-schema",
-                  "schema_version": "1",
-                  "signature": "def identity_digest(self) -> str:"
-                }
-              ],
-              "name": "ExperimentRunSpec",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            }
-          ],
-          "symbols": [
-            "ExperimentRunSpec"
-          ]
-        }
-      ],
-      "facade_module": "noetrium.contracts.systems.experimentation__run",
-      "package_prefix": "noetrium_platform.research.experimentation.run",
-      "system_key": "experimentation/run"
-    },
-    {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.run.control.api",
-          "source": "noetrium_platform/research/experimentation/run/control/api/__init__.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "MachineCut",
-              "origin_module": "noetrium_platform.foundation.kernel.kernel",
-              "origin_name": "MachineCut",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlAction",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlAction",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlActionFailure",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlActionFailure",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlCheckpointBundlePort",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlCheckpointBundlePort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlCheckpointStorePort",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlCheckpointStorePort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlConflict",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlConflict",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlError",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlError",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlEvidencePort",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlEvidencePort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlIntegrityError",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlIntegrityError",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlLifecyclePort",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlLifecyclePort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlNotFound",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlNotFound",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlPhase",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlPhase",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlPort",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlPort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlPreparedOperation",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlPreparedOperation",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlReceipt",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlReceipt",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlReconciliationPort",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlReconciliationPort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlRequest",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlRequest",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlStaleRevision",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlStaleRevision",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlTarget",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlTarget",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunControlTransitionOutcome",
-              "origin_module": ".contracts",
-              "origin_name": "RunControlTransitionOutcome",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunEvidenceValidity",
-              "origin_module": ".contracts",
-              "origin_name": "RunEvidenceValidity",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunExecutionOutcome",
-              "origin_module": ".contracts",
-              "origin_name": "RunExecutionOutcome",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunOutcomeProjection",
-              "origin_module": ".contracts",
-              "origin_name": "RunOutcomeProjection",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunScientificValidity",
-              "origin_module": ".contracts",
-              "origin_name": "RunScientificValidity",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunTaskOutcome",
-              "origin_module": ".contracts",
-              "origin_name": "RunTaskOutcome",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            }
-          ],
-          "symbols": [
-            "MachineCut",
-            "RunControlAction",
-            "RunControlActionFailure",
-            "RunControlCheckpointBundlePort",
-            "RunControlCheckpointStorePort",
-            "RunControlConflict",
-            "RunControlError",
-            "RunControlEvidencePort",
-            "RunControlIntegrityError",
-            "RunControlLifecyclePort",
-            "RunControlNotFound",
-            "RunControlPhase",
-            "RunControlPort",
-            "RunControlPreparedOperation",
-            "RunControlReceipt",
-            "RunControlReconciliationPort",
-            "RunControlRequest",
-            "RunControlStaleRevision",
-            "RunControlTarget",
-            "RunControlTransitionOutcome",
-            "RunEvidenceValidity",
-            "RunExecutionOutcome",
-            "RunOutcomeProjection",
-            "RunScientificValidity",
-            "RunTaskOutcome"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.experimentation.run.control.api.contracts",
-          "source": "noetrium_platform/research/experimentation/run/control/api/contracts.py",
+          "module": "noetrium_platform.research.experimentation.run.api.control",
+          "source": "noetrium_platform/research/experimentation/run/api/control.py",
           "symbol_schemas": [
             {
               "doc": null,
               "kind": "reexport",
               "name": "RunIdentity",
-              "origin_module": "noetrium_platform.research.experimentation.run.identity.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.identity",
               "origin_name": "RunIdentity",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -36506,7 +35968,7 @@
               "doc": null,
               "kind": "reexport",
               "name": "RunLaunchManifest",
-              "origin_module": "noetrium_platform.research.experimentation.run.manifest.api",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.manifest",
               "origin_name": "RunLaunchManifest",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
@@ -37611,45 +37073,336 @@
             "RunControlReconciliationPort",
             "RunControlEvidencePort"
           ]
-        }
-      ],
-      "facade_module": "noetrium.contracts.systems.experimentation__run__control",
-      "package_prefix": "noetrium_platform.research.experimentation.run.control",
-      "system_key": "experimentation/run/control"
-    },
-    {
-      "api_modules": [
+        },
         {
-          "module": "noetrium_platform.research.experimentation.run.identity.api",
-          "source": "noetrium_platform/research/experimentation/run/identity/api/__init__.py",
+          "module": "noetrium_platform.research.experimentation.run.api.diagnostics",
+          "source": "noetrium_platform/research/experimentation/run/api/diagnostics.py",
           "symbol_schemas": [
             {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunIdentity",
-              "origin_module": ".contracts",
-              "origin_name": "RunIdentity",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunIdentityProvider",
-              "origin_module": ".ports",
-              "origin_name": "RunIdentityProvider",
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [],
+              "doc": "Durable run diagnostics seam shared by all experiment environments.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "event",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "''",
+                      "kind": "positional_or_keyword",
+                      "name": "event",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'workload'",
+                      "kind": "keyword_only",
+                      "name": "phase",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "Mapping[str, JsonValue] | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "attributes",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'DEBUG'",
+                      "kind": "keyword_only",
+                      "name": "level",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "keyword_only",
+                      "name": "correlation_refs",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def event(self, event: str='', *, phase: str='workload', attributes: Mapping[str, JsonValue] | None=None, level: str='DEBUG', correlation_refs: tuple[str, ...]=()) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "metric",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "''",
+                      "kind": "positional_or_keyword",
+                      "name": "name",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "float",
+                      "default": "0.0",
+                      "kind": "positional_or_keyword",
+                      "name": "value",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "Mapping[str, str] | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "labels",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def metric(self, name: str='', value: float=0.0, *, labels: Mapping[str, str] | None=None) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "failure",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "''",
+                      "kind": "positional_or_keyword",
+                      "name": "code",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "''",
+                      "kind": "positional_or_keyword",
+                      "name": "message",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": "'workload'",
+                      "kind": "keyword_only",
+                      "name": "phase",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "BaseException | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "exception",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "Mapping[str, JsonValue] | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "attributes",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "keyword_only",
+                      "name": "correlation_refs",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def failure(self, code: str='', message: str='', *, phase: str='workload', exception: BaseException | None=None, attributes: Mapping[str, JsonValue] | None=None, correlation_refs: tuple[str, ...]=()) -> None:"
+                }
+              ],
+              "name": "RunDiagnosticsPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             }
           ],
           "symbols": [
-            "RunIdentity",
-            "RunIdentityProvider"
+            "RunDiagnosticsPort"
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.identity.api.contracts",
-          "source": "noetrium_platform/research/experimentation/run/identity/api/contracts.py",
+          "module": "noetrium_platform.research.experimentation.run.api.execution",
+          "source": "noetrium_platform/research/experimentation/run/api/execution.py",
+          "symbol_schemas": [
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [],
+              "doc": "Run-layer execution of one frozen, fully-bound scientific plan.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "execute",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ExperimentRunSpec",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "run_spec",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "ExperimentPlan",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "plan",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "BoundStudyExecutionPort",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "unit_adapter",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "ExperimentRunResult",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def execute(self, *, run_spec: ExperimentRunSpec, plan: ExperimentPlan, unit_adapter: BoundStudyExecutionPort) -> ExperimentRunResult:"
+                }
+              ],
+              "name": "ExperimentRunExecutionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Run-owned envelope around execution of one authoritative ExperimentPlan.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "run_spec_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "protocol_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "plan_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "binding_digest"
+                },
+                {
+                  "annotation": "StudyMatrixExecutionReport",
+                  "default": null,
+                  "name": "study_report"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "ExperimentRunResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "ExperimentRunExecutionPort",
+            "ExperimentRunResult"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.run.api.identity",
+          "source": "noetrium_platform/research/experimentation/run/api/identity.py",
           "symbol_schemas": [
             {
               "bases": [],
@@ -37786,8 +37539,8 @@
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.identity.api.ports",
-          "source": "noetrium_platform/research/experimentation/run/identity/api/ports.py",
+          "module": "noetrium_platform.research.experimentation.run.api.identity_ports",
+          "source": "noetrium_platform/research/experimentation/run/api/identity_ports.py",
           "symbol_schemas": [
             {
               "bases": [
@@ -37828,152 +37581,10 @@
           "symbols": [
             "RunIdentityProvider"
           ]
-        }
-      ],
-      "facade_module": "noetrium.contracts.systems.experimentation__run__identity",
-      "package_prefix": "noetrium_platform.research.experimentation.run.identity",
-      "system_key": "experimentation/run/identity"
-    },
-    {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.run.lifecycle.api",
-          "source": "noetrium_platform/research/experimentation/run/lifecycle/api/__init__.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "attach_cleanup_note",
-              "origin_module": ".cleanup",
-              "origin_name": "attach_cleanup_note",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunCleanupFailure",
-              "origin_module": ".contracts",
-              "origin_name": "RunCleanupFailure",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunCleanupReport",
-              "origin_module": ".contracts",
-              "origin_name": "RunCleanupReport",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunClosed",
-              "origin_module": ".contracts",
-              "origin_name": "RunClosed",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunRecoveryRequired",
-              "origin_module": ".contracts",
-              "origin_name": "RunRecoveryRequired",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunCycleExecutionPort",
-              "origin_module": ".ports",
-              "origin_name": "RunCycleExecutionPort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunCycleExecutorPort",
-              "origin_module": ".ports",
-              "origin_name": "RunCycleExecutorPort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunLifetimePort",
-              "origin_module": ".ports",
-              "origin_name": "RunLifetimePort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunSessionPort",
-              "origin_module": ".ports",
-              "origin_name": "RunSessionPort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            }
-          ],
-          "symbols": [
-            "attach_cleanup_note",
-            "RunCleanupFailure",
-            "RunCleanupReport",
-            "RunClosed",
-            "RunRecoveryRequired",
-            "RunCycleExecutionPort",
-            "RunCycleExecutorPort",
-            "RunLifetimePort",
-            "RunSessionPort"
-          ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.lifecycle.api.cleanup",
-          "source": "noetrium_platform/research/experimentation/run/lifecycle/api/cleanup.py",
-          "symbol_schemas": [
-            {
-              "decorators": [],
-              "doc": "Attach stable cleanup diagnostics without exposing Lifecycle runtime internals.",
-              "kind": "function",
-              "name": "attach_cleanup_note",
-              "parameters": [
-                {
-                  "annotation": "BaseException",
-                  "default": null,
-                  "kind": "positional_or_keyword",
-                  "name": "exc",
-                  "receiver": false,
-                  "required": true
-                },
-                {
-                  "annotation": "RunCleanupReport",
-                  "default": null,
-                  "kind": "positional_or_keyword",
-                  "name": "report",
-                  "receiver": false,
-                  "required": true
-                }
-              ],
-              "return_annotation": "None",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1",
-              "signature": "def attach_cleanup_note(exc: BaseException, report: RunCleanupReport) -> None:"
-            }
-          ],
-          "symbols": [
-            "attach_cleanup_note"
-          ]
-        },
-        {
-          "module": "noetrium_platform.research.experimentation.run.lifecycle.api.contracts",
-          "source": "noetrium_platform/research/experimentation/run/lifecycle/api/contracts.py",
+          "module": "noetrium_platform.research.experimentation.run.api.lifecycle",
+          "source": "noetrium_platform/research/experimentation/run/api/lifecycle.py",
           "symbol_schemas": [
             {
               "bases": [
@@ -38106,8 +37717,8 @@
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.lifecycle.api.ports",
-          "source": "noetrium_platform/research/experimentation/run/lifecycle/api/ports.py",
+          "module": "noetrium_platform.research.experimentation.run.api.lifecycle_ports",
+          "source": "noetrium_platform/research/experimentation/run/api/lifecycle_ports.py",
           "symbol_schemas": [
             {
               "bases": [
@@ -38454,125 +38065,10 @@
             "RunLifetimePort",
             "RunSessionPort"
           ]
-        }
-      ],
-      "facade_module": "noetrium.contracts.systems.experimentation__run__lifecycle",
-      "package_prefix": "noetrium_platform.research.experimentation.run.lifecycle",
-      "system_key": "experimentation/run/lifecycle"
-    },
-    {
-      "api_modules": [
-        {
-          "module": "noetrium_platform.research.experimentation.run.manifest.api",
-          "source": "noetrium_platform/research/experimentation/run/manifest/api/__init__.py",
-          "symbol_schemas": [
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "CompositionPlanReference",
-              "origin_module": ".contracts",
-              "origin_name": "CompositionPlanReference",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "DerivedEvidenceArtifact",
-              "origin_module": ".evidence",
-              "origin_name": "DerivedEvidenceArtifact",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "EVIDENCE_BUNDLE_SCHEMA_VERSION",
-              "origin_module": ".evidence",
-              "origin_name": "EVIDENCE_BUNDLE_SCHEMA_VERSION",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "EvidenceBundleManifest",
-              "origin_module": ".evidence",
-              "origin_name": "EvidenceBundleManifest",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "EvidenceBundlePublisherPort",
-              "origin_module": ".evidence_ports",
-              "origin_name": "EvidenceBundlePublisherPort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "EvidenceBundleReceipt",
-              "origin_module": ".evidence",
-              "origin_name": "EvidenceBundleReceipt",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "EvidenceBundleStatus",
-              "origin_module": ".evidence",
-              "origin_name": "EvidenceBundleStatus",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "EvidenceStreamDescriptor",
-              "origin_module": ".evidence",
-              "origin_name": "EvidenceStreamDescriptor",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunLaunchManifest",
-              "origin_module": ".contracts",
-              "origin_name": "RunLaunchManifest",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "RunResearchSemanticsReference",
-              "origin_module": ".contracts",
-              "origin_name": "RunResearchSemanticsReference",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            }
-          ],
-          "symbols": [
-            "CompositionPlanReference",
-            "DerivedEvidenceArtifact",
-            "EVIDENCE_BUNDLE_SCHEMA_VERSION",
-            "EvidenceBundleManifest",
-            "EvidenceBundlePublisherPort",
-            "EvidenceBundleReceipt",
-            "EvidenceBundleStatus",
-            "EvidenceStreamDescriptor",
-            "RunLaunchManifest",
-            "RunResearchSemanticsReference"
-          ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.manifest.api.contracts",
-          "source": "noetrium_platform/research/experimentation/run/manifest/api/contracts.py",
+          "module": "noetrium_platform.research.experimentation.run.api.manifest",
+          "source": "noetrium_platform/research/experimentation/run/api/manifest.py",
           "symbol_schemas": [
             {
               "bases": [],
@@ -38837,8 +38333,8 @@
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.manifest.api.evidence",
-          "source": "noetrium_platform/research/experimentation/run/manifest/api/evidence.py",
+          "module": "noetrium_platform.research.experimentation.run.api.manifest_evidence",
+          "source": "noetrium_platform/research/experimentation/run/api/manifest_evidence.py",
           "symbol_schemas": [
             {
               "bases": [],
@@ -39290,8 +38786,8 @@
           ]
         },
         {
-          "module": "noetrium_platform.research.experimentation.run.manifest.api.evidence_ports",
-          "source": "noetrium_platform/research/experimentation/run/manifest/api/evidence_ports.py",
+          "module": "noetrium_platform.research.experimentation.run.api.manifest_ports",
+          "source": "noetrium_platform/research/experimentation/run/api/manifest_ports.py",
           "symbol_schemas": [
             {
               "bases": [
@@ -39340,11 +38836,333 @@
           "symbols": [
             "EvidenceBundlePublisherPort"
           ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.run.api.ports",
+          "source": "noetrium_platform/research/experimentation/run/api/ports.py",
+          "symbol_schemas": [
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [],
+              "doc": "Parent-facing programmable one-cycle Runtime port.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "run",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ExperimentSpec",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "spec",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "DecisionCycleIdentity",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "identity",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "TaskT",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "task",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "input_kind",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "JsonInput",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "input_payload",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "DecisionCycleResult",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def run(self, spec: ExperimentSpec, identity: DecisionCycleIdentity, *, task: TaskT, input_kind: str, input_payload: JsonInput) -> DecisionCycleResult:"
+                }
+              ],
+              "name": "DecisionCycleRuntimePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [],
+              "doc": "Parent-facing programmable Runtime port for opening a long-lived run.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "open",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ExperimentSpec",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "spec",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "RunIdentity",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "identity",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "restore_checkpoint_id",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "DecisionCycleIdentity | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "restore_cycle_identity",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "RunSessionPort",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def open(self, spec: ExperimentSpec, identity: RunIdentity, *, restore_checkpoint_id: str | None=None, restore_cycle_identity: DecisionCycleIdentity | None=None) -> RunSessionPort:"
+                }
+              ],
+              "name": "RunRuntimePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunSessionPort",
+              "origin_module": "noetrium_platform.research.experimentation.run.api.lifecycle_ports",
+              "origin_name": "RunSessionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "DecisionCycleRuntimePort",
+            "RunRuntimePort",
+            "RunSessionPort"
+          ]
+        },
+        {
+          "module": "noetrium_platform.research.experimentation.run.api.spec",
+          "source": "noetrium_platform/research/experimentation/run/api/spec.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": "Immutable, environment-neutral identity of one experiment run.\n\nThe specification deliberately contains no server, model-client, process\nor filesystem-provider object. Those are selected by an outer composition\nroot and are represented here only by frozen identities/digests. MC and\nnon-MC adapters therefore consume the same run identity without sharing\nprovider details.",
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "run_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "project_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "experiment_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "study_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "execution_profile"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "task_manifest_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "seed_schedule_digest"
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "name": "repetitions"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "artifact_root"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "environment_identity_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "model_roles_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "scientific_identity_digest",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "str",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def scientific_identity_digest(self) -> str:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "execution_placement_digest",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "str",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def execution_placement_digest(self) -> str:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "identity_digest",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "str",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def identity_digest(self) -> str:"
+                }
+              ],
+              "name": "ExperimentRunSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "ExperimentRunSpec"
+          ]
         }
       ],
-      "facade_module": "noetrium.contracts.systems.experimentation__run__manifest",
-      "package_prefix": "noetrium_platform.research.experimentation.run.manifest",
-      "system_key": "experimentation/run/manifest"
+      "facade_module": "noetrium.contracts.systems.experimentation__run",
+      "package_prefix": "noetrium_platform.research.experimentation.run",
+      "system_key": "experimentation/run"
     },
     {
       "api_modules": [
@@ -54575,7 +54393,7 @@
               "annotation": "tuple[str, ...]",
               "doc": null,
               "kind": "value",
-              "name": "STANDARD_SYSTEM_SHAPE",
+              "name": "SYSTEM_PLANES",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1",
               "value": "('api', 'runtime', 'providers', 'composition')"
@@ -54639,7 +54457,7 @@
                 },
                 {
                   "annotation": "tuple[str, ...]",
-                  "default": "STANDARD_SYSTEM_SHAPE",
+                  "default": "()",
                   "name": "shape"
                 },
                 {
@@ -55003,7 +54821,7 @@
           "symbols": [
             "AuthorityDescriptor",
             "DownstreamSurfaceMode",
-            "STANDARD_SYSTEM_SHAPE",
+            "SYSTEM_PLANES",
             "SystemDescriptor",
             "SystemIdentity",
             "SystemNodeKind",
@@ -71922,18 +71740,72 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "AgentIdentity",
-              "origin_module": "noetrium_platform.capabilities.participant.agent.api",
-              "origin_name": "AgentIdentity",
+              "name": "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
+              "origin_module": ".messaging",
+              "origin_name": "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
             {
               "doc": null,
               "kind": "reexport",
-              "name": "AgentImplementation",
-              "origin_module": "noetrium_platform.capabilities.participant.agent.api",
-              "origin_name": "AgentImplementation",
+              "name": "ParticipantMessageFactBinding",
+              "origin_module": ".messaging",
+              "origin_name": "ParticipantMessageFactBinding",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ParticipantMessageKind",
+              "origin_module": ".messaging",
+              "origin_name": "ParticipantMessageKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ParticipantMessageRecipientReceipt",
+              "origin_module": ".messaging",
+              "origin_name": "ParticipantMessageRecipientReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ParticipantMessageRouteReceipt",
+              "origin_module": ".messaging",
+              "origin_name": "ParticipantMessageRouteReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ParticipantMessageRouteRequest",
+              "origin_module": ".messaging",
+              "origin_name": "ParticipantMessageRouteRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ParticipantMessageRouterPort",
+              "origin_module": ".messaging",
+              "origin_name": "ParticipantMessageRouterPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "participant_message_content_digest",
+              "origin_module": ".messaging",
+              "origin_name": "participant_message_content_digest",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -71979,42 +71851,6 @@
               "name": "require_method_program_runtime_binding",
               "origin_module": ".project",
               "origin_name": "require_method_program_runtime_binding",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "AgentSession",
-              "origin_module": "noetrium_platform.capabilities.participant.agent.api",
-              "origin_name": "AgentSession",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "AgentSnapshot",
-              "origin_module": "noetrium_platform.capabilities.participant.agent.api",
-              "origin_name": "AgentSnapshot",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "AgentTurnRequest",
-              "origin_module": "noetrium_platform.capabilities.participant.agent.api",
-              "origin_name": "AgentTurnRequest",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "AgentTurnResult",
-              "origin_module": "noetrium_platform.capabilities.participant.agent.api",
-              "origin_name": "AgentTurnResult",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -72344,17 +72180,19 @@
             }
           ],
           "symbols": [
-            "AgentIdentity",
-            "AgentImplementation",
+            "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
+            "ParticipantMessageFactBinding",
+            "ParticipantMessageKind",
+            "ParticipantMessageRecipientReceipt",
+            "ParticipantMessageRouteReceipt",
+            "ParticipantMessageRouteRequest",
+            "ParticipantMessageRouterPort",
+            "participant_message_content_digest",
             "AgentProjectDefinition",
             "MethodProjectDefinition",
             "method_program_identity_for_requirement",
             "method_program_identity_for_runtime_binding",
             "require_method_program_runtime_binding",
-            "AgentSession",
-            "AgentSnapshot",
-            "AgentTurnRequest",
-            "AgentTurnResult",
             "ArchitectureChangeKind",
             "ParticipantArchitectureChange",
             "ParticipantArchitectureComponent",
@@ -72391,6 +72229,608 @@
             "ProjectParticipantBinding",
             "ProjectParticipantProviderPort",
             "TopologyChangeKind"
+          ]
+        },
+        {
+          "module": "noetrium_platform.capabilities.participant.api.messaging",
+          "source": "noetrium_platform/capabilities/participant/api/messaging.py",
+          "symbol_schemas": [
+            {
+              "annotation": null,
+              "doc": null,
+              "kind": "value",
+              "name": "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1",
+              "value": "'participant-message-route.v3'"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "schedule_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "schedule_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "topology_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "entry_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "message_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "sender_participant_id"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": null,
+                  "name": "recipient_participant_ids"
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "name": "sequence"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": null,
+                  "name": "causal_parent_message_ids"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "content_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [
+                    "classmethod"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "from_schedule",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "cls",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ParticipantMessageSchedule",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "schedule",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "ParticipantMessageScheduleEntry",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "entry",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "content_digest",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "'ParticipantMessageFactBinding'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@classmethod"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "identity_payload",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "dict[str, object]",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def identity_payload(self) -> dict[str, object]:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "as_payload",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "keyword_only",
+                      "name": "stage",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "DeliveryReceipt | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "receipt",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "JsonObject",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def as_payload(self, *, stage: str, receipt: DeliveryReceipt | None=None) -> JsonObject:"
+                }
+              ],
+              "name": "ParticipantMessageFactBinding",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "StrEnum"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [
+                "CHAT",
+                "TASK",
+                "INTERRUPT",
+                "SYSTEM"
+              ],
+              "methods": [],
+              "name": "ParticipantMessageKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "recipient_participant_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "runtime_message_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "runtime_message_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                }
+              ],
+              "name": "ParticipantMessageRecipientReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "schedule_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "entry_digest"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "message_id"
+                },
+                {
+                  "annotation": "tuple[ParticipantMessageRecipientReceipt, ...]",
+                  "default": null,
+                  "name": "recipient_receipts"
+                },
+                {
+                  "annotation": "str",
+                  "default": "field(init=False)",
+                  "name": "receipt_digest"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "as_payload",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "bool",
+                      "default": "True",
+                      "kind": "positional_or_keyword",
+                      "name": "include_digest",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "dict[str, object]",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def as_payload(self, include_digest: bool=True) -> dict[str, object]:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "as_fact_payload",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ParticipantMessageFactBinding",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "binding",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "dict[str, object]",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def as_fact_payload(self, binding: ParticipantMessageFactBinding) -> dict[str, object]:"
+                }
+              ],
+              "name": "ParticipantMessageRouteReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "ParticipantMessageFactBinding",
+                  "default": null,
+                  "name": "binding"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "text"
+                },
+                {
+                  "annotation": "int",
+                  "default": "0",
+                  "name": "priority"
+                },
+                {
+                  "annotation": "ParticipantMessageKind",
+                  "default": "ParticipantMessageKind.TASK",
+                  "name": "kind"
+                },
+                {
+                  "annotation": "str",
+                  "default": "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
+                  "name": "schema_version"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [
+                    "classmethod"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "from_schedule",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "cls",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ParticipantMessageSchedule",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "schedule",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "ParticipantMessageScheduleEntry",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "entry",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "str",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "text",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "int",
+                      "default": "0",
+                      "kind": "keyword_only",
+                      "name": "priority",
+                      "receiver": false,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ParticipantMessageKind",
+                      "default": "ParticipantMessageKind.TASK",
+                      "kind": "keyword_only",
+                      "name": "kind",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "'ParticipantMessageRouteRequest'",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@classmethod"
+                }
+              ],
+              "name": "ParticipantMessageRouteRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "route",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "ParticipantMessageRouteRequest",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "request",
+                      "receiver": false,
+                      "required": true
+                    }
+                  ],
+                  "return_annotation": "ParticipantMessageRouteReceipt",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def route(self, request: ParticipantMessageRouteRequest) -> ParticipantMessageRouteReceipt:"
+                }
+              ],
+              "name": "ParticipantMessageRouterPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "decorators": [],
+              "doc": null,
+              "kind": "function",
+              "name": "participant_message_content_digest",
+              "parameters": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "kind": "positional_or_keyword",
+                  "name": "text",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "priority",
+                  "receiver": false,
+                  "required": true
+                },
+                {
+                  "annotation": "ParticipantMessageKind",
+                  "default": null,
+                  "kind": "keyword_only",
+                  "name": "kind",
+                  "receiver": false,
+                  "required": true
+                }
+              ],
+              "return_annotation": "str",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1",
+              "signature": "def participant_message_content_digest(text: str, *, priority: int, kind: ParticipantMessageKind) -> str:"
+            }
+          ],
+          "symbols": [
+            "PARTICIPANT_MESSAGE_ROUTE_SCHEMA",
+            "ParticipantMessageFactBinding",
+            "ParticipantMessageKind",
+            "ParticipantMessageRecipientReceipt",
+            "ParticipantMessageRouteReceipt",
+            "ParticipantMessageRouteRequest",
+            "ParticipantMessageRouterPort",
+            "participant_message_content_digest"
           ]
         },
         {
@@ -97041,6 +97481,33 @@
               "origin_name": "HostRuntimeStatus",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CommandProbeError",
+              "origin_module": ".probe",
+              "origin_name": "CommandProbeError",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CommandProbePort",
+              "origin_module": ".probe",
+              "origin_name": "CommandProbePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CommandProbeResult",
+              "origin_module": ".probe",
+              "origin_name": "CommandProbeResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -97064,7 +97531,10 @@
             "GpuRuntimeSnapshot",
             "HostRuntimeObserverPort",
             "HostRuntimeSnapshot",
-            "HostRuntimeStatus"
+            "HostRuntimeStatus",
+            "CommandProbeError",
+            "CommandProbePort",
+            "CommandProbeResult"
           ]
         },
         {
@@ -98151,6 +98621,117 @@
             "ComputeLeaseGuardFactoryPort",
             "ComputeLeaseGuardPort",
             "ComputeSchedulerPort"
+          ]
+        },
+        {
+          "module": "noetrium_platform.infrastructure.resources.compute.api.probe",
+          "source": "noetrium_platform/infrastructure/resources/compute/api/probe.py",
+          "symbol_schemas": [
+            {
+              "bases": [
+                "RuntimeError"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [],
+              "name": "CommandProbeError",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "Protocol"
+              ],
+              "decorators": [],
+              "doc": null,
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "run",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "argv",
+                      "receiver": false,
+                      "required": true
+                    },
+                    {
+                      "annotation": "float | None",
+                      "default": "None",
+                      "kind": "keyword_only",
+                      "name": "timeout_seconds",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "CommandProbeResult",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def run(self, argv: tuple[str, ...], *, timeout_seconds: float | None=None) -> CommandProbeResult:"
+                }
+              ],
+              "name": "CommandProbePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": null,
+                  "name": "argv"
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "name": "returncode"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "stdout"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "stderr"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [],
+              "name": "CommandProbeResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "CommandProbeError",
+            "CommandProbePort",
+            "CommandProbeResult"
           ]
         },
         {
@@ -101158,6 +101739,60 @@
             "SystemIdentity",
             "SystemPort",
             "SystemSpec"
+          ]
+        },
+        {
+          "module": "noetrium_platform.infrastructure.lifecycle.api.errors",
+          "source": "noetrium_platform/infrastructure/lifecycle/api/errors.py",
+          "symbol_schemas": [
+            {
+              "bases": [
+                "ValueError",
+                "RuntimeLifecycleError"
+              ],
+              "decorators": [],
+              "doc": "A frozen runtime identity no longer matches the observed/runtime binding.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [],
+              "name": "FrozenRuntimeIdentityViolation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "RuntimeError"
+              ],
+              "decorators": [],
+              "doc": "Base error for exact runtime lifecycle invariants.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [],
+              "name": "RuntimeLifecycleError",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "bases": [
+                "RuntimeLifecycleError"
+              ],
+              "decorators": [],
+              "doc": "Required operational health evidence is unavailable or stale.",
+              "fields": [],
+              "kind": "class",
+              "members": [],
+              "methods": [],
+              "name": "RuntimeOperationalHealthUnavailable",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "FrozenRuntimeIdentityViolation",
+            "RuntimeLifecycleError",
+            "RuntimeOperationalHealthUnavailable"
           ]
         },
         {
@@ -106848,6 +107483,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "ServiceHeartbeat",
+              "origin_module": ".heartbeat",
+              "origin_name": "ServiceHeartbeat",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "ExactServiceRuntimePort",
               "origin_module": ".ports",
               "origin_name": "ExactServiceRuntimePort",
@@ -106946,6 +107590,7 @@
             }
           ],
           "symbols": [
+            "ServiceHeartbeat",
             "ExactServiceRuntimePort",
             "ServiceEnvironmentPort",
             "ServiceLaunchPreflightPort",
@@ -107151,6 +107796,119 @@
             "ServiceContractDrift",
             "ServiceLaunchContract",
             "ServiceProcessIdentity"
+          ]
+        },
+        {
+          "module": "noetrium_platform.infrastructure.lifecycle.service.api.heartbeat",
+          "source": "noetrium_platform/infrastructure/lifecycle/service/api/heartbeat.py",
+          "symbol_schemas": [
+            {
+              "bases": [],
+              "decorators": [
+                "dataclass(frozen=True, slots=True)"
+              ],
+              "doc": null,
+              "fields": [
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "deployment_id"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "stack_digest"
+                },
+                {
+                  "annotation": "int",
+                  "default": null,
+                  "name": "pid"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "process_start_marker"
+                },
+                {
+                  "annotation": "str",
+                  "default": null,
+                  "name": "argv_digest"
+                },
+                {
+                  "annotation": "bool",
+                  "default": null,
+                  "name": "ready"
+                },
+                {
+                  "annotation": "str | None",
+                  "default": null,
+                  "name": "qualification_digest"
+                },
+                {
+                  "annotation": "float",
+                  "default": null,
+                  "name": "timestamp"
+                }
+              ],
+              "kind": "class",
+              "members": [],
+              "methods": [
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "__post_init__",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "None",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def __post_init__(self) -> None:"
+                },
+                {
+                  "decorators": [],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "age",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    },
+                    {
+                      "annotation": "float | None",
+                      "default": "None",
+                      "kind": "positional_or_keyword",
+                      "name": "now",
+                      "receiver": false,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "float",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "def age(self, now: float | None=None) -> float:"
+                }
+              ],
+              "name": "ServiceHeartbeat",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            }
+          ],
+          "symbols": [
+            "ServiceHeartbeat"
           ]
         },
         {
@@ -110113,5 +110871,5 @@
       "system_key": "scope/resolution"
     }
   ],
-  "topology_digest": "c4da8a78a00c12312ca68a1810040ec6762e8bd5a251a21a9fabb94d74ef93dd"
+  "topology_digest": "a965a820bdd843c947fad442011c2a28258401976103fc017aad3dc3337138ad"
 }

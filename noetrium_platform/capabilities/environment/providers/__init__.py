@@ -7,7 +7,6 @@ from .jsonl_process import (
     ProcessFactory,
     ProcessTerminator,
 )
-from .reference import ReferenceCounterDynamics, reference_counter_environment
 
 __all__ = [
     "JsonlProcess",
@@ -17,6 +16,4 @@ __all__ = [
     "JsonlProcessTransport",
     "ProcessFactory",
     "ProcessTerminator",
-    "ReferenceCounterDynamics",
-    "reference_counter_environment",
 ]

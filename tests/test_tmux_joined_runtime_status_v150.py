@@ -14,11 +14,11 @@ from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeCon
 from tests_support import recovery_lease_state
 from noetrium_platform.infrastructure.reliability.recovery.composition import compose_recovery_lease_status_probe
 from noetrium_platform.infrastructure.lifecycle.launch_control.status_readers import RuntimeControlStatusReader
-from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_transaction_status import RuntimeTransactionStatusProbe
+from noetrium_platform.composition.status_adapters.runtime import RuntimeTransactionStatusProbe
 from noetrium_platform.infrastructure.lifecycle.session.api import PersistentSessionSpec
+from noetrium_platform.composition.status_adapters.session import PersistentSessionHealthProbe
 from noetrium_platform.infrastructure.lifecycle.session.runtime import (
     BoundPersistentSessionStatusProbe,
-    PersistentSessionHealthProbe,
     DirectoryPersistentSessionBindingStore,
     PersistentSessionManager,
     TmuxPersistentSessionControl,

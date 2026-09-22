@@ -1,5 +1,5 @@
 {
-  "matrix_digest": "54fc80f6805be88dfdd490ef7925619c89a495aa2c8dd0f16524fe2effb9adf8",
+  "matrix_digest": "86b548c761c45d26f8a0916a45f49919d76eb0c847c952fb2cbc1da2b4a98345",
   "rows": [
     {
       "audit_required": [],
@@ -12,15 +12,13 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "platform",
         "scope"
       ],
-      "row_digest": "0b62139e443a725db1c557696a9d20827438c9405efb1810c4b7eebf74ec1e29",
+      "row_digest": "f33322713c355f51bbb539604992c47b944bb81085818ae9e601984c131672f0",
       "state_authority": "artifact_identity",
       "system_id": "artifact"
     },
@@ -38,11 +36,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [],
-      "row_digest": "bd35ad64937b499148e66ebda692f47296a7ead1e4f47717bb6ef8123703e15b",
+      "row_digest": "c31f01b2e5f3c1ef54bf5bbb826a45241b12436cc0e29944ca3b4e9e8d19ccb1",
       "state_authority": "artifact_identity",
       "system_id": "artifact/catalog"
     },
@@ -57,12 +54,11 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
         "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "dd62f619d318fa6e740afec4d53a05f1d9d0c4a27d1feb31b73f5c934dab854b",
+      "row_digest": "c7a683bca6a22f9078c35b9cc6e174d0e344573553e3492af186127005e8828a",
       "state_authority": "artifact_identity",
       "system_id": "artifact/content"
     },
@@ -76,13 +72,10 @@
       "plane": "evidence",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "5507f12434a1a9ffa677b140e7c1ee97b5555bd8955b0b614501655dd4419eee",
+      "row_digest": "0304d2fab29c31b2af55320e5280ab82485da76204ad3a57bef74df2a9338834",
       "state_authority": "artifact_identity",
       "system_id": "artifact/lineage"
     },
@@ -148,31 +141,6 @@
     },
     {
       "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "reference",
-      "parent": null,
-      "plane": "foundation",
-      "provides": [
-        "reference.agent.components",
-        "reference.agent.runtime.bridge"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "platform"
-      ],
-      "row_digest": "9ef33da7c8ecc8bcdb48d6403b7a44028daba754b088ccc9abb222615524b26e",
-      "state_authority": "none",
-      "system_id": "components"
-    },
-    {
-      "audit_required": [],
       "canonical_authority": "data",
       "direct_authority": true,
       "downstream_surface": "public",
@@ -181,17 +149,14 @@
       "plane": "evidence",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [
         "artifact",
         "platform",
         "scope"
       ],
-      "row_digest": "e2c65e58a9696d447984622bf4cfcfa5e55d368f938c3a4dc731aba47aeefbff",
+      "row_digest": "1f70430e2d4cfbb698f39dc11954950db8a03442b3a69706b0e3b78186a7a1a0",
       "state_authority": "data_authority",
       "system_id": "data"
     },
@@ -209,11 +174,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [],
-      "row_digest": "1fca495b0754e6fba0caf3809066b9cae73f5697d1c650e1ca6a3c5301e9d462",
+      "row_digest": "5ebe84f4b46b3abf519e689c4ead0a0ba5cfce0e8c0ee6d5ab3bb24de911baea",
       "state_authority": "data_authority",
       "system_id": "data/dataset"
     },
@@ -252,12 +216,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "bd880d966c32580829b88cce5de30ea905ddb22d5655c77c3e76fc2434a706c1",
+      "row_digest": "35138b8b829f074bcabf000ac98617ea367a7609d26ff1ce2c91a78e84fa24b0",
       "state_authority": "data_authority",
       "system_id": "data/projection"
     },
@@ -272,12 +234,10 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "7386e7693c6fdc12da09aa838afafcbb4e5be6fd3bff3cc75765ce5cdae9b819",
+      "row_digest": "2dd3989c8b6137a256413afd50def54842002ea7bde50488866c4da4d81b6b07",
       "state_authority": "data_authority",
       "system_id": "data/query"
     },
@@ -303,28 +263,6 @@
     },
     {
       "audit_required": [],
-      "canonical_authority": "data",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "data",
-      "plane": "evidence",
-      "provides": [
-        "record.plane"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "2feb8fe0134b35d82ebec169c518ef653b24484dd19083aa8e0865a871a76c0e",
-      "state_authority": "data_authority",
-      "system_id": "data/record"
-    },
-    {
-      "audit_required": [],
       "canonical_authority": "data/state",
       "direct_authority": true,
       "downstream_surface": "public",
@@ -336,14 +274,12 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "platform"
       ],
-      "row_digest": "9e7fa95421800e364fe3a849c4738f39926fe0b7956f1c256dfae371e4639671",
+      "row_digest": "469b4e291dbfedc2bc0b0bbe04a3d645ff550c2edd1c2e548c9b7aa33d986e0f",
       "state_authority": "state_authority",
       "system_id": "data/state"
     },
@@ -376,7 +312,7 @@
       "audit_required": [],
       "canonical_authority": "environment",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "environment",
       "plane": "capabilities",
@@ -388,7 +324,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "139a911d79f44d57453b84b2666001f79accf5e284e2b1bc71363db2751fc201",
+      "row_digest": "ee0d0e385b25a032cc202e10a55f89a12f37477d46e5295d1516009cea87124a",
       "state_authority": "environment_state",
       "system_id": "environment/binding"
     },
@@ -405,12 +341,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "9db1fc442c732f3dc54d550c591d72bc999544c9160428e264b0c3f6e9a8bbe8",
+      "row_digest": "9f5cefa0b2f481c32b54202cd1c691e63ad35f2f33eca677a4089d4e216b0a6f",
       "state_authority": "environment_state",
       "system_id": "environment/catalog"
     },
@@ -428,14 +362,13 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
         "governance/system_registry",
         "platform"
       ],
-      "row_digest": "c7db6cc086dfe1c98b16028ea164b26138606513831d13c5cd8dcea88a831595",
+      "row_digest": "7f3dcb481bb72ac62aa1b9c1f879b54c6cbb7693a6c521b5a2797d5d0d73ec56",
       "state_authority": "environment_state",
       "system_id": "environment/category"
     },
@@ -452,7 +385,6 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
         "providers",
         "composition"
       ],
@@ -461,7 +393,7 @@
         "reliability",
         "resource"
       ],
-      "row_digest": "93aedde89fbea5453c91a086105ad3944d8b4d0b181386e354544ac41931996c",
+      "row_digest": "510c1065215581e33ed72af87731501cc9cd8cc8fac28f856fd78c96fe1e7dc7",
       "state_authority": "environment_state",
       "system_id": "environment/embodied"
     },
@@ -477,16 +409,13 @@
         "environment.gui.contract"
       ],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [
         "environment",
         "runtime"
       ],
-      "row_digest": "2dc4a7e2f504a13da2825e461d8b57b01591fd0fb5d5afb54beef50751884dea",
+      "row_digest": "ae724f9c7203cb1a92d15d60644c5a07f23231dda961d450b6a591b0d14f967f",
       "state_authority": "environment_state",
       "system_id": "environment/gui"
     },
@@ -500,13 +429,10 @@
       "plane": "capabilities",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "195137183bfecae4f80188d78509c501a32a3b346ee5934814e87cc741b9a80e",
+      "row_digest": "d4892d79b2f048beaa5714c4e08aca3a41445f99de0136ef704ca62c037d807c",
       "state_authority": "environment_state",
       "system_id": "environment/instance"
     },
@@ -514,7 +440,7 @@
       "audit_required": [],
       "canonical_authority": "environment",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "environment/instance",
       "plane": "capabilities",
@@ -526,7 +452,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "0f88b6eccdd8e787d62898f20fc6cabdd9eb20a291d24b5184374cf52e6188ef",
+      "row_digest": "ba78dba05e58747f49355b32854240dbeda113ca43bde8b6a2bfb1f2f0b484d0",
       "state_authority": "environment_state",
       "system_id": "environment/instance/identity"
     },
@@ -534,7 +460,7 @@
       "audit_required": [],
       "canonical_authority": "environment",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "environment/instance",
       "plane": "capabilities",
@@ -546,7 +472,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "307e4b61a4cbfa525ba5257d0f65ee3e1a48c0b0b51b0d652333893f13a107b6",
+      "row_digest": "3ad844276b483a6008b4bed677b29ec0be3afdd87e88ff4ed265c42a7439a607",
       "state_authority": "environment_state",
       "system_id": "environment/instance/readiness"
     },
@@ -610,13 +536,10 @@
         "environment.contract"
       ],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "231f51fc48353c1e1cab848d398d1bb714d7de0364382225f436e552e4c7b298",
+      "row_digest": "06beb9bb29c352b8b3d23f01a307e1ad3f5b179adb4a8001826403d1b8f1f3a2",
       "state_authority": "environment_state",
       "system_id": "environment/runtime"
     },
@@ -633,7 +556,6 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
         "providers",
         "composition"
       ],
@@ -642,7 +564,7 @@
         "runtime",
         "resource"
       ],
-      "row_digest": "579dd85cf8c1f9709b3cb355e53aab1dd15c61d8c98f8f82ad84e8676ca64689",
+      "row_digest": "a0f13491c449a78e23b80faaab6ef48b7c39d14af81223d83fb0ce7a0ef1c888",
       "state_authority": "environment_state",
       "system_id": "environment/software"
     },
@@ -656,13 +578,10 @@
       "plane": "capabilities",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "6a39db09af4d9ce1b6e9cb9738d6e7c9b19c206285f7c9647f1ed48519d12877",
+      "row_digest": "5316575c7162d5274f07704519bc4431e54ef0102e0a2efbfb74dd9def02dbee",
       "state_authority": "environment_state",
       "system_id": "environment/specification"
     },
@@ -670,7 +589,7 @@
       "audit_required": [],
       "canonical_authority": "environment",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "environment/specification",
       "plane": "capabilities",
@@ -682,7 +601,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "fecf4b2d592bfccc595025ab481381bb0abdc9098c1b6e6e89ec188ac7e3bed1",
+      "row_digest": "bccaa59fc0971d89b26684a24fc5fd57f6ec4738665332805e4d12b961ef2885",
       "state_authority": "environment_state",
       "system_id": "environment/specification/digest"
     },
@@ -690,7 +609,7 @@
       "audit_required": [],
       "canonical_authority": "environment",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "environment/specification",
       "plane": "capabilities",
@@ -702,7 +621,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "3988a52bf304e1505dfca90dffd4c688d899df7a67b005aff4046d15a78d76ab",
+      "row_digest": "d8896e3eabd6aa1a7cd594b03ab1b437eb76315fc467e52b515bb7b4625b8e6c",
       "state_authority": "environment_state",
       "system_id": "environment/specification/schema"
     },
@@ -718,15 +637,12 @@
         "environment.text_world.contract"
       ],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [
         "environment"
       ],
-      "row_digest": "5a990a6a548dd92b7324ff297a51ea1272194f5ca0228399ebc4f169978f11d9",
+      "row_digest": "f3d653a4fc730a373a0eeac48f8888b5bf95b2baa2cbf52e3e437cbfa5a0b3ba",
       "state_authority": "environment_state",
       "system_id": "environment/text_world"
     },
@@ -742,16 +658,13 @@
         "environment.web.contract"
       ],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [
         "environment",
         "runtime"
       ],
-      "row_digest": "9a674af0e2d095db2c261a542c70a62927e33b819fbe44dc3e41b0fe7f6d5832",
+      "row_digest": "6a1e4173aff9eb4f38369841a849980517d990c8fa096972d7fec88cf182c165",
       "state_authority": "environment_state",
       "system_id": "environment/web"
     },
@@ -767,7 +680,6 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
@@ -781,7 +693,7 @@
         "runtime",
         "scope"
       ],
-      "row_digest": "b594034c4c22ae8e3c9f735557d23c7772ef2808672919e37af0662fe23abfac",
+      "row_digest": "5c6947c898cbb8c436c37537c4f8fb5207fb652a6ee9dea00498574f84c7e5d7",
       "state_authority": "execution_operations",
       "system_id": "execution"
     },
@@ -819,21 +731,19 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "bcb0c1638d219bbe0cad82060ab364c206b3e81ce9aed7eee960a61fc4306185",
+      "row_digest": "24f2a945237ea6916e9f7b4251ad8e92e75424d2aece667d4b194d106aee5d43",
       "state_authority": "execution_operations",
       "system_id": "execution/capability"
     },
     {
       "audit_required": [],
-      "canonical_authority": "execution/command",
-      "direct_authority": true,
+      "canonical_authority": "execution",
+      "direct_authority": false,
       "downstream_surface": "public",
-      "node_kind": "authority",
+      "node_kind": "facet",
       "parent": "execution",
       "plane": "research",
       "provides": [],
@@ -844,8 +754,8 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "4a52a0cc11ae9aeccd2afe352c94d1f283fbd85f851221b0b6bf06e87784e1e4",
-      "state_authority": "command_intent",
+      "row_digest": "e8639eeb7b0b47cb2e9b41eaa12264f5f0f201e7c39e74da92d7479a12057372",
+      "state_authority": "execution_operations",
       "system_id": "execution/command"
     },
     {
@@ -867,6 +777,33 @@
       "row_digest": "a60f078addbce8581fa8bffb1913dc2fcc9af8532be6e8ee9a483ff31195ef7b",
       "state_authority": "operation_state",
       "system_id": "execution/operation"
+    },
+    {
+      "audit_required": [],
+      "canonical_authority": "execution",
+      "direct_authority": false,
+      "downstream_surface": "public",
+      "node_kind": "facet",
+      "parent": "execution",
+      "plane": "research",
+      "provides": [
+        "research.program",
+        "runtime.program",
+        "research.machine.authoring"
+      ],
+      "public_abi": [
+        "api"
+      ],
+      "requires": [
+        "artifact/content",
+        "environment",
+        "model",
+        "participant/capability",
+        "platform"
+      ],
+      "row_digest": "15b36931d5eb26094744374714f467664a036147ae61d64adff8ef330c3e52a2",
+      "state_authority": "execution_operations",
+      "system_id": "execution/research_program"
     },
     {
       "audit_required": [],
@@ -928,8 +865,6 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
@@ -942,7 +877,7 @@
         "governance",
         "model"
       ],
-      "row_digest": "5919929447dd4059e4c678b6910a52bb7c2ac43f6fe57188b263a504bced7f29",
+      "row_digest": "932d14106b13fac311fb37d791bfe596b0bc75936993ce45993d809a395ef6df",
       "state_authority": "experimentation_state",
       "system_id": "experimentation"
     },
@@ -950,7 +885,7 @@
       "audit_required": [],
       "canonical_authority": "experimentation",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "experimentation",
       "plane": "research",
@@ -962,7 +897,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "72a2a16fa74aea9bb2a15e53d981900d80edd656e6435c192725879253e253c3",
+      "row_digest": "a41bb4e3aa21a054933b23f1528daa3e421bdc01a836e1af58a91908ce4f61d5",
       "state_authority": "experimentation_state",
       "system_id": "experimentation/branch"
     },
@@ -979,17 +914,15 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "experimentation/experiment",
-        "experimentation/run/identity",
+        "experimentation/run",
         "experimentation/study",
         "scope"
       ],
-      "row_digest": "25abaf6b357a9ea85df55bb71bf8089aaa644c38983cbcadab39652db6bab964",
+      "row_digest": "fbbd790dafab2d09502e5efd98f94f4cc9c8651755262c747c80cdba029ec704",
       "state_authority": "experimentation_state",
       "system_id": "experimentation/catalog"
     },
@@ -1027,11 +960,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "0a18178cdaa4ff838a952b40ec7473dba218359b8d50d18306d46d1306de5b51",
+      "row_digest": "25e4b3cf2d8d0fffb584774975d2b1b7e4b7ae1c759c3a350301b209797d1fd0",
       "state_authority": "experimentation_state",
       "system_id": "experimentation/evaluation"
     },
@@ -1049,12 +981,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "b82bebb2428baa377c034e717bc33ebf0b362f8a328e3b145845b3a698b192fb",
+      "row_digest": "2cd18aa19eedac1a987b3ce72e68a0aae3a397f5dd5a0ceecd1ba1dc1858f305",
       "state_authority": "experimentation_state",
       "system_id": "experimentation/experiment"
     },
@@ -1072,7 +1002,6 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
@@ -1080,7 +1009,7 @@
         "resource/compute",
         "scope"
       ],
-      "row_digest": "0ec5a1d871513eb836006f88e2808b2faa3fceada06375a2e4d5ffc5f85b4bf1",
+      "row_digest": "4912e257a4a592310037b09eb650c2342c42017653b87dc05d5a55140858c656",
       "state_authority": "experimentation_state",
       "system_id": "experimentation/resource"
     },
@@ -1093,110 +1022,22 @@
       "parent": "experimentation",
       "plane": "research",
       "provides": [
+        "run.control",
+        "run.decision",
+        "run.identity",
         "run.lifecycle",
-        "run.decision"
+        "run.manifest"
       ],
       "public_abi": [
         "api",
-        "runtime",
+        "composition",
         "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "beb581d098fa4c3bef6735d2eb291f525563d4860ec8801755ebdbb6ca0461b2",
+      "row_digest": "b04269120b60f2b61a580e915a92b124d4eaf6e041c52c96e5e23cf9528d6943",
       "state_authority": "experimentation_state",
       "system_id": "experimentation/run"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation/run/control",
-      "direct_authority": true,
-      "downstream_surface": "public",
-      "node_kind": "authority",
-      "parent": "experimentation/run",
-      "plane": "research",
-      "provides": [
-        "run.control"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "execution",
-        "execution/operation",
-        "experimentation/checkpoint",
-        "experimentation/run",
-        "experimentation/run/identity",
-        "experimentation/run/lifecycle",
-        "experimentation/run/manifest",
-        "platform"
-      ],
-      "row_digest": "a7bc10f034a38d602b4358b46fd3a5f2eb6bbb156a1a23d3f39c52e9fb2f18f9",
-      "state_authority": "run_control",
-      "system_id": "experimentation/run/control"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation/run",
-      "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "d5cbdbda76e28c926d99177672ea37ed08f1aeed1b1f08fac5ae03192375e859",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/run/identity"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation/run",
-      "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "12677eb62f01ee027de05dd65122aad628ebf01ab87b3ba289552d04e34706ee",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/run/lifecycle"
-    },
-    {
-      "audit_required": [],
-      "canonical_authority": "experimentation",
-      "direct_authority": false,
-      "downstream_surface": "public",
-      "node_kind": "facet",
-      "parent": "experimentation/run",
-      "plane": "research",
-      "provides": [],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [],
-      "row_digest": "13ae9969ef92b52a741fa5545321333d91906782200de565f35758f7ea36dedb",
-      "state_authority": "experimentation_state",
-      "system_id": "experimentation/run/manifest"
     },
     {
       "audit_required": [],
@@ -1226,7 +1067,7 @@
       "audit_required": [],
       "canonical_authority": "experimentation",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "experimentation",
       "plane": "research",
@@ -1238,7 +1079,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "a082afadb8c2048ccbb41247fbf903b0a75bd6117ee1ee7f6adc464d5dc649ca",
+      "row_digest": "2ae749a60b9061a1046a34335a76ab926611480cbc33dfe33dced6503d52e9fd",
       "state_authority": "experimentation_state",
       "system_id": "experimentation/variant"
     },
@@ -1280,7 +1121,6 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
@@ -1290,7 +1130,7 @@
         "participant/method",
         "platform"
       ],
-      "row_digest": "b2f6d6aaa6077319ce756bd95586cad3e09b6aa1315f3b6bef06e95f7e6c3eff",
+      "row_digest": "8d8889667c733f54bed0e6eb5b79d155ce3bd25aa2702e5eede1c934cdac6174",
       "state_authority": "experimentation_state",
       "system_id": "experimentation/workload"
     },
@@ -1350,13 +1190,12 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
         "scope"
       ],
-      "row_digest": "a45bbcbd64ba3c97e863fc4fcbd921204e58856aa73d62fd17c78414eaa6162b",
+      "row_digest": "480b3d679fb877eb11f5e969e515d5f08dc8a1230ff67cc5dfbb10c6e5a69104",
       "state_authority": "none",
       "system_id": "governance/architecture"
     },
@@ -1394,14 +1233,13 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [
         "governance/system_registry",
         "observability"
       ],
-      "row_digest": "c9404a8cba7a3f61bebc40063d168463c380294776eb3a924739641f78ff38c7",
+      "row_digest": "316d8b0898a92d02acbae22d68ecaf003a1c5bfb00f7a2deaf34d9f6f8c88a2e",
       "state_authority": "none",
       "system_id": "governance/evolution"
     },
@@ -1417,11 +1255,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "6ec0f5bf0d43b992dfcfb9a0ff63722e702f0701088ecf1c621e21061eec027a",
+      "row_digest": "6959c59c01254ec749c53857c39b38dcb2ca22286151c8545868d0fdb3b66d62",
       "state_authority": "none",
       "system_id": "governance/gate"
     },
@@ -1457,13 +1294,10 @@
         "quality.audit"
       ],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "0b8ced2e8b23fca06fcedead1c045c16aa3fe86651c5094fcc9f7db13e1dd95d",
+      "row_digest": "c0dc89e6dfae93bc874308aa67523579e4dd4abf54a3c0a9879131665dd57127",
       "state_authority": "none",
       "system_id": "governance/quality"
     },
@@ -1481,11 +1315,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "9a138adc573977fcb0dedd80bb644191b2c86aa19ad4b99c66931bb7229f55a1",
+      "row_digest": "dff245a719056adafcd3eb80580295e3da857ae1b3ed14e69c21d5345aaa4e48",
       "state_authority": "release_authority",
       "system_id": "governance/release"
     },
@@ -1501,11 +1334,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "a6db2fd0319ed4df4660888492793254794980f835aa44c31f88b75a8e0f9d64",
+      "row_digest": "dcdfdfd2e70b28612be5c9d5fab947a2f7932d6e77e879bb29fcf197474c99c9",
       "state_authority": "none",
       "system_id": "governance/repository_boundary"
     },
@@ -1513,7 +1345,7 @@
       "audit_required": [],
       "canonical_authority": null,
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "policy",
       "parent": "governance",
       "plane": "foundation",
@@ -1525,7 +1357,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "bd47585b30edc888ada3dd46c0d2c277ef69045e9f2c3fdfa8aa6e5611a23047",
+      "row_digest": "e2030487cd73f97e6da8f3adcda20f2a47b66153e9497a08c2bf2cbfdddab7e5",
       "state_authority": "none",
       "system_id": "governance/schema"
     },
@@ -1533,7 +1365,7 @@
       "audit_required": [],
       "canonical_authority": null,
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "policy",
       "parent": "governance",
       "plane": "foundation",
@@ -1545,7 +1377,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "f3aaa866e7fd99ab74040c7cf302c7e3cfc52dc3740c1900a8ba214d1bcbe903",
+      "row_digest": "868dc1a06968fdf4438a4799f5245981910270ac937160d82be9685663e44391",
       "state_authority": "none",
       "system_id": "governance/security"
     },
@@ -1560,12 +1392,10 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "f81593a64824c213ea09c34c39ba54df7b891a2075aa8277d231b35d0f1ce3f6",
+      "row_digest": "9f6f74a12544c4508f8150b96d8d999db3092974b8ae3b477d4a47a6cdcd0eca",
       "state_authority": "system_topology",
       "system_id": "governance/system_registry"
     },
@@ -1580,18 +1410,18 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
         "providers",
         "composition"
       ],
       "requires": [
+        "artifact",
         "environment",
         "platform",
         "resource",
         "runtime",
         "scope"
       ],
-      "row_digest": "faf8eb6f7095822554c30c5861cf0a64fb834cbdd9a3a4ada69ac69381e65340",
+      "row_digest": "bcc1abbfe999023947fac72b218dbc9c7f3b63cc2d0beff99458b162a6219589",
       "state_authority": "model_identity",
       "system_id": "model"
     },
@@ -1610,11 +1440,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [],
-      "row_digest": "88ba4ff46515c264855d5ef7205efe284c5f603cb3ec083a23355215660c1d76",
+      "row_digest": "458282b74b5a2d5e75f4eee696d760b63a3411f73555cc0581a2af348c44d653",
       "state_authority": "model_identity",
       "system_id": "model/asset"
     },
@@ -1631,12 +1460,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "9b6fd7be6d5b9e9207aabab2389a8ace31c61b9445618bfb52937752c840374f",
+      "row_digest": "715d33f3fe8ceb280a000504dda42ad6aa1c31db7a0e72cc637c29d96dc615cf",
       "state_authority": "model_identity",
       "system_id": "model/assignment"
     },
@@ -1650,13 +1477,10 @@
       "plane": "capabilities",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "445b61416d0fa6dd5ae173cfc40804a6270d716800640d224c11ef7f277567d9",
+      "row_digest": "d99e851300320487bf6282eec84b385b736c52bf214718f34c72839e2d9a8778",
       "state_authority": "model_identity",
       "system_id": "model/catalog"
     },
@@ -1664,7 +1488,7 @@
       "audit_required": [],
       "canonical_authority": "model",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "model/catalog",
       "plane": "capabilities",
@@ -1676,7 +1500,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "4a3ba2cbc554da4b17281451426f72f23b2d11b998b56963b0a8254e69b0baef",
+      "row_digest": "dc845cc2bcc99cb8a6137c29dde05d29ba0fb81992cce4fab6a6f5cc622713b9",
       "state_authority": "model_identity",
       "system_id": "model/catalog/family"
     },
@@ -1715,11 +1539,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "4b9000b18b281f3416f9a7261999827ffa4d20eb671fe7f580eeb2e643e6d032",
+      "row_digest": "71f2a06c3eb1f885bb3fc4d27056a4c82f9ea71b9b6162b0941a512e72071790",
       "state_authority": "model_identity",
       "system_id": "model/deployment"
     },
@@ -1727,7 +1550,7 @@
       "audit_required": [],
       "canonical_authority": "model",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "model/deployment",
       "plane": "capabilities",
@@ -1739,7 +1562,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "09b625805cb086e163f2394d1294d6b6a8bb6052b5380ddeb86f7310e91936e4",
+      "row_digest": "24af026db25e6042b9927065fd0a3aec10754908604f174028d08782110a3a34",
       "state_authority": "model_identity",
       "system_id": "model/deployment/closure"
     },
@@ -1777,11 +1600,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "23a4f02463187f06ded789e0c5a331acf792684533ecc67da44601dcf9ddaf8b",
+      "row_digest": "61c213c3b9e1616f8ad96ba8858a04941e964d55f95cc563ae2f3f3905cea476",
       "state_authority": "model_identity",
       "system_id": "model/request"
     },
@@ -1789,7 +1611,7 @@
       "audit_required": [],
       "canonical_authority": "model",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "model/request",
       "plane": "capabilities",
@@ -1801,7 +1623,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "62cdbbc4d471a558b0a43b6f63fab4eda06b9fad602591a42e229e4747d805f1",
+      "row_digest": "82e6b256c425f586ee92337a204ee1b69da3e568885301840381ceaf1c2c91a9",
       "state_authority": "model_identity",
       "system_id": "model/request/input"
     },
@@ -1809,7 +1631,7 @@
       "audit_required": [],
       "canonical_authority": "model",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "model/request",
       "plane": "capabilities",
@@ -1821,7 +1643,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "62e1b7133cc89cf9a858ac46e571dafc713b80cd96214bd7c0d2d7acc9b14aeb",
+      "row_digest": "fd296bcfa491abdbcdfe5f091725cdfe3255ae26cd1dabfbcde12f1f05872c01",
       "state_authority": "model_identity",
       "system_id": "model/request/output"
     },
@@ -1837,11 +1659,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "e8cec53c304dff40a68eea245347f783a45a816021b6fbbf9d4bc627eeb0b476",
+      "row_digest": "7dd89d038e51ed40e9e1c35884469953602a6e624465d9f30aa960cf063f7338",
       "state_authority": "model_identity",
       "system_id": "model/request/prompt"
     },
@@ -1898,13 +1719,10 @@
       "plane": "capabilities",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "256f040a98abedb89e33e719b79d27256e28f37da8265ab9dda062313bf9bece",
+      "row_digest": "b0f575e396eddb9b8b349221ba5dae44cf5e81b5e96bb3ce7d85f75c5ec2968b",
       "state_authority": "model_identity",
       "system_id": "model/stack"
     },
@@ -1918,10 +1736,7 @@
       "plane": "evidence",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [
         "data",
@@ -1929,7 +1744,7 @@
         "platform",
         "scope"
       ],
-      "row_digest": "b75e32e230831db27aeceb49708175b7a33b4cbcda19d5d310c4b11beba2bf31",
+      "row_digest": "ce4fa64dd2165be1fbeb6d97ffc07d4d3622f730ec55dcee3780d65694c100f6",
       "state_authority": "none",
       "system_id": "observability"
     },
@@ -1963,13 +1778,10 @@
       "plane": "evidence",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "31eb594da2693283683d8ae47353659d4ac7c8fe3c78bdffc935fae909f8bc23",
+      "row_digest": "6a1ba49ae5b7f8d410f963b6a8eed40eb23e7c32802f5a0f5beb9e2e9eb42364",
       "state_authority": "none",
       "system_id": "observability/diagnostic"
     },
@@ -2046,12 +1858,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "a4c7c6e06950c7a5ae0d6e7d4dd1c128e019e00293a57879abefeecb8a9405ee",
+      "row_digest": "2b08725781ee51233c64fe89502468f9a048ad1879f287e01d59783cc2bf5733",
       "state_authority": "none",
       "system_id": "observability/logging"
     },
@@ -2085,13 +1895,10 @@
       "plane": "evidence",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "994839137f7fc833af0c3286e50511b2ad347a172c2f83d29697be9833eec538",
+      "row_digest": "17a31453d9864fe59f8fa9f6df82ac60dc0307c70ae27bef9944a0f404d710da",
       "state_authority": "none",
       "system_id": "observability/logging/context"
     },
@@ -2125,13 +1932,10 @@
       "plane": "evidence",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "5365d3d8b82539915c8977798732be50c72750e66f51a7def034d7386fad6e41",
+      "row_digest": "6abcec9e0646e7905e6f0b0a774d9efa35e95caa51c959352281b1e7999d2d50",
       "state_authority": "none",
       "system_id": "observability/logging/query"
     },
@@ -2147,11 +1951,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [],
-      "row_digest": "1e57b6d740b49c6b97a9eb819a3288c9ca0914691f3ae42f77cd50be804e533a",
+      "row_digest": "9998c5f6218c2963a6992ec5b5fc76d4dbe237d9ead5690a862e7de7c05fcc91",
       "state_authority": "none",
       "system_id": "observability/logging/record"
     },
@@ -2188,12 +1991,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "d521e9127df0fb56819db00b8d38f5217495b6f12c77eaaa598411217adcf82d",
+      "row_digest": "81dfe7c4e1bf0992c61da5231bba8177303dc6b5b8d218d868cfa28791803ceb",
       "state_authority": "none",
       "system_id": "observability/logging/routing"
     },
@@ -2207,13 +2008,10 @@
       "plane": "evidence",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "47586e1a8ba102a6e44ef9d51f9d92f0652d25dde0ca7f86628d06009ed64b61",
+      "row_digest": "b3c968d07797d6f707683fb162f4b6418af614dc5fa6bb726a991a0e1421327b",
       "state_authority": "none",
       "system_id": "observability/logging/sink"
     },
@@ -2229,11 +2027,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "667745c9d1988302d8f6c1bc86dce016a76e65f8c470d526954f5f6872bba40c",
+      "row_digest": "578909700d3c762107fff269397f7ce8c3bb48cb931913efef4799621eda3505",
       "state_authority": "none",
       "system_id": "observability/logging/storage"
     },
@@ -2270,12 +2067,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "ab3fdf29d07fbb4d85004b838b35d48aa61f6f86038fadb6ea91cca065375e21",
+      "row_digest": "a5b1405b4b5abaef21e8db21b502f857175de1c34b91d002804977434926b784",
       "state_authority": "none",
       "system_id": "observability/status"
     },
@@ -2331,13 +2126,10 @@
         "telemetry.metrics"
       ],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "1d7597cd223203b5b3ff77c9519282730d02fa97714f64e039775f0a8ee9df00",
+      "row_digest": "93ff434d148631c2abd4a84461dd01006319b5ca16f03ca25dad1eb9217c44b6",
       "state_authority": "none",
       "system_id": "observability/telemetry"
     },
@@ -2352,12 +2144,10 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "4035dd9b78719c78a1200847de1cfdee61f4f13e9d2c4dac292ac2cdc85fa066",
+      "row_digest": "a4231525faf67f5d15e44e99c7678eed493fccd3849796066081f1d3b1918631",
       "state_authority": "none",
       "system_id": "observability/telemetry/event"
     },
@@ -2391,13 +2181,10 @@
       "plane": "evidence",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "838ad1d9907cad831d7c425ae02929a8aa8ee1bb96c7628b6d9fb527b6158134",
+      "row_digest": "794649602a41a56f0bb87c4cc2bb16de8eefda29751b3d8139b9c70d810fe71a",
       "state_authority": "none",
       "system_id": "observability/tracing"
     },
@@ -2473,7 +2260,6 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
@@ -2489,7 +2275,7 @@
         "resource",
         "scope"
       ],
-      "row_digest": "f2a69e1278823dc5dbc9c99a4f79c1551317faf347a5037354c7d7a7fe8de8e6",
+      "row_digest": "eea330a52dd30fa17e70c8e3105b13f241357aa2f5eb7094144d5e390cd71db8",
       "state_authority": "none",
       "system_id": "operator"
     },
@@ -2504,12 +2290,10 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "61aca57f1360c3c619cfb44f0a67a75dbd89e9f5e8081afc59de911b31cb6295",
+      "row_digest": "0beb48a195980fa995357faacd86c6ecf6b34c1bd297ad9318e9cf0ee6962e79",
       "state_authority": "none",
       "system_id": "operator/audit"
     },
@@ -2523,13 +2307,10 @@
       "plane": "product",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "b720136189bee3f4acc1206ebbb2a83e8a51b985fb92ab03a797af27ebee81b2",
+      "row_digest": "81ffaaa6791cbc3c0891f92f1e358196088228d81f320e839dd2b62cf9296a01",
       "state_authority": "none",
       "system_id": "operator/command"
     },
@@ -2585,13 +2366,12 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
         "runtime"
       ],
-      "row_digest": "1e521fc6bc6ac3e29fa3253c18228413872f3164d5a188b4c5d5f5682e742c01",
+      "row_digest": "642aa8a8e6a57888765623954ba8d7c289d0e39a6092826c6dc7e0381ee4509b",
       "state_authority": "none",
       "system_id": "operator/maintenance"
     },
@@ -2606,12 +2386,10 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "bb6a6e7e80215f5ea795d4b1b452d2b14ae0a052437f83f42da813cc57e8db9b",
+      "row_digest": "7dd7a8e90a13a3a0c6d9157ead6233e2fe97c664a1153e2b142eb948b371bb5d",
       "state_authority": "none",
       "system_id": "operator/query"
     },
@@ -2637,31 +2415,6 @@
     },
     {
       "audit_required": [],
-      "canonical_authority": null,
-      "direct_authority": false,
-      "downstream_surface": "metadata_only",
-      "node_kind": "reference",
-      "parent": null,
-      "plane": "foundation",
-      "provides": [
-        "multi_agent.orchestration"
-      ],
-      "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
-      ],
-      "requires": [
-        "components",
-        "platform"
-      ],
-      "row_digest": "53ca0d82459ed8007b245b6d7c36887bba77e4cc77ef5bc0cb168e59e1667316",
-      "state_authority": "none",
-      "system_id": "orchestration"
-    },
-    {
-      "audit_required": [],
       "canonical_authority": "participant",
       "direct_authority": true,
       "downstream_surface": "public",
@@ -2671,7 +2424,6 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
         "providers",
         "composition"
       ],
@@ -2680,7 +2432,7 @@
         "platform",
         "reliability"
       ],
-      "row_digest": "576894285dca2fc07da42bfa3b913c51a4d8be62b7cdee5745ec76c97ee17059",
+      "row_digest": "4671a1dc8b4a0ccb00f1ecee04188cc680aecfac9e60cf5544c0157b52d486c6",
       "state_authority": "participant_state",
       "system_id": "participant"
     },
@@ -2697,14 +2449,12 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "model"
       ],
-      "row_digest": "2720a691dbdbaab536151ed3a723fad718b22e183d89f5eb33352f6e68a07bb5",
+      "row_digest": "6dbeeef192449ab5e07fb950a7783672d4a7dc3c1a6c80d7c7c368e341d8061e",
       "state_authority": "participant_state",
       "system_id": "participant/agent"
     },
@@ -2720,11 +2470,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "ce29a98b97905e3783b7a514be19b515a46e133b8b26c738387484c755ac0480",
+      "row_digest": "6ad91ead913a53add8af0948ce7aa63b836eb04bd58a7d6f7b3fdc4d4f392e61",
       "state_authority": "participant_state",
       "system_id": "participant/binding"
     },
@@ -2741,12 +2490,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [],
-      "row_digest": "20138ce8560cdfed8e9866c118f47666b64a65350e506c1cf6ba810df0c51d9d",
+      "row_digest": "fe8f66bf48ac3bf210ce6680383846b61650f5aacdac384ccf2ac55112eaf984",
       "state_authority": "participant_state",
       "system_id": "participant/capability"
     },
@@ -2762,15 +2509,12 @@
         "participant.runtime.abi"
       ],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [
         "platform"
       ],
-      "row_digest": "574784080d007cd5ca7f29c7b3b6aaed3202db1977a28ef5d899ae81f2854f45",
+      "row_digest": "67ef32517a20cb63fc5c910fb0f56df9640446816dba2e6e9b16fa5b947b712d",
       "state_authority": "participant_state",
       "system_id": "participant/core"
     },
@@ -2787,12 +2531,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "262012b51e886a088e4567943291eeaf34759c44c5337bf68cc547bfaf8e0d1d",
+      "row_digest": "0e07b5b44c52fd178cf83268df6d157a783d1314d3637cc4ee118e879d1e8980",
       "state_authority": "participant_state",
       "system_id": "participant/definition"
     },
@@ -2811,13 +2553,12 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [
         "governance"
       ],
-      "row_digest": "4eeff0e56f80090d420dc2d2cfc46a0804ac0a6f966269e0bcba1f3f491192da",
+      "row_digest": "0acd57b08ba534af7ad13281ffa66ae0d893509aae8cd48abd92315995ef3966",
       "state_authority": "participant_state",
       "system_id": "participant/method"
     },
@@ -2834,12 +2575,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "934f50eec18e3977bbeca5304975d2d6e304a23d5f44a9b3f0a94f8daa87eeb0",
+      "row_digest": "11f453c4f748c22e7d33639533cecd58c09b252164986d2e18e6c24f33d3b923",
       "state_authority": "participant_state",
       "system_id": "participant/session"
     },
@@ -2854,12 +2593,10 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "0ba597f2bd5dd7b5a13095bd09eb050b875c9d800a81b8160f842e67f0b1d22b",
+      "row_digest": "2277f98307975fd1d7cd5df084cc6c37297c59d6d666f8ba48e250c07f55911c",
       "state_authority": "platform_identity",
       "system_id": "platform"
     },
@@ -2887,7 +2624,7 @@
       "audit_required": [],
       "canonical_authority": "platform",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "platform",
       "plane": "foundation",
@@ -2899,7 +2636,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "31f5427e76cf659515256f1a03af758cead2deb5cefdacdc5910056abc0505fd",
+      "row_digest": "4b629b62057cb76fa566b900a9bbec51ba6b6b7779777e5ee6c1a5566dd5b7cd",
       "state_authority": "platform_identity",
       "system_id": "platform/configuration"
     },
@@ -2907,7 +2644,7 @@
       "audit_required": [],
       "canonical_authority": "platform",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "platform",
       "plane": "foundation",
@@ -2919,7 +2656,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "c59d8102c2663a9964d86fe7822472c9c7714c12e0253e8d2a1178b957e111e7",
+      "row_digest": "9362863fb60e73ef3d2384cd6fa7da7ab45159f54f021705c4a7c33b9faa4f0d",
       "state_authority": "platform_identity",
       "system_id": "platform/identity"
     },
@@ -2927,7 +2664,7 @@
       "audit_required": [],
       "canonical_authority": "platform",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "platform",
       "plane": "foundation",
@@ -2939,7 +2676,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "bddc7a0ce466174103617704a5e73c3d01985a2e2fca560a1d95f54865b2baa8",
+      "row_digest": "cc52892d9aba087a104a85daddf56c0309de9b051f0dc87e6cc7ffeff368d1d2",
       "state_authority": "platform_identity",
       "system_id": "platform/lifecycle"
     },
@@ -2954,15 +2691,13 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "platform",
         "scope"
       ],
-      "row_digest": "a3bf0b1d9d80f9108ea54f6cf641ce400a8895a1351897db7181aa425d79b9a1",
+      "row_digest": "fd2d3bddd1923ea12c93457404598fa7a1d3e3a1ce98695971cbf017ccbc7428",
       "state_authority": "portfolio_metadata",
       "system_id": "portfolio"
     },
@@ -2970,7 +2705,7 @@
       "audit_required": [],
       "canonical_authority": "portfolio",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "portfolio",
       "plane": "foundation",
@@ -2982,7 +2717,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "40afbafa97030f0151e84d882f0d39a945e887108f025bd13d897df3bda4349b",
+      "row_digest": "07ffc2abd33041a337d6808ec838d07f8d6e49692b4695fa37945c7400cdb9a5",
       "state_authority": "portfolio_metadata",
       "system_id": "portfolio/membership"
     },
@@ -2990,7 +2725,7 @@
       "audit_required": [],
       "canonical_authority": "portfolio",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "portfolio",
       "plane": "foundation",
@@ -3002,7 +2737,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "e59c8e0911e0b00186af1a66c7e2e9f5edac79df073a36bd60d72475d0cb8980",
+      "row_digest": "b7f50fb00fa43be20e0161259bbc109c43a05906642bd4fb772934ba291ed58b",
       "state_authority": "portfolio_metadata",
       "system_id": "portfolio/program"
     },
@@ -3016,13 +2751,10 @@
       "plane": "foundation",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "8f3a948d09cdba335584deee77de3ddaf3ad26cd03f76e39406486d01312aa70",
+      "row_digest": "867ae98a48ceefaa7f64d612bc8c9e42bcf94e6f0d6ef9b0acac4380e4b6e161",
       "state_authority": "portfolio_metadata",
       "system_id": "portfolio/project"
     },
@@ -3030,7 +2762,7 @@
       "audit_required": [],
       "canonical_authority": "portfolio",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "portfolio",
       "plane": "foundation",
@@ -3042,7 +2774,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "2d2239d2a259431828a0331a50ded44c5a4fa6b9de1c87837f61cb7a9411d269",
+      "row_digest": "d66b7ee0052264010d17a7fbe171d43b0d3844672980bcaeb27f30a6f4806a79",
       "state_authority": "portfolio_metadata",
       "system_id": "portfolio/workspace"
     },
@@ -3056,10 +2788,7 @@
       "plane": "foundation",
       "provides": [],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [
         "data",
@@ -3068,7 +2797,7 @@
         "platform",
         "scope"
       ],
-      "row_digest": "25f7caee948c48f1d864d9d67ab5aad3f4afb8113f93ec432f4a2c019b8e64dd",
+      "row_digest": "a6351298578e4a72159c3bff0ff6bdcf56192e0cf4c38f20ea84a46abe5dd1d9",
       "state_authority": "none",
       "system_id": "reliability"
     },
@@ -3085,12 +2814,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "1864d7e6afd6899a9d7da995cb0cb599fa1f2650ac9745dc239acc535a555e24",
+      "row_digest": "5638b170baf063ee8244d50f3cc77b5fed07b0345bd48429abb7183e0074c7ff",
       "state_authority": "none",
       "system_id": "reliability/diagnostics"
     },
@@ -3108,12 +2835,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "bd636018d2ee1ba108b509e744410e33f068bc586da2bdec9392286fe74c5050",
+      "row_digest": "29e17b06fd4f3830365a2950dde99ad7aa0a1654155d814ad0e4654041aed075",
       "state_authority": "effect_authority",
       "system_id": "reliability/effect"
     },
@@ -3129,13 +2854,10 @@
         "failure.truth"
       ],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "f32cd454f3ab88c8af663e485bc3601d36cd64981fcf30c1bd812dd91b71677e",
+      "row_digest": "a866fc7b148f7ca322b6f1f3faf2cddcc8ec48ffbe4d0bcde451d64de6532514",
       "state_authority": "failure_authority",
       "system_id": "reliability/failure"
     },
@@ -3175,11 +2897,12 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
-      "requires": [],
-      "row_digest": "4719a0cf75257e768a29b5653a757437250ddd4b86d56a66801cdfaeed34085f",
+      "requires": [
+        "resource"
+      ],
+      "row_digest": "c00936a6ea1c3dc2effe6763d9d5a026c707a2a86866915e5c89b24445092dbd",
       "state_authority": "none",
       "system_id": "reliability/recovery"
     },
@@ -3197,11 +2920,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "0db319ed1d1cf8aa48fa3f3ac9c63c9542435c885603b412d1151055d639b67a",
+      "row_digest": "efcca46e39f19973006d05c517844981be797ea8c9a78259e75aa8bc6a965846",
       "state_authority": "none",
       "system_id": "reliability/recovery/execution"
     },
@@ -3216,15 +2938,13 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [
         "platform",
         "scope"
       ],
-      "row_digest": "95c3a5c5af7e1f9c5bf2036652b3cd72a0b6fd83fd5a8dc14abdfc4c8d87fd76",
+      "row_digest": "1d6ba92dc4e051890f0b6d4533691ef066db33ab652e5288386bc2cc36de573d",
       "state_authority": "resource_inventory",
       "system_id": "resource"
     },
@@ -3292,12 +3012,10 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [],
-      "row_digest": "6b3ca1ed0ee21a5fca0b777f5ebcfa73f61ebd165d4b78957c604ffdc39b55ee",
+      "row_digest": "21b8bf1c5fc1944c2a15a7835b844ea8ffc2113fce9fa72f922dc3d41ed03134",
       "state_authority": "resource_inventory",
       "system_id": "resource/directory"
     },
@@ -3314,14 +3032,12 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "scope"
       ],
-      "row_digest": "c94b796a78d66c264ceb7f3540d457bec25fb46392385060be82403fcd198f24",
+      "row_digest": "91da3a7b7e9b918a60bb1b56f15a57ef6e9c9cb3113c9a71c9d14c6ef7b2da39",
       "state_authority": "resource_lease",
       "system_id": "resource/lease"
     },
@@ -3339,11 +3055,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "2778d2ba997f72b8690d67f9cbec937ca26311d6d07365d0b6c617604afa73de",
+      "row_digest": "867ff6a3cd212e78b44b189f0e04048c436ba96199954c436e2b15d6c133734b",
       "state_authority": "resource_inventory",
       "system_id": "resource/resolution"
     },
@@ -3358,9 +3073,7 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "governance",
@@ -3370,7 +3083,7 @@
         "resource",
         "scope"
       ],
-      "row_digest": "97033463427c0efada8cedee4f420992e6c769be20ecc5bdca76258e97811f20",
+      "row_digest": "fe45db4164a5bdc509becd3c52286f6e9a31643fa46316e5e2128764f4ed1247",
       "state_authority": "runtime_state",
       "system_id": "runtime"
     },
@@ -3387,12 +3100,11 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
         "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "c9faa7450ca36f2127154b778b38b6229c6ae4912ade5c14b82b784221daa423",
+      "row_digest": "d053c6a009c0e66f6bd2a1a0f50d36d1f29966245f5f652ff352cc67d9db9e74",
       "state_authority": "runtime_state",
       "system_id": "runtime/host"
     },
@@ -3409,13 +3121,10 @@
         "process.capture"
       ],
       "public_abi": [
-        "api",
-        "runtime",
-        "providers",
-        "composition"
+        "api"
       ],
       "requires": [],
-      "row_digest": "1fa00dc9a84b6580b4116e5e5c4e4f3b7bffd21e64506d4c90f321cab0e85acb",
+      "row_digest": "247d95b4aaf5710f731608a13102edd9a23efc43194db78b516f1a800767b1a0",
       "state_authority": "runtime_state",
       "system_id": "runtime/process"
     },
@@ -3455,15 +3164,13 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "runtime",
         "resource"
       ],
-      "row_digest": "b35438c985612531ec9a976ad774c63a10ca53593ca9471c3297bd5ebda21e40",
+      "row_digest": "f2d8adce4f614f93c8f6546300b3260e02540fe9de97a9a659cd8a89a7afa243",
       "state_authority": "runtime_state",
       "system_id": "runtime/python"
     },
@@ -3500,16 +3207,14 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
-        "providers",
-        "composition"
+        "runtime"
       ],
       "requires": [
         "governance/release",
         "platform",
         "runtime/session"
       ],
-      "row_digest": "49bc9e8c581c22bb6f014ce2d5cf1c98959b92fabccaded884e0b6467590fac2",
+      "row_digest": "6e30e8e7185cf3425a2a6cf9ffa9cc5f3ab8395fb1ad93c5a28f1e02af45ee60",
       "state_authority": "runtime_state",
       "system_id": "runtime/server/bootstrap"
     },
@@ -3544,12 +3249,11 @@
       "provides": [],
       "public_abi": [
         "api",
-        "runtime",
         "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "44e9576b6ca4c88ee177dc696ccd7068f5ba4dd5882ad549ca24e0977045a80a",
+      "row_digest": "bda9817ba4d04574f5dee43ed8af88de49014a1c83719ce867991ae3caad86bd",
       "state_authority": "runtime_state",
       "system_id": "runtime/server/identity"
     },
@@ -3589,11 +3293,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "23f2e5016baaf3947be8ea85244c62dde24f432dd228fd7a4959b8fabdf3ba2d",
+      "row_digest": "2a702bcf4d6569a41fa889a0c7db5d4e7bfb447bba4a6a3d0f61e9f00a60a3df",
       "state_authority": "runtime_state",
       "system_id": "runtime/service"
     },
@@ -3611,11 +3314,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [],
-      "row_digest": "9cf029f31a56a9d9baccaf357dd25aa5846ac9d85e31c8a88bfeda9fb2200d37",
+      "row_digest": "8cc829a4b412597ec9b4cacc3410ced6b3c4414d8d10667b38248a9bd62ebaa8",
       "state_authority": "runtime_state",
       "system_id": "runtime/session"
     },
@@ -3632,14 +3334,13 @@
       ],
       "public_abi": [
         "api",
-        "runtime",
         "providers",
         "composition"
       ],
       "requires": [
         "artifact"
       ],
-      "row_digest": "c015460f146e660fde26be9231a0eb085c1257a7de0e21867a6c70dd078724e7",
+      "row_digest": "00893fa2338d2732360fdb55524b4aee85e04cb077e79394d20a0dd768d0d7ca",
       "state_authority": "runtime_state",
       "system_id": "runtime/toolchain"
     },
@@ -3655,13 +3356,12 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
-        "composition"
+        "providers"
       ],
       "requires": [
         "platform"
       ],
-      "row_digest": "dfca042e293fa935ab7a0a21d2013036d9034e8cfa2d447ef7012b90e8bd23a9",
+      "row_digest": "12dca42ba0675859044c4e16b30a231184ed31e4a00619c5c3d17fbecda2bf12",
       "state_authority": "scope_tree",
       "system_id": "scope"
     },
@@ -3669,7 +3369,7 @@
       "audit_required": [],
       "canonical_authority": "scope",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "scope",
       "plane": "foundation",
@@ -3681,7 +3381,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "d8a0fab5de2642a24e1f28e36f99564cce7996395f7ab006f829e18e8905b825",
+      "row_digest": "82d68de374a23a4890eb3072d37e1fc4670d6540b0ef5e7c1c2e2380aff2e15f",
       "state_authority": "scope_tree",
       "system_id": "scope/hierarchy"
     },
@@ -3689,7 +3389,7 @@
       "audit_required": [],
       "canonical_authority": "scope",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "scope",
       "plane": "foundation",
@@ -3701,7 +3401,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "e77bf1a7e4511dae90074417bba82cacc16c43e13e37e6d9640f456ef3d3f65f",
+      "row_digest": "5bb165c8830cd1f59d3d53ff8f0b49669728c894c959129df2f493dd0edc0c5f",
       "state_authority": "scope_tree",
       "system_id": "scope/identity"
     },
@@ -3709,7 +3409,7 @@
       "audit_required": [],
       "canonical_authority": "scope",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "scope",
       "plane": "foundation",
@@ -3721,7 +3421,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "05a56196607cc5746ff7acb65b53f2c9a3f3b05ff5a9ae2b733a68ae0746bb27",
+      "row_digest": "329fd2954f65bd0138e950ea481afc52e9ef9f1cd22403421050d12b3bfa7d3d",
       "state_authority": "scope_tree",
       "system_id": "scope/membership"
     },
@@ -3729,7 +3429,7 @@
       "audit_required": [],
       "canonical_authority": "scope",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "scope",
       "plane": "foundation",
@@ -3741,7 +3441,7 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "4bd36ca225c7f6ddb5443071244ce6ae3eea96228649e44a03fbfac33e27ebc3",
+      "row_digest": "46456a392f64638693b419d9ec7040d3e67b47ec2e33b1cc8f6857357fa01491",
       "state_authority": "scope_tree",
       "system_id": "scope/ownership"
     },
@@ -3757,11 +3457,10 @@
       "public_abi": [
         "api",
         "runtime",
-        "providers",
         "composition"
       ],
       "requires": [],
-      "row_digest": "c72ce05fce6bfb81958bd927725ae56fda21474ae01294d9eea1d66ae2e49929",
+      "row_digest": "dc2c621133d8584dbb2b29eef275a6a1b7928c6716de16480a5352c754b07f11",
       "state_authority": "scope_tree",
       "system_id": "scope/path"
     },
@@ -3769,7 +3468,7 @@
       "audit_required": [],
       "canonical_authority": "scope",
       "direct_authority": false,
-      "downstream_surface": "public",
+      "downstream_surface": "metadata_only",
       "node_kind": "facet",
       "parent": "scope",
       "plane": "foundation",
@@ -3781,11 +3480,11 @@
         "composition"
       ],
       "requires": [],
-      "row_digest": "bbc35d396bf87e663e79161c27863c05688858dfe056b2526ca796226b4efe45",
+      "row_digest": "aa7e1ecb74947cde5abf8533ed351c265bd7db9c3f7cda121e6ec8ba9ddb4f7b",
       "state_authority": "scope_tree",
       "system_id": "scope/resolution"
     }
   ],
   "schema": "noetrium.ownership-matrix.v2",
-  "source_digest": "1f2d5375fc4018d1ffa7bad81c183d135000791fbf6dfa0c4fe0a45c50a29c95"
+  "source_digest": "a965a820bdd843c947fad442011c2a28258401976103fc017aad3dc3337138ad"
 }

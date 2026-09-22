@@ -5,13 +5,13 @@ from noetrium_platform.capabilities.participant.api import (
     ParticipantMessageScheduleEntry,
     ParticipantTopology,
     ParticipantTopologyMember,
+    ParticipantMessageKind,
+    ParticipantMessageRouteRequest,
 )
+from noetrium_platform.research.execution.participants import RuntimeParticipantMessageRouter
 from noetrium_platform.capabilities.participant.agent.runtime import (
     AgentTurnFactBuffer,
     AgentTurnFactKind,
-    ParticipantMessageKind,
-    ParticipantMessageRouteRequest,
-    RuntimeParticipantMessageRouter,
 )
 from noetrium_platform.composition.participant_message import (
     PARTICIPANT_MESSAGE_ROUTE_OPERATION,
@@ -134,7 +134,7 @@ def test_broadcast_route_crosses_kernel_operation_and_machine_fact_authority() -
         "agent-c",
     )
 
-    runtime_state = thaw_json(router.session.machine.inspect().state)["_program"]["data"]
+    runtime_state = router.session.data
     assert [message["text"] for message in runtime_state["inboxes"]["agent-b"]] == ["proposal"]
     assert [message["text"] for message in runtime_state["inboxes"]["agent-c"]] == ["proposal"]
 
@@ -158,7 +158,7 @@ def test_router_preflight_prevents_partial_broadcast_to_disconnected_peer() -> N
     else:
         raise AssertionError("disconnected broadcast must fail closed")
 
-    runtime_state = thaw_json(router.session.machine.inspect().state)["_program"]["data"]
+    runtime_state = router.session.data
     assert runtime_state["inboxes"]["agent-b"] == []
     assert runtime_state["inboxes"]["agent-c"] == []
 

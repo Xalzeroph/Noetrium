@@ -1,1 +1,0 @@
-"""model.catalog runtime boundary."""

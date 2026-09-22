@@ -11,14 +11,14 @@ from noetrium_platform.research.experimentation.run.api import (
     RunArtifactKind,
     RunArtifactSnapshotReceipt,
 )
-from noetrium_platform.research.experimentation.run.manifest.api import (
+from noetrium_platform.research.experimentation.run.api.manifest_evidence import (
     DerivedEvidenceArtifact,
     EvidenceBundleManifest,
     EvidenceBundleReceipt,
     EvidenceBundleStatus,
     EvidenceStreamDescriptor,
 )
-from noetrium_platform.research.experimentation.run.manifest.runtime import (
+from noetrium_platform.research.experimentation.run.runtime.manifest_evidence import (
     RunArtifactEvidenceBundlePublisher,
     decode_evidence_bundle_manifest,
     encode_evidence_bundle_manifest,

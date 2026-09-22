@@ -1,1 +1,0 @@
-"""resource.directory providers boundary."""

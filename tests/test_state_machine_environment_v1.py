@@ -14,7 +14,7 @@ from noetrium_platform.capabilities.environment.runtime.api import (
     thaw_json_mapping,
 )
 from noetrium_platform.capabilities.environment.api import state_machine as canonical_state_machine
-from noetrium_platform.capabilities.environment.runtime.composition import (
+from noetrium_platform.composition.environment_machine import (
     compose_state_machine_environment,
 )
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_digest

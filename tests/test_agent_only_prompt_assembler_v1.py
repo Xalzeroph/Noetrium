@@ -12,7 +12,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
 from noetrium_platform.capabilities.participant.agent.runtime.model_view import (
     project_action_history,
 )
-from noetrium_platform.capabilities.participant.agent.runtime.prompt import (
+from noetrium_platform.research.execution.participants.agent_context import (
     AgentContextBudgetExceeded,
     AgentContextCompiler,
     default_agent_context_program,

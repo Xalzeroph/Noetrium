@@ -17,7 +17,7 @@ from noetrium_platform.infrastructure.lifecycle.launch_control import RuntimeCon
 from tests_support import recovery_lease_state
 from noetrium_platform.infrastructure.reliability.recovery.composition import compose_recovery_lease_status_probe
 from noetrium_platform.infrastructure.lifecycle.launch_control.status_readers import RuntimeControlStatusReader
-from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_transaction_status import RuntimeTransactionStatusProbe
+from noetrium_platform.composition.status_adapters.runtime import RuntimeTransactionStatusProbe
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ExactServiceSupervisor,
@@ -27,7 +27,7 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime import (
 )
 from noetrium_platform.infrastructure.lifecycle.service.runtime.status_reader import ServiceOperationalStatusReader
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
-from noetrium_platform.infrastructure.lifecycle.service.runtime.status_projection import ServiceOperationalStatusProbe
+from noetrium_platform.composition.status_adapters.service import ServiceOperationalStatusProbe
 
 
 def h(v): return hashlib.sha256(v.encode()).hexdigest()

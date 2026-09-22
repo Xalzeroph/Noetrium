@@ -30,6 +30,9 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     HostRuntimeObserverPort,
     HostRuntimeSnapshot,
     HostRuntimeStatus,
+    CommandProbeError,
+    CommandProbePort,
+    CommandProbeResult,
 )
 
 from noetrium_platform.infrastructure.resources.compute.api.contracts import (
@@ -52,6 +55,12 @@ from noetrium_platform.infrastructure.resources.compute.api.ports import (
     ComputeSchedulerPort as ports__ComputeSchedulerPort,
 )
 
+from noetrium_platform.infrastructure.resources.compute.api.probe import (
+    CommandProbeError as probe__CommandProbeError,
+    CommandProbePort as probe__CommandProbePort,
+    CommandProbeResult as probe__CommandProbeResult,
+)
+
 from noetrium_platform.infrastructure.resources.compute.api.runtime_status import (
     GpuDeviceStatus as runtime_status__GpuDeviceStatus,
     GpuProcessStatus as runtime_status__GpuProcessStatus,
@@ -64,4 +73,4 @@ from noetrium_platform.infrastructure.resources.compute.api.runtime_status impor
 
 SYSTEM_KEY = 'resource/compute'
 PACKAGE_PREFIX = 'noetrium_platform.infrastructure.resources.compute'
-__all__ = ('ComputeAllocation', 'ComputeCandidatePort', 'ComputeCluster', 'ComputeGPU', 'ComputeHost', 'ComputePlacementUnavailable', 'ComputeRequirement', 'ComputeLeasePolicy', 'DEFAULT_COMPUTE_LEASE_POLICY', 'ComputeInventoryPort', 'ComputeLeaseGuardFactoryPort', 'ComputeLeaseGuardPort', 'ComputeSchedulerPort', 'GpuSharingMode', 'GpuDeviceStatus', 'GpuProcessStatus', 'GpuRuntimeObserverPort', 'GpuRuntimeSnapshot', 'HostRuntimeObserverPort', 'HostRuntimeSnapshot', 'HostRuntimeStatus', 'contracts__ComputeAllocation', 'contracts__ComputeCluster', 'contracts__ComputeGPU', 'contracts__ComputeHost', 'contracts__ComputePlacementUnavailable', 'contracts__ComputeRequirement', 'contracts__ComputeLeasePolicy', 'contracts__DEFAULT_COMPUTE_LEASE_POLICY', 'contracts__GpuSharingMode', 'ports__ComputeCandidatePort', 'ports__ComputeInventoryPort', 'ports__ComputeLeaseGuardFactoryPort', 'ports__ComputeLeaseGuardPort', 'ports__ComputeSchedulerPort', 'runtime_status__GpuDeviceStatus', 'runtime_status__GpuProcessStatus', 'runtime_status__GpuRuntimeObserverPort', 'runtime_status__GpuRuntimeSnapshot', 'runtime_status__HostRuntimeObserverPort', 'runtime_status__HostRuntimeSnapshot', 'runtime_status__HostRuntimeStatus')
+__all__ = ('ComputeAllocation', 'ComputeCandidatePort', 'ComputeCluster', 'ComputeGPU', 'ComputeHost', 'ComputePlacementUnavailable', 'ComputeRequirement', 'ComputeLeasePolicy', 'DEFAULT_COMPUTE_LEASE_POLICY', 'ComputeInventoryPort', 'ComputeLeaseGuardFactoryPort', 'ComputeLeaseGuardPort', 'ComputeSchedulerPort', 'GpuSharingMode', 'GpuDeviceStatus', 'GpuProcessStatus', 'GpuRuntimeObserverPort', 'GpuRuntimeSnapshot', 'HostRuntimeObserverPort', 'HostRuntimeSnapshot', 'HostRuntimeStatus', 'CommandProbeError', 'CommandProbePort', 'CommandProbeResult', 'contracts__ComputeAllocation', 'contracts__ComputeCluster', 'contracts__ComputeGPU', 'contracts__ComputeHost', 'contracts__ComputePlacementUnavailable', 'contracts__ComputeRequirement', 'contracts__ComputeLeasePolicy', 'contracts__DEFAULT_COMPUTE_LEASE_POLICY', 'contracts__GpuSharingMode', 'ports__ComputeCandidatePort', 'ports__ComputeInventoryPort', 'ports__ComputeLeaseGuardFactoryPort', 'ports__ComputeLeaseGuardPort', 'ports__ComputeSchedulerPort', 'probe__CommandProbeError', 'probe__CommandProbePort', 'probe__CommandProbeResult', 'runtime_status__GpuDeviceStatus', 'runtime_status__GpuProcessStatus', 'runtime_status__GpuRuntimeObserverPort', 'runtime_status__GpuRuntimeSnapshot', 'runtime_status__HostRuntimeObserverPort', 'runtime_status__HostRuntimeSnapshot', 'runtime_status__HostRuntimeStatus')

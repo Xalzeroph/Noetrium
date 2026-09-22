@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 
-STANDARD_SYSTEM_SHAPE: tuple[str, ...] = ("api", "runtime", "providers", "composition")
+SYSTEM_PLANES: tuple[str, ...] = ("api", "runtime", "providers", "composition")
 
 
 class DownstreamSurfaceMode(StrEnum):
@@ -119,7 +119,7 @@ class SystemDescriptor:
     components: tuple[str, ...] = ()
     owns: str = ""
     must_not_own: str = ""
-    shape: tuple[str, ...] = STANDARD_SYSTEM_SHAPE
+    shape: tuple[str, ...] = ()
     downstream_surface: DownstreamSurfaceMode = DownstreamSurfaceMode.PUBLIC
     canonical_authority_key: str | None = None
 
@@ -189,7 +189,7 @@ class SystemRegistryChange:
 __all__ = [
     "AuthorityDescriptor",
     "DownstreamSurfaceMode",
-    "STANDARD_SYSTEM_SHAPE",
+    "SYSTEM_PLANES",
     "SystemDescriptor",
     "SystemIdentity",
     "SystemNodeKind",

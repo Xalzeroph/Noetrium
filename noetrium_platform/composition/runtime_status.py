@@ -9,21 +9,21 @@ from noetrium_platform.infrastructure.lifecycle.launch_control.heartbeat_storage
 from noetrium_platform.infrastructure.lifecycle.launch_control.history import RuntimeHistory
 from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_history_storage import FileRuntimeHistoryStorage
 from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_state_storage import FileRuntimeControlStateStore
-from noetrium_platform.infrastructure.lifecycle.launch_control.model_deployment_status import ModelDeploymentStatusProbe
+from noetrium_platform.composition.runtime_control.model_status import ModelDeploymentStatusProbe
 from noetrium_platform.infrastructure.reliability.recovery.composition import (
     compose_recovery_lease_status_probe,
     compose_sqlite_recovery_lease,
 )
-from noetrium_platform.infrastructure.lifecycle.launch_control.runtime_transaction_status import RuntimeTransactionStatusProbe
+from noetrium_platform.composition.status_adapters.runtime import RuntimeTransactionStatusProbe
 from noetrium_platform.infrastructure.lifecycle.launch_control.status_readers import (
     RuntimeControlStatusReader,
     ServiceHeartbeatStatusReader,
 )
 from noetrium_platform.infrastructure.lifecycle.session.runtime import default_persistent_session_backend_registry
-from noetrium_platform.infrastructure.lifecycle.session.runtime.health_projection import PersistentSessionHealthProbe
+from noetrium_platform.composition.status_adapters.session import PersistentSessionHealthProbe
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
-from noetrium_platform.infrastructure.lifecycle.service.runtime.status_projection import ServiceOperationalStatusProbe
+from noetrium_platform.composition.status_adapters.service import ServiceOperationalStatusProbe
 from noetrium_platform.infrastructure.lifecycle.service.runtime.status_reader import ServiceOperationalStatusReader
 
 

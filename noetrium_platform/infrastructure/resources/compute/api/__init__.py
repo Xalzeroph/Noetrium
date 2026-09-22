@@ -24,4 +24,9 @@ __all__ = [
     "HostRuntimeObserverPort",
     "HostRuntimeSnapshot",
     "HostRuntimeStatus",
+    "CommandProbeError",
+    "CommandProbePort",
+    "CommandProbeResult",
 ]
+
+from .probe import CommandProbeError, CommandProbePort, CommandProbeResult

@@ -31,6 +31,12 @@ from noetrium_platform.infrastructure.lifecycle.api.contracts import (
     SystemSpec as contracts__SystemSpec,
 )
 
+from noetrium_platform.infrastructure.lifecycle.api.errors import (
+    FrozenRuntimeIdentityViolation,
+    RuntimeLifecycleError,
+    RuntimeOperationalHealthUnavailable,
+)
+
 from noetrium_platform.infrastructure.lifecycle.api.ports import (
     SystemPort as ports__SystemPort,
     SystemSpec as ports__SystemSpec,
@@ -38,4 +44,4 @@ from noetrium_platform.infrastructure.lifecycle.api.ports import (
 
 SYSTEM_KEY = 'runtime'
 PACKAGE_PREFIX = 'noetrium_platform.infrastructure.lifecycle'
-__all__ = ('LifecycleComponent', 'LifecycleEvidence', 'LifecyclePhase', 'LifecycleSpec', 'SystemIdentity', 'SystemPort', 'SystemSpec', 'component__LifecycleComponent', 'component__LifecycleEvidence', 'component__LifecyclePhase', 'component__LifecycleSpec', 'contracts__SystemIdentity', 'contracts__SystemPort', 'contracts__SystemSpec', 'ports__SystemPort', 'ports__SystemSpec')
+__all__ = ('LifecycleComponent', 'LifecycleEvidence', 'LifecyclePhase', 'LifecycleSpec', 'SystemIdentity', 'SystemPort', 'SystemSpec', 'component__LifecycleComponent', 'component__LifecycleEvidence', 'component__LifecyclePhase', 'component__LifecycleSpec', 'contracts__SystemIdentity', 'contracts__SystemPort', 'contracts__SystemSpec', 'FrozenRuntimeIdentityViolation', 'RuntimeLifecycleError', 'RuntimeOperationalHealthUnavailable', 'ports__SystemPort', 'ports__SystemSpec')

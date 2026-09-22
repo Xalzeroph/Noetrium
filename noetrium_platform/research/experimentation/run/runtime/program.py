@@ -36,8 +36,8 @@ from noetrium_platform.research.execution.machines import (
     build_rule_handlers,
     compile_rule_program,
 )
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
-from noetrium_platform.research.experimentation.run.lifecycle.api import (
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
+from noetrium_platform.research.experimentation.run.api.lifecycle import (
     RunClosed,
     RunRecoveryRequired,
 )

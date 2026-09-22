@@ -9,17 +9,19 @@ This module is regenerated from the canonical registry and API exports.
 """
 
 from noetrium_platform.capabilities.participant.api import (
-    AgentIdentity,
-    AgentImplementation,
+    PARTICIPANT_MESSAGE_ROUTE_SCHEMA,
+    ParticipantMessageFactBinding,
+    ParticipantMessageKind,
+    ParticipantMessageRecipientReceipt,
+    ParticipantMessageRouteReceipt,
+    ParticipantMessageRouteRequest,
+    ParticipantMessageRouterPort,
+    participant_message_content_digest,
     AgentProjectDefinition,
     MethodProjectDefinition,
     method_program_identity_for_requirement,
     method_program_identity_for_runtime_binding,
     require_method_program_runtime_binding,
-    AgentSession,
-    AgentSnapshot,
-    AgentTurnRequest,
-    AgentTurnResult,
     ArchitectureChangeKind,
     ParticipantArchitectureChange,
     ParticipantArchitectureComponent,
@@ -56,6 +58,17 @@ from noetrium_platform.capabilities.participant.api import (
     ProjectParticipantBinding,
     ProjectParticipantProviderPort,
     TopologyChangeKind,
+)
+
+from noetrium_platform.capabilities.participant.api.messaging import (
+    PARTICIPANT_MESSAGE_ROUTE_SCHEMA as messaging__PARTICIPANT_MESSAGE_ROUTE_SCHEMA,
+    ParticipantMessageFactBinding as messaging__ParticipantMessageFactBinding,
+    ParticipantMessageKind as messaging__ParticipantMessageKind,
+    ParticipantMessageRecipientReceipt as messaging__ParticipantMessageRecipientReceipt,
+    ParticipantMessageRouteReceipt as messaging__ParticipantMessageRouteReceipt,
+    ParticipantMessageRouteRequest as messaging__ParticipantMessageRouteRequest,
+    ParticipantMessageRouterPort as messaging__ParticipantMessageRouterPort,
+    participant_message_content_digest as messaging__participant_message_content_digest,
 )
 
 from noetrium_platform.capabilities.participant.api.project import (
@@ -110,4 +123,4 @@ from noetrium_platform.capabilities.participant.api.topology import (
 
 SYSTEM_KEY = 'participant'
 PACKAGE_PREFIX = 'noetrium_platform.capabilities.participant'
-__all__ = ('AgentIdentity', 'AgentImplementation', 'AgentProjectDefinition', 'MethodProjectDefinition', 'method_program_identity_for_requirement', 'method_program_identity_for_runtime_binding', 'require_method_program_runtime_binding', 'AgentSession', 'AgentSnapshot', 'AgentTurnRequest', 'AgentTurnResult', 'ArchitectureChangeKind', 'ParticipantArchitectureChange', 'ParticipantArchitectureComponent', 'ParticipantArchitectureRevision', 'ParticipantArchitectureTransition', 'ParticipantBindingDiagnostic', 'ParticipantBindingDiagnosticCode', 'ParticipantBindingDiagnosticSeverity', 'ParticipantMessageSchedule', 'ParticipantMessageScheduleEntry', 'ParticipantProjectBindingError', 'ParticipantProviderProfile', 'ParticipantRequirement', 'ParticipantRequirementContribution', 'ParticipantRevisionAuthorityPort', 'ParticipantRevisionAuthoritySnapshot', 'ParticipantRevisionCommit', 'ParticipantRevisionConflictError', 'ParticipantRevisionEvidence', 'ParticipantRevisionEvidenceKind', 'ParticipantRevisionIntegrityError', 'ParticipantRevisionProposal', 'ParticipantRevisionStateError', 'ParticipantRevisionValue', 'ParticipantStateCompatibility', 'ParticipantStateRevision', 'ParticipantStateTransition', 'ParticipantTransitionValue', 'PreparedParticipantRevision', 'ParticipantTopology', 'ParticipantTopologyChange', 'ParticipantTopologyMember', 'ParticipantTopologyTransition', 'ProjectParticipantBinding', 'ProjectParticipantProviderPort', 'TopologyChangeKind', 'project__AgentProjectDefinition', 'project__MethodProjectDefinition', 'project__method_program_identity_for_requirement', 'project__method_program_identity_for_runtime_binding', 'project__require_method_program_runtime_binding', 'project__ParticipantBindingDiagnostic', 'project__ParticipantBindingDiagnosticCode', 'project__ParticipantBindingDiagnosticSeverity', 'project__ParticipantProjectBindingError', 'project__ParticipantProviderProfile', 'project__ParticipantRequirementContribution', 'project__ParticipantRequirement', 'project__ProjectParticipantBinding', 'project__ProjectParticipantProviderPort', 'revision__ParticipantRevisionAuthorityPort', 'revision__ParticipantRevisionAuthoritySnapshot', 'revision__ParticipantRevisionCommit', 'revision__ParticipantRevisionConflictError', 'revision__ParticipantRevisionEvidence', 'revision__ParticipantRevisionEvidenceKind', 'revision__ParticipantRevisionIntegrityError', 'revision__ParticipantRevisionProposal', 'revision__ParticipantRevisionStateError', 'revision__ParticipantRevisionValue', 'revision__ParticipantStateCompatibility', 'revision__ParticipantStateRevision', 'revision__ParticipantStateTransition', 'revision__ParticipantTransitionValue', 'revision__PreparedParticipantRevision', 'topology__ArchitectureChangeKind', 'topology__ParticipantArchitectureChange', 'topology__ParticipantArchitectureComponent', 'topology__ParticipantArchitectureRevision', 'topology__ParticipantArchitectureTransition', 'topology__ParticipantMessageSchedule', 'topology__ParticipantMessageScheduleEntry', 'topology__ParticipantTopology', 'topology__ParticipantTopologyChange', 'topology__ParticipantTopologyMember', 'topology__ParticipantTopologyTransition', 'topology__TopologyChangeKind')
+__all__ = ('PARTICIPANT_MESSAGE_ROUTE_SCHEMA', 'ParticipantMessageFactBinding', 'ParticipantMessageKind', 'ParticipantMessageRecipientReceipt', 'ParticipantMessageRouteReceipt', 'ParticipantMessageRouteRequest', 'ParticipantMessageRouterPort', 'participant_message_content_digest', 'AgentProjectDefinition', 'MethodProjectDefinition', 'method_program_identity_for_requirement', 'method_program_identity_for_runtime_binding', 'require_method_program_runtime_binding', 'ArchitectureChangeKind', 'ParticipantArchitectureChange', 'ParticipantArchitectureComponent', 'ParticipantArchitectureRevision', 'ParticipantArchitectureTransition', 'ParticipantBindingDiagnostic', 'ParticipantBindingDiagnosticCode', 'ParticipantBindingDiagnosticSeverity', 'ParticipantMessageSchedule', 'ParticipantMessageScheduleEntry', 'ParticipantProjectBindingError', 'ParticipantProviderProfile', 'ParticipantRequirement', 'ParticipantRequirementContribution', 'ParticipantRevisionAuthorityPort', 'ParticipantRevisionAuthoritySnapshot', 'ParticipantRevisionCommit', 'ParticipantRevisionConflictError', 'ParticipantRevisionEvidence', 'ParticipantRevisionEvidenceKind', 'ParticipantRevisionIntegrityError', 'ParticipantRevisionProposal', 'ParticipantRevisionStateError', 'ParticipantRevisionValue', 'ParticipantStateCompatibility', 'ParticipantStateRevision', 'ParticipantStateTransition', 'ParticipantTransitionValue', 'PreparedParticipantRevision', 'ParticipantTopology', 'ParticipantTopologyChange', 'ParticipantTopologyMember', 'ParticipantTopologyTransition', 'ProjectParticipantBinding', 'ProjectParticipantProviderPort', 'TopologyChangeKind', 'messaging__PARTICIPANT_MESSAGE_ROUTE_SCHEMA', 'messaging__ParticipantMessageFactBinding', 'messaging__ParticipantMessageKind', 'messaging__ParticipantMessageRecipientReceipt', 'messaging__ParticipantMessageRouteReceipt', 'messaging__ParticipantMessageRouteRequest', 'messaging__ParticipantMessageRouterPort', 'messaging__participant_message_content_digest', 'project__AgentProjectDefinition', 'project__MethodProjectDefinition', 'project__method_program_identity_for_requirement', 'project__method_program_identity_for_runtime_binding', 'project__require_method_program_runtime_binding', 'project__ParticipantBindingDiagnostic', 'project__ParticipantBindingDiagnosticCode', 'project__ParticipantBindingDiagnosticSeverity', 'project__ParticipantProjectBindingError', 'project__ParticipantProviderProfile', 'project__ParticipantRequirementContribution', 'project__ParticipantRequirement', 'project__ProjectParticipantBinding', 'project__ProjectParticipantProviderPort', 'revision__ParticipantRevisionAuthorityPort', 'revision__ParticipantRevisionAuthoritySnapshot', 'revision__ParticipantRevisionCommit', 'revision__ParticipantRevisionConflictError', 'revision__ParticipantRevisionEvidence', 'revision__ParticipantRevisionEvidenceKind', 'revision__ParticipantRevisionIntegrityError', 'revision__ParticipantRevisionProposal', 'revision__ParticipantRevisionStateError', 'revision__ParticipantRevisionValue', 'revision__ParticipantStateCompatibility', 'revision__ParticipantStateRevision', 'revision__ParticipantStateTransition', 'revision__ParticipantTransitionValue', 'revision__PreparedParticipantRevision', 'topology__ArchitectureChangeKind', 'topology__ParticipantArchitectureChange', 'topology__ParticipantArchitectureComponent', 'topology__ParticipantArchitectureRevision', 'topology__ParticipantArchitectureTransition', 'topology__ParticipantMessageSchedule', 'topology__ParticipantMessageScheduleEntry', 'topology__ParticipantTopology', 'topology__ParticipantTopologyChange', 'topology__ParticipantTopologyMember', 'topology__ParticipantTopologyTransition', 'topology__TopologyChangeKind')

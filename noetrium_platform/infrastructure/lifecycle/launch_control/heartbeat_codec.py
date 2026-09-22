@@ -8,7 +8,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.checksummed_document 
     decode_checksummed_document,
     encode_checksummed_document,
 )
-from noetrium_platform.capabilities.model.serving.api import ServiceHeartbeat
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceHeartbeat
 
 
 SERVICE_HEARTBEAT_DOCUMENT_SCHEMA = "service-heartbeat.v2"

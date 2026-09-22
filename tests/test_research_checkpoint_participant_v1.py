@@ -11,7 +11,7 @@ from noetrium_platform.research.experimentation.checkpoint.runtime import (
     WorkloadCheckpointIdentityMismatch,
 )
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet, ReplayLevel
-from noetrium_platform.research.experimentation.run.manifest.api import RunResearchSemanticsReference
+from noetrium_platform.research.experimentation.run.api.manifest import RunResearchSemanticsReference
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 

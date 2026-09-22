@@ -6,7 +6,7 @@ import unittest
 
 from runtime_manager_test_support import make_runtime_control_store
 from noetrium_platform.infrastructure.lifecycle.launch_control import ExactRuntimeController
-from noetrium_platform.infrastructure.lifecycle.launch_control.one_click import OneClickRuntimeManager
+from noetrium_platform.composition.runtime_control.one_click import OneClickRuntimeManager
 from noetrium_platform.infrastructure.reliability.recovery.execution.runtime.file_lock import FileLockedRecoveryExecutionFactory
 from tests_support import recovery_lease_state
 from tests_support import frozen_runtime_manifest

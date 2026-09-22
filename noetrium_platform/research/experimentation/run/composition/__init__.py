@@ -1,3 +1,5 @@
+from .control import build_durable_run_control
+from .control_research_result_source import RunControlResearchResultSource
 """vNext boundary package."""
 from .application import build_default_experiment_run_application
 from .artifacts import build_directory_run_artifact_store

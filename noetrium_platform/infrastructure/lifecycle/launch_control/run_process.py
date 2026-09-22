@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.infrastructure.reliability.primitives.runtime_faults import FrozenRuntimeIdentityViolation, RuntimeOperationalHealthUnavailable
+from noetrium_platform.infrastructure.lifecycle.api.errors import FrozenRuntimeIdentityViolation, RuntimeOperationalHealthUnavailable
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceContractDrift, ServiceLaunchContract, ExactServiceRuntimePort
 
 from .contracts import RuntimeLaunchManifestPort

@@ -11,7 +11,7 @@ from noetrium_platform.capabilities.environment.runtime.api import (
     action_request_digest,
 )
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
-from noetrium_platform.research.execution.workflow.implementations.context_action.action_reconciliation import ActionReconciliationPolicy
+from noetrium_platform.composition.workflows.context_action.action_reconciliation import ActionReconciliationPolicy
 
 
 def request() -> ActionRequest:

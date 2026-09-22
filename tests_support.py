@@ -188,7 +188,7 @@ def context_action_spec(
         trial_protocol_id=scientific_workflow_id,
         trial_protocol_configuration_digest=(
             __import__(
-                "noetrium_platform.research.execution.workflow.implementations.context_action",
+                "noetrium_platform.composition.workflows.context_action",
                 fromlist=["CONTEXT_ACTION_TRIAL_CONFIGURATION_DIGEST"],
             ).CONTEXT_ACTION_TRIAL_CONFIGURATION_DIGEST
             if not scientific_workflow_configuration_digest

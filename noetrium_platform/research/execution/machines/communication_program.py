@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from enum import StrEnum
 
+from noetrium_platform.capabilities.participant.api.messaging import ParticipantMessageKind
 from noetrium_platform.foundation.kernel.kernel import (
     JsonObject,
     JsonValue,
@@ -32,13 +32,6 @@ from .rule_program import (
     build_rule_handlers,
     compile_rule_program,
 )
-
-
-class ParticipantMessageKind(StrEnum):
-    CHAT = "chat"
-    TASK = "task"
-    INTERRUPT = "interrupt"
-    SYSTEM = "system"
 
 
 @dataclass(frozen=True, slots=True)

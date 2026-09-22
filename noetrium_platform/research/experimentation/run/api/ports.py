@@ -5,8 +5,8 @@ from typing import Protocol, TypeVar
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
 from noetrium_platform.research.execution.decision.cycle_result import DecisionCycleResult
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
-from noetrium_platform.research.experimentation.run.lifecycle.api import RunSessionPort
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
+from noetrium_platform.research.experimentation.run.api.lifecycle_ports import RunSessionPort
 from noetrium_platform.foundation.kernel.kernel import JsonInput
 
 

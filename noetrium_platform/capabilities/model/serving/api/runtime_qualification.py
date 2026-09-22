@@ -6,7 +6,7 @@ import re
 import time
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from .heartbeat import ServiceHeartbeat
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceHeartbeat
 from .qualified_deployment import QualifiedDeploymentManifest
 
 

@@ -17,7 +17,7 @@ from noetrium_platform.research.experimentation.run.api import (
     RunArtifactKind,
     RunArtifactSnapshotReceipt,
 )
-from noetrium_platform.research.experimentation.run.control.api import (
+from noetrium_platform.research.experimentation.run.api.control import (
     RunControlAction,
     RunControlNotFound,
     RunControlPhase,
@@ -29,10 +29,10 @@ from noetrium_platform.research.experimentation.run.control.api import (
     RunScientificValidity,
     RunTaskOutcome,
 )
-from noetrium_platform.research.experimentation.run.control.composition import (
+from noetrium_platform.research.experimentation.run.composition import (
     RunControlResearchResultSource,
 )
-from noetrium_platform.research.experimentation.run.manifest.api import (
+from noetrium_platform.research.experimentation.run.api.manifest_evidence import (
     EvidenceBundleReceipt,
 )
 

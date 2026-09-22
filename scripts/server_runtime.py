@@ -33,7 +33,7 @@ if sys.version_info < (3, 11):
 
 from scripts.server_common import compose_script_server, server_cli_concurrency_scope
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
-from noetrium_platform.research.experimentation.run.manifest.runtime import load_run_launch_manifest
+from noetrium_platform.research.experimentation.run.runtime.manifest_codec import load_run_launch_manifest
 from noetrium_platform.foundation.governance.release.runtime.active_pin_store import ActiveReleasePinStore
 from noetrium_platform.infrastructure.lifecycle.host.bootstrap.runtime import (
     DirectoryServerBootstrapStateStore,

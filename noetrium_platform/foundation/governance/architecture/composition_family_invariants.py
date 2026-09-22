@@ -13,13 +13,13 @@ def audit_composition_family_firewall(root: Path) -> list[SourceInvariantViolati
             "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api", "noetrium_platform.composition.agent_turn",
             "noetrium_platform.composition.participants.agent", "noetrium_platform.composition.participants.capability",
             "noetrium_platform.composition.registries.agent", "noetrium_platform.composition.registries.capability",
-            "noetrium_platform.research.execution.workflow.implementations.agent_turn",
+            "noetrium_platform.composition.workflows.agent_turn",
         )),
         (composition / "agent_turn.py", "composition_agent_turn_firewall", (
             "noetrium_platform.capabilities.environment.runtime.api", "noetrium_platform.capabilities.participant.method.api", "noetrium_platform.composition.context_action",
             "noetrium_platform.composition.participants.environment", "noetrium_platform.composition.participants.method",
             "noetrium_platform.composition.registries.environment", "noetrium_platform.composition.registries.method",
-            "noetrium_platform.research.execution.workflow.implementations.context_action",
+            "noetrium_platform.composition.workflows.context_action",
         )),
     )
     for path, invariant, forbidden in checks:

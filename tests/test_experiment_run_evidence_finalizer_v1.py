@@ -20,8 +20,8 @@ from noetrium_platform.research.experimentation.run.api import (
 from noetrium_platform.research.experimentation.run.composition import (
     ExperimentRunEvidenceFinalizer,
 )
-from noetrium_platform.research.experimentation.run.identity.api import RunIdentity
-from noetrium_platform.research.experimentation.run.manifest.api import (
+from noetrium_platform.research.experimentation.run.api.identity import RunIdentity
+from noetrium_platform.research.experimentation.run.api.manifest import (
     CompositionPlanReference,
     RunLaunchManifest,
     RunResearchSemanticsReference,

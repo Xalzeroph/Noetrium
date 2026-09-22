@@ -19,7 +19,7 @@ from noetrium_platform.capabilities.participant.method.api import MethodIdentity
 from noetrium_platform.research.experimentation.experiment.runtime import ExperimentRuntime
 from noetrium_platform.research.experimentation.experiment.api import ExperimentSpec
 from noetrium_platform.research.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
-from noetrium_platform.research.execution.workflow.implementations.context_action.safe_action import ActionNotApplied
+from noetrium_platform.composition.workflows.context_action.safe_action import ActionNotApplied
 
 
 class MS:

@@ -47,7 +47,7 @@ from noetrium_platform.research.experimentation.experiment.api import (
     ExperimentSpec,
     ExperimentTrialCycleExecutorPort,
 )
-from noetrium_platform.research.experimentation.run.lifecycle.api import (
+from noetrium_platform.research.experimentation.run.api.lifecycle import (
     RunCleanupFailure,
     RunCleanupReport,
     attach_cleanup_note,

@@ -32,10 +32,10 @@ from noetrium_platform.foundation.kernel.kernel import (
     InMemoryMachineJournal,
     OperationExecutor,
 )
-from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_effects import CapabilityEffectExecutor
-from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_effect_contracts import UnsafeEffectfulCapability
-from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_operations import CapabilityOperationAdapter
-from noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_routing import (
+from noetrium_platform.composition.workflows.agent_turn.capability_effects import CapabilityEffectExecutor
+from noetrium_platform.composition.workflows.agent_turn.capability_effect_contracts import UnsafeEffectfulCapability
+from noetrium_platform.composition.workflows.agent_turn.capability_operations import CapabilityOperationAdapter
+from noetrium_platform.composition.workflows.agent_turn.capability_routing import (
     CapabilitySessionBinding,
     StudyCapabilityRouter,
     UnsafeGenericCapability,

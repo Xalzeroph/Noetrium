@@ -20,7 +20,7 @@ from noetrium_platform.capabilities.environment.api import (
     EnvironmentProviderPort,
     verify_environment_provider_conformance,
 )
-from noetrium_platform.capabilities.environment.composition import reference_counter_environment
+from components.reference.environment_counter import reference_counter_environment
 
 
 def _context() -> ExecutionContext:
