@@ -18,7 +18,11 @@ from noetrium_platform.composition.model_requests import (
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointDispatchPoolPort,
+    OperationalModelEndpointReplica,
     OperationalModelEndpointReplicaSet,
+)
+from noetrium_platform.capabilities.model.serving.endpoint.providers import (
+    load_operational_model_serving_inventory,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.composition import (
     build_adaptive_operational_endpoint_pool,
@@ -51,10 +55,6 @@ from research.benchmarks.gsm8k import (
     GSM8KMaterializedTask,
     materialize_archived_gsm8k_test,
     normalize_gsm8k_numeric_answer,
-)
-from research.runtime.external_substitute import (
-    ExternalSubstituteModelDeployment,
-    load_external_substitute_model_deployment,
 )
 from research.reproductions.chain_of_thought_gsm8k.prompt import (
     COT_GSM8K_PROMPT_BUNDLE_ID,
@@ -311,23 +311,6 @@ def _require_source_sha(value: str) -> str:
     return value
 
 
-def _load_substitute_deployments(
-    paths: tuple[Path, ...],
-) -> tuple[ExternalSubstituteModelDeployment, ...]:
-    if not paths:
-        raise ValueError("Self-Consistency substitute run requires model identity receipts")
-    deployments = tuple(
-        load_external_substitute_model_deployment(path)
-        for path in paths
-    )
-    if len({row.deployment_id for row in deployments}) != len(deployments):
-        raise ValueError("Self-Consistency substitute deployments must be unique")
-    model_digests = {row.model_identity_digest for row in deployments}
-    if len(model_digests) != 1:
-        raise ValueError("Self-Consistency substitute replicas have model identity drift")
-    return tuple(sorted(deployments, key=lambda row: row.deployment_id))
-
-
 def _histogram(samples: object) -> tuple[tuple[str, int], ...]:
     if not isinstance(samples, tuple):
         return ()
@@ -467,7 +450,7 @@ def _run_substitute_task(
 def run_external_qwen_substitute_pool(
     *,
     benchmark_path: Path,
-    model_identity_paths: tuple[Path, ...],
+    deployment_inventory_path: Path,
     output_root: Path,
     source_sha: str,
     start: int,
@@ -493,24 +476,22 @@ def run_external_qwen_substitute_pool(
     selected = materialized.tasks[start : start + count]
     if len(selected) != count:
         raise ValueError("requested task range exceeds GSM8K test cut")
-    deployments = _load_substitute_deployments(model_identity_paths)
-    model = deployments[0].model
-    served_model_names = {row.served_model_name for row in deployments}
-    if len(served_model_names) != 1:
-        raise ValueError("Self-Consistency substitute replicas have served-model-name drift")
-    served_model_name = next(iter(served_model_names))
+    inventory = load_operational_model_serving_inventory(deployment_inventory_path)
+    model = inventory.model
+    served_model_name = inventory.served_model_name
     replicas = OperationalModelEndpointReplicaSet(
         tuple(
-            deployment.operational_replica(
-                capacity=per_replica_capacity,
-                timeout_s=timeout_s,
+            OperationalModelEndpointReplica(
+                row.route,
+                min(row.capacity, per_replica_capacity),
             )
-            for deployment in deployments
+            for row in inventory.replica_set.replicas
         )
     )
     runtime_binding_digest = canonical_digest({
         "lane": "platform-substitute",
-        "model_identity_digest": deployments[0].model_identity_digest,
+        "model_identity_digest": canonical_digest(model),
+        "serving_inventory_digest": inventory.identity_digest,
         "replica_set_digest": replicas.replica_set_digest,
         "method_program_digest": SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM.program_digest,
         "model_request_schema": "model-request.v1",
@@ -547,16 +528,17 @@ def run_external_qwen_substitute_pool(
         "benchmark_revision": materialized.cut.revision_id,
         "benchmark_file_sha256": materialized.file_sha256,
         "benchmark_git_blob_sha1": materialized.git_blob_sha1,
-        "model_identity_digest": deployments[0].model_identity_digest,
+        "model_identity_digest": canonical_digest(model),
+        "serving_inventory_digest": inventory.identity_digest,
         "model": asdict(model),
         "replica_set_digest": replicas.replica_set_digest,
         "deployments": tuple({
             "deployment_id": row.deployment_id,
             "deployment_generation": row.deployment_generation,
-            "endpoint_base_url": row.endpoint_base_url,
-            "identity_document_digest": row.identity_document_digest,
-            "served_model_name": row.served_model_name,
-        } for row in deployments),
+            "endpoint_base_url": row.route.base_url,
+            "capacity": row.capacity,
+            "served_model_name": served_model_name,
+        } for row in replicas.replicas),
         "sampling": {
             "reasoning_path_count": SELF_CONSISTENCY_GSM8K_FIDELITY.reasoning_path_count,
             "temperature": SELF_CONSISTENCY_GSM8K_FIDELITY.temperature,
@@ -694,13 +676,7 @@ def run_external_qwen_substitute_pool(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--benchmark", type=Path, required=True)
-    parser.add_argument(
-        "--model-identity",
-        type=Path,
-        action="append",
-        required=True,
-        dest="model_identities",
-    )
+    parser.add_argument("--deployment-inventory", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--source-sha", required=True)
     parser.add_argument("--start", type=int, default=0)
@@ -714,7 +690,7 @@ def main() -> int:
     args = parser.parse_args()
     run_external_qwen_substitute_pool(
         benchmark_path=args.benchmark,
-        model_identity_paths=tuple(args.model_identities),
+        deployment_inventory_path=args.deployment_inventory,
         output_root=args.output_root,
         source_sha=args.source_sha,
         start=args.start,

@@ -12,10 +12,10 @@ import time
 from noetrium_platform.composition.model_requests import (
     build_directory_model_request_recorder,
 )
-from noetrium_platform.capabilities.model.serving.endpoint.api import ModelEndpointRoute
 from noetrium_platform.capabilities.model.serving.endpoint.providers import (
     AsyncioJsonTransport,
     OpenAICompatibleModelEndpoint,
+    load_operational_model_serving_inventory,
 )
 from noetrium_platform.capabilities.model.serving.runtime import ModelAdmissionController
 from noetrium_platform.foundation.kernel.concurrency.composition import (
@@ -40,8 +40,6 @@ from noetrium_platform.research.execution.workflow.providers import (
     DirectoryEventMethodEvidence,
 )
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
-
-from research.runtime.external_substitute import load_external_substitute_model_deployment
 
 from research.benchmarks.gsm8k import (
     materialize_archived_gsm8k_test,
@@ -84,7 +82,7 @@ def _event(event) -> dict:
 def run_external_qwen_substitute(
     *,
     benchmark_path: Path,
-    model_identity_path: Path,
+    deployment_inventory_path: Path,
     output_root: Path,
     source_sha: str,
     start: int,
@@ -92,6 +90,7 @@ def run_external_qwen_substitute(
     max_tokens: int,
     admission_limit: int,
     disable_thinking: bool,
+    deployment_id: str | None = None,
 ) -> dict:
     """Run a clearly-labelled substitute lane; never claims matched PaLM reproduction."""
 
@@ -106,13 +105,25 @@ def run_external_qwen_substitute(
     if len(selected) != count:
         raise ValueError("requested task range exceeds GSM8K test cut")
 
-    deployment = load_external_substitute_model_deployment(model_identity_path)
-    model = deployment.model
-    deployment_id = deployment.deployment_id
-    deployment_generation = deployment.deployment_generation
-    endpoint_base_url = deployment.endpoint_base_url
-    identity_document_digest = deployment.identity_document_digest
-    model_identity_digest = deployment.model_identity_digest
+    inventory = load_operational_model_serving_inventory(deployment_inventory_path)
+    model = inventory.model
+    replicas = inventory.replica_set.replicas
+    if deployment_id is None:
+        replica = replicas[0]
+    else:
+        matches = tuple(row for row in replicas if row.deployment_id == deployment_id)
+        if len(matches) != 1:
+            raise ValueError(
+                f"CoT deployment_id is not present exactly once in inventory: {deployment_id}"
+            )
+        replica = matches[0]
+    deployment_id = replica.deployment_id
+    deployment_generation = replica.deployment_generation
+    endpoint_base_url = replica.route.base_url
+    model_identity_digest = canonical_digest(model)
+    serving_inventory_digest = inventory.identity_digest
+    replica_set_digest = inventory.replica_set.replica_set_digest
+    served_model_name = inventory.served_model_name
 
     generation_options: dict[str, object] = {
         "temperature": 0,
@@ -120,7 +131,7 @@ def run_external_qwen_substitute(
     }
     if disable_thinking:
         generation_options["chat_template_kwargs"] = {"enable_thinking": False}
-    request_factory = PromptViewChatRequestFactory("qwen", generation_options)
+    request_factory = PromptViewChatRequestFactory(served_model_name, generation_options)
     binding = MethodModelEndpointBinding(
         agent_id="cot.reasoner",
         role="reasoner",
@@ -134,7 +145,8 @@ def run_external_qwen_substitute(
         {
             "lane": "platform-substitute",
             "model_identity_digest": model_identity_digest,
-            "identity_document_digest": identity_document_digest,
+            "serving_inventory_digest": serving_inventory_digest,
+            "replica_set_digest": replica_set_digest,
             "deployment_generation": deployment_generation,
             "request_factory_digest": request_factory.digest,
             "method_program_digest": CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM.program_digest,
@@ -159,7 +171,8 @@ def run_external_qwen_substitute(
         "benchmark_file_sha256": materialized.file_sha256,
         "benchmark_git_blob_sha1": materialized.git_blob_sha1,
         "model_identity_digest": model_identity_digest,
-        "identity_document_digest": identity_document_digest,
+        "serving_inventory_digest": serving_inventory_digest,
+        "replica_set_digest": replica_set_digest,
         "model": asdict(model),
         "deployment_id": deployment_id,
         "deployment_generation": deployment_generation,
@@ -182,12 +195,7 @@ def run_external_qwen_substitute(
         f"cot-gsm8k-qwen3-8b:{manifest['manifest_digest'][:16]}"
     )
     endpoint = OpenAICompatibleModelEndpoint(
-        route=ModelEndpointRoute(
-            deployment_id,
-            deployment_generation,
-            endpoint_base_url,
-            timeout_s=180.0,
-        ),
+        route=replica.route,
         transport=AsyncioJsonTransport(),
         task_group=group,
         admission=ModelAdmissionController(admission_limit),
@@ -356,7 +364,8 @@ def run_external_qwen_substitute(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--benchmark", type=Path, required=True)
-    parser.add_argument("--model-identity", type=Path, required=True)
+    parser.add_argument("--deployment-inventory", type=Path, required=True)
+    parser.add_argument("--deployment-id")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--source-sha", required=True)
     parser.add_argument("--start", type=int, default=0)
@@ -367,7 +376,7 @@ def main() -> int:
     args = parser.parse_args()
     run_external_qwen_substitute(
         benchmark_path=args.benchmark,
-        model_identity_path=args.model_identity,
+        deployment_inventory_path=args.deployment_inventory,
         output_root=args.output_root,
         source_sha=args.source_sha,
         start=args.start,
@@ -375,6 +384,7 @@ def main() -> int:
         max_tokens=args.max_tokens,
         admission_limit=args.admission_limit,
         disable_thinking=not args.enable_thinking,
+        deployment_id=args.deployment_id,
     )
     return 0
 
