@@ -260,6 +260,7 @@ def _run_episode(
         "failure_code": result.failure_code,
         "failure_phase": result.failure_phase,
     }
+    record["outcome_class"] = _pressure_outcome_class(record)
     record["record_digest"] = canonical_digest(record)
     (output / "result.json").write_text(
         json.dumps(record, indent=2, sort_keys=True) + "\n",
@@ -276,6 +277,18 @@ def _run_episode(
             flush=True,
         )
     return record
+
+
+def _pressure_outcome_class(record: dict) -> str:
+    status = record.get("status")
+    if status == "succeeded":
+        return "succeeded"
+    if (
+        status == "limit_reached"
+        and record.get("failure_code") in {"method.step_limit", "METHOD_TIMEOUT"}
+    ):
+        return "bounded"
+    return "failed"
 
 
 def _failed_record(
@@ -306,6 +319,7 @@ def _failed_record(
         "failure_code": "pressure_lane_exception",
         "failure_phase": "execution",
     }
+    record["outcome_class"] = _pressure_outcome_class(record)
     record["record_digest"] = canonical_digest(record)
     (output / "result.json").write_text(
         json.dumps(record, indent=2, sort_keys=True) + "\n",
@@ -495,9 +509,10 @@ def run(args: argparse.Namespace) -> dict:
             }
             for row in snapshot.replicas
         ],
-        "succeeded": sum(row["status"] == "succeeded" for row in records),
+        "succeeded": sum(_pressure_outcome_class(row) == "succeeded" for row in records),
+        "bounded": sum(_pressure_outcome_class(row) == "bounded" for row in records),
         "evidence_complete": sum(row.get("evidence_status") == "complete" for row in records),
-        "failed": sum(row["status"] != "succeeded" for row in records),
+        "failed": sum(_pressure_outcome_class(row) == "failed" for row in records),
         "packages": tuple(package for package, _ in selected),
     }
     summary["summary_digest"] = canonical_digest(summary)

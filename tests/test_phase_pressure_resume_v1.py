@@ -88,3 +88,18 @@ def test_phase_pressure_resume_accepts_only_digest_valid_matching_result(tmp_pat
         source_sha="d" * 40,
         inventory=inventory,
     ) is None
+
+from research.runtime.phase_pressure import _pressure_outcome_class
+
+
+def test_pressure_outcome_class_distinguishes_budget_stop_from_failure() -> None:
+    assert _pressure_outcome_class({"status": "succeeded"}) == "succeeded"
+    assert _pressure_outcome_class(
+        {"status": "limit_reached", "failure_code": "method.step_limit"}
+    ) == "bounded"
+    assert _pressure_outcome_class(
+        {"status": "limit_reached", "failure_code": "METHOD_TIMEOUT"}
+    ) == "bounded"
+    assert _pressure_outcome_class(
+        {"status": "failed", "failure_code": "method.node_execution_failed"}
+    ) == "failed"
