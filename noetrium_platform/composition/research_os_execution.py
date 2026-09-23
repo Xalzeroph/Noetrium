@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import time
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
@@ -27,6 +28,8 @@ from noetrium_platform.product.research_os import (
 )
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphActiveCutStorePort,
+    ResearchGraphControlPhase,
+    ResearchGraphControlStorePort,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
@@ -35,6 +38,7 @@ from noetrium_platform.research.execution.graph.api import (
 
 from .research_os import ResearchOSControlPort
 from .research_os_experiment import ResearchOSExperimentClosurePort
+from .research_graph import ResearchGraphControlHalt
 from .research_os_graph import (
     CompiledResearchOSGraph,
     CompiledResearchOSGraphNode,
@@ -448,7 +452,11 @@ class PreparedResearchOSNodeExecutor:
 
 
 class StrictResearchOSControl(ResearchOSControlPort):
-    """Synchronous fail-closed product control over the durable ResearchGraph."""
+    """Synchronous fail-closed product control over the durable ResearchGraph.
+
+    Research OS owns orchestration intent only. Lower Machine/Run/effect/checkpoint
+    authorities remain the sole truth for domain execution and external effects.
+    """
 
     def __init__(
         self,
@@ -464,6 +472,8 @@ class StrictResearchOSControl(ResearchOSControlPort):
             raise TypeError("Research OS control requires graph execution store")
         if not isinstance(execution_store, ResearchGraphActiveCutStorePort):
             raise TypeError("Research OS control requires active-cut CAS store")
+        if not isinstance(execution_store, ResearchGraphControlStorePort):
+            raise TypeError("Research OS control requires durable graph control store")
         if type(execution_pool) is not ResearchExecutionPool:
             raise TypeError("Research OS control requires explicit execution pool")
         if not isinstance(runtime, ResearchOSNodeRuntimePort):
@@ -506,9 +516,134 @@ class StrictResearchOSControl(ResearchOSControlPort):
             return self._run(request, portfolio)
         if request.action is ResearchControlAction.INSPECT:
             return self._inspect(request, portfolio)
+        if request.action is ResearchControlAction.DRAIN:
+            return self._drain(request, portfolio)
+        if request.action is ResearchControlAction.PAUSE:
+            return self._pause(request, portfolio)
+        if request.action is ResearchControlAction.INTERRUPT:
+            return self._interrupt(request, portfolio)
+        if request.action is ResearchControlAction.RESUME:
+            return self._resume(request, portfolio)
+        if request.action is ResearchControlAction.CANCEL:
+            return self._cancel(request, portfolio)
+        if request.action is ResearchControlAction.CHECKPOINT:
+            return self._checkpoint(request, portfolio)
+        if request.action is ResearchControlAction.RETRY:
+            raise ResearchOSExecutionUnsupported(
+                "RETRY requires a canonical graph retry plan that resets the exact "
+                "failed node and its blocked descendants without bypassing "
+                "reconciliation debt; no implicit retry is permitted"
+            )
+        if request.action is ResearchControlAction.RECONCILE:
+            raise ResearchOSExecutionUnsupported(
+                "RECONCILE requires a lower-authority effect/execution proof; "
+                "Research OS will not accept a caller-supplied disposition as truth"
+            )
         raise ResearchOSExecutionUnsupported(
-            "Research OS control action has no canonical durable implementation yet: "
+            "Research OS control action has no canonical durable implementation: "
             f"{request.action.value}"
+        )
+
+    @staticmethod
+    def _require_whole_graph_control(request: ResearchControlRequest) -> None:
+        if request.target.node is not None:
+            raise ResearchOSExecutionUnsupported(
+                f"node-scoped {request.action.value.upper()} requires an exact "
+                "lower-runtime control proof and is not inferred from graph state"
+            )
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported(
+                f"{request.action.value.upper()} does not accept opaque control payload"
+            )
+
+    def _active_execution_state(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ):
+        compilation = compile_research_portfolio_graph(
+            request.target.revision,
+            portfolio,
+        )
+        cut = ResearchOSExecutionCut.from_compilation(
+            request.target.execution_id,
+            compilation,
+        )
+        active = self._store.active_cut(request.target.execution_id)
+        if active is None:
+            raise ResearchGraphExecutionConflict(
+                "Research OS execution has no active durable cut"
+            )
+        if active.cut_id != cut.cut_id:
+            raise ResearchGraphExecutionConflict(
+                "Research OS target revision is not the active durable cut"
+            )
+        snapshot = self._store.snapshot(cut.cut_id)
+        control = self._store.control_state(cut.cut_id)
+        return compilation, cut, active, snapshot, control
+
+    @staticmethod
+    def _states(snapshot) -> JsonObject:
+        return {
+            state.value: tuple(
+                node.node_id
+                for node in snapshot.nodes
+                if node.state is state
+            )
+            for state in ResearchGraphLiveNodeState
+        }
+
+    def _durable_control_receipt(
+        self,
+        request: ResearchControlRequest,
+        compilation: CompiledResearchOSGraph,
+        cut: ResearchOSExecutionCut,
+        active,
+        snapshot,
+        control,
+        *,
+        state: str | None = None,
+        extra: JsonObject | None = None,
+    ) -> ResearchControlReceipt:
+        states = self._states(snapshot)
+        resolved_state = state
+        if resolved_state is None:
+            if snapshot.reconciliation_required_node_ids or (
+                control.phase is ResearchGraphControlPhase.RECOVERY_REQUIRED
+            ):
+                resolved_state = "recovery_required"
+            elif control.phase is ResearchGraphControlPhase.PAUSED:
+                resolved_state = "paused"
+            elif control.phase is ResearchGraphControlPhase.DRAINING:
+                resolved_state = "draining"
+            elif control.phase is ResearchGraphControlPhase.CANCELLED:
+                resolved_state = "cancelled"
+            else:
+                resolved_state = "durable"
+        payload: JsonObject = {
+            "cut_id": cut.cut_id,
+            "graph_digest": compilation.plan.graph_digest,
+            "generation": snapshot.generation,
+            "active_cut_generation": active.generation,
+            "control_phase": control.phase.value,
+            "control_generation": control.generation,
+            "states": states,
+        }
+        if extra:
+            payload.update(extra)
+        return ResearchControlReceipt(
+            request.action,
+            request.target,
+            resolved_state,
+            canonical_digest(
+                {
+                    "action": request.action.value,
+                    "target_digest": request.target.target_digest,
+                    "state": resolved_state,
+                    "payload": payload,
+                }
+            ),
+            payload,
         )
 
     def _run(
@@ -536,7 +671,24 @@ class StrictResearchOSControl(ResearchOSControlPort):
         )
         if activation.cut != prepared.cut:
             raise ValueError("Research OS active cut drifted from preflight cut")
+        control = self._store.control_state(prepared.cut.cut_id)
+        if control.phase is not ResearchGraphControlPhase.ACTIVE:
+            raise ResearchGraphExecutionConflict(
+                "RUN requires an active graph control phase; use RESUME for a "
+                f"paused execution, actual={control.phase.value}"
+            )
+        return self._drive(
+            request,
+            prepared,
+            activation.active_cut.generation,
+        )
 
+    def _drive(
+        self,
+        request: ResearchControlRequest,
+        prepared: PreparedResearchOSExecution,
+        active_cut_generation: int,
+    ) -> ResearchControlReceipt:
         executor = PreparedResearchOSNodeExecutor(
             prepared,
             self._runtime,
@@ -555,13 +707,30 @@ class StrictResearchOSControl(ResearchOSControlPort):
             ),
         )
         try:
-            report = scheduler.execute()
+            try:
+                report = scheduler.execute()
+            except ResearchGraphControlHalt:
+                active = self._store.active_cut(request.target.execution_id)
+                if active is None or active.cut_id != prepared.cut.cut_id:
+                    raise ResearchGraphExecutionConflict(
+                        "Research OS active cut changed while control halt was observed"
+                    )
+                snapshot = self._store.snapshot(prepared.cut.cut_id)
+                control = self._store.control_state(prepared.cut.cut_id)
+                return self._durable_control_receipt(
+                    request,
+                    prepared.compilation,
+                    prepared.cut,
+                    active,
+                    snapshot,
+                    control,
+                )
         finally:
             scheduler.close()
         return self._execution_receipt(
             request,
             prepared,
-            activation.active_cut.generation,
+            active_cut_generation,
             report,
         )
 
@@ -570,59 +739,226 @@ class StrictResearchOSControl(ResearchOSControlPort):
         request: ResearchControlRequest,
         portfolio: ResearchPortfolio,
     ) -> ResearchControlReceipt:
-        compilation = compile_research_portfolio_graph(
-            request.target.revision,
+        compilation, cut, active, snapshot, control = self._active_execution_state(
+            request,
             portfolio,
         )
-        cut = ResearchOSExecutionCut.from_compilation(
-            request.target.execution_id,
+        return self._durable_control_receipt(
+            request,
             compilation,
+            cut,
+            active,
+            snapshot,
+            control,
         )
-        active = self._store.active_cut(request.target.execution_id)
-        if active is None:
-            raise ResearchGraphExecutionConflict(
-                "Research OS execution has no active durable cut"
-            )
-        if active.cut_id != cut.cut_id:
-            raise ResearchGraphExecutionConflict(
-                "Research OS target revision is not the active durable cut"
-            )
+
+    def _drain(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        self._require_whole_graph_control(request)
+        compilation, cut, active, snapshot, control = self._active_execution_state(
+            request,
+            portfolio,
+        )
+        control = self._store.request_drain(
+            cut.cut_id,
+            expected_generation=control.generation,
+            now_ns=time.time_ns(),
+        )
         snapshot = self._store.snapshot(cut.cut_id)
-        states = {
-            state.value: tuple(
-                node.node_id
-                for node in snapshot.nodes
-                if node.state is state
-            )
-            for state in ResearchGraphLiveNodeState
-        }
-        payload: JsonObject = {
-            "cut_id": cut.cut_id,
-            "graph_digest": compilation.plan.graph_digest,
-            "generation": snapshot.generation,
-            "active_cut_generation": active.generation,
-            "states": states,
-        }
-        state = (
-            "reconciliation_required"
-            if snapshot.reconciliation_required_node_ids
-            else "durable"
+        active_nodes = tuple(
+            node.node_id
+            for node in snapshot.nodes
+            if node.state in {
+                ResearchGraphLiveNodeState.CLAIMED,
+                ResearchGraphLiveNodeState.RUNNING,
+            }
         )
-        return ResearchControlReceipt(
-            request.action,
+        if not active_nodes and not snapshot.reconciliation_required_node_ids:
+            control = self._store.pause_if_quiescent(
+                cut.cut_id,
+                expected_generation=control.generation,
+                now_ns=time.time_ns(),
+            )
+            snapshot = self._store.snapshot(cut.cut_id)
+        return self._durable_control_receipt(
+            request,
+            compilation,
+            cut,
+            active,
+            snapshot,
+            control,
+        )
+
+    def _pause(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        self._require_whole_graph_control(request)
+        compilation, cut, active, _snapshot, control = self._active_execution_state(
+            request,
+            portfolio,
+        )
+        control = self._store.pause_if_quiescent(
+            cut.cut_id,
+            expected_generation=control.generation,
+            now_ns=time.time_ns(),
+        )
+        snapshot = self._store.snapshot(cut.cut_id)
+        return self._durable_control_receipt(
+            request,
+            compilation,
+            cut,
+            active,
+            snapshot,
+            control,
+            state="paused",
+        )
+
+    def _interrupt(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        self._require_whole_graph_control(request)
+        compilation, cut, active, _snapshot, control = self._active_execution_state(
+            request,
+            portfolio,
+        )
+        control = self._store.interrupt(
+            cut.cut_id,
+            expected_generation=control.generation,
+            now_ns=time.time_ns(),
+        )
+        snapshot = self._store.snapshot(cut.cut_id)
+        return self._durable_control_receipt(
+            request,
+            compilation,
+            cut,
+            active,
+            snapshot,
+            control,
+        )
+
+    def _resume(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        self._require_whole_graph_control(request)
+        compilation, cut, active, _snapshot, control = self._active_execution_state(
+            request,
+            portfolio,
+        )
+        control = self._store.resume(
+            cut.cut_id,
+            expected_generation=control.generation,
+            now_ns=time.time_ns(),
+        )
+        if control.phase is not ResearchGraphControlPhase.ACTIVE:
+            raise ResearchGraphExecutionConflict(
+                "Research OS resume did not produce active graph control"
+            )
+        prepared = prepare_research_os_execution(
             request.target,
-            state,
-            canonical_digest(
-                {
-                    "action": request.action.value,
-                    "target_digest": request.target.target_digest,
-                    "cut_id": cut.cut_id,
-                    "snapshot_generation": snapshot.generation,
-                    "active_cut_generation": active.generation,
-                    "states": states,
-                }
-            ),
-            payload,
+            portfolio,
+            self._runtime,
+            self._values,
+            experiment_closures=self._experiment_closures,
+            artifact_lineage=self._artifact_lineage,
+        )
+        if prepared.compilation != compilation or prepared.cut != cut:
+            raise ValueError("Research OS resume preflight identity drifted")
+        return self._drive(request, prepared, active.generation)
+
+    def _cancel(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        self._require_whole_graph_control(request)
+        compilation, cut, active, _snapshot, control = self._active_execution_state(
+            request,
+            portfolio,
+        )
+        control = self._store.cancel_if_quiescent(
+            cut.cut_id,
+            expected_generation=control.generation,
+            now_ns=time.time_ns(),
+        )
+        snapshot = self._store.snapshot(cut.cut_id)
+        return self._durable_control_receipt(
+            request,
+            compilation,
+            cut,
+            active,
+            snapshot,
+            control,
+            state="cancelled",
+        )
+
+    def _checkpoint(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        self._require_whole_graph_control(request)
+        compilation, cut, active, snapshot, control = self._active_execution_state(
+            request,
+            portfolio,
+        )
+        if control.phase not in {
+            ResearchGraphControlPhase.ACTIVE,
+            ResearchGraphControlPhase.PAUSED,
+        }:
+            raise ResearchGraphExecutionConflict(
+                "graph checkpoint requires active or paused durable control, "
+                f"actual={control.phase.value}"
+            )
+        active_nodes = tuple(
+            node.node_id
+            for node in snapshot.nodes
+            if node.state in {
+                ResearchGraphLiveNodeState.CLAIMED,
+                ResearchGraphLiveNodeState.RUNNING,
+            }
+        )
+        if active_nodes:
+            raise ResearchGraphExecutionConflict(
+                "graph checkpoint requires a quiescent cut or exact lower "
+                f"checkpoint proofs; active_nodes={active_nodes}"
+            )
+        if snapshot.reconciliation_required_node_ids:
+            raise ResearchGraphExecutionConflict(
+                "graph checkpoint is blocked by reconciliation debt: "
+                f"{snapshot.reconciliation_required_node_ids}"
+            )
+        checkpoint_digest = canonical_digest(
+            {
+                "schema": "noetrium.research-graph-checkpoint.v1",
+                "cut_id": cut.cut_id,
+                "graph_digest": compilation.plan.graph_digest,
+                "research_revision_digest": (
+                    compilation.plan.research_revision_digest
+                ),
+                "snapshot_generation": snapshot.generation,
+                "control_generation": control.generation,
+                "control_phase": control.phase.value,
+                "states": self._states(snapshot),
+            }
+        )
+        return self._durable_control_receipt(
+            request,
+            compilation,
+            cut,
+            active,
+            snapshot,
+            control,
+            state="checkpointed",
+            extra={"checkpoint_digest": checkpoint_digest},
         )
 
     @staticmethod
