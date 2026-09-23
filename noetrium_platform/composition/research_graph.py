@@ -313,6 +313,14 @@ class ResearchGraphScheduler:
         )
         if control_store is not None:
             control = control_store.control_state(execution_id)
+            if snapshot.reconciliation_required_node_ids:
+                if control.phase is not ResearchGraphControlPhase.RECOVERY_REQUIRED:
+                    control = control_store.require_recovery(
+                        execution_id,
+                        expected_generation=control.generation,
+                        now_ns=now_ns,
+                    )
+                raise ResearchGraphControlHalt(control)
             if control.phase in {
                 ResearchGraphControlPhase.PAUSED,
                 ResearchGraphControlPhase.RECOVERY_REQUIRED,
