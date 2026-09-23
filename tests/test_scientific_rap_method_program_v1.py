@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.platform import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentResult,
@@ -56,7 +56,7 @@ class _DeterministicRAPAgent:
 
 def test_rap_method_program_preserves_prior_mcts_tree_across_ten_rollouts(tmp_path) -> None:
     agent = _DeterministicRAPAgent()
-    result = run_method_program(
+    result = execute_method_program_canonically(
         RAP_BLOCKSWORLD_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(execution=_context(), agent_loop=agent),
         initial_state=rap_blocksworld_initial_state(
