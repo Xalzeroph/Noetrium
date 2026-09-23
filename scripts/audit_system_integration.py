@@ -650,6 +650,11 @@ def main(argv: list[str] | None = None) -> int:
         "status_counts": report["status_counts"],
         "disconnected_system_count": report["disconnected_system_count"],
         "direct_concrete_dependency_system_count": report["direct_concrete_dependency_system_count"],
+        "component_count": report["component_count"],
+        "internal_facet_count": report["internal_facet_count"],
+        "layer_status_counts": report["layer_status_counts"],
+        "layer_disconnected_count": report["layer_disconnected_count"],
+        "topology_errors": report["topology_errors"],
     }, indent=2, sort_keys=True))
     if args.fail_on_shape and (
         report["status_counts"].get("declared-shape-missing", 0)
