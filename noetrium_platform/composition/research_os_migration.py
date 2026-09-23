@@ -14,6 +14,8 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionSnapshot,
     ResearchGraphExecutionStorePort,
     ResearchGraphLiveNodeState,
+    ResearchGraphNodeControlPhase,
+    ResearchGraphNodeControlStorePort,
 )
 
 from .research_os_graph import CompiledResearchOSGraph, CompiledResearchOSGraphNode
@@ -158,6 +160,9 @@ class ResearchOSExecutionMigrationMaterialization:
     snapshot: ResearchGraphExecutionSnapshot
     reused_node_ids: tuple[str, ...]
     restart_node_ids: tuple[str, ...]
+    preserved_paused_node_ids: tuple[str, ...]
+    preserved_cancelled_node_ids: tuple[str, ...]
+    control_transfer_digest: str
 
     def __post_init__(self) -> None:
         if not isinstance(self.plan, ResearchOSExecutionMigrationPlan):
@@ -168,10 +173,10 @@ class ResearchOSExecutionMigrationMaterialization:
             raise TypeError("research migration materialization snapshot must be typed")
         reused = tuple(sorted(self.reused_node_ids))
         restart = tuple(sorted(self.restart_node_ids))
-        if (
-            len(reused) != len(set(reused))
-            or len(restart) != len(set(restart))
-        ):
+        paused = tuple(sorted(self.preserved_paused_node_ids))
+        cancelled = tuple(sorted(self.preserved_cancelled_node_ids))
+        groups = (reused, restart, paused, cancelled)
+        if any(len(group) != len(set(group)) for group in groups):
             raise ValueError(
                 "research migration materialization node ids must be unique"
             )
@@ -179,12 +184,22 @@ class ResearchOSExecutionMigrationMaterialization:
             raise ValueError(
                 "research migration reused/restart node sets must be disjoint"
             )
+        if set(cancelled) & (set(reused) | set(restart) | set(paused)):
+            raise ValueError(
+                "research migration cancelled nodes cannot also be reused/restarted/paused"
+            )
+        require_sha256(
+            self.control_transfer_digest,
+            "research migration control_transfer_digest",
+        )
         if self.active_cut.cut_id != self.plan.target_cut.cut_id:
             raise ValueError("research migration active cut does not match target cut")
         if self.snapshot.execution_id != self.plan.target_cut.cut_id:
             raise ValueError("research migration snapshot does not match target cut")
         object.__setattr__(self, "reused_node_ids", reused)
         object.__setattr__(self, "restart_node_ids", restart)
+        object.__setattr__(self, "preserved_paused_node_ids", paused)
+        object.__setattr__(self, "preserved_cancelled_node_ids", cancelled)
 
 
 @dataclass(frozen=True, slots=True)
@@ -481,15 +496,66 @@ def materialize_research_os_execution_migration(
         raise ResearchGraphExecutionConflict(
             "research migration durable source cut identity drifted"
         )
+    if not isinstance(execution_store, ResearchGraphControlStorePort):
+        raise TypeError(
+            "research migration requires durable graph control authority"
+        )
+    if not isinstance(execution_store, ResearchGraphNodeControlStorePort):
+        raise TypeError(
+            "research migration requires durable per-node control authority"
+        )
+    source_control = execution_store.control_state(plan.source_cut.cut_id)
+    if source_control.phase is not ResearchGraphControlPhase.PAUSED:
+        raise ResearchGraphExecutionConflict(
+            "research migration materialization requires a paused source cut; "
+            f"actual={source_control.phase.value}"
+        )
+    common_node_ids = tuple(
+        sorted(
+            row.graph_node_id
+            for row in plan.nodes
+            if row.old_semantic_digest is not None
+            and row.new_semantic_digest is not None
+        )
+    )
+    source_node_controls = {
+        node_id: execution_store.node_control_state(
+            plan.source_cut.cut_id,
+            node_id,
+        )
+        for node_id in common_node_ids
+    }
+    unsettled = tuple(
+        sorted(
+            (node_id, control.phase.value)
+            for node_id, control in source_node_controls.items()
+            if control.phase in {
+                ResearchGraphNodeControlPhase.DRAINING,
+                ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+            }
+        )
+    )
+    if unsettled:
+        raise ResearchGraphExecutionConflict(
+            "research migration source node control must settle before migration: "
+            f"{unsettled}"
+        )
+    for node_id, control in source_node_controls.items():
+        source_record = source_snapshot.node(node_id)
+        if (
+            source_record.state is ResearchGraphLiveNodeState.CANCELLED
+        ) != (
+            control.phase is ResearchGraphNodeControlPhase.CANCELLED
+        ):
+            raise ResearchGraphExecutionConflict(
+                "research migration source node cancellation truth drifted: "
+                f"{node_id}"
+            )
 
     target_snapshot = execution_store.ensure_execution(
         plan.target_cut.cut_id,
         target.plan,
     )
-    if not isinstance(execution_store, ResearchGraphControlStorePort):
-        raise TypeError(
-            "research migration requires durable target graph control authority"
-        )
     target_control = execution_store.control_state(plan.target_cut.cut_id)
     if target_control.phase is ResearchGraphControlPhase.ACTIVE:
         target_control = execution_store.request_drain(
@@ -546,8 +612,73 @@ def materialize_research_os_execution_migration(
         )
         reused.append(node_id)
 
+    preserved_paused: list[str] = []
+    preserved_cancelled: list[str] = []
+    for node_id in common_node_ids:
+        source_node_control = source_node_controls[node_id]
+        target_node_control = execution_store.node_control_state(
+            plan.target_cut.cut_id,
+            node_id,
+        )
+        if source_node_control.phase is ResearchGraphNodeControlPhase.PAUSED:
+            if target_node_control.phase is ResearchGraphNodeControlPhase.ACTIVE:
+                target_node_control = execution_store.request_node_drain(
+                    plan.target_cut.cut_id,
+                    node_id,
+                    expected_generation=target_node_control.generation,
+                    now_ns=now_ns,
+                )
+            if target_node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
+                target_node_control = execution_store.pause_node_if_quiescent(
+                    plan.target_cut.cut_id,
+                    node_id,
+                    expected_generation=target_node_control.generation,
+                    now_ns=now_ns,
+                )
+            if target_node_control.phase is not ResearchGraphNodeControlPhase.PAUSED:
+                raise ResearchGraphExecutionConflict(
+                    "research migration failed to preserve paused node control: "
+                    f"{node_id}"
+                )
+            preserved_paused.append(node_id)
+        elif source_node_control.phase is ResearchGraphNodeControlPhase.CANCELLED:
+            if target_node_control.phase is not ResearchGraphNodeControlPhase.ACTIVE:
+                raise ResearchGraphExecutionConflict(
+                    "research migration target cancellation staging requires active "
+                    f"node control: {node_id}"
+                )
+            target_node_control = execution_store.cancel_node_subgraph(
+                plan.target_cut.cut_id,
+                node_id,
+                descendant_node_ids=(),
+                expected_generation=target_node_control.generation,
+                now_ns=now_ns,
+            )
+            if target_node_control.phase is not ResearchGraphNodeControlPhase.CANCELLED:
+                raise ResearchGraphExecutionConflict(
+                    "research migration failed to preserve cancelled node control: "
+                    f"{node_id}"
+                )
+            preserved_cancelled.append(node_id)
+        elif source_node_control.phase is not ResearchGraphNodeControlPhase.ACTIVE:
+            raise ResearchGraphExecutionConflict(
+                "research migration encountered unsupported source node control phase: "
+                f"{node_id}={source_node_control.phase.value}"
+            )
+
+    for node_id, observed in source_node_controls.items():
+        current = execution_store.node_control_state(
+            plan.source_cut.cut_id,
+            node_id,
+        )
+        if current != observed:
+            raise ResearchGraphExecutionConflict(
+                "research migration source node control changed during materialization: "
+                f"{node_id}"
+            )
+
     target_snapshot = execution_store.snapshot(plan.target_cut.cut_id)
-    expected_restart = set(plan.restart_node_ids)
+    expected_restart = set(plan.restart_node_ids) - set(preserved_cancelled)
     actual_restart = {
         node.node_id
         for node in target_snapshot.nodes
@@ -567,6 +698,7 @@ def materialize_research_os_execution_migration(
             not in {
                 ResearchGraphLiveNodeState.PENDING,
                 ResearchGraphLiveNodeState.REUSED,
+                ResearchGraphLiveNodeState.CANCELLED,
             }
         )
     )
@@ -575,6 +707,35 @@ def materialize_research_os_execution_migration(
             "research migration target cut contains unexpected node states: "
             f"{unexpected_states}"
         )
+    target_node_controls = {
+        node_id: execution_store.node_control_state(
+            plan.target_cut.cut_id,
+            node_id,
+        )
+        for node_id in common_node_ids
+    }
+    control_transfer_digest = canonical_digest(
+        {
+            "source_cut_id": plan.source_cut.cut_id,
+            "target_cut_id": plan.target_cut.cut_id,
+            "source": tuple(
+                (
+                    node_id,
+                    source_node_controls[node_id].phase.value,
+                    source_node_controls[node_id].generation,
+                )
+                for node_id in common_node_ids
+            ),
+            "target": tuple(
+                (
+                    node_id,
+                    target_node_controls[node_id].phase.value,
+                    target_node_controls[node_id].generation,
+                )
+                for node_id in common_node_ids
+            ),
+        }
+    )
     active = cuts.move_active_cut(
         plan.execution_id,
         plan.target_cut.cut_id,
@@ -586,6 +747,9 @@ def materialize_research_os_execution_migration(
         target_snapshot,
         tuple(reused),
         tuple(sorted(expected_restart)),
+        tuple(preserved_paused),
+        tuple(preserved_cancelled),
+        control_transfer_digest,
     )
 
 
