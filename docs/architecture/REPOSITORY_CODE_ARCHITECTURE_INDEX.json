@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3613,
+    "python_files": 3614,
     "python_import_edges": 6774,
     "symbols": 4802,
-    "tracked_files": 4242,
+    "tracked_files": 4243,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -40785,7 +40785,7 @@
     "reference_orchestration": 10,
     "research_reproductions": 760,
     "tests": 773,
-    "tooling": 75
+    "tooling": 76
   },
   "role_symbol_counts": {
     "core_platform": 3319,
@@ -40800,7 +40800,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "6b58f84d00bf318c56f662f2ef5e5c662484b8a0",
+  "source_git_sha": "0d0be1497fa295426542a2fecae3f6f83e279ec7",
   "symbols": [
     {
       "bases": [],
@@ -136864,7 +136864,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 409,
+      "line": 419,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -136896,7 +136896,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 546,
+      "line": 556,
       "methods": [
         "execute"
       ],
