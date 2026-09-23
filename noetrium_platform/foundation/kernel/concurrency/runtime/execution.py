@@ -77,6 +77,34 @@ class UnifiedExecutionAuthority:
             cancellation=cancellation,
         )
 
+    def _acquire_many(
+        self,
+        owner_group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        permit_count: int,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ) -> tuple[object | None, ...]:
+        if type(permit_count) is not int or permit_count <= 0:
+            raise ValueError("execution permit_count must be a positive integer")
+        if self._permits is None:
+            return tuple(None for _ in range(permit_count))
+        leases = self._permits.acquire_many(
+            owner_group_id,
+            lane_kind,
+            permit_count=permit_count,
+            deadline=deadline,
+            cancellation=cancellation,
+        )
+        if len(leases) != permit_count:
+            for lease in leases:
+                lease.release()
+            raise RuntimeError(
+                "execution permit authority returned invalid batch cardinality"
+            )
+        return tuple(leases)
+
     @staticmethod
     def _release(lease) -> None:
         if lease is not None:
@@ -154,6 +182,60 @@ class UnifiedExecutionAuthority:
                 raise TaskCancelled(cancellation.reason or "serial execution permit wait cancelled")
             if cancellation is None:
                 time.sleep(wait_for)
+
+    def submit_atomic_batch(
+        self,
+        owner_group_id: str,
+        lane_kind: ExecutionLaneKind,
+        fns: tuple[Callable[[], T], ...],
+        *,
+        deadline: Deadline | None = None,
+        cancellation: CancellationTokenPort | None = None,
+    ) -> tuple[Any, ...]:
+        if lane_kind is not ExecutionLaneKind.BLOCKING_IO:
+            raise ValueError(
+                "atomic execution batch currently supports BLOCKING_IO only"
+            )
+        if not isinstance(fns, tuple) or not fns:
+            raise ValueError("atomic execution batch requires a non-empty tuple")
+        if any(not callable(fn) for fn in fns):
+            raise TypeError("atomic execution batch entries must be callable")
+
+        leases = self._acquire_many(
+            owner_group_id,
+            lane_kind,
+            permit_count=len(fns),
+            deadline=deadline,
+            cancellation=cancellation,
+        )
+        try:
+            raw_handles = self._blocking_io.submit_atomic_batch(
+                fns,
+                deadline=deadline,
+                cancellation=cancellation,
+            )
+        except BaseException:
+            for lease in leases:
+                self._release(lease)
+            raise
+
+        if len(raw_handles) != len(leases):
+            for raw in raw_handles:
+                try:
+                    raw.cancel()
+                except BaseException:
+                    pass
+            for lease in leases:
+                self._release(lease)
+            raise RuntimeError(
+                "atomic provider returned invalid batch cardinality"
+            )
+        for raw, lease in zip(raw_handles, leases, strict=True):
+            if lease is not None:
+                raw.add_done_callback(
+                    lambda _handle, owned_lease=lease: owned_lease.release()
+                )
+        return tuple(raw_handles)
 
     def submit(
         self,
