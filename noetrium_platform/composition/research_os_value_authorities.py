@@ -280,6 +280,55 @@ class ResearchOSArtifactValueAuthority:
         value = strict_json_loads(payload)
         return freeze_json(value)
 
+    def reuse(
+        self,
+        source: ResearchOSValueReference,
+        target: ResearchOSValueSubject,
+    ) -> ResearchOSValueReference:
+        if type(source) is not ResearchOSValueReference:
+            raise TypeError("Research OS artifact reuse source must be typed")
+        if type(target) is not ResearchOSValueSubject:
+            raise TypeError("Research OS artifact reuse target must be typed")
+        if source.authority_id != self.authority_id:
+            raise ValueError("Research OS artifact reuse authority drifted")
+        if source.subject.kind is not ResearchValueKind.ARTIFACT:
+            raise ValueError("Research OS artifact reuse source kind drifted")
+        if target.kind is not ResearchValueKind.ARTIFACT:
+            raise ValueError("Research OS artifact reuse target kind drifted")
+        if target.execution_cut_id == source.subject.execution_cut_id:
+            raise ValueError("Research OS artifact reuse requires a distinct target cut")
+        if (
+            target.graph_node_id != source.subject.graph_node_id
+            or target.output_name != source.subject.output_name
+            or target.semantic_digest != source.subject.semantic_digest
+        ):
+            raise ValueError("Research OS artifact reuse semantic identity drifted")
+
+        expected = self.lookup(source.subject)
+        if expected != source:
+            raise ValueError("Research OS artifact reuse source reference drifted")
+        source_record = self._registry.get(source.authority_ref)
+        blob_ref = self._validate_record(source.subject, source_record)
+        if not self._blobs.verify(blob_ref):
+            raise RuntimeError("Research OS artifact reuse source blob failed verification")
+
+        target_record = self._record(target, blob_ref)
+        stored = self._registry.put(target_record)
+        if stored != target_record:
+            raise RuntimeError(
+                "Research OS artifact registry changed immutable reused artifact record"
+            )
+        self._ensure_retention(target, stored.artifact_id)
+        reused = ResearchOSValueReference(
+            target,
+            self.authority_id,
+            stored.artifact_id,
+            blob_ref.content_sha256,
+        )
+        if self.resolve(reused) != self.resolve(source):
+            raise RuntimeError("Research OS artifact reuse changed resolved value")
+        return reused
+
     def reuse_proof(
         self,
         reference: ResearchOSValueReference,
