@@ -179,6 +179,15 @@ def _load_registry() -> dict[str, dict[str, object]]:
 
 
 def _system_for_module(module: str, registry: dict[str, dict[str, object]]) -> str | None:
+    # Global composition is the internal implementation/wiring plane of the
+    # Research OS. It is intentionally not a registry node and owns no durable
+    # authority. Project it under Research OS so architecture views include the
+    # real cross-authority wiring without inventing another semantic layer.
+    if module == "noetrium_platform.composition" or module.startswith(
+        "noetrium_platform.composition."
+    ):
+        return "research_os"
+
     candidates: list[tuple[int, str]] = []
     for key, descriptor in registry.items():
         prefix = descriptor.get("package_prefix")

@@ -26,38 +26,6 @@
     "canonical_authority": "artifact",
     "downstream_surface": "metadata_only"
   },
-  "composition": {
-    "authority": "research_os_composition",
-    "must_not_own": "domain authority, scientific truth, provider state, durable business state or duplicated evidence",
-    "owns": "internal cross-authority assembly, binding and product-level orchestration wiring beneath Research OS",
-    "package_prefix": "noetrium_platform.composition",
-    "parent": "research_os",
-    "shape": [],
-    "requires": [
-      "artifact",
-      "data",
-      "environment",
-      "execution",
-      "experimentation",
-      "governance",
-      "model",
-      "observability",
-      "participant",
-      "platform",
-      "portfolio",
-      "reliability",
-      "resource",
-      "runtime",
-      "scope"
-    ],
-    "provides": [
-      "research.composition"
-    ],
-    "components": [],
-    "node_kind": "facet",
-    "canonical_authority": null,
-    "downstream_surface": "metadata_only"
-  },
   "data": {
     "authority": "data_authority",
     "must_not_own": "immutable artifact content identity",
