@@ -40770,7 +40770,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "fb54d7ce7c45e8a81a6bd4b29547282363f889a2",
+  "source_git_sha": "ce726c83366456114df0ca7946f0099b50b2480e",
   "symbols": [
     {
       "bases": [],
@@ -99434,6 +99434,7 @@
         "mark_failed",
         "mark_blocked",
         "recover_expired",
+        "retry_failed_subgraph",
         "schedule_retry",
         "resolve_reconciliation",
         "mark_reused",
@@ -99456,7 +99457,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 501,
+      "line": 510,
       "methods": [
         "control_state",
         "request_drain",
@@ -99483,7 +99484,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 571,
+      "line": 580,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -99543,6 +99544,7 @@
         "mark_failed",
         "mark_blocked",
         "recover_expired",
+        "retry_failed_subgraph",
         "schedule_retry",
         "resolve_reconciliation",
         "mark_reused",
