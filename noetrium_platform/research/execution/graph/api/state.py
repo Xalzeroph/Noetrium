@@ -48,6 +48,7 @@ class ResearchGraphLiveNodeState(StrEnum):
     REUSED = "reused"
     FAILED = "failed"
     BLOCKED = "blocked"
+    CANCELLED = "cancelled"
 
 
 class ResearchGraphAttemptState(StrEnum):
@@ -66,6 +67,34 @@ class ResearchGraphReconciliationDisposition(StrEnum):
     SUCCEEDED = "succeeded"
     RETRY = "retry"
     FAILED = "failed"
+
+
+class ResearchGraphNodeControlPhase(StrEnum):
+    """Durable per-node admission/control intent inside one immutable graph cut."""
+
+    ACTIVE = "active"
+    DRAINING = "draining"
+    PAUSED = "paused"
+    RECOVERY_REQUIRED = "recovery_required"
+    CANCELLED = "cancelled"
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchGraphNodeControlRecord:
+    execution_id: str
+    node_id: str
+    phase: ResearchGraphNodeControlPhase
+    generation: int
+    updated_at_ns: int
+
+    def __post_init__(self) -> None:
+        _text(self.execution_id, "research graph node control execution_id")
+        _text(self.node_id, "research graph node control node_id")
+        if not isinstance(self.phase, ResearchGraphNodeControlPhase):
+            raise TypeError("research graph node control phase must be typed")
+        if type(self.generation) is not int or self.generation < 1:
+            raise ValueError("research graph node control generation must be positive")
+        _optional_ns(self.updated_at_ns, "research graph node control updated_at_ns")
 
 
 class ResearchGraphControlPhase(StrEnum):
@@ -194,6 +223,13 @@ class ResearchGraphNodeExecutionRecord:
             raise ValueError("blocked graph node requires blockers")
         if self.state is not ResearchGraphLiveNodeState.BLOCKED and blockers:
             raise ValueError("only blocked graph nodes may carry blockers")
+        if self.state is ResearchGraphLiveNodeState.CANCELLED and (
+            self.attempt_id is not None
+            or self.lease_owner_id is not None
+            or self.lease_expires_at_ns is not None
+            or self.retry_not_before_ns is not None
+        ):
+            raise ValueError("cancelled graph node cannot retain active attempt state")
         if self.state is not ResearchGraphLiveNodeState.FAILED and (
             self.failure_type is not None or self.failure_message is not None
         ):
@@ -577,6 +613,72 @@ class ResearchGraphControlStorePort(Protocol):
 
 
 @runtime_checkable
+class ResearchGraphNodeControlStorePort(Protocol):
+    """CAS-safe per-node control authority, independent of graph-wide control."""
+
+    def node_control_state(
+        self,
+        execution_id: str,
+        node_id: str,
+    ) -> ResearchGraphNodeControlRecord: ...
+
+    def request_node_drain(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord: ...
+
+    def pause_node_if_quiescent(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord: ...
+
+    def resume_node(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord: ...
+
+    def interrupt_node(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord: ...
+
+    def settle_node_recovery(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord: ...
+
+    def cancel_node_subgraph(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        descendant_node_ids: tuple[str, ...],
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord: ...
+
+
+@runtime_checkable
 class ResearchGraphActiveCutStorePort(Protocol):
     """CAS authority for the movable logical-execution -> immutable-cut ref."""
 
@@ -607,6 +709,9 @@ __all__ = [
     "ResearchGraphExecutionSnapshot",
     "ResearchGraphExecutionStorePort",
     "ResearchGraphLiveNodeState",
+    "ResearchGraphNodeControlPhase",
+    "ResearchGraphNodeControlRecord",
+    "ResearchGraphNodeControlStorePort",
     "ResearchGraphNodeExecutionRecord",
     "ResearchGraphReconciliationDisposition",
     "ResearchGraphReconciliationRequired",
