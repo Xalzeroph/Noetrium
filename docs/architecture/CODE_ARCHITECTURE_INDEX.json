@@ -39608,7 +39608,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 139,
+      "line": 142,
       "methods": [
         "execute"
       ],
@@ -39662,7 +39662,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 51,
+      "line": 52,
       "methods": [
         "__init__"
       ],
@@ -39680,7 +39680,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 64,
+      "line": 65,
       "methods": [
         "__init__",
         "plan",
@@ -39782,6 +39782,8 @@
         "cut",
         "lowering",
         "preflight_digest",
+        "selected_node_ids",
+        "selection_digest",
         "target"
       ],
       "kind": "dataclass",
@@ -39804,7 +39806,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 324,
+      "line": 391,
       "methods": [
         "__init__",
         "execute",
@@ -39827,7 +39829,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 234,
+      "line": 265,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -39895,7 +39897,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 489,
+      "line": 556,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -98115,11 +98117,6 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.composition.research_campaign.ResearchCampaignBinding",
-      "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.composition.research_campaign.ResearchCampaignBinding",
       "target": "noetrium_platform.composition.research_graph.ResearchGraphScheduler"
     },
     {
@@ -98141,11 +98138,6 @@
       "kind": "constructs",
       "source": "noetrium_platform.composition.research_campaign.ResearchCampaignBinding",
       "target": "noetrium_platform.research.experimentation.lifecycle.study.algorithms.BasicStudyMetricAggregator"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.composition.research_graph.ResearchGraphScheduler",
-      "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
     },
     {
       "kind": "constructs",
@@ -101696,7 +101688,7 @@
   "counts": {
     "association_edges": 3394,
     "classes": 3318,
-    "constructor_edges": 925,
+    "constructor_edges": 923,
     "inheritance_edges": 148,
     "module_import_edges": 5038,
     "parse_errors": 0,
@@ -142740,7 +142732,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "0d0be1497fa295426542a2fecae3f6f83e279ec7",
+  "source_git_sha": "7cddecc5ea6bf4f0e0cd6e9760b27e478292a960",
   "system_import_edges": [
     {
       "count": 90,
