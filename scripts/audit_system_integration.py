@@ -673,7 +673,10 @@ def main(argv: list[str] | None = None) -> int:
         or report["topology_errors"]
     ):
         return 2
-    if args.fail_on_disconnected and report["disconnected_system_count"]:
+    if args.fail_on_disconnected and (
+        report["disconnected_system_count"]
+        or report["layer_disconnected_count"]
+    ):
         return 3
     return 0
 
