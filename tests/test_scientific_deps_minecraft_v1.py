@@ -5,7 +5,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 from noetrium_platform.research.execution.workflow.api import MethodAgentRequest
-from noetrium_platform.research.reproduction import ReproductionAssetKind
+from research.reproductions.contracts import ReproductionAssetKind
 
 from research.benchmarks.deps_minecraft import (
     DEPS_ALL_SPLIT,

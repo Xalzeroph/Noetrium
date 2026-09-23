@@ -7,7 +7,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 from noetrium_platform.research.execution.workflow.api import MethodAgentRequest
-from noetrium_platform.research.reproduction import ReproductionAssetKind
+from research.reproductions.contracts import ReproductionAssetKind
 
 from research.reproductions.code_as_policies import (
     CODE_AS_POLICIES_FIDELITY,

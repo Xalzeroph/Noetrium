@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.research.reproduction import (
+from research.reproductions.contracts import (
     ReportedResult,
     ReproductionAssetKind,
     ReproductionAssetRef,

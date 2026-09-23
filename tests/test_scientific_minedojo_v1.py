@@ -27,7 +27,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRunStatus,
     MethodRuntimeContext,
 )
-from noetrium_platform.research.reproduction import ReproductionAssetKind
+from research.reproductions.contracts import ReproductionAssetKind
 
 from research.reproductions.minedojo.benchmark import (
     MINEDOJO_REVISION_ID,

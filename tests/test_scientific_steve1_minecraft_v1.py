@@ -21,7 +21,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRunStatus,
     MethodRuntimeContext,
 )
-from noetrium_platform.research.reproduction import ReproductionAssetKind
+from research.reproductions.contracts import ReproductionAssetKind
 
 from research.reproductions.steve1_minecraft.definition import REPRODUCTION
 from research.reproductions.steve1_minecraft.fidelity import (
