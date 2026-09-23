@@ -81,6 +81,7 @@ class ResearchGraphScheduler:
         execution_id: str | None = None,
         lease_seconds: float = 30.0,
         scheduler_owner_id: str | None = None,
+        selected_node_ids: tuple[str, ...] | None = None,
     ) -> None:
         if type(plan) is not ResearchGraphPlan:
             raise TypeError("research graph scheduler requires ResearchGraphPlan")
@@ -121,6 +122,40 @@ class ResearchGraphScheduler:
             raise ValueError(
                 "research graph scheduler_owner_id must be non-empty when provided"
             )
+        known_node_ids = {node.node_id for node in plan.nodes}
+        if selected_node_ids is None:
+            selected = tuple(sorted(known_node_ids))
+        else:
+            if type(selected_node_ids) is not tuple or not selected_node_ids or any(
+                type(node_id) is not str or not node_id.strip()
+                for node_id in selected_node_ids
+            ):
+                raise TypeError(
+                    "research graph selected_node_ids must be a non-empty text tuple"
+                )
+            selected = tuple(sorted(selected_node_ids))
+            if len(selected) != len(set(selected)):
+                raise ValueError("research graph selected_node_ids must be unique")
+            unknown = tuple(sorted(set(selected) - known_node_ids))
+            if unknown:
+                raise ValueError(
+                    f"research graph selection references unknown nodes: {unknown}"
+                )
+            selected_set = set(selected)
+            missing_dependencies = tuple(
+                sorted(
+                    (node.node_id, dependency)
+                    for node in plan.nodes
+                    if node.node_id in selected_set
+                    for dependency in node.depends_on_node_ids
+                    if dependency not in selected_set
+                )
+            )
+            if missing_dependencies:
+                raise ValueError(
+                    "research graph selection must be dependency-closed; "
+                    f"missing={missing_dependencies}"
+                )
         self._plan = plan
         self._executor = executor
         self._pool = execution_pool or ResearchExecutionPool()
@@ -135,6 +170,7 @@ class ResearchGraphScheduler:
             scheduler_owner_id
             or f"research-graph-scheduler:{uuid4().hex}"
         )
+        self._selected_node_ids = selected
         self._closed = False
 
     @property
@@ -159,7 +195,12 @@ class ResearchGraphScheduler:
             deadline=deadline,
             failure_policy=TaskFailurePolicy.COLLECT_ALL,
         )
-        pending = {node.node_id: node for node in self._plan.nodes}
+        selected = set(self._selected_node_ids)
+        pending = {
+            node.node_id: node
+            for node in self._plan.nodes
+            if node.node_id in selected
+        }
         running: dict[str, tuple[ResearchGraphNode, object]] = {}
         results: dict[str, ResearchGraphNodeResult] = {}
 
@@ -353,13 +394,17 @@ class ResearchGraphScheduler:
         live = {node.node_id: node for node in snapshot.nodes}
         pending: dict[str, ResearchGraphNode] = {}
         results: dict[str, ResearchGraphNodeResult] = {}
+        selected = set(self._selected_node_ids)
         reconciliation_required = {
             node.node_id
             for node in snapshot.nodes
-            if node.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+            if node.node_id in selected
+            and node.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED
         }
 
         for node_id, record in live.items():
+            if node_id not in selected:
+                continue
             node = by_id[node_id]
             if record.state in {
                 ResearchGraphLiveNodeState.SUCCEEDED,
