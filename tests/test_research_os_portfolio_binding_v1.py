@@ -207,3 +207,28 @@ def test_portfolio_backed_port_fails_closed_without_runtime_control(
     target = api.ResearchExecutionTarget("anything", revision)
     with pytest.raises(RuntimeError, match="control is not bound"):
         bound.run(target)
+
+def test_platform_resolved_requirements_round_trip_through_artifact_cas(
+    tmp_path: Path,
+) -> None:
+    builder = api.ResearchProgramBuilder("declarative")
+    builder.model("planner", config={"role": "planner", "context": 8192})
+    builder.environment("world", config={"family": "minecraft"})
+    builder.dataset("tasks", config={"split": "test"})
+    builder.protocol("protocol", config={"repetitions": 3})
+    builder.resource_policy("resources", config={"accelerator": "gpu"})
+    builder.study(
+        "main",
+        definitions=("planner", "world", "tasks", "protocol", "resources"),
+    )
+    portfolio = api.ResearchPortfolio("declarative-suite", (builder.freeze(),))
+
+    _, _, research_os = _binding(tmp_path)
+    revision = research_os.commit(portfolio, message="declarative cut")
+
+    _, _, reopened = _binding(tmp_path)
+    diff = reopened.diff(revision, revision)
+    assert tuple(row.state for row in diff.impacts) == (
+        api.ResearchImpactState.UNCHANGED,
+    )
+
