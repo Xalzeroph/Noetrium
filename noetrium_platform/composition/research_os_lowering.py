@@ -12,6 +12,7 @@ from noetrium_platform.capabilities.participant.method.api import (
     MethodProgramIdentity,
 )
 from noetrium_platform.foundation.kernel.kernel import (
+    JsonValue,
     MachineKind,
     canonical_digest,
 )
@@ -204,7 +205,7 @@ def _invoke_plain_callable(
     implementation: Callable[..., object],
     *,
     accepts_payload: bool,
-    payload: object,
+    payload: JsonValue,
 ) -> object:
     return implementation(payload) if accepts_payload else implementation()
 
