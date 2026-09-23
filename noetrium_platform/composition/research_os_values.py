@@ -121,6 +121,17 @@ class ResearchOSValueAuthorityPort(Protocol):
     ) -> str: ...
 
 
+@runtime_checkable
+class ResearchOSValueReusePort(Protocol):
+    """Optional lower-authority capability for immutable cross-cut value reuse."""
+
+    def reuse(
+        self,
+        source: ResearchOSValueReference,
+        target: ResearchOSValueSubject,
+    ) -> ResearchOSValueReference: ...
+
+
 class ResearchOSValueAuthorityMissing(RuntimeError):
     pass
 
@@ -240,6 +251,37 @@ class ResearchOSValueRouter:
         if reference.subject.kind not in authority.supported_kinds:
             raise ValueError("research value reference kind/authority drifted")
         return freeze_json(authority.resolve(reference))
+
+    def reuse(
+        self,
+        reference: ResearchOSValueReference,
+        target: ResearchOSValueSubject,
+    ) -> ResearchOSValueReference:
+        if type(reference) is not ResearchOSValueReference:
+            raise TypeError("research value reuse reference must be typed")
+        if type(target) is not ResearchOSValueSubject:
+            raise TypeError("research value reuse target must be typed")
+        try:
+            authority = self._by_id[reference.authority_id]
+        except KeyError as exc:
+            raise ResearchOSValueAuthorityMissing(
+                "research value reuse authority is not explicitly bound: "
+                f"{reference.authority_id}"
+            ) from exc
+        if reference.subject.kind not in authority.supported_kinds:
+            raise ValueError("research value reuse source kind/authority drifted")
+        if target.kind is not reference.subject.kind:
+            raise ValueError("research value reuse target kind drifted")
+        if not isinstance(authority, ResearchOSValueReusePort):
+            raise ResearchOSValueAuthorityMissing(
+                "research value authority does not support immutable cross-cut reuse: "
+                f"{reference.authority_id}"
+            )
+        reused = authority.reuse(reference, target)
+        self._validate_reference(reused, target, authority)
+        if reused.authority_id != reference.authority_id:
+            raise ValueError("research value reuse changed authority identity")
+        return reused
 
     def reuse_proof(
         self,
@@ -445,6 +487,7 @@ __all__ = [
     "ResearchOSValueAuthorityMissing",
     "ResearchOSValueAuthorityPort",
     "ResearchOSValueReference",
+    "ResearchOSValueReusePort",
     "ResearchOSValueRouter",
     "ResearchOSValueSubject",
     "lookup_research_os_node_input_references",
