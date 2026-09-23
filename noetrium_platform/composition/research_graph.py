@@ -831,9 +831,10 @@ class ResearchGraphScheduler:
                     raise ResearchGraphControlHalt(paused)
 
                 if pending and not running and not progressed:
+                    local_control_ids = set(pending) | reconciliation_required
                     local_controls = tuple(
                         node_control_store.node_control_state(execution_id, node_id)
-                        for node_id in sorted(pending)
+                        for node_id in sorted(local_control_ids)
                         if node_control_store.node_control_state(
                             execution_id, node_id
                         ).phase
