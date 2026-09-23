@@ -49,6 +49,7 @@ from noetrium_platform.composition.research_os_migration import (
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphControlPhase,
     ResearchGraphExecutionConflict,
+    ResearchGraphExecutionNotFound,
     ResearchGraphLiveNodeState,
 )
 from noetrium_platform.research.execution.graph.providers import (
@@ -166,6 +167,37 @@ def _portfolio() -> api.ResearchPortfolio:
     return api.ResearchPortfolio("suite", (builder.freeze(),))
 
 
+def _portfolio_v2() -> api.ResearchPortfolio:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.node(
+        "source",
+        kind=api.ResearchNodeKind.CUSTOM,
+        outputs=(
+            api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),
+        ),
+        config={"revision": 2},
+    )
+    builder.node(
+        "consume",
+        kind=api.ResearchNodeKind.CUSTOM,
+        outputs=(
+            api.ResearchOutputSpec("result", api.ResearchValueKind.DATA),
+        ),
+    )
+    builder.depends(
+        "consume",
+        "source",
+        bindings=(
+            api.ResearchInputBinding(
+                "source",
+                "data",
+                api.ResearchValueKind.DATA,
+            ),
+        ),
+    )
+    return api.ResearchPortfolio("suite", (builder.freeze(),))
+
+
 def _pool() -> ResearchExecutionPool:
     return ResearchExecutionPool(
         orchestration_concurrency_budget=ConcurrencyBudget(
@@ -223,6 +255,52 @@ def test_public_run_closes_preflight_before_creating_durable_cut(tmp_path: Path)
             "paper::consume",
             "paper::source",
         )
+    finally:
+        pool.close()
+
+
+def test_run_cannot_switch_active_revision_without_explicit_migration(
+    tmp_path: Path,
+) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        first_portfolio = _portfolio()
+        first_revision = research_os.commit(first_portfolio, message="r1")
+        first_target = api.ResearchExecutionTarget("execution-revision", first_revision)
+        research_os.run(first_target.for_node("paper", "source"))
+        active_before = graph.active_cut(first_target.execution_id)
+        assert active_before is not None
+
+        second_portfolio = _portfolio_v2()
+        second_revision = research_os.commit(
+            second_portfolio,
+            parents=(first_revision,),
+            message="r2",
+        )
+        second_target = api.ResearchExecutionTarget(
+            first_target.execution_id,
+            second_revision,
+        )
+        second_compilation = compile_research_portfolio_graph(
+            second_revision,
+            second_portfolio,
+        )
+        second_cut = ResearchOSExecutionCut.from_compilation(
+            second_target.execution_id,
+            second_compilation,
+        )
+
+        with pytest.raises(
+            ResearchGraphExecutionConflict,
+            match="explicit migration",
+        ):
+            research_os.run(second_target.for_node("paper", "source"))
+
+        assert graph.active_cut(first_target.execution_id) == active_before
+        with pytest.raises(ResearchGraphExecutionNotFound):
+            graph.snapshot(second_cut.cut_id)
     finally:
         pool.close()
 
