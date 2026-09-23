@@ -1,4 +1,4 @@
-name: platform-projection-sync
+name: canonical-projection-sync
 
 on:
   workflow_dispatch:
@@ -12,6 +12,7 @@ on:
       - "noetrium/**"
       - "components/**"
       - "orchestration/**"
+      - "research/**"
       - "scripts/update_generated_docs.py"
       - "scripts/generate_authority_disposition_matrix.py"
       - "scripts/generate_downstream_contracts.py"
@@ -22,6 +23,8 @@ on:
       - "scripts/readme_i18n.py"
       - "scripts/check_readme_i18n.py"
       - "scripts/generate_code_architecture_map.py"
+      - "scripts/generate_repository_code_architecture_map.py"
+      - "scripts/sync_architecture_maps.py"
       - "scripts/sync_platform_architecture_map.py"
       - "sdk/**"
       - "examples/**"
@@ -72,10 +75,10 @@ jobs:
             python -m pip install -e .
 
             python scripts/update_generated_docs.py
-            python scripts/sync_platform_architecture_map.py
+            python scripts/sync_architecture_maps.py
 
             python scripts/update_generated_docs.py --check
-            python scripts/sync_platform_architecture_map.py --check
+            python scripts/sync_architecture_maps.py --check
 
             if [[ -z "$(git status --porcelain --untracked-files=all)" ]]; then
               echo "Platform projections are current."
