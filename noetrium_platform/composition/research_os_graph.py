@@ -6,10 +6,11 @@ from typing import Protocol, runtime_checkable
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_graph import ResearchGraphScheduler
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 from noetrium_platform.product.research_os import (
     ResearchDefinition,
     ResearchGraphRevision,
+    ResearchInputBinding,
     ResearchNode,
     ResearchNodeRef,
     ResearchPortfolio,
@@ -29,13 +30,38 @@ def _graph_node_id(ref: ResearchNodeRef) -> str:
 
 
 @dataclass(frozen=True, slots=True)
+class CompiledResearchOSInputEdge:
+    """Lossless normalized typed edge used by lowering and runtime composition."""
+
+    upstream: ResearchNodeRef
+    bindings: tuple[ResearchInputBinding, ...]
+    dependency_digest: str
+
+    def __post_init__(self) -> None:
+        if type(self.upstream) is not ResearchNodeRef:
+            raise TypeError("compiled Research OS edge upstream must be ResearchNodeRef")
+        if type(self.bindings) is not tuple or any(
+            type(value) is not ResearchInputBinding for value in self.bindings
+        ):
+            raise TypeError("compiled Research OS edge bindings must be typed")
+        bindings = tuple(sorted(self.bindings, key=lambda value: value.input_name))
+        names = tuple(value.input_name for value in bindings)
+        if len(names) != len(set(names)):
+            raise ValueError("compiled Research OS edge input names must be unique")
+        require_sha256(
+            self.dependency_digest,
+            "compiled Research OS dependency_digest",
+        )
+        object.__setattr__(self, "bindings", bindings)
+
+
+@dataclass(frozen=True, slots=True)
 class CompiledResearchOSGraphNode:
     graph_node_id: str
     ref: ResearchNodeRef
     node: ResearchNode
     definitions: tuple[ResearchDefinition, ...]
-    incoming_dependency_digests: tuple[str, ...]
-    upstream_refs: tuple[ResearchNodeRef, ...]
+    incoming_edges: tuple[CompiledResearchOSInputEdge, ...]
     semantic_digest: str
 
     def __post_init__(self) -> None:
@@ -47,12 +73,39 @@ class CompiledResearchOSGraphNode:
             type(value) is not ResearchDefinition for value in self.definitions
         ):
             raise TypeError("compiled Research OS graph definitions must be typed")
-        if type(self.incoming_dependency_digests) is not tuple:
-            raise TypeError("compiled Research OS dependency digests must be a tuple")
-        if type(self.upstream_refs) is not tuple or any(
-            type(value) is not ResearchNodeRef for value in self.upstream_refs
+        if type(self.incoming_edges) is not tuple or any(
+            type(value) is not CompiledResearchOSInputEdge
+            for value in self.incoming_edges
         ):
-            raise TypeError("compiled Research OS upstream refs must be typed")
+            raise TypeError("compiled Research OS incoming edges must be typed")
+        ordered_edges = tuple(
+            sorted(
+                self.incoming_edges,
+                key=lambda value: (
+                    value.upstream.program_id,
+                    value.upstream.node_id,
+                    value.dependency_digest,
+                ),
+            )
+        )
+        upstream = tuple(value.upstream for value in ordered_edges)
+        if len(upstream) != len(set(upstream)):
+            raise ValueError(
+                "compiled Research OS node cannot have duplicate upstream edges"
+            )
+        require_sha256(
+            self.semantic_digest,
+            "compiled Research OS node semantic_digest",
+        )
+        object.__setattr__(self, "incoming_edges", ordered_edges)
+
+    @property
+    def incoming_dependency_digests(self) -> tuple[str, ...]:
+        return tuple(value.dependency_digest for value in self.incoming_edges)
+
+    @property
+    def upstream_refs(self) -> tuple[ResearchNodeRef, ...]:
+        return tuple(value.upstream for value in self.incoming_edges)
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,7 +165,10 @@ def compile_research_portfolio_graph(
         }
         for program in portfolio.programs
     }
-    incoming: dict[ResearchNodeRef, list[tuple[ResearchNodeRef, str]]] = {
+    incoming: dict[
+        ResearchNodeRef,
+        list[tuple[ResearchNodeRef, tuple[ResearchInputBinding, ...], str]],
+    ] = {
         ref: [] for ref in nodes
     }
 
@@ -127,11 +183,19 @@ def compile_research_portfolio_graph(
                 dependency.downstream_node_id,
             )
             incoming[downstream].append(
-                (upstream, dependency.dependency_digest)
+                (
+                    upstream,
+                    dependency.bindings,
+                    dependency.dependency_digest,
+                )
             )
     for dependency in portfolio.dependencies:
         incoming[dependency.downstream].append(
-            (dependency.upstream, dependency.dependency_digest)
+            (
+                dependency.upstream,
+                dependency.bindings,
+                dependency.dependency_digest,
+            )
         )
 
     ordered_refs = tuple(
@@ -151,7 +215,7 @@ def compile_research_portfolio_graph(
                 key=lambda row: (
                     row[0].program_id,
                     row[0].node_id,
-                    row[1],
+                    row[2],
                 ),
             )
         )
@@ -179,7 +243,7 @@ def compile_research_portfolio_graph(
                         "dependency_digest": dependency_digest,
                         "upstream_semantic_digest": semantic_digest(upstream),
                     }
-                    for upstream, dependency_digest in incoming_rows
+                    for upstream, _bindings, dependency_digest in incoming_rows
                 ),
             }
         )
@@ -195,8 +259,14 @@ def compile_research_portfolio_graph(
         node = nodes[ref]
         node_definitions = node_definitions_by_ref[ref]
         incoming_rows = incoming_rows_by_ref[ref]
-        incoming_digests = tuple(row[1] for row in incoming_rows)
-        upstream_refs = tuple(row[0] for row in incoming_rows)
+        incoming_edges = tuple(
+            CompiledResearchOSInputEdge(
+                upstream,
+                bindings,
+                dependency_digest,
+            )
+            for upstream, bindings, dependency_digest in incoming_rows
+        )
         digest = semantic_digests[ref]
         graph_node_id = _graph_node_id(ref)
         compiled = CompiledResearchOSGraphNode(
@@ -204,8 +274,7 @@ def compile_research_portfolio_graph(
             ref,
             node,
             node_definitions,
-            incoming_digests,
-            upstream_refs,
+            incoming_edges,
             digest,
         )
         compiled_nodes.append(compiled)
@@ -213,7 +282,10 @@ def compile_research_portfolio_graph(
             ResearchGraphNode(
                 graph_node_id,
                 digest,
-                tuple(_graph_node_id(upstream) for upstream in upstream_refs),
+                tuple(
+                    _graph_node_id(edge.upstream)
+                    for edge in compiled.incoming_edges
+                ),
             )
         )
 
@@ -299,6 +371,7 @@ def bind_research_portfolio_scheduler(
 __all__ = [
     "CompiledResearchOSGraph",
     "CompiledResearchOSGraphNode",
+    "CompiledResearchOSInputEdge",
     "ResearchOSGraphExecutor",
     "ResearchOSNodeExecutionPort",
     "bind_research_portfolio_scheduler",

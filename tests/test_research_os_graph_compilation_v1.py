@@ -129,6 +129,18 @@ def test_portfolio_compiles_same_and_cross_paper_dependencies_into_one_graph() -
     assert confirm.definitions[0].definition_id == "environment"
     assert confirm.definitions[0].platform_resolved
 
+    assert len(confirm.incoming_edges) == 1
+    edge = confirm.incoming_edges[0]
+    assert edge.upstream == api.ResearchNodeRef("search-paper", "select")
+    assert tuple(
+        (binding.input_name, binding.output_name, binding.kind)
+        for binding in edge.bindings
+    ) == (
+        ("candidate", "best", api.ResearchValueKind.SELECTION),
+    )
+    assert confirm.upstream_refs == (edge.upstream,)
+    assert confirm.incoming_dependency_digests == (edge.dependency_digest,)
+
 
 def test_typed_cross_paper_binding_changes_canonical_graph_identity() -> None:
     first = _portfolio("candidate")
