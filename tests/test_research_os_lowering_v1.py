@@ -5,6 +5,7 @@ import pytest
 from noetrium_platform.composition.research_os_lowering import (
     ResearchImplementationResolutionError,
     ResearchOSLoweringTarget,
+    compile_callable_machine_definition,
     compile_callable_method_definition,
     compile_research_os_lowering,
 )
@@ -12,11 +13,17 @@ from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
 from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.foundation.kernel.kernel import (
+    ExecutionContext,
+    InMemoryMachineJournal,
+    MachineKind,
+    MachineStatus,
+)
 from noetrium_platform.research.execution.workflow.api import (
     MethodRunStatus,
     MethodRuntimeContext,
 )
+from noetrium_platform.research.execution.machines import ResearchProgramHost
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 from noetrium_platform.product import research_os as api
 
@@ -27,6 +34,10 @@ def _method(payload=None):
 
 def _metric(payload=None):
     return payload
+
+
+def _benchmark():
+    return {"tasks": 3}
 
 
 def _revision(portfolio: api.ResearchPortfolio) -> api.ResearchGraphRevision:
@@ -108,8 +119,14 @@ def test_lowering_covers_method_evaluation_optimization_and_workbench_routes() -
     assert lowering.node("paper::evaluation").target is (
         ResearchOSLoweringTarget.EVALUATION_MACHINE
     )
+    assert lowering.node("paper::evaluation").machine_programs[0].machine_kind is (
+        MachineKind.EVALUATION
+    )
     assert lowering.node("paper::optimization").target is (
         ResearchOSLoweringTarget.OPTIMIZATION_MACHINE
+    )
+    assert lowering.node("paper::optimization").machine_programs[0].machine_kind is (
+        MachineKind.OPTIMIZATION
     )
     for node_id in ("analysis", "selection", "figure", "table"):
         assert lowering.node(f"paper::{node_id}").target is (
@@ -176,3 +193,79 @@ def test_plain_method_callable_compiles_to_machine_backed_umm_program(tmp_path) 
     assert result.value == {"candidate": 7}
     assert result.program_digest == program.program_digest
     assert (tmp_path / "method-state" / "journal").is_dir()
+
+
+
+def test_plain_metric_callable_compiles_to_research_program_host() -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.metric("metric", implementation=_metric, config={"name": "score"})
+    definition = builder.freeze().definitions[0]
+
+    lowered = compile_callable_machine_definition(
+        definition,
+        machine_kind=MachineKind.EVALUATION,
+    )
+    assert lowered.program.kind is MachineKind.EVALUATION
+    assert lowered.operation.implementation_digest == definition.implementation_digest
+
+    host = ResearchProgramHost(
+        host_id="research-os.evaluation.metric",
+        program=lowered.program,
+        operations=(lowered.operation,),
+        journal=InMemoryMachineJournal(),
+    )
+    execution = host.execute(
+        machine_id="evaluation:metric:1",
+        instance_identity={"definition": definition.definition_digest},
+        binding=None,
+        initial_data={},
+        payload={"score": 0.9},
+    )
+
+    assert execution.status is MachineStatus.COMPLETED
+    assert execution.previous_value == {"score": 0.9}
+    assert execution.cut is not None
+
+
+def test_zero_argument_benchmark_callable_compiles_without_typeerror_guessing() -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.benchmark("benchmark", implementation=_benchmark)
+    builder.experiment("main", definitions=("benchmark",))
+    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    lowering = compile_research_os_lowering(
+        compile_research_portfolio_graph(_revision(portfolio), portfolio)
+    )
+    lowered = lowering.node("paper::main").machine_programs[0]
+    assert lowered.machine_kind is MachineKind.EXPERIMENT
+
+    host = ResearchProgramHost(
+        host_id="research-os.experiment.benchmark",
+        program=lowered.program,
+        operations=(lowered.operation,),
+        journal=InMemoryMachineJournal(),
+    )
+    execution = host.execute(
+        machine_id="experiment:benchmark:1",
+        instance_identity={"definition": "benchmark"},
+        binding=None,
+        initial_data={},
+        payload={"ignored": True},
+    )
+    assert execution.status is MachineStatus.COMPLETED
+    assert execution.previous_value == {"tasks": 3}
+
+
+def test_plain_callable_with_unsupported_arity_fails_at_lowering_not_runtime() -> None:
+    def invalid(left, right):
+        return left, right
+
+    # Local functions cannot be frozen through the public builder, so use the
+    # signature helper through a module-level-shaped resolver contract.
+    with pytest.raises(
+        ResearchImplementationResolutionError,
+        match="zero or one positional payload",
+    ):
+        from noetrium_platform.composition.research_os_lowering import (
+            _plain_callable_accepts_payload,
+        )
+        _plain_callable_accepts_payload(invalid)

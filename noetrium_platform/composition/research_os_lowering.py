@@ -4,13 +4,24 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 import importlib
+import inspect
 from typing import Callable, Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.participant.method.api import (
     MethodIdentity,
     MethodProgramIdentity,
 )
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import (
+    MachineKind,
+    canonical_digest,
+)
+from noetrium_platform.research.execution.machines.api import (
+    ProgramNodeRequest,
+    ProgramNodeResult,
+    ResearchHostOperation,
+    ResearchProgram as MachineResearchProgram,
+    ResearchProgramBuilder as MachineResearchProgramBuilder,
+)
 from noetrium_platform.research.execution.workflow.api import (
     MethodExecutionClass,
     MethodNodeRequest,
@@ -68,6 +79,19 @@ _NODE_TARGETS: dict[ResearchNodeKind, ResearchOSLoweringTarget] = {
 }
 if set(_NODE_TARGETS) != set(ResearchNodeKind):
     raise RuntimeError("Research OS lowering table must cover every ResearchNodeKind")
+
+
+_NODE_MACHINE_KINDS: dict[ResearchNodeKind, MachineKind] = {
+    ResearchNodeKind.STUDY: MachineKind.EXPERIMENT,
+    ResearchNodeKind.EXPERIMENT: MachineKind.EXPERIMENT,
+    ResearchNodeKind.TRIAL: MachineKind.EXPERIMENT,
+    ResearchNodeKind.ABLATION: MachineKind.EXPERIMENT,
+    ResearchNodeKind.ROBUSTNESS: MachineKind.EXPERIMENT,
+    ResearchNodeKind.SCALING: MachineKind.EXPERIMENT,
+    ResearchNodeKind.RUN: MachineKind.RUN,
+    ResearchNodeKind.EVALUATION: MachineKind.EVALUATION,
+    ResearchNodeKind.OPTIMIZATION: MachineKind.OPTIMIZATION,
+}
 
 
 class ResearchImplementationResolutionError(RuntimeError):
@@ -150,6 +174,41 @@ class ImportResearchImplementationResolver:
         )
 
 
+def _plain_callable_accepts_payload(
+    implementation: Callable[..., object],
+) -> bool:
+    """Determine invocation shape without executing author code."""
+
+    try:
+        signature = inspect.signature(implementation)
+    except (TypeError, ValueError) as exc:
+        raise ResearchImplementationResolutionError(
+            "research implementation signature cannot be inspected"
+        ) from exc
+    marker = object()
+    try:
+        signature.bind(marker)
+    except TypeError:
+        try:
+            signature.bind()
+        except TypeError as exc:
+            raise ResearchImplementationResolutionError(
+                "plain research implementation must accept either zero or one "
+                "positional payload argument"
+            ) from exc
+        return False
+    return True
+
+
+def _invoke_plain_callable(
+    implementation: Callable[..., object],
+    *,
+    accepts_payload: bool,
+    payload: object,
+) -> object:
+    return implementation(payload) if accepts_payload else implementation()
+
+
 
 def compile_callable_method_definition(
     definition: ResearchDefinition,
@@ -187,9 +246,14 @@ def compile_callable_method_definition(
         )
     declared = selected.declared
     implementation = selected.implementation
+    accepts_payload = _plain_callable_accepts_payload(implementation)
 
     def invoke(request: MethodNodeRequest) -> MethodNodeResult:
-        value = implementation(request.input_value)
+        value = _invoke_plain_callable(
+            implementation,
+            accepts_payload=accepts_payload,
+            payload=request.input_value,
+        )
         if type(value) is MethodNodeResult:
             return value
         return MethodNodeResult(value=value)
@@ -227,6 +291,113 @@ def compile_callable_method_definition(
 
 
 @dataclass(frozen=True, slots=True)
+class LoweredResearchMachineProgram:
+    """One paper callable lowered to the shared non-Method ResearchProgram ABI."""
+
+    definition_id: str
+    machine_kind: MachineKind
+    program: MachineResearchProgram
+    operation: ResearchHostOperation
+
+    def __post_init__(self) -> None:
+        if type(self.definition_id) is not str or not self.definition_id.strip():
+            raise ValueError("lowered machine definition_id is required")
+        if not isinstance(self.machine_kind, MachineKind):
+            raise TypeError("lowered machine kind must be MachineKind")
+        if self.machine_kind is MachineKind.METHOD:
+            raise ValueError("Method definitions must use MethodProgram/UMM")
+        if type(self.program) is not MachineResearchProgram:
+            raise TypeError("lowered machine program must be ResearchProgram")
+        if self.program.kind is not self.machine_kind:
+            raise ValueError("lowered machine program kind drifted")
+        if type(self.operation) is not ResearchHostOperation:
+            raise TypeError("lowered machine operation must be ResearchHostOperation")
+
+
+def compile_callable_machine_definition(
+    definition: ResearchDefinition,
+    *,
+    machine_kind: MachineKind,
+    resolved: ResolvedResearchImplementation | None = None,
+    resolver: ResearchImplementationResolverPort | None = None,
+) -> LoweredResearchMachineProgram:
+    """Compile one non-Method paper callable to ResearchProgram + host operation."""
+
+    if type(definition) is not ResearchDefinition:
+        raise TypeError("callable machine lowering requires ResearchDefinition")
+    if definition.kind is ResearchDefinitionKind.METHOD:
+        raise ValueError("METHOD definition must lower through MethodProgram/UMM")
+    if not isinstance(machine_kind, MachineKind) or machine_kind is MachineKind.METHOD:
+        raise ValueError("callable machine lowering requires non-Method MachineKind")
+    if definition.implementation is None:
+        raise ResearchImplementationResolutionError(
+            "paper callable definition has no implementation"
+        )
+    if resolved is not None and resolver is not None:
+        raise ValueError("machine lowering accepts resolved or resolver, not both")
+    selected = resolved or (
+        resolver or ImportResearchImplementationResolver()
+    ).resolve(definition)
+    if (
+        selected.definition_id != definition.definition_id
+        or selected.declared != definition.implementation
+    ):
+        raise ResearchImplementationResolutionError(
+            "resolved machine implementation does not match frozen definition"
+        )
+    implementation = selected.implementation
+    accepts_payload = _plain_callable_accepts_payload(implementation)
+    operation_name = (
+        f"research-os.{machine_kind.value}:{definition.definition_id}"
+    )
+
+    def handle(request: ProgramNodeRequest, _binding: object) -> ProgramNodeResult:
+        value = _invoke_plain_callable(
+            implementation,
+            accepts_payload=accepts_payload,
+            payload=request.payload,
+        )
+        if type(value) is ProgramNodeResult:
+            return value
+        return ProgramNodeResult(value=value)
+
+    config_value = definition.config
+    configuration = (
+        dict(config_value)
+        if isinstance(config_value, Mapping)
+        else {"research_definition_config": config_value}
+    )
+    configuration["research_definition_id"] = definition.definition_id
+    configuration["research_implementation_digest"] = (
+        selected.declared.implementation_digest
+    )
+    builder = MachineResearchProgramBuilder(
+        program_id=f"research-os:{machine_kind.value}:{definition.definition_id}",
+        kind=machine_kind,
+        version=selected.declared.source_digest,
+        state_schema="json",
+        entrypoint="invoke",
+    )
+    builder.node(
+        "invoke",
+        operation_name,
+        configuration=configuration,
+    )
+    program = builder.build()
+    operation = ResearchHostOperation(
+        operation_name,
+        handle,
+        selected.declared.implementation_digest,
+    )
+    return LoweredResearchMachineProgram(
+        definition.definition_id,
+        machine_kind,
+        program,
+        operation,
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class LoweredResearchMethodProgram:
     """One METHOD definition compiled to the canonical UMM program IR."""
 
@@ -249,6 +420,7 @@ class LoweredResearchOSGraphNode:
     implementations: tuple[ResolvedResearchImplementation, ...] = ()
     platform_requirements: tuple[ResearchDefinition, ...] = ()
     method_programs: tuple[LoweredResearchMethodProgram, ...] = ()
+    machine_programs: tuple[LoweredResearchMachineProgram, ...] = ()
     lowering_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -271,11 +443,17 @@ class LoweredResearchOSGraphNode:
             for row in self.method_programs
         ):
             raise TypeError("lowered method programs must be typed tuple")
+        if type(self.machine_programs) is not tuple or any(
+            type(row) is not LoweredResearchMachineProgram
+            for row in self.machine_programs
+        ):
+            raise TypeError("lowered machine programs must be typed tuple")
 
         definitions = {row.definition_id: row for row in self.source.definitions}
         implementation_ids = tuple(row.definition_id for row in self.implementations)
         requirement_ids = tuple(row.definition_id for row in self.platform_requirements)
         method_ids = tuple(row.definition_id for row in self.method_programs)
+        machine_ids = tuple(row.definition_id for row in self.machine_programs)
         if len(implementation_ids) != len(set(implementation_ids)):
             raise ValueError("lowered implementation definitions must be unique")
         if len(requirement_ids) != len(set(requirement_ids)):
@@ -297,6 +475,23 @@ class LoweredResearchOSGraphNode:
             for key in method_ids
         ):
             raise ValueError("only METHOD definitions may lower to MethodProgram")
+        if len(machine_ids) != len(set(machine_ids)):
+            raise ValueError("lowered machine program definitions must be unique")
+        if any(key not in implementation_ids for key in machine_ids):
+            raise ValueError("lowered machine program must belong to an implementation")
+        if any(
+            definitions[key].kind is ResearchDefinitionKind.METHOD
+            for key in machine_ids
+        ):
+            raise ValueError("METHOD definitions cannot lower to ResearchProgram")
+        expected_machine_kind = _NODE_MACHINE_KINDS.get(self.source.node.kind)
+        if self.machine_programs and expected_machine_kind is None:
+            raise ValueError("node kind does not own a programmable ResearchProgram target")
+        if expected_machine_kind is not None and any(
+            row.machine_kind is not expected_machine_kind
+            for row in self.machine_programs
+        ):
+            raise ValueError("lowered machine program kind does not match node target")
 
         ordered_implementations = tuple(
             sorted(self.implementations, key=lambda row: row.definition_id)
@@ -307,9 +502,13 @@ class LoweredResearchOSGraphNode:
         ordered_method_programs = tuple(
             sorted(self.method_programs, key=lambda row: row.definition_id)
         )
+        ordered_machine_programs = tuple(
+            sorted(self.machine_programs, key=lambda row: row.definition_id)
+        )
         object.__setattr__(self, "implementations", ordered_implementations)
         object.__setattr__(self, "platform_requirements", ordered_requirements)
         object.__setattr__(self, "method_programs", ordered_method_programs)
+        object.__setattr__(self, "machine_programs", ordered_machine_programs)
         object.__setattr__(
             self,
             "lowering_digest",
@@ -334,6 +533,15 @@ class LoweredResearchOSGraphNode:
                     "method_programs": tuple(
                         (row.definition_id, row.program.program_digest)
                         for row in ordered_method_programs
+                    ),
+                    "machine_programs": tuple(
+                        (
+                            row.definition_id,
+                            row.machine_kind.value,
+                            row.program.program_digest,
+                            row.operation.implementation_digest,
+                        )
+                        for row in ordered_machine_programs
                     ),
                 }
             ),
@@ -413,6 +621,7 @@ class ResearchOSLoweringCompiler:
         implementations: list[ResolvedResearchImplementation] = []
         requirements: list[ResearchDefinition] = []
         method_programs: list[LoweredResearchMethodProgram] = []
+        machine_programs: list[LoweredResearchMachineProgram] = []
         for definition in node.definitions:
             if definition.implementation is None:
                 requirements.append(definition)
@@ -429,12 +638,23 @@ class ResearchOSLoweringCompiler:
                             ),
                         )
                     )
+                else:
+                    machine_kind = _NODE_MACHINE_KINDS.get(node.node.kind)
+                    if machine_kind is not None:
+                        machine_programs.append(
+                            compile_callable_machine_definition(
+                                definition,
+                                machine_kind=machine_kind,
+                                resolved=resolved,
+                            )
+                        )
         return LoweredResearchOSGraphNode(
             source=node,
             target=_NODE_TARGETS[node.node.kind],
             implementations=tuple(implementations),
             platform_requirements=tuple(requirements),
             method_programs=tuple(method_programs),
+            machine_programs=tuple(machine_programs),
         )
 
     def compile(
@@ -461,6 +681,7 @@ def compile_research_os_lowering(
 
 __all__ = [
     "ImportResearchImplementationResolver",
+    "LoweredResearchMachineProgram",
     "LoweredResearchMethodProgram",
     "LoweredResearchOSGraphNode",
     "ResearchImplementationResolutionError",
@@ -469,6 +690,7 @@ __all__ = [
     "ResearchOSLoweringPlan",
     "ResearchOSLoweringTarget",
     "ResolvedResearchImplementation",
+    "compile_callable_machine_definition",
     "compile_callable_method_definition",
     "compile_research_os_lowering",
 ]
