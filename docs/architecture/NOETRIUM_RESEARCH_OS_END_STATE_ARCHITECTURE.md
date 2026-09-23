@@ -1781,12 +1781,13 @@ previous historical section.
 - Production provider qualification remains outside this metadata boundary
   and must still be supplied through explicit typed composition ports.
 
-## 63. R20: Single product composition owner
+## 63. R20: Single Research OS product surface
 
-The public product bindings have one implementation owner:
-`noetrium_platform.platform`. The historical `noetrium.platform` forwarding
-module has been removed; downstream projects use only `noetrium.api`, which
-lazily projects registered contracts and stable composition helpers. This
+The downstream product surface has one semantic owner:
+`noetrium_platform.product.api` / Research OS. Both historical Level-0
+composition modules `noetrium.platform` and `noetrium_platform.platform`
+are removed. Downstream projects use only `noetrium.api`, which
+projects only the Research OS product contract; lower-system composition helpers are internal. This
 closes the previous horizontal split where multiple root facades assembled
 environment, model, method, experiment, workbench, and agent capabilities.
 

@@ -86,31 +86,47 @@ def _check_public_facades() -> int:
         raise SystemExit(f"public facade exposes duplicate authority/concrete layer: {detail}")
     return 0
 
-def _check_public_platform_entrypoint() -> str:
-    """Keep the root product entrypoint as a forwarding surface only."""
+def _check_research_os_product_entrypoint() -> str:
+    """Require one downstream product source: noetrium.api -> product.api."""
 
-    entrypoint = ROOT / "noetrium/platform.py"
-    owner = "noetrium_platform.platform"
-    if not entrypoint.is_file():
-        raise SystemExit("public product entrypoint is missing: noetrium/platform.py")
-    tree = ast.parse(entrypoint.read_text(encoding="utf-8"), filename=str(entrypoint))
-    definitions = [
-        node for node in ast.walk(tree)
-        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
-    ]
-    if definitions:
+    legacy_paths = (
+        ROOT / "noetrium/platform.py",
+        ROOT / "noetrium_platform/platform.py",
+    )
+    leaked = tuple(
+        str(path.relative_to(ROOT))
+        for path in legacy_paths
+        if path.exists()
+    )
+    if leaked:
         raise SystemExit(
-            "noetrium/platform.py must not define product behavior; "
-            "use the single operator composition owner"
+            "legacy Level-0 product composition reappeared: " + ", ".join(leaked)
         )
-    imports = [node for node in tree.body if isinstance(node, ast.ImportFrom)]
-    if not any(node.module == owner and any(alias.name == "*" for alias in node.names) for node in imports):
-        raise SystemExit("noetrium/platform.py does not forward the operator composition owner")
-    if not any(node.module == owner and any(alias.name == "__all__" for alias in node.names) for node in imports):
-        raise SystemExit("noetrium/platform.py does not forward the owner's export contract")
-    if not (ROOT / "noetrium_platform/platform.py").is_file():
-        raise SystemExit("platform composition owner is missing")
-    return owner
+
+    entrypoint = ROOT / "noetrium/api.py"
+    product = ROOT / "noetrium_platform/product/api/__init__.py"
+    source_list = ROOT / "noetrium/_api_surface.py"
+    if not entrypoint.is_file() or not product.is_file() or not source_list.is_file():
+        raise SystemExit("canonical Research OS product surface is incomplete")
+
+    entry_source = entrypoint.read_text(encoding="utf-8")
+    source_text = source_list.read_text(encoding="utf-8")
+    if "from noetrium_platform.product import api as _product" not in entry_source:
+        raise SystemExit("noetrium.api is not bound to product.api")
+    if "noetrium_platform.product.api" not in source_text:
+        raise SystemExit("unified API source list omits product.api")
+    forbidden = (
+        "noetrium_platform.platform",
+        "components.api",
+        "orchestration.api",
+    )
+    escaped = tuple(value for value in forbidden if value in source_text)
+    if escaped:
+        raise SystemExit(
+            "unified Research OS API contains lower/legacy product sources: "
+            + ", ".join(escaped)
+        )
+    return "noetrium_platform.product.api"
 
 
 def _check_durability_ownership() -> str:
@@ -541,7 +557,7 @@ def main() -> int:
     _check_document(doc_path)
     family_count = _check_machine_families()
     facade_count = _check_public_facades()
-    platform_owner = _check_public_platform_entrypoint()
+    platform_owner = _check_research_os_product_entrypoint()
     durability_owner = _check_durability_ownership()
     worker_count = _check_worker_boundaries()
     research_machine_bypass_checks = _check_research_machine_bypasses()
