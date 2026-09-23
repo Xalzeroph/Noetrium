@@ -93,6 +93,39 @@ class ResearchCampaignStudy:
         )
 
 
+def _validate_dependency_graph(
+    dependencies_by_lane: dict[str, tuple[str, ...]],
+) -> None:
+    known_lane_ids = set(dependencies_by_lane)
+    for lane_id, dependencies in dependencies_by_lane.items():
+        unknown = tuple(
+            dependency
+            for dependency in dependencies
+            if dependency not in known_lane_ids
+        )
+        if unknown:
+            raise ValueError(
+                f"campaign lane {lane_id!r} depends on unknown lanes: {unknown}"
+            )
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(lane_id: str) -> None:
+        if lane_id in visited:
+            return
+        if lane_id in visiting:
+            raise ValueError(f"campaign dependency cycle at lane {lane_id!r}")
+        visiting.add(lane_id)
+        for dependency in dependencies_by_lane[lane_id]:
+            visit(dependency)
+        visiting.remove(lane_id)
+        visited.add(lane_id)
+
+    for lane_id in sorted(dependencies_by_lane):
+        visit(lane_id)
+
+
 @dataclass(frozen=True, slots=True)
 class ResearchCampaignPlan:
     campaign_id: str
@@ -114,35 +147,12 @@ class ResearchCampaignPlan:
             raise ValueError(
                 "duplicate compiled research plans belong inside Study repetitions, not campaign lanes"
             )
-        known_lane_ids = set(lane_ids)
-        for study in studies:
-            unknown = tuple(
-                dependency
-                for dependency in study.depends_on_lane_ids
-                if dependency not in known_lane_ids
-            )
-            if unknown:
-                raise ValueError(
-                    f"campaign lane {study.lane_id!r} depends on unknown lanes: {unknown}"
-                )
-
-        by_lane = {row.lane_id: row for row in studies}
-        visiting: set[str] = set()
-        visited: set[str] = set()
-
-        def visit(lane_id: str) -> None:
-            if lane_id in visited:
-                return
-            if lane_id in visiting:
-                raise ValueError(f"campaign dependency cycle at lane {lane_id!r}")
-            visiting.add(lane_id)
-            for dependency in by_lane[lane_id].depends_on_lane_ids:
-                visit(dependency)
-            visiting.remove(lane_id)
-            visited.add(lane_id)
-
-        for lane_id in lane_ids:
-            visit(lane_id)
+        _validate_dependency_graph(
+            {
+                study.lane_id: study.depends_on_lane_ids
+                for study in studies
+            }
+        )
 
         object.__setattr__(self, "studies", studies)
         object.__setattr__(
@@ -234,6 +244,11 @@ def compile_research_campaign(
     lane_ids = tuple(row.lane_id for row in units)
     if len(lane_ids) != len(set(lane_ids)):
         raise ValueError("campaign compilation lane identities must be unique")
+    dependencies_by_lane = {
+        row.lane_id: row.depends_on_lane_ids
+        for row in units
+    }
+    _validate_dependency_graph(dependencies_by_lane)
     compiled_lanes = tuple(
         sorted(
             (
@@ -252,11 +267,7 @@ def compile_research_campaign(
             ResearchCampaignStudy.from_compiled(
                 row.lane_id,
                 row.research_plan,
-                depends_on_lane_ids=next(
-                    unit.depends_on_lane_ids
-                    for unit in units
-                    if unit.lane_id == row.lane_id
-                ),
+                depends_on_lane_ids=dependencies_by_lane[row.lane_id],
             )
             for row in compiled_lanes
         ),
