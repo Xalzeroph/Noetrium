@@ -3,9 +3,7 @@ name: canonical-projection-sync
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - "codex/**"
+    branches: [main]
     paths:
       # Keep this trigger aligned with the source sets scanned by the canonical
       # projection generators. A source that can change a derived architecture
@@ -37,7 +35,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: platform-projection-${{ github.ref_name }}
+  group: platform-projection-main
   cancel-in-progress: true
 
 jobs:
@@ -45,10 +43,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout source branch
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: main
           fetch-depth: 0
 
       - name: Set up Python
@@ -66,16 +64,10 @@ jobs:
           git config user.name "Xalzeroph"
           git config user.email "203086430+Xalzeroph@users.noreply.github.com"
 
-          target_branch="${GITHUB_REF_NAME}"
-          if [[ -z "${target_branch}" ]]; then
-            echo "Projection target branch is empty."
-            exit 1
-          fi
-
           for attempt in 1 2 3 4 5; do
-            echo "platform projection convergence attempt ${attempt} branch=${target_branch}"
-            git fetch origin "${target_branch}"
-            git reset --hard "origin/${target_branch}"
+            echo "platform projection convergence attempt ${attempt}"
+            git fetch origin main
+            git reset --hard origin/main
 
             # The source branch may have advanced to a source cut with new optional generator
             # dependencies. Reinstalling the editable package keeps the retry
@@ -97,17 +89,14 @@ jobs:
             git add -A
             git commit -m "chore(projections): refresh canonical derived artifacts"
 
-            # The lease binds the projection commit to the exact source head it
-            # was generated from. If the branch advances between fetch and push,
-            # do not publish a stale projection; reset to the new head and rebuild.
-            if git push \
-              --force-with-lease="refs/heads/${target_branch}:${source_sha}" \
-              origin "HEAD:${target_branch}"; then
-              echo "Published platform projection for source cut ${source_sha} branch=${target_branch}."
+            # A concurrent main advance must reject this ordinary fast-forward
+            # push. The next iteration then rebuilds from the new canonical head.
+            if git push origin HEAD:main; then
+              echo "Published platform projection for source cut ${source_sha}."
               exit 0
             fi
 
-            echo "source branch advanced during projection publication; retrying"
+            echo "main advanced during projection publication; retrying"
           done
 
           echo "Platform projection convergence did not stabilize after 5 attempts."
