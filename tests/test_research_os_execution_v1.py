@@ -305,6 +305,32 @@ def test_run_cannot_switch_active_revision_without_explicit_migration(
         pool.close()
 
 
+def test_node_scoped_preflight_does_not_admit_unselected_nodes(tmp_path: Path) -> None:
+    runtime = _Runtime(reject=frozenset({"paper::consume"}))
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="selection admission")
+        target = api.ResearchExecutionTarget("execution-selection-admission", revision)
+
+        receipt = research_os.run(target.for_node("paper", "source"))
+        assert receipt.state == "succeeded"
+        assert receipt.payload["selected_node_ids"] == ("paper::source",)
+        assert runtime.executed == ["paper::source"]
+
+        active = graph.active_cut(target.execution_id)
+        assert active is not None
+        assert graph.snapshot(active.cut_id).node("paper::consume").state is (
+            ResearchGraphLiveNodeState.PENDING
+        )
+        with pytest.raises(RuntimeError, match="runtime rejected: paper::consume"):
+            research_os.run(target)
+        assert graph.attempts(active.cut_id, "paper::consume") == ()
+    finally:
+        pool.close()
+
+
 def test_runtime_admission_failure_creates_no_execution_cut(tmp_path: Path) -> None:
     runtime = _Runtime(reject=frozenset({"paper::consume"}))
     values = ResearchOSValueRouter((_ValueAuthority(),))
