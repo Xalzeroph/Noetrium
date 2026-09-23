@@ -137,8 +137,13 @@ def test_durable_research_os_reopens_revision_graph_and_minimally_invalidates(
     assert impacts[("paper-a", "analysis")] is api.ResearchImpactState.STALE
     assert impacts[("paper-b", "main")] is api.ResearchImpactState.REUSABLE
 
-    resumed = reopened.resume("suite:paper-a:main")
+    execution = api.ResearchExecutionTarget(
+        "suite-confirmatory",
+        second,
+    ).for_node("paper-a", "main")
+    resumed = reopened.resume(execution)
     assert resumed.action is api.ResearchControlAction.RESUME
+    assert resumed.target == execution
 
 
 def test_branch_compare_and_swap_rejects_stale_human_or_agent_edit(
@@ -193,5 +198,12 @@ def test_portfolio_backed_port_fails_closed_without_runtime_control(
         DirectoryArtifactBlobStore(tmp_path / "blobs"),
     )
     bound = bind_research_os(port)
+    revision = api.ResearchGraphRevision(
+        "anything",
+        "a" * 64,
+        (),
+        "unbound control test",
+    )
+    target = api.ResearchExecutionTarget("anything", revision)
     with pytest.raises(RuntimeError, match="control is not bound"):
-        bound.run("anything")
+        bound.run(target)
