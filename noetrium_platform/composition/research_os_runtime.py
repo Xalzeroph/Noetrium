@@ -21,7 +21,13 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
 )
 from noetrium_platform.research.execution.machines import ResearchProgramHost
-from noetrium_platform.research.experimentation.api import ExperimentProgramBinding
+from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphReconciliationDisposition,
+)
+from noetrium_platform.research.experimentation.api import (
+    ExperimentProgramBinding,
+    experiment_report_from_data,
+)
 from noetrium_platform.research.experimentation.lifecycle.api import (
     RunArtifactKind,
     RunArtifactSealedError,
@@ -48,6 +54,10 @@ from .research_os_graph import CompiledResearchOSGraphNode
 from .research_os_lowering import (
     LoweredResearchOSGraphNode,
     ResearchOSLoweringTarget,
+)
+from .research_os_reconciliation import (
+    ResearchOSNodeReconciliationProof,
+    ResearchOSReconciliationIndeterminate,
 )
 
 
@@ -115,6 +125,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         self._experiment_bindings = experiment_bindings
         self._max_steps = max_steps
         self._machine_journal = DirectoryMachineJournal(root / "program-journal")
+        self._method_journal = DirectoryMachineJournal(root / "method-state" / "journal")
         self._method_binder_digest = standard_method_runtime_binder().identity_digest
 
     def admit(
@@ -598,6 +609,176 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 f"status={result.status.value}"
             )
         return result.previous_value
+
+    def reconcile_node(
+        self,
+        node: CompiledResearchOSGraphNode,
+        lowering: LoweredResearchOSGraphNode,
+        *,
+        execution_cut_id: str,
+        attempt_id: str,
+    ) -> ResearchOSNodeReconciliationProof:
+        if type(node) is not CompiledResearchOSGraphNode:
+            raise TypeError("canonical reconciliation requires compiled graph node")
+        if type(lowering) is not LoweredResearchOSGraphNode:
+            raise TypeError("canonical reconciliation requires lowered graph node")
+        if lowering.source != node:
+            raise ValueError("canonical reconciliation node/lowering identity drifted")
+        require_sha256(execution_cut_id, "canonical reconciliation execution_cut_id")
+        if type(attempt_id) is not str or not attempt_id.strip():
+            raise ValueError("canonical reconciliation attempt_id is required")
+
+        machine_id = self._machine_id(
+            execution_cut_id,
+            node.graph_node_id,
+            lowering.lowering_digest,
+        )
+        journal = (
+            self._method_journal
+            if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE
+            else self._machine_journal
+        )
+        head = journal.latest(machine_id)
+        expected_program_digest = self._lower_program_digest(lowering)
+        if head is not None:
+            if head.program_digest != expected_program_digest:
+                raise CanonicalResearchOSRuntimeFailure(
+                    "lower Machine journal program identity drifted during reconciliation"
+                )
+            if head.accepted_status is MachineStatus.COMPLETED:
+                result = self._recovered_result(
+                    node,
+                    lowering,
+                    head.state,
+                )
+                return ResearchOSNodeReconciliationProof(
+                    execution_cut_id,
+                    node.graph_node_id,
+                    node.semantic_digest,
+                    lowering.lowering_digest,
+                    attempt_id,
+                    ResearchGraphReconciliationDisposition.SUCCEEDED,
+                    "machine-journal",
+                    (head.commit_id,),
+                    result=result,
+                )
+            if head.accepted_status is MachineStatus.FAILED:
+                return ResearchOSNodeReconciliationProof(
+                    execution_cut_id,
+                    node.graph_node_id,
+                    node.semantic_digest,
+                    lowering.lowering_digest,
+                    attempt_id,
+                    ResearchGraphReconciliationDisposition.FAILED,
+                    "machine-journal",
+                    (head.commit_id,),
+                    failure_type="LowerMachineFailed",
+                    failure_message=(
+                        "lower Machine committed FAILED at "
+                        f"revision={head.revision} commit={head.commit_id}"
+                    ),
+                )
+
+        if lowering.target is ResearchOSLoweringTarget.EXPERIMENTATION:
+            closure = lowering.experiment_closure
+            if closure is None or self._experiment_bindings is None:
+                raise ResearchOSReconciliationIndeterminate(
+                    "Experiment reconciliation has no canonical closure/runtime binding"
+                )
+            binding = self._experiment_bindings.resolve(closure)
+            if type(binding) is not ResearchOSExperimentRuntimeBinding:
+                raise TypeError(
+                    "experiment reconciliation resolver returned invalid binding"
+                )
+            binding.validate_closure(closure)
+            proof = binding.reconciliation.reconcile(
+                closure,
+                machine_id=machine_id,
+                execution_cut_id=execution_cut_id,
+                graph_node_id=node.graph_node_id,
+                semantic_digest=node.semantic_digest,
+                lowering_digest=lowering.lowering_digest,
+                attempt_id=attempt_id,
+            )
+            if type(proof) is not ResearchOSNodeReconciliationProof:
+                raise TypeError(
+                    "experiment reconciliation authority returned invalid proof"
+                )
+            proof.validate(
+                node,
+                lowering,
+                execution_cut_id=execution_cut_id,
+                attempt_id=attempt_id,
+            )
+            return proof
+
+        raise ResearchOSReconciliationIndeterminate(
+            "lower Machine has no terminal commit proving a safe graph disposition"
+        )
+
+    def _lower_program_digest(
+        self,
+        lowering: LoweredResearchOSGraphNode,
+    ) -> str:
+        if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE:
+            return lowering.method_programs[0].program.program_digest
+        if lowering.target is ResearchOSLoweringTarget.EXPERIMENTATION:
+            closure = lowering.experiment_closure
+            if closure is None:
+                raise CanonicalResearchOSRuntimeUnsupported(
+                    "Experiment reconciliation has no closure"
+                )
+            return closure.experiment_program.program.program_digest
+        if lowering.target in self._MACHINE_TARGETS:
+            return lowering.machine_programs[0].program.program_digest
+        raise CanonicalResearchOSRuntimeUnsupported(
+            "reconciliation target has no lower Machine program"
+        )
+
+    def _recovered_result(
+        self,
+        node: CompiledResearchOSGraphNode,
+        lowering: LoweredResearchOSGraphNode,
+        machine_state: JsonObject,
+    ) -> JsonValue:
+        if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE:
+            method_state = machine_state.get("method")
+            if not isinstance(method_state, dict):
+                raise CanonicalResearchOSRuntimeFailure(
+                    "completed Method Machine lost canonical method state"
+                )
+            return method_state.get("previous_value")
+
+        program_state = machine_state.get("_program")
+        if not isinstance(program_state, dict):
+            raise CanonicalResearchOSRuntimeFailure(
+                "completed ResearchProgram Machine lost canonical program state"
+            )
+        if lowering.target is ResearchOSLoweringTarget.EXPERIMENTATION:
+            closure = lowering.experiment_closure
+            if closure is None or self._experiment_bindings is None:
+                raise CanonicalResearchOSRuntimeFailure(
+                    "completed Experiment Machine lost runtime closure"
+                )
+            data = program_state.get("data")
+            report = experiment_report_from_data(
+                closure.experiment_program,
+                data,
+            )
+            binding = self._experiment_bindings.resolve(closure)
+            if type(binding) is not ResearchOSExperimentRuntimeBinding:
+                raise TypeError(
+                    "experiment recovery resolver returned invalid binding"
+                )
+            binding.validate_closure(closure)
+            report_ref = self._publish_experiment_report(
+                lowering,
+                binding,
+                report,
+            )
+            return report_ref if node.node.outputs else None
+        return program_state.get("previous_value")
+
 
     @staticmethod
     def _machine_id(
