@@ -9,6 +9,9 @@ from noetrium import api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_execution import StrictResearchOSControl
+from noetrium_platform.composition.research_os_experiment import (
+    ResearchOSExperimentClosureMissing,
+)
 from noetrium_platform.composition.research_os_runtime import (
     CanonicalResearchOSNodeRuntime,
     CanonicalResearchOSRuntimeUnsupported,
@@ -178,8 +181,8 @@ def test_canonical_runtime_rejects_experiment_family_until_experiment_lowering_e
 
     runtime = CanonicalResearchOSNodeRuntime(tmp_path / "machine-state")
     with pytest.raises(
-        CanonicalResearchOSRuntimeUnsupported,
-        match="no canonical built-in runtime yet",
+        ResearchOSExperimentClosureMissing,
+        match="explicit canonical experiment closure provider",
     ):
         prepare_research_os_execution(
             api.ResearchExecutionTarget("experiment", revision),

@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import pytest
 
+from noetrium_platform.composition.research_os_experiment import (
+    ResearchOSExperimentClosureMissing,
+)
 from noetrium_platform.composition.research_os_lowering import (
     ResearchImplementationResolutionError,
     ResearchOSLoweringTarget,
@@ -54,8 +57,9 @@ def test_lowering_partitions_paper_implementation_from_platform_requirement() ->
     builder.method("method", implementation=_method)
     builder.model("planner", config={"role": "planner"})
     builder.environment("world", config={"family": "minecraft"})
-    builder.experiment(
+    builder.node(
         "main",
+        kind=api.ResearchNodeKind.METHOD,
         definitions=("method", "planner", "world"),
     )
     portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
@@ -64,7 +68,7 @@ def test_lowering_partitions_paper_implementation_from_platform_requirement() ->
     lowering = compile_research_os_lowering(compilation)
     node = lowering.node("paper::main")
 
-    assert node.target is ResearchOSLoweringTarget.EXPERIMENTATION
+    assert node.target is ResearchOSLoweringTarget.METHOD_MACHINE
     assert tuple(row.definition_id for row in node.implementations) == ("method",)
     assert node.implementations[0].implementation is _method
     assert tuple(row.definition_id for row in node.method_programs) == ("method",)
@@ -243,26 +247,38 @@ def test_plain_metric_callable_compiles_to_research_program_host() -> None:
     assert execution.cut is not None
 
 
-def test_zero_argument_benchmark_callable_compiles_without_typeerror_guessing() -> None:
+def test_experiment_callable_is_not_misrepresented_as_one_node_experiment_machine() -> None:
     builder = api.ResearchProgramBuilder("paper")
     builder.benchmark("benchmark", implementation=_benchmark)
     builder.experiment("main", definitions=("benchmark",))
     portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
-    lowering = compile_research_os_lowering(
-        compile_research_portfolio_graph(_revision(portfolio), portfolio)
-    )
-    lowered = lowering.node("paper::main").machine_programs[0]
-    assert lowered.machine_kind is MachineKind.EXPERIMENT
 
+    with pytest.raises(
+        ResearchOSExperimentClosureMissing,
+        match="explicit canonical experiment closure provider",
+    ):
+        compile_research_os_lowering(
+            compile_research_portfolio_graph(_revision(portfolio), portfolio)
+        )
+
+
+def test_zero_argument_callable_signature_is_compiled_without_typeerror_guessing() -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.metric("metric", implementation=_benchmark)
+    definition = builder.freeze().definitions[0]
+    lowered = compile_callable_machine_definition(
+        definition,
+        machine_kind=MachineKind.EVALUATION,
+    )
     host = ResearchProgramHost(
-        host_id="research-os.experiment.benchmark",
+        host_id="research-os.evaluation.zero-arg",
         program=lowered.program,
         operations=(lowered.operation,),
         journal=InMemoryMachineJournal(),
     )
     execution = host.execute(
-        machine_id="experiment:benchmark:1",
-        instance_identity={"definition": "benchmark"},
+        machine_id="evaluation:zero-arg:1",
+        instance_identity={"definition": "metric"},
         binding=None,
         initial_data={},
         payload={"ignored": True},

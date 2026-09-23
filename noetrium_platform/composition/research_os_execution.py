@@ -28,6 +28,7 @@ from noetrium_platform.research.execution.graph.api import (
 )
 
 from .research_os import ResearchOSControlPort
+from .research_os_experiment import ResearchOSExperimentClosurePort
 from .research_os_graph import (
     CompiledResearchOSGraph,
     CompiledResearchOSGraphNode,
@@ -216,6 +217,8 @@ def prepare_research_os_execution(
     portfolio: ResearchPortfolio,
     runtime: ResearchOSNodeRuntimePort,
     values: ResearchOSValueRouter,
+    *,
+    experiment_closures: ResearchOSExperimentClosurePort | None = None,
 ) -> PreparedResearchOSExecution:
     """Close the complete execution dependency set before any durable cut exists."""
 
@@ -240,7 +243,10 @@ def prepare_research_os_execution(
         target.revision,
         portfolio,
     )
-    lowering = compile_research_os_lowering(compilation)
+    lowering = compile_research_os_lowering(
+        compilation,
+        experiment_closures=experiment_closures,
+    )
     validate_research_os_value_authorities(compilation, values)
 
     lowered = {
@@ -277,6 +283,8 @@ class PreparedResearchOSNodeExecutor:
         prepared: PreparedResearchOSExecution,
         runtime: ResearchOSNodeRuntimePort,
         values: ResearchOSValueRouter,
+        *,
+        experiment_closures: ResearchOSExperimentClosurePort | None = None,
     ) -> None:
         if type(prepared) is not PreparedResearchOSExecution:
             raise TypeError("research node executor requires prepared execution")
@@ -287,6 +295,15 @@ class PreparedResearchOSNodeExecutor:
         self._prepared = prepared
         self._runtime = runtime
         self._values = values
+        if experiment_closures is not None and not isinstance(
+            experiment_closures,
+            ResearchOSExperimentClosurePort,
+        ):
+            raise TypeError(
+                "Research OS control experiment_closures must satisfy "
+                "ResearchOSExperimentClosurePort"
+            )
+        self._experiment_closures = experiment_closures
         self._lowered = {
             row.source.graph_node_id: row
             for row in prepared.lowering.nodes
@@ -390,6 +407,7 @@ class StrictResearchOSControl(ResearchOSControlPort):
             portfolio,
             self._runtime,
             self._values,
+            experiment_closures=self._experiment_closures,
         )
         activation = activate_research_os_execution_cut(
             request.target.execution_id,

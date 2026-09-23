@@ -37,6 +37,11 @@ from noetrium_platform.product.research_os import (
     ResearchNodeKind,
 )
 
+from .research_os_experiment import (
+    ResearchOSExperimentClosure,
+    ResearchOSExperimentClosureMissing,
+    ResearchOSExperimentClosurePort,
+)
 from .research_os_graph import (
     CompiledResearchOSGraphNode,
     CompiledResearchOSGraph,
@@ -83,12 +88,6 @@ if set(_NODE_TARGETS) != set(ResearchNodeKind):
 
 
 _NODE_MACHINE_KINDS: dict[ResearchNodeKind, MachineKind] = {
-    ResearchNodeKind.STUDY: MachineKind.EXPERIMENT,
-    ResearchNodeKind.EXPERIMENT: MachineKind.EXPERIMENT,
-    ResearchNodeKind.TRIAL: MachineKind.EXPERIMENT,
-    ResearchNodeKind.ABLATION: MachineKind.EXPERIMENT,
-    ResearchNodeKind.ROBUSTNESS: MachineKind.EXPERIMENT,
-    ResearchNodeKind.SCALING: MachineKind.EXPERIMENT,
     ResearchNodeKind.RUN: MachineKind.RUN,
     ResearchNodeKind.EVALUATION: MachineKind.EVALUATION,
     ResearchNodeKind.OPTIMIZATION: MachineKind.OPTIMIZATION,
@@ -434,6 +433,7 @@ class LoweredResearchOSGraphNode:
     platform_requirements: tuple[ResearchDefinition, ...] = ()
     method_programs: tuple[LoweredResearchMethodProgram, ...] = ()
     machine_programs: tuple[LoweredResearchMachineProgram, ...] = ()
+    experiment_closure: ResearchOSExperimentClosure | None = None
     lowering_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -461,6 +461,10 @@ class LoweredResearchOSGraphNode:
             for row in self.machine_programs
         ):
             raise TypeError("lowered machine programs must be typed tuple")
+        if self.experiment_closure is not None and type(
+            self.experiment_closure
+        ) is not ResearchOSExperimentClosure:
+            raise TypeError("lowered experiment closure must be typed")
 
         definitions = {row.definition_id: row for row in self.source.definitions}
         implementation_ids = tuple(row.definition_id for row in self.implementations)
@@ -506,13 +510,27 @@ class LoweredResearchOSGraphNode:
         ):
             raise ValueError("lowered machine program kind does not match node target")
         executable_ids = set(method_ids) | set(machine_ids)
-        if executable_ids != set(implementation_ids):
-            missing = tuple(sorted(set(implementation_ids) - executable_ids))
-            extra = tuple(sorted(executable_ids - set(implementation_ids)))
-            raise ValueError(
-                "paper implementations must lower exactly once to executable "
-                f"Machine IR; missing={missing}, extra={extra}"
-            )
+        if self.target is ResearchOSLoweringTarget.EXPERIMENTATION:
+            if self.experiment_closure is None:
+                raise ResearchOSExperimentClosureMissing(
+                    "Experimentation node requires a complete canonical experiment closure"
+                )
+            if executable_ids:
+                raise ValueError(
+                    "Experimentation node cannot also carry per-definition Machine programs"
+                )
+        else:
+            if self.experiment_closure is not None:
+                raise ValueError(
+                    "non-Experimentation node cannot carry an experiment closure"
+                )
+            if executable_ids != set(implementation_ids):
+                missing = tuple(sorted(set(implementation_ids) - executable_ids))
+                extra = tuple(sorted(executable_ids - set(implementation_ids)))
+                raise ValueError(
+                    "paper implementations must lower exactly once to executable "
+                    f"Machine IR; missing={missing}, extra={extra}"
+                )
 
         ordered_implementations = tuple(
             sorted(self.implementations, key=lambda row: row.definition_id)
@@ -563,6 +581,11 @@ class LoweredResearchOSGraphNode:
                             row.operation.implementation_digest,
                         )
                         for row in ordered_machine_programs
+                    ),
+                    "experiment_closure_digest": (
+                        None
+                        if self.experiment_closure is None
+                        else self.experiment_closure.closure_digest
                     ),
                 }
             ),
@@ -624,6 +647,7 @@ class ResearchOSLoweringCompiler:
     def __init__(
         self,
         resolver: ResearchImplementationResolverPort | None = None,
+        experiment_closures: ResearchOSExperimentClosurePort | None = None,
     ) -> None:
         resolved = (
             resolver
@@ -636,13 +660,27 @@ class ResearchOSLoweringCompiler:
                 "ResearchImplementationResolverPort"
             )
         self._resolver = resolved
+        if experiment_closures is not None and not isinstance(
+            experiment_closures,
+            ResearchOSExperimentClosurePort,
+        ):
+            raise TypeError(
+                "Research OS experiment closure resolver must satisfy "
+                "ResearchOSExperimentClosurePort"
+            )
+        self._experiment_closures = experiment_closures
 
     def compile_node(
         self,
         node: CompiledResearchOSGraphNode,
+        *,
+        graph_id: str | None = None,
+        graph_digest: str | None = None,
+        research_revision_digest: str | None = None,
     ) -> LoweredResearchOSGraphNode:
         if type(node) is not CompiledResearchOSGraphNode:
             raise TypeError("Research OS lowering requires CompiledResearchOSGraphNode")
+        target = _NODE_TARGETS[node.node.kind]
         implementations: list[ResolvedResearchImplementation] = []
         requirements: list[ResearchDefinition] = []
         method_programs: list[LoweredResearchMethodProgram] = []
@@ -650,43 +688,79 @@ class ResearchOSLoweringCompiler:
         for definition in node.definitions:
             if definition.implementation is None:
                 requirements.append(definition)
-            else:
-                resolved = self._resolver.resolve(definition)
-                implementations.append(resolved)
-                if definition.kind is ResearchDefinitionKind.METHOD:
-                    method_programs.append(
-                        LoweredResearchMethodProgram(
-                            definition.definition_id,
-                            compile_callable_method_definition(
-                                definition,
-                                resolved=resolved,
-                            ),
-                        )
-                    )
-                else:
-                    machine_kind = _NODE_MACHINE_KINDS.get(node.node.kind)
-                    if machine_kind is None:
-                        raise ResearchImplementationResolutionError(
-                            "research node has a paper implementation but no "
-                            "canonical Machine lowering target: "
-                            f"node={node.graph_node_id} "
-                            f"kind={node.node.kind.value} "
-                            f"definition={definition.definition_id}"
-                        )
-                    machine_programs.append(
-                        compile_callable_machine_definition(
+                continue
+            resolved = self._resolver.resolve(definition)
+            implementations.append(resolved)
+            if target is ResearchOSLoweringTarget.EXPERIMENTATION:
+                continue
+            if definition.kind is ResearchDefinitionKind.METHOD:
+                method_programs.append(
+                    LoweredResearchMethodProgram(
+                        definition.definition_id,
+                        compile_callable_method_definition(
                             definition,
-                            machine_kind=machine_kind,
                             resolved=resolved,
-                        )
+                        ),
                     )
+                )
+                continue
+            machine_kind = _NODE_MACHINE_KINDS.get(node.node.kind)
+            if machine_kind is None:
+                raise ResearchImplementationResolutionError(
+                    "research node has a paper implementation but no "
+                    "canonical Machine lowering target: "
+                    f"node={node.graph_node_id} "
+                    f"kind={node.node.kind.value} "
+                    f"definition={definition.definition_id}"
+                )
+            machine_programs.append(
+                compile_callable_machine_definition(
+                    definition,
+                    machine_kind=machine_kind,
+                    resolved=resolved,
+                )
+            )
+
+        experiment_closure = None
+        if target is ResearchOSLoweringTarget.EXPERIMENTATION:
+            if (
+                graph_id is None
+                or graph_digest is None
+                or research_revision_digest is None
+            ):
+                raise ResearchOSExperimentClosureMissing(
+                    "Experimentation lowering requires complete ResearchGraph identity"
+                )
+            if self._experiment_closures is None:
+                raise ResearchOSExperimentClosureMissing(
+                    "Experimentation lowering requires an explicit canonical "
+                    "experiment closure provider"
+                )
+            experiment_closure = self._experiment_closures.resolve(
+                graph_id=graph_id,
+                graph_digest=graph_digest,
+                research_revision_digest=research_revision_digest,
+                node=node,
+            )
+            if type(experiment_closure) is not ResearchOSExperimentClosure:
+                raise TypeError(
+                    "experiment closure provider returned an invalid closure"
+                )
+            experiment_closure.validate_source(
+                graph_id=graph_id,
+                graph_digest=graph_digest,
+                research_revision_digest=research_revision_digest,
+                node=node,
+            )
+
         return LoweredResearchOSGraphNode(
             source=node,
-            target=_NODE_TARGETS[node.node.kind],
+            target=target,
             implementations=tuple(implementations),
             platform_requirements=tuple(requirements),
             method_programs=tuple(method_programs),
             machine_programs=tuple(machine_programs),
+            experiment_closure=experiment_closure,
         )
 
     def compile(
@@ -699,7 +773,17 @@ class ResearchOSLoweringCompiler:
             compilation.plan.graph_id,
             compilation.plan.graph_digest,
             compilation.plan.research_revision_digest,
-            tuple(self.compile_node(node) for node in compilation.nodes),
+            tuple(
+                self.compile_node(
+                    node,
+                    graph_id=compilation.plan.graph_id,
+                    graph_digest=compilation.plan.graph_digest,
+                    research_revision_digest=(
+                        compilation.plan.research_revision_digest
+                    ),
+                )
+                for node in compilation.nodes
+            ),
         )
 
 
@@ -707,8 +791,12 @@ def compile_research_os_lowering(
     compilation: CompiledResearchOSGraph,
     *,
     resolver: ResearchImplementationResolverPort | None = None,
+    experiment_closures: ResearchOSExperimentClosurePort | None = None,
 ) -> ResearchOSLoweringPlan:
-    return ResearchOSLoweringCompiler(resolver).compile(compilation)
+    return ResearchOSLoweringCompiler(
+        resolver,
+        experiment_closures,
+    ).compile(compilation)
 
 
 __all__ = [

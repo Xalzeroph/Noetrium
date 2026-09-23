@@ -1,0 +1,240 @@
+from __future__ import annotations
+
+from dataclasses import replace
+
+import pytest
+
+from noetrium import api
+from noetrium_platform.composition.research_os_experiment import (
+    ResearchOSExperimentClosure,
+    compile_research_os_experiment_closure,
+)
+from noetrium_platform.composition.research_os_graph import (
+    compile_research_portfolio_graph,
+)
+from noetrium_platform.foundation.governance.architecture.api import (
+    BindingProof,
+    CompositionSubject,
+)
+from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
+from noetrium_platform.foundation.kernel.kernel import Sha256Digest, canonical_digest
+from noetrium_platform.foundation.portfolio.api import (
+    ProjectCapabilityRequirement,
+    ProjectIdentity,
+    ProjectManifest,
+    ProjectProviderBinding,
+    ProjectSpec,
+    ProjectToolProvenance,
+)
+from noetrium_platform.research.experimentation.api import (
+    ResearchBindingContribution,
+    ResearchBindingRequirements,
+    ResearchCapabilityBinding,
+    compile_experiment_program,
+    compile_research_plan,
+    resolve_research_requirements,
+)
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkTaskSet,
+    ExperimentTrialProtocolIdentity,
+    MeasurementDefinition,
+    MeasurementProtocol,
+    MeasurementValueKind,
+    ReplayLevel,
+    ResearchRevision,
+    ResearchStudyDefinition,
+    StudyExecutionPolicy,
+    TaskDefinition,
+    TrialBudget,
+)
+
+
+def _compiled_graph():
+    builder = api.ResearchProgramBuilder("paper")
+    builder.protocol("study", config={"authority": "experimentation"})
+    builder.experiment("main", definitions=("study",))
+    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    revision = api.ResearchGraphRevision(
+        portfolio.portfolio_id,
+        portfolio.portfolio_digest,
+        (),
+        "experiment closure",
+    )
+    return compile_research_portfolio_graph(revision, portfolio)
+
+
+def _study_definition(*, seeds=("seed-1",)) -> ResearchStudyDefinition:
+    benchmark = BenchmarkTaskSet(
+        "benchmark",
+        "1",
+        "b" * 64,
+        "task.v1",
+        (TaskDefinition("task-1", "1", "generic", "task.v1", "a" * 64),),
+    )
+    measurements = MeasurementProtocol(
+        "measurements",
+        (
+            MeasurementDefinition(
+                "score",
+                "scalar-v1",
+                MeasurementValueKind.SCALAR,
+            ),
+        ),
+    )
+    return ResearchStudyDefinition(
+        "suite",
+        "main",
+        "study-1",
+        "method-program",
+        (),
+        seeds,
+        1,
+        measurements,
+        benchmark,
+        None,
+        ResearchBindingRequirements("trial-provider"),
+        ExperimentTrialProtocolIdentity("trial.test", "c" * 64),
+        ResearchRevision("research-os-revision", "d" * 64),
+        StudyExecutionPolicy.serial_shared_v1(
+            trial_budget=TrialBudget(
+                "standard",
+                max_steps=8,
+                max_seconds=60.0,
+            ),
+            replay_level=ReplayLevel.EXACT,
+            repetition_timeout_seconds=60.0,
+        ),
+    )
+
+
+def _resolution_and_binding(definition: ResearchStudyDefinition):
+    requirement = ProjectCapabilityRequirement(
+        "trial-provider",
+        "experimentation",
+        "trial",
+        1,
+        "1" * 64,
+    )
+    provider = ProjectProviderBinding(
+        "trial-binding",
+        "trial-provider",
+        "trial.provider",
+        "1",
+        "2" * 64,
+    )
+    manifest = ProjectManifest(
+        ProjectSpec(
+            ProjectIdentity("suite", "1"),
+            "program",
+            "Suite",
+        ),
+        "template",
+        ProjectToolProvenance("tool", "1", "3" * 64),
+        capability_requirements=(requirement,),
+        provider_bindings=(provider,),
+        study_ids=("study-1",),
+    )
+    resolution = resolve_research_requirements(definition, manifest)
+    proof = BindingProof(
+        owner=CompositionSubject.system_subject(SystemIdentity("experimentation")),
+        subject=CompositionSubject.project_subject("suite", "1"),
+        requirement_digest=Sha256Digest(canonical_digest(requirement)),
+        provider_identity="trial.provider",
+        provider_profile_digest=Sha256Digest("4" * 64),
+        binding_generation="generation-1",
+    )
+    binding = ResearchBindingContribution(
+        resolution.resolution_digest,
+        (ResearchCapabilityBinding("trial-provider", proof),),
+    )
+    return resolution, binding
+
+
+def test_experiment_closure_is_existing_compiler_output_bound_to_research_graph() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+
+    assert closure.research_plan.experiment_plan == closure.experiment_program.plan
+    assert closure.experiment_program == compile_experiment_program(
+        closure.research_plan.experiment_plan
+    )
+    assert len(closure.closure_digest) == 64
+    closure.validate_source(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+    )
+
+
+def test_experiment_closure_rejects_cross_revision_or_node_rebinding() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+
+    with pytest.raises(ValueError, match="does not belong"):
+        closure.validate_source(
+            graph_id=compilation.plan.graph_id,
+            graph_digest=compilation.plan.graph_digest,
+            research_revision_digest="f" * 64,
+            node=node,
+        )
+
+
+def test_closure_constructor_rejects_plan_from_other_scientific_design() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    other_definition = replace(definition, seeds=("seed-2",))
+    other_plan = compile_research_plan(
+        other_definition,
+        resolution,
+        binding,
+    )
+
+    with pytest.raises(ValueError, match="research plan drifted"):
+        ResearchOSExperimentClosure(
+            closure.source_graph_id,
+            closure.source_graph_digest,
+            closure.source_revision_digest,
+            closure.source_graph_node_id,
+            closure.source_semantic_digest,
+            closure.source_definition_digests,
+            closure.definition,
+            closure.resolution,
+            closure.binding,
+            other_plan,
+            compile_experiment_program(other_plan.experiment_plan),
+        )
