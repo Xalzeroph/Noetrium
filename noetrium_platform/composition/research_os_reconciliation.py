@@ -3,7 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+from noetrium_platform.foundation.kernel.kernel import (
+    JsonValue,
+    canonical_digest,
+    freeze_json,
+    require_sha256,
+)
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphReconciliationDisposition,
 )
@@ -26,6 +31,7 @@ class ResearchOSNodeReconciliationProof:
     disposition: ResearchGraphReconciliationDisposition
     authority_id: str
     evidence_digests: tuple[str, ...]
+    result: JsonValue = None
     failure_type: str | None = None
     failure_message: str | None = None
     proof_digest: str = field(init=False)
@@ -47,6 +53,13 @@ class ResearchOSNodeReconciliationProof:
         for digest in evidence:
             require_sha256(digest, "reconciliation evidence digest")
         object.__setattr__(self, "evidence_digests", evidence)
+
+        object.__setattr__(self, "result", freeze_json(self.result))
+        if self.disposition is not ResearchGraphReconciliationDisposition.SUCCEEDED:
+            if self.result is not None:
+                raise ValueError(
+                    "only succeeded reconciliation may carry a recovered result"
+                )
 
         if self.disposition is ResearchGraphReconciliationDisposition.FAILED:
             _text(self.failure_type, "reconciliation failure_type")
@@ -70,6 +83,7 @@ class ResearchOSNodeReconciliationProof:
                     "disposition": self.disposition.value,
                     "authority_id": self.authority_id,
                     "evidence_digests": evidence,
+                    "result_digest": canonical_digest(self.result),
                     "failure_type": self.failure_type,
                     "failure_message": self.failure_message,
                 }
