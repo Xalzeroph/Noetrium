@@ -16,6 +16,7 @@ from noetrium_platform.composition.research_os_migration import (
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.product import research_os as api
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphControlPhase,
     ResearchGraphExecutionSnapshot,
     ResearchGraphLiveNodeState,
     ResearchGraphExecutionConflict,
@@ -351,3 +352,120 @@ def test_migration_cas_rejects_stale_source_cut(tmp_path) -> None:
             store,
             now_ns=20,
         )
+
+
+
+class _RacingActiveCutStore:
+    def __init__(self, store, *, competing_cut_id: str) -> None:
+        self._store = store
+        self._competing_cut_id = competing_cut_id
+        self._raced = False
+
+    def active_cut(self, logical_execution_id: str):
+        return self._store.active_cut(logical_execution_id)
+
+    def move_active_cut(
+        self,
+        logical_execution_id: str,
+        cut_id: str,
+        *,
+        expected_cut_id: str | None = None,
+    ):
+        if not self._raced:
+            self._raced = True
+            self._store.move_active_cut(
+                logical_execution_id,
+                self._competing_cut_id,
+                expected_cut_id=expected_cut_id,
+            )
+        return self._store.move_active_cut(
+            logical_execution_id,
+            cut_id,
+            expected_cut_id=expected_cut_id,
+        )
+
+
+def test_migration_final_cas_conflict_keeps_staged_target_inactive_and_paused(
+    tmp_path,
+) -> None:
+    old_portfolio = _portfolio(_method_v1)
+    old_revision = _revision(old_portfolio, message="r1")
+    old = compile_research_portfolio_graph(old_revision, old_portfolio)
+    new_portfolio = _portfolio(_method_v2)
+    new_revision = _revision(new_portfolio, parent=old_revision, message="r2")
+    new = compile_research_portfolio_graph(new_revision, new_portfolio)
+
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    activation = activate_research_os_execution_cut(
+        "logical-execution",
+        old,
+        store,
+    )
+    _complete_cut(store, activation)
+    source_snapshot = store.snapshot(activation.cut.cut_id)
+    plan = plan_research_os_execution_migration(
+        "logical-execution",
+        old,
+        new,
+        source_snapshot,
+    )
+
+    competing_portfolio = _portfolio(_method_v1)
+    competing_revision = api.ResearchGraphRevision(
+        competing_portfolio.portfolio_id,
+        competing_portfolio.portfolio_digest,
+        (old_revision.revision_digest,),
+        "competing revision",
+    )
+    competing = compile_research_portfolio_graph(
+        competing_revision,
+        competing_portfolio,
+    )
+    competing_cut = ResearchOSExecutionCut.from_compilation(
+        "logical-execution",
+        competing,
+    )
+    store.ensure_execution(competing_cut.cut_id, competing.plan)
+
+    stable = {
+        row.graph_node_id: row
+        for row in plan.nodes
+    }["paper-b::main"]
+    assert stable.new_semantic_digest is not None
+    proof = ResearchOSReuseProof(
+        "paper-b::main",
+        plan.source_cut.cut_id,
+        stable.new_semantic_digest,
+        canonical_digest({"artifact-proof": "paper-b::main"}),
+    )
+    racing = _RacingActiveCutStore(
+        store,
+        competing_cut_id=competing_cut.cut_id,
+    )
+
+    with pytest.raises(
+        ResearchGraphExecutionConflict,
+        match="active cut",
+    ):
+        materialize_research_os_execution_migration(
+            plan,
+            new,
+            store,
+            reuse_proofs=(proof,),
+            active_cut_store=racing,
+            now_ns=20,
+        )
+
+    active = store.active_cut("logical-execution")
+    assert active is not None
+    assert active.cut_id == competing_cut.cut_id
+
+    staged = store.snapshot(plan.target_cut.cut_id)
+    assert store.control_state(plan.target_cut.cut_id).phase is (
+        ResearchGraphControlPhase.PAUSED
+    )
+    assert staged.node("paper-b::main").state is ResearchGraphLiveNodeState.REUSED
+    assert store.attempts(plan.target_cut.cut_id, "paper-b::main") == ()
+    assert staged.node("paper-a::main").state is ResearchGraphLiveNodeState.PENDING
+    assert staged.node("paper-a::analysis").state is ResearchGraphLiveNodeState.PENDING
+    assert store.snapshot(plan.source_cut.cut_id) == source_snapshot
