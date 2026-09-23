@@ -389,15 +389,15 @@ def activate_research_os_execution_cut(
         raise TypeError("research execution activation requires graph execution store")
     cuts = _cut_store(execution_store, active_cut_store)
     cut = ResearchOSExecutionCut.from_compilation(execution_id, compilation)
-    snapshot = execution_store.ensure_execution(cut.cut_id, compilation.plan)
     active = cuts.active_cut(execution_id)
-    if active is None:
-        active = cuts.move_active_cut(execution_id, cut.cut_id)
-    elif active.cut_id != cut.cut_id:
+    if active is not None and active.cut_id != cut.cut_id:
         raise ResearchGraphExecutionConflict(
             "logical Research OS execution is already bound to a different active cut; "
             "revision changes require explicit migration"
         )
+    snapshot = execution_store.ensure_execution(cut.cut_id, compilation.plan)
+    if active is None:
+        active = cuts.move_active_cut(execution_id, cut.cut_id)
     return ResearchOSExecutionActivation(cut, active, snapshot)
 
 
