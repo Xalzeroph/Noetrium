@@ -169,7 +169,7 @@ class ResearchImplementation:
 class ResearchDefinition:
     definition_id: str
     kind: ResearchDefinitionKind
-    implementation: ResearchImplementation
+    implementation: ResearchImplementation | None = None
     config: JsonValue = None
     definition_digest: str = field(init=False)
 
@@ -177,9 +177,9 @@ class ResearchDefinition:
         _token(self.definition_id, "research definition_id")
         if not isinstance(self.kind, ResearchDefinitionKind):
             raise TypeError("research definition kind must be typed")
-        if type(self.implementation) is not ResearchImplementation:
+        if self.implementation is not None and type(self.implementation) is not ResearchImplementation:
             raise TypeError(
-                "research definition implementation must be ResearchImplementation"
+                "research definition implementation must be ResearchImplementation or None"
             )
         config = freeze_json(self.config)
         object.__setattr__(self, "config", config)
@@ -190,19 +190,31 @@ class ResearchDefinition:
                 {
                     "definition_id": self.definition_id,
                     "kind": self.kind.value,
-                    "implementation_digest": self.implementation.implementation_digest,
+                    "implementation_digest": (
+                        None
+                        if self.implementation is None
+                        else self.implementation.implementation_digest
+                    ),
                     "config": config,
                 }
             ),
         )
 
     @property
-    def implementation_id(self) -> str:
-        return self.implementation.implementation_id
+    def implementation_id(self) -> str | None:
+        return None if self.implementation is None else self.implementation.implementation_id
 
     @property
-    def implementation_digest(self) -> str:
-        return self.implementation.implementation_digest
+    def implementation_digest(self) -> str | None:
+        return (
+            None
+            if self.implementation is None
+            else self.implementation.implementation_digest
+        )
+
+    @property
+    def platform_resolved(self) -> bool:
+        return self.implementation is None
 
 
 @dataclass(frozen=True, slots=True)
@@ -540,8 +552,10 @@ def _research_definition_document(
     return {
         "definition_id": definition.definition_id,
         "kind": definition.kind.value,
-        "implementation": _research_implementation_document(
-            definition.implementation
+        "implementation": (
+            None
+            if definition.implementation is None
+            else _research_implementation_document(definition.implementation)
         ),
         "config": definition.config,
         "definition_digest": definition.definition_digest,
@@ -1231,13 +1245,17 @@ class ResearchProgramBuilder:
         definition_id: str,
         *,
         kind: ResearchDefinitionKind,
-        implementation: ResearchImplementation | Callable[..., object],
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         resolved = (
-            implementation
-            if type(implementation) is ResearchImplementation
-            else ResearchImplementation.from_callable(definition_id, implementation)
+            None
+            if implementation is None
+            else (
+                implementation
+                if type(implementation) is ResearchImplementation
+                else ResearchImplementation.from_callable(definition_id, implementation)
+            )
         )
         row = ResearchDefinition(
             definition_id,
@@ -1268,7 +1286,7 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object],
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
@@ -1296,7 +1314,7 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object],
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
@@ -1310,7 +1328,7 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object],
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
@@ -1324,7 +1342,7 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object],
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
@@ -1338,7 +1356,7 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object],
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
@@ -1352,7 +1370,7 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object],
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
@@ -1366,7 +1384,7 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object],
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
