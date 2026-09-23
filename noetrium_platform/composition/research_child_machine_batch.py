@@ -5,6 +5,7 @@ from time import monotonic_ns
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ExecutionLaneKind,
     ExecutionSpec,
+    TaskFailureScope,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.machines.child_machine import (
@@ -122,6 +123,7 @@ class PooledChildResearchBatchMechanics(
                 ExecutionSpec(
                     task_id=self._task_id(index, item),
                     lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                    failure_scope=TaskFailureScope.CALLER,
                 ),
                 run,
             )
