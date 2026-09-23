@@ -56,6 +56,10 @@ def test_lowering_partitions_paper_implementation_from_platform_requirement() ->
     assert node.target is ResearchOSLoweringTarget.EXPERIMENTATION
     assert tuple(row.definition_id for row in node.implementations) == ("method",)
     assert node.implementations[0].implementation is _method
+    assert tuple(row.definition_id for row in node.method_programs) == ("method",)
+    assert node.method_programs[0].program.program_identity.implementation.method_id == (
+        "method"
+    )
     assert tuple(row.definition_id for row in node.platform_requirements) == (
         "planner",
         "world",
@@ -97,6 +101,10 @@ def test_lowering_covers_method_evaluation_optimization_and_workbench_routes() -
     assert lowering.node("paper::method-node").target is (
         ResearchOSLoweringTarget.METHOD_MACHINE
     )
+    assert tuple(
+        row.definition_id
+        for row in lowering.node("paper::method-node").method_programs
+    ) == ("method",)
     assert lowering.node("paper::evaluation").target is (
         ResearchOSLoweringTarget.EVALUATION_MACHINE
     )

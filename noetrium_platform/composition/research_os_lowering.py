@@ -154,6 +154,7 @@ class ImportResearchImplementationResolver:
 def compile_callable_method_definition(
     definition: ResearchDefinition,
     *,
+    resolved: ResolvedResearchImplementation | None = None,
     resolver: ResearchImplementationResolverPort | None = None,
 ) -> MethodProgram:
     """Compile one ordinary paper METHOD callable into the canonical UMM IR.
@@ -172,9 +173,20 @@ def compile_callable_method_definition(
         raise ResearchImplementationResolutionError(
             "METHOD definition has no paper implementation"
         )
-    resolved = (resolver or ImportResearchImplementationResolver()).resolve(definition)
-    declared = resolved.declared
-    implementation = resolved.implementation
+    if resolved is not None and resolver is not None:
+        raise ValueError("method lowering accepts resolved or resolver, not both")
+    selected = resolved or (
+        resolver or ImportResearchImplementationResolver()
+    ).resolve(definition)
+    if (
+        selected.definition_id != definition.definition_id
+        or selected.declared != definition.implementation
+    ):
+        raise ResearchImplementationResolutionError(
+            "resolved METHOD implementation does not match frozen definition"
+        )
+    declared = selected.declared
+    implementation = selected.implementation
 
     def invoke(request: MethodNodeRequest) -> MethodNodeResult:
         value = implementation(request.input_value)
@@ -215,6 +227,20 @@ def compile_callable_method_definition(
 
 
 @dataclass(frozen=True, slots=True)
+class LoweredResearchMethodProgram:
+    """One METHOD definition compiled to the canonical UMM program IR."""
+
+    definition_id: str
+    program: MethodProgram
+
+    def __post_init__(self) -> None:
+        if type(self.definition_id) is not str or not self.definition_id.strip():
+            raise ValueError("lowered method definition_id is required")
+        if type(self.program) is not MethodProgram:
+            raise TypeError("lowered method requires MethodProgram")
+
+
+@dataclass(frozen=True, slots=True)
 class LoweredResearchOSGraphNode:
     """Ephemeral executable lowering view over an immutable ResearchGraph node."""
 
@@ -222,6 +248,7 @@ class LoweredResearchOSGraphNode:
     target: ResearchOSLoweringTarget
     implementations: tuple[ResolvedResearchImplementation, ...] = ()
     platform_requirements: tuple[ResearchDefinition, ...] = ()
+    method_programs: tuple[LoweredResearchMethodProgram, ...] = ()
     lowering_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -239,10 +266,16 @@ class LoweredResearchOSGraphNode:
             for row in self.platform_requirements
         ):
             raise TypeError("lowered platform requirements must be ResearchDefinition tuple")
+        if type(self.method_programs) is not tuple or any(
+            type(row) is not LoweredResearchMethodProgram
+            for row in self.method_programs
+        ):
+            raise TypeError("lowered method programs must be typed tuple")
 
         definitions = {row.definition_id: row for row in self.source.definitions}
         implementation_ids = tuple(row.definition_id for row in self.implementations)
         requirement_ids = tuple(row.definition_id for row in self.platform_requirements)
+        method_ids = tuple(row.definition_id for row in self.method_programs)
         if len(implementation_ids) != len(set(implementation_ids)):
             raise ValueError("lowered implementation definitions must be unique")
         if len(requirement_ids) != len(set(requirement_ids)):
@@ -255,6 +288,15 @@ class LoweredResearchOSGraphNode:
             raise ValueError("implementation lowering contains platform-resolved definition")
         if any(definitions[key].implementation is not None for key in requirement_ids):
             raise ValueError("platform requirement contains paper implementation")
+        if len(method_ids) != len(set(method_ids)):
+            raise ValueError("lowered method program definitions must be unique")
+        if any(key not in implementation_ids for key in method_ids):
+            raise ValueError("lowered method program must belong to an implementation")
+        if any(
+            definitions[key].kind is not ResearchDefinitionKind.METHOD
+            for key in method_ids
+        ):
+            raise ValueError("only METHOD definitions may lower to MethodProgram")
 
         ordered_implementations = tuple(
             sorted(self.implementations, key=lambda row: row.definition_id)
@@ -262,8 +304,12 @@ class LoweredResearchOSGraphNode:
         ordered_requirements = tuple(
             sorted(self.platform_requirements, key=lambda row: row.definition_id)
         )
+        ordered_method_programs = tuple(
+            sorted(self.method_programs, key=lambda row: row.definition_id)
+        )
         object.__setattr__(self, "implementations", ordered_implementations)
         object.__setattr__(self, "platform_requirements", ordered_requirements)
+        object.__setattr__(self, "method_programs", ordered_method_programs)
         object.__setattr__(
             self,
             "lowering_digest",
@@ -284,6 +330,10 @@ class LoweredResearchOSGraphNode:
                             row.definition_digest,
                         )
                         for row in ordered_requirements
+                    ),
+                    "method_programs": tuple(
+                        (row.definition_id, row.program.program_digest)
+                        for row in ordered_method_programs
                     ),
                 }
             ),
@@ -362,16 +412,29 @@ class ResearchOSLoweringCompiler:
             raise TypeError("Research OS lowering requires CompiledResearchOSGraphNode")
         implementations: list[ResolvedResearchImplementation] = []
         requirements: list[ResearchDefinition] = []
+        method_programs: list[LoweredResearchMethodProgram] = []
         for definition in node.definitions:
             if definition.implementation is None:
                 requirements.append(definition)
             else:
-                implementations.append(self._resolver.resolve(definition))
+                resolved = self._resolver.resolve(definition)
+                implementations.append(resolved)
+                if definition.kind is ResearchDefinitionKind.METHOD:
+                    method_programs.append(
+                        LoweredResearchMethodProgram(
+                            definition.definition_id,
+                            compile_callable_method_definition(
+                                definition,
+                                resolved=resolved,
+                            ),
+                        )
+                    )
         return LoweredResearchOSGraphNode(
             source=node,
             target=_NODE_TARGETS[node.node.kind],
             implementations=tuple(implementations),
             platform_requirements=tuple(requirements),
+            method_programs=tuple(method_programs),
         )
 
     def compile(
@@ -398,6 +461,7 @@ def compile_research_os_lowering(
 
 __all__ = [
     "ImportResearchImplementationResolver",
+    "LoweredResearchMethodProgram",
     "LoweredResearchOSGraphNode",
     "ResearchImplementationResolutionError",
     "ResearchImplementationResolverPort",
