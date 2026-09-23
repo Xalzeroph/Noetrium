@@ -78,6 +78,16 @@ from noetrium_platform.research.execution.graph.providers import (
 )
 
 
+def _validate_experiment_report(payload):
+    report = payload["report"]
+    if report["schema"] != "research-os.experiment-report-ref.v1":
+        raise ValueError("unexpected experiment report schema")
+    manifest = report["manifest"]
+    if len(manifest["content_sha256"]) != 64 or len(manifest["generation"]) != 64:
+        raise ValueError("experiment report artifact identity is incomplete")
+    return None
+
+
 def _compiled_graph():
     builder = api.ResearchProgramBuilder("paper")
     builder.protocol("study", config={"authority": "experimentation"})
@@ -535,5 +545,103 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
         )
         assert second.state == "succeeded"
         assert authority.resolve(authority.lookup(subject)) == report_ref
+    finally:
+        pool.close()
+
+
+
+def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
+    tmp_path,
+) -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.protocol("study", config={"authority": "experimentation"})
+    builder.metric("validate-report", implementation=_validate_experiment_report)
+    builder.experiment(
+        "main",
+        definitions=("study",),
+        outputs=(
+            api.ResearchOutputSpec(
+                "report",
+                api.ResearchValueKind.ARTIFACT,
+            ),
+        ),
+    )
+    builder.evaluation(
+        "evaluate",
+        definitions=("validate-report",),
+    )
+    builder.depends(
+        "evaluate",
+        "main",
+        bindings=(
+            api.ResearchInputBinding(
+                "report",
+                "report",
+                api.ResearchValueKind.ARTIFACT,
+            ),
+        ),
+    )
+    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+
+    pool = ResearchExecutionPool(
+        orchestration_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            max_async_io_in_flight=2,
+        ),
+        experiment_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            max_async_io_in_flight=2,
+        ),
+    )
+    graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    run_artifacts = DirectoryRunArtifactStore(
+        tmp_path / "run-artifacts",
+        run_id="experiment-evaluation",
+        writer_actor=_InlineActor(),
+    )
+    value_authority = ResearchOSArtifactValueAuthority(
+        DirectoryArtifactBlobStore(tmp_path / "value-blobs"),
+        SQLiteArtifactRegistry(tmp_path / "value-artifacts.sqlite3"),
+    )
+    research_os = bind_portfolio_research_os(
+        SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3"),
+        DirectoryArtifactBlobStore(tmp_path / "portfolio-blobs"),
+        control=StrictResearchOSControl(
+            graph,
+            pool,
+            CanonicalResearchOSNodeRuntime(
+                tmp_path / "machine-state",
+                execution_pool=pool,
+                experiment_bindings=_ExperimentRuntimeBindings(run_artifacts),
+            ),
+            ResearchOSValueRouter((value_authority,)),
+            experiment_closures=_ClosureProvider(
+                definition,
+                resolution,
+                binding,
+            ),
+        ),
+    )
+    try:
+        revision = research_os.commit(
+            portfolio,
+            message="experiment to evaluation artifact edge",
+        )
+        receipt = research_os.run(
+            api.ResearchExecutionTarget(
+                "experiment-evaluation",
+                revision,
+            )
+        )
+        assert receipt.state == "succeeded"
+        active = graph.active_cut("experiment-evaluation")
+        assert active is not None
+        snapshot = graph.snapshot(active.cut_id)
+        assert snapshot.node("paper::main").state.value == "succeeded"
+        assert snapshot.node("paper::evaluate").state.value == "succeeded"
     finally:
         pool.close()

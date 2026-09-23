@@ -8,6 +8,7 @@ from noetrium_platform.composition.research_os_value_authorities import (
 from noetrium_platform.composition.research_os_values import ResearchOSValueSubject
 from noetrium_platform.evidence.artifact.catalog.api import (
     ArtifactKind,
+    ArtifactRegistryConflict,
     ArtifactRecord,
     ArtifactRetention,
 )
@@ -65,7 +66,7 @@ def test_same_subject_cannot_be_rebound_to_different_artifact_content(tmp_path) 
     subject = _subject()
     authority.publish(subject, {"value": 1})
 
-    with pytest.raises(Exception):
+    with pytest.raises(ArtifactRegistryConflict):
         authority.publish(subject, {"value": 2})
 
 
