@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3610,
-    "python_import_edges": 6764,
-    "symbols": 4786,
-    "tracked_files": 4239,
+    "python_files": 3613,
+    "python_import_edges": 6766,
+    "symbols": 4805,
+    "tracked_files": 4242,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4780,
+    "python": 4799,
     "typescript": 5
   },
   "parse_errors": [],
@@ -17607,6 +17607,12 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "research.reproductions.contracts",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "research.reproductions.crossha_cvpr2026.definition",
       "source_role": "research_reproductions",
       "target_module": "noetrium_platform.research.reproduction",
@@ -19410,6 +19416,12 @@
       "source_module": "research.reproductions.pi05_openpi.source",
       "source_role": "research_reproductions",
       "target_module": "noetrium_platform.research.provenance",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.provenance",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -40646,7 +40658,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 825,
+      "count": 827,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -40718,7 +40730,7 @@
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
-    "research_reproductions": 757,
+    "research_reproductions": 760,
     "tests": 772,
     "tooling": 75
   },
@@ -40729,13 +40741,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 384,
+    "research_reproductions": 403,
     "sdk": 5,
     "tests": 948,
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "f7c2d7ed57b87f59a959217788859382f425a811",
+  "source_git_sha": "9ba01c47277c6b285d0721bde4788682b4a5d57d",
   "symbols": [
     {
       "bases": [],
@@ -119596,6 +119608,369 @@
       "role": "research_reproductions"
     },
     {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "CATALOGUED",
+        "PROTOCOL_BOUND",
+        "RUNNABLE",
+        "PILOT",
+        "MATCHED_REPRODUCTION",
+        "BLOCKED",
+        "PAPER_ONLY",
+        "ARTIFACT_ONLY"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 54,
+      "methods": [],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionLifecycle",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionLifecycle",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "FIDELITY",
+        "STUDY",
+        "BENCHMARK",
+        "METHOD_PROGRAM",
+        "RESEARCH_PROGRAM",
+        "SEMANTICS",
+        "SUPPORT"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 65,
+      "methods": [],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionAssetKind",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionAssetKind",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "SUBSTITUTION",
+        "UNRESOLVED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 75,
+      "methods": [],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionDeltaKind",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionDeltaKind",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "PILOT",
+        "MATCHED_RESULT"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 80,
+      "methods": [],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionEvidenceKind",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionEvidenceKind",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "SATISFIED",
+        "NOT_APPLICABLE",
+        "UNRESOLVED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 85,
+      "methods": [],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionMatchCriterionStatus",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionMatchCriterionStatus",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "method_id: str",
+        "title: str",
+        "paper_uri: str",
+        "year: int",
+        "paper_revision: str | None",
+        "identity_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 101,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionIdentity",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionIdentity",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "domains: tuple[str, ...]",
+        "families: tuple[str, ...]",
+        "priority: int",
+        "benchmark_ids: tuple[str, ...]",
+        "platform_pressure: tuple[str, ...]",
+        "method_owned: tuple[str, ...]",
+        "platform_owned: tuple[str, ...]",
+        "catalog_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 135,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionCatalog",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionCatalog",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "kind: ReproductionAssetKind",
+        "path: str",
+        "declaration_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 181,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionAssetRef",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionAssetRef",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "claim_id: str",
+        "metric_id: str",
+        "value: int | float",
+        "qualifiers: JsonObject",
+        "claim_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 200,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReportedResult",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReportedResult",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "baseline_id: str",
+        "description: str",
+        "qualifiers: JsonObject",
+        "baseline_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 231,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReferenceBaseline",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReferenceBaseline",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "kind: ReproductionDeltaKind",
+        "description: str",
+        "delta_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 258,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionDelta",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionDelta",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "criterion_id: str",
+        "status: ReproductionMatchCriterionStatus",
+        "authority_digest: str",
+        "detail: str",
+        "criterion_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 275,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionMatchCriterion",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionMatchCriterion",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "qualification_id: str",
+        "decision: ReproductionEvidenceKind",
+        "run_id: str",
+        "run_manifest_digest: str",
+        "evidence_bundle_digest: str",
+        "claim_ids: tuple[str, ...]",
+        "criteria: tuple[ReproductionMatchCriterion, ...]",
+        "qualification_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 309,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionEvidenceQualification",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionEvidenceQualification",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "evidence_id: str",
+        "kind: ReproductionEvidenceKind",
+        "run_id: str",
+        "run_manifest_digest: str",
+        "bundle_id: str",
+        "evidence_bundle_digest: str",
+        "manifest_ref: str",
+        "manifest_sha256: str",
+        "claim_ids: tuple[str, ...]",
+        "qualification: ReproductionEvidenceQualification | None",
+        "evidence_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 424,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionEvidenceRef",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionEvidenceRef",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "package: str",
+        "lifecycle: ReproductionLifecycle",
+        "identity: ReproductionIdentity",
+        "catalog: ReproductionCatalog",
+        "assets: tuple[ReproductionAssetRef, ...]",
+        "primary_executable: str | None",
+        "reported_results: tuple[ReportedResult, ...]",
+        "reference_baselines: tuple[ReferenceBaseline, ...]",
+        "deltas: tuple[ReproductionDelta, ...]",
+        "blockers: tuple[str, ...]",
+        "evidence_refs: tuple[ReproductionEvidenceRef, ...]",
+        "scientific_tests: tuple[str, ...]",
+        "definition_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 542,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionDefinition",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionDefinition",
+      "role": "research_reproductions"
+    },
+    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -122116,6 +122491,110 @@
       "name": "Pi05OpenPIFidelity",
       "path": "research/reproductions/pi05_openpi/fidelity.py",
       "qualname": "research.reproductions.pi05_openpi.fidelity.Pi05OpenPIFidelity",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "OFFICIAL_EXECUTABLE",
+        "LATER_RELEASED_EXECUTABLE",
+        "OFFICIAL_ARTIFACT",
+        "SURROGATE",
+        "INDEPENDENT",
+        "PAPER_PROVENANCE",
+        "CANDIDATE"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 23,
+      "methods": [
+        "executable"
+      ],
+      "module": "research.reproductions.provenance",
+      "name": "MethodSourceLaneKind",
+      "path": "research/reproductions/provenance.py",
+      "qualname": "research.reproductions.provenance.MethodSourceLaneKind",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "lane_id: str",
+        "kind: MethodSourceLaneKind",
+        "repository: str",
+        "commit: str",
+        "artifacts: tuple[str, ...]",
+        "lane_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 45,
+      "methods": [
+        "__post_init__",
+        "executable"
+      ],
+      "module": "research.reproductions.provenance",
+      "name": "MethodSourceLane",
+      "path": "research/reproductions/provenance.py",
+      "qualname": "research.reproductions.provenance.MethodSourceLane",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "lane_id: str",
+        "venue: str",
+        "year: int",
+        "publication_id: str",
+        "publication_uri: str",
+        "revision: str | None",
+        "content_sha256: str | None",
+        "kind: MethodSourceLaneKind",
+        "lane_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 114,
+      "methods": [
+        "__post_init__",
+        "executable"
+      ],
+      "module": "research.reproductions.provenance",
+      "name": "PublicationSourceLane",
+      "path": "research/reproductions/provenance.py",
+      "qualname": "research.reproductions.provenance.PublicationSourceLane",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "lanes: tuple[SourceLane, ...]",
+        "registry_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 187,
+      "methods": [
+        "__post_init__",
+        "repositories",
+        "publication_uris"
+      ],
+      "module": "research.reproductions.provenance",
+      "name": "MethodSourceRegistry",
+      "path": "research/reproductions/provenance.py",
+      "qualname": "research.reproductions.provenance.MethodSourceRegistry",
       "role": "research_reproductions"
     },
     {
