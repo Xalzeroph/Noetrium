@@ -16,6 +16,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphAttemptState,
     ResearchGraphControlPhase,
     ResearchGraphControlRecord,
+    ResearchGraphCutSwitchFence,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionNotFound,
     ResearchGraphExecutionSnapshot,
@@ -1235,12 +1236,24 @@ class SQLiteResearchGraphExecutionStore:
         cut_id: str,
         *,
         expected_cut_id: str | None = None,
+        source_fence: ResearchGraphCutSwitchFence | None = None,
     ) -> ResearchGraphActiveCutRef:
         if type(logical_execution_id) is not str or not logical_execution_id.strip():
             raise ValueError("research graph logical_execution_id must be non-empty")
         require_sha256(cut_id, "research graph cut_id")
         if expected_cut_id is not None:
             require_sha256(expected_cut_id, "research graph expected_cut_id")
+        if source_fence is not None:
+            if not isinstance(source_fence, ResearchGraphCutSwitchFence):
+                raise TypeError("research graph source_fence must be typed")
+            if expected_cut_id is None:
+                raise ValueError(
+                    "research graph guarded cut switch requires expected_cut_id"
+                )
+            if source_fence.source_execution_id != expected_cut_id:
+                raise ValueError(
+                    "research graph cut switch fence source identity drifted"
+                )
         with self._transaction() as conn:
             execution = self._execution_tx(conn, cut_id)
             current_row = conn.execute(
@@ -1257,11 +1270,42 @@ class SQLiteResearchGraphExecutionStore:
                     raise ResearchGraphExecutionConflict(
                         "research graph active cut compare-and-swap conflict"
                     )
+                if source_fence is not None:
+                    if current.generation != source_fence.active_cut_generation:
+                        raise ResearchGraphExecutionConflict(
+                            "research graph active cut generation fence conflict"
+                        )
+                    source_execution = self._execution_tx(
+                        conn,
+                        source_fence.source_execution_id,
+                    )
+                    if int(source_execution[4]) != source_fence.execution_generation:
+                        raise ResearchGraphExecutionConflict(
+                            "research graph source execution generation fence conflict"
+                        )
+                    if self._control_tx(
+                        conn,
+                        source_fence.source_execution_id,
+                    ) != source_fence.graph_control:
+                        raise ResearchGraphExecutionConflict(
+                            "research graph source control fence conflict"
+                        )
+                    for expected_control in source_fence.node_controls:
+                        current_control = self._node_control_tx(
+                            conn,
+                            source_fence.source_execution_id,
+                            expected_control.node_id,
+                        )
+                        if current_control != expected_control:
+                            raise ResearchGraphExecutionConflict(
+                                "research graph source node control fence conflict: "
+                                f"{expected_control.node_id}"
+                            )
                 generation = current.generation + 1
-                conn.execute(
+                updated = conn.execute(
                     "UPDATE research_graph_active_cuts SET cut_id=?,"
                     "research_revision_digest=?,graph_digest=?,generation=? "
-                    "WHERE logical_execution_id=? AND cut_id=?",
+                    "WHERE logical_execution_id=? AND cut_id=? AND generation=?",
                     (
                         cut_id,
                         str(execution[3]),
@@ -1269,8 +1313,13 @@ class SQLiteResearchGraphExecutionStore:
                         generation,
                         logical_execution_id,
                         expected_cut_id,
+                        current.generation,
                     ),
                 )
+                if updated.rowcount != 1:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph active cut compare-and-swap conflict"
+                    )
             else:
                 if expected_cut_id is not None:
                     raise ResearchGraphExecutionConflict(
