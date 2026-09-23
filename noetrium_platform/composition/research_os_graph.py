@@ -133,15 +133,18 @@ def compile_research_portfolio_graph(
             (dependency.upstream, dependency.dependency_digest)
         )
 
-    compiled_nodes = []
-    graph_nodes = []
-    for ref in sorted(nodes, key=lambda value: (value.program_id, value.node_id)):
-        node = nodes[ref]
-        node_definitions = tuple(
+    ordered_refs = tuple(
+        sorted(nodes, key=lambda value: (value.program_id, value.node_id))
+    )
+    node_definitions_by_ref = {
+        ref: tuple(
             definitions[ref.program_id][definition_id]
-            for definition_id in node.definition_ids
+            for definition_id in nodes[ref].definition_ids
         )
-        incoming_rows = tuple(
+        for ref in ordered_refs
+    }
+    incoming_rows_by_ref = {
+        ref: tuple(
             sorted(
                 incoming[ref],
                 key=lambda row: (
@@ -151,18 +154,49 @@ def compile_research_portfolio_graph(
                 ),
             )
         )
-        incoming_digests = tuple(row[1] for row in incoming_rows)
-        upstream_refs = tuple(row[0] for row in incoming_rows)
-        semantic_digest = canonical_digest(
+        for ref in ordered_refs
+    }
+    semantic_digests: dict[ResearchNodeRef, str] = {}
+
+    def semantic_digest(ref: ResearchNodeRef) -> str:
+        current = semantic_digests.get(ref)
+        if current is not None:
+            return current
+        node = nodes[ref]
+        node_definitions = node_definitions_by_ref[ref]
+        incoming_rows = incoming_rows_by_ref[ref]
+        value = canonical_digest(
             {
                 "node_digest": node.node_digest,
                 "definition_digests": tuple(
                     definition.definition_digest
                     for definition in node_definitions
                 ),
-                "incoming_dependency_digests": incoming_digests,
+                "incoming": tuple(
+                    {
+                        "upstream_graph_node_id": _graph_node_id(upstream),
+                        "dependency_digest": dependency_digest,
+                        "upstream_semantic_digest": semantic_digest(upstream),
+                    }
+                    for upstream, dependency_digest in incoming_rows
+                ),
             }
         )
+        semantic_digests[ref] = value
+        return value
+
+    for ref in ordered_refs:
+        semantic_digest(ref)
+
+    compiled_nodes = []
+    graph_nodes = []
+    for ref in ordered_refs:
+        node = nodes[ref]
+        node_definitions = node_definitions_by_ref[ref]
+        incoming_rows = incoming_rows_by_ref[ref]
+        incoming_digests = tuple(row[1] for row in incoming_rows)
+        upstream_refs = tuple(row[0] for row in incoming_rows)
+        digest = semantic_digests[ref]
         graph_node_id = _graph_node_id(ref)
         compiled = CompiledResearchOSGraphNode(
             graph_node_id,
@@ -171,13 +205,13 @@ def compile_research_portfolio_graph(
             node_definitions,
             incoming_digests,
             upstream_refs,
-            semantic_digest,
+            digest,
         )
         compiled_nodes.append(compiled)
         graph_nodes.append(
             ResearchGraphNode(
                 graph_node_id,
-                semantic_digest,
+                digest,
                 tuple(_graph_node_id(upstream) for upstream in upstream_refs),
             )
         )
