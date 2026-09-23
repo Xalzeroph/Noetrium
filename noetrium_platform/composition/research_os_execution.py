@@ -938,6 +938,13 @@ class StrictResearchOSControl(
                 "target_cut_id": plan.target_cut.cut_id,
                 "reused_node_ids": materialized.reused_node_ids,
                 "restart_node_ids": materialized.restart_node_ids,
+                "preserved_paused_node_ids": (
+                    materialized.preserved_paused_node_ids
+                ),
+                "preserved_cancelled_node_ids": (
+                    materialized.preserved_cancelled_node_ids
+                ),
+                "control_transfer_digest": materialized.control_transfer_digest,
             },
         )
 
