@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import require_sha256
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 
 from .contracts import ResearchGraphPlan
 
@@ -352,6 +352,64 @@ class ResearchGraphReuseRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchGraphCutSwitchFence:
+    """Exact source-cut transaction fence for an atomic active-ref switch."""
+
+    source_execution_id: str
+    execution_generation: int
+    graph_control: ResearchGraphControlRecord
+    node_controls: tuple[ResearchGraphNodeControlRecord, ...]
+    fence_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _text(self.source_execution_id, "research graph cut fence source_execution_id")
+        if type(self.execution_generation) is not int or self.execution_generation < 1:
+            raise ValueError(
+                "research graph cut fence execution_generation must be positive"
+            )
+        if type(self.graph_control) is not ResearchGraphControlRecord:
+            raise TypeError("research graph cut fence graph_control must be typed")
+        if self.graph_control.execution_id != self.source_execution_id:
+            raise ValueError("research graph cut fence graph control identity drifted")
+        if type(self.node_controls) is not tuple or any(
+            type(row) is not ResearchGraphNodeControlRecord
+            for row in self.node_controls
+        ):
+            raise TypeError("research graph cut fence node_controls must be typed tuple")
+        ordered = tuple(sorted(self.node_controls, key=lambda row: row.node_id))
+        ids = tuple(row.node_id for row in ordered)
+        if len(ids) != len(set(ids)):
+            raise ValueError("research graph cut fence node controls must be unique")
+        if any(row.execution_id != self.source_execution_id for row in ordered):
+            raise ValueError("research graph cut fence node control identity drifted")
+        object.__setattr__(self, "node_controls", ordered)
+        object.__setattr__(
+            self,
+            "fence_digest",
+            canonical_digest(
+                {
+                    "source_execution_id": self.source_execution_id,
+                    "execution_generation": self.execution_generation,
+                    "graph_control": (
+                        self.graph_control.phase.value,
+                        self.graph_control.generation,
+                        self.graph_control.updated_at_ns,
+                    ),
+                    "node_controls": tuple(
+                        (
+                            row.node_id,
+                            row.phase.value,
+                            row.generation,
+                            row.updated_at_ns,
+                        )
+                        for row in ordered
+                    ),
+                }
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchGraphActiveCutRef:
     logical_execution_id: str
     cut_id: str
@@ -693,6 +751,7 @@ class ResearchGraphActiveCutStorePort(Protocol):
         cut_id: str,
         *,
         expected_cut_id: str | None = None,
+        source_fence: ResearchGraphCutSwitchFence | None = None,
     ) -> ResearchGraphActiveCutRef: ...
 
 
@@ -704,6 +763,7 @@ __all__ = [
     "ResearchGraphControlPhase",
     "ResearchGraphControlRecord",
     "ResearchGraphControlStorePort",
+    "ResearchGraphCutSwitchFence",
     "ResearchGraphExecutionConflict",
     "ResearchGraphExecutionNotFound",
     "ResearchGraphExecutionSnapshot",
