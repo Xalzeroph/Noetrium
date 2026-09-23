@@ -24,7 +24,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "artifact",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "data": {
     "authority": "data_authority",
@@ -51,7 +51,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "data",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "data/fact": {
     "authority": "fact_authority",
@@ -72,7 +72,7 @@
     "components": [],
     "node_kind": "authority",
     "canonical_authority": "data/fact",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "data/state": {
     "authority": "state_authority",
@@ -93,7 +93,7 @@
     "components": [],
     "node_kind": "authority",
     "canonical_authority": "data/state",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "environment": {
     "authority": "environment_state",
@@ -130,7 +130,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "environment",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "environment/minecraft": {
     "authority": "minecraft_environment",
@@ -287,7 +287,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "execution",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "execution/operation": {
     "authority": "operation_state",
@@ -305,7 +305,7 @@
     "components": [],
     "node_kind": "authority",
     "canonical_authority": "execution/operation",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "experimentation": {
     "authority": "experimentation_state",
@@ -351,7 +351,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "experimentation",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "governance": {
     "authority": "governance_policy",
@@ -382,7 +382,7 @@
     ],
     "node_kind": "facet",
     "canonical_authority": null,
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "governance/release": {
     "authority": "release_authority",
@@ -402,7 +402,7 @@
     "components": [],
     "node_kind": "authority",
     "canonical_authority": "governance/release",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "governance/system_registry": {
     "authority": "system_topology",
@@ -419,7 +419,7 @@
     "components": [],
     "node_kind": "authority",
     "canonical_authority": "governance/system_registry",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "model": {
     "authority": "model_identity",
@@ -462,7 +462,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "model",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "observability": {
     "authority": "observability",
@@ -585,7 +585,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "participant",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "platform": {
     "authority": "platform_identity",
@@ -603,7 +603,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "platform",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "portfolio": {
     "authority": "portfolio_metadata",
@@ -625,7 +625,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "portfolio",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "reliability": {
     "authority": "reliability_authority",
@@ -657,7 +657,7 @@
     ],
     "node_kind": "facet",
     "canonical_authority": null,
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "reliability/effect": {
     "authority": "effect_authority",
@@ -677,7 +677,7 @@
     "components": [],
     "node_kind": "authority",
     "canonical_authority": "reliability/effect",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "reliability/failure": {
     "authority": "failure_authority",
@@ -695,7 +695,7 @@
     "components": [],
     "node_kind": "authority",
     "canonical_authority": "reliability/failure",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "resource": {
     "authority": "resource_inventory",
@@ -728,7 +728,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "resource",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "resource/lease": {
     "authority": "resource_lease",
@@ -749,7 +749,7 @@
     "components": [],
     "node_kind": "authority",
     "canonical_authority": "resource/lease",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "runtime": {
     "authority": "runtime_state",
@@ -793,7 +793,7 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "runtime",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   },
   "scope": {
     "authority": "scope_tree",
@@ -815,6 +815,6 @@
     ],
     "node_kind": "authority",
     "canonical_authority": "scope",
-    "downstream_surface": "public"
+    "downstream_surface": "metadata_only"
   }
 }
