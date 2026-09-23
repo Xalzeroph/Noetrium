@@ -132,33 +132,6 @@
     "canonical_authority": "environment",
     "downstream_surface": "metadata_only"
   },
-  "environment/minecraft": {
-    "authority": "minecraft_environment",
-    "must_not_own": "generic environment catalog, process/server supervision, model serving, project method semantics or telemetry storage",
-    "owns": "Minecraft environment contracts, server-control/world-cut semantics, state projection, bridge providers and readiness adapters",
-    "package_prefix": "noetrium_platform.capabilities.environment.minecraft",
-    "parent": "environment",
-    "shape": [
-      "api",
-      "runtime",
-      "providers",
-      "composition"
-    ],
-    "requires": [
-      "artifact",
-      "environment",
-      "reliability",
-      "resource",
-      "runtime"
-    ],
-    "provides": [
-      "environment.minecraft.contract"
-    ],
-    "components": [],
-    "node_kind": "provider",
-    "canonical_authority": "environment",
-    "downstream_surface": "metadata_only"
-  },
   "environment/gui": {
     "authority": "gui_environment",
     "must_not_own": "benchmark cases, task scoring, tool capability policy or OS process supervision",
@@ -180,21 +153,27 @@
     "canonical_authority": "environment",
     "downstream_surface": "metadata_only"
   },
-  "environment/web": {
-    "authority": "web_environment",
-    "must_not_own": "benchmark cases, task scoring, browser automation policy or model serving",
-    "owns": "stateful web and browser environment contracts and provider adapters",
-    "package_prefix": "noetrium_platform.capabilities.environment.web",
+  "environment/minecraft": {
+    "authority": "minecraft_environment",
+    "must_not_own": "generic environment catalog, process/server supervision, model serving, project method semantics or telemetry storage",
+    "owns": "Minecraft environment contracts, server-control/world-cut semantics, state projection, bridge providers and readiness adapters",
+    "package_prefix": "noetrium_platform.capabilities.environment.minecraft",
     "parent": "environment",
     "shape": [
-      "api"
+      "api",
+      "runtime",
+      "providers",
+      "composition"
     ],
     "requires": [
+      "artifact",
       "environment",
+      "reliability",
+      "resource",
       "runtime"
     ],
     "provides": [
-      "environment.web.contract"
+      "environment.minecraft.contract"
     ],
     "components": [],
     "node_kind": "provider",
@@ -239,6 +218,27 @@
     ],
     "provides": [
       "environment.text_world.contract"
+    ],
+    "components": [],
+    "node_kind": "provider",
+    "canonical_authority": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  "environment/web": {
+    "authority": "web_environment",
+    "must_not_own": "benchmark cases, task scoring, browser automation policy or model serving",
+    "owns": "stateful web and browser environment contracts and provider adapters",
+    "package_prefix": "noetrium_platform.capabilities.environment.web",
+    "parent": "environment",
+    "shape": [
+      "api"
+    ],
+    "requires": [
+      "environment",
+      "runtime"
+    ],
+    "provides": [
+      "environment.web.contract"
     ],
     "components": [],
     "node_kind": "provider",
@@ -515,25 +515,18 @@
   },
   "operator": {
     "authority": "operator_surface",
-    "must_not_own": "domain authority and business state",
-    "owns": "human-facing query, command, maintenance and incident surfaces",
+    "must_not_own": "research authoring semantics, scientific graph authority, domain authority or business state",
+    "owns": "human-facing CLI, maintenance, incident and operator routing over the Research OS product surface",
     "package_prefix": "noetrium_platform.product.operator",
-    "parent": null,
+    "parent": "research_os",
     "shape": [
       "api",
       "runtime"
     ],
     "requires": [
-      "environment",
-      "execution",
-      "experimentation",
       "governance",
-      "model",
-      "observability",
       "platform",
-      "portfolio",
-      "reliability",
-      "resource",
+      "research_os",
       "runtime",
       "scope"
     ],
@@ -696,6 +689,40 @@
     "node_kind": "authority",
     "canonical_authority": "reliability/failure",
     "downstream_surface": "metadata_only"
+  },
+  "research_os": {
+    "authority": "research_os_surface",
+    "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
+    "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",
+    "package_prefix": "noetrium_platform.product",
+    "parent": null,
+    "shape": [
+      "api"
+    ],
+    "requires": [
+      "artifact",
+      "data",
+      "environment",
+      "execution",
+      "experimentation",
+      "governance",
+      "model",
+      "observability",
+      "participant",
+      "platform",
+      "portfolio",
+      "reliability",
+      "resource",
+      "runtime",
+      "scope"
+    ],
+    "provides": [
+      "research.os"
+    ],
+    "components": [],
+    "node_kind": "product_surface",
+    "canonical_authority": null,
+    "downstream_surface": "public"
   },
   "resource": {
     "authority": "resource_inventory",
