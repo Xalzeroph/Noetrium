@@ -253,20 +253,6 @@
     "provides": [],
     "components": []
   },
-  "environment/runtime": {
-    "system": "environment",
-    "parent": "environment",
-    "package_prefix": "noetrium_platform.capabilities.environment.runtime",
-    "node_kind": "adapter",
-    "canonical_authority": "environment",
-    "owns": "internal environment runtime adapters",
-    "must_not_own": "environment family contracts or environment catalog authority",
-    "shape": [],
-    "downstream_surface": "metadata_only",
-    "requires": [],
-    "provides": [],
-    "components": []
-  },
   "environment/specification": {
     "system": "environment",
     "parent": "environment",
@@ -528,7 +514,7 @@
     ],
     "downstream_surface": "public",
     "requires": [
-      "experimentation/study"
+      "experimentation/lifecycle/study"
     ],
     "provides": [
       "research.workbench"
@@ -550,9 +536,8 @@
     ],
     "downstream_surface": "metadata_only",
     "requires": [
-      "environment/runtime",
-      "experimentation/experiment",
-      "experimentation/run",
+      "experimentation/lifecycle/experiment",
+      "experimentation/lifecycle/run",
       "participant/method",
       "platform"
     ],
@@ -821,8 +806,7 @@
     "must_not_own": "business result semantics",
     "shape": [
       "api",
-      "runtime",
-      "composition"
+      "runtime"
     ],
     "downstream_surface": "public",
     "requires": [],
@@ -1046,9 +1030,7 @@
         "node_kind": "projection",
         "owns": "observation projections/indexes and read models",
         "must_not_own": "source-of-truth mutation",
-        "shape": [
-          "api"
-        ]
+        "shape": []
       }
     ]
   },
@@ -1121,8 +1103,7 @@
     "owns": "audit/reporting views across system authorities",
     "must_not_own": "new durable truth",
     "shape": [
-      "api",
-      "runtime"
+      "api"
     ],
     "downstream_surface": "metadata_only",
     "requires": [],
@@ -1154,9 +1135,7 @@
     "owns": "maintenance workflows and administrative actions",
     "must_not_own": "provider internals",
     "shape": [
-      "api",
-      "runtime",
-      "composition"
+      "api"
     ],
     "downstream_surface": "metadata_only",
     "requires": [
@@ -1174,8 +1153,7 @@
     "owns": "operator read/query contracts",
     "must_not_own": "durable state mutation",
     "shape": [
-      "api",
-      "runtime"
+      "api"
     ],
     "downstream_surface": "metadata_only",
     "requires": [],
@@ -1192,8 +1170,7 @@
     "must_not_own": "provider internals",
     "shape": [
       "api",
-      "runtime",
-      "composition"
+      "runtime"
     ],
     "downstream_surface": "public",
     "requires": [],
@@ -1383,9 +1360,7 @@
     "owns": "recovery plans, exact replay/reconcile and recovery lifecycle",
     "must_not_own": "provider storage internals",
     "shape": [
-      "api",
-      "runtime",
-      "composition"
+      "api"
     ],
     "downstream_surface": "metadata_only",
     "requires": [
@@ -1404,8 +1379,8 @@
         "owns": "recovery execution lifecycle and effect handoff",
         "must_not_own": "failure taxonomy",
         "shape": [
-          "api",
-          "runtime"
+          "runtime",
+          "composition"
         ]
       }
     ]
@@ -1421,8 +1396,7 @@
     "shape": [
       "api",
       "runtime",
-      "providers",
-      "composition"
+      "providers"
     ],
     "downstream_surface": "public",
     "requires": [

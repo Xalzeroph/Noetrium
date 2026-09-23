@@ -125,7 +125,6 @@
       "environment/category",
       "environment/embodied",
       "environment/instance",
-      "environment/runtime",
       "environment/specification"
     ],
     "node_kind": "authority",
