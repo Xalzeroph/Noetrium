@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3622,
-    "python_import_edges": 6830,
-    "symbols": 4815,
-    "tracked_files": 4251,
+    "python_files": 3623,
+    "python_import_edges": 6836,
+    "symbols": 4817,
+    "tracked_files": 4252,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4809,
+    "python": 4811,
     "typescript": 5
   },
   "parse_errors": [],
@@ -31929,6 +31929,36 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_research_graph_scale_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_scale_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_scale_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_scale_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_scale_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_research_graph_scheduler_durable_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_execution_pool",
@@ -32178,6 +32208,12 @@
       "source_module": "tests.test_research_os_execution_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_os_migration",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_reconciliation",
       "target_role": "core_platform"
     },
     {
@@ -41057,7 +41093,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2660,
+      "count": 2666,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41120,7 +41156,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 778,
+    "tests": 779,
     "tooling": 77
   },
   "role_symbol_counts": {
@@ -41132,11 +41168,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 403,
     "sdk": 5,
-    "tests": 953,
+    "tests": 955,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "784e018fabd5d051b6100482279250132dbb6082",
+  "source_git_sha": "c7fc05bcff5227601a1fe54c7973d701f8b99191",
   "symbols": [
     {
       "bases": [],
@@ -64256,7 +64292,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 29,
+      "line": 31,
       "methods": [
         "__post_init__",
         "from_compilation"
@@ -64281,7 +64317,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 71,
+      "line": 73,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_migration",
       "name": "ResearchOSNodeMigrationDisposition",
@@ -64304,7 +64340,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 80,
+      "line": 82,
       "methods": [
         "__post_init__"
       ],
@@ -64327,7 +64363,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 108,
+      "line": 110,
       "methods": [
         "__post_init__"
       ],
@@ -64347,7 +64383,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 124,
+      "line": 126,
       "methods": [
         "materialize_reuse"
       ],
@@ -64369,7 +64405,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 136,
+      "line": 138,
       "methods": [
         "__post_init__"
       ],
@@ -64389,11 +64425,14 @@
         "active_cut: ResearchGraphActiveCutRef",
         "snapshot: ResearchGraphExecutionSnapshot",
         "reused_node_ids: tuple[str, ...]",
-        "restart_node_ids: tuple[str, ...]"
+        "restart_node_ids: tuple[str, ...]",
+        "preserved_paused_node_ids: tuple[str, ...]",
+        "preserved_cancelled_node_ids: tuple[str, ...]",
+        "control_transfer_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 155,
+      "line": 157,
       "methods": [
         "__post_init__"
       ],
@@ -64417,7 +64456,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 191,
+      "line": 206,
       "methods": [
         "__post_init__",
         "can_switch",
@@ -137358,6 +137397,23 @@
       "role": "tests"
     },
     {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 16,
+      "methods": [
+        "__init__",
+        "execute"
+      ],
+      "module": "tests.test_research_graph_scale_v1",
+      "name": "_DependencyCheckingExecutor",
+      "path": "tests/test_research_graph_scale_v1.py",
+      "qualname": "tests.test_research_graph_scale_v1._DependencyCheckingExecutor",
+      "role": "tests"
+    },
+    {
       "bases": [
         "ResearchGraphNodeExecutorPort"
       ],
@@ -137365,7 +137421,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 36,
+      "line": 40,
       "methods": [
         "__init__",
         "execute"
@@ -137405,7 +137461,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 65,
+      "line": 70,
       "methods": [
         "publish",
         "lookup",
@@ -137424,7 +137480,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 103,
+      "line": 108,
       "methods": [
         "__init__",
         "admit",
@@ -137438,12 +137494,30 @@
       "role": "tests"
     },
     {
+      "bases": [
+        "_Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 182,
+      "methods": [
+        "reconcile_node"
+      ],
+      "module": "tests.test_research_os_execution_v1",
+      "name": "_ReconciliationRuntime",
+      "path": "tests/test_research_os_execution_v1.py",
+      "qualname": "tests.test_research_os_execution_v1._ReconciliationRuntime",
+      "role": "tests"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 613,
+      "line": 816,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -137475,7 +137549,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 750,
+      "line": 953,
       "methods": [
         "execute"
       ],
@@ -137607,7 +137681,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 358,
+      "line": 377,
       "methods": [
         "__init__",
         "active_cut",

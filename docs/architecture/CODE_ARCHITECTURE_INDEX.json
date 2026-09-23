@@ -40615,7 +40615,7 @@
         "snapshot"
       ],
       "kind": "dataclass",
-      "line": 136,
+      "line": 138,
       "methods": [
         "__post_init__"
       ],
@@ -40640,7 +40640,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 29,
+      "line": 31,
       "methods": [
         "__post_init__",
         "from_compilation"
@@ -40661,13 +40661,16 @@
       ],
       "fields": [
         "active_cut",
+        "control_transfer_digest",
         "plan",
+        "preserved_cancelled_node_ids",
+        "preserved_paused_node_ids",
         "restart_node_ids",
         "reused_node_ids",
         "snapshot"
       ],
       "kind": "dataclass",
-      "line": 155,
+      "line": 157,
       "methods": [
         "__post_init__"
       ],
@@ -40693,7 +40696,7 @@
         "target_cut"
       ],
       "kind": "dataclass",
-      "line": 191,
+      "line": 206,
       "methods": [
         "__post_init__",
         "can_switch",
@@ -40723,7 +40726,7 @@
         "source_state"
       ],
       "kind": "dataclass",
-      "line": 80,
+      "line": 82,
       "methods": [
         "__post_init__"
       ],
@@ -40749,7 +40752,7 @@
         "REUSE_CANDIDATE"
       ],
       "kind": "enum",
-      "line": 71,
+      "line": 73,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_migration",
       "name": "ResearchOSNodeMigrationDisposition",
@@ -40769,7 +40772,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 124,
+      "line": 126,
       "methods": [
         "materialize_reuse"
       ],
@@ -40794,7 +40797,7 @@
         "source_cut_id"
       ],
       "kind": "dataclass",
-      "line": 108,
+      "line": 110,
       "methods": [
         "__post_init__"
       ],
@@ -143066,7 +143069,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "784e018fabd5d051b6100482279250132dbb6082",
+  "source_git_sha": "c7fc05bcff5227601a1fe54c7973d701f8b99191",
   "system_import_edges": [
     {
       "count": 90,
