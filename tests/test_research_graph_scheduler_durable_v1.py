@@ -22,6 +22,9 @@ from noetrium_platform.research.execution.graph.providers import (
 )
 
 
+_FAR_FUTURE_NS = (1 << 63) - 1
+
+
 def _pool() -> ResearchExecutionPool:
     return ResearchExecutionPool(
         orchestration_concurrency_budget=ConcurrencyBudget(
@@ -195,7 +198,7 @@ def test_local_recovery_debt_does_not_stop_independent_branch(tmp_path) -> None:
         "a",
         owner_id="scheduler-old",
         now_ns=2,
-        lease_expires_at_ns=10**30,
+        lease_expires_at_ns=_FAR_FUTURE_NS,
     )
     store.mark_running(
         "execution-local-recovery",
@@ -247,7 +250,7 @@ def test_disjoint_selection_runs_while_unrelated_node_has_live_lease(tmp_path) -
         "a",
         owner_id="scheduler-a",
         now_ns=2,
-        lease_expires_at_ns=10**30,
+        lease_expires_at_ns=_FAR_FUTURE_NS,
     )
     store.mark_running(
         "execution-disjoint",
@@ -290,7 +293,7 @@ def test_overlapping_selection_rejects_live_lease(tmp_path) -> None:
         "a",
         owner_id="scheduler-a",
         now_ns=2,
-        lease_expires_at_ns=10**30,
+        lease_expires_at_ns=_FAR_FUTURE_NS,
     )
     store.mark_running(
         "execution-overlap",
