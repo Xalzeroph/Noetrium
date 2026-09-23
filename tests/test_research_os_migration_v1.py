@@ -256,14 +256,14 @@ def test_migration_materializes_proven_reuse_then_cas_switches_active_cut(tmp_pa
         ResearchGraphLiveNodeState.REUSED
     )
     assert store.attempts(plan.target_cut.cut_id, "paper-b::main") == ()
-    assert set(materialized.rerun_node_ids) == {
+    assert set(materialized.restart_node_ids) == {
         "paper-a::main",
         "paper-a::analysis",
     }
     assert store.snapshot(plan.source_cut.cut_id) == source_snapshot
 
 
-def test_missing_reuse_proof_fails_safe_to_rerun_without_blocking_cut_switch(tmp_path) -> None:
+def test_missing_reuse_proof_fails_closed_and_keeps_source_cut_active(tmp_path) -> None:
     old_portfolio = _portfolio(_method_v1)
     old_revision = _revision(old_portfolio, message="r1")
     old = compile_research_portfolio_graph(old_revision, old_portfolio)
@@ -285,21 +285,22 @@ def test_missing_reuse_proof_fails_safe_to_rerun_without_blocking_cut_switch(tmp
         store.snapshot(activation.cut.cut_id),
     )
 
-    materialized = materialize_research_os_execution_migration(
-        plan,
-        new,
-        store,
-        now_ns=20,
-    )
+    with pytest.raises(
+        ResearchGraphExecutionConflict,
+        match="missing mandatory reuse proofs",
+    ):
+        materialize_research_os_execution_migration(
+            plan,
+            new,
+            store,
+            now_ns=20,
+        )
 
-    assert materialized.reused_node_ids == ()
-    assert set(materialized.rerun_node_ids) == {
-        node.node_id for node in new.plan.nodes
-    }
-    assert all(
-        node.state is ResearchGraphLiveNodeState.PENDING
-        for node in materialized.snapshot.nodes
-    )
+    active = store.active_cut("logical-execution")
+    assert active is not None
+    assert active.cut_id == plan.source_cut.cut_id
+    with pytest.raises(ResearchGraphExecutionNotFound):
+        store.snapshot(plan.target_cut.cut_id)
 
 
 def test_migration_cas_rejects_stale_source_cut(tmp_path) -> None:

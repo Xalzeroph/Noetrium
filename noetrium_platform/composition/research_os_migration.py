@@ -142,7 +142,7 @@ class ResearchOSExecutionMigrationMaterialization:
     active_cut: ResearchGraphActiveCutRef
     snapshot: ResearchGraphExecutionSnapshot
     reused_node_ids: tuple[str, ...]
-    rerun_node_ids: tuple[str, ...]
+    restart_node_ids: tuple[str, ...]
 
     def __post_init__(self) -> None:
         if not isinstance(self.plan, ResearchOSExecutionMigrationPlan):
@@ -152,7 +152,7 @@ class ResearchOSExecutionMigrationMaterialization:
         if type(self.snapshot) is not ResearchGraphExecutionSnapshot:
             raise TypeError("research migration materialization snapshot must be typed")
         reused = tuple(sorted(self.reused_node_ids))
-        rerun = tuple(sorted(self.rerun_node_ids))
+        rerun = tuple(sorted(self.restart_node_ids))
         if len(reused) != len(set(reused)) or len(rerun) != len(set(rerun)):
             raise ValueError("research migration materialization node ids must be unique")
         if set(reused) & set(rerun):
@@ -162,7 +162,7 @@ class ResearchOSExecutionMigrationMaterialization:
         if self.snapshot.execution_id != self.plan.target_cut.cut_id:
             raise ValueError("research migration snapshot does not match target cut")
         object.__setattr__(self, "reused_node_ids", reused)
-        object.__setattr__(self, "rerun_node_ids", rerun)
+        object.__setattr__(self, "restart_node_ids", rerun)
 
 
 @dataclass(frozen=True, slots=True)
@@ -383,8 +383,9 @@ def materialize_research_os_execution_migration(
 ) -> ResearchOSExecutionMigrationMaterialization:
     """Materialize R2 beside R1, prove safe reuse, then CAS-switch the active cut.
 
-    Reuse candidates without a proof remain PENDING in the target cut and are
-    therefore rerun. The source cut is never mutated.
+    Every REUSE_CANDIDATE must carry an exact lower-authority proof. Missing,
+    extra, stale or mismatched proofs fail closed before the target cut is
+    activated. The source cut is never mutated.
     """
 
     if not isinstance(plan, ResearchOSExecutionMigrationPlan):
@@ -412,10 +413,17 @@ def materialize_research_os_execution_migration(
 
     by_id = {row.graph_node_id: row for row in plan.nodes}
     candidates = set(plan.reuse_candidate_node_ids)
-    unknown = tuple(sorted(set(proofs) - candidates))
+    provided = set(proofs)
+    unknown = tuple(sorted(provided - candidates))
     if unknown:
         raise ValueError(
             f"research migration proof supplied for non-reuse candidates: {unknown}"
+        )
+    missing = tuple(sorted(candidates - provided))
+    if missing:
+        raise ResearchGraphExecutionConflict(
+            "research migration is missing mandatory reuse proofs: "
+            f"{missing}"
         )
     for node_id, proof in proofs.items():
         row = by_id[node_id]
@@ -466,22 +474,45 @@ def materialize_research_os_execution_migration(
         reused.append(node_id)
 
     target_snapshot = execution_store.snapshot(plan.target_cut.cut_id)
+    expected_restart = set(plan.restart_node_ids)
+    actual_restart = {
+        node.node_id
+        for node in target_snapshot.nodes
+        if node.state is ResearchGraphLiveNodeState.PENDING
+    }
+    if actual_restart != expected_restart:
+        raise ResearchGraphExecutionConflict(
+            "research migration target cut restart set drifted: "
+            f"expected={tuple(sorted(expected_restart))}, "
+            f"actual={tuple(sorted(actual_restart))}"
+        )
+    unexpected_states = tuple(
+        sorted(
+            (node.node_id, node.state.value)
+            for node in target_snapshot.nodes
+            if node.state
+            not in {
+                ResearchGraphLiveNodeState.PENDING,
+                ResearchGraphLiveNodeState.REUSED,
+            }
+        )
+    )
+    if unexpected_states:
+        raise ResearchGraphExecutionConflict(
+            "research migration target cut contains unexpected node states: "
+            f"{unexpected_states}"
+        )
     active = cuts.move_active_cut(
         plan.execution_id,
         plan.target_cut.cut_id,
         expected_cut_id=plan.source_cut.cut_id,
-    )
-    rerun = tuple(
-        node.node_id
-        for node in target_snapshot.nodes
-        if node.state is not ResearchGraphLiveNodeState.REUSED
     )
     return ResearchOSExecutionMigrationMaterialization(
         plan,
         active,
         target_snapshot,
         tuple(reused),
-        rerun,
+        tuple(sorted(expected_restart)),
     )
 
 
