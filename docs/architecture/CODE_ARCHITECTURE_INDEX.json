@@ -102086,7 +102086,7 @@
     "inheritance_edges": 145,
     "module_import_edges": 5077,
     "parse_errors": 0,
-    "python_modules": 1957,
+    "python_modules": 1939,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -123566,27 +123566,6 @@
     },
     {
       "imports": [],
-      "module": "noetrium_platform.capabilities.environment.instance",
-      "path": "noetrium_platform/capabilities/environment/instance/__init__.py",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.capabilities.environment.instance.api",
-      "path": "noetrium_platform/capabilities/environment/instance/api/__init__.py",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.capabilities.environment.instance.api.boundary",
-      "path": "noetrium_platform/capabilities/environment/instance/api/boundary.py",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "imports": [],
       "module": "noetrium_platform.capabilities.environment.minecraft",
       "path": "noetrium_platform/capabilities/environment/minecraft/__init__.py",
       "system_key": "environment/minecraft",
@@ -124271,27 +124250,6 @@
       "module": "noetrium_platform.capabilities.environment.software.providers.local_repository",
       "path": "noetrium_platform/capabilities/environment/software/providers/local_repository.py",
       "system_key": "environment/software",
-      "top_system": "environment"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.capabilities.environment.specification",
-      "path": "noetrium_platform/capabilities/environment/specification/__init__.py",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.capabilities.environment.specification.api",
-      "path": "noetrium_platform/capabilities/environment/specification/api/__init__.py",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.capabilities.environment.specification.api.boundary",
-      "path": "noetrium_platform/capabilities/environment/specification/api/boundary.py",
-      "system_key": "environment",
       "top_system": "environment"
     },
     {
@@ -132371,27 +132329,6 @@
       "top_system": "observability"
     },
     {
-      "imports": [],
-      "module": "noetrium_platform.evidence.observability.tracing",
-      "path": "noetrium_platform/evidence/observability/tracing/__init__.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.evidence.observability.tracing.api",
-      "path": "noetrium_platform/evidence/observability/tracing/api/__init__.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.evidence.observability.tracing.api.boundary",
-      "path": "noetrium_platform/evidence/observability/tracing/api/boundary.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
       "imports": [
         "noetrium_platform.evidence.artifact.api",
         "noetrium_platform.foundation.governance.api",
@@ -140130,48 +140067,6 @@
     },
     {
       "imports": [],
-      "module": "noetrium_platform.product.operator.audit",
-      "path": "noetrium_platform/product/operator/audit/__init__.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.audit.api",
-      "path": "noetrium_platform/product/operator/audit/api/__init__.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.audit.api.boundary",
-      "path": "noetrium_platform/product/operator/audit/api/boundary.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.command",
-      "path": "noetrium_platform/product/operator/command/__init__.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.command.api",
-      "path": "noetrium_platform/product/operator/command/api/__init__.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.command.api.boundary",
-      "path": "noetrium_platform/product/operator/command/api/boundary.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
       "module": "noetrium_platform.product.operator.maintenance",
       "path": "noetrium_platform/product/operator/maintenance/__init__.py",
       "system_key": "operator",
@@ -140197,27 +140092,6 @@
       "imports": [],
       "module": "noetrium_platform.product.operator.maintenance.api.control_plan",
       "path": "noetrium_platform/product/operator/maintenance/api/control_plan.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.query",
-      "path": "noetrium_platform/product/operator/query/__init__.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.query.api",
-      "path": "noetrium_platform/product/operator/query/api/__init__.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.query.api.boundary",
-      "path": "noetrium_platform/product/operator/query/api/boundary.py",
       "system_key": "operator",
       "top_system": "research_os"
     },
@@ -143527,9 +143401,9 @@
     }
   ],
   "parse_errors": [],
-  "registry_sha256": "6ccf0ef9ca05e987c0b89aa9d14e30ad0dd88e5ef616d43d75b84af2d7ca423b",
+  "registry_sha256": "d75d6aa6bb9b8fc44e4dff4705d1fab16c72ad9ab704825aa3ff703bf4627e27",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "fd4f3a10c8a3ddefbff0ccae861f179b013f8ff2",
+  "source_git_sha": "0fc4f8ac8653b6876ed933b8362fce1870e234b4",
   "system_import_edges": [
     {
       "count": 90,

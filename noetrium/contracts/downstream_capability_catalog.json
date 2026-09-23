@@ -1,6 +1,6 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "70888088d0db2b29616e919763c0028aaa13b359d4f6fa174e92cf07726a3fef",
+  "catalog_digest": "bc2f9c242edf7ccef7dd3fb24f60e237b712e09f77bb7d07bbff232319161062",
   "direct_symbol_sources": {
     "ResearchBranch": "noetrium_platform.product.api",
     "ResearchControlAction": "noetrium_platform.product.api",
@@ -844,5 +844,5 @@
       "system_key": "scope"
     }
   ],
-  "topology_digest": "8c66fe2bfac2e42ebeddecdb07503f0645f93a381ef35d50b4d57d5951da46d0"
+  "topology_digest": "837ccbd9fa838856e1ccf088b29127c5151cc27a3dec8442c8b96d2e5a56a2b1"
 }

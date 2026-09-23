@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3642,
+    "python_files": 3624,
     "python_import_edges": 6808,
     "symbols": 4799,
-    "tracked_files": 4271,
+    "tracked_files": 4253,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -40976,7 +40976,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1957,
+    "core_platform": 1939,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
@@ -40999,7 +40999,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "fd4f3a10c8a3ddefbff0ccae861f179b013f8ff2",
+  "source_git_sha": "0fc4f8ac8653b6876ed933b8362fce1870e234b4",
   "symbols": [
     {
       "bases": [],

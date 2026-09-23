@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "c6e5f09b055c9b19126daf6962d3d07ddb3d255663d6120266047a4e064a2d36",
+  "interface_digest": "9548cf70d5cae69a1686f058777a02dd07467b403a8d666d1fb5f9a043bd0eef",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -464,5 +464,5 @@
       "system_key": "scope"
     }
   ],
-  "topology_digest": "8c66fe2bfac2e42ebeddecdb07503f0645f93a381ef35d50b4d57d5951da46d0"
+  "topology_digest": "837ccbd9fa838856e1ccf088b29127c5151cc27a3dec8442c8b96d2e5a56a2b1"
 }
