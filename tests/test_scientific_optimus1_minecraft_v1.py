@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from pathlib import Path
 
-from noetrium_platform.platform import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
@@ -280,7 +280,7 @@ def test_optimus1_released_lane_records_periodic_replan_reflection_without_branc
     agents = _OptimusAgents()
     environment = _OptimusMinecraft()
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         OPTIMUS1_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(
             _optimus_context(),
