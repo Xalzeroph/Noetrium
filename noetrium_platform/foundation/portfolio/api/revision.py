@@ -27,6 +27,7 @@ class PortfolioRevision:
 
     subject_id: str
     payload_digest: str
+    payload_size_bytes: int
     parent_revision_digests: tuple[str, ...] = ()
     message: str = ""
     revision_digest: str = field(init=False)
@@ -34,6 +35,8 @@ class PortfolioRevision:
     def __post_init__(self) -> None:
         _token(self.subject_id, "portfolio revision subject_id")
         require_sha256(self.payload_digest, "portfolio revision payload_digest")
+        if type(self.payload_size_bytes) is not int or self.payload_size_bytes < 0:
+            raise ValueError("portfolio revision payload_size_bytes must be non-negative")
         if type(self.parent_revision_digests) is not tuple:
             raise TypeError("portfolio revision parents must be a tuple")
         for parent in self.parent_revision_digests:
