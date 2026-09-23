@@ -281,6 +281,159 @@ class StructuredTaskGroup:
             return self._submit_serial(spec, fn, *args, deadline=deadline, **kwargs)
         raise ValueError(f"unsupported execution lane: {spec.lane_kind}")
 
+    def submit_atomic_batch(
+        self,
+        items: tuple[tuple[ExecutionSpec, Callable[..., T]], ...],
+        *,
+        deadline: Deadline | None = None,
+    ) -> tuple[TaskHandlePort[T], ...]:
+        """Submit one all-or-none concurrent BLOCKING_IO ready set.
+
+        Resource admission and provider capacity are reserved for the entire set
+        before any user callable can begin. Unsupported lanes fail closed rather
+        than silently degrading to sequential execution.
+        """
+
+        if not isinstance(items, tuple) or len(items) < 2:
+            raise ValueError("atomic task batch requires at least two items")
+        specs: list[ExecutionSpec] = []
+        functions: list[Callable[..., T]] = []
+        for item in items:
+            if not isinstance(item, tuple) or len(item) != 2:
+                raise TypeError(
+                    "atomic task batch items must be (ExecutionSpec, callable) pairs"
+                )
+            spec, fn = item
+            if not isinstance(spec, ExecutionSpec):
+                raise TypeError("atomic task batch requires ExecutionSpec values")
+            if spec.lane_kind is not ExecutionLaneKind.BLOCKING_IO:
+                raise ValueError(
+                    "atomic task batch currently supports BLOCKING_IO only"
+                )
+            if not callable(fn):
+                raise TypeError("atomic task batch callable required")
+            specs.append(spec)
+            functions.append(fn)
+        task_ids = tuple(spec.task_id for spec in specs)
+        if len(set(task_ids)) != len(task_ids):
+            raise ValueError("atomic task batch task ids must be unique")
+
+        with self._submission_scope():
+            records: list[_TaskRecord] = []
+            try:
+                for spec in specs:
+                    records.append(
+                        self._reserve_task(
+                            spec.task_id,
+                            ExecutionLaneKind.BLOCKING_IO,
+                            None,
+                            deadline,
+                            spec.failure_scope,
+                        )
+                    )
+            except BaseException:
+                for record in records:
+                    self._mark_cancelled(
+                        record.task_id,
+                        TaskCancelled(
+                            "atomic task batch reservation aborted before execution"
+                        ),
+                    )
+                raise
+
+            invocations: list[Callable[[], T]] = []
+            for record, fn in zip(records, functions, strict=True):
+                context = _TaskContext(
+                    self._group_id,
+                    record.task_id,
+                    record.lane_kind,
+                    self._cancellation,
+                    record.cancellation,
+                    record.deadline,
+                    record.deadline_owner,
+                    self.cancel,
+                )
+
+                def invoke(
+                    owned_record: _TaskRecord = record,
+                    owned_context: _TaskContext = context,
+                    owned_fn: Callable[..., T] = fn,
+                ) -> T:
+                    self._mark_running(owned_record.task_id)
+                    owned_context.checkpoint()
+                    value = owned_fn(owned_context)
+                    owned_context.checkpoint()
+                    return value
+
+                invocations.append(invoke)
+
+            effective_deadlines = {
+                record.deadline.monotonic_deadline
+                for record in records
+                if record.deadline is not None
+            }
+            if effective_deadlines and len(effective_deadlines) != 1:
+                failure = RuntimeError(
+                    "atomic task batch resolved inconsistent execution deadlines"
+                )
+                for record in records:
+                    self._mark_failed(record.task_id, failure)
+                raise failure
+            batch_deadline = (
+                None
+                if not effective_deadlines
+                else Deadline(next(iter(effective_deadlines)))
+            )
+
+            try:
+                raws = self._execution.submit_atomic_batch(
+                    self._group_id,
+                    ExecutionLaneKind.BLOCKING_IO,
+                    tuple(invocations),
+                    deadline=batch_deadline,
+                    cancellation=self._provider_submission_cancellation,
+                )
+            except (TaskCancelled, ExecutionPermitRejected) as exc:
+                for record in records:
+                    self._mark_cancelled(record.task_id, exc)
+                raise
+            except BaseException as exc:
+                for record in records:
+                    failure = self._normalize_submission_failure(record, exc)
+                    if isinstance(failure, TaskCancelled):
+                        self._mark_cancelled(record.task_id, failure)
+                    else:
+                        self._mark_failed(record.task_id, failure)
+                raise
+
+            if len(raws) != len(records):
+                failure = RuntimeError(
+                    "atomic execution authority returned invalid batch cardinality"
+                )
+                for record in records:
+                    self._mark_failed(record.task_id, failure)
+                raise failure
+
+            handles: list[TaskHandlePort[T]] = []
+            for record, raw in zip(records, raws, strict=True):
+                self._state.bind_raw(record, raw)
+                if hasattr(raw, "add_done_callback"):
+                    raw.add_done_callback(
+                        lambda _handle, task_id=record.task_id:
+                            self._sync_terminal_from_raw(task_id)
+                    )
+                self._arm_task_deadline(record)
+                if (
+                    self._cancellation.cancelled
+                    or self._submission_cancellation.cancelled
+                ):
+                    self._cancel_task(
+                        record.task_id,
+                        reason=self._cancellation.reason or "task group closing",
+                    )
+                handles.append(_OwnedTaskHandle(self, record))
+            return tuple(handles)
+
     def _submit_blocking(
         self,
         spec: ExecutionSpec,
