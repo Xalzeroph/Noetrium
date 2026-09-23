@@ -67,67 +67,97 @@ include = ["{package}*"]
 '''
 
 
-def _method_module(request: ProjectCreateRequest) -> str:
-    return f'''"""Paper-specific method semantics."""
+def _research_module(request: ProjectCreateRequest) -> str:
+    return f'''"""Whole-project scientific authoring through the unified Research OS."""
 from noetrium import api
 
-METHOD_SPEC = api.AgentMethodSpec(
-    method_id={request.project_id!r},
-    phases=(
-        api.AgentPhaseSpec(
-            "solve",
-            "agent.solve",
-            "Implement the paper-specific method semantics here.",
+
+def paper_method(payload=None):
+    """Implement the paper-specific method semantics here."""
+    return payload
+
+
+def benchmark():
+    """Return or resolve the benchmark/task semantics for this project."""
+    return ()
+
+
+def primary_metric(value):
+    """Implement the primary metric semantics here."""
+    return 0.0 if value is None else 1.0
+
+
+_builder = api.ResearchProgramBuilder({request.project_id!r})
+_builder.method("method", implementation=paper_method)
+_builder.benchmark("benchmark", implementation=benchmark)
+_builder.metric("primary-metric", implementation=primary_metric)
+_builder.experiment(
+    "main",
+    definitions=("method", "benchmark"),
+    outputs=(
+        api.ResearchOutputSpec("trajectory", api.ResearchValueKind.ARTIFACT),
+    ),
+)
+_builder.evaluation(
+    "evaluate",
+    definitions=("primary-metric",),
+    outputs=(
+        api.ResearchOutputSpec("score", api.ResearchValueKind.METRIC),
+    ),
+)
+_builder.depends(
+    "evaluate",
+    "main",
+    bindings=(
+        api.ResearchInputBinding(
+            "trajectory",
+            "trajectory",
+            api.ResearchValueKind.ARTIFACT,
         ),
     ),
 )
-METHOD_PROGRAM = METHOD_SPEC.compile()
+_builder.analysis(
+    "analysis",
+    depends_on=("evaluate",),
+    outputs=(
+        api.ResearchOutputSpec("claim-evidence", api.ResearchValueKind.EVIDENCE),
+    ),
+)
 
-__all__ = ["METHOD_PROGRAM", "METHOD_SPEC"]
+PROGRAM = _builder.freeze()
+PORTFOLIO = api.ResearchPortfolio({request.project_id!r}, (PROGRAM,))
+
+__all__ = ["PORTFOLIO", "PROGRAM"]
 '''
 
-
-def _study_module() -> str:
-    return '''"""Paper experiment declaration."""
-from noetrium import api
-
-from .method import METHOD_SPEC
-
-STUDY_SPEC = api.AgentStudySpec(method_id=METHOD_SPEC.method_id)
-
-build_study = STUDY_SPEC.build
-
-__all__ = ["STUDY_SPEC", "build_study"]
-'''
 
 
 def _generated_test_module(package: str) -> str:
     return f'''import unittest
-from pathlib import Path
 
 from noetrium import api
-from {package}.method import METHOD_PROGRAM, METHOD_SPEC
-from {package}.study import STUDY_SPEC, build_study
-
-ROOT = Path(__file__).resolve().parents[1]
+from {package}.research import PORTFOLIO, PROGRAM
 
 
 class GeneratedProjectTests(unittest.TestCase):
-    def test_manifest_identity_matches_method_identity(self):
-        manifest = api.decode_project_manifest_bytes(
-            (ROOT / {_MANIFEST_PATH!r}).read_bytes()
+    def test_project_authors_one_top_level_research_program(self):
+        self.assertIsInstance(PROGRAM, api.ResearchProgram)
+        self.assertIsInstance(PORTFOLIO, api.ResearchPortfolio)
+        self.assertEqual(PORTFOLIO.programs, (PROGRAM,))
+
+    def test_program_contains_scientific_pipeline(self):
+        self.assertEqual(
+            tuple(node.node_id for node in PROGRAM.nodes),
+            ("analysis", "evaluate", "main"),
         )
         self.assertEqual(
-            manifest.project.identity.project_id,
-            METHOD_SPEC.method_id,
+            tuple(definition.definition_id for definition in PROGRAM.definitions),
+            ("benchmark", "method", "primary-metric"),
         )
-
-    def test_method_and_study_use_unified_public_contracts(self):
-        self.assertIsInstance(METHOD_SPEC, api.AgentMethodSpec)
-        self.assertIsInstance(METHOD_PROGRAM, api.MethodProgram)
-        self.assertIsInstance(STUDY_SPEC, api.AgentStudySpec)
-        self.assertTrue(callable(build_study))
-        self.assertTrue(callable(api.compile_research_method))
+        self.assertTrue(all(
+            len(definition.implementation_digest) == 64
+            for definition in PROGRAM.definitions
+        ))
 
 
 if __name__ == "__main__":
@@ -135,17 +165,18 @@ if __name__ == "__main__":
 '''
 
 
+
 def _readme(project_id: str) -> str:
     return f'''# {project_id}
 
-This is a unified Noetrium downstream project.
+This is a unified Noetrium Research OS project.
 
-Edit `method.py` for paper-specific method semantics and `study.py` for the
-scientific experiment declaration. Use `from noetrium import api` as the only
-platform import.
+Edit `research.py` to describe the complete scientific program: methods,
+benchmarks, metrics, experiments, evaluations, analyses, dependencies, and
+outputs. Use `from noetrium import api` as the only platform import.
 
-Runtime/provider/application code is optional project-owned extension code; it
-is not generated as a separate project type.
+Model/environment/resource binding, scheduling, checkpointing, evidence,
+recovery, and operator plumbing are platform-owned and are not project files.
 
 Run `noetrium project doctor --project .` and
 `noetrium project test --project .`.
@@ -165,8 +196,7 @@ def _scaffold_files(
         "README.md": _readme(request.project_id),
         "pyproject.toml": _pyproject(request, package, platform.version),
         f"src/{package}/__init__.py": '"""Unified Noetrium downstream project."""\n',
-        f"src/{package}/method.py": _method_module(request),
-        f"src/{package}/study.py": _study_module(),
+        f"src/{package}/research.py": _research_module(request),
         "tests/test_generated_project.py": _generated_test_module(package),
     }
     files = {name: text.encode("utf-8") for name, text in text_files.items()}
