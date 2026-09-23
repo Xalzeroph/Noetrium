@@ -22,7 +22,10 @@ from noetrium_platform.research.execution.machines import (
     ResearchProgramBuilder,
     ResearchProgramHost,
 )
-from noetrium_platform.research.execution.policy.api import AdmissionBudget
+from noetrium_platform.research.execution.policy.api import (
+    AdmissionBudget,
+    AdmissionRejected,
+)
 
 
 def _pool(*, max_children: int) -> ResearchExecutionPool:
@@ -135,7 +138,7 @@ def test_pooled_child_batch_fails_closed_without_partial_child_execution() -> No
     executor, journal, pool = _executor(max_children=2)
     try:
         with pytest.raises(
-            ValueError,
+            AdmissionRejected,
             match="batch exceeds configured capacity",
         ):
             executor.execute_batch(_request(3))
