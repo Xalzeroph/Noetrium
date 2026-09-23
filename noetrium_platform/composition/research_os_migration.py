@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import StrEnum
+from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 from noetrium_platform.research.execution.graph.api import (
@@ -15,7 +16,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphLiveNodeState,
 )
 
-from .research_os_graph import CompiledResearchOSGraph
+from .research_os_graph import CompiledResearchOSGraph, CompiledResearchOSGraphNode
 
 
 def _text(value: object, field_name: str) -> str:
@@ -117,6 +118,18 @@ class ResearchOSReuseProof:
         require_sha256(self.source_cut_id, "research reuse proof source_cut_id")
         require_sha256(self.semantic_digest, "research reuse proof semantic_digest")
         require_sha256(self.proof_digest, "research reuse proof proof_digest")
+
+
+@runtime_checkable
+class ResearchOSReuseMaterializerPort(Protocol):
+    """Materialize already-proven immutable outputs into a target execution cut."""
+
+    def materialize_reuse(
+        self,
+        plan: "ResearchOSExecutionMigrationPlan",
+        node: CompiledResearchOSGraphNode,
+        proof: ResearchOSReuseProof,
+    ) -> str: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -387,6 +400,7 @@ def materialize_research_os_execution_migration(
     execution_store: ResearchGraphExecutionStorePort,
     *,
     reuse_proofs: tuple[ResearchOSReuseProof, ...] = (),
+    reuse_materializer: ResearchOSReuseMaterializerPort | None = None,
     active_cut_store: ResearchGraphActiveCutStorePort | None = None,
     now_ns: int,
 ) -> ResearchOSExecutionMigrationMaterialization:
@@ -492,13 +506,35 @@ def materialize_research_os_execution_migration(
         row = by_id[node_id]
         if row.new_semantic_digest is None:
             raise RuntimeError("reuse candidate unexpectedly has no target semantic digest")
+        target_node = target.node(node_id)
+        materialization_digest = None
+        if target_node.node.outputs:
+            if not isinstance(reuse_materializer, ResearchOSReuseMaterializerPort):
+                raise ResearchGraphExecutionConflict(
+                    "research migration reuse with declared outputs requires an "
+                    "explicit lower-authority value materializer"
+                )
+            materialization_digest = require_sha256(
+                reuse_materializer.materialize_reuse(
+                    plan,
+                    target_node,
+                    proof,
+                ),
+                "research migration reuse materialization proof",
+            )
+        combined_proof_digest = canonical_digest(
+            {
+                "source_reuse_proof": proof.proof_digest,
+                "target_materialization_proof": materialization_digest,
+            }
+        )
         execution_store.mark_reused(
             plan.target_cut.cut_id,
             node_id,
             source_execution_id=plan.source_cut.cut_id,
             source_node_id=node_id,
             semantic_digest=row.new_semantic_digest,
-            proof_digest=proof.proof_digest,
+            proof_digest=combined_proof_digest,
             now_ns=now_ns,
         )
         reused.append(node_id)
@@ -553,6 +589,7 @@ __all__ = [
     "ResearchOSExecutionMigrationPlan",
     "ResearchOSNodeMigration",
     "ResearchOSNodeMigrationDisposition",
+    "ResearchOSReuseMaterializerPort",
     "ResearchOSReuseProof",
     "activate_research_os_execution_cut",
     "materialize_research_os_execution_migration",
