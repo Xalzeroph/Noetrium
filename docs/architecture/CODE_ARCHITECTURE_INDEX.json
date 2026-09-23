@@ -12922,6 +12922,16 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlRecord",
+      "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlPhase"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlStorePort",
+      "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlRecord"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphExecutionSnapshot",
       "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphNodeExecutionRecord"
     },
@@ -79054,7 +79064,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 289,
+      "line": 319,
       "methods": [
         "__post_init__"
       ],
@@ -79076,7 +79086,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 471,
+      "line": 563,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -79110,7 +79120,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 179,
+      "line": 209,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -79154,12 +79164,89 @@
     },
     {
       "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "ACTIVE",
+        "CANCELLED",
+        "DRAINING",
+        "PAUSED",
+        "RECOVERY_REQUIRED"
+      ],
+      "kind": "enum",
+      "line": 71,
+      "methods": [],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphControlPhase",
+      "nesting": [
+        "ResearchGraphControlPhase"
+      ],
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlPhase",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "execution_id",
+        "generation",
+        "phase",
+        "updated_at_ns"
+      ],
+      "kind": "dataclass",
+      "line": 86,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphControlRecord",
+      "nesting": [
+        "ResearchGraphControlRecord"
+      ],
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlRecord",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 501,
+      "methods": [
+        "control_state",
+        "request_drain",
+        "pause_if_quiescent",
+        "resume",
+        "interrupt",
+        "cancel_if_quiescent",
+        "settle_recovery"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphControlStorePort",
+      "nesting": [
+        "ResearchGraphControlStorePort"
+      ],
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlStorePort",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
         "RuntimeError"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 329,
+      "line": 359,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -79177,7 +79264,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 333,
+      "line": 363,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -79202,7 +79289,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 221,
+      "line": 251,
       "methods": [
         "__post_init__",
         "node",
@@ -79226,7 +79313,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 338,
+      "line": 368,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -79302,7 +79389,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 72,
+      "line": 102,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -79345,7 +79432,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 308,
+      "line": 338,
       "methods": [
         "__init__"
       ],
@@ -79373,7 +79460,7 @@
         "source_node_id"
       ],
       "kind": "dataclass",
-      "line": 267,
+      "line": 297,
       "methods": [
         "__post_init__"
       ],
@@ -101135,8 +101222,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3370,
-    "classes": 3303,
+    "association_edges": 3372,
+    "classes": 3306,
     "constructor_edges": 918,
     "inheritance_edges": 145,
     "module_import_edges": 5029,
@@ -142113,7 +142200,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "c6ea93b7556edc504927436b72e7029b09214d59",
+  "source_git_sha": "5a44ae5db37642df7f05a8ee6e056ef9504ae8a4",
   "system_import_edges": [
     {
       "count": 90,

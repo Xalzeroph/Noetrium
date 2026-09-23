@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3612,
     "python_import_edges": 6767,
-    "symbols": 4786,
+    "symbols": 4789,
     "tracked_files": 4241,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4780,
+    "python": 4783,
     "typescript": 5
   },
   "parse_errors": [],
@@ -40746,7 +40746,7 @@
     "tooling": 75
   },
   "role_symbol_counts": {
-    "core_platform": 3304,
+    "core_platform": 3307,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -40758,7 +40758,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "c6ea93b7556edc504927436b72e7029b09214d59",
+  "source_git_sha": "5a44ae5db37642df7f05a8ee6e056ef9504ae8a4",
   "symbols": [
     {
       "bases": [],
@@ -99136,6 +99136,51 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "ACTIVE",
+        "DRAINING",
+        "PAUSED",
+        "RECOVERY_REQUIRED",
+        "CANCELLED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 71,
+      "methods": [],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphControlPhase",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlPhase",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "execution_id: str",
+        "phase: ResearchGraphControlPhase",
+        "generation: int",
+        "updated_at_ns: int"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 86,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphControlRecord",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlRecord",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -99156,7 +99201,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 72,
+      "line": 102,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -99188,7 +99233,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 179,
+      "line": 209,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -99214,7 +99259,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 221,
+      "line": 251,
       "methods": [
         "__post_init__",
         "node",
@@ -99242,7 +99287,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 267,
+      "line": 297,
       "methods": [
         "__post_init__"
       ],
@@ -99266,7 +99311,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 289,
+      "line": 319,
       "methods": [
         "__post_init__"
       ],
@@ -99284,7 +99329,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 308,
+      "line": 338,
       "methods": [
         "__init__"
       ],
@@ -99302,7 +99347,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 329,
+      "line": 359,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -99318,7 +99363,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 333,
+      "line": 363,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -99336,7 +99381,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 338,
+      "line": 368,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -99370,7 +99415,33 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 471,
+      "line": 501,
+      "methods": [
+        "control_state",
+        "request_drain",
+        "pause_if_quiescent",
+        "resume",
+        "interrupt",
+        "cancel_if_quiescent",
+        "settle_recovery"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphControlStorePort",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlStorePort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 563,
       "methods": [
         "active_cut",
         "move_active_cut"
