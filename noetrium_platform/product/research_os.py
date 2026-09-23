@@ -1292,6 +1292,104 @@ class ResearchProgramBuilder:
             config=config,
         )
 
+    def dataset(
+        self,
+        definition_id: str,
+        *,
+        implementation: ResearchImplementation | Callable[..., object],
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.DATASET,
+            implementation=implementation,
+            config=config,
+        )
+
+    def model(
+        self,
+        definition_id: str,
+        *,
+        implementation: ResearchImplementation | Callable[..., object],
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.MODEL,
+            implementation=implementation,
+            config=config,
+        )
+
+    def environment(
+        self,
+        definition_id: str,
+        *,
+        implementation: ResearchImplementation | Callable[..., object],
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.ENVIRONMENT,
+            implementation=implementation,
+            config=config,
+        )
+
+    def participant(
+        self,
+        definition_id: str,
+        *,
+        implementation: ResearchImplementation | Callable[..., object],
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.PARTICIPANT,
+            implementation=implementation,
+            config=config,
+        )
+
+    def protocol(
+        self,
+        definition_id: str,
+        *,
+        implementation: ResearchImplementation | Callable[..., object],
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.PROTOCOL,
+            implementation=implementation,
+            config=config,
+        )
+
+    def resource_policy(
+        self,
+        definition_id: str,
+        *,
+        implementation: ResearchImplementation | Callable[..., object],
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.RESOURCE_POLICY,
+            implementation=implementation,
+            config=config,
+        )
+
+    def custom_definition(
+        self,
+        definition_id: str,
+        *,
+        implementation: ResearchImplementation | Callable[..., object],
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.CUSTOM,
+            implementation=implementation,
+            config=config,
+        )
+
     def node(
         self,
         node_id: str,
@@ -1384,6 +1482,222 @@ class ResearchProgramBuilder:
         return self.node(
             node_id,
             kind=ResearchNodeKind.SELECTION,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def method_node(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.METHOD,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def study(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.STUDY,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def run_node(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.RUN,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def trial(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.TRIAL,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def optimization(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.OPTIMIZATION,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def ablation(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.ABLATION,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def robustness(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.ROBUSTNESS,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def scaling(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.SCALING,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def figure(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.FIGURE,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def table(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.TABLE,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def publication(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.PUBLICATION,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=depends_on,
+            config=config,
+        )
+
+    def custom_node(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[ResearchOutputSpec, ...] = (),
+        depends_on: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        return self.node(
+            node_id,
+            kind=ResearchNodeKind.CUSTOM,
             definitions=definitions,
             outputs=outputs,
             depends_on=depends_on,
