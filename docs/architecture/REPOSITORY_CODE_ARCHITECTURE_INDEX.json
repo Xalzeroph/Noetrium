@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3612,
     "python_import_edges": 6767,
-    "symbols": 4789,
+    "symbols": 4790,
     "tracked_files": 4241,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4783,
+    "python": 4784,
     "typescript": 5
   },
   "parse_errors": [],
@@ -40746,7 +40746,7 @@
     "tooling": 75
   },
   "role_symbol_counts": {
-    "core_platform": 3307,
+    "core_platform": 3308,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -40758,7 +40758,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "5a44ae5db37642df7f05a8ee6e056ef9504ae8a4",
+  "source_git_sha": "1b215a5ba15fd35df92ff9c85299263970efbaef",
   "symbols": [
     {
       "bases": [],
@@ -63041,12 +63041,30 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 51,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.composition.research_graph",
+      "name": "ResearchGraphControlHalt",
+      "path": "noetrium_platform/composition/research_graph.py",
+      "qualname": "noetrium_platform.composition.research_graph.ResearchGraphControlHalt",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 48,
+      "line": 64,
       "methods": [
         "__init__",
         "plan",
@@ -99458,7 +99476,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 27,
       "methods": [
         "__init__",
         "_connection",
@@ -99468,6 +99486,11 @@
         "_decode_node",
         "_decode_attempt",
         "_decode_reuse",
+        "_decode_control",
+        "_control_tx",
+        "_active_node_rows_tx",
+        "_reconciliation_node_ids_tx",
+        "_write_control_phase_tx",
         "_decode_active_cut",
         "_execution_tx",
         "_node_tx",
@@ -99476,6 +99499,13 @@
         "_require_now",
         "ensure_execution",
         "snapshot",
+        "control_state",
+        "request_drain",
+        "pause_if_quiescent",
+        "resume",
+        "interrupt",
+        "cancel_if_quiescent",
+        "settle_recovery",
         "active_cut",
         "move_active_cut",
         "mark_ready",

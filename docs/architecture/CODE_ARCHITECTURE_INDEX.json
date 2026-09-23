@@ -39546,11 +39546,31 @@
       "top_system": "research_os"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 51,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.composition.research_graph",
+      "name": "ResearchGraphControlHalt",
+      "nesting": [
+        "ResearchGraphControlHalt"
+      ],
+      "qualname": "noetrium_platform.composition.research_graph.ResearchGraphControlHalt",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 48,
+      "line": 64,
       "methods": [
         "__init__",
         "plan",
@@ -79480,7 +79500,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 25,
+      "line": 27,
       "methods": [
         "__init__",
         "_connection",
@@ -79490,6 +79510,11 @@
         "_decode_node",
         "_decode_attempt",
         "_decode_reuse",
+        "_decode_control",
+        "_control_tx",
+        "_active_node_rows_tx",
+        "_reconciliation_node_ids_tx",
+        "_write_control_phase_tx",
         "_decode_active_cut",
         "_execution_tx",
         "_node_tx",
@@ -79498,6 +79523,13 @@
         "_require_now",
         "ensure_execution",
         "snapshot",
+        "control_state",
+        "request_drain",
+        "pause_if_quiescent",
+        "resume",
+        "interrupt",
+        "cancel_if_quiescent",
+        "settle_recovery",
         "active_cut",
         "move_active_cut",
         "mark_ready",
@@ -97712,6 +97744,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.composition.research_graph.ResearchGraphScheduler",
+      "target": "noetrium_platform.composition.research_graph.ResearchGraphControlHalt"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.composition.research_os.PortfolioBackedResearchOSPort",
       "target": "noetrium_platform.product.research_os.ResearchBranch"
     },
@@ -101223,8 +101260,8 @@
   ],
   "counts": {
     "association_edges": 3372,
-    "classes": 3306,
-    "constructor_edges": 918,
+    "classes": 3307,
+    "constructor_edges": 919,
     "inheritance_edges": 145,
     "module_import_edges": 5029,
     "parse_errors": 0,
@@ -142200,7 +142237,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "5a44ae5db37642df7f05a8ee6e056ef9504ae8a4",
+  "source_git_sha": "1b215a5ba15fd35df92ff9c85299263970efbaef",
   "system_import_edges": [
     {
       "count": 90,
