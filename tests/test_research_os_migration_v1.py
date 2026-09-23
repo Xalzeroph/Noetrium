@@ -19,6 +19,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphControlPhase,
     ResearchGraphExecutionSnapshot,
     ResearchGraphLiveNodeState,
+    ResearchGraphNodeControlPhase,
     ResearchGraphExecutionConflict,
     ResearchGraphNodeExecutionRecord,
 )
@@ -182,6 +183,21 @@ def test_execution_cut_identity_is_revision_and_graph_bound() -> None:
 
 
 
+def _pause_cut(store, cut_id: str, *, now_ns: int = 14) -> None:
+    control = store.control_state(cut_id)
+    control = store.request_drain(
+        cut_id,
+        expected_generation=control.generation,
+        now_ns=now_ns,
+    )
+    control = store.pause_if_quiescent(
+        cut_id,
+        expected_generation=control.generation,
+        now_ns=now_ns + 1,
+    )
+    assert control.phase is ResearchGraphControlPhase.PAUSED
+
+
 def _complete_cut(store, activation) -> None:
     for node in activation.snapshot.nodes:
         store.mark_ready(activation.cut.cut_id, node.node_id, now_ns=10)
@@ -224,6 +240,7 @@ def test_migration_materializes_proven_reuse_then_cas_switches_active_cut(tmp_pa
         store,
     )
     _complete_cut(store, activation)
+    _pause_cut(store, activation.cut.cut_id)
     source_snapshot = store.snapshot(activation.cut.cut_id)
     plan = plan_research_os_execution_migration(
         "logical-execution",
@@ -279,6 +296,7 @@ def test_missing_reuse_proof_fails_closed_and_keeps_source_cut_active(tmp_path) 
         store,
     )
     _complete_cut(store, activation)
+    _pause_cut(store, activation.cut.cut_id)
     plan = plan_research_os_execution_migration(
         "logical-execution",
         old,
@@ -319,6 +337,7 @@ def test_migration_cas_rejects_stale_source_cut(tmp_path) -> None:
         store,
     )
     _complete_cut(store, activation)
+    _pause_cut(store, activation.cut.cut_id)
     plan = plan_research_os_execution_migration(
         "logical-execution",
         old,
@@ -402,6 +421,7 @@ def test_migration_final_cas_conflict_keeps_staged_target_inactive_and_paused(
         store,
     )
     _complete_cut(store, activation)
+    _pause_cut(store, activation.cut.cut_id)
     source_snapshot = store.snapshot(activation.cut.cut_id)
     plan = plan_research_os_execution_migration(
         "logical-execution",
@@ -469,3 +489,100 @@ def test_migration_final_cas_conflict_keeps_staged_target_inactive_and_paused(
     assert staged.node("paper-a::main").state is ResearchGraphLiveNodeState.PENDING
     assert staged.node("paper-a::analysis").state is ResearchGraphLiveNodeState.PENDING
     assert store.snapshot(plan.source_cut.cut_id) == source_snapshot
+
+
+
+def test_migration_preserves_paused_and_cancelled_node_control_intent(
+    tmp_path,
+) -> None:
+    old_portfolio = _portfolio(_method_v1)
+    old_revision = _revision(old_portfolio, message="r1")
+    old = compile_research_portfolio_graph(old_revision, old_portfolio)
+    new_portfolio = _portfolio(_method_v2)
+    new_revision = _revision(new_portfolio, parent=old_revision, message="r2")
+    new = compile_research_portfolio_graph(new_revision, new_portfolio)
+
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    activation = activate_research_os_execution_cut(
+        "logical-execution",
+        old,
+        store,
+    )
+    source_cut_id = activation.cut.cut_id
+
+    paused = store.node_control_state(source_cut_id, "paper-a::main")
+    paused = store.request_node_drain(
+        source_cut_id,
+        "paper-a::main",
+        expected_generation=paused.generation,
+        now_ns=5,
+    )
+    paused = store.pause_node_if_quiescent(
+        source_cut_id,
+        "paper-a::main",
+        expected_generation=paused.generation,
+        now_ns=6,
+    )
+    assert paused.phase is ResearchGraphNodeControlPhase.PAUSED
+
+    cancelled = store.node_control_state(source_cut_id, "paper-b::main")
+    cancelled = store.cancel_node_subgraph(
+        source_cut_id,
+        "paper-b::main",
+        descendant_node_ids=(),
+        expected_generation=cancelled.generation,
+        now_ns=7,
+    )
+    assert cancelled.phase is ResearchGraphNodeControlPhase.CANCELLED
+    assert store.snapshot(source_cut_id).node("paper-b::main").state is (
+        ResearchGraphLiveNodeState.CANCELLED
+    )
+
+    _pause_cut(store, source_cut_id, now_ns=8)
+    source_snapshot = store.snapshot(source_cut_id)
+    plan = plan_research_os_execution_migration(
+        "logical-execution",
+        old,
+        new,
+        source_snapshot,
+    )
+    assert set(plan.restart_node_ids) == {
+        "paper-a::main",
+        "paper-a::analysis",
+        "paper-b::main",
+    }
+
+    materialized = materialize_research_os_execution_migration(
+        plan,
+        new,
+        store,
+        now_ns=20,
+    )
+
+    target_cut_id = plan.target_cut.cut_id
+    assert materialized.active_cut.cut_id == target_cut_id
+    assert materialized.preserved_paused_node_ids == ("paper-a::main",)
+    assert materialized.preserved_cancelled_node_ids == ("paper-b::main",)
+    assert set(materialized.restart_node_ids) == {
+        "paper-a::main",
+        "paper-a::analysis",
+    }
+    assert len(materialized.control_transfer_digest) == 64
+
+    assert store.control_state(target_cut_id).phase is ResearchGraphControlPhase.PAUSED
+    assert store.node_control_state(
+        target_cut_id,
+        "paper-a::main",
+    ).phase is ResearchGraphNodeControlPhase.PAUSED
+    assert store.node_control_state(
+        target_cut_id,
+        "paper-b::main",
+    ).phase is ResearchGraphNodeControlPhase.CANCELLED
+    target_snapshot = store.snapshot(target_cut_id)
+    assert target_snapshot.node("paper-a::main").state is (
+        ResearchGraphLiveNodeState.PENDING
+    )
+    assert target_snapshot.node("paper-b::main").state is (
+        ResearchGraphLiveNodeState.CANCELLED
+    )
+    assert store.attempts(target_cut_id, "paper-b::main") == ()
