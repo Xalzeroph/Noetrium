@@ -119,7 +119,7 @@ from .child_machine_batch import (
     ChildResearchMachineBatchMechanicsResult,
     ChildResearchMachineBatchRequest,
     RegisteredSerialChildResearchBatchMechanics,
-    ThreadPoolChildResearchBatchMechanics,
+
 )
 from .child_machine import (
     ChildFailurePolicy,
@@ -366,7 +366,7 @@ __all__ = [
     "ChildResearchMachineBatchMechanicsResult",
     "ChildResearchMachineBatchRequest",
     "RegisteredSerialChildResearchBatchMechanics",
-    "ThreadPoolChildResearchBatchMechanics",
+
     "ChildFailurePolicy",
     "RuntimeProgramComposer",
     "RuntimeModuleNode",
