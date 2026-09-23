@@ -8,6 +8,9 @@ import pytest
 from noetrium import api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
+from noetrium_platform.composition.research_os_checkpoint import (
+    ResearchOSNodeCheckpointProof,
+)
 from noetrium_platform.composition.research_os_execution import (
     ResearchOSExecutionUnsupported,
     ResearchOSNodeAdmission,
@@ -36,6 +39,7 @@ from noetrium_platform.evidence.artifact.retention.providers import (
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import (
     JsonValue,
+    MachineCut,
     canonical_digest,
     freeze_json,
 )
@@ -135,6 +139,39 @@ class _Runtime:
         if node.graph_node_id == "paper::consume":
             return {"seen": inputs["source"]["value"]}
         raise AssertionError(node.graph_node_id)
+
+    def checkpoint_node(
+        self,
+        node,
+        lowering,
+        *,
+        execution_cut_id,
+    ):
+        commit_id = canonical_digest(
+            {
+                "test-checkpoint": execution_cut_id,
+                "graph_node_id": node.graph_node_id,
+                "lowering_digest": lowering.lowering_digest,
+            }
+        )
+        cut = MachineCut(
+            machine_id=f"test:{node.graph_node_id}",
+            revision=1,
+            commit_id=commit_id,
+            state_digest=canonical_digest({"node": node.graph_node_id}),
+            program_digest=canonical_digest(
+                {"lowering_digest": lowering.lowering_digest}
+            ),
+        )
+        return ResearchOSNodeCheckpointProof(
+            execution_cut_id,
+            node.graph_node_id,
+            node.semantic_digest,
+            lowering.lowering_digest,
+            "test-machine-journal",
+            cut,
+            (commit_id,),
+        )
 
 
 def _portfolio() -> api.ResearchPortfolio:
@@ -443,6 +480,36 @@ def test_quiescent_graph_control_pause_checkpoint_resume_drain_cancel(
         assert inspected.payload["control_phase"] == ResearchGraphControlPhase.CANCELLED.value
         assert graph.control_state(inspected.payload["cut_id"]).phase is (
             ResearchGraphControlPhase.CANCELLED
+        )
+    finally:
+        pool.close()
+
+
+def test_node_scoped_checkpoint_binds_exact_lower_machine_cut(
+    tmp_path: Path,
+) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="node checkpoint")
+        target = api.ResearchExecutionTarget("execution-node-checkpoint", revision)
+        research_os.run(target.for_node("paper", "source"))
+
+        receipt = research_os.checkpoint(target.for_node("paper", "source"))
+        assert receipt.state == "checkpointed"
+        assert receipt.payload["checkpoint_node_ids"] == ("paper::source",)
+        node = receipt.payload["checkpoint_nodes"][0]
+        assert node["graph_node_id"] == "paper::source"
+        assert node["authority_id"] == "test-machine-journal"
+        assert len(node["machine_cut_digest"]) == 64
+        assert len(node["checkpoint_proof_digest"]) == 64
+
+        active = graph.active_cut(target.execution_id)
+        assert active is not None
+        assert graph.snapshot(active.cut_id).node("paper::consume").state is (
+            ResearchGraphLiveNodeState.PENDING
         )
     finally:
         pool.close()
