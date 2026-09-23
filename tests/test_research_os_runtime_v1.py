@@ -179,6 +179,47 @@ def test_canonical_runtime_executes_method_and_evaluation_through_machine_journa
         pool.close()
 
 
+def test_canonical_runtime_checkpoint_binds_real_machine_journal_heads(
+    tmp_path: Path,
+) -> None:
+    revisions = SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3")
+    blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
+    graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    pool = _pool()
+    runtime = CanonicalResearchOSNodeRuntime(tmp_path / "machine-state")
+    values = ResearchOSValueRouter((_DataAuthority(),))
+    research_os = bind_portfolio_research_os(
+        revisions,
+        blobs,
+        control=StrictResearchOSControl(
+            graph,
+            pool,
+            runtime,
+            values,
+        ),
+    )
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="checkpoint proof")
+        target = api.ResearchExecutionTarget("canonical-checkpoint", revision)
+        assert research_os.run(target).state == "succeeded"
+        checkpoint = research_os.checkpoint(target)
+        assert checkpoint.state == "checkpointed"
+        nodes = {
+            row["graph_node_id"]: row
+            for row in checkpoint.payload["checkpoint_nodes"]
+        }
+        assert set(nodes) == {"paper::source", "paper::evaluate"}
+        for row in nodes.values():
+            assert row["authority_id"] == "machine-journal"
+            assert row["machine_revision"] >= 1
+            assert len(row["machine_commit_id"]) == 64
+            assert len(row["machine_cut_digest"]) == 64
+            assert len(row["checkpoint_proof_digest"]) == 64
+    finally:
+        pool.close()
+
+
 def test_canonical_runtime_rejects_experiment_family_until_experiment_lowering_exists(
     tmp_path: Path,
 ) -> None:
