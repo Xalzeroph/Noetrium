@@ -64,6 +64,9 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
     BasicStudyMetricAggregator,
 )
+from noetrium_platform.research.experimentation.lifecycle.run.runtime import (
+    DirectoryRunArtifactStore,
+)
 from noetrium_platform.research.execution.graph.providers import (
     SQLiteResearchGraphExecutionStore,
 )
@@ -299,7 +302,18 @@ class _BoundAdapter:
         return StudyMetricObservation(assignment, (("score", 1.0),))
 
 
+class _InlineActor:
+    actor_id = "research-os-experiment-test-writer"
+
+    def call(self, operation, fn, /, *args, **kwargs):
+        del operation
+        return fn(*args, **kwargs)
+
+
 class _ExperimentRuntimeBindings:
+    def __init__(self, artifacts) -> None:
+        self.artifacts = artifacts
+
     def resolve(self, closure):
         return ResearchOSExperimentRuntimeBinding(
             closure.closure_digest,
@@ -307,11 +321,13 @@ class _ExperimentRuntimeBindings:
             closure.research_plan.binding_digest,
             _BoundAdapter(),
             BasicStudyMetricAggregator(),
+            self.artifacts,
+            canonical_digest({"adapter": "test.bound-study-execution.v1"}),
+            canonical_digest({"aggregation": "basic-study-metric-aggregator.v1"}),
             canonical_digest(
                 {
-                    "adapter": "test.bound-study-execution.v1",
-                    "aggregation": "basic-study-metric-aggregator.v1",
-                    "closure_digest": closure.closure_digest,
+                    "artifact_store": "directory-run-artifact-store.v1",
+                    "run_id": self.artifacts.run_id,
                 }
             ),
         )
@@ -342,10 +358,15 @@ def test_public_research_os_runs_exact_experiment_program_with_durable_machine_j
     revisions = SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3")
     blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    run_artifacts = DirectoryRunArtifactStore(
+        tmp_path / "run-artifacts",
+        run_id="experiment-execution",
+        writer_actor=_InlineActor(),
+    )
     runtime = CanonicalResearchOSNodeRuntime(
         tmp_path / "machine-state",
         execution_pool=pool,
-        experiment_bindings=_ExperimentRuntimeBindings(),
+        experiment_bindings=_ExperimentRuntimeBindings(run_artifacts),
     )
     research_os = bind_portfolio_research_os(
         revisions,
@@ -390,14 +411,151 @@ def test_experiment_runtime_binding_drift_fails_closed() -> None:
         resolution=resolution,
         binding=binding,
     )
-    runtime_binding = _ExperimentRuntimeBindings().resolve(closure)
+    import tempfile
+    from pathlib import Path
 
-    with pytest.raises(ValueError, match="does not belong"):
-        ResearchOSExperimentRuntimeBinding(
+    with tempfile.TemporaryDirectory() as temp:
+        artifacts = DirectoryRunArtifactStore(
+            Path(temp) / "run",
+            run_id="drift",
+            writer_actor=_InlineActor(),
+        )
+        runtime_binding = ResearchOSExperimentRuntimeBinding(
             closure.closure_digest,
-            "f" * 64,
-            runtime_binding.research_binding_digest,
-            runtime_binding.adapter,
-            runtime_binding.aggregation,
-            runtime_binding.runtime_binding_digest,
-        ).validate_closure(closure)
+            closure.experiment_program.plan.plan_digest,
+            closure.research_plan.binding_digest,
+            _BoundAdapter(),
+            BasicStudyMetricAggregator(),
+            artifacts,
+            canonical_digest({"adapter": "test.bound-study-execution.v1"}),
+            canonical_digest({"aggregation": "basic-study-metric-aggregator.v1"}),
+            canonical_digest({"artifact_store": "drift"}),
+        )
+        object.__setattr__(runtime_binding, "study_plan_digest", "f" * 64)
+        with pytest.raises(ValueError, match="does not belong"):
+            runtime_binding.validate_closure(closure)
+
+
+
+class _ArtifactValueAuthority:
+    authority_id = "artifact.value.test"
+    supported_kinds = frozenset({api.ResearchValueKind.ARTIFACT})
+
+    def __init__(self) -> None:
+        self.rows = {}
+
+    def publish(self, subject, value):
+        from noetrium_platform.composition.research_os_values import (
+            ResearchOSValueReference,
+        )
+        self.rows[subject.subject_digest] = value
+        return ResearchOSValueReference(
+            subject,
+            self.authority_id,
+            subject.subject_digest,
+            canonical_digest(value),
+        )
+
+    def lookup(self, subject):
+        from noetrium_platform.composition.research_os_values import (
+            ResearchOSValueReference,
+        )
+        value = self.rows[subject.subject_digest]
+        return ResearchOSValueReference(
+            subject,
+            self.authority_id,
+            subject.subject_digest,
+            canonical_digest(value),
+        )
+
+    def resolve(self, reference):
+        return self.rows[reference.authority_ref]
+
+    def reuse_proof(self, reference):
+        return canonical_digest(
+            {
+                "authority": self.authority_id,
+                "reference_digest": reference.reference_digest,
+            }
+        )
+
+
+def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
+    tmp_path,
+) -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.protocol("study", config={"authority": "experimentation"})
+    builder.experiment(
+        "main",
+        definitions=("study",),
+        outputs=(
+            api.ResearchOutputSpec(
+                "report",
+                api.ResearchValueKind.ARTIFACT,
+            ),
+        ),
+    )
+    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+
+    pool = ResearchExecutionPool(
+        orchestration_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            max_async_io_in_flight=2,
+        ),
+        experiment_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            max_async_io_in_flight=2,
+        ),
+    )
+    run_artifacts = DirectoryRunArtifactStore(
+        tmp_path / "run-artifacts",
+        run_id="experiment-output",
+        writer_actor=_InlineActor(),
+    )
+    graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    authority = _ArtifactValueAuthority()
+    research_os = bind_portfolio_research_os(
+        SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3"),
+        DirectoryArtifactBlobStore(tmp_path / "blobs"),
+        control=StrictResearchOSControl(
+            graph,
+            pool,
+            CanonicalResearchOSNodeRuntime(
+                tmp_path / "machine-state",
+                execution_pool=pool,
+                experiment_bindings=_ExperimentRuntimeBindings(run_artifacts),
+            ),
+            ResearchOSValueRouter((authority,)),
+            experiment_closures=_ClosureProvider(
+                definition,
+                resolution,
+                binding,
+            ),
+        ),
+    )
+    try:
+        revision = research_os.commit(portfolio, message="artifact report")
+        receipt = research_os.run(
+            api.ResearchExecutionTarget("experiment-output", revision)
+        )
+        assert receipt.state == "succeeded"
+        assert len(authority.rows) == 1
+        report_ref = next(iter(authority.rows.values()))
+        assert report_ref["schema"] == "research-os.experiment-report-ref.v1"
+        finalized = report_ref["manifest"]
+        assert len(finalized["content_sha256"]) == 64
+        assert len(finalized["generation"]) == 64
+
+        # Same immutable execution is replay/recovery-safe: sealed report files
+        # are accepted only after exact content verification.
+        second = research_os.run(
+            api.ResearchExecutionTarget("experiment-output", revision)
+        )
+        assert second.state == "succeeded"
+        assert next(iter(authority.rows.values())) == report_ref
+    finally:
+        pool.close()

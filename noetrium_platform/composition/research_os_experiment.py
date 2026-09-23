@@ -15,6 +15,7 @@ from noetrium_platform.research.experimentation.api import (
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BoundStudyExecutionPort,
+    RunArtifactStorePort,
     StudyMetricAggregationPort,
 )
 
@@ -196,7 +197,11 @@ class ResearchOSExperimentRuntimeBinding:
     research_binding_digest: str
     adapter: BoundStudyExecutionPort
     aggregation: StudyMetricAggregationPort
-    runtime_binding_digest: str
+    artifacts: RunArtifactStorePort
+    adapter_identity_digest: str
+    aggregation_identity_digest: str
+    artifact_store_identity_digest: str
+    runtime_binding_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         require_sha256(
@@ -220,9 +225,29 @@ class ResearchOSExperimentRuntimeBinding:
                 "experiment runtime binding aggregation must satisfy "
                 "StudyMetricAggregationPort"
             )
-        require_sha256(
-            self.runtime_binding_digest,
-            "experiment runtime binding identity",
+        if not isinstance(self.artifacts, RunArtifactStorePort):
+            raise TypeError(
+                "experiment runtime binding artifacts must satisfy RunArtifactStorePort"
+            )
+        for field_name, value in (
+            ("adapter_identity_digest", self.adapter_identity_digest),
+            ("aggregation_identity_digest", self.aggregation_identity_digest),
+            ("artifact_store_identity_digest", self.artifact_store_identity_digest),
+        ):
+            require_sha256(value, f"experiment runtime binding {field_name}")
+        object.__setattr__(
+            self,
+            "runtime_binding_digest",
+            canonical_digest(
+                {
+                    "closure_digest": self.closure_digest,
+                    "study_plan_digest": self.study_plan_digest,
+                    "research_binding_digest": self.research_binding_digest,
+                    "adapter_identity_digest": self.adapter_identity_digest,
+                    "aggregation_identity_digest": self.aggregation_identity_digest,
+                    "artifact_store_identity_digest": self.artifact_store_identity_digest,
+                }
+            ),
         )
 
     def validate_closure(

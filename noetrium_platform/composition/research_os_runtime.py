@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import asdict, replace
+import hashlib
 from pathlib import Path
 
 from noetrium_platform.composition.method_runtime import (
@@ -15,11 +16,18 @@ from noetrium_platform.foundation.kernel.kernel import (
     JsonObject,
     JsonValue,
     MachineStatus,
+    canonical_bytes,
     canonical_digest,
     require_sha256,
 )
 from noetrium_platform.research.execution.machines import ResearchProgramHost
 from noetrium_platform.research.experimentation.api import ExperimentProgramBinding
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    RunArtifactKind,
+    RunArtifactSealedError,
+    RunArtifactSnapshotReceipt,
+)
+from noetrium_platform.product.research_os import ResearchValueKind
 from noetrium_platform.research.execution.workflow.api import (
     MethodRunStatus,
     MethodRuntimeContext,
@@ -123,9 +131,12 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 raise CanonicalResearchOSRuntimeUnsupported(
                     "Experimentation target has no canonical experiment closure"
                 )
-            if node.node.outputs:
+            if node.node.outputs and (
+                len(node.node.outputs) != 1
+                or node.node.outputs[0].kind is not ResearchValueKind.ARTIFACT
+            ):
                 raise CanonicalResearchOSRuntimeUnsupported(
-                    "Experimentation outputs require an explicit report projection contract"
+                    "Experimentation may expose only one ARTIFACT report output"
                 )
             if self._execution_pool is None or self._experiment_bindings is None:
                 raise CanonicalResearchOSRuntimeUnsupported(
@@ -290,6 +301,134 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             "canonical runtime execution target was not admitted"
         )
 
+    @staticmethod
+    def _receipt_json(
+        receipt: RunArtifactSnapshotReceipt,
+    ) -> JsonObject:
+        return {
+            "run_id": receipt.run_id,
+            "artifact_ref": receipt.artifact_ref,
+            "artifact_kind": receipt.artifact_kind.value,
+            "generation": receipt.generation,
+            "content_sha256": receipt.content_sha256,
+            "byte_size": receipt.byte_size,
+            "record_count": receipt.record_count,
+        }
+
+    @staticmethod
+    def _publish_exact_finalized_json(
+        artifacts,
+        name: str,
+        payload: JsonValue,
+        *,
+        kind: RunArtifactKind,
+    ) -> RunArtifactSnapshotReceipt:
+        body = canonical_bytes(payload, indent=2) + b"\n"
+        expected_sha = hashlib.sha256(body).hexdigest()
+        expected_size = len(body)
+        try:
+            artifacts.publish_text(
+                name,
+                body.decode("utf-8"),
+                kind=kind,
+            )
+        except RunArtifactSealedError:
+            # Exact-identity recovery only: the immutable sealed artifact must
+            # already contain precisely the bytes this execution intends to publish.
+            receipt = artifacts.finalize(
+                name,
+                kind=kind,
+                record_stream=False,
+            )
+            verified = artifacts.verify_finalized(receipt)
+            if (
+                verified.content_sha256 != expected_sha
+                or verified.byte_size != expected_size
+            ):
+                raise CanonicalResearchOSRuntimeFailure(
+                    "sealed Experiment artifact content drifted during recovery"
+                )
+            return verified
+
+        receipt = artifacts.finalize(
+            name,
+            kind=kind,
+            record_stream=False,
+        )
+        verified = artifacts.verify_finalized(receipt)
+        if (
+            verified.content_sha256 != expected_sha
+            or verified.byte_size != expected_size
+        ):
+            raise CanonicalResearchOSRuntimeFailure(
+                "Experiment artifact finalization identity drifted"
+            )
+        return verified
+
+    def _publish_experiment_report(
+        self,
+        lowering: LoweredResearchOSGraphNode,
+        runtime_binding: ResearchOSExperimentRuntimeBinding,
+        report,
+    ) -> JsonObject:
+        closure = lowering.experiment_closure
+        if closure is None:
+            raise CanonicalResearchOSRuntimeUnsupported(
+                "Experiment report publication has no canonical closure"
+            )
+        prefix = f"research-os/experiments/{closure.closure_digest}"
+        protocol = self._publish_exact_finalized_json(
+            runtime_binding.artifacts,
+            f"{prefix}/protocol.json",
+            {
+                "protocol": asdict(closure.experiment_program.plan.protocol),
+                "assignments": tuple(
+                    asdict(row)
+                    for row in closure.experiment_program.plan.assignments
+                ),
+            },
+            kind=RunArtifactKind.MANIFEST,
+        )
+        observations = self._publish_exact_finalized_json(
+            runtime_binding.artifacts,
+            f"{prefix}/observations.json",
+            tuple(asdict(row) for row in report.observations),
+            kind=RunArtifactKind.METRIC,
+        )
+        aggregates = self._publish_exact_finalized_json(
+            runtime_binding.artifacts,
+            f"{prefix}/aggregates.json",
+            tuple(asdict(row) for row in report.aggregates),
+            kind=RunArtifactKind.METRIC,
+        )
+        manifest_payload: JsonObject = {
+            "schema": "research-os.experiment-report-manifest.v1",
+            "closure_digest": closure.closure_digest,
+            "research_plan_digest": closure.research_plan.research_plan_digest,
+            "experiment_program_digest": (
+                closure.experiment_program.program.program_digest
+            ),
+            "protocol_digest": report.protocol_digest,
+            "binding_digest": report.binding_digest,
+            "plan_digest": report.plan_digest,
+            "observation_count": len(report.observations),
+            "aggregate_count": len(report.aggregates),
+            "protocol_artifact": self._receipt_json(protocol),
+            "observations_artifact": self._receipt_json(observations),
+            "aggregates_artifact": self._receipt_json(aggregates),
+        }
+        manifest = self._publish_exact_finalized_json(
+            runtime_binding.artifacts,
+            f"{prefix}/report-manifest.json",
+            manifest_payload,
+            kind=RunArtifactKind.MANIFEST,
+        )
+        return {
+            "schema": "research-os.experiment-report-ref.v1",
+            "closure_digest": closure.closure_digest,
+            "manifest": self._receipt_json(manifest),
+        }
+
     def _execute_experiment(
         self,
         machine_id: str,
@@ -363,8 +502,13 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 raise CanonicalResearchOSRuntimeFailure(
                     "Experiment report identity drifted from admitted closure"
                 )
+            report_ref = self._publish_experiment_report(
+                lowering,
+                runtime_binding,
+                report,
+            )
             completed = True
-            return None
+            return report_ref if lowering.source.node.outputs else None
         finally:
             self._execution_pool.close_experiment_group(
                 group,
