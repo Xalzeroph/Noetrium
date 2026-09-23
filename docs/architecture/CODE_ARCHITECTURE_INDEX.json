@@ -84827,6 +84827,7 @@
         "register_group",
         "unregister_group",
         "acquire",
+        "acquire_many",
         "snapshot",
         "close"
       ],
@@ -84844,7 +84845,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 66,
+      "line": 67,
       "methods": [
         "__init__",
         "_group_id",
@@ -84852,11 +84853,13 @@
         "unregister_group",
         "_cancelled",
         "_identity",
+        "_can_ever_admit",
         "_can_admit",
         "_invalidate_selection",
         "_selected_waiter",
-        "_grant",
+        "_grant_many",
         "acquire",
+        "acquire_many",
         "_decrement",
         "_release",
         "_waiting_counters",
@@ -84877,7 +84880,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 50,
+      "line": 51,
       "methods": [
         "__init__",
         "release"
@@ -84924,6 +84927,7 @@
         "group_id",
         "intent",
         "lane_kind",
+        "permit_count",
         "ticket"
       ],
       "kind": "dataclass",
@@ -142856,7 +142860,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "1f87c8fa4c4ba7b531894e4114c9d9ed90aa97d9",
+  "source_git_sha": "55e4789c1606cbf707fd11cdc2beb60af12f9bca",
   "system_import_edges": [
     {
       "count": 90,

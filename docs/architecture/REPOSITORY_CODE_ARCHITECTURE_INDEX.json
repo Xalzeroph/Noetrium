@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3616,
-    "python_import_edges": 6780,
+    "python_files": 3617,
+    "python_import_edges": 6783,
     "symbols": 4807,
-    "tracked_files": 4245,
+    "tracked_files": 4246,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -24063,6 +24063,24 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_capacity_atomic_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_capacity_atomic_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_capacity_atomic_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.composition",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_capacity_execution_admission_cache_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
@@ -40757,7 +40775,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2616,
+      "count": 2619,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -40820,7 +40838,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 773,
+    "tests": 774,
     "tooling": 77
   },
   "role_symbol_counts": {
@@ -40836,7 +40854,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "1f87c8fa4c4ba7b531894e4114c9d9ed90aa97d9",
+  "source_git_sha": "55e4789c1606cbf707fd11cdc2beb60af12f9bca",
   "symbols": [
     {
       "bases": [],
@@ -104347,6 +104365,7 @@
         "register_group",
         "unregister_group",
         "acquire",
+        "acquire_many",
         "snapshot",
         "close"
       ],
@@ -104386,6 +104405,7 @@
         "ticket: int",
         "group_id: str",
         "lane_kind: ExecutionLaneKind",
+        "permit_count: int",
         "intent: AdmissionIntent",
         "enqueued_monotonic: float"
       ],
@@ -104405,7 +104425,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 50,
+      "line": 51,
       "methods": [
         "__init__",
         "release"
@@ -104422,7 +104442,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 66,
+      "line": 67,
       "methods": [
         "__init__",
         "_group_id",
@@ -104430,11 +104450,13 @@
         "unregister_group",
         "_cancelled",
         "_identity",
+        "_can_ever_admit",
         "_can_admit",
         "_invalidate_selection",
         "_selected_waiter",
-        "_grant",
+        "_grant_many",
         "acquire",
+        "acquire_many",
         "_decrement",
         "_release",
         "_waiting_counters",
