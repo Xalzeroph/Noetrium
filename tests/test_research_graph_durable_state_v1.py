@@ -5,8 +5,10 @@ import pytest
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphAttemptState,
+    ResearchGraphControlPhase,
     ResearchGraphExecutionConflict,
     ResearchGraphLiveNodeState,
+    ResearchGraphNodeControlPhase,
     ResearchGraphNode,
     ResearchGraphPlan,
     ResearchGraphReconciliationDisposition,
@@ -185,3 +187,199 @@ def test_expired_running_lease_fences_stale_worker_terminal_commit(tmp_path) -> 
             failure_type="LateWorker",
             failure_message="stale completion",
         )
+
+
+
+def test_per_node_pause_resume_is_independent_of_graph_control(tmp_path) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    store.ensure_execution("execution-node-control", _plan())
+
+    node_control = store.node_control_state("execution-node-control", "a")
+    assert node_control.phase is ResearchGraphNodeControlPhase.ACTIVE
+    assert store.control_state("execution-node-control").phase is (
+        ResearchGraphControlPhase.ACTIVE
+    )
+
+    paused = store.pause_node_if_quiescent(
+        "execution-node-control",
+        "a",
+        expected_generation=node_control.generation,
+        now_ns=10,
+    )
+    assert paused.phase is ResearchGraphNodeControlPhase.PAUSED
+    assert store.snapshot("execution-node-control").node("a").state is (
+        ResearchGraphLiveNodeState.PENDING
+    )
+    assert store.control_state("execution-node-control").phase is (
+        ResearchGraphControlPhase.ACTIVE
+    )
+
+    resumed = store.resume_node(
+        "execution-node-control",
+        "a",
+        expected_generation=paused.generation,
+        now_ns=11,
+    )
+    assert resumed.phase is ResearchGraphNodeControlPhase.ACTIVE
+    assert store.control_state("execution-node-control").phase is (
+        ResearchGraphControlPhase.ACTIVE
+    )
+
+
+def test_node_interrupt_claimed_before_start_is_safely_paused(tmp_path) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    store.ensure_execution("execution-node-claimed", _plan())
+    store.mark_ready("execution-node-claimed", "a", now_ns=1)
+    claim = store.claim(
+        "execution-node-claimed",
+        "a",
+        owner_id="scheduler",
+        now_ns=2,
+        lease_expires_at_ns=100,
+    )
+    control = store.node_control_state("execution-node-claimed", "a")
+
+    interrupted = store.interrupt_node(
+        "execution-node-claimed",
+        "a",
+        expected_generation=control.generation,
+        now_ns=3,
+    )
+
+    assert interrupted.phase is ResearchGraphNodeControlPhase.PAUSED
+    assert store.snapshot("execution-node-claimed").node("a").state is (
+        ResearchGraphLiveNodeState.PENDING
+    )
+    attempts = store.attempts("execution-node-claimed", "a")
+    assert len(attempts) == 1
+    assert attempts[0].attempt_id == claim.attempt_id
+    assert attempts[0].state is ResearchGraphAttemptState.EXPIRED_BEFORE_START
+    assert store.control_state("execution-node-claimed").phase is (
+        ResearchGraphControlPhase.ACTIVE
+    )
+
+
+def test_node_interrupt_running_localizes_reconciliation_debt(tmp_path) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    store.ensure_execution("execution-node-running", _plan())
+    store.mark_ready("execution-node-running", "a", now_ns=1)
+    claim = store.claim(
+        "execution-node-running",
+        "a",
+        owner_id="scheduler",
+        now_ns=2,
+        lease_expires_at_ns=100,
+    )
+    store.mark_running(
+        "execution-node-running",
+        "a",
+        attempt_id=claim.attempt_id or "",
+        owner_id="scheduler",
+        now_ns=3,
+    )
+    control = store.node_control_state("execution-node-running", "a")
+
+    interrupted = store.interrupt_node(
+        "execution-node-running",
+        "a",
+        expected_generation=control.generation,
+        now_ns=4,
+    )
+
+    assert interrupted.phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+    assert store.snapshot("execution-node-running").node("a").state is (
+        ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+    )
+    assert store.attempts("execution-node-running", "a")[0].state is (
+        ResearchGraphAttemptState.RECONCILE_REQUIRED
+    )
+    assert store.control_state("execution-node-running").phase is (
+        ResearchGraphControlPhase.ACTIVE
+    )
+
+    store.resolve_reconciliation(
+        "execution-node-running",
+        "a",
+        disposition=ResearchGraphReconciliationDisposition.RETRY,
+        now_ns=5,
+        retry_not_before_ns=5,
+    )
+    settled = store.settle_node_recovery(
+        "execution-node-running",
+        "a",
+        expected_generation=interrupted.generation,
+        now_ns=6,
+    )
+    assert settled.phase is ResearchGraphNodeControlPhase.PAUSED
+    assert store.snapshot("execution-node-running").node("a").state is (
+        ResearchGraphLiveNodeState.RETRY_WAIT
+    )
+
+
+def test_cancel_node_subgraph_is_atomic_and_leaves_unrelated_work_active(tmp_path) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    plan = _plan()
+    # Add an independent sibling to prove cancellation stays inside descendants.
+    x = ResearchGraphNode("x", canonical_digest({"node": "x"}))
+    plan = ResearchGraphPlan(
+        plan.graph_id,
+        plan.research_revision_digest,
+        plan.nodes + (x,),
+    )
+    store.ensure_execution("execution-node-cancel", plan)
+    root_control = store.node_control_state("execution-node-cancel", "a")
+
+    cancelled = store.cancel_node_subgraph(
+        "execution-node-cancel",
+        "a",
+        descendant_node_ids=("b",),
+        expected_generation=root_control.generation,
+        now_ns=10,
+    )
+
+    assert cancelled.phase is ResearchGraphNodeControlPhase.CANCELLED
+    snapshot = store.snapshot("execution-node-cancel")
+    assert snapshot.node("a").state is ResearchGraphLiveNodeState.CANCELLED
+    assert snapshot.node("b").state is ResearchGraphLiveNodeState.CANCELLED
+    assert snapshot.node("x").state is ResearchGraphLiveNodeState.PENDING
+    assert store.node_control_state(
+        "execution-node-cancel", "b"
+    ).phase is ResearchGraphNodeControlPhase.CANCELLED
+    assert store.node_control_state(
+        "execution-node-cancel", "x"
+    ).phase is ResearchGraphNodeControlPhase.ACTIVE
+    assert store.control_state("execution-node-cancel").phase is (
+        ResearchGraphControlPhase.ACTIVE
+    )
+
+
+def test_cancel_node_subgraph_rejects_active_target_without_partial_mutation(
+    tmp_path,
+) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    store.ensure_execution("execution-node-cancel-active", _plan())
+    store.mark_ready("execution-node-cancel-active", "b", now_ns=1)
+    store.claim(
+        "execution-node-cancel-active",
+        "b",
+        owner_id="scheduler",
+        now_ns=2,
+        lease_expires_at_ns=100,
+    )
+    control = store.node_control_state("execution-node-cancel-active", "a")
+
+    with pytest.raises(ResearchGraphExecutionConflict, match="cannot be cancelled"):
+        store.cancel_node_subgraph(
+            "execution-node-cancel-active",
+            "a",
+            descendant_node_ids=("b",),
+            expected_generation=control.generation,
+            now_ns=3,
+        )
+
+    snapshot = store.snapshot("execution-node-cancel-active")
+    assert snapshot.node("a").state is ResearchGraphLiveNodeState.PENDING
+    assert snapshot.node("b").state is ResearchGraphLiveNodeState.CLAIMED
+    assert store.node_control_state(
+        "execution-node-cancel-active", "a"
+    ).phase is ResearchGraphNodeControlPhase.ACTIVE
