@@ -21,6 +21,9 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
     ResearchGraphLiveNodeState,
+    ResearchGraphNodeControlPhase,
+    ResearchGraphNodeControlRecord,
+    ResearchGraphNodeControlStorePort,
     ResearchGraphNode,
     ResearchGraphNodeExecutorPort,
     ResearchGraphNodeResult,
@@ -59,6 +62,22 @@ class ResearchGraphControlHalt(RuntimeError):
         super().__init__(
             "research graph scheduler halted by durable control: "
             f"{control.execution_id} -> {control.phase.value}"
+        )
+
+
+class ResearchGraphNodeControlHalt(RuntimeError):
+    """Scheduler exhausted runnable work because selected nodes are locally controlled."""
+
+    def __init__(self, controls: tuple[ResearchGraphNodeControlRecord, ...]) -> None:
+        if type(controls) is not tuple or not controls or any(
+            type(row) is not ResearchGraphNodeControlRecord for row in controls
+        ):
+            raise TypeError("research graph node control halt requires typed controls")
+        ordered = tuple(sorted(controls, key=lambda row: row.node_id))
+        self.controls = ordered
+        super().__init__(
+            "research graph scheduler halted by per-node control: "
+            + ", ".join(f"{row.node_id}={row.phase.value}" for row in ordered)
         )
 
 
@@ -363,37 +382,53 @@ class ResearchGraphScheduler:
         now_ns = time.time_ns()
         store.ensure_execution(execution_id, self._plan)
         snapshot = store.recover_expired(execution_id, now_ns=now_ns)
-        control_store = (
-            store if isinstance(store, ResearchGraphControlStorePort) else None
+        if not isinstance(store, ResearchGraphControlStorePort):
+            raise TypeError(
+                "durable research graph scheduling requires graph control authority"
+            )
+        if not isinstance(store, ResearchGraphNodeControlStorePort):
+            raise TypeError(
+                "durable research graph scheduling requires per-node control authority"
+            )
+        control_store = store
+        node_control_store = store
+        control = control_store.control_state(execution_id)
+        debt_ids = snapshot.reconciliation_required_node_ids
+        global_debt = tuple(
+            node_id
+            for node_id in debt_ids
+            if node_control_store.node_control_state(
+                execution_id, node_id
+            ).phase is not ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
         )
-        if control_store is not None:
-            control = control_store.control_state(execution_id)
-            if snapshot.reconciliation_required_node_ids:
-                if control.phase is not ResearchGraphControlPhase.RECOVERY_REQUIRED:
-                    control = control_store.require_recovery(
-                        execution_id,
-                        expected_generation=control.generation,
-                        now_ns=now_ns,
-                    )
-                raise ResearchGraphControlHalt(control)
-            if control.phase in {
-                ResearchGraphControlPhase.PAUSED,
-                ResearchGraphControlPhase.RECOVERY_REQUIRED,
-                ResearchGraphControlPhase.CANCELLED,
-            }:
-                raise ResearchGraphControlHalt(control)
-            if control.phase is ResearchGraphControlPhase.DRAINING:
-                control = control_store.pause_if_quiescent(
+        if global_debt:
+            if control.phase is not ResearchGraphControlPhase.RECOVERY_REQUIRED:
+                control = control_store.require_recovery(
                     execution_id,
                     expected_generation=control.generation,
                     now_ns=now_ns,
                 )
-                raise ResearchGraphControlHalt(control)
+            raise ResearchGraphControlHalt(control)
+        if control.phase in {
+            ResearchGraphControlPhase.PAUSED,
+            ResearchGraphControlPhase.RECOVERY_REQUIRED,
+            ResearchGraphControlPhase.CANCELLED,
+        }:
+            raise ResearchGraphControlHalt(control)
+        if control.phase is ResearchGraphControlPhase.DRAINING:
+            control = control_store.pause_if_quiescent(
+                execution_id,
+                expected_generation=control.generation,
+                now_ns=now_ns,
+            )
+            raise ResearchGraphControlHalt(control)
 
+        selected = set(self._selected_node_ids)
         active = tuple(
             node.node_id
             for node in snapshot.nodes
-            if node.state in {
+            if node.node_id in selected
+            and node.state in {
                 ResearchGraphLiveNodeState.CLAIMED,
                 ResearchGraphLiveNodeState.RUNNING,
             }
@@ -408,7 +443,6 @@ class ResearchGraphScheduler:
         live = {node.node_id: node for node in snapshot.nodes}
         pending: dict[str, ResearchGraphNode] = {}
         results: dict[str, ResearchGraphNodeResult] = {}
-        selected = set(self._selected_node_ids)
         reconciliation_required = {
             node.node_id
             for node in snapshot.nodes
@@ -443,6 +477,12 @@ class ResearchGraphScheduler:
                     node.semantic_digest,
                     ResearchGraphNodeState.BLOCKED,
                     blocked_by_node_ids=record.blocked_by_node_ids,
+                )
+            elif record.state is ResearchGraphLiveNodeState.CANCELLED:
+                results[node_id] = ResearchGraphNodeResult(
+                    node_id,
+                    node.semantic_digest,
+                    ResearchGraphNodeState.CANCELLED,
                 )
             elif record.state in {
                 ResearchGraphLiveNodeState.PENDING,
@@ -548,43 +588,50 @@ class ResearchGraphScheduler:
                 if current.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
                     reconciliation_required.add(node_id)
                     return
-                if control_store is not None:
-                    control = control_store.control_state(execution_id)
-                    if control.phase in {
-                        ResearchGraphControlPhase.PAUSED,
-                        ResearchGraphControlPhase.RECOVERY_REQUIRED,
-                        ResearchGraphControlPhase.CANCELLED,
-                    }:
-                        raise ResearchGraphControlHalt(control)
+                node_control = node_control_store.node_control_state(
+                    execution_id, node_id
+                )
+                if (
+                    current.state is ResearchGraphLiveNodeState.PENDING
+                    and node_control.phase is ResearchGraphNodeControlPhase.PAUSED
+                ):
+                    pending[node_id] = node
+                    return
+                if current.state is ResearchGraphLiveNodeState.CANCELLED:
+                    results[node_id] = ResearchGraphNodeResult(
+                        node.node_id,
+                        node.semantic_digest,
+                        ResearchGraphNodeState.CANCELLED,
+                    )
+                    return
+                control = control_store.control_state(execution_id)
+                if control.phase in {
+                    ResearchGraphControlPhase.PAUSED,
+                    ResearchGraphControlPhase.RECOVERY_REQUIRED,
+                    ResearchGraphControlPhase.CANCELLED,
+                }:
+                    raise ResearchGraphControlHalt(control)
                 raise
 
         try:
             while pending or running:
-                current_control = (
-                    None
-                    if control_store is None
-                    else control_store.control_state(execution_id)
+                current_control = control_store.control_state(execution_id)
+                if current_control.phase in {
+                    ResearchGraphControlPhase.PAUSED,
+                    ResearchGraphControlPhase.RECOVERY_REQUIRED,
+                    ResearchGraphControlPhase.CANCELLED,
+                }:
+                    for _node_id, (
+                        _node,
+                        handle,
+                        _attempt_id,
+                        _renewal,
+                    ) in tuple(running.items()):
+                        handle.cancel()
+                    raise ResearchGraphControlHalt(current_control)
+                draining = (
+                    current_control.phase is ResearchGraphControlPhase.DRAINING
                 )
-                if current_control is not None:
-                    if current_control.phase in {
-                        ResearchGraphControlPhase.PAUSED,
-                        ResearchGraphControlPhase.RECOVERY_REQUIRED,
-                        ResearchGraphControlPhase.CANCELLED,
-                    }:
-                        for _node_id, (
-                            _node,
-                            handle,
-                            _attempt_id,
-                            _renewal,
-                        ) in tuple(running.items()):
-                            handle.cancel()
-                        raise ResearchGraphControlHalt(current_control)
-                    draining = (
-                        current_control.phase
-                        is ResearchGraphControlPhase.DRAINING
-                    )
-                else:
-                    draining = False
 
                 if deadline is not None and deadline.expired:
                     for _node_id, (_node, handle, _attempt_id, _renewal) in tuple(
@@ -631,6 +678,37 @@ class ResearchGraphScheduler:
                 if not draining:
                     for node_id in tuple(sorted(pending)):
                         node = pending[node_id]
+                        node_control = node_control_store.node_control_state(
+                            execution_id, node_id
+                        )
+                        if node_control.phase is ResearchGraphNodeControlPhase.CANCELLED:
+                            current = store.snapshot(execution_id).node(node_id)
+                            if current.state is not ResearchGraphLiveNodeState.CANCELLED:
+                                raise ResearchGraphExecutionConflict(
+                                    "cancelled node control disagrees with execution state"
+                                )
+                            live[node_id] = current
+                            results[node_id] = ResearchGraphNodeResult(
+                                node.node_id,
+                                node.semantic_digest,
+                                ResearchGraphNodeState.CANCELLED,
+                            )
+                            del pending[node_id]
+                            progressed = True
+                            continue
+                        if node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
+                            node_control_store.pause_node_if_quiescent(
+                                execution_id,
+                                node_id,
+                                expected_generation=node_control.generation,
+                                now_ns=now_ns,
+                            )
+                            continue
+                        if node_control.phase in {
+                            ResearchGraphNodeControlPhase.PAUSED,
+                            ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+                        }:
+                            continue
                         if not all(
                             dependency in results
                             and results[dependency].state
@@ -698,6 +776,24 @@ class ResearchGraphScheduler:
                     node, handle, attempt_id, next_renewal = running[node_id]
                     if handle.done() or now_ns < next_renewal:
                         continue
+                    current = store.snapshot(execution_id).node(node_id)
+                    node_control = node_control_store.node_control_state(
+                        execution_id, node_id
+                    )
+                    if (
+                        current.state is not ResearchGraphLiveNodeState.RUNNING
+                        or current.attempt_id != attempt_id
+                    ):
+                        if node_control.phase in {
+                            ResearchGraphNodeControlPhase.PAUSED,
+                            ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+                            ResearchGraphNodeControlPhase.CANCELLED,
+                        }:
+                            handle.cancel()
+                            continue
+                        raise ResearchGraphExecutionConflict(
+                            "running scheduler attempt lost authoritative node state"
+                        )
                     renewed = store.renew_lease(
                         execution_id,
                         node_id,
@@ -715,10 +811,6 @@ class ResearchGraphScheduler:
                     )
 
                 if draining and not running:
-                    if control_store is None or current_control is None:
-                        raise RuntimeError(
-                            "draining graph lost durable control authority"
-                        )
                     paused = control_store.pause_if_quiescent(
                         execution_id,
                         expected_generation=current_control.generation,
@@ -727,6 +819,19 @@ class ResearchGraphScheduler:
                     raise ResearchGraphControlHalt(paused)
 
                 if pending and not running and not progressed:
+                    local_controls = tuple(
+                        node_control_store.node_control_state(execution_id, node_id)
+                        for node_id in sorted(pending)
+                        if node_control_store.node_control_state(
+                            execution_id, node_id
+                        ).phase
+                        in {
+                            ResearchGraphNodeControlPhase.PAUSED,
+                            ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+                        }
+                    )
+                    if local_controls:
+                        raise ResearchGraphNodeControlHalt(local_controls)
                     if reconciliation_required:
                         raise ResearchGraphReconciliationRequired(
                             execution_id,
@@ -823,4 +928,8 @@ class ResearchGraphScheduler:
         return False
 
 
-__all__ = ["ResearchGraphControlHalt", "ResearchGraphScheduler"]
+__all__ = [
+    "ResearchGraphControlHalt",
+    "ResearchGraphNodeControlHalt",
+    "ResearchGraphScheduler",
+]
