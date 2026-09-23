@@ -41,8 +41,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Automated projection commits must preserve the repository owner's
+          # canonical contributor identity.
+          git config user.name "Xalzeroph"
+          git config user.email "203086430+Xalzeroph@users.noreply.github.com"
 
           for attempt in 1 2 3 4 5; do
             echo "research projection convergence attempt ${attempt}"
@@ -73,7 +75,9 @@ jobs:
             git add research
             git commit -m "chore(research): refresh canonical projections"
 
-            if git push               --force-with-lease="refs/heads/main:${source_sha}"               origin HEAD:main; then
+            # A concurrent main advance must reject this ordinary fast-forward
+            # push. Rebuild from the new canonical head on the next iteration.
+            if git push origin HEAD:main; then
               echo "Published research projection for source cut ${source_sha}."
               exit 0
             fi
