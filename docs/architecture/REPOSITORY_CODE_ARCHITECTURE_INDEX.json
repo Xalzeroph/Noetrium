@@ -40758,7 +40758,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "7a87dc233a798acd2ca6db16e84e956ce5bcdaa1",
+  "source_git_sha": "b72f87270dd52b5c4813a54cbef1bd84bca5a6bd",
   "symbols": [
     {
       "bases": [],
@@ -63139,7 +63139,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 63,
+      "line": 67,
       "methods": [
         "__post_init__"
       ],
@@ -63159,7 +63159,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 106,
+      "line": 110,
       "methods": [
         "admit",
         "execute"
@@ -63185,7 +63185,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 128,
+      "line": 132,
       "methods": [
         "__post_init__",
         "admission"
@@ -63204,7 +63204,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 218,
+      "line": 222,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -63218,7 +63218,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 308,
+      "line": 312,
       "methods": [
         "__init__",
         "execute",
@@ -63238,12 +63238,23 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 450,
+      "line": 454,
       "methods": [
         "__init__",
         "control",
+        "_require_whole_graph_control",
+        "_active_execution_state",
+        "_states",
+        "_durable_control_receipt",
         "_run",
+        "_drive",
         "_inspect",
+        "_drain",
+        "_pause",
+        "_interrupt",
+        "_resume",
+        "_cancel",
+        "_checkpoint",
         "_execution_receipt"
       ],
       "module": "noetrium_platform.composition.research_os_execution",

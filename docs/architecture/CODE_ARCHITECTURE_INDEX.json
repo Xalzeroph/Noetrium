@@ -4793,6 +4793,16 @@
     {
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
+      "target": "noetrium_platform.composition.research_os_graph.CompiledResearchOSGraph"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
+      "target": "noetrium_platform.composition.research_os_migration.ResearchOSExecutionCut"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
       "target": "noetrium_platform.composition.research_os_values.ResearchOSValueRouter"
     },
     {
@@ -39652,7 +39662,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 128,
+      "line": 132,
       "methods": [
         "__post_init__",
         "admission"
@@ -39671,7 +39681,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 308,
+      "line": 312,
       "methods": [
         "__init__",
         "execute",
@@ -39693,7 +39703,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 218,
+      "line": 222,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -39717,7 +39727,7 @@
         "semantic_digest"
       ],
       "kind": "dataclass",
-      "line": 63,
+      "line": 67,
       "methods": [
         "__post_init__"
       ],
@@ -39739,7 +39749,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 106,
+      "line": 110,
       "methods": [
         "admit",
         "execute"
@@ -39760,12 +39770,23 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 450,
+      "line": 454,
       "methods": [
         "__init__",
         "control",
+        "_require_whole_graph_control",
+        "_active_execution_state",
+        "_states",
+        "_durable_control_receipt",
         "_run",
+        "_drive",
         "_inspect",
+        "_drain",
+        "_pause",
+        "_interrupt",
+        "_resume",
+        "_cancel",
+        "_checkpoint",
         "_execution_receipt"
       ],
       "module": "noetrium_platform.composition.research_os_execution",
@@ -101261,11 +101282,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3372,
+    "association_edges": 3374,
     "classes": 3307,
     "constructor_edges": 919,
     "inheritance_edges": 145,
-    "module_import_edges": 5029,
+    "module_import_edges": 5030,
     "parse_errors": 0,
     "python_modules": 1925,
     "registry_authorities": 20,
@@ -108095,6 +108116,10 @@
     {
       "source": "noetrium_platform.composition.research_os_execution",
       "target": "noetrium_platform.composition.research_execution_pool"
+    },
+    {
+      "source": "noetrium_platform.composition.research_os_execution",
+      "target": "noetrium_platform.composition.research_graph"
     },
     {
       "source": "noetrium_platform.composition.research_os_execution",
@@ -127768,6 +127793,7 @@
     {
       "imports": [
         "noetrium_platform.composition.research_execution_pool",
+        "noetrium_platform.composition.research_graph",
         "noetrium_platform.composition.research_os",
         "noetrium_platform.composition.research_os_experiment",
         "noetrium_platform.composition.research_os_graph",
@@ -142239,7 +142265,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "7a87dc233a798acd2ca6db16e84e956ce5bcdaa1",
+  "source_git_sha": "b72f87270dd52b5c4813a54cbef1bd84bca5a6bd",
   "system_import_edges": [
     {
       "count": 90,
@@ -142437,7 +142463,7 @@
       "target": "reliability"
     },
     {
-      "count": 296,
+      "count": 297,
       "source": "research_os",
       "target": "research_os"
     },
