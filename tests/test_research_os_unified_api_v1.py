@@ -3,6 +3,22 @@ from __future__ import annotations
 import noetrium.api as api
 
 
+def _sem_method_v1(payload=None):
+    return payload
+
+
+def _sem_method_v2(payload=None):
+    return {"version": 2, "payload": payload}
+
+
+def _minecraft_memory_benchmark():
+    return ("task-1",)
+
+
+def _task_success_metric(value):
+    return 1.0 if value else 0.0
+
+
 class _Port:
     def __init__(self) -> None:
         self.controls = []
@@ -47,21 +63,12 @@ class _Port:
 
 def _program() -> api.ResearchProgram:
     builder = api.ResearchProgramBuilder("sem")
-    builder.method(
-        "sem-method",
-        implementation_id="sem-method-v1",
-        implementation_digest="1" * 64,
-    )
+    builder.method("sem-method", implementation=_sem_method_v1)
     builder.benchmark(
         "minecraft-memory",
-        implementation_id="minecraft-memory-v1",
-        implementation_digest="2" * 64,
+        implementation=_minecraft_memory_benchmark,
     )
-    builder.metric(
-        "task-success",
-        implementation_id="task-success-v1",
-        implementation_digest="3" * 64,
-    )
+    builder.metric("task-success", implementation=_task_success_metric)
     builder.experiment(
         "main",
         definitions=("sem-method", "minecraft-memory"),
@@ -117,6 +124,7 @@ def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
         "ResearchDependency",
         "ResearchNode",
         "ResearchDefinition",
+        "ResearchImplementation",
         "ResearchControlAction",
     }
     assert expected <= set(api.__all__)
@@ -135,6 +143,24 @@ def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
     assert retired.isdisjoint(api.__all__)
     for name in retired:
         assert not hasattr(api, name)
+
+
+def test_research_implementation_identity_is_derived_without_manual_hashes() -> None:
+    implementation = api.ResearchImplementation.from_callable(
+        "sem-method",
+        _sem_method_v1,
+    )
+    assert implementation.module == __name__
+    assert implementation.qualname == "_sem_method_v1"
+    assert len(implementation.source_digest) == 64
+    assert len(implementation.implementation_digest) == 64
+
+    program = _program()
+    definition = next(
+        row for row in program.definitions
+        if row.definition_id == "sem-method"
+    )
+    assert definition.implementation == implementation
 
 
 def test_research_program_builder_freezes_whole_paper_semantics() -> None:
@@ -159,11 +185,7 @@ def test_research_program_builder_freezes_whole_paper_semantics() -> None:
 def test_research_program_digest_changes_when_scientific_semantics_change() -> None:
     first = _program()
     builder = api.ResearchProgramBuilder("sem")
-    builder.method(
-        "sem-method",
-        implementation_id="sem-method-v2",
-        implementation_digest="4" * 64,
-    )
+    builder.method("sem-method", implementation=_sem_method_v2)
     builder.experiment(
         "main",
         definitions=("sem-method",),
