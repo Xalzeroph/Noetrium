@@ -1,1 +1,12 @@
-"""Canonical source list for the unified downstream Research OS API.\n\nRegistered lower systems are composition authorities, not independent downstream\nSDKs. The product layer is the sole source projected through noetrium.api.\n"""\nfrom __future__ import annotations\n\nUNIFIED_API_EXTRA_MODULES = (\n    "noetrium_platform.product.api",\n)\n\n__all__ = ["UNIFIED_API_EXTRA_MODULES"]\n
+"""Canonical source list for the unified downstream Research OS API.
+
+Registered lower systems are composition authorities, not independent downstream
+SDKs. The product layer is the sole source projected through noetrium.api.
+"""
+from __future__ import annotations
+
+UNIFIED_API_EXTRA_MODULES = (
+    "noetrium_platform.product.api",
+)
+
+__all__ = ["UNIFIED_API_EXTRA_MODULES"]
