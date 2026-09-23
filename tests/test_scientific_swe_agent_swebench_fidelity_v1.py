@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium.api import (
+from noetrium_platform.research.experimentation.api import (
     CapabilityDescriptor,
     CapabilityRequest,
     ExecutionContext,
