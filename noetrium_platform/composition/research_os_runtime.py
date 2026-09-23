@@ -8,6 +8,7 @@ from noetrium_platform.composition.method_runtime import (
     standard_method_runtime_binder,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline
+from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.foundation.kernel.kernel import (
     DirectoryMachineJournal,
     ExecutionContext,
@@ -18,6 +19,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
 )
 from noetrium_platform.research.execution.machines import ResearchProgramHost
+from noetrium_platform.research.experimentation.api import ExperimentProgramBinding
 from noetrium_platform.research.execution.workflow.api import (
     MethodRunStatus,
     MethodRuntimeContext,
@@ -26,6 +28,10 @@ from noetrium_platform.research.execution.workflow.runtime import (
     UniversalMethodMachine,
 )
 
+from .research_os_experiment import (
+    ResearchOSExperimentRuntimeBinding,
+    ResearchOSExperimentRuntimeBindingPort,
+)
 from .research_os_execution import (
     ResearchOSNodeAdmission,
     ResearchOSNodeRuntimePort,
@@ -64,6 +70,8 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         self,
         state_root: str | Path,
         *,
+        execution_pool: ResearchExecutionPool | None = None,
+        experiment_bindings: ResearchOSExperimentRuntimeBindingPort | None = None,
         max_steps: int = 10_000,
     ) -> None:
         if type(state_root) not in {str, Path}:
@@ -73,8 +81,27 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             raise ValueError("canonical Research OS runtime state_root must be a directory")
         if type(max_steps) is not int or max_steps < 1:
             raise ValueError("canonical Research OS runtime max_steps must be positive")
+        if (execution_pool is None) != (experiment_bindings is None):
+            raise ValueError(
+                "canonical Experiment runtime requires both execution_pool and "
+                "experiment_bindings"
+            )
+        if execution_pool is not None and type(execution_pool) is not ResearchExecutionPool:
+            raise TypeError(
+                "canonical Experiment runtime execution_pool must be ResearchExecutionPool"
+            )
+        if experiment_bindings is not None and not isinstance(
+            experiment_bindings,
+            ResearchOSExperimentRuntimeBindingPort,
+        ):
+            raise TypeError(
+                "canonical Experiment runtime binding resolver must satisfy "
+                "ResearchOSExperimentRuntimeBindingPort"
+            )
         root.mkdir(parents=True, exist_ok=True)
         self._state_root = root
+        self._execution_pool = execution_pool
+        self._experiment_bindings = experiment_bindings
         self._max_steps = max_steps
         self._machine_journal = DirectoryMachineJournal(root / "program-journal")
         self._method_binder_digest = standard_method_runtime_binder().identity_digest
@@ -90,6 +117,49 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             raise TypeError("canonical Research OS runtime requires lowered node")
         if lowering.source != node:
             raise ValueError("canonical Research OS runtime node/lowering identity drifted")
+        if lowering.target is ResearchOSLoweringTarget.EXPERIMENTATION:
+            closure = lowering.experiment_closure
+            if closure is None:
+                raise CanonicalResearchOSRuntimeUnsupported(
+                    "Experimentation target has no canonical experiment closure"
+                )
+            if node.node.outputs:
+                raise CanonicalResearchOSRuntimeUnsupported(
+                    "Experimentation outputs require an explicit report projection contract"
+                )
+            if self._execution_pool is None or self._experiment_bindings is None:
+                raise CanonicalResearchOSRuntimeUnsupported(
+                    "canonical Experiment execution requires exact runtime binding "
+                    "and explicit ResearchExecutionPool"
+                )
+            runtime_binding = self._experiment_bindings.resolve(closure)
+            if type(runtime_binding) is not ResearchOSExperimentRuntimeBinding:
+                raise TypeError(
+                    "experiment runtime binding resolver returned invalid binding"
+                )
+            runtime_binding.validate_closure(closure)
+            binding_digest = canonical_digest(
+                {
+                    "runtime": "canonical-research-os-experiment-runtime",
+                    "version": 1,
+                    "closure_digest": closure.closure_digest,
+                    "runtime_binding_digest": runtime_binding.runtime_binding_digest,
+                    "experiment_program_digest": (
+                        closure.experiment_program.program.program_digest
+                    ),
+                    "experiment_batch_plan_digest": (
+                        closure.experiment_program.batch_plan_digest
+                    ),
+                    "journal": "directory-machine-journal",
+                }
+            )
+            return ResearchOSNodeAdmission(
+                node.graph_node_id,
+                node.semantic_digest,
+                lowering.lowering_digest,
+                binding_digest,
+            )
+
         if lowering.platform_requirements:
             raise CanonicalResearchOSRuntimeUnsupported(
                 "canonical Research OS runtime received unresolved platform requirements: "
@@ -193,6 +263,13 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             lowering.lowering_digest,
         )
 
+        if lowering.target is ResearchOSLoweringTarget.EXPERIMENTATION:
+            return self._execute_experiment(
+                machine_id,
+                lowering,
+                admission.runtime_binding_digest,
+                deadline=deadline,
+            )
         if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE:
             return self._execute_method(
                 runtime_context,
@@ -212,6 +289,89 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         raise CanonicalResearchOSRuntimeUnsupported(
             "canonical runtime execution target was not admitted"
         )
+
+    def _execute_experiment(
+        self,
+        machine_id: str,
+        lowering: LoweredResearchOSGraphNode,
+        admission_binding_digest: str,
+        *,
+        deadline: Deadline | None,
+    ) -> JsonValue:
+        closure = lowering.experiment_closure
+        if closure is None:
+            raise CanonicalResearchOSRuntimeUnsupported(
+                "Experimentation execution has no canonical closure"
+            )
+        if self._execution_pool is None or self._experiment_bindings is None:
+            raise CanonicalResearchOSRuntimeUnsupported(
+                "Experimentation execution is not explicitly bound"
+            )
+        runtime_binding = self._experiment_bindings.resolve(closure)
+        if type(runtime_binding) is not ResearchOSExperimentRuntimeBinding:
+            raise TypeError(
+                "experiment runtime binding resolver returned invalid binding"
+            )
+        runtime_binding.validate_closure(closure)
+        observed_admission = canonical_digest(
+            {
+                "runtime": "canonical-research-os-experiment-runtime",
+                "version": 1,
+                "closure_digest": closure.closure_digest,
+                "runtime_binding_digest": runtime_binding.runtime_binding_digest,
+                "experiment_program_digest": (
+                    closure.experiment_program.program.program_digest
+                ),
+                "experiment_batch_plan_digest": (
+                    closure.experiment_program.batch_plan_digest
+                ),
+                "journal": "directory-machine-journal",
+            }
+        )
+        if observed_admission != admission_binding_digest:
+            raise CanonicalResearchOSRuntimeFailure(
+                "Experiment runtime binding drifted after admission"
+            )
+
+        group = self._execution_pool.open_experiment_group(
+            f"research-os-experiment:{canonical_digest({'machine_id': machine_id})}",
+            resource_id=(
+                "research-os-experiment:"
+                f"{closure.research_plan.experiment.experiment_id}"
+            ),
+            deadline=deadline,
+        )
+        completed = False
+        try:
+            report = ExperimentProgramBinding(
+                closure.experiment_program,
+                runtime_binding.adapter,
+                runtime_binding.aggregation,
+                task_group=group,
+            ).execute(
+                journal=self._machine_journal,
+                machine_id=machine_id,
+            )
+            if (
+                report.protocol_digest
+                != closure.experiment_program.plan.protocol.protocol_digest
+                or report.binding_digest
+                != closure.experiment_program.plan.binding_digest
+                or report.plan_digest
+                != closure.experiment_program.plan.plan_digest
+            ):
+                raise CanonicalResearchOSRuntimeFailure(
+                    "Experiment report identity drifted from admitted closure"
+                )
+            completed = True
+            return None
+        finally:
+            self._execution_pool.close_experiment_group(
+                group,
+                cancel_pending=not completed,
+                deadline=deadline,
+            )
+
 
     def _execute_method(
         self,

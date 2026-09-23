@@ -13,6 +13,10 @@ from noetrium_platform.research.experimentation.api import (
     compile_experiment_program,
     compile_research_plan,
 )
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BoundStudyExecutionPort,
+    StudyMetricAggregationPort,
+)
 
 from .research_os_graph import CompiledResearchOSGraphNode
 
@@ -183,6 +187,72 @@ class ResearchOSExperimentClosureMissing(RuntimeError):
     pass
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchOSExperimentRuntimeBinding:
+    """Exact runtime objects plus immutable identity for one experiment closure."""
+
+    closure_digest: str
+    study_plan_digest: str
+    research_binding_digest: str
+    adapter: BoundStudyExecutionPort
+    aggregation: StudyMetricAggregationPort
+    runtime_binding_digest: str
+
+    def __post_init__(self) -> None:
+        require_sha256(
+            self.closure_digest,
+            "experiment runtime binding closure_digest",
+        )
+        require_sha256(
+            self.study_plan_digest,
+            "experiment runtime binding study_plan_digest",
+        )
+        require_sha256(
+            self.research_binding_digest,
+            "experiment runtime binding research_binding_digest",
+        )
+        if not isinstance(self.adapter, BoundStudyExecutionPort):
+            raise TypeError(
+                "experiment runtime binding adapter must satisfy BoundStudyExecutionPort"
+            )
+        if not callable(getattr(self.aggregation, "aggregate", None)):
+            raise TypeError(
+                "experiment runtime binding aggregation must satisfy "
+                "StudyMetricAggregationPort"
+            )
+        require_sha256(
+            self.runtime_binding_digest,
+            "experiment runtime binding identity",
+        )
+
+    def validate_closure(
+        self,
+        closure: ResearchOSExperimentClosure,
+    ) -> None:
+        if type(closure) is not ResearchOSExperimentClosure:
+            raise TypeError(
+                "experiment runtime binding validation requires closure"
+            )
+        if (
+            self.closure_digest != closure.closure_digest
+            or self.study_plan_digest
+            != closure.experiment_program.plan.plan_digest
+            or self.research_binding_digest
+            != closure.research_plan.binding_digest
+        ):
+            raise ValueError(
+                "experiment runtime binding does not belong to the closure"
+            )
+
+
+@runtime_checkable
+class ResearchOSExperimentRuntimeBindingPort(Protocol):
+    def resolve(
+        self,
+        closure: ResearchOSExperimentClosure,
+    ) -> ResearchOSExperimentRuntimeBinding: ...
+
+
 @runtime_checkable
 class ResearchOSExperimentClosurePort(Protocol):
     """Platform-owned resolver of a complete, proof-backed Experimentation closure."""
@@ -249,5 +319,7 @@ __all__ = [
     "ResearchOSExperimentClosure",
     "ResearchOSExperimentClosureMissing",
     "ResearchOSExperimentClosurePort",
+    "ResearchOSExperimentRuntimeBinding",
+    "ResearchOSExperimentRuntimeBindingPort",
     "compile_research_os_experiment_closure",
 ]

@@ -7,8 +7,16 @@ import pytest
 from noetrium import api
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentClosure,
+    ResearchOSExperimentRuntimeBinding,
     compile_research_os_experiment_closure,
 )
+from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.composition.research_os import bind_portfolio_research_os
+from noetrium_platform.composition.research_os_execution import StrictResearchOSControl
+from noetrium_platform.composition.research_os_runtime import (
+    CanonicalResearchOSNodeRuntime,
+)
+from noetrium_platform.composition.research_os_values import ResearchOSValueRouter
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
@@ -17,7 +25,11 @@ from noetrium_platform.foundation.governance.architecture.api import (
     CompositionSubject,
 )
 from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
+from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import Sha256Digest, canonical_digest
+from noetrium_platform.evidence.artifact.content.providers import (
+    DirectoryArtifactBlobStore,
+)
 from noetrium_platform.foundation.portfolio.api import (
     ProjectCapabilityRequirement,
     ProjectIdentity,
@@ -26,6 +38,7 @@ from noetrium_platform.foundation.portfolio.api import (
     ProjectSpec,
     ProjectToolProvenance,
 )
+from noetrium_platform.foundation.portfolio.runtime import SQLitePortfolioRevisionStore
 from noetrium_platform.research.experimentation.api import (
     ResearchBindingContribution,
     ResearchBindingRequirements,
@@ -45,7 +58,14 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     ResearchStudyDefinition,
     StudyExecutionPolicy,
     TaskDefinition,
+    StudyMetricObservation,
     TrialBudget,
+)
+from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
+    BasicStudyMetricAggregator,
+)
+from noetrium_platform.research.execution.graph.providers import (
+    SQLiteResearchGraphExecutionStore,
 )
 
 
@@ -238,3 +258,146 @@ def test_closure_constructor_rejects_plan_from_other_scientific_design() -> None
             other_plan,
             compile_experiment_program(other_plan.experiment_plan),
         )
+
+
+
+class _ClosureProvider:
+    def __init__(self, definition, resolution, binding) -> None:
+        self.definition = definition
+        self.resolution = resolution
+        self.binding = binding
+
+    def resolve(
+        self,
+        *,
+        graph_id,
+        graph_digest,
+        research_revision_digest,
+        node,
+    ):
+        return compile_research_os_experiment_closure(
+            graph_id=graph_id,
+            graph_digest=graph_digest,
+            research_revision_digest=research_revision_digest,
+            node=node,
+            definition=self.definition,
+            resolution=self.resolution,
+            binding=self.binding,
+        )
+
+
+class _BoundAdapter:
+    def execute_bound(self, unit, bindings, plan_digest):
+        del bindings, plan_digest
+        return tuple(
+            StudyMetricObservation(assignment, (("score", 1.0),))
+            for assignment in unit.assignments
+        )
+
+    def execute_bound_variant(self, assignment, binding, plan_digest):
+        del binding, plan_digest
+        return StudyMetricObservation(assignment, (("score", 1.0),))
+
+
+class _ExperimentRuntimeBindings:
+    def resolve(self, closure):
+        return ResearchOSExperimentRuntimeBinding(
+            closure.closure_digest,
+            closure.experiment_program.plan.plan_digest,
+            closure.research_plan.binding_digest,
+            _BoundAdapter(),
+            BasicStudyMetricAggregator(),
+            canonical_digest(
+                {
+                    "adapter": "test.bound-study-execution.v1",
+                    "aggregation": "basic-study-metric-aggregator.v1",
+                    "closure_digest": closure.closure_digest,
+                }
+            ),
+        )
+
+
+def test_public_research_os_runs_exact_experiment_program_with_durable_machine_journal(
+    tmp_path,
+) -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.protocol("study", config={"authority": "experimentation"})
+    builder.experiment("main", definitions=("study",))
+    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    pool = ResearchExecutionPool(
+        orchestration_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            max_async_io_in_flight=2,
+        ),
+        experiment_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            max_async_io_in_flight=2,
+        ),
+    )
+    revisions = SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3")
+    blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
+    graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    runtime = CanonicalResearchOSNodeRuntime(
+        tmp_path / "machine-state",
+        execution_pool=pool,
+        experiment_bindings=_ExperimentRuntimeBindings(),
+    )
+    research_os = bind_portfolio_research_os(
+        revisions,
+        blobs,
+        control=StrictResearchOSControl(
+            graph,
+            pool,
+            runtime,
+            ResearchOSValueRouter(()),
+            experiment_closures=_ClosureProvider(
+                definition,
+                resolution,
+                binding,
+            ),
+        ),
+    )
+    try:
+        revision = research_os.commit(portfolio, message="exact experiment")
+        receipt = research_os.run(
+            api.ResearchExecutionTarget("experiment-execution", revision)
+        )
+        assert receipt.state == "succeeded"
+        assert (tmp_path / "machine-state" / "program-journal" / "machines").is_dir()
+        active = graph.active_cut("experiment-execution")
+        assert active is not None
+        assert receipt.payload["cut_id"] == active.cut_id
+    finally:
+        pool.close()
+
+
+def test_experiment_runtime_binding_drift_fails_closed() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    runtime_binding = _ExperimentRuntimeBindings().resolve(closure)
+
+    with pytest.raises(ValueError, match="does not belong"):
+        ResearchOSExperimentRuntimeBinding(
+            closure.closure_digest,
+            "f" * 64,
+            runtime_binding.research_binding_digest,
+            runtime_binding.adapter,
+            runtime_binding.aggregation,
+            runtime_binding.runtime_binding_digest,
+        ).validate_closure(closure)
