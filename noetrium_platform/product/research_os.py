@@ -1172,7 +1172,6 @@ __all__ = [
     "ResearchPortfolioBuilder",
     "ResearchNodeRef",
     "ResearchOS",
-    "ResearchOSPort",
     "ResearchOutputSpec",
     "ResearchPortfolio",
     "ResearchProgram",
