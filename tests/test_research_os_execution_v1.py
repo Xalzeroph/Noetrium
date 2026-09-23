@@ -43,6 +43,14 @@ from noetrium_platform.foundation.portfolio.runtime import SQLitePortfolioRevisi
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
+from noetrium_platform.composition.research_os_migration import (
+    ResearchOSExecutionCut,
+)
+from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphControlPhase,
+    ResearchGraphExecutionConflict,
+    ResearchGraphLiveNodeState,
+)
 from noetrium_platform.research.execution.graph.providers import (
     SQLiteResearchGraphExecutionStore,
 )
@@ -271,20 +279,128 @@ def test_node_scoped_run_and_implicit_global_payload_fail_closed(tmp_path: Path)
         pool.close()
 
 
-def test_unimplemented_control_action_fails_closed(tmp_path: Path) -> None:
+def test_quiescent_graph_control_pause_checkpoint_resume_drain_cancel(
+    tmp_path: Path,
+) -> None:
     runtime = _Runtime()
     values = ResearchOSValueRouter((_ValueAuthority(),))
-    _graph, pool, research_os = _bound(tmp_path, runtime, values)
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="control")
         target = api.ResearchExecutionTarget("execution-control", revision)
 
+        assert research_os.run(target).state == "succeeded"
+
+        paused = research_os.pause(target)
+        assert paused.state == "paused"
+        assert paused.payload["control_phase"] == ResearchGraphControlPhase.PAUSED.value
+
+        checkpointed = research_os.checkpoint(target)
+        assert checkpointed.state == "checkpointed"
+        assert len(checkpointed.payload["checkpoint_digest"]) == 64
+
+        resumed = research_os.resume(target)
+        assert resumed.state == "succeeded"
+
+        drained = research_os.drain(target)
+        assert drained.state == "paused"
+        assert drained.payload["control_phase"] == ResearchGraphControlPhase.PAUSED.value
+
+        cancelled = research_os.cancel(target)
+        assert cancelled.state == "cancelled"
+        assert cancelled.payload["control_phase"] == ResearchGraphControlPhase.CANCELLED.value
+
+        inspected = research_os.inspect(target)
+        assert inspected.state == "cancelled"
+        assert inspected.payload["control_phase"] == ResearchGraphControlPhase.CANCELLED.value
+        assert graph.control_state(inspected.payload["cut_id"]).phase is (
+            ResearchGraphControlPhase.CANCELLED
+        )
+    finally:
+        pool.close()
+
+
+def test_running_interrupt_fences_attempt_and_requires_reconciliation(
+    tmp_path: Path,
+) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="interrupt")
+        target = api.ResearchExecutionTarget("execution-interrupt", revision)
+        compilation = compile_research_portfolio_graph(revision, portfolio)
+        cut = ResearchOSExecutionCut.from_compilation(
+            target.execution_id,
+            compilation,
+        )
+        graph.ensure_execution(cut.cut_id, compilation.plan)
+        graph.move_active_cut(target.execution_id, cut.cut_id)
+
+        graph.mark_ready(cut.cut_id, "paper::source", now_ns=1)
+        claimed = graph.claim(
+            cut.cut_id,
+            "paper::source",
+            owner_id="worker-a",
+            now_ns=2,
+            lease_expires_at_ns=100,
+        )
+        assert claimed.attempt_id is not None
+        graph.mark_running(
+            cut.cut_id,
+            "paper::source",
+            attempt_id=claimed.attempt_id,
+            owner_id="worker-a",
+            now_ns=3,
+        )
+
+        interrupted = research_os.interrupt(target)
+        assert interrupted.state == "recovery_required"
+        assert interrupted.payload["control_phase"] == (
+            ResearchGraphControlPhase.RECOVERY_REQUIRED.value
+        )
+        snapshot = graph.snapshot(cut.cut_id)
+        assert snapshot.node("paper::source").state is (
+            ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+        )
+
+        with pytest.raises(
+            ResearchGraphExecutionConflict,
+            match="cannot resume graph from control phase recovery_required",
+        ):
+            research_os.resume(target)
+
+        with pytest.raises(
+            ResearchGraphExecutionConflict,
+            match="checkpoint",
+        ):
+            research_os.checkpoint(target)
+    finally:
+        pool.close()
+
+
+def test_retry_and_reconcile_remain_proof_gated(tmp_path: Path) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    _graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="proof-gated-control")
+        target = api.ResearchExecutionTarget("execution-proof-gated", revision)
+        research_os.run(target)
+
         with pytest.raises(
             ResearchOSExecutionUnsupported,
-            match="no canonical durable implementation",
+            match="canonical graph retry plan",
         ):
-            research_os.pause(target)
+            research_os.retry(target)
+        with pytest.raises(
+            ResearchOSExecutionUnsupported,
+            match="lower-authority effect/execution proof",
+        ):
+            research_os.reconcile(target)
     finally:
         pool.close()
 
