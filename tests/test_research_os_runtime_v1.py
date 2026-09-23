@@ -47,6 +47,14 @@ def _benchmark():
     return ("task",)
 
 
+def _source_v2():
+    return {"value": 11}
+
+
+def _stable():
+    return {"stable": 1}
+
+
 @dataclass
 class _DataAuthority:
     authority_id: str = "data.authority"
@@ -76,6 +84,16 @@ class _DataAuthority:
 
     def resolve(self, reference):
         return self.rows[reference.authority_ref]
+
+    def reuse(self, source, target):
+        value = self.resolve(source)
+        self.rows[target.subject_digest] = value
+        return ResearchOSValueReference(
+            target,
+            self.authority_id,
+            target.subject_digest,
+            canonical_digest(value),
+        )
 
     def reuse_proof(self, reference):
         return canonical_digest(
@@ -224,3 +242,90 @@ def test_canonical_runtime_rejects_unresolved_platform_requirements(
             CanonicalResearchOSNodeRuntime(tmp_path / "machine-state"),
             ResearchOSValueRouter(()),
         )
+
+
+def _migration_portfolio(source_impl) -> api.ResearchPortfolio:
+    first = api.ResearchProgramBuilder("paper-a")
+    first.method("source-method", implementation=source_impl)
+    first.metric("metric", implementation=_metric)
+    first.node(
+        "source",
+        kind=api.ResearchNodeKind.METHOD,
+        definitions=("source-method",),
+        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+    )
+    first.evaluation(
+        "evaluate",
+        definitions=("metric",),
+        outputs=(api.ResearchOutputSpec("result", api.ResearchValueKind.DATA),),
+    )
+    first.depends(
+        "evaluate",
+        "source",
+        bindings=(
+            api.ResearchInputBinding("source", "data", api.ResearchValueKind.DATA),
+        ),
+    )
+
+    second = api.ResearchProgramBuilder("paper-b")
+    second.method("stable-method", implementation=_stable)
+    second.node(
+        "stable",
+        kind=api.ResearchNodeKind.METHOD,
+        definitions=("stable-method",),
+        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+    )
+    return api.ResearchPortfolio("migration-suite", (first.freeze(), second.freeze()))
+
+
+def test_live_revision_migration_reuses_only_proven_unchanged_nodes(
+    tmp_path: Path,
+) -> None:
+    revisions = SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3")
+    blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
+    graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    pool = _pool()
+    runtime = CanonicalResearchOSNodeRuntime(tmp_path / "machine-state")
+    authority = _DataAuthority()
+    research_os = bind_portfolio_research_os(
+        revisions,
+        blobs,
+        control=StrictResearchOSControl(
+            graph,
+            pool,
+            runtime,
+            ResearchOSValueRouter((authority,)),
+        ),
+    )
+    try:
+        first_portfolio = _migration_portfolio(_source)
+        first_revision = research_os.commit(first_portfolio, message="r1")
+        first_target = api.ResearchExecutionTarget("live-migration", first_revision)
+        assert research_os.run(first_target).state == "succeeded"
+        assert research_os.pause(first_target).state == "paused"
+
+        second_portfolio = _migration_portfolio(_source_v2)
+        second_revision = research_os.commit(
+            second_portfolio,
+            parents=(first_revision,),
+            message="r2",
+        )
+        second_target = api.ResearchExecutionTarget("live-migration", second_revision)
+        migrated = research_os.migrate(second_target)
+        assert migrated.state == "paused"
+        assert tuple(migrated.payload["reused_node_ids"]) == ("paper-b::stable",)
+        assert set(migrated.payload["restart_node_ids"]) == {
+            "paper-a::source",
+            "paper-a::evaluate",
+        }
+
+        resumed = research_os.resume(second_target)
+        assert resumed.state == "succeeded"
+        inspected = research_os.inspect(second_target)
+        assert tuple(inspected.payload["states"]["reused"]) == ("paper-b::stable",)
+        assert set(inspected.payload["states"]["succeeded"]) == {
+            "paper-a::source",
+            "paper-a::evaluate",
+        }
+    finally:
+        pool.close()
