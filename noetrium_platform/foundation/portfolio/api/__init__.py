@@ -24,10 +24,24 @@ from .contracts import (
     project_manifest_identity_facets,
 )
 from .ports import PortfolioCatalogPort
+from .revision import (
+    PortfolioBranchRef,
+    PortfolioRevision,
+    PortfolioRevisionConflict,
+    PortfolioRevisionNotFound,
+    PortfolioRevisionStorePort,
+    PortfolioTagRef,
+)
 
 __all__ = [
     "PROJECT_MANIFEST_SCHEMA",
     "PortfolioCatalogPort",
+    "PortfolioBranchRef",
+    "PortfolioRevision",
+    "PortfolioRevisionConflict",
+    "PortfolioRevisionNotFound",
+    "PortfolioRevisionStorePort",
+    "PortfolioTagRef",
     "ProgramSpec",
     "ProjectCapabilityRequirement",
     "ProjectConfigurationReference",
