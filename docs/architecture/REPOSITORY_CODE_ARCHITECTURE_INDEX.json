@@ -41172,7 +41172,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "c7fc05bcff5227601a1fe54c7973d701f8b99191",
+  "source_git_sha": "d2dbd38ad9ebaa204b8f49be17d69302afc537a3",
   "symbols": [
     {
       "bases": [],
@@ -100269,7 +100269,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
+      "line": 32,
       "methods": [
         "__init__",
         "_connection",
@@ -100292,6 +100292,7 @@
         "_node_tx",
         "_snapshot_tx",
         "_bump_generation",
+        "_require_timestamp_ns",
         "_require_now",
         "ensure_execution",
         "snapshot",
@@ -137421,7 +137422,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 40,
+      "line": 43,
       "methods": [
         "__init__",
         "execute"

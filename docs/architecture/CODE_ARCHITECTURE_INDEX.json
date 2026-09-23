@@ -80069,7 +80069,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 29,
+      "line": 32,
       "methods": [
         "__init__",
         "_connection",
@@ -80092,6 +80092,7 @@
         "_node_tx",
         "_snapshot_tx",
         "_bump_generation",
+        "_require_timestamp_ns",
         "_require_now",
         "ensure_execution",
         "snapshot",
@@ -143069,7 +143070,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "c7fc05bcff5227601a1fe54c7973d701f8b99191",
+  "source_git_sha": "d2dbd38ad9ebaa204b8f49be17d69302afc537a3",
   "system_import_edges": [
     {
       "count": 90,
