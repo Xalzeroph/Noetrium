@@ -14,52 +14,94 @@ from noetrium_platform.product.research_os import (
 
 
 class ReferenceResearchOSPort:
+    def __init__(self) -> None:
+        self._branches: dict[tuple[str, str], ResearchBranch] = {}
+        self._tags: dict[tuple[str, str], ResearchTag] = {}
+
     def commit(
         self,
         portfolio: ResearchPortfolio,
         *,
-        parents: tuple[str, ...],
+        parents: tuple[ResearchGraphRevision, ...],
         message: str,
     ) -> ResearchGraphRevision:
         return ResearchGraphRevision(
+            portfolio.portfolio_id,
             portfolio.portfolio_digest,
-            parents,
+            tuple(parent.revision_digest for parent in parents),
             message,
         )
 
     def diff(
         self,
-        left_revision_digest: str,
-        right_revision_digest: str,
+        left: ResearchGraphRevision,
+        right: ResearchGraphRevision,
     ) -> ResearchRevisionDiff:
         return ResearchRevisionDiff(
-            left_revision_digest,
-            right_revision_digest,
+            left.portfolio_id,
+            left.revision_digest,
+            right.revision_digest,
             (),
         )
 
-    def branch(self, name: str, revision_digest: str) -> ResearchBranch:
-        return ResearchBranch(name, revision_digest)
+    def branch(
+        self,
+        name: str,
+        revision: ResearchGraphRevision,
+        *,
+        expected: ResearchGraphRevision | None,
+    ) -> ResearchBranch:
+        key = (revision.portfolio_id, name)
+        current = self._branches.get(key)
+        if current is None:
+            if expected is not None:
+                raise ValueError("reference branch does not yet exist")
+            result = ResearchBranch(
+                revision.portfolio_id,
+                name,
+                revision.revision_digest,
+                1,
+            )
+            self._branches[key] = result
+            return result
+        if expected is None or current.revision_digest != expected.revision_digest:
+            raise ValueError("reference branch expected revision mismatch")
+        if current.revision_digest == revision.revision_digest:
+            return current
+        result = ResearchBranch(
+            revision.portfolio_id,
+            name,
+            revision.revision_digest,
+            current.generation + 1,
+        )
+        self._branches[key] = result
+        return result
 
-    def tag(self, name: str, revision_digest: str) -> ResearchTag:
-        return ResearchTag(name, revision_digest)
+    def tag(self, name: str, revision: ResearchGraphRevision) -> ResearchTag:
+        key = (revision.portfolio_id, name)
+        candidate = ResearchTag(
+            revision.portfolio_id,
+            name,
+            revision.revision_digest,
+        )
+        current = self._tags.get(key)
+        if current is not None and current != candidate:
+            raise ValueError("reference tag is immutable")
+        self._tags[key] = candidate
+        return candidate
 
     def merge(
         self,
-        left_revision_digest: str,
-        right_revision_digest: str,
+        portfolio: ResearchPortfolio,
+        left: ResearchGraphRevision,
+        right: ResearchGraphRevision,
         *,
         message: str,
     ) -> ResearchGraphRevision:
-        portfolio_digest = canonical_digest(
-            {
-                "left": left_revision_digest,
-                "right": right_revision_digest,
-            }
-        )
         return ResearchGraphRevision(
-            portfolio_digest,
-            (left_revision_digest, right_revision_digest),
+            portfolio.portfolio_id,
+            portfolio.portfolio_digest,
+            (left.revision_digest, right.revision_digest),
             message,
         )
 
