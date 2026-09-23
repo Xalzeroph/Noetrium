@@ -3,35 +3,11 @@ System: data/state
 Authority: state_authority
 Canonical authority: data/state
 Node kind: authority
-Downstream surface: public
-API exports: available
+Downstream surface: metadata_only
+API exports: none (metadata-only facade)
 This module is regenerated from the canonical registry and API exports.
 """
 
-from noetrium_platform.evidence.data.state.api import (
-    AggregateValue,
-    AtomicMutation,
-    AtomicStateStorePort,
-    StateBootstrapConflict,
-    StateCorruptionError,
-    StateVersionConflict,
-)
-
-from noetrium_platform.evidence.data.state.api.contracts import (
-    AggregateValue as contracts__AggregateValue,
-    AtomicMutation as contracts__AtomicMutation,
-)
-
-from noetrium_platform.evidence.data.state.api.errors import (
-    StateBootstrapConflict as errors__StateBootstrapConflict,
-    StateCorruptionError as errors__StateCorruptionError,
-    StateVersionConflict as errors__StateVersionConflict,
-)
-
-from noetrium_platform.evidence.data.state.api.ports import (
-    AtomicStateStorePort as ports__AtomicStateStorePort,
-)
-
 SYSTEM_KEY = 'data/state'
 PACKAGE_PREFIX = 'noetrium_platform.evidence.data.state'
-__all__ = ('AggregateValue', 'AtomicMutation', 'AtomicStateStorePort', 'StateBootstrapConflict', 'StateCorruptionError', 'StateVersionConflict', 'contracts__AggregateValue', 'contracts__AtomicMutation', 'errors__StateBootstrapConflict', 'errors__StateCorruptionError', 'errors__StateVersionConflict', 'ports__AtomicStateStorePort')
+__all__ = ()

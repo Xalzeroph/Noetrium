@@ -21,7 +21,7 @@
 
 <!-- readme-locale:pt-BR -->
 
-<!-- readme-source-sha256:b62e99e9e4d2b6735fcdbb88ec4874c2a8a29d68f884e13b9787ebf27f359625 -->
+<!-- readme-source-sha256:5555cf6d1c8114d940f9bb305e23bcb6190157ed2f22b2d2c774a20194019a81 -->
 
 <p align="center">
   <strong>Construa agentes. Execute experimentos. Verifique resultados.</strong><br>
@@ -94,12 +94,12 @@ Noetrium é deliberadamente mais amplo que uma biblioteca de agent workflows: de
 <!-- noetrium-interface-catalog:start -->
 ### Public interface catalog
 
-Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.
+Noetrium exposes one high-level Research OS API. Registered lower systems remain internal composition authorities and are listed here only as architecture metadata.
 
-- 30 registered system surfaces; 405 public API modules; 4361 public symbols.
+- 31 registered system surfaces; 1 public API modules; 26 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
-- Import rule: downstream code uses the single noetrium.api surface; generated system facades are registry material, not separate product entrypoints.
+- Import rule: downstream code uses only noetrium.api; lower system facades are internal registry material.
 
 | Capability domain | Registered surfaces |
 | --- | ---: |
@@ -116,16 +116,16 @@ Noetrium is a general-purpose research-systems platform for long-running agents,
 | platform | 1 |
 | portfolio | 1 |
 | reliability | 3 |
+| research_os | 1 |
 | resource | 2 |
 | runtime | 1 |
 | scope | 1 |
 
-Discover and use every capability through the same API:
+Author and control research through the same top-level API:
 
     from noetrium import api
-    MinecraftBridgePort = api.MinecraftBridgePort
-    AgentMemoryPort = api.AgentMemoryPort
-    matches = api.search("memory")
+    program = api.ResearchProgramBuilder("paper")
+    research_os = api.ResearchOS(port)
 
 After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
 <!-- noetrium-interface-catalog:end -->
