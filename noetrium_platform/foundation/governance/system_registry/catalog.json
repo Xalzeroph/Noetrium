@@ -752,10 +752,7 @@
     "provides": [
       "research.os"
     ],
-    "components": [
-      "composition",
-      "operator"
-    ],
+    "components": [],
     "node_kind": "product_surface",
     "canonical_authority": null,
     "downstream_surface": "public"
