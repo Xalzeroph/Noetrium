@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import asdict, replace
 import hashlib
 from pathlib import Path
@@ -19,6 +20,9 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_bytes,
     canonical_digest,
     require_sha256,
+)
+from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphReconciliationDisposition,
 )
 from noetrium_platform.research.execution.machines import ResearchProgramHost
 from noetrium_platform.research.experimentation.api import ExperimentProgramBinding
@@ -42,6 +46,8 @@ from .research_os_experiment import (
 )
 from .research_os_execution import (
     ResearchOSNodeAdmission,
+    ResearchOSNodeReconciliationPort,
+    ResearchOSNodeReconciliationProof,
     ResearchOSNodeRuntimePort,
 )
 from .research_os_graph import CompiledResearchOSGraphNode
@@ -112,6 +118,9 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         self._experiment_bindings = experiment_bindings
         self._max_steps = max_steps
         self._machine_journal = DirectoryMachineJournal(root / "program-journal")
+        self._method_journal = DirectoryMachineJournal(
+            root / "method-state" / "journal"
+        )
         self._method_binder_digest = standard_method_runtime_binder().identity_digest
 
     def admit(
@@ -299,6 +308,126 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             )
         raise CanonicalResearchOSRuntimeUnsupported(
             "canonical runtime execution target was not admitted"
+        )
+
+    @staticmethod
+    def _lower_program_digest(
+        lowering: LoweredResearchOSGraphNode,
+    ) -> str:
+        if lowering.target is ResearchOSLoweringTarget.EXPERIMENTATION:
+            closure = lowering.experiment_closure
+            if closure is None:
+                raise CanonicalResearchOSRuntimeUnsupported(
+                    "Experimentation reconciliation has no canonical closure"
+                )
+            return closure.experiment_program.program.program_digest
+        if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE:
+            if len(lowering.method_programs) != 1:
+                raise CanonicalResearchOSRuntimeUnsupported(
+                    "Method reconciliation requires exactly one MethodProgram"
+                )
+            return lowering.method_programs[0].program.program_digest
+        if len(lowering.machine_programs) != 1:
+            raise CanonicalResearchOSRuntimeUnsupported(
+                "Machine reconciliation requires exactly one ResearchProgram"
+            )
+        return lowering.machine_programs[0].program.program_digest
+
+    def reconcile(
+        self,
+        node: CompiledResearchOSGraphNode,
+        lowering: LoweredResearchOSGraphNode,
+        *,
+        execution_cut_id: str,
+        attempt_id: str,
+    ) -> ResearchOSNodeReconciliationProof:
+        if type(node) is not CompiledResearchOSGraphNode:
+            raise TypeError("canonical reconciliation requires compiled graph node")
+        if type(lowering) is not LoweredResearchOSGraphNode or lowering.source != node:
+            raise TypeError("canonical reconciliation requires matching lowering")
+        require_sha256(
+            execution_cut_id,
+            "canonical reconciliation execution_cut_id",
+        )
+        if type(attempt_id) is not str or not attempt_id.strip():
+            raise ValueError("canonical reconciliation attempt_id is required")
+
+        admission = self.admit(node, lowering)
+        machine_id = self._machine_id(
+            execution_cut_id,
+            node.graph_node_id,
+            lowering.lowering_digest,
+        )
+        journal = (
+            self._method_journal
+            if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE
+            else self._machine_journal
+        )
+        latest = journal.latest(machine_id)
+        expected_program_digest = self._lower_program_digest(lowering)
+        if latest is not None and latest.program_digest not in {
+            None,
+            expected_program_digest,
+        }:
+            raise CanonicalResearchOSRuntimeFailure(
+                "lower Machine journal program identity drifted during reconciliation"
+            )
+
+        status = None if latest is None else latest.accepted_status
+        if status is MachineStatus.FAILED:
+            disposition = ResearchGraphReconciliationDisposition.FAILED
+            failure_type = "LowerMachineFailed"
+            failure_message = (
+                "canonical lower Machine journal is definitively FAILED"
+            )
+        elif status in {
+            None,
+            MachineStatus.READY,
+            MachineStatus.RUNNABLE,
+            MachineStatus.COMPLETED,
+        }:
+            # COMPLETED still replays through the canonical node path so typed
+            # output publication / Artifact lineage closes before graph success.
+            disposition = ResearchGraphReconciliationDisposition.RETRY
+            failure_type = None
+            failure_message = None
+        else:
+            raise CanonicalResearchOSRuntimeUnsupported(
+                "lower Machine state requires explicit domain reconciliation: "
+                f"node={node.graph_node_id} "
+                f"status={None if status is None else status.value}"
+            )
+
+        proof_digest = canonical_digest(
+            {
+                "schema": "noetrium.research-os-node-reconciliation-proof.v1",
+                "graph_node_id": node.graph_node_id,
+                "execution_cut_id": execution_cut_id,
+                "attempt_id": attempt_id,
+                "machine_id": machine_id,
+                "lower_program_digest": expected_program_digest,
+                "lowering_digest": lowering.lowering_digest,
+                "runtime_binding_digest": admission.runtime_binding_digest,
+                "lower_head": (
+                    None
+                    if latest is None
+                    else {
+                        "commit_id": latest.commit_id,
+                        "revision": latest.revision,
+                        "status": latest.accepted_status.value,
+                    }
+                ),
+                "disposition": disposition.value,
+            }
+        )
+        return ResearchOSNodeReconciliationProof(
+            node.graph_node_id,
+            execution_cut_id,
+            attempt_id,
+            disposition,
+            proof_digest,
+            failure_type,
+            failure_message,
         )
 
     @staticmethod
@@ -526,6 +655,28 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         runtime_binding_digest: str,
     ) -> JsonValue:
         program = lowering.method_programs[0].program
+        lower_head = self._method_journal.latest(machine_id)
+        if lower_head is not None:
+            if lower_head.program_digest not in {None, program.program_digest}:
+                raise CanonicalResearchOSRuntimeFailure(
+                    "Method Machine journal program identity drifted"
+                )
+            if lower_head.accepted_status is MachineStatus.COMPLETED:
+                method_state = (
+                    lower_head.state.get("method")
+                    if isinstance(lower_head.state, Mapping)
+                    else None
+                )
+                if not isinstance(method_state, Mapping) or "previous_value" not in method_state:
+                    raise CanonicalResearchOSRuntimeFailure(
+                        "completed Method Machine lost recoverable result state"
+                    )
+                return method_state["previous_value"]
+            if lower_head.accepted_status is MachineStatus.FAILED:
+                raise CanonicalResearchOSRuntimeFailure(
+                    "Method Machine is definitively FAILED; a new scientific "
+                    "revision or explicit lower recovery is required"
+                )
         runtime = bind_standard_method_runtime(
             program,
             MethodRuntimeContext(
@@ -541,6 +692,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             program,
             runtime=runtime,
             input_value=payload,
+            resume=lower_head is not None,
         )
         if result.status is not MethodRunStatus.SUCCEEDED:
             raise CanonicalResearchOSRuntimeFailure(
