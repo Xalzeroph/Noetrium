@@ -16,6 +16,9 @@ from noetrium_platform.composition.research_os_execution import StrictResearchOS
 from noetrium_platform.composition.research_os_runtime import (
     CanonicalResearchOSNodeRuntime,
 )
+from noetrium_platform.composition.research_os_value_authorities import (
+    ResearchOSArtifactValueAuthority,
+)
 from noetrium_platform.composition.research_os_values import ResearchOSValueRouter
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
@@ -27,6 +30,9 @@ from noetrium_platform.foundation.governance.architecture.api import (
 from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import Sha256Digest, canonical_digest
+from noetrium_platform.evidence.artifact.catalog.providers import (
+    SQLiteArtifactRegistry,
+)
 from noetrium_platform.evidence.artifact.content.providers import (
     DirectoryArtifactBlobStore,
 )
@@ -437,49 +443,6 @@ def test_experiment_runtime_binding_drift_fails_closed() -> None:
 
 
 
-class _ArtifactValueAuthority:
-    authority_id = "artifact.value.test"
-    supported_kinds = frozenset({api.ResearchValueKind.ARTIFACT})
-
-    def __init__(self) -> None:
-        self.rows = {}
-
-    def publish(self, subject, value):
-        from noetrium_platform.composition.research_os_values import (
-            ResearchOSValueReference,
-        )
-        self.rows[subject.subject_digest] = value
-        return ResearchOSValueReference(
-            subject,
-            self.authority_id,
-            subject.subject_digest,
-            canonical_digest(value),
-        )
-
-    def lookup(self, subject):
-        from noetrium_platform.composition.research_os_values import (
-            ResearchOSValueReference,
-        )
-        value = self.rows[subject.subject_digest]
-        return ResearchOSValueReference(
-            subject,
-            self.authority_id,
-            subject.subject_digest,
-            canonical_digest(value),
-        )
-
-    def resolve(self, reference):
-        return self.rows[reference.authority_ref]
-
-    def reuse_proof(self, reference):
-        return canonical_digest(
-            {
-                "authority": self.authority_id,
-                "reference_digest": reference.reference_digest,
-            }
-        )
-
-
 def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
     tmp_path,
 ) -> None:
@@ -517,7 +480,12 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
         writer_actor=_InlineActor(),
     )
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
-    authority = _ArtifactValueAuthority()
+    artifact_blobs = DirectoryArtifactBlobStore(tmp_path / "value-blobs")
+    artifact_registry = SQLiteArtifactRegistry(tmp_path / "value-artifacts.sqlite3")
+    authority = ResearchOSArtifactValueAuthority(
+        artifact_blobs,
+        artifact_registry,
+    )
     research_os = bind_portfolio_research_os(
         SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3"),
         DirectoryArtifactBlobStore(tmp_path / "blobs"),
@@ -543,8 +511,18 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
             api.ResearchExecutionTarget("experiment-output", revision)
         )
         assert receipt.state == "succeeded"
-        assert len(authority.rows) == 1
-        report_ref = next(iter(authority.rows.values()))
+        compilation_cut = graph.active_cut("experiment-output")
+        assert compilation_cut is not None
+        from noetrium_platform.composition.research_os_values import ResearchOSValueSubject
+        subject = ResearchOSValueSubject(
+            compilation_cut.cut_id,
+            "paper::main",
+            "report",
+            api.ResearchValueKind.ARTIFACT,
+            graph.snapshot(compilation_cut.cut_id).node("paper::main").semantic_digest,
+        )
+        value_reference = authority.lookup(subject)
+        report_ref = authority.resolve(value_reference)
         assert report_ref["schema"] == "research-os.experiment-report-ref.v1"
         finalized = report_ref["manifest"]
         assert len(finalized["content_sha256"]) == 64
@@ -556,6 +534,6 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
             api.ResearchExecutionTarget("experiment-output", revision)
         )
         assert second.state == "succeeded"
-        assert next(iter(authority.rows.values())) == report_ref
+        assert authority.resolve(authority.lookup(subject)) == report_ref
     finally:
         pool.close()
