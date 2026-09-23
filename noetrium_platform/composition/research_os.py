@@ -16,10 +16,6 @@ from noetrium_platform.foundation.portfolio.api import (
     PortfolioRevision,
     PortfolioRevisionStorePort,
 )
-from noetrium_platform.research.execution.graph.api import (
-    ResearchGraphNode,
-    ResearchGraphPlan,
-)
 from noetrium_platform.product.research_os import (
     RESEARCH_PORTFOLIO_SCHEMA,
     ResearchBranch,
@@ -435,50 +431,6 @@ def _semantic_node_fingerprints(
     return local, memo
 
 
-def research_graph_node_id(ref: ResearchNodeRef) -> str:
-    if type(ref) is not ResearchNodeRef:
-        raise TypeError("research graph node identity requires ResearchNodeRef")
-    return f"{ref.program_id}:{ref.node_id}"
-
-
-def compile_research_graph(
-    revision: ResearchGraphRevision,
-    portfolio: ResearchPortfolio,
-) -> ResearchGraphPlan:
-    """Lower the complete top-level portfolio DAG into the canonical scheduler IR."""
-
-    if type(revision) is not ResearchGraphRevision:
-        raise TypeError("research graph compilation requires ResearchGraphRevision")
-    if type(portfolio) is not ResearchPortfolio:
-        raise TypeError("research graph compilation requires ResearchPortfolio")
-    if revision.portfolio_id != portfolio.portfolio_id:
-        raise ValueError("research graph revision and portfolio identities differ")
-    if revision.portfolio_digest != portfolio.portfolio_digest:
-        raise ValueError("research graph revision does not bind the supplied portfolio")
-
-    _, semantic = _semantic_node_fingerprints(portfolio)
-    incoming = _incoming_edges(portfolio)
-    nodes = tuple(
-        ResearchGraphNode(
-            research_graph_node_id(ref),
-            semantic[ref],
-            tuple(
-                research_graph_node_id(upstream)
-                for upstream, _ in incoming[ref]
-            ),
-        )
-        for ref in sorted(
-            semantic,
-            key=lambda value: (value.program_id, value.node_id),
-        )
-    )
-    return ResearchGraphPlan(
-        f"{portfolio.portfolio_id}@{revision.revision_digest}",
-        revision.revision_digest,
-        nodes,
-    )
-
-
 def diff_research_portfolios(
     left: ResearchPortfolio,
     right: ResearchPortfolio,
@@ -711,9 +663,7 @@ __all__ = [
     "RESEARCH_PORTFOLIO_MEDIA_TYPE",
     "ResearchOSControlPort",
     "bind_portfolio_research_os",
-    "compile_research_graph",
     "decode_research_portfolio",
     "diff_research_portfolios",
     "encode_research_portfolio",
-    "research_graph_node_id",
 ]
