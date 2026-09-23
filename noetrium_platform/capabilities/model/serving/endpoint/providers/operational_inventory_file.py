@@ -12,7 +12,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     OperationalModelEndpointReplicaSet,
     OperationalModelServingInventory,
 )
-from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
+from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity, JsonValue
 
 
 OPERATIONAL_MODEL_SERVING_INVENTORY_FILE_SCHEMA = (
@@ -24,14 +24,14 @@ class OperationalModelServingInventoryReadError(ValueError):
     """The persisted inventory is absent, malformed, or semantically invalid."""
 
 
-def _require_mapping(value: object, field: str) -> Mapping[str, object]:
+def _require_mapping(value: object, field: str) -> Mapping[str, JsonValue]:
     if not isinstance(value, Mapping):
         raise OperationalModelServingInventoryReadError(f"{field} must be an object")
     return value
 
 
 def decode_operational_model_serving_inventory(
-    document: Mapping[str, object],
+    document: Mapping[str, JsonValue],
 ) -> OperationalModelServingInventory:
     if document.get("schema") != OPERATIONAL_MODEL_SERVING_INVENTORY_FILE_SCHEMA:
         raise OperationalModelServingInventoryReadError(

@@ -10,6 +10,7 @@ from collections.abc import Mapping, Sequence
 
 from noetrium_platform.foundation.kernel.kernel import (
     JsonObject,
+    JsonValue,
     MachineJournalPort,
     MachineSnapshotStorePort,
     MachineStatus,
@@ -58,7 +59,7 @@ def _optional_digest(value: object, field: str) -> str | None:
     return text
 
 
-def _fact(value: object) -> Mapping[str, object]:
+def _fact(value: object) -> Mapping[str, JsonValue]:
     if not isinstance(value, Mapping) or frozenset(value) != _FACT_FIELDS:
         raise ValueError("participant turn fact fields mismatch")
     if value["schema_version"] != PARTICIPANT_TURN_FACT_WIRE_SCHEMA:

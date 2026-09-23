@@ -28,20 +28,20 @@ test = ["pytest>=8,<10"]
 release = ["build>=1.2,<2", "twine>=5,<7"]
 
 [project.scripts]
-noetrium = "noetrium_platform.product.operator.composition.research:main"
-noetrium-forensics = "noetrium_platform.product.operator.composition.cli:main"
+noetrium = "noetrium_platform.composition.operator.wiring.research:main"
+noetrium-forensics = "noetrium_platform.composition.operator.wiring.cli:main"
 noetrium-architecture-gate = "noetrium_platform.foundation.governance.architecture.gate:main"
-noetrium-manage = "noetrium_platform.product.operator.maintenance.runtime.management_cli:main"
+noetrium-manage = "noetrium_platform.composition.operator.maintenance_wiring.cli:main"
 noetrium-algorithm = "noetrium_platform.foundation.governance.analysis.algorithm.cli:main"
 noetrium-concurrency = "noetrium_platform.foundation.governance.analysis.concurrency.cli:main"
 noetrium-performance = "noetrium_platform.foundation.governance.analysis.performance.cli:main"
-noetrium-repository-boundary = "noetrium_platform.foundation.governance.repository_boundary.cli:main"
+noetrium-repository-boundary = "noetrium_platform.foundation.governance.architecture.repository_boundary.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["components*", "orchestration*", "noetrium*", "noetrium_platform*"]
 
 [tool.setuptools.package-data]
-"noetrium_platform.foundation.governance.system_registry" = ["catalog.json"]
+"noetrium_platform.foundation.governance.system_registry" = ["catalog.json", "components.json", "hierarchy.json"]
 "noetrium.contracts" = ["downstream_capability_catalog.json", "interface_schema.json"]
 "noetrium" = ["api.pyi", "py.typed"]
 "noetrium_platform.capabilities.environment.minecraft.providers" = ["assets/mineflayer_bridge/*.js", "assets/mineflayer_bridge/package.json", "assets/mineflayer_bridge/package-lock.json"]
