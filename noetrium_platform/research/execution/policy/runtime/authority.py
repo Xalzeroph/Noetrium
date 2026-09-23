@@ -43,6 +43,7 @@ class _Waiter:
     ticket: int
     group_id: str
     lane_kind: ExecutionLaneKind
+    permit_count: int
     intent: AdmissionIntent
     enqueued_monotonic: float
 
@@ -166,18 +167,52 @@ class HierarchicalAdmissionAuthority:
             raise KeyError(f"execution group is not registered with admission authority: {group_id}")
         return identity
 
-    def _can_admit(self, group_id: str, lane_kind: ExecutionLaneKind) -> bool:
+    def _can_ever_admit(
+        self,
+        group_id: str,
+        lane_kind: ExecutionLaneKind,
+        permit_count: int,
+    ) -> bool:
         identity = self._identity(group_id)
-        if self._in_flight >= self._budget.max_total_in_flight:
+        limits = [
+            int(self._budget.max_total_in_flight),
+            int(self._budget.max_in_flight_per_group),
+            int(self._lane_limits[lane_kind]),
+        ]
+        if identity.tenant_id is not None:
+            limits.append(int(self._budget.max_in_flight_per_tenant))
+        if identity.resource_key is not None:
+            limits.append(int(self._budget.max_in_flight_per_resource))
+        return permit_count <= min(limits)
+
+    def _can_admit(
+        self,
+        group_id: str,
+        lane_kind: ExecutionLaneKind,
+        permit_count: int = 1,
+    ) -> bool:
+        identity = self._identity(group_id)
+        if self._in_flight + permit_count > self._budget.max_total_in_flight:
             return False
-        if self._groups.get(group_id, 0) >= int(self._budget.max_in_flight_per_group):
+        if (
+            self._groups.get(group_id, 0) + permit_count
+            > int(self._budget.max_in_flight_per_group)
+        ):
             return False
-        if self._lanes.get(lane_kind, 0) >= self._lane_limits[lane_kind]:
+        if self._lanes.get(lane_kind, 0) + permit_count > self._lane_limits[lane_kind]:
             return False
-        if identity.tenant_id is not None and self._tenants.get(identity.tenant_id, 0) >= int(self._budget.max_in_flight_per_tenant):
+        if (
+            identity.tenant_id is not None
+            and self._tenants.get(identity.tenant_id, 0) + permit_count
+            > int(self._budget.max_in_flight_per_tenant)
+        ):
             return False
         resource_key = identity.resource_key
-        if resource_key is not None and self._resources.get(resource_key, 0) >= int(self._budget.max_in_flight_per_resource):
+        if (
+            resource_key is not None
+            and self._resources.get(resource_key, 0) + permit_count
+            > int(self._budget.max_in_flight_per_resource)
+        ):
             return False
         return True
 
@@ -196,7 +231,11 @@ class HierarchicalAdmissionAuthority:
         if self._in_flight < self._budget.max_total_in_flight:
             candidates = tuple(
                 item for item in self._waiters.values()
-                if self._can_admit(item.group_id, item.lane_kind)
+                if self._can_admit(
+                    item.group_id,
+                    item.lane_kind,
+                    item.permit_count,
+                )
             )
             if candidates:
                 candidate_rows = tuple(
@@ -221,25 +260,42 @@ class HierarchicalAdmissionAuthority:
         self._selection_cache_ticket = None if selected is None else selected.ticket
         return selected
 
-    def _grant(self, group_id: str, lane_kind: ExecutionLaneKind, *, waited_seconds: float) -> _AdmissionLease:
-        if not self._can_admit(group_id, lane_kind):
+    def _grant_many(
+        self,
+        group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        permit_count: int,
+        waited_seconds: float,
+    ) -> tuple[_AdmissionLease, ...]:
+        if not self._can_admit(group_id, lane_kind, permit_count):
             raise RuntimeError("admission grant violated configured budget")
         identity = self._identity(group_id)
-        self._in_flight += 1
-        self._groups[group_id] = self._groups.get(group_id, 0) + 1
-        self._lanes[lane_kind] = self._lanes.get(lane_kind, 0) + 1
+        self._in_flight += permit_count
+        self._groups[group_id] = self._groups.get(group_id, 0) + permit_count
+        self._lanes[lane_kind] = self._lanes.get(lane_kind, 0) + permit_count
         if identity.tenant_id is not None:
-            self._tenants[identity.tenant_id] = self._tenants.get(identity.tenant_id, 0) + 1
+            self._tenants[identity.tenant_id] = (
+                self._tenants.get(identity.tenant_id, 0) + permit_count
+            )
         resource_key = identity.resource_key
         if resource_key is not None:
-            self._resources[resource_key] = self._resources.get(resource_key, 0) + 1
+            self._resources[resource_key] = (
+                self._resources.get(resource_key, 0) + permit_count
+            )
         self._grant_sequence += 1
         self._group_last_grant[group_id] = self._grant_sequence
         self._invalidate_selection()
-        self._admitted_total += 1
-        self._cumulative_queue_wait_seconds += waited_seconds
-        self._max_queue_wait_seconds = max(self._max_queue_wait_seconds, waited_seconds)
-        return _AdmissionLease(self, group_id, lane_kind)
+        self._admitted_total += permit_count
+        self._cumulative_queue_wait_seconds += waited_seconds * permit_count
+        self._max_queue_wait_seconds = max(
+            self._max_queue_wait_seconds,
+            waited_seconds,
+        )
+        return tuple(
+            _AdmissionLease(self, group_id, lane_kind)
+            for _ in range(permit_count)
+        )
 
     def acquire(
         self,
@@ -249,60 +305,115 @@ class HierarchicalAdmissionAuthority:
         deadline: Deadline | None,
         cancellation: CancellationTokenPort | None,
     ) -> _AdmissionLease:
+        leases = self.acquire_many(
+            group_id,
+            lane_kind,
+            permit_count=1,
+            deadline=deadline,
+            cancellation=cancellation,
+        )
+        if len(leases) != 1:
+            raise RuntimeError("single admission acquire returned invalid lease cardinality")
+        return leases[0]
+
+    def acquire_many(
+        self,
+        group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        permit_count: int,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ) -> tuple[_AdmissionLease, ...]:
         group_id = self._group_id(group_id)
+        if type(permit_count) is not int or permit_count <= 0:
+            raise ValueError("execution admission permit_count must be a positive integer")
         if lane_kind is ExecutionLaneKind.TIMER:
             raise ValueError("timer scheduler does not consume execution admission")
         if lane_kind not in self._lane_limits:
             raise ValueError(f"unsupported admission lane: {lane_kind}")
         with self._condition:
             self._identity(group_id)
+            if not self._can_ever_admit(group_id, lane_kind, permit_count):
+                raise AdmissionRejected(
+                    "execution admission batch exceeds configured capacity: "
+                    f"group={group_id} lane={lane_kind.value} permits={permit_count}"
+                )
             if self._closed:
                 raise RuntimeError("execution admission authority is closed")
             if self._cancelled(cancellation):
-                self._cancelled_total += 1
+                self._cancelled_total += permit_count
                 raise TaskCancelled(cancellation.reason or "execution admission cancelled")
             if deadline is not None and deadline.expired:
-                self._timed_out_total += 1
+                self._timed_out_total += permit_count
                 raise TimeoutError("execution admission deadline expired")
 
             if self._group_intents[group_id].mode is AdmissionMode.REJECT:
-                if self._can_admit(group_id, lane_kind) and self._selected_waiter() is None:
-                    return self._grant(group_id, lane_kind, waited_seconds=0.0)
-                self._rejected_total += 1
+                if (
+                    self._can_admit(group_id, lane_kind, permit_count)
+                    and self._selected_waiter() is None
+                ):
+                    return self._grant_many(
+                        group_id,
+                        lane_kind,
+                        permit_count=permit_count,
+                        waited_seconds=0.0,
+                    )
+                self._rejected_total += permit_count
                 raise AdmissionRejected(
-                    f"execution admission rejected group={group_id} lane={lane_kind.value}"
+                    "execution admission rejected "
+                    f"group={group_id} lane={lane_kind.value} permits={permit_count}"
                 )
 
             waiter = _Waiter(
                 ticket=self._next_ticket,
                 group_id=group_id,
                 lane_kind=lane_kind,
+                permit_count=permit_count,
                 intent=self._group_intents[group_id],
                 enqueued_monotonic=time.monotonic(),
             )
             self._next_ticket += 1
             self._waiters[waiter.ticket] = waiter
             self._invalidate_selection()
-            self._queued_total += 1
+            self._queued_total += permit_count
             try:
                 while True:
                     if self._closed:
                         raise RuntimeError("execution admission authority is closed")
                     if self._cancelled(cancellation):
-                        self._cancelled_total += 1
-                        raise TaskCancelled(cancellation.reason or "execution admission cancelled")
+                        self._cancelled_total += permit_count
+                        raise TaskCancelled(
+                            cancellation.reason or "execution admission cancelled"
+                        )
                     if deadline is not None and deadline.expired:
-                        self._timed_out_total += 1
+                        self._timed_out_total += permit_count
                         raise TimeoutError("execution admission deadline expired")
                     if self._selected_waiter() is waiter:
                         self._waiters.pop(waiter.ticket, None)
                         self._invalidate_selection()
-                        waited = max(0.0, time.monotonic() - waiter.enqueued_monotonic)
-                        lease = self._grant(group_id, lane_kind, waited_seconds=waited)
+                        waited = max(
+                            0.0,
+                            time.monotonic() - waiter.enqueued_monotonic,
+                        )
+                        leases = self._grant_many(
+                            group_id,
+                            lane_kind,
+                            permit_count=permit_count,
+                            waited_seconds=waited,
+                        )
                         self._condition.notify_all()
-                        return lease
-                    remaining = None if deadline is None else deadline.remaining_seconds
-                    wait_for = self._POLL_SECONDS if remaining is None else min(self._POLL_SECONDS, remaining)
+                        return leases
+                    remaining = (
+                        None
+                        if deadline is None
+                        else deadline.remaining_seconds
+                    )
+                    wait_for = (
+                        self._POLL_SECONDS
+                        if remaining is None
+                        else min(self._POLL_SECONDS, remaining)
+                    )
                     self._condition.wait(wait_for)
             finally:
                 if waiter.ticket in self._waiters:
@@ -337,16 +448,18 @@ class HierarchicalAdmissionAuthority:
 
     def _waiting_counters(self):
         waiters = tuple(self._waiters.values())
-        by_group = Counter(item.group_id for item in waiters)
-        by_lane = Counter(item.lane_kind for item in waiters)
+        by_group: Counter[str] = Counter()
+        by_lane: Counter[ExecutionLaneKind] = Counter()
         by_tenant: Counter[str] = Counter()
         by_resource: Counter[tuple[str | None, str]] = Counter()
         for item in waiters:
+            by_group[item.group_id] += item.permit_count
+            by_lane[item.lane_kind] += item.permit_count
             identity = self._identity(item.group_id)
             if identity.tenant_id is not None:
-                by_tenant[identity.tenant_id] += 1
+                by_tenant[identity.tenant_id] += item.permit_count
             if identity.resource_key is not None:
-                by_resource[identity.resource_key] += 1
+                by_resource[identity.resource_key] += item.permit_count
         return by_group, by_lane, by_tenant, by_resource
 
     def snapshot(self) -> AdmissionTopologySnapshot:
@@ -369,7 +482,7 @@ class HierarchicalAdmissionAuthority:
                 max_in_flight_per_tenant=int(self._budget.max_in_flight_per_tenant),
                 max_in_flight_per_resource=int(self._budget.max_in_flight_per_resource),
                 in_flight=self._in_flight,
-                waiting=len(self._waiters),
+                waiting=sum(item.permit_count for item in self._waiters.values()),
                 closed=self._closed,
                 admitted_total=self._admitted_total,
                 rejected_total=self._rejected_total,
