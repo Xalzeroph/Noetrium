@@ -75,6 +75,8 @@ jobs:
         run: noetrium-repository-boundary . --skip-release-manifest
       - name: Verify public contracts
         run: python scripts/public_contract_audit.py
+      - name: Verify canonical workflow policy
+        run: python scripts/canonical_workflow_policy_gate.py
       - name: Verify public surface generation converges
         run: |
           python scripts/update_generated_docs.py
