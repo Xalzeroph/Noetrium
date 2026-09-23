@@ -40542,7 +40542,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 68,
+      "line": 67,
       "methods": [
         "__init__",
         "admit",
@@ -40573,7 +40573,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 64,
+      "line": 63,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeFailure",
@@ -40591,7 +40591,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 60,
+      "line": 59,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeUnsupported",
@@ -142357,7 +142357,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "87cd37a10bdd451c1f18d67936d59f5417a24674",
+  "source_git_sha": "ccedcaa0d4e9e50eb6f8900c71bc9e0cba5fa5c9",
   "system_import_edges": [
     {
       "count": 90,

@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3612,
     "python_import_edges": 6770,
-    "symbols": 4792,
+    "symbols": 4794,
     "tracked_files": 4241,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4786,
+    "python": 4788,
     "typescript": 5
   },
   "parse_errors": [],
@@ -40772,11 +40772,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 403,
     "sdk": 5,
-    "tests": 948,
+    "tests": 950,
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "87cd37a10bdd451c1f18d67936d59f5417a24674",
+  "source_git_sha": "ccedcaa0d4e9e50eb6f8900c71bc9e0cba5fa5c9",
   "symbols": [
     {
       "bases": [],
@@ -63948,7 +63948,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 60,
+      "line": 59,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeUnsupported",
@@ -63964,7 +63964,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 64,
+      "line": 63,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeFailure",
@@ -63980,7 +63980,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 68,
+      "line": 67,
       "methods": [
         "__init__",
         "admit",
@@ -136596,7 +136596,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 60,
+      "line": 62,
       "methods": [
         "publish",
         "lookup",
@@ -136615,7 +136615,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 98,
+      "line": 100,
       "methods": [
         "__init__",
         "admit",
@@ -136628,12 +136628,49 @@
       "role": "tests"
     },
     {
+      "bases": [
+        "_Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 141,
+      "methods": [
+        "__init__",
+        "execute"
+      ],
+      "module": "tests.test_research_os_execution_v1",
+      "name": "_FailOnceSourceRuntime",
+      "path": "tests/test_research_os_execution_v1.py",
+      "qualname": "tests.test_research_os_execution_v1._FailOnceSourceRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "_Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 171,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "tests.test_research_os_execution_v1",
+      "name": "_ReconcilingRuntime",
+      "path": "tests/test_research_os_execution_v1.py",
+      "qualname": "tests.test_research_os_execution_v1._ReconcilingRuntime",
+      "role": "tests"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 409,
+      "line": 571,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -136644,6 +136681,7 @@
         "renew_lease",
         "mark_succeeded",
         "mark_failed",
+        "retry_failed_subgraph",
         "schedule_retry",
         "mark_blocked",
         "resolve_reconciliation",
@@ -136665,7 +136703,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 546,
+      "line": 718,
       "methods": [
         "execute"
       ],
