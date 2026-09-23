@@ -969,8 +969,12 @@ class StrictResearchOSControl(ResearchOSControlPort):
                 expected_generation=control.generation,
                 now_ns=time.time_ns(),
             )
+        execution_target = ResearchExecutionTarget(
+            request.target.execution_id,
+            request.target.revision,
+        )
         prepared = prepare_research_os_execution(
-            request.target,
+            execution_target,
             portfolio,
             self._runtime,
             self._values,
