@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.reproduction import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
+from research.reproductions.contracts import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
 REPRODUCTION=ReproductionDefinition(
     package="d3d_vlp_cvpr2026",lifecycle=ReproductionLifecycle.PROTOCOL_BOUND,
     identity=ReproductionIdentity(method_id="d3d_vlp_cvpr2026",title="D3D-VLP: Dynamic 3D Vision-Language-Planning Model for Embodied Grounding and Navigation",paper_uri="https://openaccess.thecvf.com/content/CVPR2026/html/Wang_D3D-VLP_Dynamic_3D_Vision-Language-Planning_Model_for_Embodied_Grounding_and_Navigation_CVPR_2026_paper.html",year=2026,paper_revision="CVPR 2026 final proceedings"),
