@@ -34,6 +34,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
     ResearchGraphLiveNodeState,
+    ResearchGraphReconciliationDisposition,
 )
 
 from .research_os import ResearchOSControlPort
@@ -126,6 +127,63 @@ class ResearchOSNodeRuntimePort(Protocol):
         execution_cut_id: str,
         deadline: Deadline | None,
     ) -> JsonValue: ...
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchOSNodeReconciliationProof:
+    """Lower-authority proof used to resolve one uncertain graph attempt."""
+
+    graph_node_id: str
+    execution_cut_id: str
+    attempt_id: str
+    disposition: ResearchGraphReconciliationDisposition
+    proof_digest: str
+    failure_type: str | None = None
+    failure_message: str | None = None
+
+    def __post_init__(self) -> None:
+        if type(self.graph_node_id) is not str or not self.graph_node_id.strip():
+            raise ValueError("reconciliation proof graph_node_id is required")
+        require_sha256(
+            self.execution_cut_id,
+            "reconciliation proof execution_cut_id",
+        )
+        if type(self.attempt_id) is not str or not self.attempt_id.strip():
+            raise ValueError("reconciliation proof attempt_id is required")
+        if not isinstance(
+            self.disposition,
+            ResearchGraphReconciliationDisposition,
+        ):
+            raise TypeError("reconciliation proof disposition must be typed")
+        require_sha256(self.proof_digest, "reconciliation proof proof_digest")
+        if self.disposition is ResearchGraphReconciliationDisposition.FAILED:
+            if (
+                type(self.failure_type) is not str
+                or not self.failure_type.strip()
+                or type(self.failure_message) is not str
+                or not self.failure_message.strip()
+            ):
+                raise ValueError(
+                    "failed reconciliation proof requires failure type/message"
+                )
+        elif self.failure_type is not None or self.failure_message is not None:
+            raise ValueError(
+                "non-failed reconciliation proof cannot carry failure metadata"
+            )
+
+
+@runtime_checkable
+class ResearchOSNodeReconciliationPort(Protocol):
+    """Lower runtime reconciliation seam; graph control never invents effect truth."""
+
+    def reconcile(
+        self,
+        node: CompiledResearchOSGraphNode,
+        lowering: LoweredResearchOSGraphNode,
+        *,
+        execution_cut_id: str,
+        attempt_id: str,
+    ) -> ResearchOSNodeReconciliationProof: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -531,10 +589,7 @@ class StrictResearchOSControl(ResearchOSControlPort):
         if request.action is ResearchControlAction.RETRY:
             return self._retry(request, portfolio)
         if request.action is ResearchControlAction.RECONCILE:
-            raise ResearchOSExecutionUnsupported(
-                "RECONCILE requires a lower-authority effect/execution proof; "
-                "Research OS will not accept a caller-supplied disposition as truth"
-            )
+            return self._reconcile(request, portfolio)
         raise ResearchOSExecutionUnsupported(
             "Research OS control action has no canonical durable implementation: "
             f"{request.action.value}"
@@ -1046,6 +1101,109 @@ class StrictResearchOSControl(ResearchOSControlPort):
             extra={"checkpoint_digest": checkpoint_digest},
         )
 
+    def _reconcile(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported(
+                "RECONCILE does not accept caller-supplied reconciliation truth"
+            )
+        if request.target.node is None:
+            raise ResearchOSExecutionUnsupported(
+                "RECONCILE requires an explicit ResearchNodeRef"
+            )
+        if not isinstance(self._runtime, ResearchOSNodeReconciliationPort):
+            raise ResearchOSExecutionUnsupported(
+                "bound Research OS runtime has no lower-authority reconciliation proof seam"
+            )
+        compilation, cut, active, snapshot, control = self._active_execution_state(
+            request,
+            portfolio,
+        )
+        if snapshot.reconciliation_required_node_ids and (
+            control.phase is not ResearchGraphControlPhase.RECOVERY_REQUIRED
+        ):
+            control = self._store.require_recovery(
+                cut.cut_id,
+                expected_generation=control.generation,
+                now_ns=time.time_ns(),
+            )
+        matches = tuple(
+            node for node in compilation.nodes if node.ref == request.target.node
+        )
+        if len(matches) != 1:
+            raise ResearchGraphExecutionConflict(
+                "reconciliation target does not identify exactly one graph node"
+            )
+        compiled_node = matches[0]
+        record = snapshot.node(compiled_node.graph_node_id)
+        if record.state is not ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
+            raise ResearchGraphExecutionConflict(
+                "reconciliation target does not require reconciliation"
+            )
+        if record.attempt_id is None:
+            raise RuntimeError("uncertain graph node lost attempt identity")
+
+        lowering = compile_research_os_lowering(
+            compilation,
+            experiment_closures=self._experiment_closures,
+        ).node(compiled_node.graph_node_id)
+        proof = self._runtime.reconcile(
+            compiled_node,
+            lowering,
+            execution_cut_id=cut.cut_id,
+            attempt_id=record.attempt_id,
+        )
+        if (
+            proof.graph_node_id != compiled_node.graph_node_id
+            or proof.execution_cut_id != cut.cut_id
+            or proof.attempt_id != record.attempt_id
+        ):
+            raise ResearchGraphExecutionConflict(
+                "lower reconciliation proof identity drifted"
+            )
+
+        now_ns = time.time_ns()
+        kwargs = {}
+        if proof.disposition is ResearchGraphReconciliationDisposition.RETRY:
+            kwargs["retry_not_before_ns"] = now_ns
+        elif proof.disposition is ResearchGraphReconciliationDisposition.FAILED:
+            kwargs["failure_type"] = proof.failure_type
+            kwargs["failure_message"] = proof.failure_message
+        self._store.resolve_reconciliation(
+            cut.cut_id,
+            compiled_node.graph_node_id,
+            disposition=proof.disposition,
+            now_ns=now_ns,
+            **kwargs,
+        )
+        snapshot = self._store.snapshot(cut.cut_id)
+        control = self._store.control_state(cut.cut_id)
+        if (
+            not snapshot.reconciliation_required_node_ids
+            and control.phase is ResearchGraphControlPhase.RECOVERY_REQUIRED
+        ):
+            control = self._store.settle_recovery(
+                cut.cut_id,
+                expected_generation=control.generation,
+                now_ns=time.time_ns(),
+            )
+        return self._durable_control_receipt(
+            request,
+            compilation,
+            cut,
+            active,
+            snapshot,
+            control,
+            extra={
+                "reconciled_node_id": compiled_node.graph_node_id,
+                "reconciliation_disposition": proof.disposition.value,
+                "reconciliation_proof_digest": proof.proof_digest,
+            },
+        )
+
     @staticmethod
     def _execution_receipt(
         request: ResearchControlRequest,
@@ -1097,6 +1255,8 @@ __all__ = [
     "PreparedResearchOSNodeExecutor",
     "ResearchOSExecutionUnsupported",
     "ResearchOSNodeAdmission",
+    "ResearchOSNodeReconciliationPort",
+    "ResearchOSNodeReconciliationProof",
     "ResearchOSNodeRuntimePort",
     "StrictResearchOSControl",
     "prepare_research_os_execution",
