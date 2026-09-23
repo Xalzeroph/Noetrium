@@ -4,11 +4,11 @@ from dataclasses import dataclass
 import os
 import sys
 
-from noetrium.api import (
+from noetrium_platform.capabilities.participant.method.api import (
     MethodIdentity,
     MethodRuntimeIdentity,
 )
-from noetrium.api import bind_method_endpoint, run_local_command, run_local_shell_command
+from noetrium_platform.platform import bind_method_endpoint, run_local_command, run_local_shell_command
 
 
 @dataclass(frozen=True)
