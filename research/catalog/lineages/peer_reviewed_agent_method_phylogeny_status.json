@@ -68,7 +68,7 @@
       "reproductions": [
         {
           "package": "minedojo",
-          "package_digest": "78d55d406a5858d6229d0f8ba2b7fe22aab020ea811e5dd033a6eb9384e53347",
+          "package_digest": "37931f2d8279edbcec63cf2c309a98d1b119d53c70efa3ab2ca07e2109cca6d6",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minedojo"
@@ -126,7 +126,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/minedojo/source.py",
-              "content_sha256": "beceab4cc5c80bfd49eb60e17229716d89d9a20314d9d06b1a0d819012b18db3"
+              "content_sha256": "43f8c115fa3c336edf8d0a33186513c1dad7dffaf4bc6edac6a24a10eab81439"
             }
           ],
           "blockers": [
@@ -145,7 +145,7 @@
             },
             {
               "path": "tests/test_scientific_minedojo_v1.py",
-              "content_sha256": "4e8a78741ba96dd4fc99c080d8e9c8426655520b0da3add7152c779820967cd4"
+              "content_sha256": "0cc87f33026046a48ca939e5bc39f6a80e81eb7fed29a5819d6e86832ca5b1ec"
             }
           ]
         }
@@ -156,7 +156,7 @@
       "reproductions": [
         {
           "package": "saycan",
-          "package_digest": "43870f09de828d69374dc048ec7569554ba893911f7595995a5a68507962d3fd",
+          "package_digest": "d08f1505dc09d6e61dfabf24a65f421479b6991d77ab3db8dbe75b476b6610f2",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "saycan-101"
@@ -208,7 +208,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/saycan/source.py",
-              "content_sha256": "4f0472a9e7075fa14307e8b20308c342d731f7e39c36b936a1e0a71a905d186e"
+              "content_sha256": "3d4eeab8f2ea1a9cc7cd2d6cdabd858d2d943e0047408570c5f420573d3fdbaa"
             }
           ],
           "blockers": [
@@ -227,7 +227,7 @@
             },
             {
               "path": "tests/test_scientific_saycan_v1.py",
-              "content_sha256": "a83482c2b4378403763400e73052d9ee47db8488964c19fee9f8c6008a25e12a"
+              "content_sha256": "957503a9f3695ef1f9ad222fcc6825eec9f972b9f9b9bebe75a399ea3a76e6af"
             }
           ]
         }
@@ -299,7 +299,7 @@
       "reproductions": [
         {
           "package": "code_as_policies",
-          "package_digest": "18a6f32540e96b7db0641c9d41e559f9fa037cb283e607e22e60a8e6c991b8b7",
+          "package_digest": "954ce685306441a34eef59c5662c120f97a37fe25b04059ca52f1299c56fe871",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "robocodegen-37"
@@ -363,7 +363,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/code_as_policies/source.py",
-              "content_sha256": "dea59b7ea581efe26f775130c12e27faf32a6819954151f036b587d67a0053b2"
+              "content_sha256": "ae41102d792983d321eb6bcf015d9ec807838a9697d20463d6e0e7ed6c927003"
             }
           ],
           "blockers": [
@@ -383,7 +383,7 @@
             },
             {
               "path": "tests/test_scientific_code_as_policies_v1.py",
-              "content_sha256": "5bc29113b2ffd4205d2e3d809773bebcb0932272e5f08041816d600b332cfdb4"
+              "content_sha256": "e896c9da3a8b8454e64c795ba50cd27c02cf33a7bcbe4a5a05e7344f026de3a0"
             }
           ]
         }
@@ -394,7 +394,7 @@
       "reproductions": [
         {
           "package": "deps_minecraft",
-          "package_digest": "43cbc94e9f6b895f19a650e4c2c6b3de120d18918c323d6e297e5fe83d3451fa",
+          "package_digest": "df336393ed58c905083d1019d8f149f194f8b58e923dff1ab0283bbaf1052546",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "deps-minecraft-70"
@@ -447,7 +447,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/deps_minecraft/source.py",
-              "content_sha256": "4c9c53262430da92beb5f464e991adf3c8ee4fa0b4a0272d4cd49703e5638763"
+              "content_sha256": "a68ebe34d4cf948694f79d07b184ea9300126e16416387d0972f2f0b97d62447"
             }
           ],
           "blockers": [
@@ -462,7 +462,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_deps_minecraft_v1.py",
-              "content_sha256": "00b298bdb225736f6198fde210a9d73de763836bf6a230800a2756a57abc3b46"
+              "content_sha256": "a80e526c681c3942dc3f8d2483357cbc1d385b0d2b9676f2848639c99affd41e"
             }
           ]
         }
@@ -595,7 +595,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "68ac83534097830b9c0568249cad10f2a3d4815611db823ba7e171ab0d1c351b",
+          "package_digest": "6c5202eb80e2f4dd006fa6e85bffc13d47438f46f031bb7e7137028783f6fb91",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -612,7 +612,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/rap_reasoning/fidelity.py",
-              "content_sha256": "8df41dca2e81b71bf55f538630cb4641c7dec7c1989126af384817c561529f52"
+              "content_sha256": "6bc1f8ceca6a80df29b833f50ba5c77f26bf71639f0beef60333583befd9b09a"
             },
             {
               "kind": "method_program",
@@ -640,7 +640,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_rap_method_program_v1.py",
-              "content_sha256": "d44dd1a8b8c60484c73b0a5062117f56ca01b82cd7dd6f212cbb3382827d20ac"
+              "content_sha256": "a08f96f0eddd3fa395f38a0f3589cddcfe61ca04f5ede8641fc492ac1a717813"
             },
             {
               "path": "tests/test_scientific_rap_reproduction_v1.py",
@@ -655,7 +655,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "f9ed01a3c90bfce15aec0ba6868eff2f048a73c45cb5d3514de6d4fd43de5010",
+          "package_digest": "813990776be5bcb39df987b82b1d4406fa589d87b2740f49d9574041046f9d21",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -673,7 +673,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/react_alfworld/fidelity.py",
-              "content_sha256": "1f45511384a13360af5cbd6e8ac35141360983a270e22a2a3f88e1db37b706ba"
+              "content_sha256": "ab2af0ce33c5b41dc4e90b48bbb857ae4e52af650dbf576222c1c198d4482dac"
             },
             {
               "kind": "method_program",
@@ -712,7 +712,7 @@
             },
             {
               "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
-              "content_sha256": "6721c1d681e7641de961288f1fbc216ddc8fed94f5824a4f8ae09716a362e473"
+              "content_sha256": "dc5e549d5e7ba08e9a77ff127fbcc4a203b262858c6fe0ae859505674e097f61"
             },
             {
               "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
@@ -727,7 +727,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "37a6c6cc13c32e987cb0bba90745f81209df7e5ebd3cd0fbc53d918b5c150044",
+          "package_digest": "bc912d9aa5dd8e9e5844eec359823870391b5ada9ff5ab4238e10bbcf7158aa7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -744,7 +744,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/reflexion_alfworld/fidelity.py",
-              "content_sha256": "4d22b4ffefe32174abb9948fd94cc7d0aaef0847f44f8203616e4e0fa192ae81"
+              "content_sha256": "99730a9181f412330d9719a5ec4b4f5066025047e8cd742c7cfc81f2a2af1c09"
             },
             {
               "kind": "method_program",
@@ -920,7 +920,7 @@
       "reproductions": [
         {
           "package": "steve1_minecraft",
-          "package_digest": "e8fb3f3f0ffddcc9e1fd4a18fe4bc574b9371c3caaccb6e7eb63eb1460378fec",
+          "package_digest": "ca632e8bce7ccb35c78269af96b269d1986dd69aa2c1ed3d6d0c70dd35db8c83",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "steve1-paper-prompts"
@@ -967,7 +967,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/steve1_minecraft/source.py",
-              "content_sha256": "8e3c070e7e0bdda446bc689d4c2b99fcdf48663539b2cb6caa30ffbc495c0af4"
+              "content_sha256": "6afa84c5aab1dce9add07ef4b778830d1cff65efb0712832c07e372319912f7c"
             }
           ],
           "blockers": [
@@ -985,7 +985,7 @@
             },
             {
               "path": "tests/test_scientific_steve1_minecraft_v1.py",
-              "content_sha256": "1d832409a6122912e39fe1dc2785ca46a2278bb42994a1f6ef491dfcfbee28d4"
+              "content_sha256": "453479209a9a4c6ef4d9a1c4efcda7bbe2564eb976e8a70bcafe8e651a63bd1b"
             }
           ]
         }
@@ -1058,7 +1058,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "203e5198f4d3ff9f108bdfb842048cc14bc2d8d1def8b1df0c8c0f2363c45e34",
+          "package_digest": "998fb9e656cf51118ded33ee63c9e00452078f29725b641f809bdb403715666d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -1075,7 +1075,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/tree_of_thoughts/fidelity.py",
-              "content_sha256": "e330485cede1863d834713f6e6903dbe268efde9afaa31b0db5799016de3fa93"
+              "content_sha256": "6dcad9c69575c303237fab1cbce8d317e74f84e7a451a43462de8bf63b525ad6"
             },
             {
               "kind": "method_program",
@@ -1107,7 +1107,7 @@
             },
             {
               "path": "tests/test_scientific_tree_of_thoughts_method_program_v1.py",
-              "content_sha256": "e04e3664f1ea7fe24b0fcba99ca5a82ad98fcc4ffdbbb70ab4e3af1997a164ee"
+              "content_sha256": "4fe1f6a22d6d34458f14a7355ee069c0ce8395b9627a7d2918c045d87242c8a1"
             }
           ]
         }
@@ -1118,7 +1118,7 @@
       "reproductions": [
         {
           "package": "vima_embodied",
-          "package_digest": "74e909a6f5b03d0ad213ecb552d8498bb07154bcd32a6d661d82d358ad7b6eee",
+          "package_digest": "1b4cdcd5c5dafb81d8a76df2be7734c05694456f7060cbaf9c02102fab18a437",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "vima-bench"
@@ -1181,7 +1181,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/vima_embodied/source.py",
-              "content_sha256": "dce81437f7de225177cc639d775c28e59c6d4d2aac7e53b83055a60b3362709c"
+              "content_sha256": "fcb212e7044a06aa5a71e0072ff27e1bcdd1b21e2577c22d012ddc9f51d41192"
             }
           ],
           "blockers": [
@@ -1200,7 +1200,7 @@
             },
             {
               "path": "tests/test_scientific_vima_embodied_v1.py",
-              "content_sha256": "6a4ebb88e1654609a6deed3065b1844efe336ce3ff802a3de6800f91bc3f0ce0"
+              "content_sha256": "1d444d6c541dcc5104fbaa53bc03f6d59b1d9ccf528c4a6e16e39f9c13149e5f"
             },
             {
               "path": "tests/test_scientific_vima_environment_adapter_v1.py",
@@ -1215,7 +1215,7 @@
       "reproductions": [
         {
           "package": "autogen_agentchat",
-          "package_digest": "5c88c4ffbde98085628618acf977a5ea218462a70f01dcf412374f03f99f30d3",
+          "package_digest": "4a3becb012dad4a19d1e6e401b659df8f907bc814bba4725cb60213e5ae313cc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "multiagentbench"
@@ -1259,7 +1259,7 @@
             },
             {
               "path": "tests/test_scientific_autogen_groupchat_method_program_v1.py",
-              "content_sha256": "a479c9f5ff459c74ab8e60df97651228e0475bb850fb8af4c94b008442e51afe"
+              "content_sha256": "8ec33d8f814b694c3db9ae3ff6e09fc4435a41dd9b417b394416413072cd6dd1"
             }
           ]
         }
@@ -1270,7 +1270,7 @@
       "reproductions": [
         {
           "package": "chatdev_v1",
-          "package_digest": "c2ae5efc96a79a85a928a6e3ae30124b8f46bcfa719c7bd975da27da68b41ecb",
+          "package_digest": "3569b0fb9156681272c9468b81b0560e8860d6b560fc6f1c16202b4d8b5ea125",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "srdd"
@@ -1327,7 +1327,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/chatdev_v1/source.py",
-              "content_sha256": "ad7c58a28c08a9f02151da2d63e957307b91f83e1b1b94e8620a76028acf88f2"
+              "content_sha256": "7eef78e11eb13bb9293b8dfa78167a26bdac69b224dfb68ce5823f79d0b49c4f"
             },
             {
               "kind": "support",
@@ -1427,7 +1427,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "4a5750744ce4f5505bd61a87ede6119bdf34616c3683f006223d507bf7d334dc",
+          "package_digest": "206ea8218f07f406f2b23e2a0ed74ba148e3bb2509c30c563f19156f47663392",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -1444,7 +1444,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/lats_webshop/fidelity.py",
-              "content_sha256": "ad9fa1725d5ce170673961c6741b72460a6045ab7be1488321e694328dff39d5"
+              "content_sha256": "acd33c4ad3a1ec1963ce1c8979c819f98bfca889bb831d47484d4b97e67d21c0"
             },
             {
               "kind": "method_program",
@@ -1503,7 +1503,7 @@
       "reproductions": [
         {
           "package": "ma_lmm_memory",
-          "package_digest": "439eb762214ef6be86274de56c7bfcc6b9ff3d2bb20808dee0ac04359ce5ea06",
+          "package_digest": "c40810dd2ef8fb01bad9f92b7167cd3d74103cce6bd647481e48378a9d505624",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -1556,7 +1556,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/ma_lmm_memory/source.py",
-              "content_sha256": "18cd06479db9652654e4213ed022bef0a5eb2fc6a740ffdf6e19563db91fe169"
+              "content_sha256": "40a2a485606819772fb7888ea12d0d1a598d34df60d8fc12843f831ea9723e0d"
             }
           ],
           "blockers": [
@@ -1645,7 +1645,7 @@
       "reproductions": [
         {
           "package": "moviechat_memory",
-          "package_digest": "10d45ac103aa0d6d9c8ace60fd827caba82131963462f6f56272f43d9837cd1b",
+          "package_digest": "ec936f7432c9f7986f8406e99ee6c7694ea13707b2387cb7a8ba2f56f82cc137",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -1698,7 +1698,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/moviechat_memory/source.py",
-              "content_sha256": "493f85bea503045fa4f0fe4820bfa0092de54f8a131affacfc6cbb32e9c87d82"
+              "content_sha256": "9df0b9591abcb39a1893ffd5c5ce11a1aa1cc863b11a20562a686bae822d4275"
             }
           ],
           "blockers": [
@@ -1858,7 +1858,7 @@
       "reproductions": [
         {
           "package": "swe_agent_swebench",
-          "package_digest": "5ea19521f3275aedc674a34814ce5cb92cb0049ad2474e85778a379d8cab0fb0",
+          "package_digest": "b3d6b090961451450a873b56fbc59bab8a3512c9b5c508526024a7f5288de4f2",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -1890,7 +1890,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/swe_agent_swebench/aci.py",
-              "content_sha256": "26a59a0c5ab8d810097c10aefb5e3120c069c426baba27cdb9d36c3b61b8cd56"
+              "content_sha256": "988ef1c4d6447db1234f0a42a765d005f8dd504579651200900a6d965df1a5cb"
             },
             {
               "kind": "support",
@@ -1912,11 +1912,11 @@
             },
             {
               "path": "tests/test_scientific_swe_agent_method_program_v1.py",
-              "content_sha256": "4486f18adc9b14dc9d0e81566bb665dcf81d53d6acfa7c860950baa196caf222"
+              "content_sha256": "c707428dbd01b8097f72319691332f085a75d8318d932e184b5b1cb0275db58b"
             },
             {
               "path": "tests/test_scientific_swe_agent_swebench_fidelity_v1.py",
-              "content_sha256": "702102891d5e56e5c32db76f41cc6a6ffd7f3eaa0bc1c4c8173869d7b69896ef"
+              "content_sha256": "82150b65e2b6e40f7137d2186425c9bfc80b04c05c292aea55b469b9aac42a5c"
             }
           ]
         }
@@ -2006,7 +2006,7 @@
       "reproductions": [
         {
           "package": "videoagent_memory",
-          "package_digest": "f56ef7dd170b7697f5abc2137d1363a86f11f82fac281b00521f1ad8bc2b7225",
+          "package_digest": "94e62bd6081baa27d7080513332a472d53cb2eb32408ec45ad1c23de5697e735",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egoschema"
@@ -2070,7 +2070,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/videoagent_memory/source.py",
-              "content_sha256": "59778c8525a97aa734334d190ebf0650104e23f4eb99656b588094ba5f277a07"
+              "content_sha256": "337492a238056373274a76d7755a134782de498fda8d0dd3fc346e9b4f0abbab"
             }
           ],
           "blockers": [
@@ -2085,7 +2085,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_videoagent_egoschema_v1.py",
-              "content_sha256": "ebe6da363022d257772de14b4a263dc963b4c342f9a17e5dedeb1eabe4f143a7"
+              "content_sha256": "2e9530d4474411c19a69e7cd8874af3f84303569f78c67fac5e88a46a3813626"
             },
             {
               "path": "tests/test_scientific_videoagent_memory_v1.py",
@@ -2100,7 +2100,7 @@
       "reproductions": [
         {
           "package": "voyager_minecraft",
-          "package_digest": "f143b5d5a3e9c0a9ad48162abd6eb96ec2fd1890e9deb29bc26711fd52df156b",
+          "package_digest": "bfeb63b463098dfea337ffa75b6f04692e06da02c9829673836933e6d98d51b5",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "voyager-minecraft"
@@ -2168,7 +2168,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/voyager_minecraft/source.py",
-              "content_sha256": "f6cb11dd7d2ea23f39d5b98909c79ab848165040c5fd369ca352630f4c0c81aa"
+              "content_sha256": "12b811dc43f4b48d8cf987e0c7e97d200fdd20f651119d1021d37a0bb5cafeaa"
             }
           ],
           "blockers": [
@@ -2282,7 +2282,7 @@
       "reproductions": [
         {
           "package": "adacm2_memory",
-          "package_digest": "7e26957b32cbb2be097d19f2dac2da7502bc0d2d0f2f78aed82999debe27feec",
+          "package_digest": "90fc63f2385ef618af1b14d322c773ebaafc34cf54ee7da2baae146c8a705a5d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -2323,7 +2323,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/adacm2_memory/source.py",
-              "content_sha256": "67bcd34e5ca9a4dcb05a28d1e079ae129c474f970b41733291c3c74f32334d46"
+              "content_sha256": "e4497295e8450ecb6f9309fdc74720ba54cc096ec5dd79840589ffd0ddf19ffe"
             }
           ],
           "blockers": [
@@ -2408,7 +2408,7 @@
       "reproductions": [
         {
           "package": "aflow",
-          "package_digest": "ab63f50284cc0eb342d202934015ce7d18f83ded2e13830d5c969aaee6cc6b88",
+          "package_digest": "0ee598c0849d3fc83aeccab552b1775e159d55beede92834f87e57e266aa735c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -2474,7 +2474,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_aflow_fidelity_v1.py",
-              "content_sha256": "f937e860c22e6a9e83f39ea38f9dbac398b3d7936afb86a528dd327b84dd12ba"
+              "content_sha256": "43032779f2861ba9402e63653c0a8844ab1e5713ba8e920ddd1e4a3e1639c9ef"
             },
             {
               "path": "tests/test_scientific_aflow_optimization_program_v1.py",
@@ -2630,7 +2630,7 @@
       "reproductions": [
         {
           "package": "flow_modularized_agentic_workflow",
-          "package_digest": "4bedc87c502e9f7fe3f5e97f9e1eaf1b51f226d02f211c1dfc0b5b51bcce4fe0",
+          "package_digest": "1a30a8b010a053be8b6a0486cde924a35686a942ee77a8ec19865fa701e898fc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "flow-practical-tasks"
@@ -2694,7 +2694,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_flow_modularized_workflow_v1.py",
-              "content_sha256": "51387e22708de7ded369359febb01313ac10ff11b4167cebc06df5cfc0251c53"
+              "content_sha256": "b56af996728b5c7b07cd6d853e92aa76b20819aa9ab27907230ff64cec933355"
             }
           ]
         }
@@ -2705,7 +2705,7 @@
       "reproductions": [
         {
           "package": "jarvis1_minecraft",
-          "package_digest": "49b5e32f14ad717efe7d938aeba8330bf23b5d916fe96c96a539f30302fe8e56",
+          "package_digest": "b13149a105889feab0557ac51204c02f9f0e79d1dedc1095e8b4cd7e5f09063a",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "jarvis1-offline-185"
@@ -2757,7 +2757,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/jarvis1_minecraft/source.py",
-              "content_sha256": "79bf8871222551f9638e0c599ba05260be6491d9c4ee897e0a9ec983f6ce1af7"
+              "content_sha256": "3b690e2851b899f627634ddc368a14321244f9a465709b7e58aef90d087d6ec4"
             }
           ],
           "blockers": [
@@ -2780,7 +2780,7 @@
             },
             {
               "path": "tests/test_scientific_jarvis1_method_program_v1.py",
-              "content_sha256": "92804b9e12844c9530d7c1cb79be33ff297e25377b4a2edd7da29e353d87aa27"
+              "content_sha256": "5356a7124a97c4bff35845bc40b443335bdfab119c1dfffd36b459d5f67ec8f2"
             }
           ]
         }
@@ -2791,7 +2791,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "39dd12a2d71315a376391e049010f4ec46f9c6452a0dc0973ea5803cae4fe860",
+          "package_digest": "ab22e913a75a822ba782138aca3f7f91ba398438201400cc816026df6e6b0cec",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -2815,7 +2815,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/qlass_alfworld/fidelity.py",
-              "content_sha256": "65dc26d90b5b8c2acca4d36381c418f4ab51562863a7d085ea42b4dc4a331fb3"
+              "content_sha256": "b12e0e1d3683523a8ad6d37eeaafe385cb2763bad1f2909968535596b2da640f"
             },
             {
               "kind": "method_program",
@@ -2862,7 +2862,7 @@
       "reproductions": [
         {
           "package": "rewind_memory",
-          "package_digest": "d20ec5a03e366cacb3eea04b264bc3a035ab2c451532b09026dd47bcf5a878fe",
+          "package_digest": "d9ae4263ae85778d36ca2eae2083555b2f5e15bca99eaf3338881638aefd8d29",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -2903,7 +2903,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/rewind_memory/source.py",
-              "content_sha256": "383f1c917d1f1b2c6c965a053d3272ca319a508d06bbe6eacf7ae0df808deabd"
+              "content_sha256": "ce659b9f369bd32229c2c3cdf25297c464e8f6eef3c1a3ae0819257ca4984e19"
             }
           ],
           "blockers": [
@@ -3813,7 +3813,7 @@
       "reproductions": [
         {
           "package": "worldmm_memory",
-          "package_digest": "4523349f9c1410b8df7386c7e85949648a5c05191bbe28f9831695e2b4157b79",
+          "package_digest": "79118b4df4bacfc1347f462e2acd22efaf03808aa5225c3005a0833d1927fbd0",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egolifeqa"
@@ -3871,7 +3871,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/worldmm_memory/source.py",
-              "content_sha256": "8a19be477958edff46bbd5da85a5d9b511ace6f09bd0ed4b2ca9fce905f17287"
+              "content_sha256": "10eb912c141ed7177c328bee1f759cde82ad33ba25e2782c9bc844a01f6dbe51"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "cad6a7b5c4bf6c70bb557942bde9d1cc159231cc10156769d42c191ae87fa82f"
+  "projection_digest": "8ac6c820ce026fcd6a13bbbfc0ea4ef6a0f49fc5dc9b52c3e61e2212fb20e76e"
 }

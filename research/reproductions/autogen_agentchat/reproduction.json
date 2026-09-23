@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "autogen_agentchat",
-  "package_digest": "5c88c4ffbde98085628618acf977a5ea218462a70f01dcf412374f03f99f30d3",
+  "package_digest": "4a3becb012dad4a19d1e6e401b659df8f907bc814bba4725cb60213e5ae313cc",
   "definition_digest": "9258ee91e88cac0da05db1b725cd3e4b0045ed4d0da44722ce81bd1b67b87e35",
   "source_registry_digest": "8668e81cb1f973ed2b3d05971c15f5e4455cd2ee8b8e2932f40c208aa8875912",
   "lifecycle": "protocol_bound",
@@ -101,7 +101,7 @@
     },
     {
       "path": "tests/test_scientific_autogen_groupchat_method_program_v1.py",
-      "content_sha256": "a479c9f5ff459c74ab8e60df97651228e0475bb850fb8af4c94b008442e51afe"
+      "content_sha256": "8ec33d8f814b694c3db9ae3ff6e09fc4435a41dd9b417b394416413072cd6dd1"
     }
   ]
 }

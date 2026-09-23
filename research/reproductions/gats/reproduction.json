@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "gats",
-  "package_digest": "a1b4763d872119c0ddd59b267aaa7b5146b3ddc93cee0450e765f77d8254745e",
+  "package_digest": "9393d256bb91c9b4728bc1407361eb16b695abc4e7582b9bb1a6a2cc126d8f38",
   "definition_digest": "128e9f6423d7c25a605583d14e086d9a00847d2cfc8b06973b44ab40d6755052",
   "source_registry_digest": "bd01696f94f58340e853c4ec16a61206335c13e3ef45730b14418c4646b37a67",
   "lifecycle": "protocol_bound",
@@ -73,7 +73,7 @@
       "kind": "fidelity",
       "path": "research/reproductions/gats/fidelity.py",
       "declaration_digest": "6848468073f0fb3e9764df85558328571e9215af15f8c542104be976db37e0a4",
-      "content_sha256": "95809b7c82f9045494f406f5f29b87225b044ac677d96647e5276ff3ce71fb6f"
+      "content_sha256": "b784f6295136f9e6130e1b6bdd67bcab254e9b9595eeac7bf318986a2bf7c6bd"
     },
     {
       "kind": "study",

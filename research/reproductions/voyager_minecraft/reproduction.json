@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "voyager_minecraft",
-  "package_digest": "f143b5d5a3e9c0a9ad48162abd6eb96ec2fd1890e9deb29bc26711fd52df156b",
+  "package_digest": "bfeb63b463098dfea337ffa75b6f04692e06da02c9829673836933e6d98d51b5",
   "definition_digest": "eab60b402b1b344a21057545661fe6f79af8a0c11b8b996cbc554be142093c95",
   "source_registry_digest": "f1ab1828eec1ae53b63ea726f5a6a82721010fa6108cb609089c7bb1b4d5420b",
   "lifecycle": "protocol_bound",
@@ -159,7 +159,7 @@
       "kind": "support",
       "path": "research/reproductions/voyager_minecraft/source.py",
       "declaration_digest": "f40e961995f11502d49266f2610775c6d2f6b4081b5e0a964b33109dc97b3f23",
-      "content_sha256": "f6cb11dd7d2ea23f39d5b98909c79ab848165040c5fd369ca352630f4c0c81aa"
+      "content_sha256": "12b811dc43f4b48d8cf987e0c7e97d200fdd20f651119d1021d37a0bb5cafeaa"
     }
   ],
   "primary_executable": "research/reproductions/voyager_minecraft/program.py",

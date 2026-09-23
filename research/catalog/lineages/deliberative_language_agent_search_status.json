@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "f9ed01a3c90bfce15aec0ba6868eff2f048a73c45cb5d3514de6d4fd43de5010",
+          "package_digest": "813990776be5bcb39df987b82b1d4406fa589d87b2740f49d9574041046f9d21",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -27,7 +27,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/react_alfworld/fidelity.py",
-              "content_sha256": "1f45511384a13360af5cbd6e8ac35141360983a270e22a2a3f88e1db37b706ba"
+              "content_sha256": "ab2af0ce33c5b41dc4e90b48bbb857ae4e52af650dbf576222c1c198d4482dac"
             },
             {
               "kind": "method_program",
@@ -66,7 +66,7 @@
             },
             {
               "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
-              "content_sha256": "6721c1d681e7641de961288f1fbc216ddc8fed94f5824a4f8ae09716a362e473"
+              "content_sha256": "dc5e549d5e7ba08e9a77ff127fbcc4a203b262858c6fe0ae859505674e097f61"
             },
             {
               "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
@@ -145,7 +145,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "37a6c6cc13c32e987cb0bba90745f81209df7e5ebd3cd0fbc53d918b5c150044",
+          "package_digest": "bc912d9aa5dd8e9e5844eec359823870391b5ada9ff5ab4238e10bbcf7158aa7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -162,7 +162,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/reflexion_alfworld/fidelity.py",
-              "content_sha256": "4d22b4ffefe32174abb9948fd94cc7d0aaef0847f44f8203616e4e0fa192ae81"
+              "content_sha256": "99730a9181f412330d9719a5ec4b4f5066025047e8cd742c7cfc81f2a2af1c09"
             },
             {
               "kind": "method_program",
@@ -215,7 +215,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "203e5198f4d3ff9f108bdfb842048cc14bc2d8d1def8b1df0c8c0f2363c45e34",
+          "package_digest": "998fb9e656cf51118ded33ee63c9e00452078f29725b641f809bdb403715666d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -232,7 +232,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/tree_of_thoughts/fidelity.py",
-              "content_sha256": "e330485cede1863d834713f6e6903dbe268efde9afaa31b0db5799016de3fa93"
+              "content_sha256": "6dcad9c69575c303237fab1cbce8d317e74f84e7a451a43462de8bf63b525ad6"
             },
             {
               "kind": "method_program",
@@ -264,7 +264,7 @@
             },
             {
               "path": "tests/test_scientific_tree_of_thoughts_method_program_v1.py",
-              "content_sha256": "e04e3664f1ea7fe24b0fcba99ca5a82ad98fcc4ffdbbb70ab4e3af1997a164ee"
+              "content_sha256": "4fe1f6a22d6d34458f14a7355ee069c0ce8395b9627a7d2918c045d87242c8a1"
             }
           ]
         }
@@ -275,7 +275,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "68ac83534097830b9c0568249cad10f2a3d4815611db823ba7e171ab0d1c351b",
+          "package_digest": "6c5202eb80e2f4dd006fa6e85bffc13d47438f46f031bb7e7137028783f6fb91",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -292,7 +292,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/rap_reasoning/fidelity.py",
-              "content_sha256": "8df41dca2e81b71bf55f538630cb4641c7dec7c1989126af384817c561529f52"
+              "content_sha256": "6bc1f8ceca6a80df29b833f50ba5c77f26bf71639f0beef60333583befd9b09a"
             },
             {
               "kind": "method_program",
@@ -320,7 +320,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_rap_method_program_v1.py",
-              "content_sha256": "d44dd1a8b8c60484c73b0a5062117f56ca01b82cd7dd6f212cbb3382827d20ac"
+              "content_sha256": "a08f96f0eddd3fa395f38a0f3589cddcfe61ca04f5ede8641fc492ac1a717813"
             },
             {
               "path": "tests/test_scientific_rap_reproduction_v1.py",
@@ -335,7 +335,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "4a5750744ce4f5505bd61a87ede6119bdf34616c3683f006223d507bf7d334dc",
+          "package_digest": "206ea8218f07f406f2b23e2a0ed74ba148e3bb2509c30c563f19156f47663392",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -352,7 +352,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/lats_webshop/fidelity.py",
-              "content_sha256": "ad9fa1725d5ce170673961c6741b72460a6045ab7be1488321e694328dff39d5"
+              "content_sha256": "acd33c4ad3a1ec1963ce1c8979c819f98bfca889bb831d47484d4b97e67d21c0"
             },
             {
               "kind": "method_program",
@@ -411,7 +411,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "39dd12a2d71315a376391e049010f4ec46f9c6452a0dc0973ea5803cae4fe860",
+          "package_digest": "ab22e913a75a822ba782138aca3f7f91ba398438201400cc816026df6e6b0cec",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -435,7 +435,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/qlass_alfworld/fidelity.py",
-              "content_sha256": "65dc26d90b5b8c2acca4d36381c418f4ab51562863a7d085ea42b4dc4a331fb3"
+              "content_sha256": "b12e0e1d3683523a8ad6d37eeaafe385cb2763bad1f2909968535596b2da640f"
             },
             {
               "kind": "method_program",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "8d8ab130be6b3708fe77a4a99286a1477d8f03b67bf2b3c6db1e1367208ce424"
+  "projection_digest": "8a3af4bdba72e80d152fba3f9b12a40e89d70671111dbf412318068e50607a92"
 }

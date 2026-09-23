@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "steve1_minecraft",
-  "package_digest": "e8fb3f3f0ffddcc9e1fd4a18fe4bc574b9371c3caaccb6e7eb63eb1460378fec",
+  "package_digest": "ca632e8bce7ccb35c78269af96b269d1986dd69aa2c1ed3d6d0c70dd35db8c83",
   "definition_digest": "f0f19b97ed5412ff9ecac1901064f9121a004c739b5064e602032181b165c192",
   "source_registry_digest": "365b9a6eac2c92f89fc90b3802a0fdbdcf92ad106758f8a518a664be076f0881",
   "lifecycle": "protocol_bound",
@@ -118,7 +118,7 @@
       "kind": "support",
       "path": "research/reproductions/steve1_minecraft/source.py",
       "declaration_digest": "2a42f3ee27ebdb87f853035c8b9389ce36c4c24b013c9bf9a22e222c73e84478",
-      "content_sha256": "8e3c070e7e0bdda446bc689d4c2b99fcdf48663539b2cb6caa30ffbc495c0af4"
+      "content_sha256": "6afa84c5aab1dce9add07ef4b778830d1cff65efb0712832c07e372319912f7c"
     }
   ],
   "primary_executable": "research/reproductions/steve1_minecraft/program.py",
@@ -168,7 +168,7 @@
     },
     {
       "path": "tests/test_scientific_steve1_minecraft_v1.py",
-      "content_sha256": "1d832409a6122912e39fe1dc2785ca46a2278bb42994a1f6ef491dfcfbee28d4"
+      "content_sha256": "453479209a9a4c6ef4d9a1c4efcda7bbe2564eb976e8a70bcafe8e651a63bd1b"
     }
   ]
 }

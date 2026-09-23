@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "moviechat_memory",
-  "package_digest": "10d45ac103aa0d6d9c8ace60fd827caba82131963462f6f56272f43d9837cd1b",
+  "package_digest": "ec936f7432c9f7986f8406e99ee6c7694ea13707b2387cb7a8ba2f56f82cc137",
   "definition_digest": "0e54dfdc27ebb7abf80a8c406e7ab0b3cca264c2ec6bbb4d957486f6a4cb71d8",
   "source_registry_digest": "2cef17c8d328384849759d7e5d19d69f4b2d8cee4baf1d186f767e439b1fd60c",
   "lifecycle": "protocol_bound",
@@ -128,7 +128,7 @@
       "kind": "support",
       "path": "research/reproductions/moviechat_memory/source.py",
       "declaration_digest": "68e3e5681d14b98b5f52ee2caf8089445586bcdb3f8fedb607077e2879f8af28",
-      "content_sha256": "493f85bea503045fa4f0fe4820bfa0092de54f8a131affacfc6cbb32e9c87d82"
+      "content_sha256": "9df0b9591abcb39a1893ffd5c5ce11a1aa1cc863b11a20562a686bae822d4275"
     }
   ],
   "primary_executable": "research/reproductions/moviechat_memory/memory.py",

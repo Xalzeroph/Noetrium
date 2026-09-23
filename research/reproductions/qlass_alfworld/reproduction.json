@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "qlass_alfworld",
-  "package_digest": "39dd12a2d71315a376391e049010f4ec46f9c6452a0dc0973ea5803cae4fe860",
+  "package_digest": "ab22e913a75a822ba782138aca3f7f91ba398438201400cc816026df6e6b0cec",
   "definition_digest": "018d222a2bfe76cad3902422017f980e6f98f678e48ff828fa13e5962d6dcae0",
   "source_registry_digest": "819fd0e885a29c9300eee6b6c1b86d1cea8854f8e10d988bf56fb3022f71ed29",
   "lifecycle": "protocol_bound",
@@ -86,7 +86,7 @@
       "kind": "fidelity",
       "path": "research/reproductions/qlass_alfworld/fidelity.py",
       "declaration_digest": "244eecde7ff1f8041f5b2b778b6d981f8bcf31b43c6ce4d97e78e9e0baa37232",
-      "content_sha256": "65dc26d90b5b8c2acca4d36381c418f4ab51562863a7d085ea42b4dc4a331fb3"
+      "content_sha256": "b12e0e1d3683523a8ad6d37eeaafe385cb2763bad1f2909968535596b2da640f"
     },
     {
       "kind": "method_program",

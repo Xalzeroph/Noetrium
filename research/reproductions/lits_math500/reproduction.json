@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lits_math500",
-  "package_digest": "6bcbb0f66735e14ab94b67de2f3249815a11c5a885c9a7774a7ae46ea06abc21",
+  "package_digest": "d3ccef8bd8d751ce2d8b075a46941eab4e410af877323ecc935e97e1cce42aec",
   "definition_digest": "1872d21311a5e175496735542625d6b2d3bd16877631dc6ee9b8bc1d323e908f",
   "source_registry_digest": "a7690832f13476ee4b23d5467a46ea3041e9a9bc011a9268b12aee7a7ade8709",
   "lifecycle": "protocol_bound",
@@ -75,7 +75,7 @@
       "kind": "fidelity",
       "path": "research/reproductions/lits_math500/fidelity.py",
       "declaration_digest": "afa36a91cc566406ece6833409f36e539f7bf1fc6862491a0ab50be547b11223",
-      "content_sha256": "3ee56dc373b4084c2709100afc2dfa55664d3b7a52ccbd24be0496a2baccb8ff"
+      "content_sha256": "04b936f2f89d762e2160bb8f1d06c7841c00789399fed185628d201c8a5e7964"
     },
     {
       "kind": "study",

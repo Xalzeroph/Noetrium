@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flow_modularized_agentic_workflow",
-  "package_digest": "4bedc87c502e9f7fe3f5e97f9e1eaf1b51f226d02f211c1dfc0b5b51bcce4fe0",
+  "package_digest": "1a30a8b010a053be8b6a0486cde924a35686a942ee77a8ec19865fa701e898fc",
   "definition_digest": "d7dcb5f56811068501c262cdef4f58f4ddabdfe59d5b648f3050e90aff41eb4f",
   "source_registry_digest": "871ee9bf57337e607fa5a5ed65434e3cc122df43f3db5d6cca12cb61261175b4",
   "lifecycle": "protocol_bound",
@@ -214,7 +214,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_flow_modularized_workflow_v1.py",
-      "content_sha256": "51387e22708de7ded369359febb01313ac10ff11b4167cebc06df5cfc0251c53"
+      "content_sha256": "b56af996728b5c7b07cd6d853e92aa76b20819aa9ab27907230ff64cec933355"
     }
   ]
 }

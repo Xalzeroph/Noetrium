@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rap_reasoning",
-  "package_digest": "68ac83534097830b9c0568249cad10f2a3d4815611db823ba7e171ab0d1c351b",
+  "package_digest": "6c5202eb80e2f4dd006fa6e85bffc13d47438f46f031bb7e7137028783f6fb91",
   "definition_digest": "f58198941a817385b78c646778221978096ca460b26bb477ac3e69ef0f157ed1",
   "source_registry_digest": "ced15295ec849f883db78704fb7a1e4351e59bd9ff1229c652b243f23abfdff2",
   "lifecycle": "protocol_bound",
@@ -71,7 +71,7 @@
       "kind": "fidelity",
       "path": "research/reproductions/rap_reasoning/fidelity.py",
       "declaration_digest": "6a2c47cf098c58cb81c6f8721c34cf2143ebb07a4f968d2e9ed3c0b80f39ece2",
-      "content_sha256": "8df41dca2e81b71bf55f538630cb4641c7dec7c1989126af384817c561529f52"
+      "content_sha256": "6bc1f8ceca6a80df29b833f50ba5c77f26bf71639f0beef60333583befd9b09a"
     },
     {
       "kind": "method_program",
@@ -131,7 +131,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_rap_method_program_v1.py",
-      "content_sha256": "d44dd1a8b8c60484c73b0a5062117f56ca01b82cd7dd6f212cbb3382827d20ac"
+      "content_sha256": "a08f96f0eddd3fa395f38a0f3589cddcfe61ca04f5ede8641fc492ac1a717813"
     },
     {
       "path": "tests/test_scientific_rap_reproduction_v1.py",

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ma_lmm_memory",
-  "package_digest": "439eb762214ef6be86274de56c7bfcc6b9ff3d2bb20808dee0ac04359ce5ea06",
+  "package_digest": "c40810dd2ef8fb01bad9f92b7167cd3d74103cce6bd647481e48378a9d505624",
   "definition_digest": "9c2f0e4cf9ab3fc9c12fd8ec320e3fc18b5abb5813dc8b785c12382b667e9b3f",
   "source_registry_digest": "5f3d368fdee5eea455e920c9272f4c9bd9feddccd71af306baeaab1137bdff7e",
   "lifecycle": "protocol_bound",
@@ -125,7 +125,7 @@
       "kind": "support",
       "path": "research/reproductions/ma_lmm_memory/source.py",
       "declaration_digest": "a2c64c2fb580f81053bbe538f8e0e965884e5196ea6074dc5704d61f3e20d848",
-      "content_sha256": "18cd06479db9652654e4213ed022bef0a5eb2fc6a740ffdf6e19563db91fe169"
+      "content_sha256": "40a2a485606819772fb7888ea12d0d1a598d34df60d8fc12843f831ea9723e0d"
     }
   ],
   "primary_executable": "research/reproductions/ma_lmm_memory/memory.py",

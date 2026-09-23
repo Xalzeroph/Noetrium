@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "pi05_openpi",
-  "package_digest": "264ccedb22999881ff68e578ab295bd019ee27de09da7e36bb7a2d8bb823c177",
+  "package_digest": "d665ef77d28189d46ea02b1ff7b409424fc7de43043457921a96f992bcccb66b",
   "definition_digest": "5305fdd3fc18b9ca981df4b40f49a93d7ca06e5120cd25aa14ea69b1d2447e30",
   "source_registry_digest": "6fd9550e5e62e26d5d5b30a198b91082ca51daf1f7f6619ca09c0115dcdf8f04",
   "lifecycle": "catalogued",
@@ -72,7 +72,7 @@
       "kind": "support",
       "path": "research/reproductions/pi05_openpi/binding.py",
       "declaration_digest": "cf5dc6285a1803c633df64a75dc6672fb57c703c7f2b8532df8ab2ea126111be",
-      "content_sha256": "14e1188a2da5a14328cf1c1e90a5b7c31dcc7b0dcf5a4c3aa6176f6232007d62"
+      "content_sha256": "59f018f350814228ba99e6811f642c2b4e78ee3587a74db094aa42b14b9c0cb8"
     }
   ],
   "primary_executable": null,
@@ -84,7 +84,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_pi05_openpi_v1.py",
-      "content_sha256": "ac9810225dda5d38e5546d59d6f5a90251f67b3828ab41c17ac73e14d25f2f63"
+      "content_sha256": "1bf02deafbb7b8ca0e53c8e2e2d86d9bb4efe564f23fd1d78b9bead689505e55"
     }
   ]
 }

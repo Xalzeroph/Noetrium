@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "deps_minecraft",
-  "package_digest": "43cbc94e9f6b895f19a650e4c2c6b3de120d18918c323d6e297e5fe83d3451fa",
+  "package_digest": "df336393ed58c905083d1019d8f149f194f8b58e923dff1ab0283bbaf1052546",
   "definition_digest": "f75cf70e70c1e43a3b5fbda7b5ea294718b1a7a429c7440cd2e4d8833591ad09",
   "source_registry_digest": "b34ac82a645a66821c20029f19473c146715222483bfaf316120b963fd884a90",
   "lifecycle": "protocol_bound",
@@ -136,7 +136,7 @@
       "kind": "support",
       "path": "research/reproductions/deps_minecraft/source.py",
       "declaration_digest": "fe1e88bd3f542b1a8b10f37cdc37cc98a80ebdf2d38cae6c17bd15cea82e7046",
-      "content_sha256": "4c9c53262430da92beb5f464e991adf3c8ee4fa0b4a0272d4cd49703e5638763"
+      "content_sha256": "a68ebe34d4cf948694f79d07b184ea9300126e16416387d0972f2f0b97d62447"
     }
   ],
   "primary_executable": "research/reproductions/deps_minecraft/program.py",
@@ -180,7 +180,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_deps_minecraft_v1.py",
-      "content_sha256": "00b298bdb225736f6198fde210a9d73de763836bf6a230800a2756a57abc3b46"
+      "content_sha256": "a80e526c681c3942dc3f8d2483357cbc1d385b0d2b9676f2848639c99affd41e"
     }
   ]
 }

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "worldmm_memory",
-  "package_digest": "4523349f9c1410b8df7386c7e85949648a5c05191bbe28f9831695e2b4157b79",
+  "package_digest": "79118b4df4bacfc1347f462e2acd22efaf03808aa5225c3005a0833d1927fbd0",
   "definition_digest": "bd806ccfa9d1f50a6d52b9a79be8e37fc5388b3316e23eb8b0756af748cce682",
   "source_registry_digest": "59fad67df15f1fffd4579cda87465a6feb1607352e4bdf24806f77c92a06dc6e",
   "lifecycle": "protocol_bound",
@@ -142,7 +142,7 @@
       "kind": "support",
       "path": "research/reproductions/worldmm_memory/source.py",
       "declaration_digest": "a9c810cc0797c0d7197aeb60bf39afe312e5b292753768b68078dca8defbcbc4",
-      "content_sha256": "8a19be477958edff46bbd5da85a5d9b511ace6f09bd0ed4b2ca9fce905f17287"
+      "content_sha256": "10eb912c141ed7177c328bee1f759cde82ad33ba25e2782c9bc844a01f6dbe51"
     }
   ],
   "primary_executable": "research/reproductions/worldmm_memory/program.py",

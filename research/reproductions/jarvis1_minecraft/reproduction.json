@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "jarvis1_minecraft",
-  "package_digest": "49b5e32f14ad717efe7d938aeba8330bf23b5d916fe96c96a539f30302fe8e56",
+  "package_digest": "b13149a105889feab0557ac51204c02f9f0e79d1dedc1095e8b4cd7e5f09063a",
   "definition_digest": "643391e292946e8a9af22044269b4b5bdfbe3da9949c0880c33860af541449c2",
   "source_registry_digest": "d0a3d3ba7b0bbee5cf156be04b204f1c10085da1b8847a3a18f524b83ae1280b",
   "lifecycle": "protocol_bound",
@@ -128,7 +128,7 @@
       "kind": "support",
       "path": "research/reproductions/jarvis1_minecraft/source.py",
       "declaration_digest": "d05b6318ff62704debb6cbbd4b2d2000382bb69d992922919cd613589f608e36",
-      "content_sha256": "79bf8871222551f9638e0c599ba05260be6491d9c4ee897e0a9ec983f6ce1af7"
+      "content_sha256": "3b690e2851b899f627634ddc368a14321244f9a465709b7e58aef90d087d6ec4"
     }
   ],
   "primary_executable": "research/reproductions/jarvis1_minecraft/program.py",
@@ -168,7 +168,7 @@
     },
     {
       "path": "tests/test_scientific_jarvis1_method_program_v1.py",
-      "content_sha256": "92804b9e12844c9530d7c1cb79be33ff297e25377b4a2edd7da29e353d87aa27"
+      "content_sha256": "5356a7124a97c4bff35845bc40b443335bdfab119c1dfffd36b459d5f67ec8f2"
     }
   ]
 }

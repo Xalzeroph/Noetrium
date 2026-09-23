@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flash_vstream_memory",
-  "package_digest": "46a719ea5f631f09462deceb99f4c60604b91155dc92f18c4b0f6b2cc58c3104",
+  "package_digest": "4447d0126da34e67b84900573d0dae9ddfe6a68eb4ee39d72417701b02f351cd",
   "definition_digest": "dfa95056daad131a020784cbf7ae38cf3fb3b20cbde00cc136e2f48f447f2b19",
   "source_registry_digest": "7d6fdeedd563fb8fff5cec18bda0051a643425a48a5a9943c6d5cddb34c9f8a9",
   "lifecycle": "protocol_bound",
@@ -129,7 +129,7 @@
       "kind": "support",
       "path": "research/reproductions/flash_vstream_memory/source.py",
       "declaration_digest": "6d85a9f78287eee171aa70a887e4b7e7810ad852a790e5d06ef8a934cd175009",
-      "content_sha256": "5a77eb04c26af74b71c8495461793e27eaffa90ce872497cca67a47752b3be06"
+      "content_sha256": "aa8251db6ad93e3c9d36dc8ceb1428aa2327ce6362fed777ac16a57537314014"
     }
   ],
   "primary_executable": "research/reproductions/flash_vstream_memory/memory.py",

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lats_webshop",
-  "package_digest": "4a5750744ce4f5505bd61a87ede6119bdf34616c3683f006223d507bf7d334dc",
+  "package_digest": "206ea8218f07f406f2b23e2a0ed74ba148e3bb2509c30c563f19156f47663392",
   "definition_digest": "17ccc90fdba1d3447c4f2cbd1a6f5cd739b2fe4266ee32b59c0adbd6f861231d",
   "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
   "lifecycle": "protocol_bound",
@@ -72,7 +72,7 @@
       "kind": "fidelity",
       "path": "research/reproductions/lats_webshop/fidelity.py",
       "declaration_digest": "34e493fef0075723e335bd841a1d0fd0f19146f3e7c9fd8948f0832b0d6abb19",
-      "content_sha256": "ad9fa1725d5ce170673961c6741b72460a6045ab7be1488321e694328dff39d5"
+      "content_sha256": "acd33c4ad3a1ec1963ce1c8979c819f98bfca889bb831d47484d4b97e67d21c0"
     },
     {
       "kind": "method_program",

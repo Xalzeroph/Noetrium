@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "saycan",
-  "package_digest": "43870f09de828d69374dc048ec7569554ba893911f7595995a5a68507962d3fd",
+  "package_digest": "d08f1505dc09d6e61dfabf24a65f421479b6991d77ab3db8dbe75b476b6610f2",
   "definition_digest": "b100e320de333ae8abff3f334ee038f4f54a3ac480d07b55fdf1266ad687f4c9",
   "source_registry_digest": "358acfb9456c29c701634acb64fbce6b2a866522c9060ca11b081e7effdeec4f",
   "lifecycle": "protocol_bound",
@@ -117,7 +117,7 @@
       "kind": "support",
       "path": "research/reproductions/saycan/source.py",
       "declaration_digest": "2bdff367bf3ef492b63fef94d6ffdedab9beeb30fb431d7b5f7108864bca99d7",
-      "content_sha256": "4f0472a9e7075fa14307e8b20308c342d731f7e39c36b936a1e0a71a905d186e"
+      "content_sha256": "3d4eeab8f2ea1a9cc7cd2d6cdabd858d2d943e0047408570c5f420573d3fdbaa"
     }
   ],
   "primary_executable": "research/reproductions/saycan/program.py",
@@ -177,7 +177,7 @@
     },
     {
       "path": "tests/test_scientific_saycan_v1.py",
-      "content_sha256": "a83482c2b4378403763400e73052d9ee47db8488964c19fee9f8c6008a25e12a"
+      "content_sha256": "957503a9f3695ef1f9ad222fcc6825eec9f972b9f9b9bebe75a399ea3a76e6af"
     }
   ]
 }

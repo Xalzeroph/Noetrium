@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videollamb_memory",
-  "package_digest": "47887b0b686c1050c25c79fd08640279e80f7f7cd9a53ea3026f05f8f8e5ea6c",
+  "package_digest": "62b55fd889e47c75211362e6f1425d7e807e35cfdba33e52678a47280dc57ba0",
   "definition_digest": "556a0739d312b2077ba1dddf462b82ff32a1287382a99494d3b409dc0e14224b",
   "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
   "lifecycle": "protocol_bound",
@@ -121,7 +121,7 @@
       "kind": "support",
       "path": "research/reproductions/videollamb_memory/source.py",
       "declaration_digest": "c2bf227cf6b080cd5e3ddbc71de639747d53b09b8ec52776a3f127b5493f454b",
-      "content_sha256": "b764595ec1c1a9ccb65c03f209ef5cba482ff7c7356d521cbdb5c08107d5e8fa"
+      "content_sha256": "cb6bfbae784fbb81e549ba2bef65252e8db21c6c7038452b0e5345bb90d5caa0"
     }
   ],
   "primary_executable": "research/reproductions/videollamb_memory/memory.py",

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "drvideo",
-  "package_digest": "1f6c4664ff3aa747583b65486fa7f10ad8edbee63ffc30273b98659fde6c035c",
+  "package_digest": "63e05bdfd4a1c66af7c0165b2e84c64d09fc1b9c3261a67129a81f44116788ff",
   "definition_digest": "c467be4797ee695948ea3a94e2b0bc8ede9df373abe09248e27175ebb6f6c276",
   "source_registry_digest": "7fefca6637ec616d0b9bca8e3d69771815436472b8f69bb31f15efe37cd0d68c",
   "lifecycle": "protocol_bound",
@@ -120,7 +120,7 @@
       "kind": "support",
       "path": "research/reproductions/drvideo/source.py",
       "declaration_digest": "28a5fbfc20731878c981db36ac5677c62647d489809bd1cbaee61bda5f4b4fe1",
-      "content_sha256": "60c265f34d2e7e3520ff507f7a3e6a0a0b747c408bf795edddb9e44dd3571428"
+      "content_sha256": "94fa281699842846119f41863adbacd49f47cc7baad78b8f7019d44e05e2b056"
     }
   ],
   "primary_executable": "research/reproductions/drvideo/program.py",

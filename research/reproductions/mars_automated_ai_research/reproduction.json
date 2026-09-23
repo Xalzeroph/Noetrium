@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "mars_automated_ai_research",
-  "package_digest": "7a977005655df938130b354ca7f739eb724eacc3f01a33664e718a98549eabdf",
+  "package_digest": "9036ce50149d0375165dbb648458374c7e75608cac68f7f502dbd4a70550304c",
   "definition_digest": "33967cc3375ce09f68d574ddf74e53688a78db7063151dc856ce43878928e84f",
   "source_registry_digest": "5c4a7eeaf260528c2d32423f029e4420611ba8a29b54a0794f2d546645010ccd",
   "lifecycle": "artifact_only",
@@ -72,7 +72,7 @@
       "kind": "fidelity",
       "path": "research/reproductions/mars_automated_ai_research/fidelity.py",
       "declaration_digest": "847c1e8fde3bc9bca898d292a031259c2d68a2cd73a532b74a717d0394c13156",
-      "content_sha256": "c7b755f9d9f6b931a02205bd09b2946a9535671f1454d807c9e653a04ddc5266"
+      "content_sha256": "5a05851123bc5bd9b49e1a833ff4ab16c42a9613ffeffd372f6d4a901c1dcc1d"
     }
   ],
   "primary_executable": null,
