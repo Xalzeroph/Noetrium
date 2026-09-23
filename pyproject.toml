@@ -41,7 +41,7 @@ noetrium-repository-boundary = "noetrium_platform.foundation.governance.architec
 include = ["components*", "orchestration*", "noetrium*", "noetrium_platform*"]
 
 [tool.setuptools.package-data]
-"noetrium_platform.foundation.governance.system_registry" = ["catalog.json"]
+"noetrium_platform.foundation.governance.system_registry" = ["catalog.json", "components.json"]
 "noetrium.contracts" = ["downstream_capability_catalog.json", "interface_schema.json"]
 "noetrium" = ["api.pyi", "py.typed"]
 "noetrium_platform.capabilities.environment.minecraft.providers" = ["assets/mineflayer_bridge/*.js", "assets/mineflayer_bridge/package.json", "assets/mineflayer_bridge/package-lock.json"]
