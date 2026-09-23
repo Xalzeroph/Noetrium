@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from queue import Empty, Queue
 from uuid import uuid4
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
@@ -73,7 +74,7 @@ class ResearchGraphScheduler:
         plan: ResearchGraphPlan,
         executor: ResearchGraphNodeExecutorPort,
         *,
-        execution_pool: ResearchExecutionPool | None = None,
+        execution_pool: ResearchExecutionPool,
         tenant_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
         task_group_id: str | None = None,
@@ -88,6 +89,10 @@ class ResearchGraphScheduler:
         if not isinstance(executor, ResearchGraphNodeExecutorPort):
             raise TypeError(
                 "research graph scheduler executor must satisfy ResearchGraphNodeExecutorPort"
+            )
+        if not isinstance(execution_pool, ResearchExecutionPool):
+            raise TypeError(
+                "research graph scheduler requires explicit ResearchExecutionPool"
             )
         if tenant_id is not None and (
             not isinstance(tenant_id, str) or not tenant_id.strip()
@@ -158,8 +163,7 @@ class ResearchGraphScheduler:
                 )
         self._plan = plan
         self._executor = executor
-        self._pool = execution_pool or ResearchExecutionPool()
-        self._owns_pool = execution_pool is None
+        self._pool = execution_pool
         self._tenant_id = tenant_id
         self._priority = priority
         self._task_group_id = task_group_id
@@ -203,16 +207,20 @@ class ResearchGraphScheduler:
         }
         running: dict[str, tuple[ResearchGraphNode, object]] = {}
         results: dict[str, ResearchGraphNodeResult] = {}
+        completion_queue: Queue[str] = Queue()
 
         def submit(node: ResearchGraphNode):
             def run(context, owned_node=node):
-                context.checkpoint()
-                self._executor.execute(
-                    context,
-                    owned_node,
-                    deadline=deadline,
-                )
-                context.checkpoint()
+                try:
+                    context.checkpoint()
+                    self._executor.execute(
+                        context,
+                        owned_node,
+                        deadline=deadline,
+                    )
+                    context.checkpoint()
+                finally:
+                    completion_queue.put(owned_node.node_id)
 
             return group.submit(
                 ExecutionSpec(
@@ -288,15 +296,16 @@ class ResearchGraphScheduler:
                     del pending[node_id]
                     progressed = True
 
-                completed = tuple(
-                    sorted(
-                        node_id
-                        for node_id, (_node, handle) in running.items()
-                        if handle.done()
-                    )
-                )
+                completed: list[str] = []
+                while True:
+                    try:
+                        completed_id = completion_queue.get_nowait()
+                    except Empty:
+                        break
+                    if completed_id in running:
+                        completed.append(completed_id)
                 if completed:
-                    for node_id in completed:
+                    for node_id in sorted(completed):
                         record_completion(node_id)
                     continue
 
@@ -313,14 +322,19 @@ class ResearchGraphScheduler:
                         record_completion(node_id, timeout=0.0)
                     continue
 
-                sleep_seconds = 0.005
-                if deadline is not None:
-                    sleep_seconds = min(
-                        sleep_seconds,
-                        max(0.0, deadline.remaining_seconds),
-                    )
-                if sleep_seconds > 0.0:
-                    time.sleep(sleep_seconds)
+                wait_timeout = (
+                    None
+                    if deadline is None
+                    else max(0.0, deadline.remaining_seconds)
+                )
+                try:
+                    completed_id = completion_queue.get(timeout=wait_timeout)
+                except Empty:
+                    for node_id in tuple(sorted(running)):
+                        record_completion(node_id, timeout=0.0)
+                    continue
+                if completed_id in running:
+                    record_completion(completed_id)
 
             return ResearchGraphExecutionReport(
                 self._plan.graph_id,
@@ -447,22 +461,27 @@ class ResearchGraphScheduler:
         )
         running: dict[str, tuple[ResearchGraphNode, object, str, int]] = {}
         renewal_interval_ns = max(1, self._lease_ns // 3)
+        completion_queue: Queue[str] = Queue()
 
         def submit(node: ResearchGraphNode, attempt_id: str):
             def run(context, owned_node=node, owned_attempt_id=attempt_id):
-                store.mark_running(
-                    execution_id,
-                    owned_node.node_id,
-                    attempt_id=owned_attempt_id,
-                    owner_id=self._scheduler_owner_id,
-                    now_ns=time.time_ns(),
-                )
-                context.checkpoint()
-                self._executor.execute(
-                    context,
-                    owned_node,
-                    deadline=deadline,
-                )
+                try:
+                    store.mark_running(
+                        execution_id,
+                        owned_node.node_id,
+                        attempt_id=owned_attempt_id,
+                        owner_id=self._scheduler_owner_id,
+                        now_ns=time.time_ns(),
+                    )
+                    context.checkpoint()
+                    self._executor.execute(
+                        context,
+                        owned_node,
+                        deadline=deadline,
+                    )
+                    context.checkpoint()
+                finally:
+                    completion_queue.put(owned_node.node_id)
 
             return group.submit(
                 ExecutionSpec(
@@ -661,15 +680,16 @@ class ResearchGraphScheduler:
                         del pending[node_id]
                         progressed = True
 
-                completed = tuple(
-                    sorted(
-                        node_id
-                        for node_id, (_node, handle, _attempt, _renewal) in running.items()
-                        if handle.done()
-                    )
-                )
+                completed: list[str] = []
+                while True:
+                    try:
+                        completed_id = completion_queue.get_nowait()
+                    except Empty:
+                        break
+                    if completed_id in running:
+                        completed.append(completed_id)
                 if completed:
-                    for node_id in completed:
+                    for node_id in sorted(completed):
                         record_completion(node_id)
                     continue
 
@@ -724,9 +744,16 @@ class ResearchGraphScheduler:
                             0.0,
                             (min(retry_times) - time.time_ns()) / 1_000_000_000,
                         )
-                        sleep_seconds = min(0.05, delay)
-                        if sleep_seconds > 0.0:
-                            time.sleep(sleep_seconds)
+                        wait_seconds = min(0.05, delay)
+                        if wait_seconds > 0.0:
+                            try:
+                                completed_id = completion_queue.get(
+                                    timeout=wait_seconds
+                                )
+                            except Empty:
+                                continue
+                            if completed_id in running:
+                                record_completion(completed_id)
                             continue
                     raise RuntimeError(
                         "durable research graph scheduler reached an "
@@ -736,14 +763,32 @@ class ResearchGraphScheduler:
                 if not running:
                     continue
 
-                sleep_seconds = 0.005
+                wait_seconds = 0.05
+                if running:
+                    next_renewal_ns = min(
+                        renewal
+                        for _node, _handle, _attempt, renewal
+                        in running.values()
+                    )
+                    wait_seconds = min(
+                        wait_seconds,
+                        max(
+                            0.0,
+                            (next_renewal_ns - time.time_ns())
+                            / 1_000_000_000,
+                        ),
+                    )
                 if deadline is not None:
-                    sleep_seconds = min(
-                        sleep_seconds,
+                    wait_seconds = min(
+                        wait_seconds,
                         max(0.0, deadline.remaining_seconds),
                     )
-                if sleep_seconds > 0.0:
-                    time.sleep(sleep_seconds)
+                try:
+                    completed_id = completion_queue.get(timeout=wait_seconds)
+                except Empty:
+                    continue
+                if completed_id in running:
+                    record_completion(completed_id)
 
             if reconciliation_required:
                 raise ResearchGraphReconciliationRequired(
@@ -767,8 +812,6 @@ class ResearchGraphScheduler:
         if self._closed:
             return
         self._closed = True
-        if self._owns_pool:
-            self._pool.close(deadline=deadline)
 
     def __enter__(self) -> "ResearchGraphScheduler":
         if self._closed:
