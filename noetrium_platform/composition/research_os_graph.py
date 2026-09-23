@@ -16,6 +16,7 @@ from noetrium_platform.product.research_os import (
 )
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphNode,
+    ResearchGraphExecutionStorePort,
     ResearchGraphNodeExecutorPort,
     ResearchGraphPlan,
 )
@@ -276,6 +277,10 @@ def bind_research_portfolio_scheduler(
     tenant_id: str | None = None,
     priority: ExecutionPriority = ExecutionPriority.NORMAL,
     task_group_id: str | None = None,
+    execution_store: ResearchGraphExecutionStorePort | None = None,
+    execution_id: str | None = None,
+    lease_seconds: float = 30.0,
+    scheduler_owner_id: str | None = None,
 ) -> ResearchGraphScheduler:
     return ResearchGraphScheduler(
         compilation.plan,
@@ -284,6 +289,10 @@ def bind_research_portfolio_scheduler(
         tenant_id=tenant_id,
         priority=priority,
         task_group_id=task_group_id,
+        execution_store=execution_store,
+        execution_id=execution_id,
+        lease_seconds=lease_seconds,
+        scheduler_owner_id=scheduler_owner_id,
     )
 
 

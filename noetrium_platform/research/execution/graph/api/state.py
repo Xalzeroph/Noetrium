@@ -244,6 +244,27 @@ class ResearchGraphExecutionSnapshot:
         )
 
 
+class ResearchGraphReconciliationRequired(RuntimeError):
+    def __init__(self, execution_id: str, node_ids: tuple[str, ...]) -> None:
+        _text(execution_id, "research graph reconciliation execution_id")
+        if type(node_ids) is not tuple or not node_ids or any(
+            type(node_id) is not str or not node_id.strip()
+            for node_id in node_ids
+        ):
+            raise ValueError(
+                "research graph reconciliation requires non-empty node ids"
+            )
+        ordered = tuple(sorted(node_ids))
+        if len(ordered) != len(set(ordered)):
+            raise ValueError("research graph reconciliation node ids must be unique")
+        self.execution_id = execution_id
+        self.node_ids = ordered
+        super().__init__(
+            "research graph execution requires reconciliation before dependent "
+            f"work can continue: {execution_id} -> {ordered}"
+        )
+
+
 class ResearchGraphExecutionConflict(RuntimeError):
     pass
 
@@ -377,4 +398,5 @@ __all__ = [
     "ResearchGraphLiveNodeState",
     "ResearchGraphNodeExecutionRecord",
     "ResearchGraphReconciliationDisposition",
+    "ResearchGraphReconciliationRequired",
 ]

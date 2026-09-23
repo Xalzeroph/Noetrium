@@ -17,6 +17,7 @@ from .state import (
     ResearchGraphLiveNodeState,
     ResearchGraphNodeExecutionRecord,
     ResearchGraphReconciliationDisposition,
+    ResearchGraphReconciliationRequired,
 )
 
 __all__ = [
@@ -36,4 +37,5 @@ __all__ = [
     "ResearchGraphNodeState",
     "ResearchGraphPlan",
     "ResearchGraphReconciliationDisposition",
+    "ResearchGraphReconciliationRequired",
 ]
