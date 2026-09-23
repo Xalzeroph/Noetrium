@@ -330,30 +330,34 @@ class _ExecutionStoreWithoutActiveCut:
     ):
         raise AssertionError("unused")
 
-    def mark_retry_wait(
+    def schedule_retry(
         self,
         execution_id,
         node_id,
         *,
-        attempt_id,
-        owner_id,
-        now_ns,
         retry_not_before_ns,
-        failure_type,
-        failure_message,
     ):
         raise AssertionError("unused")
 
-    def mark_blocked(self, execution_id, node_id, *, blockers):
+    def mark_blocked(
+        self,
+        execution_id,
+        node_id,
+        *,
+        blocked_by_node_ids,
+    ):
         raise AssertionError("unused")
 
-    def reconcile_node(
+    def resolve_reconciliation(
         self,
         execution_id,
         node_id,
         *,
         disposition,
         now_ns,
+        retry_not_before_ns=None,
+        failure_type=None,
+        failure_message=None,
     ):
         raise AssertionError("unused")
 
