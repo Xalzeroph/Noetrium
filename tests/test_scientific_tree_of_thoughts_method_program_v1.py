@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.platform import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentResult,
@@ -51,7 +51,7 @@ class _DeterministicToTAgent:
 
 def test_tot_game24_method_program_compiles_bfs_into_explicit_model_and_selection_nodes(tmp_path) -> None:
     agent = _DeterministicToTAgent()
-    result = run_method_program(
+    result = execute_method_program_canonically(
         TOT_GAME24_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(execution=_context(), agent_loop=agent),
         initial_state=tot_game24_initial_state(problem="4 4 6 8"),
