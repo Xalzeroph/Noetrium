@@ -7,6 +7,8 @@ from noetrium_platform.foundation.kernel.kernel import canonical_digest, require
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphActiveCutRef,
     ResearchGraphActiveCutStorePort,
+    ResearchGraphControlPhase,
+    ResearchGraphControlStorePort,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionSnapshot,
     ResearchGraphExecutionStorePort,
@@ -463,6 +465,27 @@ def materialize_research_os_execution_migration(
         plan.target_cut.cut_id,
         target.plan,
     )
+    if not isinstance(execution_store, ResearchGraphControlStorePort):
+        raise TypeError(
+            "research migration requires durable target graph control authority"
+        )
+    target_control = execution_store.control_state(plan.target_cut.cut_id)
+    if target_control.phase is ResearchGraphControlPhase.ACTIVE:
+        target_control = execution_store.request_drain(
+            plan.target_cut.cut_id,
+            expected_generation=target_control.generation,
+            now_ns=now_ns,
+        )
+        target_control = execution_store.pause_if_quiescent(
+            plan.target_cut.cut_id,
+            expected_generation=target_control.generation,
+            now_ns=now_ns,
+        )
+    if target_control.phase is not ResearchGraphControlPhase.PAUSED:
+        raise ResearchGraphExecutionConflict(
+            "research migration target cut must be paused before active-cut CAS; "
+            f"actual={target_control.phase.value}"
+        )
     reused: list[str] = []
     for node_id in sorted(proofs):
         proof = proofs[node_id]
