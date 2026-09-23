@@ -699,3 +699,214 @@ def test_migration_retry_reconciles_staged_pause_with_current_source_control(tmp
     assert store.snapshot(plan.target_cut.cut_id).node(
         "paper-a::main"
     ).state is ResearchGraphLiveNodeState.PENDING
+
+
+
+class _SourceControlRacingActiveCutStore:
+    def __init__(self, store, *, node_id: str) -> None:
+        self._store = store
+        self._node_id = node_id
+        self._raced = False
+
+    def active_cut(self, logical_execution_id: str):
+        return self._store.active_cut(logical_execution_id)
+
+    def move_active_cut(
+        self,
+        logical_execution_id: str,
+        cut_id: str,
+        *,
+        expected_cut_id: str | None = None,
+        source_fence=None,
+    ):
+        if source_fence is not None and not self._raced:
+            self._raced = True
+            control = self._store.node_control_state(
+                source_fence.source_execution_id,
+                self._node_id,
+            )
+            assert control.phase is ResearchGraphNodeControlPhase.PAUSED
+            resumed = self._store.resume_node(
+                source_fence.source_execution_id,
+                self._node_id,
+                expected_generation=control.generation,
+                now_ns=50,
+            )
+            assert resumed.phase is ResearchGraphNodeControlPhase.ACTIVE
+        return self._store.move_active_cut(
+            logical_execution_id,
+            cut_id,
+            expected_cut_id=expected_cut_id,
+            source_fence=source_fence,
+        )
+
+
+def test_atomic_cut_fence_rejects_source_node_control_race(tmp_path) -> None:
+    old_portfolio = _portfolio(_method_v1)
+    old_revision = _revision(old_portfolio, message="r1")
+    old = compile_research_portfolio_graph(old_revision, old_portfolio)
+    new_portfolio = _portfolio(_method_v2)
+    new_revision = _revision(new_portfolio, parent=old_revision, message="r2")
+    new = compile_research_portfolio_graph(new_revision, new_portfolio)
+
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    activation = activate_research_os_execution_cut(
+        "logical-execution",
+        old,
+        store,
+    )
+    source_cut_id = activation.cut.cut_id
+    node_control = store.node_control_state(source_cut_id, "paper-a::main")
+    node_control = store.request_node_drain(
+        source_cut_id,
+        "paper-a::main",
+        expected_generation=node_control.generation,
+        now_ns=5,
+    )
+    node_control = store.pause_node_if_quiescent(
+        source_cut_id,
+        "paper-a::main",
+        expected_generation=node_control.generation,
+        now_ns=6,
+    )
+    assert node_control.phase is ResearchGraphNodeControlPhase.PAUSED
+    _pause_cut(store, source_cut_id, now_ns=7)
+
+    plan = plan_research_os_execution_migration(
+        "logical-execution",
+        old,
+        new,
+        store.snapshot(source_cut_id),
+    )
+    racing = _SourceControlRacingActiveCutStore(
+        store,
+        node_id="paper-a::main",
+    )
+
+    with pytest.raises(
+        ResearchGraphExecutionConflict,
+        match="source node control fence conflict",
+    ):
+        materialize_research_os_execution_migration(
+            plan,
+            new,
+            store,
+            active_cut_store=racing,
+            now_ns=20,
+        )
+
+    active = store.active_cut("logical-execution")
+    assert active is not None
+    assert active.cut_id == source_cut_id
+    assert store.node_control_state(
+        source_cut_id,
+        "paper-a::main",
+    ).phase is ResearchGraphNodeControlPhase.ACTIVE
+    assert store.control_state(plan.target_cut.cut_id).phase is (
+        ResearchGraphControlPhase.PAUSED
+    )
+    assert store.node_control_state(
+        plan.target_cut.cut_id,
+        "paper-a::main",
+    ).phase is ResearchGraphNodeControlPhase.PAUSED
+
+
+class _ABAActiveCutStore:
+    def __init__(self, store, *, competing_cut_id: str) -> None:
+        self._store = store
+        self._competing_cut_id = competing_cut_id
+        self._raced = False
+
+    def active_cut(self, logical_execution_id: str):
+        return self._store.active_cut(logical_execution_id)
+
+    def move_active_cut(
+        self,
+        logical_execution_id: str,
+        cut_id: str,
+        *,
+        expected_cut_id: str | None = None,
+        source_fence=None,
+    ):
+        if source_fence is not None and not self._raced:
+            self._raced = True
+            self._store.move_active_cut(
+                logical_execution_id,
+                self._competing_cut_id,
+                expected_cut_id=expected_cut_id,
+            )
+            self._store.move_active_cut(
+                logical_execution_id,
+                source_fence.source_execution_id,
+                expected_cut_id=self._competing_cut_id,
+            )
+        return self._store.move_active_cut(
+            logical_execution_id,
+            cut_id,
+            expected_cut_id=expected_cut_id,
+            source_fence=source_fence,
+        )
+
+
+def test_atomic_cut_fence_rejects_active_ref_aba(tmp_path) -> None:
+    old_portfolio = _portfolio(_method_v1)
+    old_revision = _revision(old_portfolio, message="r1")
+    old = compile_research_portfolio_graph(old_revision, old_portfolio)
+    new_portfolio = _portfolio(_method_v2)
+    new_revision = _revision(new_portfolio, parent=old_revision, message="r2")
+    new = compile_research_portfolio_graph(new_revision, new_portfolio)
+
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    activation = activate_research_os_execution_cut(
+        "logical-execution",
+        old,
+        store,
+    )
+    source_cut_id = activation.cut.cut_id
+    _pause_cut(store, source_cut_id, now_ns=5)
+    plan = plan_research_os_execution_migration(
+        "logical-execution",
+        old,
+        new,
+        store.snapshot(source_cut_id),
+    )
+
+    competing_revision = api.ResearchGraphRevision(
+        old_portfolio.portfolio_id,
+        old_portfolio.portfolio_digest,
+        (old_revision.revision_digest,),
+        "aba competing revision",
+    )
+    competing = compile_research_portfolio_graph(
+        competing_revision,
+        old_portfolio,
+    )
+    competing_cut = ResearchOSExecutionCut.from_compilation(
+        "logical-execution",
+        competing,
+    )
+    store.ensure_execution(competing_cut.cut_id, competing.plan)
+    racing = _ABAActiveCutStore(
+        store,
+        competing_cut_id=competing_cut.cut_id,
+    )
+
+    with pytest.raises(
+        ResearchGraphExecutionConflict,
+        match="active cut generation fence conflict",
+    ):
+        materialize_research_os_execution_migration(
+            plan,
+            new,
+            store,
+            active_cut_store=racing,
+            now_ns=20,
+        )
+
+    active = store.active_cut("logical-execution")
+    assert active is not None
+    assert active.cut_id == source_cut_id
+    assert active.generation > activation.active_cut.generation
+    assert store.control_state(plan.target_cut.cut_id).phase is (
+        ResearchGraphControlPhase.PAUSED
+    )
