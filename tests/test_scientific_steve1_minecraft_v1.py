@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from pathlib import Path
 
-from noetrium.api import run_method_program
+from noetrium_platform.platform import run_method_program
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
