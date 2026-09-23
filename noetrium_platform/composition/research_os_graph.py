@@ -93,6 +93,15 @@ class CompiledResearchOSGraphNode:
             raise ValueError(
                 "compiled Research OS node cannot have duplicate upstream edges"
             )
+        input_names = tuple(
+            binding.input_name
+            for edge in ordered_edges
+            for binding in edge.bindings
+        )
+        if len(input_names) != len(set(input_names)):
+            raise ValueError(
+                "compiled Research OS node input names must be globally unique"
+            )
         require_sha256(
             self.semantic_digest,
             "compiled Research OS node semantic_digest",
