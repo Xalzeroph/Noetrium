@@ -620,7 +620,27 @@ def materialize_research_os_execution_migration(
             plan.target_cut.cut_id,
             node_id,
         )
-        if source_node_control.phase is ResearchGraphNodeControlPhase.PAUSED:
+        if source_node_control.phase is ResearchGraphNodeControlPhase.ACTIVE:
+            if target_node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
+                target_node_control = execution_store.pause_node_if_quiescent(
+                    plan.target_cut.cut_id,
+                    node_id,
+                    expected_generation=target_node_control.generation,
+                    now_ns=now_ns,
+                )
+            if target_node_control.phase is ResearchGraphNodeControlPhase.PAUSED:
+                target_node_control = execution_store.resume_node(
+                    plan.target_cut.cut_id,
+                    node_id,
+                    expected_generation=target_node_control.generation,
+                    now_ns=now_ns,
+                )
+            if target_node_control.phase is not ResearchGraphNodeControlPhase.ACTIVE:
+                raise ResearchGraphExecutionConflict(
+                    "research migration target staging carries stale node control "
+                    f"intent: {node_id}={target_node_control.phase.value}"
+                )
+        elif source_node_control.phase is ResearchGraphNodeControlPhase.PAUSED:
             if target_node_control.phase is ResearchGraphNodeControlPhase.ACTIVE:
                 target_node_control = execution_store.request_node_drain(
                     plan.target_cut.cut_id,
@@ -642,25 +662,31 @@ def materialize_research_os_execution_migration(
                 )
             preserved_paused.append(node_id)
         elif source_node_control.phase is ResearchGraphNodeControlPhase.CANCELLED:
-            if target_node_control.phase is not ResearchGraphNodeControlPhase.ACTIVE:
-                raise ResearchGraphExecutionConflict(
-                    "research migration target cancellation staging requires active "
-                    f"node control: {node_id}"
+            if target_node_control.phase is ResearchGraphNodeControlPhase.ACTIVE:
+                target_node_control = execution_store.cancel_node_subgraph(
+                    plan.target_cut.cut_id,
+                    node_id,
+                    descendant_node_ids=(),
+                    expected_generation=target_node_control.generation,
+                    now_ns=now_ns,
                 )
-            target_node_control = execution_store.cancel_node_subgraph(
-                plan.target_cut.cut_id,
-                node_id,
-                descendant_node_ids=(),
-                expected_generation=target_node_control.generation,
-                now_ns=now_ns,
-            )
             if target_node_control.phase is not ResearchGraphNodeControlPhase.CANCELLED:
                 raise ResearchGraphExecutionConflict(
                     "research migration failed to preserve cancelled node control: "
                     f"{node_id}"
                 )
+            if (
+                execution_store.snapshot(plan.target_cut.cut_id)
+                .node(node_id)
+                .state
+                is not ResearchGraphLiveNodeState.CANCELLED
+            ):
+                raise ResearchGraphExecutionConflict(
+                    "research migration cancelled node control disagrees with "
+                    f"target execution state: {node_id}"
+                )
             preserved_cancelled.append(node_id)
-        elif source_node_control.phase is not ResearchGraphNodeControlPhase.ACTIVE:
+        else:
             raise ResearchGraphExecutionConflict(
                 "research migration encountered unsupported source node control phase: "
                 f"{node_id}={source_node_control.phase.value}"
