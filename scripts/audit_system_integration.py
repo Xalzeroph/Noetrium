@@ -351,6 +351,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", type=Path)
     parser.add_argument("--markdown", type=Path)
     parser.add_argument("--fail-on-shape", action="store_true")
+    parser.add_argument("--fail-on-disconnected", action="store_true")
     args = parser.parse_args(argv)
     report = build_report()
     if args.json:
@@ -370,6 +371,8 @@ def main(argv: list[str] | None = None) -> int:
         or report["status_counts"].get("public-facade-missing", 0)
     ):
         return 2
+    if args.fail_on_disconnected and report["disconnected_system_count"]:
+        return 3
     return 0
 
 

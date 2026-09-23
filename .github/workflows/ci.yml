@@ -79,8 +79,10 @@ jobs:
         run: |
           python scripts/update_generated_docs.py
           python scripts/update_generated_docs.py --check
-      - name: Verify source-derived architecture generators
-        run: python scripts/sync_platform_architecture_map.py --verify-build
+      - name: Verify source-derived architecture projections
+        run: |
+          python scripts/sync_architecture_maps.py --check
+          python scripts/audit_system_integration.py --fail-on-shape --fail-on-disconnected
       - name: Verify README localization
         run: python scripts/check_readme_i18n.py
       - name: Run no-degradation audit
