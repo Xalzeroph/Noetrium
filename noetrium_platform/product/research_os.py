@@ -976,6 +976,7 @@ class ResearchControlAction(StrEnum):
     CANCEL = "cancel"
     CHECKPOINT = "checkpoint"
     RECONCILE = "reconcile"
+    MIGRATE = "migrate"
 
 
 @dataclass(frozen=True, slots=True)
@@ -1062,6 +1063,7 @@ class ResearchOS(Protocol):
     def cancel(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
     def checkpoint(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
     def reconcile(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def migrate(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
 
 
 class ResearchOSPort(Protocol):
@@ -1222,6 +1224,9 @@ class _BoundResearchOS:
 
     def reconcile(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.RECONCILE, target, payload)
+
+    def migrate(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
+        return self._control(ResearchControlAction.MIGRATE, target, payload)
 
 
 def bind_research_os(port: ResearchOSPort) -> ResearchOS:
