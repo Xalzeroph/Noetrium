@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3613,
-    "python_import_edges": 6766,
+    "python_files": 3614,
+    "python_import_edges": 6769,
     "symbols": 4805,
-    "tracked_files": 4242,
+    "tracked_files": 4243,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -16919,8 +16919,8 @@
     {
       "source_module": "research.reproductions.agent_s3.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agentless_swebench.definition",
@@ -17033,8 +17033,8 @@
     {
       "source_module": "research.reproductions.agentsquare.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agentsquare.study",
@@ -17219,8 +17219,8 @@
     {
       "source_module": "research.reproductions.cer_acl2025.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.cer_acl2025.study",
@@ -17441,8 +17441,8 @@
     {
       "source_module": "research.reproductions.chatdev_v1.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.chatdev_v1.study",
@@ -17585,8 +17585,8 @@
     {
       "source_module": "research.reproductions.cogagent.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.cogagent.study",
@@ -17681,8 +17681,8 @@
     {
       "source_module": "research.reproductions.dars_acl2025.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.dars_acl2025.study",
@@ -17813,8 +17813,8 @@
     {
       "source_module": "research.reproductions.drvideo.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.drvideo.study",
@@ -17993,8 +17993,8 @@
     {
       "source_module": "research.reproductions.exact_vwa.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.exact_vwa.study",
@@ -18191,8 +18191,8 @@
     {
       "source_module": "research.reproductions.gats.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.gats.study",
@@ -18335,8 +18335,8 @@
     {
       "source_module": "research.reproductions.hugginggpt.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.hugginggpt.study",
@@ -18803,8 +18803,8 @@
     {
       "source_module": "research.reproductions.memevolve.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.memgpt_classic.definition",
@@ -18959,8 +18959,8 @@
     {
       "source_module": "research.reproductions.minedojo.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.minedojo.study",
@@ -19415,8 +19415,8 @@
     {
       "source_module": "research.reproductions.pi05_openpi.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.provenance",
@@ -19925,8 +19925,8 @@
     {
       "source_module": "research.reproductions.saycan.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.saycan.study",
@@ -19973,8 +19973,8 @@
     {
       "source_module": "research.reproductions.seeclick.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.seeclick.study",
@@ -20159,8 +20159,8 @@
     {
       "source_module": "research.reproductions.self_refine.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.self_refine.study",
@@ -20309,8 +20309,8 @@
     {
       "source_module": "research.reproductions.storm_wiki.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.storm_wiki.study",
@@ -20417,8 +20417,8 @@
     {
       "source_module": "research.reproductions.toolformer.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.toolformer.study",
@@ -20723,8 +20723,8 @@
     {
       "source_module": "research.reproductions.vca_video.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.vca_video.study",
@@ -21293,8 +21293,8 @@
     {
       "source_module": "research.reproductions.webvoyager.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.webvoyager.study",
@@ -22254,6 +22254,24 @@
       "source_module": "scripts.verify_release_package",
       "source_role": "tooling",
       "target_module": "noetrium_platform.foundation.governance.release.runtime.package_verification",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests._canonical_method_execution",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.method_runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests._canonical_method_execution",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests._canonical_method_execution",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.workflow.runtime",
       "target_role": "core_platform"
     },
     {
@@ -33971,12 +33989,6 @@
     {
       "source_module": "tests.test_scientific_autogen_groupchat_method_program_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_autogen_groupchat_method_program_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -33997,6 +34009,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.autogen_agentchat.study",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_autogen_groupchat_method_program_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_camel_ai_society_benchmark_v1",
@@ -34493,12 +34511,6 @@
     {
       "source_module": "tests.test_scientific_flow_modularized_workflow_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_flow_modularized_workflow_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.machines.api",
       "target_role": "core_platform"
     },
@@ -34519,6 +34531,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.flow_modularized_agentic_workflow",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_flow_modularized_workflow_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_frontier_2026_wave_01",
@@ -34865,12 +34883,6 @@
     {
       "source_module": "tests.test_scientific_jarvis1_method_program_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_jarvis1_method_program_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.machines.api",
       "target_role": "core_platform"
     },
@@ -34891,6 +34903,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.jarvis1_minecraft.program",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_jarvis1_method_program_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_lats_method_program_v1",
@@ -35171,12 +35189,6 @@
     {
       "source_module": "tests.test_scientific_minedojo_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_minedojo_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -35227,6 +35239,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.minedojo.study",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_minedojo_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_moviechat_memory_v1",
@@ -35291,12 +35309,6 @@
     {
       "source_module": "tests.test_scientific_optimus1_minecraft_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_optimus1_minecraft_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.machines.api",
       "target_role": "core_platform"
     },
@@ -35335,6 +35347,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.optimus1_minecraft.program",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_optimus1_minecraft_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_optimus2_minecraft_v1",
@@ -35609,12 +35627,6 @@
     {
       "source_module": "tests.test_scientific_rap_method_program_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_rap_method_program_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -35623,6 +35635,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.rap_reasoning",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_rap_method_program_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_rap_reproduction_v1",
@@ -35657,12 +35675,6 @@
     {
       "source_module": "tests.test_scientific_react_alfworld_method_program_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_react_alfworld_method_program_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -35671,6 +35683,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.react_alfworld",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_react_alfworld_method_program_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_react_alfworld_protocol_v1",
@@ -35879,12 +35897,6 @@
     {
       "source_module": "tests.test_scientific_saycan_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_saycan_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -35893,6 +35905,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.saycan",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_saycan_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_seeclick_v1",
@@ -36053,12 +36071,6 @@
     {
       "source_module": "tests.test_scientific_steve1_minecraft_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_steve1_minecraft_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -36085,6 +36097,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.steve1_minecraft.program",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_steve1_minecraft_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_storm_method_program_v1",
@@ -36125,12 +36143,6 @@
     {
       "source_module": "tests.test_scientific_swe_agent_method_program_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_swe_agent_method_program_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -36151,6 +36163,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.swe_agent_swebench.study",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_swe_agent_method_program_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_swe_agent_swebench_fidelity_v1",
@@ -36299,12 +36317,6 @@
     {
       "source_module": "tests.test_scientific_tree_of_thoughts_method_program_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_tree_of_thoughts_method_program_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -36313,6 +36325,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.tree_of_thoughts",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_tree_of_thoughts_method_program_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_tree_search_language_model_agents_v1",
@@ -36371,12 +36389,6 @@
     {
       "source_module": "tests.test_scientific_ui_tars_method_program_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_ui_tars_method_program_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -36397,6 +36409,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.ui_tars_desktop_v001.study",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_ui_tars_method_program_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_vca_video_v1",
@@ -36587,12 +36605,6 @@
     {
       "source_module": "tests.test_scientific_vima_embodied_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_vima_embodied_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.api",
       "target_role": "core_platform"
     },
@@ -36607,6 +36619,12 @@
       "source_role": "tests",
       "target_module": "research.reproductions.vima_embodied.program",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_vima_embodied_v1",
+      "source_role": "tests",
+      "target_module": "tests._canonical_method_execution",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_scientific_vima_environment_adapter_v1",
@@ -40658,7 +40676,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 827,
+      "count": 807,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -40668,12 +40686,12 @@
       "target_role": "public_facade"
     },
     {
-      "count": 120,
+      "count": 140,
       "source_role": "research_reproductions",
       "target_role": "research_reproductions"
     },
     {
-      "count": 2632,
+      "count": 2622,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -40698,7 +40716,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 74,
+      "count": 87,
       "source_role": "tests",
       "target_role": "tests"
     },
@@ -40731,7 +40749,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 772,
+    "tests": 773,
     "tooling": 75
   },
   "role_symbol_counts": {
@@ -40747,7 +40765,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "9ba01c47277c6b285d0721bde4788682b4a5d57d",
+  "source_git_sha": "b29416b83189a77c30b4eebe5f77e851f4c26f6b",
   "symbols": [
     {
       "bases": [],
