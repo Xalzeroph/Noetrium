@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3612,
-    "python_import_edges": 6767,
+    "python_import_edges": 6769,
     "symbols": 4790,
     "tracked_files": 4241,
     "typescript_javascript_files": 11
@@ -31895,6 +31895,12 @@
     {
       "source_module": "tests.test_research_os_execution_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_migration",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_os_value_authorities",
       "target_role": "core_platform"
     },
@@ -31950,6 +31956,12 @@
       "source_module": "tests.test_research_os_execution_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.portfolio.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
       "target_role": "core_platform"
     },
     {
@@ -40679,7 +40691,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2609,
+      "count": 2611,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -40758,7 +40770,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "b72f87270dd52b5c4813a54cbef1bd84bca5a6bd",
+  "source_git_sha": "fb54d7ce7c45e8a81a6bd4b29547282363f889a2",
   "symbols": [
     {
       "bases": [],
@@ -136525,7 +136537,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 52,
+      "line": 60,
       "methods": [
         "publish",
         "lookup",
@@ -136544,7 +136556,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 90,
+      "line": 98,
       "methods": [
         "__init__",
         "admit",
@@ -136562,7 +136574,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 293,
+      "line": 409,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -136594,7 +136606,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 430,
+      "line": 546,
       "methods": [
         "execute"
       ],
