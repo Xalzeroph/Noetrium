@@ -600,8 +600,8 @@
   },
   "portfolio": {
     "authority": "portfolio_metadata",
-    "must_not_own": "study/run execution state",
-    "owns": "workspace/program/project metadata and portfolio organization",
+    "must_not_own": "scientific payload bytes, study/run execution state, provider effects or evidence truth",
+    "owns": "workspace/program/project metadata, immutable portfolio revision DAGs, branches, tags and portfolio organization",
     "package_prefix": "noetrium_platform.foundation.portfolio",
     "parent": null,
     "shape": [
