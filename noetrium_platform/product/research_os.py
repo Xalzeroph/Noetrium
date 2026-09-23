@@ -6,8 +6,12 @@ research projects author and control work only through this product surface.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
+import hashlib
+import inspect
+from pathlib import Path
 import re
 from typing import Protocol
 
@@ -79,11 +83,89 @@ class ResearchValueKind(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchImplementation:
+    """Import-resolvable authoring implementation with automatic source identity.
+
+    The callable itself is never embedded in a frozen ResearchProgram.  The module
+    and qualname are stable resolution coordinates; the complete owning module
+    source is normalized and digested so any code edit changes authoring identity.
+    Runtime compilation may bind additional Git, dependency, environment, model,
+    and provider provenance without asking downstream authors to calculate hashes.
+    """
+
+    implementation_id: str
+    module: str
+    qualname: str
+    source_digest: str
+    implementation_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _token(self.implementation_id, "research implementation_id")
+        if type(self.module) is not str or not self.module.strip():
+            raise ValueError("research implementation module must be non-empty")
+        if type(self.qualname) is not str or not self.qualname.strip():
+            raise ValueError("research implementation qualname must be non-empty")
+        if "<locals>" in self.qualname or "<lambda>" in self.qualname:
+            raise ValueError(
+                "research implementation must be a module-resolvable named callable"
+            )
+        require_sha256(self.source_digest, "research implementation source_digest")
+        object.__setattr__(
+            self,
+            "implementation_digest",
+            canonical_digest(
+                {
+                    "implementation_id": self.implementation_id,
+                    "module": self.module.strip(),
+                    "qualname": self.qualname.strip(),
+                    "source_digest": self.source_digest,
+                }
+            ),
+        )
+
+    @classmethod
+    def from_callable(
+        cls,
+        implementation_id: str,
+        implementation: Callable[..., object],
+    ) -> "ResearchImplementation":
+        if not callable(implementation):
+            raise TypeError("research implementation must be callable")
+        module = getattr(implementation, "__module__", None)
+        qualname = getattr(implementation, "__qualname__", None)
+        if type(module) is not str or not module.strip():
+            raise ValueError("research implementation callable has no module identity")
+        if type(qualname) is not str or not qualname.strip():
+            raise ValueError("research implementation callable has no qualname identity")
+        if "<locals>" in qualname or "<lambda>" in qualname:
+            raise ValueError(
+                "research implementation must be declared at module scope with a name"
+            )
+        source_file = inspect.getsourcefile(implementation)
+        if source_file is None:
+            raise ValueError("research implementation source file cannot be resolved")
+        source_path = Path(source_file)
+        if not source_path.is_file():
+            raise ValueError("research implementation source file does not exist")
+        try:
+            source = source_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            raise ValueError("research implementation source is not canonical UTF-8") from exc
+        normalized = source.replace("\r\n", "\n").replace("\r", "\n")
+        source_digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+        return cls(
+            implementation_id,
+            module.strip(),
+            qualname.strip(),
+            source_digest,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchDefinition:
     definition_id: str
     kind: ResearchDefinitionKind
-    implementation_id: str
-    implementation_digest: str
+    implementation: ResearchImplementation
     config: JsonValue = None
     definition_digest: str = field(init=False)
 
@@ -91,11 +173,10 @@ class ResearchDefinition:
         _token(self.definition_id, "research definition_id")
         if not isinstance(self.kind, ResearchDefinitionKind):
             raise TypeError("research definition kind must be typed")
-        _token(self.implementation_id, "research implementation_id")
-        require_sha256(
-            self.implementation_digest,
-            "research implementation_digest",
-        )
+        if type(self.implementation) is not ResearchImplementation:
+            raise TypeError(
+                "research definition implementation must be ResearchImplementation"
+            )
         config = freeze_json(self.config)
         object.__setattr__(self, "config", config)
         object.__setattr__(
@@ -105,12 +186,19 @@ class ResearchDefinition:
                 {
                     "definition_id": self.definition_id,
                     "kind": self.kind.value,
-                    "implementation_id": self.implementation_id,
-                    "implementation_digest": self.implementation_digest,
+                    "implementation_digest": self.implementation.implementation_digest,
                     "config": config,
                 }
             ),
         )
+
+    @property
+    def implementation_id(self) -> str:
+        return self.implementation.implementation_id
+
+    @property
+    def implementation_digest(self) -> str:
+        return self.implementation.implementation_digest
 
 
 @dataclass(frozen=True, slots=True)
@@ -661,15 +749,18 @@ class ResearchProgramBuilder:
         definition_id: str,
         *,
         kind: ResearchDefinitionKind,
-        implementation_id: str,
-        implementation_digest: str,
+        implementation: ResearchImplementation | Callable[..., object],
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
+        resolved = (
+            implementation
+            if type(implementation) is ResearchImplementation
+            else ResearchImplementation.from_callable(definition_id, implementation)
+        )
         row = ResearchDefinition(
             definition_id,
             kind,
-            implementation_id,
-            implementation_digest,
+            resolved,
             freeze_json(config),
         )
         if row.definition_id in self._definitions:
@@ -681,15 +772,13 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation_id: str,
-        implementation_digest: str,
+        implementation: ResearchImplementation | Callable[..., object],
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
             definition_id,
             kind=ResearchDefinitionKind.METHOD,
-            implementation_id=implementation_id,
-            implementation_digest=implementation_digest,
+            implementation=implementation,
             config=config,
         )
 
@@ -697,15 +786,13 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation_id: str,
-        implementation_digest: str,
+        implementation: ResearchImplementation | Callable[..., object],
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
             definition_id,
             kind=ResearchDefinitionKind.BENCHMARK,
-            implementation_id=implementation_id,
-            implementation_digest=implementation_digest,
+            implementation=implementation,
             config=config,
         )
 
@@ -713,15 +800,13 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation_id: str,
-        implementation_digest: str,
+        implementation: ResearchImplementation | Callable[..., object],
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
             definition_id,
             kind=ResearchDefinitionKind.METRIC,
-            implementation_id=implementation_id,
-            implementation_digest=implementation_digest,
+            implementation=implementation,
             config=config,
         )
 
@@ -858,6 +943,7 @@ __all__ = [
     "ResearchDependency",
     "ResearchGraphRevision",
     "ResearchImpactState",
+    "ResearchImplementation",
     "ResearchInputBinding",
     "ResearchNode",
     "ResearchNodeImpact",
