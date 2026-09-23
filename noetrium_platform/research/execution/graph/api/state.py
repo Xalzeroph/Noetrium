@@ -68,6 +68,36 @@ class ResearchGraphReconciliationDisposition(StrEnum):
     FAILED = "failed"
 
 
+class ResearchGraphControlPhase(StrEnum):
+    """Durable orchestration control for one immutable ResearchGraph cut.
+
+    This phase owns only graph admission/control intent. Lower Machine, Run,
+    Effect, checkpoint and scientific truth remain in their canonical authorities.
+    """
+
+    ACTIVE = "active"
+    DRAINING = "draining"
+    PAUSED = "paused"
+    RECOVERY_REQUIRED = "recovery_required"
+    CANCELLED = "cancelled"
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchGraphControlRecord:
+    execution_id: str
+    phase: ResearchGraphControlPhase
+    generation: int
+    updated_at_ns: int
+
+    def __post_init__(self) -> None:
+        _text(self.execution_id, "research graph control execution_id")
+        if not isinstance(self.phase, ResearchGraphControlPhase):
+            raise TypeError("research graph control phase must be typed")
+        if type(self.generation) is not int or self.generation < 1:
+            raise ValueError("research graph control generation must be positive")
+        _optional_ns(self.updated_at_ns, "research graph control updated_at_ns")
+
+
 @dataclass(frozen=True, slots=True)
 class ResearchGraphNodeExecutionRecord:
     execution_id: str
@@ -468,6 +498,68 @@ class ResearchGraphExecutionStorePort(Protocol):
 
 
 @runtime_checkable
+class ResearchGraphControlStorePort(Protocol):
+    """CAS-safe durable graph control authority.
+
+    Control is scoped to one immutable physical execution cut. It never claims
+    lower Machine/Run/effect state and cannot resolve reconciliation debt itself.
+    """
+
+    def control_state(
+        self,
+        execution_id: str,
+    ) -> ResearchGraphControlRecord: ...
+
+    def request_drain(
+        self,
+        execution_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphControlRecord: ...
+
+    def pause_if_quiescent(
+        self,
+        execution_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphControlRecord: ...
+
+    def resume(
+        self,
+        execution_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphControlRecord: ...
+
+    def interrupt(
+        self,
+        execution_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphControlRecord: ...
+
+    def cancel_if_quiescent(
+        self,
+        execution_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphControlRecord: ...
+
+    def settle_recovery(
+        self,
+        execution_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphControlRecord: ...
+
+
+@runtime_checkable
 class ResearchGraphActiveCutStorePort(Protocol):
     """CAS authority for the movable logical-execution -> immutable-cut ref."""
 
@@ -490,6 +582,9 @@ __all__ = [
     "ResearchGraphActiveCutStorePort",
     "ResearchGraphAttemptRecord",
     "ResearchGraphAttemptState",
+    "ResearchGraphControlPhase",
+    "ResearchGraphControlRecord",
+    "ResearchGraphControlStorePort",
     "ResearchGraphExecutionConflict",
     "ResearchGraphExecutionNotFound",
     "ResearchGraphExecutionSnapshot",
