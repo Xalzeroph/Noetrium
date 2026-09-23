@@ -1597,10 +1597,6 @@ class StrictResearchOSControl(
             request,
             portfolio,
         )
-        if control.phase is not ResearchGraphControlPhase.RECOVERY_REQUIRED:
-            raise ResearchGraphExecutionConflict(
-                "RECONCILE requires recovery_required graph control"
-            )
         matches = tuple(
             node for node in compilation.nodes if node.ref == request.target.node
         )
@@ -1609,6 +1605,20 @@ class StrictResearchOSControl(
                 "reconciliation target does not identify exactly one graph node"
             )
         node = matches[0]
+        node_control = self._store.node_control_state(
+            cut.cut_id,
+            node.graph_node_id,
+        )
+        global_recovery = (
+            control.phase is ResearchGraphControlPhase.RECOVERY_REQUIRED
+        )
+        local_recovery = (
+            node_control.phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+        )
+        if not global_recovery and not local_recovery:
+            raise ResearchGraphExecutionConflict(
+                "RECONCILE requires graph-wide or node-local recovery_required control"
+            )
         record = snapshot.node(node.graph_node_id)
         if record.state is not ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
             raise ResearchGraphExecutionConflict(
@@ -1617,12 +1627,8 @@ class StrictResearchOSControl(
         if record.attempt_id is None:
             raise RuntimeError("reconciliation-required node lost attempt identity")
 
-        whole_target = ResearchExecutionTarget(
-            request.target.execution_id,
-            request.target.revision,
-        )
         prepared = prepare_research_os_execution(
-            whole_target,
+            request.target,
             portfolio,
             self._runtime,
             self._values,
@@ -1673,7 +1679,15 @@ class StrictResearchOSControl(
         )
         snapshot = self._store.snapshot(cut.cut_id)
         control = self._store.control_state(cut.cut_id)
-        if not snapshot.reconciliation_required_node_ids:
+        settled_node_control = None
+        if local_recovery:
+            settled_node_control = self._store.settle_node_recovery(
+                cut.cut_id,
+                node.graph_node_id,
+                expected_generation=node_control.generation,
+                now_ns=time.time_ns(),
+            )
+        if global_recovery and not snapshot.reconciliation_required_node_ids:
             control = self._store.settle_recovery(
                 cut.cut_id,
                 expected_generation=control.generation,
@@ -1691,6 +1705,11 @@ class StrictResearchOSControl(
                 "reconciliation_proof_digest": proof.proof_digest,
                 "reconciliation_authority_id": proof.authority_id,
                 "reconciliation_disposition": proof.disposition.value,
+                "node_control_phase": (
+                    None
+                    if settled_node_control is None
+                    else settled_node_control.phase.value
+                ),
             },
         )
 
@@ -1890,6 +1909,8 @@ class StrictResearchOSControl(
             state = "failed"
         elif report.blocked_node_ids:
             state = "blocked"
+        elif report.cancelled_node_ids:
+            state = "cancelled"
         else:
             state = "succeeded"
         payload: JsonObject = {
@@ -1903,6 +1924,7 @@ class StrictResearchOSControl(
             "succeeded_node_ids": report.succeeded_node_ids,
             "failed_node_ids": report.failed_node_ids,
             "blocked_node_ids": report.blocked_node_ids,
+            "cancelled_node_ids": report.cancelled_node_ids,
         }
         return ResearchControlReceipt(
             request.action,
