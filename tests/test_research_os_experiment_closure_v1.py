@@ -16,6 +16,9 @@ from noetrium_platform.composition.research_os_execution import StrictResearchOS
 from noetrium_platform.composition.research_os_runtime import (
     CanonicalResearchOSNodeRuntime,
 )
+from noetrium_platform.composition.research_os_reconciliation import (
+    ResearchOSNodeReconciliationProof,
+)
 from noetrium_platform.composition.research_os_value_authorities import (
     ResearchOSArtifactValueAuthority,
 )
@@ -72,6 +75,9 @@ from noetrium_platform.research.experimentation.lifecycle.study.algorithms impor
 )
 from noetrium_platform.research.experimentation.lifecycle.run.runtime import (
     DirectoryRunArtifactStore,
+)
+from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphReconciliationDisposition,
 )
 from noetrium_platform.research.execution.graph.providers import (
     SQLiteResearchGraphExecutionStore,
@@ -318,6 +324,35 @@ class _BoundAdapter:
         return StudyMetricObservation(assignment, (("score", 1.0),))
 
 
+class _ExperimentReconciliation:
+    identity_digest = canonical_digest(
+        {"reconciliation": "test.experiment-reconciliation.v1"}
+    )
+
+    def reconcile(
+        self,
+        closure,
+        *,
+        machine_id,
+        execution_cut_id,
+        graph_node_id,
+        semantic_digest,
+        lowering_digest,
+        attempt_id,
+    ):
+        del closure, machine_id
+        return ResearchOSNodeReconciliationProof(
+            execution_cut_id,
+            graph_node_id,
+            semantic_digest,
+            lowering_digest,
+            attempt_id,
+            ResearchGraphReconciliationDisposition.RETRY,
+            "test.experiment-reconciliation",
+            (canonical_digest({"proof": attempt_id}),),
+        )
+
+
 class _InlineActor:
     actor_id = "research-os-experiment-test-writer"
 
@@ -338,6 +373,7 @@ class _ExperimentRuntimeBindings:
             _BoundAdapter(),
             BasicStudyMetricAggregator(),
             self.artifacts,
+            _ExperimentReconciliation(),
             canonical_digest({"adapter": "test.bound-study-execution.v1"}),
             canonical_digest({"aggregation": "basic-study-metric-aggregator.v1"}),
             canonical_digest(
@@ -346,6 +382,7 @@ class _ExperimentRuntimeBindings:
                     "run_id": self.artifacts.run_id,
                 }
             ),
+            _ExperimentReconciliation.identity_digest,
         )
 
 
@@ -443,9 +480,11 @@ def test_experiment_runtime_binding_drift_fails_closed() -> None:
             _BoundAdapter(),
             BasicStudyMetricAggregator(),
             artifacts,
+            _ExperimentReconciliation(),
             canonical_digest({"adapter": "test.bound-study-execution.v1"}),
             canonical_digest({"aggregation": "basic-study-metric-aggregator.v1"}),
             canonical_digest({"artifact_store": "drift"}),
+            _ExperimentReconciliation.identity_digest,
         )
         object.__setattr__(runtime_binding, "study_plan_digest", "f" * 64)
         with pytest.raises(ValueError, match="does not belong"):
