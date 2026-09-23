@@ -35,7 +35,7 @@ noetrium-manage = "noetrium_platform.product.operator.maintenance.runtime.manage
 noetrium-algorithm = "noetrium_platform.foundation.governance.analysis.algorithm.cli:main"
 noetrium-concurrency = "noetrium_platform.foundation.governance.analysis.concurrency.cli:main"
 noetrium-performance = "noetrium_platform.foundation.governance.analysis.performance.cli:main"
-noetrium-repository-boundary = "noetrium_platform.foundation.governance.repository_boundary.cli:main"
+noetrium-repository-boundary = "noetrium_platform.foundation.governance.architecture.repository_boundary.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["components*", "orchestration*", "noetrium*", "noetrium_platform*"]
