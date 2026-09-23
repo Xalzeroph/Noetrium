@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3624,
-    "python_import_edges": 6811,
-    "symbols": 4799,
+    "python_import_edges": 6819,
+    "symbols": 4800,
     "tracked_files": 4253,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4793,
+    "python": 4794,
     "typescript": 5
   },
   "parse_errors": [],
@@ -5520,6 +5520,18 @@
       "source_module": "noetrium_platform.composition.research_os_execution",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_execution",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.contracts",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_execution",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.lineage.relation.api",
       "target_role": "core_platform"
     },
     {
@@ -32189,13 +32201,49 @@
     {
       "source_module": "tests.test_research_os_execution_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_value_authorities",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_os_values",
       "target_role": "core_platform"
     },
     {
       "source_module": "tests.test_research_os_execution_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.catalog.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.evidence.artifact.content.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.contracts",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.lineage.relation.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.retention.providers",
       "target_role": "core_platform"
     },
     {
@@ -40883,7 +40931,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2635,
+      "count": 2637,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -40943,7 +40991,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2633,
+      "count": 2639,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41013,11 +41061,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 384,
     "sdk": 5,
-    "tests": 949,
+    "tests": 950,
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "8941cac873280fc573acb2082d017d1719bc1d00",
+  "source_git_sha": "c794a3512b1591498791f494c757fd4ca4a87e3b",
   "symbols": [
     {
       "bases": [],
@@ -63380,7 +63428,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 56,
+      "line": 63,
       "methods": [
         "__post_init__"
       ],
@@ -63400,7 +63448,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 99,
+      "line": 106,
       "methods": [
         "admit",
         "execute"
@@ -63426,7 +63474,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 121,
+      "line": 128,
       "methods": [
         "__post_init__",
         "admission"
@@ -63445,7 +63493,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 211,
+      "line": 218,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -63459,10 +63507,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 278,
+      "line": 308,
       "methods": [
         "__init__",
-        "execute"
+        "execute",
+        "_record_artifact_lineage"
       ],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "PreparedResearchOSNodeExecutor",
@@ -63478,7 +63527,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 352,
+      "line": 450,
       "methods": [
         "__init__",
         "control",
@@ -136999,7 +137048,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 37,
+      "line": 52,
       "methods": [
         "publish",
         "lookup",
@@ -137018,7 +137067,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 75,
+      "line": 90,
       "methods": [
         "__init__",
         "admit",
@@ -137036,7 +137085,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 272,
+      "line": 293,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -137058,6 +137107,24 @@
       "name": "_ExecutionStoreWithoutActiveCut",
       "path": "tests/test_research_os_execution_v1.py",
       "qualname": "tests.test_research_os_execution_v1._ExecutionStoreWithoutActiveCut",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "_Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 430,
+      "methods": [
+        "execute"
+      ],
+      "module": "tests.test_research_os_execution_v1",
+      "name": "_ArtifactRuntime",
+      "path": "tests/test_research_os_execution_v1.py",
+      "qualname": "tests.test_research_os_execution_v1._ArtifactRuntime",
       "role": "tests"
     },
     {
