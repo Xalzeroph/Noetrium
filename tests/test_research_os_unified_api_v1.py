@@ -116,7 +116,6 @@ def _program() -> api.ResearchProgram:
 def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
     expected = {
         "ResearchOS",
-        "ResearchOSPort",
         "ResearchPortfolio",
         "ResearchProgram",
         "ResearchProgramBuilder",
@@ -126,6 +125,9 @@ def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
         "ResearchDefinition",
         "ResearchImplementation",
         "ResearchControlAction",
+        "ResearchPortfolioBuilder",
+        "ResearchPortfolioDependency",
+        "ResearchNodeRef",
     }
     assert expected <= set(api.__all__)
 
@@ -143,6 +145,9 @@ def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
     assert retired.isdisjoint(api.__all__)
     for name in retired:
         assert not hasattr(api, name)
+
+
+    assert not hasattr(api, "ResearchOSPort")
 
 
 def test_research_implementation_identity_is_derived_without_manual_hashes() -> None:
@@ -192,6 +197,89 @@ def test_research_program_digest_changes_when_scientific_semantics_change() -> N
     )
     second = builder.freeze()
     assert first.program_digest != second.program_digest
+
+
+def test_portfolio_builder_connects_multiple_papers_as_one_typed_graph() -> None:
+    search_builder = api.ResearchProgramBuilder("paper-a")
+    search_builder.selection(
+        "select",
+        outputs=(
+            api.ResearchOutputSpec(
+                "best-candidate",
+                api.ResearchValueKind.SELECTION,
+            ),
+        ),
+    )
+    search = search_builder.freeze()
+
+    confirm_builder = api.ResearchProgramBuilder("paper-b")
+    confirm_builder.node(
+        "confirm",
+        kind=api.ResearchNodeKind.EXPERIMENT,
+    )
+    confirm = confirm_builder.freeze()
+
+    portfolio = (
+        api.ResearchPortfolioBuilder("portfolio")
+        .program(search)
+        .program(confirm)
+        .depends(
+            upstream_program_id="paper-a",
+            upstream_node_id="select",
+            downstream_program_id="paper-b",
+            downstream_node_id="confirm",
+            bindings=(
+                api.ResearchInputBinding(
+                    "candidate",
+                    "best-candidate",
+                    api.ResearchValueKind.SELECTION,
+                ),
+            ),
+        )
+        .freeze()
+    )
+
+    assert tuple(program.program_id for program in portfolio.programs) == (
+        "paper-a",
+        "paper-b",
+    )
+    assert len(portfolio.dependencies) == 1
+    dependency = portfolio.dependencies[0]
+    assert dependency.upstream == api.ResearchNodeRef("paper-a", "select")
+    assert dependency.downstream == api.ResearchNodeRef("paper-b", "confirm")
+    assert dependency.bindings[0].input_name == "candidate"
+
+
+def test_portfolio_rejects_cross_program_dependency_cycle() -> None:
+    first_builder = api.ResearchProgramBuilder("paper-a")
+    first_builder.node("a", kind=api.ResearchNodeKind.ANALYSIS)
+    first = first_builder.freeze()
+
+    second_builder = api.ResearchProgramBuilder("paper-b")
+    second_builder.node("b", kind=api.ResearchNodeKind.ANALYSIS)
+    second = second_builder.freeze()
+
+    builder = api.ResearchPortfolioBuilder("cyclic")
+    builder.program(first).program(second)
+    builder.depends(
+        upstream_program_id="paper-a",
+        upstream_node_id="a",
+        downstream_program_id="paper-b",
+        downstream_node_id="b",
+    )
+    builder.depends(
+        upstream_program_id="paper-b",
+        upstream_node_id="b",
+        downstream_program_id="paper-a",
+        downstream_node_id="a",
+    )
+
+    try:
+        builder.freeze()
+    except ValueError as exc:
+        assert "dependency cycle" in str(exc)
+    else:
+        raise AssertionError("cross-program dependency cycle was accepted")
 
 
 def test_research_os_unifies_revision_and_live_control() -> None:
