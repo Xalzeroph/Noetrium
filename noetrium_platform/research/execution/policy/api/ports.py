@@ -32,5 +32,15 @@ class ExecutionAdmissionPort(Protocol):
         cancellation: CancellationTokenPort | None,
     ) -> ExecutionPermitLeasePort: ...
 
+    def acquire_many(
+        self,
+        group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        permit_count: int,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ) -> tuple[ExecutionPermitLeasePort, ...]: ...
+
     def snapshot(self) -> AdmissionTopologySnapshot: ...
     def close(self) -> None: ...
