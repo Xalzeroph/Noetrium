@@ -14,6 +14,7 @@ from noetrium_platform.evidence.artifact.content.providers import (
 )
 from noetrium_platform.foundation.portfolio.api import PortfolioRevisionConflict
 from noetrium_platform.foundation.portfolio.runtime import SQLitePortfolioRevisionStore
+from noetrium_platform.product.research_os import bind_research_os
 
 
 def _method_v1(payload=None):
@@ -191,6 +192,6 @@ def test_portfolio_backed_port_fails_closed_without_runtime_control(
         SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3"),
         DirectoryArtifactBlobStore(tmp_path / "blobs"),
     )
-    bound = api.bind_research_os(port)
+    bound = bind_research_os(port)
     with pytest.raises(RuntimeError, match="control is not bound"):
         bound.run("anything")
