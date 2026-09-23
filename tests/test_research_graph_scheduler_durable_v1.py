@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import pytest
 
+from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_graph import ResearchGraphScheduler
+from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphLiveNodeState,
@@ -14,6 +16,21 @@ from noetrium_platform.research.execution.graph.api import (
 from noetrium_platform.research.execution.graph.providers import (
     SQLiteResearchGraphExecutionStore,
 )
+
+
+def _pool() -> ResearchExecutionPool:
+    return ResearchExecutionPool(
+        orchestration_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=4,
+            max_cpu_workers=1,
+            max_async_io_in_flight=4,
+        ),
+        experiment_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            max_async_io_in_flight=2,
+        ),
+    )
 
 
 class _Executor(ResearchGraphNodeExecutorPort):
@@ -42,9 +59,11 @@ def _plan() -> ResearchGraphPlan:
 def test_durable_scheduler_reuses_completed_graph_without_reexecution(tmp_path) -> None:
     store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
     first_executor = _Executor()
+    pool = _pool()
     scheduler = ResearchGraphScheduler(
         _plan(),
         first_executor,
+        execution_pool=pool,
         execution_store=store,
         execution_id="execution-1",
         lease_seconds=5.0,
@@ -53,14 +72,17 @@ def test_durable_scheduler_reuses_completed_graph_without_reexecution(tmp_path) 
         report = scheduler.execute()
     finally:
         scheduler.close()
+        pool.close()
 
     assert report.succeeded_node_ids == ("a", "b", "x")
     assert set(first_executor.calls) == {"a", "b", "x"}
 
     second_executor = _Executor()
+    second_pool = _pool()
     resumed = ResearchGraphScheduler(
         _plan(),
         second_executor,
+        execution_pool=second_pool,
         execution_store=store,
         execution_id="execution-1",
         lease_seconds=5.0,
@@ -69,6 +91,7 @@ def test_durable_scheduler_reuses_completed_graph_without_reexecution(tmp_path) 
         second_report = resumed.execute()
     finally:
         resumed.close()
+        second_pool.close()
 
     assert second_report.succeeded_node_ids == ("a", "b", "x")
     assert second_executor.calls == []
@@ -97,9 +120,11 @@ def test_durable_scheduler_runs_unrelated_branch_before_reconciliation_boundary(
     )
 
     executor = _Executor()
+    pool = _pool()
     scheduler = ResearchGraphScheduler(
         plan,
         executor,
+        execution_pool=pool,
         execution_store=store,
         execution_id="execution-2",
         lease_seconds=5.0,
@@ -109,6 +134,7 @@ def test_durable_scheduler_runs_unrelated_branch_before_reconciliation_boundary(
             scheduler.execute()
     finally:
         scheduler.close()
+        pool.close()
 
     assert captured.value.node_ids == ("a",)
     assert executor.calls == ["x"]
