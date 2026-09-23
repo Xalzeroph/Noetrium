@@ -83163,7 +83163,11 @@
         "_commit_authoritative_transition",
         "_commit_authoritative_control",
         "_counts_from_events",
+        "_semantic_execution_scope",
+        "_node_semantic_identity",
         "_operation_id",
+        "_node_idempotency_key",
+        "_capability_idempotency_key",
         "_evidence_obligations",
         "_evidence_status",
         "_result",
@@ -139126,7 +139130,7 @@
   "parse_errors": [],
   "registry_sha256": "aaab5b90bc9a5fde2121df4c1c6e70c9bb90f7f09d5f6eaaff61907eb06cb1d3",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "unknown",
+  "source_git_sha": "a9baedaccc1b7fa8de0e2e95179d471c9cf8bbdb",
   "system_import_edges": [
     {
       "count": 90,
