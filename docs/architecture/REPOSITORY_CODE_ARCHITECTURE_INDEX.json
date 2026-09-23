@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3640,
-    "python_import_edges": 6807,
-    "symbols": 4798,
-    "tracked_files": 4269,
+    "python_files": 3642,
+    "python_import_edges": 6808,
+    "symbols": 4799,
+    "tracked_files": 4271,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4792,
+    "python": 4793,
     "typescript": 5
   },
   "parse_errors": [],
@@ -186,6 +186,12 @@
       "source_module": "noetrium.contracts.json",
       "source_role": "public_facade",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium.contracts.systems.research_os",
+      "source_role": "public_facade",
+      "target_module": "noetrium_platform.product.api",
       "target_role": "core_platform"
     },
     {
@@ -40879,7 +40885,7 @@
       "target_role": "core_platform"
     },
     {
-      "count": 5,
+      "count": 6,
       "source_role": "public_facade",
       "target_role": "core_platform"
     },
@@ -40973,11 +40979,11 @@
     "core_platform": 1957,
     "examples": 6,
     "other": 1,
-    "public_facade": 39,
+    "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 757,
-    "tests": 773,
+    "tests": 774,
     "tooling": 75
   },
   "role_symbol_counts": {
@@ -40990,10 +40996,10 @@
     "research_reproductions": 384,
     "sdk": 5,
     "tests": 949,
-    "tooling": 35
+    "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "100111715d8f2e85fd748e5a77ef695cfba8c0e4",
+  "source_git_sha": "fd4f3a10c8a3ddefbff0ccae861f179b013f8ff2",
   "symbols": [
     {
       "bases": [],
@@ -126581,12 +126587,45 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 17,
+      "line": 19,
       "methods": [],
       "module": "scripts.audit_system_integration",
       "name": "SystemIntegrationRow",
       "path": "scripts/audit_system_integration.py",
       "qualname": "scripts.audit_system_integration.SystemIntegrationRow",
+      "role": "tooling"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True)"
+      ],
+      "fields": [
+        "node_key: str",
+        "topology_level: str",
+        "system_key: str",
+        "parent_key: str",
+        "package_prefix: str",
+        "node_kind: str",
+        "declared_shape: tuple[str, ...]",
+        "present_shape: tuple[str, ...]",
+        "missing_shape: tuple[str, ...]",
+        "python_file_count: int",
+        "production_consumers: tuple[str, ...]",
+        "research_consumers: tuple[str, ...]",
+        "script_consumers: tuple[str, ...]",
+        "test_consumers: tuple[str, ...]",
+        "direct_runtime_or_provider_consumers: tuple[str, ...]",
+        "status: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 39,
+      "methods": [],
+      "module": "scripts.audit_system_integration",
+      "name": "LayerIntegrationRow",
+      "path": "scripts/audit_system_integration.py",
+      "qualname": "scripts.audit_system_integration.LayerIntegrationRow",
       "role": "tooling"
     },
     {
