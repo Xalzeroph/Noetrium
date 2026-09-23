@@ -155,6 +155,7 @@ def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
         "ResearchDefinition",
         "ResearchImplementation",
         "ResearchControlAction",
+        "ResearchExecutionTarget",
         "ResearchPortfolioBuilder",
         "ResearchPortfolioDependency",
         "ResearchNodeRef",
@@ -340,8 +341,10 @@ def test_research_os_unifies_revision_and_live_control() -> None:
         message="resolved merge",
     )
 
-    paused = research_os.pause("sem.confirmatory")
-    resumed = research_os.resume("sem.confirmatory")
+    target = api.ResearchExecutionTarget("sem.confirmatory", next_revision)
+    node_target = target.for_node("sem", "main")
+    paused = research_os.pause(node_target)
+    resumed = research_os.resume(target)
 
     assert revision.portfolio_id == "main"
     assert branch.revision_digest == revision.revision_digest
@@ -354,6 +357,12 @@ def test_research_os_unifies_revision_and_live_control() -> None:
         revision.revision_digest,
         next_revision.revision_digest,
     )
+    assert target.portfolio_id == "main"
+    assert target.research_revision_digest == next_revision.revision_digest
+    assert node_target.node == api.ResearchNodeRef("sem", "main")
+    assert node_target.target_digest != target.target_digest
+    assert paused.target == node_target
+    assert resumed.target == target
     assert paused.action is api.ResearchControlAction.PAUSE
     assert resumed.action is api.ResearchControlAction.RESUME
     assert tuple(row.action for row in port.controls) == (
