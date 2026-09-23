@@ -35629,7 +35629,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 16,
+      "line": 18,
       "methods": [
         "__init__",
         "resolve"
@@ -40598,7 +40598,7 @@
         "supported_kinds"
       ],
       "kind": "class",
-      "line": 33,
+      "line": 38,
       "methods": [
         "__init__",
         "_artifact_id",
@@ -40606,6 +40606,8 @@
         "_metadata",
         "_record",
         "_size_bytes",
+        "_expected_retention",
+        "_ensure_retention",
         "_validate_record",
         "publish",
         "lookup",
@@ -102084,7 +102086,7 @@
     "classes": 3334,
     "constructor_edges": 920,
     "inheritance_edges": 145,
-    "module_import_edges": 5077,
+    "module_import_edges": 5079,
     "parse_errors": 0,
     "python_modules": 1939,
     "registry_authorities": 20,
@@ -106556,6 +106558,10 @@
       "target": "noetrium_platform.capabilities.participant.core.api"
     },
     {
+      "source": "noetrium_platform.capabilities.participant.binding.runtime.local_resolver",
+      "target": "noetrium_platform.capabilities.participant.definition.api"
+    },
+    {
       "source": "noetrium_platform.capabilities.participant.capability.api",
       "target": "noetrium_platform.capabilities.participant.capability.contracts"
     },
@@ -109102,6 +109108,10 @@
     {
       "source": "noetrium_platform.composition.research_os_value_authorities",
       "target": "noetrium_platform.evidence.artifact.content.api"
+    },
+    {
+      "source": "noetrium_platform.composition.research_os_value_authorities",
+      "target": "noetrium_platform.evidence.artifact.retention.api"
     },
     {
       "source": "noetrium_platform.composition.research_os_value_authorities",
@@ -126870,7 +126880,8 @@
     {
       "imports": [
         "noetrium_platform.capabilities.participant.binding.api",
-        "noetrium_platform.capabilities.participant.core.api"
+        "noetrium_platform.capabilities.participant.core.api",
+        "noetrium_platform.capabilities.participant.definition.api"
       ],
       "module": "noetrium_platform.capabilities.participant.binding.runtime.local_resolver",
       "path": "noetrium_platform/capabilities/participant/binding/runtime/local_resolver.py",
@@ -128874,6 +128885,7 @@
         "noetrium_platform.composition.research_os_values",
         "noetrium_platform.evidence.artifact.catalog.api",
         "noetrium_platform.evidence.artifact.content.api",
+        "noetrium_platform.evidence.artifact.retention.api",
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.foundation.scope.api",
         "noetrium_platform.product.research_os"
@@ -143403,7 +143415,7 @@
   "parse_errors": [],
   "registry_sha256": "d75d6aa6bb9b8fc44e4dff4705d1fab16c72ad9ab704825aa3ff703bf4627e27",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "0fc4f8ac8653b6876ed933b8362fce1870e234b4",
+  "source_git_sha": "8941cac873280fc573acb2082d017d1719bc1d00",
   "system_import_edges": [
     {
       "count": 90,
@@ -143506,7 +143518,7 @@
       "target": "platform"
     },
     {
-      "count": 129,
+      "count": 130,
       "source": "participant",
       "target": "participant"
     },
@@ -143541,7 +143553,7 @@
       "target": "reliability"
     },
     {
-      "count": 7,
+      "count": 8,
       "source": "research_os",
       "target": "artifact"
     },

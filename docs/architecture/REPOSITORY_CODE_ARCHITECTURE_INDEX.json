@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3624,
-    "python_import_edges": 6808,
+    "python_import_edges": 6811,
     "symbols": 4799,
     "tracked_files": 4253,
     "typescript_javascript_files": 11
@@ -2718,6 +2718,12 @@
       "source_module": "noetrium_platform.capabilities.participant.binding.runtime.local_resolver",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.participant.core.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.participant.binding.runtime.local_resolver",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.participant.definition.api",
       "target_role": "core_platform"
     },
     {
@@ -5712,6 +5718,12 @@
       "source_module": "noetrium_platform.composition.research_os_value_authorities",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact.content.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_value_authorities",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.retention.api",
       "target_role": "core_platform"
     },
     {
@@ -32129,6 +32141,12 @@
     {
       "source_module": "tests.test_research_os_artifact_value_authority_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.retention.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_value_authority_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
@@ -40865,7 +40883,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2633,
+      "count": 2635,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -40925,7 +40943,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2632,
+      "count": 2633,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -40999,7 +41017,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "0fc4f8ac8653b6876ed933b8362fce1870e234b4",
+  "source_git_sha": "8941cac873280fc573acb2082d017d1719bc1d00",
   "symbols": [
     {
       "bases": [],
@@ -59624,7 +59642,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 18,
       "methods": [
         "__init__",
         "resolve"
@@ -64149,7 +64167,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 33,
+      "line": 38,
       "methods": [
         "__init__",
         "_artifact_id",
@@ -64157,6 +64175,8 @@
         "_metadata",
         "_record",
         "_size_bytes",
+        "_expected_retention",
+        "_ensure_retention",
         "_validate_record",
         "publish",
         "lookup",
