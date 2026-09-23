@@ -138,9 +138,11 @@ def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
         reference_code = (
             "import json,sys;"
             "from noetrium.api import ResearchOS;"
+            "from noetrium_platform.product.research_os import bind_research_os;"
             "from noetrium_platform.product.reference import ReferenceResearchOSPort;"
             "action=sys.argv[1];target=sys.argv[2];"
-            "research_os=ResearchOS(ReferenceResearchOSPort());"
+            "research_os=bind_research_os(ReferenceResearchOSPort());"
+            "assert isinstance(research_os,ResearchOS);"
             "result=getattr(research_os,action)(target);"
             "print(json.dumps({'ok':True,'command':action,'result':"
             "{'action':result.action.value,'target':result.target,'state':result.state}},"
