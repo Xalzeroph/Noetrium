@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 from tests._canonical_method_execution import execute_method_program_canonically
+from noetrium_platform.composition.research_child_machine_batch import (
+    PooledChildResearchBatchMechanics,
+)
+from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     InMemoryMachineJournal,
@@ -9,8 +14,8 @@ from noetrium_platform.foundation.kernel.kernel import (
 from noetrium_platform.research.execution.machines.api import (
     BatchCapableRegisteredChildResearchMachineExecutor,
     ChildResearchHostRegistry,
-    ThreadPoolChildResearchBatchMechanics,
 )
+from noetrium_platform.research.execution.policy.api import AdmissionBudget
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentRequest,
     MethodAgentResult,
@@ -164,9 +169,22 @@ def _child_runtime():
         FlowSubtaskBinding(subtask_runtime),
     )
     single = registry.executor()
-    mechanics = ThreadPoolChildResearchBatchMechanics(
+    pool = ResearchExecutionPool(
+        experiment_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=4,
+            max_blocking_io_in_flight=4,
+        ),
+        experiment_admission_budget=AdmissionBudget(
+            max_total_in_flight=4,
+            max_in_flight_per_group=4,
+            max_in_flight_per_tenant=4,
+            max_in_flight_per_resource=4,
+            max_blocking_io_in_flight=4,
+        ),
+    )
+    mechanics = PooledChildResearchBatchMechanics(
         single,
-        max_workers=4,
+        execution_pool=pool,
     )
     return (
         BatchCapableRegisteredChildResearchMachineExecutor(
@@ -175,6 +193,7 @@ def _child_runtime():
         ),
         subtask_runtime,
         journal,
+        pool,
     )
 
 
@@ -192,20 +211,23 @@ def test_flow_method_runs_concurrent_ready_set_child_machines_and_lazy_refinemen
     tmp_path,
 ) -> None:
     agents = _FlowParentAgents()
-    children, subtasks, journal = _child_runtime()
-    result = execute_method_program_canonically(
-        FLOW_METHOD_PROGRAM,
-        runtime=MethodRuntimeContext(
-            _context(),
-            agent_loop=agents,
-            child_machines=children,
-        ),
-        initial_state=flow_initial_state(
-            task_id="paper-task",
-            overall_task="Build the paper task with a modular AOV workflow.",
-        ),
-        state_root=tmp_path / "machine",
-    )
+    children, subtasks, journal, pool = _child_runtime()
+    try:
+        result = execute_method_program_canonically(
+            FLOW_METHOD_PROGRAM,
+            runtime=MethodRuntimeContext(
+                _context(),
+                agent_loop=agents,
+                child_machines=children,
+            ),
+            initial_state=flow_initial_state(
+                task_id="paper-task",
+                overall_task="Build the paper task with a modular AOV workflow.",
+            ),
+            state_root=tmp_path / "machine",
+        )
+    finally:
+        pool.close()
 
     assert result.status is MethodRunStatus.SUCCEEDED
     assert result.value["task_success"] is True
