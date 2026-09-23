@@ -58,7 +58,8 @@ jobs:
             tests/test_capacity_atomic_admission_v1.py \
             tests/test_atomic_task_batch_v1.py \
             tests/test_pooled_child_research_machine_batch_v1.py \
-            tests/test_research_graph_scheduler_durable_v1.py
+            tests/test_research_graph_scheduler_durable_v1.py \
+            tests/test_research_graph_scale_v1.py
 
   governance:
     name: governance / contracts / quality
