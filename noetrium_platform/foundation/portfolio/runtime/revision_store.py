@@ -163,7 +163,8 @@ class SQLitePortfolioRevisionStore:
         conn.execute(
             "CREATE TABLE IF NOT EXISTS portfolio_revisions("
             "subject_id TEXT NOT NULL,revision_digest TEXT NOT NULL,"
-            "payload_digest TEXT NOT NULL,parents_json TEXT NOT NULL,message TEXT NOT NULL,"
+            "payload_digest TEXT NOT NULL,payload_size_bytes INTEGER NOT NULL,"
+            "parents_json TEXT NOT NULL,message TEXT NOT NULL,"
             "PRIMARY KEY(subject_id,revision_digest))"
         )
         conn.execute(
@@ -189,7 +190,7 @@ class SQLitePortfolioRevisionStore:
 
     @staticmethod
     def _decode_revision(row: tuple[object, ...]) -> PortfolioRevision:
-        parents_raw = json.loads(str(row[3]))
+        parents_raw = json.loads(str(row[4]))
         if not isinstance(parents_raw, list) or any(
             type(value) is not str for value in parents_raw
         ):
@@ -197,8 +198,9 @@ class SQLitePortfolioRevisionStore:
         revision = PortfolioRevision(
             str(row[0]),
             str(row[2]),
+            int(row[3]),
             tuple(parents_raw),
-            str(row[4]),
+            str(row[5]),
         )
         if revision.revision_digest != str(row[1]):
             raise RuntimeError("portfolio revision digest integrity failure")
@@ -215,7 +217,7 @@ class SQLitePortfolioRevisionStore:
         revision_digest: str,
     ) -> PortfolioRevision:
         row = conn.execute(
-            "SELECT subject_id,revision_digest,payload_digest,parents_json,message "
+            "SELECT subject_id,revision_digest,payload_digest,payload_size_bytes,parents_json,message "
             "FROM portfolio_revisions WHERE subject_id=? AND revision_digest=?",
             (subject_id, revision_digest),
         ).fetchone()
@@ -234,7 +236,7 @@ class SQLitePortfolioRevisionStore:
                 for parent in revision.parent_revision_digests:
                     self._revision_tx(conn, revision.subject_id, parent)
                 row = conn.execute(
-                    "SELECT subject_id,revision_digest,payload_digest,parents_json,message "
+                    "SELECT subject_id,revision_digest,payload_digest,payload_size_bytes,parents_json,message "
                     "FROM portfolio_revisions WHERE subject_id=? AND revision_digest=?",
                     (revision.subject_id, revision.revision_digest),
                 ).fetchone()
@@ -246,12 +248,13 @@ class SQLitePortfolioRevisionStore:
                     return current
                 conn.execute(
                     "INSERT INTO portfolio_revisions("
-                    "subject_id,revision_digest,payload_digest,parents_json,message"
-                    ") VALUES(?,?,?,?,?)",
+                    "subject_id,revision_digest,payload_digest,payload_size_bytes,parents_json,message"
+                    ") VALUES(?,?,?,?,?,?)",
                     (
                         revision.subject_id,
                         revision.revision_digest,
                         revision.payload_digest,
+                        revision.payload_size_bytes,
                         self._parents_json(revision.parent_revision_digests),
                         revision.message,
                     ),
