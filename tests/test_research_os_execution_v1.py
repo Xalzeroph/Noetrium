@@ -261,18 +261,41 @@ def test_missing_value_authority_fails_before_cut_creation(tmp_path: Path) -> No
         pool.close()
 
 
-def test_node_scoped_run_and_implicit_global_payload_fail_closed(tmp_path: Path) -> None:
+def test_node_scoped_run_uses_dependency_closed_selection(tmp_path: Path) -> None:
     runtime = _Runtime()
     values = ResearchOSValueRouter((_ValueAuthority(),))
-    _graph, pool, research_os = _bound(tmp_path, runtime, values)
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
     try:
         portfolio = _portfolio()
-        revision = research_os.commit(portfolio, message="strict")
-        target = api.ResearchExecutionTarget("execution-strict", revision)
+        revision = research_os.commit(portfolio, message="node selection")
+        target = api.ResearchExecutionTarget("execution-selection", revision)
 
-        with pytest.raises(ResearchOSExecutionUnsupported, match="node-scoped RUN"):
-            research_os.run(target.for_node("paper", "source"))
+        source_receipt = research_os.run(target.for_node("paper", "source"))
+        assert source_receipt.state == "succeeded"
+        assert source_receipt.payload["selected_node_ids"] == ("paper::source",)
+        assert runtime.executed == ["paper::source"]
+        active = graph.active_cut(target.execution_id)
+        assert active is not None
+        snapshot = graph.snapshot(active.cut_id)
+        assert snapshot.node("paper::source").state is ResearchGraphLiveNodeState.SUCCEEDED
+        assert snapshot.node("paper::consume").state is ResearchGraphLiveNodeState.PENDING
+        assert graph.attempts(active.cut_id, "paper::consume") == ()
 
+        consume_receipt = research_os.run(target.for_node("paper", "consume"))
+        assert consume_receipt.state == "succeeded"
+        assert consume_receipt.payload["selected_node_ids"] == (
+            "paper::consume",
+            "paper::source",
+        )
+        assert runtime.executed == ["paper::source", "paper::consume"]
+        snapshot = graph.snapshot(active.cut_id)
+        assert snapshot.node("paper::consume").state is ResearchGraphLiveNodeState.SUCCEEDED
+
+        with pytest.raises(
+            ResearchOSExecutionUnsupported,
+            match="does not identify exactly one",
+        ):
+            research_os.run(target.for_node("paper", "missing"))
         with pytest.raises(ResearchOSExecutionUnsupported, match="root-input"):
             research_os.run(target, payload={"implicit": True})
     finally:
