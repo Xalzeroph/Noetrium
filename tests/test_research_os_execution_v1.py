@@ -13,13 +13,25 @@ from noetrium_platform.composition.research_os_execution import (
     ResearchOSNodeAdmission,
     StrictResearchOSControl,
 )
+from noetrium_platform.composition.research_os_value_authorities import (
+    ResearchOSArtifactValueAuthority,
+)
 from noetrium_platform.composition.research_os_values import (
     ResearchOSValueAuthorityMissing,
     ResearchOSValueReference,
     ResearchOSValueRouter,
+    ResearchOSValueSubject,
 )
+from noetrium_platform.evidence.artifact.catalog.providers import SQLiteArtifactRegistry
 from noetrium_platform.evidence.artifact.content.providers import (
     DirectoryArtifactBlobStore,
+)
+from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
+from noetrium_platform.evidence.artifact.lineage.relation.providers import (
+    SQLiteArtifactLineageStore,
+)
+from noetrium_platform.evidence.artifact.retention.providers import (
+    SQLiteArtifactRetentionStore,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import (
@@ -28,6 +40,9 @@ from noetrium_platform.foundation.kernel.kernel import (
     freeze_json,
 )
 from noetrium_platform.foundation.portfolio.runtime import SQLitePortfolioRevisionStore
+from noetrium_platform.composition.research_os_graph import (
+    compile_research_portfolio_graph,
+)
 from noetrium_platform.research.execution.graph.providers import (
     SQLiteResearchGraphExecutionStore,
 )
@@ -153,12 +168,18 @@ def _pool() -> ResearchExecutionPool:
     )
 
 
-def _bound(tmp_path: Path, runtime, values):
+def _bound(tmp_path: Path, runtime, values, *, artifact_lineage=None):
     revisions = SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3")
     blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
     pool = _pool()
-    control = StrictResearchOSControl(graph, pool, runtime, values)
+    control = StrictResearchOSControl(
+        graph,
+        pool,
+        runtime,
+        values,
+        artifact_lineage=artifact_lineage,
+    )
     return (
         graph,
         pool,
@@ -401,5 +422,147 @@ def test_control_requires_explicit_active_cut_cas_authority() -> None:
                 _Runtime(),
                 ResearchOSValueRouter((_ValueAuthority(),)),
             )
+    finally:
+        pool.close()
+
+
+
+class _ArtifactRuntime(_Runtime):
+    def execute(
+        self,
+        context,
+        node,
+        lowering,
+        inputs,
+        *,
+        execution_cut_id,
+        deadline,
+    ):
+        del lowering, deadline
+        context.checkpoint()
+        self.executed.append(node.graph_node_id)
+        if node.graph_node_id == "paper::source":
+            return {"stage": "source"}
+        if node.graph_node_id == "paper::derive":
+            assert inputs["source"] == {"stage": "source"}
+            return {"stage": "derived"}
+        raise AssertionError(node.graph_node_id)
+
+
+def _artifact_portfolio() -> api.ResearchPortfolio:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.node(
+        "source",
+        kind=api.ResearchNodeKind.CUSTOM,
+        outputs=(
+            api.ResearchOutputSpec(
+                "artifact",
+                api.ResearchValueKind.ARTIFACT,
+            ),
+        ),
+    )
+    builder.node(
+        "derive",
+        kind=api.ResearchNodeKind.CUSTOM,
+        outputs=(
+            api.ResearchOutputSpec(
+                "artifact",
+                api.ResearchValueKind.ARTIFACT,
+            ),
+        ),
+    )
+    builder.depends(
+        "derive",
+        "source",
+        bindings=(
+            api.ResearchInputBinding(
+                "source",
+                "artifact",
+                api.ResearchValueKind.ARTIFACT,
+            ),
+        ),
+    )
+    return api.ResearchPortfolio("suite", (builder.freeze(),))
+
+
+def test_derived_artifact_requires_and_records_exact_lineage(tmp_path: Path) -> None:
+    runtime = _ArtifactRuntime()
+    blobs = DirectoryArtifactBlobStore(tmp_path / "artifact-blobs")
+    registry = SQLiteArtifactRegistry(tmp_path / "artifact-catalog.sqlite3")
+    retention = SQLiteArtifactRetentionStore(tmp_path / "artifact-retention.sqlite3")
+    authority = ResearchOSArtifactValueAuthority(blobs, registry, retention)
+    values = ResearchOSValueRouter((authority,))
+    lineage = SQLiteArtifactLineageStore(tmp_path / "artifact-lineage.sqlite3")
+    graph, pool, research_os = _bound(
+        tmp_path,
+        runtime,
+        values,
+        artifact_lineage=lineage,
+    )
+    try:
+        portfolio = _artifact_portfolio()
+        revision = research_os.commit(portfolio, message="artifact lineage")
+        target = api.ResearchExecutionTarget("execution-artifact", revision)
+        receipt = research_os.run(target)
+        assert receipt.state == "succeeded"
+
+        compilation = compile_research_portfolio_graph(revision, portfolio)
+        cut_id = receipt.payload["cut_id"]
+        source_node = compilation.node("paper::source")
+        derive_node = compilation.node("paper::derive")
+        source_ref = authority.lookup(
+            ResearchOSValueSubject(
+                cut_id,
+                source_node.graph_node_id,
+                "artifact",
+                api.ResearchValueKind.ARTIFACT,
+                source_node.semantic_digest,
+            )
+        )
+        child_ref = authority.lookup(
+            ResearchOSValueSubject(
+                cut_id,
+                derive_node.graph_node_id,
+                "artifact",
+                api.ResearchValueKind.ARTIFACT,
+                derive_node.semantic_digest,
+            )
+        )
+        assert source_ref.content_digest is not None
+        assert child_ref.content_digest is not None
+        child_identity = ArtifactContentIdentity(
+            child_ref.authority_ref,
+            child_ref.content_digest,
+        )
+        edges = lineage.parents(child_identity)
+        assert len(edges) == 1
+        assert edges[0].parent == ArtifactContentIdentity(
+            source_ref.authority_ref,
+            source_ref.content_digest,
+        )
+        assert edges[0].relation_type == "derived_from"
+    finally:
+        pool.close()
+
+
+def test_derived_artifact_without_lineage_authority_fails_before_cut(tmp_path: Path) -> None:
+    runtime = _ArtifactRuntime()
+    authority = ResearchOSArtifactValueAuthority(
+        DirectoryArtifactBlobStore(tmp_path / "artifact-blobs"),
+        SQLiteArtifactRegistry(tmp_path / "artifact-catalog.sqlite3"),
+        SQLiteArtifactRetentionStore(tmp_path / "artifact-retention.sqlite3"),
+    )
+    values = ResearchOSValueRouter((authority,))
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        portfolio = _artifact_portfolio()
+        revision = research_os.commit(portfolio, message="lineage missing")
+        target = api.ResearchExecutionTarget("execution-lineage-missing", revision)
+        with pytest.raises(
+            ResearchOSExecutionUnsupported,
+            match="ArtifactLineageRelationPort",
+        ):
+            research_os.run(target)
+        assert graph.active_cut("execution-lineage-missing") is None
     finally:
         pool.close()

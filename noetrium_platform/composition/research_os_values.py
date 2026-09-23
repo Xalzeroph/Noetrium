@@ -314,13 +314,13 @@ def _node_by_ref(
     raise KeyError(f"{program_id}::{node_id}")
 
 
-def resolve_research_os_node_inputs(
+def lookup_research_os_node_input_references(
     execution_cut_id: str,
     compilation: CompiledResearchOSGraph,
     node: CompiledResearchOSGraphNode,
     values: ResearchOSValueRouter,
-) -> JsonObject:
-    """Resolve exact typed inputs through their owning lower authorities."""
+) -> dict[str, ResearchOSValueReference]:
+    """Resolve exact typed input references without collapsing authority identity."""
 
     require_sha256(execution_cut_id, "research input execution_cut_id")
     if type(compilation) is not CompiledResearchOSGraph:
@@ -332,7 +332,7 @@ def resolve_research_os_node_inputs(
     if type(values) is not ResearchOSValueRouter:
         raise TypeError("research input resolution requires ResearchOSValueRouter")
 
-    resolved: JsonObject = {}
+    references: dict[str, ResearchOSValueReference] = {}
     for edge in node.incoming_edges:
         upstream = _node_by_ref(
             compilation,
@@ -356,8 +356,32 @@ def resolve_research_os_node_inputs(
                 upstream.semantic_digest,
             )
             reference = values.lookup(subject)
-            resolved[binding.input_name] = values.resolve(reference)
-    return resolved
+            if binding.input_name in references:
+                raise ValueError(
+                    "research input reference name was bound more than once"
+                )
+            references[binding.input_name] = reference
+    return references
+
+
+def resolve_research_os_node_inputs(
+    execution_cut_id: str,
+    compilation: CompiledResearchOSGraph,
+    node: CompiledResearchOSGraphNode,
+    values: ResearchOSValueRouter,
+) -> JsonObject:
+    """Resolve exact typed inputs through their owning lower authorities."""
+
+    references = lookup_research_os_node_input_references(
+        execution_cut_id,
+        compilation,
+        node,
+        values,
+    )
+    return {
+        input_name: values.resolve(reference)
+        for input_name, reference in references.items()
+    }
 
 
 def publish_research_os_node_outputs(
@@ -423,6 +447,7 @@ __all__ = [
     "ResearchOSValueReference",
     "ResearchOSValueRouter",
     "ResearchOSValueSubject",
+    "lookup_research_os_node_input_references",
     "publish_research_os_node_outputs",
     "required_research_os_value_kinds",
     "resolve_research_os_node_inputs",

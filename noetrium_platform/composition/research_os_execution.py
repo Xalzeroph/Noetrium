@@ -4,6 +4,11 @@ from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
+from noetrium_platform.evidence.artifact.lineage.relation.api import (
+    ArtifactLineageEdge,
+    ArtifactLineageRelationPort,
+)
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
@@ -18,6 +23,7 @@ from noetrium_platform.product.research_os import (
     ResearchControlRequest,
     ResearchExecutionTarget,
     ResearchPortfolio,
+    ResearchValueKind,
 )
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphActiveCutStorePort,
@@ -45,9 +51,10 @@ from .research_os_migration import (
     activate_research_os_execution_cut,
 )
 from .research_os_values import (
+    ResearchOSValueReference,
     ResearchOSValueRouter,
+    lookup_research_os_node_input_references,
     publish_research_os_node_outputs,
-    resolve_research_os_node_inputs,
     validate_research_os_value_authorities,
 )
 
@@ -219,6 +226,7 @@ def prepare_research_os_execution(
     values: ResearchOSValueRouter,
     *,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
+    artifact_lineage: ArtifactLineageRelationPort | None = None,
 ) -> PreparedResearchOSExecution:
     """Close the complete execution dependency set before any durable cut exists."""
 
@@ -248,6 +256,28 @@ def prepare_research_os_execution(
         experiment_closures=experiment_closures,
     )
     validate_research_os_value_authorities(compilation, values)
+    requires_artifact_lineage = any(
+        output.kind is ResearchValueKind.ARTIFACT
+        and any(
+            binding.kind is ResearchValueKind.ARTIFACT
+            for edge in node.incoming_edges
+            for binding in edge.bindings
+        )
+        for node in compilation.nodes
+        for output in node.node.outputs
+    )
+    if requires_artifact_lineage and artifact_lineage is None:
+        raise ResearchOSExecutionUnsupported(
+            "derived ARTIFACT outputs require ArtifactLineageRelationPort"
+        )
+    if artifact_lineage is not None and not isinstance(
+        artifact_lineage,
+        ArtifactLineageRelationPort,
+    ):
+        raise TypeError(
+            "research execution artifact_lineage must satisfy "
+            "ArtifactLineageRelationPort"
+        )
 
     lowered = {
         row.source.graph_node_id: row
@@ -285,6 +315,7 @@ class PreparedResearchOSNodeExecutor:
         values: ResearchOSValueRouter,
         *,
         experiment_closures: ResearchOSExperimentClosurePort | None = None,
+        artifact_lineage: ArtifactLineageRelationPort | None = None,
     ) -> None:
         if type(prepared) is not PreparedResearchOSExecution:
             raise TypeError("research node executor requires prepared execution")
@@ -304,6 +335,15 @@ class PreparedResearchOSNodeExecutor:
                 "ResearchOSExperimentClosurePort"
             )
         self._experiment_closures = experiment_closures
+        if artifact_lineage is not None and not isinstance(
+            artifact_lineage,
+            ArtifactLineageRelationPort,
+        ):
+            raise TypeError(
+                "research node executor artifact_lineage must satisfy "
+                "ArtifactLineageRelationPort"
+            )
+        self._artifact_lineage = artifact_lineage
         self._lowered = {
             row.source.graph_node_id: row
             for row in prepared.lowering.nodes
@@ -327,12 +367,16 @@ class PreparedResearchOSNodeExecutor:
         if admission.lowering_digest != lowering.lowering_digest:
             raise ValueError("research node execution lowering admission drifted")
 
-        inputs = resolve_research_os_node_inputs(
+        input_references = lookup_research_os_node_input_references(
             self._prepared.cut.cut_id,
             self._prepared.compilation,
             node,
             self._values,
         )
+        inputs: JsonObject = {
+            input_name: self._values.resolve(reference)
+            for input_name, reference in input_references.items()
+        }
         result = self._runtime.execute(
             context,
             node,
@@ -341,12 +385,66 @@ class PreparedResearchOSNodeExecutor:
             execution_cut_id=self._prepared.cut.cut_id,
             deadline=deadline,
         )
-        publish_research_os_node_outputs(
+        output_references = publish_research_os_node_outputs(
             self._prepared.cut.cut_id,
             node,
             self._values,
             result,
         )
+        self._record_artifact_lineage(
+            input_references,
+            output_references,
+        )
+
+    def _record_artifact_lineage(
+        self,
+        input_references: dict[str, ResearchOSValueReference],
+        output_references: tuple[ResearchOSValueReference, ...],
+    ) -> None:
+        parents = tuple(
+            reference
+            for reference in input_references.values()
+            if reference.subject.kind is ResearchValueKind.ARTIFACT
+        )
+        children = tuple(
+            reference
+            for reference in output_references
+            if reference.subject.kind is ResearchValueKind.ARTIFACT
+        )
+        if not parents or not children:
+            return
+        if self._artifact_lineage is None:
+            raise ResearchOSExecutionUnsupported(
+                "derived ARTIFACT output reached execution without lineage authority"
+            )
+        for parent_reference in parents:
+            if parent_reference.content_digest is None:
+                raise ValueError(
+                    "upstream ARTIFACT reference is missing content digest"
+                )
+            parent_identity = ArtifactContentIdentity(
+                parent_reference.authority_ref,
+                parent_reference.content_digest,
+            )
+            for child_reference in children:
+                if child_reference.content_digest is None:
+                    raise ValueError(
+                        "derived ARTIFACT reference is missing content digest"
+                    )
+                child_identity = ArtifactContentIdentity(
+                    child_reference.authority_ref,
+                    child_reference.content_digest,
+                )
+                edge = ArtifactLineageEdge(
+                    parent_identity,
+                    child_identity,
+                    "derived_from",
+                )
+                stored = self._artifact_lineage.add(edge)
+                if stored != edge:
+                    raise RuntimeError(
+                        "artifact lineage authority changed immutable provenance edge"
+                    )
 
 
 class StrictResearchOSControl(ResearchOSControlPort):
@@ -360,6 +458,7 @@ class StrictResearchOSControl(ResearchOSControlPort):
         values: ResearchOSValueRouter,
         *,
         experiment_closures: ResearchOSExperimentClosurePort | None = None,
+        artifact_lineage: ArtifactLineageRelationPort | None = None,
     ) -> None:
         if not isinstance(execution_store, ResearchGraphExecutionStorePort):
             raise TypeError("Research OS control requires graph execution store")
@@ -384,6 +483,15 @@ class StrictResearchOSControl(ResearchOSControlPort):
         self._runtime = runtime
         self._values = values
         self._experiment_closures = experiment_closures
+        if artifact_lineage is not None and not isinstance(
+            artifact_lineage,
+            ArtifactLineageRelationPort,
+        ):
+            raise TypeError(
+                "Research OS control artifact_lineage must satisfy "
+                "ArtifactLineageRelationPort"
+            )
+        self._artifact_lineage = artifact_lineage
 
     def control(
         self,
@@ -419,6 +527,7 @@ class StrictResearchOSControl(ResearchOSControlPort):
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            artifact_lineage=self._artifact_lineage,
         )
         activation = activate_research_os_execution_cut(
             request.target.execution_id,
@@ -432,6 +541,7 @@ class StrictResearchOSControl(ResearchOSControlPort):
             prepared,
             self._runtime,
             self._values,
+            artifact_lineage=self._artifact_lineage,
         )
         scheduler = bind_research_portfolio_scheduler(
             prepared.compilation,
