@@ -107,3 +107,35 @@ def test_catalog_tampering_or_scope_drift_fails_closed(tmp_path) -> None:
     )
     assert stored.kind is ArtifactKind.SCIENTIFIC
     assert stored.retention is ArtifactRetention.RUN
+
+
+def test_artifact_value_authority_rebinds_same_content_across_execution_cuts(tmp_path) -> None:
+    authority = ResearchOSArtifactValueAuthority(
+        DirectoryArtifactBlobStore(tmp_path / "blobs"),
+        SQLiteArtifactRegistry(tmp_path / "artifacts.sqlite3"),
+        SQLiteArtifactRetentionStore(tmp_path / "retention.sqlite3"),
+    )
+    source = _subject()
+    published = authority.publish(source, {"value": 7})
+    target = ResearchOSValueSubject(
+        canonical_digest({"cut": "target"}),
+        source.graph_node_id,
+        source.output_name,
+        source.kind,
+        source.semantic_digest,
+    )
+
+    reused = authority.reuse(published, target)
+
+    assert reused.subject == target
+    assert reused.authority_id == published.authority_id
+    assert reused.authority_ref != published.authority_ref
+    assert reused.content_digest == published.content_digest
+    assert authority.resolve(reused) == authority.resolve(published) == {"value": 7}
+    assert len(authority.reuse_proof(reused)) == 64
+    retention = SQLiteArtifactRetentionStore(
+        tmp_path / "retention.sqlite3"
+    ).get(reused.authority_ref)
+    assert retention.retention is ArtifactRetention.RUN
+    assert retention.pinned
+    assert retention.reason_refs == (target.subject_digest,)
