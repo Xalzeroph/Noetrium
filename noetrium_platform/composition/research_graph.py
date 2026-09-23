@@ -260,6 +260,16 @@ class ResearchGraphScheduler:
                     node.semantic_digest,
                     ResearchGraphNodeState.SUCCEEDED,
                 )
+                node_control = node_control_store.node_control_state(
+                    execution_id, node_id
+                )
+                if node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
+                    node_control_store.pause_node_if_quiescent(
+                        execution_id,
+                        node_id,
+                        expected_generation=node_control.generation,
+                        now_ns=time.time_ns(),
+                    )
             except BaseException as exc:
                 handle.cancel()
                 failure = _reportable_failure(exc)
@@ -584,6 +594,16 @@ class ResearchGraphScheduler:
                         failure_type=type(failure).__name__,
                         failure_message=message,
                     )
+                    node_control = node_control_store.node_control_state(
+                        execution_id, node_id
+                    )
+                    if node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
+                        node_control_store.pause_node_if_quiescent(
+                            execution_id,
+                            node_id,
+                            expected_generation=node_control.generation,
+                            now_ns=time.time_ns(),
+                        )
                     return
                 if current.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
                     reconciliation_required.add(node_id)
@@ -896,6 +916,15 @@ class ResearchGraphScheduler:
                     record_completion(completed_id)
 
             if reconciliation_required:
+                local_recovery = tuple(
+                    node_control_store.node_control_state(execution_id, node_id)
+                    for node_id in sorted(reconciliation_required)
+                    if node_control_store.node_control_state(
+                        execution_id, node_id
+                    ).phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+                )
+                if len(local_recovery) == len(reconciliation_required):
+                    raise ResearchGraphNodeControlHalt(local_recovery)
                 raise ResearchGraphReconciliationRequired(
                     execution_id,
                     tuple(sorted(reconciliation_required)),
