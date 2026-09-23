@@ -628,12 +628,32 @@ class StrictResearchOSControl(ResearchOSControlPort):
                         "stored Research OS output does not match lower succeeded result: "
                         f"{graph_node_id}:{output.name}"
                     )
+                source_authority_proof = self._values.reuse_proof(reference)
+                target_subject = ResearchOSValueSubject(
+                    plan.target_cut.cut_id,
+                    graph_node_id,
+                    output.name,
+                    output.kind,
+                    node.semantic_digest,
+                )
+                target_reference = self._values.reuse(reference, target_subject)
+                target_resolved = self._values.resolve(target_reference)
+                if target_resolved != resolved or target_resolved != expected:
+                    raise ResearchGraphExecutionConflict(
+                        "cross-cut value reuse changed canonical output value: "
+                        f"{graph_node_id}:{output.name}"
+                    )
+                target_authority_proof = self._values.reuse_proof(
+                    target_reference
+                )
                 output_proofs.append(
                     {
                         "name": output.name,
                         "kind": output.kind.value,
-                        "reference_digest": reference.reference_digest,
-                        "authority_reuse_proof": self._values.reuse_proof(reference),
+                        "source_reference_digest": reference.reference_digest,
+                        "source_authority_reuse_proof": source_authority_proof,
+                        "target_reference_digest": target_reference.reference_digest,
+                        "target_authority_reuse_proof": target_authority_proof,
                         "resolved_value_digest": canonical_digest(resolved),
                     }
                 )
