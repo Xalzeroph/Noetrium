@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.reproduction import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
+from research.reproductions.contracts import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
 REPRODUCTION=ReproductionDefinition(
     package="refact_cvpr2026",lifecycle=ReproductionLifecycle.PROTOCOL_BOUND,
     identity=ReproductionIdentity(method_id="refact_cvpr2026",title="ReFAct: Empowering Multimodal Web Agents with Visual and Context Focusing",paper_uri="https://openaccess.thecvf.com/content/CVPR2026/html/Wu_ReFAct_Empowering_Multimodal_Web_Agents_with_Visual_and_Context_Focusing_CVPR_2026_paper.html",year=2026,paper_revision="CVPR 2026 final proceedings"),

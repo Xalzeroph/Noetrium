@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.reproduction import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
+from research.reproductions.contracts import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
 REPRODUCTION=ReproductionDefinition(
     package="lmee_cvpr2026",lifecycle=ReproductionLifecycle.PROTOCOL_BOUND,
     identity=ReproductionIdentity(method_id="lmee_cvpr2026",title="Explore with Long-term Memory: A Benchmark and Multimodal LLM-based Reinforcement Learning Framework for Embodied Exploration",paper_uri="https://openaccess.thecvf.com/content/CVPR2026/html/Wang_Explore_with_Long-term_Memory_A_Benchmark_and_Multimodal_LLM-based_Reinforcement_CVPR_2026_paper.html",year=2026,paper_revision="CVPR 2026 final proceedings"),
