@@ -56,5 +56,5 @@ plan and checkpoint-compatibility identity, so a checkpoint can never be
 resumed across a method implementation change.
 
 External paper/source relationships belong exclusively to
-`noetrium_platform.research.provenance.MethodSourceRegistry`. Study design
+`research.reproductions.provenance.MethodSourceRegistry`. Study design
 does not carry repository URLs, commits, or source-lane classifications.
