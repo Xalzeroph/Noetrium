@@ -393,14 +393,24 @@ def test_retry_and_reconcile_remain_proof_gated(tmp_path: Path) -> None:
 
         with pytest.raises(
             ResearchOSExecutionUnsupported,
-            match="canonical graph retry plan",
+            match="explicit ResearchNodeRef",
         ):
             research_os.retry(target)
         with pytest.raises(
+            ResearchGraphExecutionConflict,
+            match="definitively failed",
+        ):
+            research_os.retry(target.for_node("paper", "source"))
+        with pytest.raises(
             ResearchOSExecutionUnsupported,
-            match="lower-authority effect/execution proof",
+            match="explicit ResearchNodeRef",
         ):
             research_os.reconcile(target)
+        with pytest.raises(
+            ResearchOSExecutionUnsupported,
+            match="no lower-authority reconciliation port",
+        ):
+            research_os.reconcile(target.for_node("paper", "source"))
     finally:
         pool.close()
 
