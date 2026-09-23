@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+import time
 from uuid import uuid4
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
@@ -51,11 +52,11 @@ def _reportable_failure(exc: BaseException) -> BaseException:
 
 
 class ResearchCampaignBinding:
-    """Composition-only concurrent execution of independent frozen studies.
+    """Composition-only dependency-aware execution of frozen studies.
 
-    Orchestration tasks run in the pool's orchestration domain. Every scientific
-    study opens its own experiment-domain task group and remains authoritative
-    for its own concurrency policy, measurements, and result evidence.
+    Campaign dependencies gate orchestration eligibility only. Resource capacity
+    remains owned by ResearchExecutionPool, while each scientific study retains
+    authority over its own experiment concurrency, measurements, and evidence.
     """
 
     def __init__(
@@ -155,67 +156,140 @@ class ResearchCampaignBinding:
             deadline=deadline,
             failure_policy=TaskFailurePolicy.COLLECT_ALL,
         )
-        handles = {}
-        try:
-            for study in self._plan.studies:
-                binding = self._bindings[study.lane_id]
+        pending = {study.lane_id: study for study in self._plan.studies}
+        running = {}
+        results: dict[str, ResearchCampaignLaneResult] = {}
 
-                def run(context, owned_study=study, owned_binding=binding):
-                    return self._run_lane(
-                        context,
-                        owned_study,
-                        owned_binding,
-                        deadline,
-                    )
+        def submit(study: ResearchCampaignStudy):
+            binding = self._bindings[study.lane_id]
 
-                handles[study.lane_id] = group.submit(
-                    ExecutionSpec(
-                        task_id=f"campaign-lane:{self._plan.campaign_id}:{study.lane_id}",
-                        lane_kind=ExecutionLaneKind.BLOCKING_IO,
-                        failure_scope=TaskFailureScope.CALLER,
-                    ),
-                    run,
-                    deadline=deadline,
+            def run(context, owned_study=study, owned_binding=binding):
+                return self._run_lane(
+                    context,
+                    owned_study,
+                    owned_binding,
+                    deadline,
                 )
 
-            results: list[ResearchCampaignLaneResult] = []
-            for study in self._plan.studies:
-                handle = handles[study.lane_id]
-                try:
-                    timeout = None if deadline is None else max(
-                        0.001, deadline.remaining_seconds
+            return group.submit(
+                ExecutionSpec(
+                    task_id=(
+                        f"campaign-lane:{self._plan.campaign_id}:"
+                        f"{study.lane_id}"
+                    ),
+                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                    failure_scope=TaskFailureScope.CALLER,
+                ),
+                run,
+                deadline=deadline,
+            )
+
+        def record_completion(lane_id: str, *, timeout: float | None = None) -> None:
+            study, handle = running.pop(lane_id)
+            try:
+                report = handle.result(timeout=timeout)
+                results[lane_id] = ResearchCampaignLaneResult(
+                    lane_id=study.lane_id,
+                    research_plan_digest=study.research_plan_digest,
+                    study_plan_digest=study.plan.plan_digest,
+                    state=ResearchCampaignLaneState.SUCCEEDED,
+                    report=report,
+                )
+            except BaseException as exc:
+                handle.cancel()
+                failure = _reportable_failure(exc)
+                description = describe_exception(failure)
+                results[lane_id] = ResearchCampaignLaneResult(
+                    lane_id=study.lane_id,
+                    research_plan_digest=study.research_plan_digest,
+                    study_plan_digest=study.plan.plan_digest,
+                    state=ResearchCampaignLaneState.FAILED,
+                    failure_type=type(failure).__name__,
+                    failure_message=(
+                        description.safe_message.strip()
+                        or type(failure).__name__
+                    ),
+                )
+
+        try:
+            while pending or running:
+                progressed = False
+
+                for lane_id in tuple(sorted(pending)):
+                    study = pending[lane_id]
+                    blockers = tuple(
+                        dependency
+                        for dependency in study.depends_on_lane_ids
+                        if dependency in results
+                        and results[dependency].state
+                        in {
+                            ResearchCampaignLaneState.FAILED,
+                            ResearchCampaignLaneState.BLOCKED,
+                        }
                     )
-                    report = handle.result(timeout=timeout)
-                    results.append(
-                        ResearchCampaignLaneResult(
-                            lane_id=study.lane_id,
-                            research_plan_digest=study.research_plan_digest,
-                            study_plan_digest=study.plan.plan_digest,
-                            state=ResearchCampaignLaneState.SUCCEEDED,
-                            report=report,
-                        )
+                    if not blockers:
+                        continue
+                    results[lane_id] = ResearchCampaignLaneResult(
+                        lane_id=study.lane_id,
+                        research_plan_digest=study.research_plan_digest,
+                        study_plan_digest=study.plan.plan_digest,
+                        state=ResearchCampaignLaneState.BLOCKED,
+                        blocked_by_lane_ids=blockers,
                     )
-                except BaseException as exc:
-                    handle.cancel()
-                    failure = _reportable_failure(exc)
-                    description = describe_exception(failure)
-                    results.append(
-                        ResearchCampaignLaneResult(
-                            lane_id=study.lane_id,
-                            research_plan_digest=study.research_plan_digest,
-                            study_plan_digest=study.plan.plan_digest,
-                            state=ResearchCampaignLaneState.FAILED,
-                            failure_type=type(failure).__name__,
-                            failure_message=(
-                                description.safe_message.strip()
-                                or type(failure).__name__
-                            ),
-                        )
+                    del pending[lane_id]
+                    progressed = True
+
+                for lane_id in tuple(sorted(pending)):
+                    study = pending[lane_id]
+                    if not all(
+                        dependency in results
+                        and results[dependency].state
+                        is ResearchCampaignLaneState.SUCCEEDED
+                        for dependency in study.depends_on_lane_ids
+                    ):
+                        continue
+                    running[lane_id] = (study, submit(study))
+                    del pending[lane_id]
+                    progressed = True
+
+                completed = tuple(
+                    sorted(
+                        lane_id
+                        for lane_id, (_study, handle) in running.items()
+                        if handle.done()
                     )
+                )
+                if completed:
+                    for lane_id in completed:
+                        record_completion(lane_id)
+                    continue
+
+                if pending and not running and not progressed:
+                    raise RuntimeError(
+                        "campaign scheduler reached an impossible dependency state"
+                    )
+
+                if not running:
+                    continue
+
+                if deadline is not None and deadline.expired:
+                    for lane_id in tuple(sorted(running)):
+                        record_completion(lane_id, timeout=0.0)
+                    continue
+
+                sleep_seconds = 0.005
+                if deadline is not None:
+                    sleep_seconds = min(
+                        sleep_seconds,
+                        max(0.0, deadline.remaining_seconds),
+                    )
+                if sleep_seconds > 0.0:
+                    time.sleep(sleep_seconds)
+
             return ResearchCampaignExecutionReport(
                 campaign_id=self._plan.campaign_id,
                 campaign_digest=self._plan.campaign_digest,
-                lanes=tuple(results),
+                lanes=tuple(results[lane_id] for lane_id in sorted(results)),
             )
         finally:
             self._pool.close_orchestration_group(
