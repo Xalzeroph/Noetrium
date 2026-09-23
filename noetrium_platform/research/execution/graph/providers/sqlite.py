@@ -7,6 +7,9 @@ import sqlite3
 from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.kernel import require_sha256
+_SQLITE_INT64_MAX = (1 << 63) - 1
+
+
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphActiveCutRef,
     ResearchGraphAttemptRecord,
@@ -456,10 +459,21 @@ class SQLiteResearchGraphExecutionStore:
             raise ResearchGraphExecutionNotFound(execution_id)
 
     @staticmethod
-    def _require_now(now_ns: int) -> int:
-        if type(now_ns) is not int or now_ns < 0:
-            raise ValueError("research graph now_ns must be non-negative")
-        return now_ns
+    def _require_timestamp_ns(value: int, field_name: str) -> int:
+        if (
+            type(value) is not int
+            or value < 0
+            or value > _SQLITE_INT64_MAX
+        ):
+            raise ValueError(
+                f"{field_name} must be an unsigned nanosecond timestamp "
+                "within SQLite signed 64-bit storage"
+            )
+        return value
+
+    @classmethod
+    def _require_now(cls, now_ns: int) -> int:
+        return cls._require_timestamp_ns(now_ns, "research graph now_ns")
 
     def ensure_execution(
         self,
@@ -1331,10 +1345,11 @@ class SQLiteResearchGraphExecutionStore:
         now_ns = self._require_now(now_ns)
         if type(owner_id) is not str or not owner_id.strip():
             raise ValueError("research graph owner_id must be non-empty")
-        if (
-            type(lease_expires_at_ns) is not int
-            or lease_expires_at_ns <= now_ns
-        ):
+        lease_expires_at_ns = self._require_timestamp_ns(
+            lease_expires_at_ns,
+            "research graph lease_expires_at_ns",
+        )
+        if lease_expires_at_ns <= now_ns:
             raise ValueError("research graph lease must expire after now")
         with self._transaction() as conn:
             current = self._node_tx(conn, execution_id, node_id)
@@ -1470,10 +1485,11 @@ class SQLiteResearchGraphExecutionStore:
         lease_expires_at_ns: int,
     ) -> ResearchGraphNodeExecutionRecord:
         now_ns = self._require_now(now_ns)
-        if (
-            type(lease_expires_at_ns) is not int
-            or lease_expires_at_ns <= now_ns
-        ):
+        lease_expires_at_ns = self._require_timestamp_ns(
+            lease_expires_at_ns,
+            "research graph renewed lease_expires_at_ns",
+        )
+        if lease_expires_at_ns <= now_ns:
             raise ValueError("research graph renewed lease must expire after now")
         with self._transaction() as conn:
             current = self._node_tx(conn, execution_id, node_id)
@@ -1739,8 +1755,10 @@ class SQLiteResearchGraphExecutionStore:
                 "research graph retry descendants must be unique non-empty node ids "
                 "excluding the failed root"
             )
-        if type(retry_not_before_ns) is not int or retry_not_before_ns < 0:
-            raise ValueError("research graph retry_not_before_ns must be non-negative")
+        retry_not_before_ns = self._require_timestamp_ns(
+            retry_not_before_ns,
+            "research graph retry_not_before_ns",
+        )
         with self._transaction() as conn:
             self._execution_tx(conn, execution_id)
             root = self._node_tx(conn, execution_id, failed_node_id)
@@ -1802,8 +1820,10 @@ class SQLiteResearchGraphExecutionStore:
         *,
         retry_not_before_ns: int,
     ) -> ResearchGraphNodeExecutionRecord:
-        if type(retry_not_before_ns) is not int or retry_not_before_ns < 0:
-            raise ValueError("research graph retry_not_before_ns must be non-negative")
+        retry_not_before_ns = self._require_timestamp_ns(
+            retry_not_before_ns,
+            "research graph retry_not_before_ns",
+        )
         with self._transaction() as conn:
             current = self._node_tx(conn, execution_id, node_id)
             if current.state is not ResearchGraphLiveNodeState.FAILED:
@@ -1855,13 +1875,14 @@ class SQLiteResearchGraphExecutionStore:
                 failure_type_value = None
                 failure_message_value = None
             elif disposition is ResearchGraphReconciliationDisposition.RETRY:
-                if (
-                    type(retry_not_before_ns) is not int
-                    or retry_not_before_ns < 0
-                ):
+                if retry_not_before_ns is None:
                     raise ValueError(
                         "reconciled retry requires retry_not_before_ns"
                     )
+                retry_not_before_ns = self._require_timestamp_ns(
+                    retry_not_before_ns,
+                    "reconciled retry_not_before_ns",
+                )
                 node_state = ResearchGraphLiveNodeState.RETRY_WAIT
                 attempt_state = ResearchGraphAttemptState.RECONCILED_RETRY
                 retry_value = retry_not_before_ns
