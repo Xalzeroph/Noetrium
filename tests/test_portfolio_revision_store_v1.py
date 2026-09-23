@@ -16,13 +16,14 @@ from noetrium_platform.foundation.portfolio.runtime import (
 
 
 def _root(subject: str = "sem") -> PortfolioRevision:
-    return PortfolioRevision(subject, "1" * 64, (), "root")
+    return PortfolioRevision(subject, "1" * 64, 101, (), "root")
 
 
 def _child(parent: PortfolioRevision, payload: str = "2" * 64) -> PortfolioRevision:
     return PortfolioRevision(
         parent.subject_id,
         payload,
+        202,
         (parent.revision_digest,),
         "child",
     )
@@ -68,6 +69,7 @@ def _exercise(store) -> None:
     missing_parent = PortfolioRevision(
         "sem",
         "3" * 64,
+        303,
         ("f" * 64,),
         "orphan",
     )
@@ -99,16 +101,18 @@ def test_sqlite_portfolio_revision_graph_reopens_exactly(tmp_path: Path) -> None
 
 def test_merge_parent_order_is_part_of_revision_identity() -> None:
     left = _root("paper")
-    right = PortfolioRevision("paper", "2" * 64, (), "right")
+    right = PortfolioRevision("paper", "2" * 64, 202, (), "right")
     forward = PortfolioRevision(
         "paper",
         "3" * 64,
+        303,
         (left.revision_digest, right.revision_digest),
         "merge",
     )
     reverse = PortfolioRevision(
         "paper",
         "3" * 64,
+        303,
         (right.revision_digest, left.revision_digest),
         "merge",
     )
