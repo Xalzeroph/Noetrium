@@ -369,3 +369,55 @@ def test_research_os_unifies_revision_and_live_control() -> None:
         api.ResearchControlAction.PAUSE,
         api.ResearchControlAction.RESUME,
     )
+
+
+def test_builder_supports_platform_resolved_scientific_requirements() -> None:
+    builder = api.ResearchProgramBuilder("declarative")
+    builder.model(
+        "planner-model",
+        config={"role": "planner", "minimum_context": 8192},
+    )
+    builder.environment(
+        "minecraft",
+        config={"family": "minecraft", "capabilities": ["act", "observe"]},
+    )
+    builder.dataset(
+        "tasks",
+        config={"benchmark": "memory-suite", "split": "test"},
+    )
+    builder.protocol(
+        "confirmatory",
+        config={"repetitions": 3, "freeze": True},
+    )
+    builder.resource_policy(
+        "resources",
+        config={"accelerator": "gpu", "placement": "adaptive"},
+    )
+    builder.study(
+        "main",
+        definitions=(
+            "planner-model",
+            "minecraft",
+            "tasks",
+            "confirmatory",
+            "resources",
+        ),
+    )
+    program = builder.freeze()
+
+    by_id = {row.definition_id: row for row in program.definitions}
+    assert all(
+        by_id[name].platform_resolved
+        for name in (
+            "planner-model",
+            "minecraft",
+            "tasks",
+            "confirmatory",
+            "resources",
+        )
+    )
+    assert all(
+        by_id[name].implementation_digest is None
+        for name in by_id
+    )
+    assert program.nodes[0].kind is api.ResearchNodeKind.STUDY
