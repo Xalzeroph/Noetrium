@@ -484,6 +484,14 @@ class ResearchGraphScheduler:
                 if current.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
                     reconciliation_required.add(node_id)
                     return
+                if control_store is not None:
+                    control = control_store.control_state(execution_id)
+                    if control.phase in {
+                        ResearchGraphControlPhase.PAUSED,
+                        ResearchGraphControlPhase.RECOVERY_REQUIRED,
+                        ResearchGraphControlPhase.CANCELLED,
+                    }:
+                        raise ResearchGraphControlHalt(control)
                 raise
 
         try:
