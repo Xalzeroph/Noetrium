@@ -19,6 +19,7 @@ from noetrium_platform.foundation.portfolio.api import (
 from noetrium_platform.product.research_os import (
     RESEARCH_PORTFOLIO_SCHEMA,
     ResearchBranch,
+    ResearchControlAction,
     ResearchControlReceipt,
     ResearchControlRequest,
     ResearchDefinition,
@@ -485,6 +486,21 @@ class ResearchOSControlPort(Protocol):
     ) -> ResearchControlReceipt: ...
 
 
+@runtime_checkable
+class ResearchOSRevisionMigrationPort(Protocol):
+    """Internal bridge that binds live execution migration to durable revisions."""
+
+    def active_revision_digest(self, execution_id: str) -> str: ...
+
+    def migrate(
+        self,
+        request: ResearchControlRequest,
+        source_revision: ResearchGraphRevision,
+        source_portfolio: ResearchPortfolio,
+        target_portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt: ...
+
+
 class PortfolioBackedResearchOSPort:
     """Durable revision/diff/ref implementation over existing authorities."""
 
@@ -644,7 +660,28 @@ class PortfolioBackedResearchOSPort:
         portfolio = self._load(request.target.revision)
         if portfolio.portfolio_digest != request.target.revision.portfolio_digest:
             raise ValueError("Research OS control portfolio/revision digest drifted")
-        receipt = self._control.control(request, portfolio)
+        if request.action is ResearchControlAction.MIGRATE:
+            if not isinstance(self._control, ResearchOSRevisionMigrationPort):
+                raise RuntimeError(
+                    "Research OS migration requires a revision-aware execution control port"
+                )
+            source_digest = self._control.active_revision_digest(
+                request.target.execution_id
+            )
+            source_stored = self._revisions.revision(
+                request.target.portfolio_id,
+                source_digest,
+            )
+            source_revision = self._public_revision(source_stored)
+            source_portfolio = self._load(source_revision)
+            receipt = self._control.migrate(
+                request,
+                source_revision,
+                source_portfolio,
+                portfolio,
+            )
+        else:
+            receipt = self._control.control(request, portfolio)
         if type(receipt) is not ResearchControlReceipt:
             raise TypeError("Research OS control returned invalid receipt")
         if receipt.action is not request.action or receipt.target != request.target:
@@ -671,6 +708,7 @@ __all__ = [
     "PortfolioBackedResearchOSPort",
     "RESEARCH_PORTFOLIO_MEDIA_TYPE",
     "ResearchOSControlPort",
+    "ResearchOSRevisionMigrationPort",
     "bind_portfolio_research_os",
     "decode_research_portfolio",
     "diff_research_portfolios",
