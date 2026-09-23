@@ -1128,6 +1128,7 @@ class StrictResearchOSControl(
                 "research-os:"
                 f"{prepared.target.execution_id}:{prepared.cut.cut_id}"
             ),
+            selected_node_ids=prepared.selected_node_ids,
         )
         try:
             try:
@@ -1615,6 +1616,8 @@ class StrictResearchOSControl(
         payload: JsonObject = {
             "cut_id": prepared.cut.cut_id,
             "preflight_digest": prepared.preflight_digest,
+            "selection_digest": prepared.selection_digest,
+            "selected_node_ids": prepared.selected_node_ids,
             "graph_digest": report.graph_digest,
             "lowering_digest": prepared.lowering.lowering_digest,
             "active_cut_generation": active_cut_generation,
