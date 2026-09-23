@@ -86,9 +86,11 @@ PORTFOLIO = api.ResearchPortfolio("my-paper", (PROGRAM,))
 
 Authors do not calculate implementation hashes. A named module-scope callable
 is converted into a `ResearchImplementation` automatically by freezing its
-import-resolvable module/qualname and canonical module-source digest. Runtime
-compilation may add stronger Git cut, dependency, environment, model, provider,
-and release provenance without changing this authoring ergonomics.
+import-resolvable module/qualname and canonical callable-source digest. This
+keeps authoring diffs fine-grained: changing an unrelated metric does not
+invalidate a method. Runtime compilation adds the referenced dependency closure,
+Git cut, environment, model, provider, and release provenance without changing
+this authoring ergonomics.
 
 ## Project scaffold
 
