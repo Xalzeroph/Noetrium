@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.research.provenance import MethodSourceLane, MethodSourceLaneKind
+from research.reproductions.provenance import MethodSourceLane, MethodSourceLaneKind
 from .source import SOURCE_PRE_ARXIV_REPRODUCIBILITY_CUT
 
 GATS_PAPER_URI = "https://arxiv.org/abs/2607.08894"
