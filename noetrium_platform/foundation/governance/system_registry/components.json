@@ -303,6 +303,28 @@
     ],
     "components": []
   },
+  "execution/graph": {
+    "system": "execution",
+    "parent": "execution",
+    "package_prefix": "noetrium_platform.research.execution.graph",
+    "node_kind": "facet",
+    "canonical_authority": "execution",
+    "owns": "canonical ResearchGraph scheduling contracts, durable node attempt/lease state and reconciliation boundaries",
+    "must_not_own": "scientific result truth, lower Machine or Experiment state, provider effects, evidence truth or resource capacity",
+    "shape": [
+      "api",
+      "providers"
+    ],
+    "downstream_surface": "metadata_only",
+    "requires": [
+      "execution/policy",
+      "platform"
+    ],
+    "provides": [
+      "research.graph.scheduling"
+    ],
+    "components": []
+  },
   "execution/policy": {
     "system": "execution",
     "parent": "execution",

@@ -14,7 +14,7 @@ from noetrium_platform.product.research_os import (
 
 from .research_os_graph import (
     CompiledResearchOSGraphNode,
-    ResearchOSGraphCompilation,
+    CompiledResearchOSGraph,
 )
 
 
@@ -299,10 +299,10 @@ class ResearchOSLoweringCompiler:
 
     def compile(
         self,
-        compilation: ResearchOSGraphCompilation,
+        compilation: CompiledResearchOSGraph,
     ) -> ResearchOSLoweringPlan:
-        if type(compilation) is not ResearchOSGraphCompilation:
-            raise TypeError("Research OS lowering requires ResearchOSGraphCompilation")
+        if type(compilation) is not CompiledResearchOSGraph:
+            raise TypeError("Research OS lowering requires CompiledResearchOSGraph")
         return ResearchOSLoweringPlan(
             compilation.plan.graph_id,
             compilation.plan.graph_digest,
@@ -312,7 +312,7 @@ class ResearchOSLoweringCompiler:
 
 
 def compile_research_os_lowering(
-    compilation: ResearchOSGraphCompilation,
+    compilation: CompiledResearchOSGraph,
     *,
     resolver: ResearchImplementationResolverPort | None = None,
 ) -> ResearchOSLoweringPlan:
