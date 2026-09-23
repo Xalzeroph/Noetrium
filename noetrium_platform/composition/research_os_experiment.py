@@ -20,6 +20,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 )
 
 from .research_os_graph import CompiledResearchOSGraphNode
+from .research_os_reconciliation import ResearchOSNodeReconciliationProof
 
 
 def _text(value: str, field_name: str) -> str:
@@ -188,6 +189,26 @@ class ResearchOSExperimentClosureMissing(RuntimeError):
     pass
 
 
+@runtime_checkable
+class ResearchOSExperimentReconciliationPort(Protocol):
+    """Exact lower-authority recovery seam for an Experimentation closure."""
+
+    @property
+    def identity_digest(self) -> str: ...
+
+    def reconcile(
+        self,
+        closure: ResearchOSExperimentClosure,
+        *,
+        machine_id: str,
+        execution_cut_id: str,
+        graph_node_id: str,
+        semantic_digest: str,
+        lowering_digest: str,
+        attempt_id: str,
+    ) -> ResearchOSNodeReconciliationProof: ...
+
+
 @dataclass(frozen=True, slots=True)
 class ResearchOSExperimentRuntimeBinding:
     """Exact runtime objects plus immutable identity for one experiment closure."""
@@ -198,9 +219,11 @@ class ResearchOSExperimentRuntimeBinding:
     adapter: BoundStudyExecutionPort
     aggregation: StudyMetricAggregationPort
     artifacts: RunArtifactStorePort
+    reconciliation: ResearchOSExperimentReconciliationPort
     adapter_identity_digest: str
     aggregation_identity_digest: str
     artifact_store_identity_digest: str
+    reconciliation_identity_digest: str
     runtime_binding_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -229,10 +252,23 @@ class ResearchOSExperimentRuntimeBinding:
             raise TypeError(
                 "experiment runtime binding artifacts must satisfy RunArtifactStorePort"
             )
+        if not isinstance(
+            self.reconciliation,
+            ResearchOSExperimentReconciliationPort,
+        ):
+            raise TypeError(
+                "experiment runtime binding reconciliation must satisfy "
+                "ResearchOSExperimentReconciliationPort"
+            )
+        if self.reconciliation.identity_digest != self.reconciliation_identity_digest:
+            raise ValueError(
+                "experiment reconciliation identity digest drifted"
+            )
         for field_name, value in (
             ("adapter_identity_digest", self.adapter_identity_digest),
             ("aggregation_identity_digest", self.aggregation_identity_digest),
             ("artifact_store_identity_digest", self.artifact_store_identity_digest),
+            ("reconciliation_identity_digest", self.reconciliation_identity_digest),
         ):
             require_sha256(value, f"experiment runtime binding {field_name}")
         object.__setattr__(
@@ -246,6 +282,7 @@ class ResearchOSExperimentRuntimeBinding:
                     "adapter_identity_digest": self.adapter_identity_digest,
                     "aggregation_identity_digest": self.aggregation_identity_digest,
                     "artifact_store_identity_digest": self.artifact_store_identity_digest,
+                    "reconciliation_identity_digest": self.reconciliation_identity_digest,
                 }
             ),
         )
@@ -344,6 +381,7 @@ __all__ = [
     "ResearchOSExperimentClosure",
     "ResearchOSExperimentClosureMissing",
     "ResearchOSExperimentClosurePort",
+    "ResearchOSExperimentReconciliationPort",
     "ResearchOSExperimentRuntimeBinding",
     "ResearchOSExperimentRuntimeBindingPort",
     "compile_research_os_experiment_closure",
