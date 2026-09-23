@@ -39,6 +39,10 @@ from noetrium_platform.research.execution.graph.api import (
 )
 
 from .research_os import ResearchOSControlPort
+from .research_os_checkpoint import (
+    ResearchOSNodeCheckpointPort,
+    ResearchOSNodeCheckpointProof,
+)
 from .research_os_experiment import ResearchOSExperimentClosurePort
 from .research_graph import ResearchGraphControlHalt
 from .research_os_graph import (
@@ -1537,7 +1541,10 @@ class StrictResearchOSControl(
         request: ResearchControlRequest,
         portfolio: ResearchPortfolio,
     ) -> ResearchControlReceipt:
-        self._require_whole_graph_control(request)
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported(
+                "CHECKPOINT does not accept opaque control payload"
+            )
         compilation, cut, active, snapshot, control = self._active_execution_state(
             request,
             portfolio,
@@ -1550,27 +1557,136 @@ class StrictResearchOSControl(
                 "graph checkpoint requires active or paused durable control, "
                 f"actual={control.phase.value}"
             )
+        if snapshot.reconciliation_required_node_ids:
+            raise ResearchGraphExecutionConflict(
+                "graph checkpoint is blocked by reconciliation debt: "
+                f"{snapshot.reconciliation_required_node_ids}"
+            )
+
+        if request.target.node is None:
+            selected_nodes = compilation.nodes
+        else:
+            selected_nodes = tuple(
+                node for node in compilation.nodes if node.ref == request.target.node
+            )
+            if len(selected_nodes) != 1:
+                raise ResearchGraphExecutionConflict(
+                    "checkpoint target does not identify exactly one graph node"
+                )
+
+        selected_ids = {node.graph_node_id for node in selected_nodes}
         active_nodes = tuple(
             node.node_id
             for node in snapshot.nodes
-            if node.state in {
+            if node.node_id in selected_ids
+            and node.state in {
                 ResearchGraphLiveNodeState.CLAIMED,
                 ResearchGraphLiveNodeState.RUNNING,
             }
         )
         if active_nodes:
             raise ResearchGraphExecutionConflict(
-                "graph checkpoint requires a quiescent cut or exact lower "
-                f"checkpoint proofs; active_nodes={active_nodes}"
+                "graph checkpoint requires checkpoint-safe selected nodes; "
+                f"active_nodes={active_nodes}"
             )
-        if snapshot.reconciliation_required_node_ids:
-            raise ResearchGraphExecutionConflict(
-                "graph checkpoint is blocked by reconciliation debt: "
-                f"{snapshot.reconciliation_required_node_ids}"
+
+        succeeded_ids = tuple(
+            sorted(
+                node.node_id
+                for node in snapshot.nodes
+                if node.node_id in selected_ids
+                and node.state is ResearchGraphLiveNodeState.SUCCEEDED
             )
+        )
+        lowered = {}
+        if succeeded_ids:
+            if not isinstance(self._runtime, ResearchOSNodeCheckpointPort):
+                raise ResearchOSExecutionUnsupported(
+                    "successful node checkpoint requires lower Machine checkpoint proof"
+                )
+            lowering_plan = compile_research_os_lowering(
+                compilation,
+                experiment_closures=self._experiment_closures,
+                selected_node_ids=succeeded_ids,
+            )
+            lowered = {
+                row.source.graph_node_id: row for row in lowering_plan.nodes
+            }
+
+        rows = []
+        compiled_by_id = {
+            node.graph_node_id: node for node in compilation.nodes
+        }
+        for record in snapshot.nodes:
+            if record.node_id not in selected_ids:
+                continue
+            row: JsonObject = {
+                "graph_node_id": record.node_id,
+                "semantic_digest": record.semantic_digest,
+                "state": record.state.value,
+                "attempt_number": record.attempt_number,
+            }
+            if record.state is ResearchGraphLiveNodeState.SUCCEEDED:
+                node = compiled_by_id[record.node_id]
+                lowering = lowered[record.node_id]
+                proof = self._runtime.checkpoint_node(
+                    node,
+                    lowering,
+                    execution_cut_id=cut.cut_id,
+                )
+                if type(proof) is not ResearchOSNodeCheckpointProof:
+                    raise TypeError(
+                        "Research OS runtime returned invalid node checkpoint proof"
+                    )
+                proof.validate(
+                    node,
+                    lowering,
+                    execution_cut_id=cut.cut_id,
+                )
+                row.update(
+                    {
+                        "authority_id": proof.authority_id,
+                        "machine_cut_digest": proof.machine_cut.cut_digest,
+                        "machine_revision": proof.machine_cut.revision,
+                        "machine_commit_id": proof.machine_cut.commit_id,
+                        "checkpoint_proof_digest": proof.proof_digest,
+                    }
+                )
+            elif record.state is ResearchGraphLiveNodeState.REUSED:
+                reuse = self._store.reuse_record(cut.cut_id, record.node_id)
+                if reuse is None:
+                    raise RuntimeError("reused graph node lost immutable reuse proof")
+                row.update(
+                    {
+                        "authority_id": "research-graph-reuse",
+                        "source_execution_id": reuse.source_execution_id,
+                        "source_node_id": reuse.source_node_id,
+                        "checkpoint_proof_digest": reuse.proof_digest,
+                    }
+                )
+            else:
+                row.update(
+                    {
+                        "authority_id": "research-graph",
+                        "checkpoint_proof_digest": canonical_digest(
+                            {
+                                "cut_id": cut.cut_id,
+                                "graph_node_id": record.node_id,
+                                "semantic_digest": record.semantic_digest,
+                                "state": record.state.value,
+                                "attempt_number": record.attempt_number,
+                                "failure_type": record.failure_type,
+                                "failure_message": record.failure_message,
+                                "blocked_by_node_ids": record.blocked_by_node_ids,
+                            }
+                        ),
+                    }
+                )
+            rows.append(row)
+
         checkpoint_digest = canonical_digest(
             {
-                "schema": "noetrium.research-graph-checkpoint.v1",
+                "schema": "noetrium.research-graph-checkpoint.v2",
                 "cut_id": cut.cut_id,
                 "graph_digest": compilation.plan.graph_digest,
                 "research_revision_digest": (
@@ -1579,7 +1695,8 @@ class StrictResearchOSControl(
                 "snapshot_generation": snapshot.generation,
                 "control_generation": control.generation,
                 "control_phase": control.phase.value,
-                "states": self._states(snapshot),
+                "selected_node_ids": tuple(sorted(selected_ids)),
+                "nodes": tuple(rows),
             }
         )
         return self._durable_control_receipt(
@@ -1590,7 +1707,11 @@ class StrictResearchOSControl(
             snapshot,
             control,
             state="checkpointed",
-            extra={"checkpoint_digest": checkpoint_digest},
+            extra={
+                "checkpoint_digest": checkpoint_digest,
+                "checkpoint_node_ids": tuple(sorted(selected_ids)),
+                "checkpoint_nodes": tuple(rows),
+            },
         )
 
     @staticmethod
