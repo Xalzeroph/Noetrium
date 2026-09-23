@@ -10,6 +10,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphActiveCutStorePort,
     ResearchGraphControlPhase,
     ResearchGraphControlStorePort,
+    ResearchGraphCutSwitchFence,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionSnapshot,
     ResearchGraphExecutionStorePort,
@@ -525,6 +526,13 @@ def materialize_research_os_execution_migration(
         )
         for node_id in common_node_ids
     }
+    source_fence = ResearchGraphCutSwitchFence(
+        plan.source_cut.cut_id,
+        active.generation,
+        source_snapshot.generation,
+        source_control,
+        tuple(source_node_controls[node_id] for node_id in common_node_ids),
+    )
     unsettled = tuple(
         sorted(
             (node_id, control.phase.value)
@@ -744,6 +752,7 @@ def materialize_research_os_execution_migration(
         {
             "source_cut_id": plan.source_cut.cut_id,
             "target_cut_id": plan.target_cut.cut_id,
+            "source_fence_digest": source_fence.fence_digest,
             "source": tuple(
                 (
                     node_id,
@@ -766,6 +775,7 @@ def materialize_research_os_execution_migration(
         plan.execution_id,
         plan.target_cut.cut_id,
         expected_cut_id=plan.source_cut.cut_id,
+        source_fence=source_fence,
     )
     return ResearchOSExecutionMigrationMaterialization(
         plan,
