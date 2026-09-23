@@ -661,14 +661,9 @@ class SQLiteResearchGraphExecutionStore:
                 raise ResearchGraphExecutionConflict(
                     "research graph node pause is blocked by reconciliation debt"
                 )
-            if node.state in {
-                ResearchGraphLiveNodeState.SUCCEEDED,
-                ResearchGraphLiveNodeState.REUSED,
-                ResearchGraphLiveNodeState.FAILED,
-                ResearchGraphLiveNodeState.CANCELLED,
-            }:
+            if node.state is ResearchGraphLiveNodeState.CANCELLED:
                 raise ResearchGraphExecutionConflict(
-                    "terminal graph node cannot be paused"
+                    "cancelled graph node cannot be paused"
                 )
             self._write_node_control_phase_tx(
                 conn, execution_id, node_id,
