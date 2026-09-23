@@ -23,31 +23,60 @@ def _task_success_metric(value):
 class _Port:
     def __init__(self) -> None:
         self.controls = []
+        self.branches = {}
 
     def commit(self, portfolio, *, parents, message):
         return api.ResearchGraphRevision(
+            portfolio.portfolio_id,
             portfolio.portfolio_digest,
-            parents,
+            tuple(parent.revision_digest for parent in parents),
             message,
         )
 
-    def diff(self, left_revision_digest, right_revision_digest):
+    def diff(self, left, right):
         return api.ResearchRevisionDiff(
-            left_revision_digest,
-            right_revision_digest,
+            left.portfolio_id,
+            left.revision_digest,
+            right.revision_digest,
             (),
         )
 
-    def branch(self, name, revision_digest):
-        return api.ResearchBranch(name, revision_digest)
+    def branch(self, name, revision, *, expected):
+        key = (revision.portfolio_id, name)
+        current = self.branches.get(key)
+        if current is None:
+            if expected is not None:
+                raise ValueError("branch does not exist")
+            result = api.ResearchBranch(
+                revision.portfolio_id,
+                name,
+                revision.revision_digest,
+                1,
+            )
+        else:
+            if expected is None or current.revision_digest != expected.revision_digest:
+                raise ValueError("branch expected revision mismatch")
+            result = api.ResearchBranch(
+                revision.portfolio_id,
+                name,
+                revision.revision_digest,
+                current.generation + (current.revision_digest != revision.revision_digest),
+            )
+        self.branches[key] = result
+        return result
 
-    def tag(self, name, revision_digest):
-        return api.ResearchTag(name, revision_digest)
+    def tag(self, name, revision):
+        return api.ResearchTag(
+            revision.portfolio_id,
+            name,
+            revision.revision_digest,
+        )
 
-    def merge(self, left_revision_digest, right_revision_digest, *, message):
+    def merge(self, portfolio, left, right, *, message):
         return api.ResearchGraphRevision(
-            "a" * 64,
-            (left_revision_digest, right_revision_digest),
+            portfolio.portfolio_id,
+            portfolio.portfolio_digest,
+            (left.revision_digest, right.revision_digest),
             message,
         )
 
@@ -290,14 +319,41 @@ def test_research_os_unifies_revision_and_live_control() -> None:
     portfolio = api.ResearchPortfolio("main", (_program(),))
 
     revision = research_os.commit(portfolio, message="initial SEM graph")
-    branch = research_os.branch("sem-main", revision.revision_digest)
-    tag = research_os.tag("sem-confirmatory-v1", revision.revision_digest)
+    branch = research_os.branch("sem-main", revision)
+    tag = research_os.tag("sem-confirmatory-v1", revision)
+
+    next_revision = research_os.commit(
+        portfolio,
+        parents=(revision,),
+        message="second cut",
+    )
+    advanced = research_os.branch(
+        "sem-main",
+        next_revision,
+        expected=revision,
+    )
+    diff = research_os.diff(revision, next_revision)
+    merge = research_os.merge(
+        portfolio,
+        revision,
+        next_revision,
+        message="resolved merge",
+    )
 
     paused = research_os.pause("sem.confirmatory")
     resumed = research_os.resume("sem.confirmatory")
 
+    assert revision.portfolio_id == "main"
     assert branch.revision_digest == revision.revision_digest
+    assert branch.generation == 1
+    assert advanced.revision_digest == next_revision.revision_digest
+    assert advanced.generation == 2
     assert tag.revision_digest == revision.revision_digest
+    assert diff.portfolio_id == "main"
+    assert merge.parent_revision_digests == (
+        revision.revision_digest,
+        next_revision.revision_digest,
+    )
     assert paused.action is api.ResearchControlAction.PAUSE
     assert resumed.action is api.ResearchControlAction.RESUME
     assert tuple(row.action for row in port.controls) == (
