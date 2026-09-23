@@ -88,9 +88,9 @@ def test_container_smoke_verifies_wheel_record_and_effective_identity():
     assert "os.getegid()" in script
     assert "installed RECORD digest mismatch" in script
     assert script.index("installed RECORD digest mismatch") < script.index("noetrium --help")
-    assert "ResearchFacade" in script
-    assert "ReferenceResearchApplication" in script
-    assert 'for action in ("run", "inspect", "stop", "resume", "reconcile", "evidence")' in script
+    assert "ResearchOS" in script
+    assert "ReferenceResearchOSPort" in script
+    assert 'for action in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")' in script
     for action in container._ACTIONS:
         assert action in script
 
@@ -163,9 +163,9 @@ def test_container_verifier_returns_distribution_bound_receipt(monkeypatch):
         expected_distribution_evidence_sha256=DIST_SHA,
     )
     assert result.schema == "noetrium.container-verification.v3"
-    assert result.qualification_scope == "operator-smoke-only"
+    assert result.qualification_scope == "research-os-smoke-only"
     assert result.npe_verified is False
-    assert result.operator_smoke_actions == ("run", "inspect", "stop", "resume", "reconcile", "evidence")
+    assert result.research_os_smoke_actions == ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")
     assert result.source_sha == SHA
     assert result.wheel_sha256 == WHEEL_SHA
     assert result.distribution_evidence_sha256 == DIST_SHA
