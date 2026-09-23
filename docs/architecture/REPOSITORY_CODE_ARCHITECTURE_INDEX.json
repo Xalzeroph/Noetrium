@@ -40758,7 +40758,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "1b215a5ba15fd35df92ff9c85299263970efbaef",
+  "source_git_sha": "7a87dc233a798acd2ca6db16e84e956ce5bcdaa1",
   "symbols": [
     {
       "bases": [],
@@ -99441,6 +99441,7 @@
         "resume",
         "interrupt",
         "cancel_if_quiescent",
+        "require_recovery",
         "settle_recovery"
       ],
       "module": "noetrium_platform.research.execution.graph.api.state",
@@ -99459,7 +99460,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 563,
+      "line": 571,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -99505,6 +99506,7 @@
         "resume",
         "interrupt",
         "cancel_if_quiescent",
+        "require_recovery",
         "settle_recovery",
         "active_cut",
         "move_active_cut",

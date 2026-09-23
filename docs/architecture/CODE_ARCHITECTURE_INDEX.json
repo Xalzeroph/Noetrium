@@ -79106,7 +79106,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 563,
+      "line": 571,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -79248,6 +79248,7 @@
         "resume",
         "interrupt",
         "cancel_if_quiescent",
+        "require_recovery",
         "settle_recovery"
       ],
       "module": "noetrium_platform.research.execution.graph.api.state",
@@ -79529,6 +79530,7 @@
         "resume",
         "interrupt",
         "cancel_if_quiescent",
+        "require_recovery",
         "settle_recovery",
         "active_cut",
         "move_active_cut",
@@ -142237,7 +142239,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "1b215a5ba15fd35df92ff9c85299263970efbaef",
+  "source_git_sha": "7a87dc233a798acd2ca6db16e84e956ce5bcdaa1",
   "system_import_edges": [
     {
       "count": 90,
