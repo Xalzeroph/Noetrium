@@ -586,3 +586,114 @@ def test_migration_preserves_paused_and_cancelled_node_control_intent(
         ResearchGraphLiveNodeState.CANCELLED
     )
     assert store.attempts(target_cut_id, "paper-b::main") == ()
+
+
+
+def test_migration_retry_reconciles_staged_pause_with_current_source_control(tmp_path) -> None:
+    old_portfolio = _portfolio(_method_v1)
+    old_revision = _revision(old_portfolio, message="r1")
+    old = compile_research_portfolio_graph(old_revision, old_portfolio)
+    new_portfolio = _portfolio(_method_v2)
+    new_revision = _revision(new_portfolio, parent=old_revision, message="r2")
+    new = compile_research_portfolio_graph(new_revision, new_portfolio)
+
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    activation = activate_research_os_execution_cut(
+        "logical-execution",
+        old,
+        store,
+    )
+    source_cut_id = activation.cut.cut_id
+
+    node_control = store.node_control_state(source_cut_id, "paper-a::main")
+    node_control = store.request_node_drain(
+        source_cut_id,
+        "paper-a::main",
+        expected_generation=node_control.generation,
+        now_ns=5,
+    )
+    node_control = store.pause_node_if_quiescent(
+        source_cut_id,
+        "paper-a::main",
+        expected_generation=node_control.generation,
+        now_ns=6,
+    )
+    assert node_control.phase is ResearchGraphNodeControlPhase.PAUSED
+    _pause_cut(store, source_cut_id, now_ns=7)
+
+    plan = plan_research_os_execution_migration(
+        "logical-execution",
+        old,
+        new,
+        store.snapshot(source_cut_id),
+    )
+
+    competing_revision = api.ResearchGraphRevision(
+        old_portfolio.portfolio_id,
+        old_portfolio.portfolio_digest,
+        (old_revision.revision_digest,),
+        "competing revision",
+    )
+    competing = compile_research_portfolio_graph(
+        competing_revision,
+        old_portfolio,
+    )
+    competing_cut = ResearchOSExecutionCut.from_compilation(
+        "logical-execution",
+        competing,
+    )
+    store.ensure_execution(competing_cut.cut_id, competing.plan)
+    racing = _RacingActiveCutStore(
+        store,
+        competing_cut_id=competing_cut.cut_id,
+    )
+
+    with pytest.raises(ResearchGraphExecutionConflict, match="active cut"):
+        materialize_research_os_execution_migration(
+            plan,
+            new,
+            store,
+            active_cut_store=racing,
+            now_ns=20,
+        )
+
+    assert store.active_cut("logical-execution").cut_id == competing_cut.cut_id
+    assert store.node_control_state(
+        plan.target_cut.cut_id,
+        "paper-a::main",
+    ).phase is ResearchGraphNodeControlPhase.PAUSED
+
+    store.move_active_cut(
+        "logical-execution",
+        source_cut_id,
+        expected_cut_id=competing_cut.cut_id,
+    )
+    source_node_control = store.node_control_state(
+        source_cut_id,
+        "paper-a::main",
+    )
+    source_node_control = store.resume_node(
+        source_cut_id,
+        "paper-a::main",
+        expected_generation=source_node_control.generation,
+        now_ns=30,
+    )
+    assert source_node_control.phase is ResearchGraphNodeControlPhase.ACTIVE
+
+    materialized = materialize_research_os_execution_migration(
+        plan,
+        new,
+        store,
+        now_ns=40,
+    )
+
+    assert materialized.active_cut.cut_id == plan.target_cut.cut_id
+    assert materialized.preserved_paused_node_ids == ()
+    assert materialized.preserved_cancelled_node_ids == ()
+    assert store.node_control_state(
+        plan.target_cut.cut_id,
+        "paper-a::main",
+    ).phase is ResearchGraphNodeControlPhase.ACTIVE
+    assert store.snapshot(plan.target_cut.cut_id).node(
+        "paper-a::main"
+    ).state is ResearchGraphLiveNodeState.PENDING
