@@ -40,6 +40,7 @@ class ResearchCampaignStudy:
     lane_id: str
     research_plan_digest: str
     plan: StudyExecutionPlan
+    depends_on_lane_ids: tuple[str, ...] = ()
     study_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -48,6 +49,18 @@ class ResearchCampaignStudy:
         if type(self.plan) is not StudyExecutionPlan:
             raise TypeError("campaign study plan must be StudyExecutionPlan")
         self.plan.assert_consistent()
+        if type(self.depends_on_lane_ids) is not tuple:
+            raise TypeError("campaign dependencies must be a tuple")
+        dependencies = tuple(
+            _token(value, "campaign dependency lane_id")
+            for value in self.depends_on_lane_ids
+        )
+        if len(dependencies) != len(set(dependencies)):
+            raise ValueError("campaign dependencies must not contain duplicates")
+        if self.lane_id in dependencies:
+            raise ValueError("campaign lane cannot depend on itself")
+        dependencies = tuple(sorted(dependencies))
+        object.__setattr__(self, "depends_on_lane_ids", dependencies)
         object.__setattr__(
             self,
             "study_digest",
@@ -57,6 +70,7 @@ class ResearchCampaignStudy:
                     "research_plan_digest": self.research_plan_digest,
                     "study_id": self.plan.protocol.study_id,
                     "study_plan_digest": self.plan.plan_digest,
+                    "depends_on_lane_ids": dependencies,
                 }
             ),
         )
@@ -66,10 +80,17 @@ class ResearchCampaignStudy:
         cls,
         lane_id: str,
         compiled: CompiledResearchPlan,
+        *,
+        depends_on_lane_ids: tuple[str, ...] = (),
     ) -> "ResearchCampaignStudy":
         if type(compiled) is not CompiledResearchPlan:
             raise TypeError("campaign study compilation requires CompiledResearchPlan")
-        return cls(lane_id, compiled.research_plan_digest, compiled.experiment_plan)
+        return cls(
+            lane_id,
+            compiled.research_plan_digest,
+            compiled.experiment_plan,
+            depends_on_lane_ids,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -93,6 +114,36 @@ class ResearchCampaignPlan:
             raise ValueError(
                 "duplicate compiled research plans belong inside Study repetitions, not campaign lanes"
             )
+        known_lane_ids = set(lane_ids)
+        for study in studies:
+            unknown = tuple(
+                dependency
+                for dependency in study.depends_on_lane_ids
+                if dependency not in known_lane_ids
+            )
+            if unknown:
+                raise ValueError(
+                    f"campaign lane {study.lane_id!r} depends on unknown lanes: {unknown}"
+                )
+
+        by_lane = {row.lane_id: row for row in studies}
+        visiting: set[str] = set()
+        visited: set[str] = set()
+
+        def visit(lane_id: str) -> None:
+            if lane_id in visited:
+                return
+            if lane_id in visiting:
+                raise ValueError(f"campaign dependency cycle at lane {lane_id!r}")
+            visiting.add(lane_id)
+            for dependency in by_lane[lane_id].depends_on_lane_ids:
+                visit(dependency)
+            visiting.remove(lane_id)
+            visited.add(lane_id)
+
+        for lane_id in lane_ids:
+            visit(lane_id)
+
         object.__setattr__(self, "studies", studies)
         object.__setattr__(
             self,
@@ -112,6 +163,7 @@ class ResearchCampaignCompilationUnit:
     definition: ResearchStudyDefinition
     resolution: ResearchRequirementResolution
     binding: ResearchBindingContribution
+    depends_on_lane_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         _token(self.lane_id, "campaign compilation lane_id")
@@ -121,6 +173,17 @@ class ResearchCampaignCompilationUnit:
             raise TypeError("campaign compilation resolution must be ResearchRequirementResolution")
         if type(self.binding) is not ResearchBindingContribution:
             raise TypeError("campaign compilation binding must be ResearchBindingContribution")
+        if type(self.depends_on_lane_ids) is not tuple:
+            raise TypeError("campaign compilation dependencies must be a tuple")
+        dependencies = tuple(
+            _token(value, "campaign compilation dependency lane_id")
+            for value in self.depends_on_lane_ids
+        )
+        if len(dependencies) != len(set(dependencies)):
+            raise ValueError("campaign compilation dependencies must not contain duplicates")
+        if self.lane_id in dependencies:
+            raise ValueError("campaign compilation lane cannot depend on itself")
+        object.__setattr__(self, "depends_on_lane_ids", tuple(sorted(dependencies)))
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,7 +249,15 @@ def compile_research_campaign(
     plan = ResearchCampaignPlan(
         campaign_id,
         tuple(
-            ResearchCampaignStudy.from_compiled(row.lane_id, row.research_plan)
+            ResearchCampaignStudy.from_compiled(
+                row.lane_id,
+                row.research_plan,
+                depends_on_lane_ids=next(
+                    unit.depends_on_lane_ids
+                    for unit in units
+                    if unit.lane_id == row.lane_id
+                ),
+            )
             for row in compiled_lanes
         ),
     )
@@ -212,6 +283,7 @@ class ResearchCampaignStudyBinding:
 class ResearchCampaignLaneState(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
+    BLOCKED = "blocked"
 
 
 @dataclass(frozen=True, slots=True)
@@ -223,6 +295,7 @@ class ResearchCampaignLaneResult:
     report: StudyMatrixExecutionReport | None = None
     failure_type: str | None = None
     failure_message: str | None = None
+    blocked_by_lane_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         _token(self.lane_id, "campaign result lane_id")
@@ -230,6 +303,16 @@ class ResearchCampaignLaneResult:
         require_sha256(self.study_plan_digest, "campaign result study_plan_digest")
         if not isinstance(self.state, ResearchCampaignLaneState):
             raise TypeError("campaign lane state must be ResearchCampaignLaneState")
+        if type(self.blocked_by_lane_ids) is not tuple:
+            raise TypeError("campaign blocked dependencies must be a tuple")
+        blockers = tuple(
+            _token(value, "campaign blocker lane_id")
+            for value in self.blocked_by_lane_ids
+        )
+        if len(blockers) != len(set(blockers)):
+            raise ValueError("campaign blocked dependencies must not contain duplicates")
+        blockers = tuple(sorted(blockers))
+        object.__setattr__(self, "blocked_by_lane_ids", blockers)
         if self.state is ResearchCampaignLaneState.SUCCEEDED:
             if type(self.report) is not StudyMatrixExecutionReport:
                 raise TypeError("successful campaign lane requires StudyMatrixExecutionReport")
@@ -237,13 +320,24 @@ class ResearchCampaignLaneResult:
                 raise ValueError("campaign lane report does not match frozen study plan")
             if self.failure_type is not None or self.failure_message is not None:
                 raise ValueError("successful campaign lane cannot carry failure metadata")
-        else:
+            if blockers:
+                raise ValueError("successful campaign lane cannot carry blockers")
+        elif self.state is ResearchCampaignLaneState.FAILED:
             if self.report is not None:
                 raise ValueError("failed campaign lane cannot carry a study report")
             if not isinstance(self.failure_type, str) or not self.failure_type.strip():
                 raise ValueError("failed campaign lane requires failure_type")
             if not isinstance(self.failure_message, str) or not self.failure_message.strip():
                 raise ValueError("failed campaign lane requires failure_message")
+            if blockers:
+                raise ValueError("failed campaign lane cannot carry blockers")
+        else:
+            if self.report is not None:
+                raise ValueError("blocked campaign lane cannot carry a study report")
+            if self.failure_type is not None or self.failure_message is not None:
+                raise ValueError("blocked campaign lane cannot carry failure metadata")
+            if not blockers:
+                raise ValueError("blocked campaign lane requires blocked_by_lane_ids")
 
 
 @dataclass(frozen=True, slots=True)
@@ -277,6 +371,13 @@ class ResearchCampaignExecutionReport:
         return tuple(
             row.lane_id for row in self.lanes
             if row.state is ResearchCampaignLaneState.FAILED
+        )
+
+    @property
+    def blocked_lane_ids(self) -> tuple[str, ...]:
+        return tuple(
+            row.lane_id for row in self.lanes
+            if row.state is ResearchCampaignLaneState.BLOCKED
         )
 
 
