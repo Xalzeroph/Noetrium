@@ -5,7 +5,11 @@ from enum import StrEnum
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphActiveCutRef,
+    ResearchGraphActiveCutStorePort,
+    ResearchGraphExecutionConflict,
     ResearchGraphExecutionSnapshot,
+    ResearchGraphExecutionStorePort,
     ResearchGraphLiveNodeState,
 )
 
@@ -95,6 +99,70 @@ class ResearchOSNodeMigration:
             raise TypeError("research migration source_state must be typed")
         if type(self.source_attempt_number) is not int or self.source_attempt_number < 0:
             raise ValueError("research migration source_attempt_number must be non-negative")
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchOSReuseProof:
+    """Lower-authority proof that one completed semantic node can be reused."""
+
+    graph_node_id: str
+    source_cut_id: str
+    semantic_digest: str
+    proof_digest: str
+
+    def __post_init__(self) -> None:
+        _text(self.graph_node_id, "research reuse proof graph_node_id")
+        require_sha256(self.source_cut_id, "research reuse proof source_cut_id")
+        require_sha256(self.semantic_digest, "research reuse proof semantic_digest")
+        require_sha256(self.proof_digest, "research reuse proof proof_digest")
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchOSExecutionActivation:
+    cut: ResearchOSExecutionCut
+    active_cut: ResearchGraphActiveCutRef
+    snapshot: ResearchGraphExecutionSnapshot
+
+    def __post_init__(self) -> None:
+        if type(self.cut) is not ResearchOSExecutionCut:
+            raise TypeError("research execution activation cut must be typed")
+        if type(self.active_cut) is not ResearchGraphActiveCutRef:
+            raise TypeError("research execution activation active_cut must be typed")
+        if type(self.snapshot) is not ResearchGraphExecutionSnapshot:
+            raise TypeError("research execution activation snapshot must be typed")
+        if self.active_cut.cut_id != self.cut.cut_id:
+            raise ValueError("research execution activation cut identity drifted")
+        if self.snapshot.execution_id != self.cut.cut_id:
+            raise ValueError("research execution activation snapshot cut drifted")
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchOSExecutionMigrationMaterialization:
+    plan: "ResearchOSExecutionMigrationPlan"
+    active_cut: ResearchGraphActiveCutRef
+    snapshot: ResearchGraphExecutionSnapshot
+    reused_node_ids: tuple[str, ...]
+    rerun_node_ids: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.plan, ResearchOSExecutionMigrationPlan):
+            raise TypeError("research migration materialization plan must be typed")
+        if type(self.active_cut) is not ResearchGraphActiveCutRef:
+            raise TypeError("research migration materialization active_cut must be typed")
+        if type(self.snapshot) is not ResearchGraphExecutionSnapshot:
+            raise TypeError("research migration materialization snapshot must be typed")
+        reused = tuple(sorted(self.reused_node_ids))
+        rerun = tuple(sorted(self.rerun_node_ids))
+        if len(reused) != len(set(reused)) or len(rerun) != len(set(rerun)):
+            raise ValueError("research migration materialization node ids must be unique")
+        if set(reused) & set(rerun):
+            raise ValueError("research migration reused/rerun node sets must be disjoint")
+        if self.active_cut.cut_id != self.plan.target_cut.cut_id:
+            raise ValueError("research migration active cut does not match target cut")
+        if self.snapshot.execution_id != self.plan.target_cut.cut_id:
+            raise ValueError("research migration snapshot does not match target cut")
+        object.__setattr__(self, "reused_node_ids", reused)
+        object.__setattr__(self, "rerun_node_ids", rerun)
 
 
 @dataclass(frozen=True, slots=True)
@@ -201,12 +269,17 @@ def plan_research_os_execution_migration(
         raise TypeError("research migration snapshot must be ResearchGraphExecutionSnapshot")
     if source.plan.graph_id != target.plan.graph_id:
         raise ValueError("research migration requires the same ResearchPortfolio identity")
+    source_cut = ResearchOSExecutionCut.from_compilation(execution_id, source)
+    target_cut = ResearchOSExecutionCut.from_compilation(execution_id, target)
     if (
-        snapshot.graph_id != source.plan.graph_id
+        snapshot.execution_id != source_cut.cut_id
+        or snapshot.graph_id != source.plan.graph_id
         or snapshot.graph_digest != source.plan.graph_digest
         or snapshot.research_revision_digest != source.plan.research_revision_digest
     ):
-        raise ValueError("research migration source snapshot does not match source cut")
+        raise ValueError(
+            "research migration source snapshot does not match immutable source cut"
+        )
 
     source_nodes = {node.node_id: node for node in source.plan.nodes}
     target_nodes = {node.node_id: node for node in target.plan.nodes}
@@ -261,16 +334,166 @@ def plan_research_os_execution_migration(
 
     return ResearchOSExecutionMigrationPlan(
         execution_id,
-        ResearchOSExecutionCut.from_compilation(execution_id, source),
-        ResearchOSExecutionCut.from_compilation(execution_id, target),
+        source_cut,
+        target_cut,
         tuple(rows),
     )
 
 
+
+def _cut_store(
+    execution_store: ResearchGraphExecutionStorePort,
+    active_cut_store: ResearchGraphActiveCutStorePort | None,
+) -> ResearchGraphActiveCutStorePort:
+    selected: object = execution_store if active_cut_store is None else active_cut_store
+    if not isinstance(selected, ResearchGraphActiveCutStorePort):
+        raise TypeError("research execution migration requires active-cut CAS authority")
+    return selected
+
+
+def activate_research_os_execution_cut(
+    execution_id: str,
+    compilation: CompiledResearchOSGraph,
+    execution_store: ResearchGraphExecutionStorePort,
+    *,
+    active_cut_store: ResearchGraphActiveCutStorePort | None = None,
+) -> ResearchOSExecutionActivation:
+    """Create/reopen one immutable physical cut and bind the logical execution ref."""
+
+    _text(execution_id, "research execution activation execution_id")
+    if type(compilation) is not CompiledResearchOSGraph:
+        raise TypeError("research execution activation requires compiled Research OS graph")
+    if not isinstance(execution_store, ResearchGraphExecutionStorePort):
+        raise TypeError("research execution activation requires graph execution store")
+    cuts = _cut_store(execution_store, active_cut_store)
+    cut = ResearchOSExecutionCut.from_compilation(execution_id, compilation)
+    snapshot = execution_store.ensure_execution(cut.cut_id, compilation.plan)
+    active = cuts.move_active_cut(execution_id, cut.cut_id)
+    return ResearchOSExecutionActivation(cut, active, snapshot)
+
+
+def materialize_research_os_execution_migration(
+    plan: ResearchOSExecutionMigrationPlan,
+    target: CompiledResearchOSGraph,
+    execution_store: ResearchGraphExecutionStorePort,
+    *,
+    reuse_proofs: tuple[ResearchOSReuseProof, ...] = (),
+    active_cut_store: ResearchGraphActiveCutStorePort | None = None,
+    now_ns: int,
+) -> ResearchOSExecutionMigrationMaterialization:
+    """Materialize R2 beside R1, prove safe reuse, then CAS-switch the active cut.
+
+    Reuse candidates without a proof remain PENDING in the target cut and are
+    therefore rerun. The source cut is never mutated.
+    """
+
+    if not isinstance(plan, ResearchOSExecutionMigrationPlan):
+        raise TypeError("research migration materialization requires typed plan")
+    if type(target) is not CompiledResearchOSGraph:
+        raise TypeError("research migration materialization target must be compiled graph")
+    if not isinstance(execution_store, ResearchGraphExecutionStorePort):
+        raise TypeError("research migration materialization requires graph execution store")
+    if type(now_ns) is not int or now_ns < 0:
+        raise ValueError("research migration materialization now_ns must be non-negative")
+    if not plan.can_switch:
+        raise ResearchGraphExecutionConflict(
+            "research migration cannot switch while source work needs quiesce/reconcile"
+        )
+    expected_target = ResearchOSExecutionCut.from_compilation(plan.execution_id, target)
+    if expected_target != plan.target_cut:
+        raise ValueError("research migration target compilation does not match target cut")
+    if type(reuse_proofs) is not tuple or any(
+        type(proof) is not ResearchOSReuseProof for proof in reuse_proofs
+    ):
+        raise TypeError("research migration reuse_proofs must be typed tuple")
+    proofs = {proof.graph_node_id: proof for proof in reuse_proofs}
+    if len(proofs) != len(reuse_proofs):
+        raise ValueError("research migration reuse proofs must have unique node ids")
+
+    by_id = {row.graph_node_id: row for row in plan.nodes}
+    candidates = set(plan.reuse_candidate_node_ids)
+    unknown = tuple(sorted(set(proofs) - candidates))
+    if unknown:
+        raise ValueError(
+            f"research migration proof supplied for non-reuse candidates: {unknown}"
+        )
+    for node_id, proof in proofs.items():
+        row = by_id[node_id]
+        if (
+            proof.source_cut_id != plan.source_cut.cut_id
+            or proof.semantic_digest != row.old_semantic_digest
+            or proof.semantic_digest != row.new_semantic_digest
+        ):
+            raise ValueError(
+                f"research migration reuse proof identity drifted: {node_id}"
+            )
+
+    cuts = _cut_store(execution_store, active_cut_store)
+    active = cuts.active_cut(plan.execution_id)
+    if active is None or active.cut_id != plan.source_cut.cut_id:
+        raise ResearchGraphExecutionConflict(
+            "research migration source cut is no longer the active execution cut"
+        )
+    source_snapshot = execution_store.snapshot(plan.source_cut.cut_id)
+    if (
+        source_snapshot.graph_digest != plan.source_cut.graph_digest
+        or source_snapshot.research_revision_digest
+        != plan.source_cut.research_revision_digest
+    ):
+        raise ResearchGraphExecutionConflict(
+            "research migration durable source cut identity drifted"
+        )
+
+    target_snapshot = execution_store.ensure_execution(
+        plan.target_cut.cut_id,
+        target.plan,
+    )
+    reused: list[str] = []
+    for node_id in sorted(proofs):
+        proof = proofs[node_id]
+        row = by_id[node_id]
+        if row.new_semantic_digest is None:
+            raise RuntimeError("reuse candidate unexpectedly has no target semantic digest")
+        execution_store.mark_reused(
+            plan.target_cut.cut_id,
+            node_id,
+            source_execution_id=plan.source_cut.cut_id,
+            source_node_id=node_id,
+            semantic_digest=row.new_semantic_digest,
+            proof_digest=proof.proof_digest,
+            now_ns=now_ns,
+        )
+        reused.append(node_id)
+
+    target_snapshot = execution_store.snapshot(plan.target_cut.cut_id)
+    active = cuts.move_active_cut(
+        plan.execution_id,
+        plan.target_cut.cut_id,
+        expected_cut_id=plan.source_cut.cut_id,
+    )
+    rerun = tuple(
+        node.node_id
+        for node in target_snapshot.nodes
+        if node.state is not ResearchGraphLiveNodeState.REUSED
+    )
+    return ResearchOSExecutionMigrationMaterialization(
+        plan,
+        active,
+        target_snapshot,
+        tuple(reused),
+        rerun,
+    )
+
+
 __all__ = [
+    "ResearchOSExecutionActivation",
     "ResearchOSExecutionCut",
+    "ResearchOSExecutionMigrationMaterialization",
     "ResearchOSExecutionMigrationPlan",
     "ResearchOSNodeMigration",
     "ResearchOSNodeMigrationDisposition",
+    "ResearchOSReuseProof",
+    "activate_research_os_execution_cut",
+    "materialize_research_os_execution_migration",
     "plan_research_os_execution_migration",
 ]

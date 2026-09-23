@@ -1,18 +1,28 @@
 from __future__ import annotations
 
+import pytest
+
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
 from noetrium_platform.composition.research_os_migration import (
     ResearchOSExecutionCut,
     ResearchOSNodeMigrationDisposition,
+    ResearchOSReuseProof,
+    activate_research_os_execution_cut,
+    materialize_research_os_execution_migration,
     plan_research_os_execution_migration,
 )
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.product import research_os as api
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionSnapshot,
     ResearchGraphLiveNodeState,
+    ResearchGraphExecutionConflict,
     ResearchGraphNodeExecutionRecord,
+)
+from noetrium_platform.research.execution.graph.providers import (
+    SQLiteResearchGraphExecutionStore,
 )
 
 
@@ -58,7 +68,13 @@ def _revision(
     )
 
 
-def _snapshot(compilation, *, live_node_id: str | None = None):
+def _snapshot(
+    compilation,
+    *,
+    execution_id: str = "logical-execution",
+    live_node_id: str | None = None,
+):
+    cut = ResearchOSExecutionCut.from_compilation(execution_id, compilation)
     rows = []
     for node in compilation.plan.nodes:
         state = (
@@ -68,7 +84,7 @@ def _snapshot(compilation, *, live_node_id: str | None = None):
         )
         rows.append(
             ResearchGraphNodeExecutionRecord(
-                "logical-execution",
+                cut.cut_id,
                 node.node_id,
                 node.semantic_digest,
                 state,
@@ -87,7 +103,7 @@ def _snapshot(compilation, *, live_node_id: str | None = None):
             )
         )
     return ResearchGraphExecutionSnapshot(
-        "logical-execution",
+        cut.cut_id,
         compilation.plan.graph_id,
         compilation.plan.graph_digest,
         compilation.plan.research_revision_digest,
@@ -162,3 +178,175 @@ def test_execution_cut_identity_is_revision_and_graph_bound() -> None:
 
     assert first.cut_id != second.cut_id
     assert len(first.cut_id) == 64
+
+
+
+def _complete_cut(store, activation) -> None:
+    for node in activation.snapshot.nodes:
+        store.mark_ready(activation.cut.cut_id, node.node_id, now_ns=10)
+        claim = store.claim(
+            activation.cut.cut_id,
+            node.node_id,
+            owner_id="worker",
+            now_ns=11,
+            lease_expires_at_ns=100,
+        )
+        store.mark_running(
+            activation.cut.cut_id,
+            node.node_id,
+            attempt_id=claim.attempt_id or "",
+            owner_id="worker",
+            now_ns=12,
+        )
+        store.mark_succeeded(
+            activation.cut.cut_id,
+            node.node_id,
+            attempt_id=claim.attempt_id or "",
+            owner_id="worker",
+            now_ns=13,
+        )
+
+
+def test_migration_materializes_proven_reuse_then_cas_switches_active_cut(tmp_path) -> None:
+    old_portfolio = _portfolio(_method_v1)
+    old_revision = _revision(old_portfolio, message="r1")
+    old = compile_research_portfolio_graph(old_revision, old_portfolio)
+
+    new_portfolio = _portfolio(_method_v2)
+    new_revision = _revision(new_portfolio, parent=old_revision, message="r2")
+    new = compile_research_portfolio_graph(new_revision, new_portfolio)
+
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    activation = activate_research_os_execution_cut(
+        "logical-execution",
+        old,
+        store,
+    )
+    _complete_cut(store, activation)
+    source_snapshot = store.snapshot(activation.cut.cut_id)
+    plan = plan_research_os_execution_migration(
+        "logical-execution",
+        old,
+        new,
+        source_snapshot,
+    )
+
+    stable = {
+        row.graph_node_id: row
+        for row in plan.nodes
+    }["paper-b::main"]
+    assert stable.new_semantic_digest is not None
+    proof = ResearchOSReuseProof(
+        "paper-b::main",
+        plan.source_cut.cut_id,
+        stable.new_semantic_digest,
+        canonical_digest({"artifact-proof": "paper-b::main"}),
+    )
+    materialized = materialize_research_os_execution_migration(
+        plan,
+        new,
+        store,
+        reuse_proofs=(proof,),
+        now_ns=20,
+    )
+
+    assert materialized.active_cut.cut_id == plan.target_cut.cut_id
+    assert materialized.reused_node_ids == ("paper-b::main",)
+    assert materialized.snapshot.node("paper-b::main").state is (
+        ResearchGraphLiveNodeState.REUSED
+    )
+    assert store.attempts(plan.target_cut.cut_id, "paper-b::main") == ()
+    assert set(materialized.rerun_node_ids) == {
+        "paper-a::main",
+        "paper-a::analysis",
+    }
+    assert store.snapshot(plan.source_cut.cut_id) == source_snapshot
+
+
+def test_missing_reuse_proof_fails_safe_to_rerun_without_blocking_cut_switch(tmp_path) -> None:
+    old_portfolio = _portfolio(_method_v1)
+    old_revision = _revision(old_portfolio, message="r1")
+    old = compile_research_portfolio_graph(old_revision, old_portfolio)
+    new_portfolio = _portfolio(_method_v2)
+    new_revision = _revision(new_portfolio, parent=old_revision, message="r2")
+    new = compile_research_portfolio_graph(new_revision, new_portfolio)
+
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    activation = activate_research_os_execution_cut(
+        "logical-execution",
+        old,
+        store,
+    )
+    _complete_cut(store, activation)
+    plan = plan_research_os_execution_migration(
+        "logical-execution",
+        old,
+        new,
+        store.snapshot(activation.cut.cut_id),
+    )
+
+    materialized = materialize_research_os_execution_migration(
+        plan,
+        new,
+        store,
+        now_ns=20,
+    )
+
+    assert materialized.reused_node_ids == ()
+    assert set(materialized.rerun_node_ids) == {
+        node.node_id for node in new.plan.nodes
+    }
+    assert all(
+        node.state is ResearchGraphLiveNodeState.PENDING
+        for node in materialized.snapshot.nodes
+    )
+
+
+def test_migration_cas_rejects_stale_source_cut(tmp_path) -> None:
+    old_portfolio = _portfolio(_method_v1)
+    old_revision = _revision(old_portfolio, message="r1")
+    old = compile_research_portfolio_graph(old_revision, old_portfolio)
+    new_portfolio = _portfolio(_method_v2)
+    new_revision = _revision(new_portfolio, parent=old_revision, message="r2")
+    new = compile_research_portfolio_graph(new_revision, new_portfolio)
+
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    activation = activate_research_os_execution_cut(
+        "logical-execution",
+        old,
+        store,
+    )
+    _complete_cut(store, activation)
+    plan = plan_research_os_execution_migration(
+        "logical-execution",
+        old,
+        new,
+        store.snapshot(activation.cut.cut_id),
+    )
+
+    other_portfolio = _portfolio(_method_v1)
+    other_revision = api.ResearchGraphRevision(
+        other_portfolio.portfolio_id,
+        other_portfolio.portfolio_digest,
+        (old_revision.revision_digest,),
+        "parallel revision",
+    )
+    other = compile_research_portfolio_graph(other_revision, other_portfolio)
+    other_cut = ResearchOSExecutionCut.from_compilation(
+        "logical-execution",
+        other,
+    )
+    store.ensure_execution(other_cut.cut_id, other.plan)
+    store.move_active_cut(
+        "logical-execution",
+        other_cut.cut_id,
+        expected_cut_id=activation.cut.cut_id,
+    )
+
+    with pytest.raises(ResearchGraphExecutionConflict, match="no longer the active"):
+        materialize_research_os_execution_migration(
+            plan,
+            new,
+            store,
+            now_ns=20,
+        )
