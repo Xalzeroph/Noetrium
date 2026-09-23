@@ -4818,6 +4818,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
+      "target": "noetrium_platform.composition.research_os_graph.CompiledResearchOSGraphNode"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
       "target": "noetrium_platform.composition.research_os_lowering.ResearchOSLoweringPlan"
     },
     {
@@ -5104,6 +5109,16 @@
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_migration.ResearchOSNodeMigration",
       "target": "noetrium_platform.composition.research_os_migration.ResearchOSNodeMigrationDisposition"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_migration.ResearchOSReuseMaterializerPort",
+      "target": "noetrium_platform.composition.research_os_graph.CompiledResearchOSGraphNode"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_migration.ResearchOSReuseMaterializerPort",
+      "target": "noetrium_platform.composition.research_os_migration.ResearchOSReuseProof"
     },
     {
       "kind": "references",
@@ -39770,7 +39785,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 143,
+      "line": 144,
       "methods": [
         "__post_init__",
         "admission"
@@ -39789,7 +39804,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 323,
+      "line": 324,
       "methods": [
         "__init__",
         "execute",
@@ -39812,7 +39827,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 233,
+      "line": 234,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -39836,7 +39851,7 @@
         "semantic_digest"
       ],
       "kind": "dataclass",
-      "line": 78,
+      "line": 79,
       "methods": [
         "__post_init__"
       ],
@@ -39858,7 +39873,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 121,
+      "line": 122,
       "methods": [
         "admit",
         "execute"
@@ -39874,16 +39889,18 @@
     },
     {
       "bases": [
-        "ResearchOSControlPort"
+        "ResearchOSControlPort",
+        "ResearchOSReuseMaterializerPort"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 488,
+      "line": 489,
       "methods": [
         "__init__",
         "active_revision_digest",
         "_migration_reuse_proofs",
+        "materialize_reuse",
         "migrate",
         "control",
         "_require_whole_graph_control",
@@ -40432,7 +40449,7 @@
         "snapshot"
       ],
       "kind": "dataclass",
-      "line": 123,
+      "line": 136,
       "methods": [
         "__post_init__"
       ],
@@ -40457,7 +40474,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 28,
+      "line": 29,
       "methods": [
         "__post_init__",
         "from_compilation"
@@ -40484,7 +40501,7 @@
         "snapshot"
       ],
       "kind": "dataclass",
-      "line": 142,
+      "line": 155,
       "methods": [
         "__post_init__"
       ],
@@ -40510,7 +40527,7 @@
         "target_cut"
       ],
       "kind": "dataclass",
-      "line": 178,
+      "line": 191,
       "methods": [
         "__post_init__",
         "can_switch",
@@ -40540,7 +40557,7 @@
         "source_state"
       ],
       "kind": "dataclass",
-      "line": 79,
+      "line": 80,
       "methods": [
         "__post_init__"
       ],
@@ -40566,7 +40583,7 @@
         "REUSE_CANDIDATE"
       ],
       "kind": "enum",
-      "line": 70,
+      "line": 71,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_migration",
       "name": "ResearchOSNodeMigrationDisposition",
@@ -40574,6 +40591,28 @@
         "ResearchOSNodeMigrationDisposition"
       ],
       "qualname": "noetrium_platform.composition.research_os_migration.ResearchOSNodeMigrationDisposition",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 124,
+      "methods": [
+        "materialize_reuse"
+      ],
+      "module": "noetrium_platform.composition.research_os_migration",
+      "name": "ResearchOSReuseMaterializerPort",
+      "nesting": [
+        "ResearchOSReuseMaterializerPort"
+      ],
+      "qualname": "noetrium_platform.composition.research_os_migration.ResearchOSReuseMaterializerPort",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -40589,7 +40628,7 @@
         "source_cut_id"
       ],
       "kind": "dataclass",
-      "line": 107,
+      "line": 108,
       "methods": [
         "__post_init__"
       ],
@@ -98161,6 +98200,11 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
+      "target": "noetrium_platform.evidence.artifact.contracts.ArtifactContentIdentity"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
       "target": "noetrium_platform.product.research_os.ResearchControlReceipt"
     },
     {
@@ -101650,10 +101694,10 @@
     }
   ],
   "counts": {
-    "association_edges": 3391,
-    "classes": 3317,
-    "constructor_edges": 924,
-    "inheritance_edges": 147,
+    "association_edges": 3394,
+    "classes": 3318,
+    "constructor_edges": 925,
+    "inheritance_edges": 148,
     "module_import_edges": 5038,
     "parse_errors": 0,
     "python_modules": 1926,
@@ -101751,6 +101795,11 @@
       "kind": "inherits",
       "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
       "target": "noetrium_platform.composition.research_os.ResearchOSControlPort"
+    },
+    {
+      "kind": "inherits",
+      "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
+      "target": "noetrium_platform.composition.research_os_migration.ResearchOSReuseMaterializerPort"
     },
     {
       "kind": "inherits",
@@ -142691,7 +142740,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "12f3a7539edbcc6caef67ed841f639e5ccbd11b4",
+  "source_git_sha": "6b58f84d00bf318c56f662f2ef5e5c662484b8a0",
   "system_import_edges": [
     {
       "count": 90,

@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3613,
     "python_import_edges": 6774,
-    "symbols": 4801,
+    "symbols": 4802,
     "tracked_files": 4242,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4795,
+    "python": 4796,
     "typescript": 5
   },
   "parse_errors": [],
@@ -40788,7 +40788,7 @@
     "tooling": 75
   },
   "role_symbol_counts": {
-    "core_platform": 3318,
+    "core_platform": 3319,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -40800,7 +40800,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "12f3a7539edbcc6caef67ed841f639e5ccbd11b4",
+  "source_git_sha": "6b58f84d00bf318c56f662f2ef5e5c662484b8a0",
   "symbols": [
     {
       "bases": [],
@@ -63202,7 +63202,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 78,
+      "line": 79,
       "methods": [
         "__post_init__"
       ],
@@ -63222,7 +63222,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 121,
+      "line": 122,
       "methods": [
         "admit",
         "execute"
@@ -63248,7 +63248,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 143,
+      "line": 144,
       "methods": [
         "__post_init__",
         "admission"
@@ -63267,7 +63267,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 233,
+      "line": 234,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -63281,7 +63281,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 323,
+      "line": 324,
       "methods": [
         "__init__",
         "execute",
@@ -63296,17 +63296,19 @@
     },
     {
       "bases": [
-        "ResearchOSControlPort"
+        "ResearchOSControlPort",
+        "ResearchOSReuseMaterializerPort"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 488,
+      "line": 489,
       "methods": [
         "__init__",
         "active_revision_digest",
         "_migration_reuse_proofs",
+        "materialize_reuse",
         "migrate",
         "control",
         "_require_whole_graph_control",
@@ -63812,7 +63814,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 28,
+      "line": 29,
       "methods": [
         "__post_init__",
         "from_compilation"
@@ -63837,7 +63839,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 70,
+      "line": 71,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_migration",
       "name": "ResearchOSNodeMigrationDisposition",
@@ -63860,7 +63862,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 79,
+      "line": 80,
       "methods": [
         "__post_init__"
       ],
@@ -63883,7 +63885,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 107,
+      "line": 108,
       "methods": [
         "__post_init__"
       ],
@@ -63891,6 +63893,26 @@
       "name": "ResearchOSReuseProof",
       "path": "noetrium_platform/composition/research_os_migration.py",
       "qualname": "noetrium_platform.composition.research_os_migration.ResearchOSReuseProof",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 124,
+      "methods": [
+        "materialize_reuse"
+      ],
+      "module": "noetrium_platform.composition.research_os_migration",
+      "name": "ResearchOSReuseMaterializerPort",
+      "path": "noetrium_platform/composition/research_os_migration.py",
+      "qualname": "noetrium_platform.composition.research_os_migration.ResearchOSReuseMaterializerPort",
       "role": "core_platform"
     },
     {
@@ -63905,7 +63927,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 123,
+      "line": 136,
       "methods": [
         "__post_init__"
       ],
@@ -63929,7 +63951,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 142,
+      "line": 155,
       "methods": [
         "__post_init__"
       ],
@@ -63953,7 +63975,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 178,
+      "line": 191,
       "methods": [
         "__post_init__",
         "can_switch",
