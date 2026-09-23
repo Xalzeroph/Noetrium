@@ -35,6 +35,8 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
     ResearchGraphLiveNodeState,
+    ResearchGraphNodeControlPhase,
+    ResearchGraphNodeControlStorePort,
     ResearchGraphReconciliationDisposition,
 )
 
@@ -44,7 +46,7 @@ from .research_os_checkpoint import (
     ResearchOSNodeCheckpointProof,
 )
 from .research_os_experiment import ResearchOSExperimentClosurePort
-from .research_graph import ResearchGraphControlHalt
+from .research_graph import ResearchGraphControlHalt, ResearchGraphNodeControlHalt
 from .research_os_graph import (
     CompiledResearchOSGraph,
     CompiledResearchOSGraphNode,
@@ -583,6 +585,8 @@ class StrictResearchOSControl(
             raise TypeError("Research OS control requires active-cut CAS store")
         if not isinstance(execution_store, ResearchGraphControlStorePort):
             raise TypeError("Research OS control requires durable graph control store")
+        if not isinstance(execution_store, ResearchGraphNodeControlStorePort):
+            raise TypeError("Research OS control requires durable per-node control store")
         if type(execution_pool) is not ResearchExecutionPool:
             raise TypeError("Research OS control requires explicit execution pool")
         if not isinstance(runtime, ResearchOSNodeRuntimePort):
@@ -1010,6 +1014,20 @@ class StrictResearchOSControl(
         return compilation, cut, active, snapshot, control
 
     @staticmethod
+    def _target_graph_node(
+        request: ResearchControlRequest,
+        compilation: CompiledResearchOSGraph,
+    ) -> CompiledResearchOSGraphNode:
+        if request.target.node is None:
+            raise ResearchGraphExecutionConflict("control target requires ResearchNodeRef")
+        matches = tuple(node for node in compilation.nodes if node.ref == request.target.node)
+        if len(matches) != 1:
+            raise ResearchGraphExecutionConflict(
+                "control target does not identify exactly one graph node"
+            )
+        return matches[0]
+
+    @staticmethod
     def _states(snapshot) -> JsonObject:
         return {
             state.value: tuple(
@@ -1056,6 +1074,24 @@ class StrictResearchOSControl(
             "control_generation": control.generation,
             "states": states,
         }
+        if request.target.node is not None:
+            target_node = self._target_graph_node(request, compilation)
+            node_record = snapshot.node(target_node.graph_node_id)
+            node_control = self._store.node_control_state(
+                cut.cut_id,
+                target_node.graph_node_id,
+            )
+            payload["node"] = {
+                "graph_node_id": target_node.graph_node_id,
+                "state": node_record.state.value,
+                "attempt_number": node_record.attempt_number,
+                "attempt_id": node_record.attempt_id,
+                "failure_type": node_record.failure_type,
+                "failure_message": node_record.failure_message,
+                "blocked_by_node_ids": node_record.blocked_by_node_ids,
+                "control_phase": node_control.phase.value,
+                "control_generation": node_control.generation,
+            }
         if extra:
             payload.update(extra)
         return ResearchControlReceipt(
@@ -1152,6 +1188,41 @@ class StrictResearchOSControl(
                     active,
                     snapshot,
                     control,
+                )
+            except ResearchGraphNodeControlHalt as halt:
+                active = self._store.active_cut(request.target.execution_id)
+                if active is None or active.cut_id != prepared.cut.cut_id:
+                    raise ResearchGraphExecutionConflict(
+                        "Research OS active cut changed while node control halt was observed"
+                    )
+                snapshot = self._store.snapshot(prepared.cut.cut_id)
+                control = self._store.control_state(prepared.cut.cut_id)
+                recovery = any(
+                    row.phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+                    for row in halt.controls
+                )
+                return self._durable_control_receipt(
+                    request,
+                    prepared.compilation,
+                    prepared.cut,
+                    active,
+                    snapshot,
+                    control,
+                    state=(
+                        "node_recovery_required"
+                        if recovery
+                        else "node_paused"
+                    ),
+                    extra={
+                        "node_control_halt": tuple(
+                            {
+                                "node_id": row.node_id,
+                                "phase": row.phase.value,
+                                "generation": row.generation,
+                            }
+                            for row in halt.controls
+                        )
+                    },
                 )
         finally:
             scheduler.close()
