@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.platform import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     InMemoryMachineJournal,
@@ -193,7 +193,7 @@ def test_flow_method_runs_concurrent_ready_set_child_machines_and_lazy_refinemen
 ) -> None:
     agents = _FlowParentAgents()
     children, subtasks, journal = _child_runtime()
-    result = run_method_program(
+    result = execute_method_program_canonically(
         FLOW_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(
             _context(),
