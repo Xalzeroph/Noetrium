@@ -39786,6 +39786,8 @@
         "_interrupt",
         "_resume",
         "_cancel",
+        "_retry_descendants",
+        "_retry",
         "_checkpoint",
         "_execution_receipt"
       ],
@@ -97814,6 +97816,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
+      "target": "noetrium_platform.product.research_os.ResearchExecutionTarget"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.composition.research_os_lowering.ImportResearchImplementationResolver",
       "target": "noetrium_platform.composition.research_os_lowering.ResearchImplementationResolutionError"
     },
@@ -101286,7 +101293,7 @@
   "counts": {
     "association_edges": 3374,
     "classes": 3307,
-    "constructor_edges": 919,
+    "constructor_edges": 920,
     "inheritance_edges": 145,
     "module_import_edges": 5030,
     "parse_errors": 0,
@@ -142267,7 +142274,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "ce726c83366456114df0ca7946f0099b50b2480e",
+  "source_git_sha": "207da5dfdcb79d236ec582fe18ab70de9a1b5fc8",
   "system_import_edges": [
     {
       "count": 90,

@@ -40770,7 +40770,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "ce726c83366456114df0ca7946f0099b50b2480e",
+  "source_git_sha": "207da5dfdcb79d236ec582fe18ab70de9a1b5fc8",
   "symbols": [
     {
       "bases": [],
@@ -63266,6 +63266,8 @@
         "_interrupt",
         "_resume",
         "_cancel",
+        "_retry_descendants",
+        "_retry",
         "_checkpoint",
         "_execution_receipt"
       ],
