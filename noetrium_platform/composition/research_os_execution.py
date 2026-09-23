@@ -59,6 +59,7 @@ from .research_os_reconciliation import (
 from .research_os_migration import (
     ResearchOSExecutionCut,
     ResearchOSExecutionMigrationPlan,
+    ResearchOSReuseMaterializerPort,
     ResearchOSReuseProof,
     activate_research_os_execution_cut,
     materialize_research_os_execution_migration,
@@ -485,7 +486,10 @@ class PreparedResearchOSNodeExecutor:
                     )
 
 
-class StrictResearchOSControl(ResearchOSControlPort):
+class StrictResearchOSControl(
+    ResearchOSControlPort,
+    ResearchOSReuseMaterializerPort,
+):
     """Synchronous fail-closed product control over the durable ResearchGraph.
 
     Research OS owns orchestration intent only. Lower Machine/Run/effect/checkpoint
@@ -628,32 +632,14 @@ class StrictResearchOSControl(ResearchOSControlPort):
                         "stored Research OS output does not match lower succeeded result: "
                         f"{graph_node_id}:{output.name}"
                     )
-                source_authority_proof = self._values.reuse_proof(reference)
-                target_subject = ResearchOSValueSubject(
-                    plan.target_cut.cut_id,
-                    graph_node_id,
-                    output.name,
-                    output.kind,
-                    node.semantic_digest,
-                )
-                target_reference = self._values.reuse(reference, target_subject)
-                target_resolved = self._values.resolve(target_reference)
-                if target_resolved != resolved or target_resolved != expected:
-                    raise ResearchGraphExecutionConflict(
-                        "cross-cut value reuse changed canonical output value: "
-                        f"{graph_node_id}:{output.name}"
-                    )
-                target_authority_proof = self._values.reuse_proof(
-                    target_reference
-                )
                 output_proofs.append(
                     {
                         "name": output.name,
                         "kind": output.kind.value,
                         "source_reference_digest": reference.reference_digest,
-                        "source_authority_reuse_proof": source_authority_proof,
-                        "target_reference_digest": target_reference.reference_digest,
-                        "target_authority_reuse_proof": target_authority_proof,
+                        "source_authority_reuse_proof": self._values.reuse_proof(
+                            reference
+                        ),
                         "resolved_value_digest": canonical_digest(resolved),
                     }
                 )
@@ -675,6 +661,77 @@ class StrictResearchOSControl(ResearchOSControlPort):
                 )
             )
         return tuple(proofs)
+
+    def materialize_reuse(
+        self,
+        plan: ResearchOSExecutionMigrationPlan,
+        node: CompiledResearchOSGraphNode,
+        proof: ResearchOSReuseProof,
+    ) -> str:
+        if not isinstance(plan, ResearchOSExecutionMigrationPlan):
+            raise TypeError("Research OS reuse materialization requires migration plan")
+        if type(node) is not CompiledResearchOSGraphNode:
+            raise TypeError("Research OS reuse materialization requires compiled node")
+        if type(proof) is not ResearchOSReuseProof:
+            raise TypeError("Research OS reuse materialization requires reuse proof")
+        if (
+            proof.graph_node_id != node.graph_node_id
+            or proof.source_cut_id != plan.source_cut.cut_id
+            or proof.semantic_digest != node.semantic_digest
+        ):
+            raise ValueError("Research OS reuse materialization identity drifted")
+
+        rows = []
+        for output in node.node.outputs:
+            source_subject = ResearchOSValueSubject(
+                plan.source_cut.cut_id,
+                node.graph_node_id,
+                output.name,
+                output.kind,
+                node.semantic_digest,
+            )
+            source_reference = self._values.lookup(source_subject)
+            source_value = self._values.resolve(source_reference)
+            source_authority_proof = self._values.reuse_proof(source_reference)
+            target_subject = ResearchOSValueSubject(
+                plan.target_cut.cut_id,
+                node.graph_node_id,
+                output.name,
+                output.kind,
+                node.semantic_digest,
+            )
+            target_reference = self._values.reuse(
+                source_reference,
+                target_subject,
+            )
+            target_value = self._values.resolve(target_reference)
+            if target_value != source_value:
+                raise ResearchGraphExecutionConflict(
+                    "cross-cut value reuse changed canonical output value: "
+                    f"{node.graph_node_id}:{output.name}"
+                )
+            rows.append(
+                {
+                    "name": output.name,
+                    "kind": output.kind.value,
+                    "source_reference_digest": source_reference.reference_digest,
+                    "source_authority_reuse_proof": source_authority_proof,
+                    "target_reference_digest": target_reference.reference_digest,
+                    "target_authority_reuse_proof": self._values.reuse_proof(
+                        target_reference
+                    ),
+                    "resolved_value_digest": canonical_digest(target_value),
+                }
+            )
+        return canonical_digest(
+            {
+                "schema": "noetrium.research-os-reuse-materialization.v1",
+                "migration_digest": plan.migration_digest,
+                "source_reuse_proof": proof.proof_digest,
+                "graph_node_id": node.graph_node_id,
+                "outputs": tuple(rows),
+            }
+        )
 
     def migrate(
         self,
@@ -756,6 +813,7 @@ class StrictResearchOSControl(ResearchOSControlPort):
             target,
             self._store,
             reuse_proofs=reuse_proofs,
+            reuse_materializer=self,
             now_ns=time.time_ns(),
         )
         target_control = self._store.control_state(plan.target_cut.cut_id)
