@@ -8,7 +8,9 @@ from noetrium import api
 from noetrium_platform.composition.research_os import (
     PortfolioBackedResearchOSPort,
     bind_portfolio_research_os,
-    compile_research_graph,
+)
+from noetrium_platform.composition.research_os_graph import (
+    compile_research_portfolio_graph,
 )
 from noetrium_platform.evidence.artifact.content.providers import (
     DirectoryArtifactBlobStore,
@@ -250,19 +252,22 @@ def test_top_level_portfolio_compiles_into_one_multi_paper_execution_graph(
     _, _, research_os = _binding(tmp_path)
     revision = research_os.commit(portfolio, message="multi-paper graph")
 
-    plan = compile_research_graph(revision, portfolio)
+    compilation = compile_research_portfolio_graph(revision, portfolio)
+    plan = compilation.plan
     by_id = {row.node_id: row for row in plan.nodes}
 
+    assert compilation.revision == revision
+    assert compilation.portfolio == portfolio
     assert plan.research_revision_digest == revision.revision_digest
     assert set(by_id) == {
-        "paper-a:main",
-        "paper-a:evaluate",
-        "paper-a:analysis",
-        "paper-b:main",
+        "paper-a::main",
+        "paper-a::evaluate",
+        "paper-a::analysis",
+        "paper-b::main",
     }
-    assert by_id["paper-a:main"].depends_on_node_ids == ()
-    assert by_id["paper-a:evaluate"].depends_on_node_ids == ("paper-a:main",)
-    assert by_id["paper-a:analysis"].depends_on_node_ids == ("paper-a:evaluate",)
-    assert by_id["paper-b:main"].depends_on_node_ids == ("paper-a:analysis",)
+    assert by_id["paper-a::main"].depends_on_node_ids == ()
+    assert by_id["paper-a::evaluate"].depends_on_node_ids == ("paper-a::main",)
+    assert by_id["paper-a::analysis"].depends_on_node_ids == ("paper-a::evaluate",)
+    assert by_id["paper-b::main"].depends_on_node_ids == ("paper-a::analysis",)
     assert all(len(row.semantic_digest) == 64 for row in plan.nodes)
 
