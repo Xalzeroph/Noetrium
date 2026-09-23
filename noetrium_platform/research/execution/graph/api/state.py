@@ -45,6 +45,7 @@ class ResearchGraphLiveNodeState(StrEnum):
     RETRY_WAIT = "retry_wait"
     RECONCILE_REQUIRED = "reconcile_required"
     SUCCEEDED = "succeeded"
+    REUSED = "reused"
     FAILED = "failed"
     BLOCKED = "blocked"
 
@@ -142,6 +143,14 @@ class ResearchGraphNodeExecutionRecord:
         if self.state is ResearchGraphLiveNodeState.SUCCEEDED:
             if self.attempt_number < 1:
                 raise ValueError("succeeded graph node requires an attempt")
+        if self.state is ResearchGraphLiveNodeState.REUSED:
+            if (
+                self.attempt_number != 0
+                or self.attempt_id is not None
+                or self.lease_owner_id is not None
+                or self.lease_expires_at_ns is not None
+            ):
+                raise ValueError("reused graph node cannot fabricate an execution attempt")
         if self.state is ResearchGraphLiveNodeState.FAILED:
             if (
                 self.attempt_number < 1
@@ -252,6 +261,48 @@ class ResearchGraphExecutionSnapshot:
             for node in self.nodes
             if node.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED
         )
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchGraphReuseRecord:
+    execution_id: str
+    node_id: str
+    source_execution_id: str
+    source_node_id: str
+    semantic_digest: str
+    proof_digest: str
+    created_at_ns: int
+
+    def __post_init__(self) -> None:
+        _text(self.execution_id, "research graph reuse execution_id")
+        _text(self.node_id, "research graph reuse node_id")
+        _text(self.source_execution_id, "research graph reuse source_execution_id")
+        _text(self.source_node_id, "research graph reuse source_node_id")
+        if self.execution_id == self.source_execution_id:
+            raise ValueError("research graph reuse must cross immutable execution cuts")
+        require_sha256(self.semantic_digest, "research graph reuse semantic_digest")
+        require_sha256(self.proof_digest, "research graph reuse proof_digest")
+        _optional_ns(self.created_at_ns, "research graph reuse created_at_ns")
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchGraphActiveCutRef:
+    logical_execution_id: str
+    cut_id: str
+    research_revision_digest: str
+    graph_digest: str
+    generation: int
+
+    def __post_init__(self) -> None:
+        _text(self.logical_execution_id, "research graph logical_execution_id")
+        require_sha256(self.cut_id, "research graph active cut_id")
+        require_sha256(
+            self.research_revision_digest,
+            "research graph active cut revision",
+        )
+        require_sha256(self.graph_digest, "research graph active cut graph_digest")
+        if type(self.generation) is not int or self.generation < 1:
+            raise ValueError("research graph active cut generation must be positive")
 
 
 class ResearchGraphReconciliationRequired(RuntimeError):
@@ -391,6 +442,24 @@ class ResearchGraphExecutionStorePort(Protocol):
         failure_message: str | None = None,
     ) -> ResearchGraphNodeExecutionRecord: ...
 
+    def mark_reused(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        source_execution_id: str,
+        source_node_id: str,
+        semantic_digest: str,
+        proof_digest: str,
+        now_ns: int,
+    ) -> ResearchGraphNodeExecutionRecord: ...
+
+    def reuse_record(
+        self,
+        execution_id: str,
+        node_id: str,
+    ) -> ResearchGraphReuseRecord | None: ...
+
     def attempts(
         self,
         execution_id: str,
@@ -398,7 +467,27 @@ class ResearchGraphExecutionStorePort(Protocol):
     ) -> tuple[ResearchGraphAttemptRecord, ...]: ...
 
 
+@runtime_checkable
+class ResearchGraphActiveCutStorePort(Protocol):
+    """CAS authority for the movable logical-execution -> immutable-cut ref."""
+
+    def active_cut(
+        self,
+        logical_execution_id: str,
+    ) -> ResearchGraphActiveCutRef | None: ...
+
+    def move_active_cut(
+        self,
+        logical_execution_id: str,
+        cut_id: str,
+        *,
+        expected_cut_id: str | None = None,
+    ) -> ResearchGraphActiveCutRef: ...
+
+
 __all__ = [
+    "ResearchGraphActiveCutRef",
+    "ResearchGraphActiveCutStorePort",
     "ResearchGraphAttemptRecord",
     "ResearchGraphAttemptState",
     "ResearchGraphExecutionConflict",
@@ -409,4 +498,5 @@ __all__ = [
     "ResearchGraphNodeExecutionRecord",
     "ResearchGraphReconciliationDisposition",
     "ResearchGraphReconciliationRequired",
+    "ResearchGraphReuseRecord",
 ]

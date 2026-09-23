@@ -8,6 +8,8 @@ from .contracts import (
 )
 
 from .state import (
+    ResearchGraphActiveCutRef,
+    ResearchGraphActiveCutStorePort,
     ResearchGraphAttemptRecord,
     ResearchGraphAttemptState,
     ResearchGraphExecutionConflict,
@@ -18,9 +20,12 @@ from .state import (
     ResearchGraphNodeExecutionRecord,
     ResearchGraphReconciliationDisposition,
     ResearchGraphReconciliationRequired,
+    ResearchGraphReuseRecord,
 )
 
 __all__ = [
+    "ResearchGraphActiveCutRef",
+    "ResearchGraphActiveCutStorePort",
     "ResearchGraphAttemptRecord",
     "ResearchGraphAttemptState",
     "ResearchGraphExecutionConflict",
@@ -38,4 +43,5 @@ __all__ = [
     "ResearchGraphPlan",
     "ResearchGraphReconciliationDisposition",
     "ResearchGraphReconciliationRequired",
+    "ResearchGraphReuseRecord",
 ]

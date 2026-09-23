@@ -318,7 +318,10 @@ class ResearchGraphScheduler:
 
         for node_id, record in live.items():
             node = by_id[node_id]
-            if record.state is ResearchGraphLiveNodeState.SUCCEEDED:
+            if record.state in {
+                ResearchGraphLiveNodeState.SUCCEEDED,
+                ResearchGraphLiveNodeState.REUSED,
+            }:
                 results[node_id] = ResearchGraphNodeResult(
                     node_id,
                     node.semantic_digest,

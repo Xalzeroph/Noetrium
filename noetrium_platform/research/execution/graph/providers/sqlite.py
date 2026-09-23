@@ -6,7 +6,9 @@ from pathlib import Path
 import sqlite3
 from uuid import uuid4
 
+from noetrium_platform.foundation.kernel.kernel import require_sha256
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphActiveCutRef,
     ResearchGraphAttemptRecord,
     ResearchGraphAttemptState,
     ResearchGraphExecutionConflict,
@@ -16,6 +18,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphNodeExecutionRecord,
     ResearchGraphPlan,
     ResearchGraphReconciliationDisposition,
+    ResearchGraphReuseRecord,
 )
 
 
@@ -118,6 +121,32 @@ class SQLiteResearchGraphExecutionStore:
             ")"
         )
         conn.execute(
+            "CREATE TABLE IF NOT EXISTS research_graph_reuse("
+            "execution_id TEXT NOT NULL,"
+            "node_id TEXT NOT NULL,"
+            "source_execution_id TEXT NOT NULL,"
+            "source_node_id TEXT NOT NULL,"
+            "semantic_digest TEXT NOT NULL,"
+            "proof_digest TEXT NOT NULL,"
+            "created_at_ns INTEGER NOT NULL,"
+            "PRIMARY KEY(execution_id,node_id),"
+            "FOREIGN KEY(execution_id,node_id) "
+            "REFERENCES research_graph_nodes(execution_id,node_id),"
+            "FOREIGN KEY(source_execution_id,source_node_id) "
+            "REFERENCES research_graph_nodes(execution_id,node_id)"
+            ")"
+        )
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS research_graph_active_cuts("
+            "logical_execution_id TEXT PRIMARY KEY,"
+            "cut_id TEXT NOT NULL,"
+            "research_revision_digest TEXT NOT NULL,"
+            "graph_digest TEXT NOT NULL,"
+            "generation INTEGER NOT NULL,"
+            "FOREIGN KEY(cut_id) REFERENCES research_graph_executions(execution_id)"
+            ")"
+        )
+        conn.execute(
             "INSERT OR IGNORE INTO research_graph_meta(key,value) "
             "VALUES('schema_version',?)",
             (str(self.SCHEMA_VERSION),),
@@ -167,6 +196,28 @@ class SQLiteResearchGraphExecutionStore:
             finished_at_ns=None if row[9] is None else int(row[9]),
             failure_type=None if row[10] is None else str(row[10]),
             failure_message=None if row[11] is None else str(row[11]),
+        )
+
+    @staticmethod
+    def _decode_reuse(row: tuple[object, ...]) -> ResearchGraphReuseRecord:
+        return ResearchGraphReuseRecord(
+            execution_id=str(row[0]),
+            node_id=str(row[1]),
+            source_execution_id=str(row[2]),
+            source_node_id=str(row[3]),
+            semantic_digest=str(row[4]),
+            proof_digest=str(row[5]),
+            created_at_ns=int(row[6]),
+        )
+
+    @staticmethod
+    def _decode_active_cut(row: tuple[object, ...]) -> ResearchGraphActiveCutRef:
+        return ResearchGraphActiveCutRef(
+            logical_execution_id=str(row[0]),
+            cut_id=str(row[1]),
+            research_revision_digest=str(row[2]),
+            graph_digest=str(row[3]),
+            generation=int(row[4]),
         )
 
     def _execution_tx(
@@ -310,6 +361,91 @@ class SQLiteResearchGraphExecutionStore:
     def snapshot(self, execution_id: str) -> ResearchGraphExecutionSnapshot:
         with self._connection() as conn:
             return self._snapshot_tx(conn, execution_id)
+
+    def active_cut(
+        self,
+        logical_execution_id: str,
+    ) -> ResearchGraphActiveCutRef | None:
+        if type(logical_execution_id) is not str or not logical_execution_id.strip():
+            raise ValueError("research graph logical_execution_id must be non-empty")
+        with self._connection() as conn:
+            row = conn.execute(
+                "SELECT logical_execution_id,cut_id,research_revision_digest,"
+                "graph_digest,generation FROM research_graph_active_cuts "
+                "WHERE logical_execution_id=?",
+                (logical_execution_id,),
+            ).fetchone()
+        return None if row is None else self._decode_active_cut(row)
+
+    def move_active_cut(
+        self,
+        logical_execution_id: str,
+        cut_id: str,
+        *,
+        expected_cut_id: str | None = None,
+    ) -> ResearchGraphActiveCutRef:
+        if type(logical_execution_id) is not str or not logical_execution_id.strip():
+            raise ValueError("research graph logical_execution_id must be non-empty")
+        require_sha256(cut_id, "research graph cut_id")
+        if expected_cut_id is not None:
+            require_sha256(expected_cut_id, "research graph expected_cut_id")
+        with self._transaction() as conn:
+            execution = self._execution_tx(conn, cut_id)
+            current_row = conn.execute(
+                "SELECT logical_execution_id,cut_id,research_revision_digest,"
+                "graph_digest,generation FROM research_graph_active_cuts "
+                "WHERE logical_execution_id=?",
+                (logical_execution_id,),
+            ).fetchone()
+            if current_row is not None:
+                current = self._decode_active_cut(current_row)
+                if current.cut_id == cut_id:
+                    return current
+                if expected_cut_id is None or current.cut_id != expected_cut_id:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph active cut compare-and-swap conflict"
+                    )
+                generation = current.generation + 1
+                conn.execute(
+                    "UPDATE research_graph_active_cuts SET cut_id=?,"
+                    "research_revision_digest=?,graph_digest=?,generation=? "
+                    "WHERE logical_execution_id=? AND cut_id=?",
+                    (
+                        cut_id,
+                        str(execution[3]),
+                        str(execution[2]),
+                        generation,
+                        logical_execution_id,
+                        expected_cut_id,
+                    ),
+                )
+            else:
+                if expected_cut_id is not None:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph active cut does not exist for expected cut"
+                    )
+                generation = 1
+                conn.execute(
+                    "INSERT INTO research_graph_active_cuts("
+                    "logical_execution_id,cut_id,research_revision_digest,"
+                    "graph_digest,generation) VALUES(?,?,?,?,?)",
+                    (
+                        logical_execution_id,
+                        cut_id,
+                        str(execution[3]),
+                        str(execution[2]),
+                        generation,
+                    ),
+                )
+            row = conn.execute(
+                "SELECT logical_execution_id,cut_id,research_revision_digest,"
+                "graph_digest,generation FROM research_graph_active_cuts "
+                "WHERE logical_execution_id=?",
+                (logical_execution_id,),
+            ).fetchone()
+            if row is None:
+                raise RuntimeError("research graph active cut update disappeared")
+            return self._decode_active_cut(row)
 
     def mark_ready(
         self,
@@ -844,6 +980,103 @@ class SQLiteResearchGraphExecutionStore:
             )
             self._bump_generation(conn, execution_id)
             return self._node_tx(conn, execution_id, node_id)
+
+    def mark_reused(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        source_execution_id: str,
+        source_node_id: str,
+        semantic_digest: str,
+        proof_digest: str,
+        now_ns: int,
+    ) -> ResearchGraphNodeExecutionRecord:
+        now_ns = self._require_now(now_ns)
+        require_sha256(semantic_digest, "research graph reuse semantic_digest")
+        require_sha256(proof_digest, "research graph reuse proof_digest")
+        if execution_id == source_execution_id:
+            raise ValueError("research graph reuse must cross immutable execution cuts")
+        with self._transaction() as conn:
+            current = self._node_tx(conn, execution_id, node_id)
+            source = self._node_tx(conn, source_execution_id, source_node_id)
+            if current.state is ResearchGraphLiveNodeState.REUSED:
+                existing = conn.execute(
+                    "SELECT execution_id,node_id,source_execution_id,source_node_id,"
+                    "semantic_digest,proof_digest,created_at_ns "
+                    "FROM research_graph_reuse WHERE execution_id=? AND node_id=?",
+                    (execution_id, node_id),
+                ).fetchone()
+                if existing is None:
+                    raise RuntimeError("reused graph node lost its reuse proof")
+                proof = self._decode_reuse(existing)
+                if (
+                    proof.source_execution_id != source_execution_id
+                    or proof.source_node_id != source_node_id
+                    or proof.semantic_digest != semantic_digest
+                    or proof.proof_digest != proof_digest
+                ):
+                    raise ResearchGraphExecutionConflict(
+                        "research graph node already reused from different proof"
+                    )
+                return current
+            if current.state is not ResearchGraphLiveNodeState.PENDING:
+                raise ResearchGraphExecutionConflict(
+                    f"cannot reuse graph node from {current.state.value}"
+                )
+            if source.state not in {
+                ResearchGraphLiveNodeState.SUCCEEDED,
+                ResearchGraphLiveNodeState.REUSED,
+            }:
+                raise ResearchGraphExecutionConflict(
+                    "research graph reuse source is not successfully completed"
+                )
+            if (
+                current.semantic_digest != semantic_digest
+                or source.semantic_digest != semantic_digest
+            ):
+                raise ResearchGraphExecutionConflict(
+                    "research graph reuse semantic identity mismatch"
+                )
+            conn.execute(
+                "INSERT INTO research_graph_reuse("
+                "execution_id,node_id,source_execution_id,source_node_id,"
+                "semantic_digest,proof_digest,created_at_ns) VALUES(?,?,?,?,?,?,?)",
+                (
+                    execution_id,
+                    node_id,
+                    source_execution_id,
+                    source_node_id,
+                    semantic_digest,
+                    proof_digest,
+                    now_ns,
+                ),
+            )
+            conn.execute(
+                "UPDATE research_graph_nodes SET state=? "
+                "WHERE execution_id=? AND node_id=?",
+                (
+                    ResearchGraphLiveNodeState.REUSED.value,
+                    execution_id,
+                    node_id,
+                ),
+            )
+            self._bump_generation(conn, execution_id)
+            return self._node_tx(conn, execution_id, node_id)
+
+    def reuse_record(
+        self,
+        execution_id: str,
+        node_id: str,
+    ) -> ResearchGraphReuseRecord | None:
+        with self._connection() as conn:
+            row = conn.execute(
+                "SELECT execution_id,node_id,source_execution_id,source_node_id,"
+                "semantic_digest,proof_digest,created_at_ns "
+                "FROM research_graph_reuse WHERE execution_id=? AND node_id=?",
+                (execution_id, node_id),
+            ).fetchone()
+        return None if row is None else self._decode_reuse(row)
 
     def attempts(
         self,
