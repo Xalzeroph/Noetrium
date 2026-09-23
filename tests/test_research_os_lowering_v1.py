@@ -79,7 +79,7 @@ def test_lowering_partitions_paper_implementation_from_platform_requirement() ->
     assert len(lowering.lowering_digest) == 64
 
 
-def test_lowering_covers_method_evaluation_optimization_and_workbench_routes() -> None:
+def test_lowering_covers_executable_machine_routes_and_platform_only_workbench() -> None:
     builder = api.ResearchProgramBuilder("paper")
     builder.method("method", implementation=_method)
     builder.metric("metric", implementation=_metric)
@@ -129,8 +129,24 @@ def test_lowering_covers_method_evaluation_optimization_and_workbench_routes() -
         MachineKind.OPTIMIZATION
     )
     for node_id in ("analysis", "selection", "figure", "table"):
-        assert lowering.node(f"paper::{node_id}").target is (
-            ResearchOSLoweringTarget.WORKBENCH
+        node = lowering.node(f"paper::{node_id}")
+        assert node.target is ResearchOSLoweringTarget.WORKBENCH
+        assert node.implementations == ()
+        assert node.machine_programs == ()
+
+
+def test_paper_callable_without_canonical_machine_target_fails_closed() -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.metric("metric", implementation=_metric)
+    builder.analysis("analysis", definitions=("metric",))
+    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+
+    with pytest.raises(
+        ResearchImplementationResolutionError,
+        match="no canonical Machine lowering target",
+    ):
+        compile_research_os_lowering(
+            compile_research_portfolio_graph(_revision(portfolio), portfolio)
         )
 
 
@@ -269,3 +285,27 @@ def test_plain_callable_with_unsupported_arity_fails_at_lowering_not_runtime() -
             _plain_callable_accepts_payload,
         )
         _plain_callable_accepts_payload(invalid)
+
+
+
+class _FalseyResolver:
+    def __bool__(self) -> bool:
+        return False
+
+
+def test_falsey_invalid_resolver_is_not_silently_replaced() -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.method("method", implementation=_method)
+    builder.node(
+        "method-node",
+        kind=api.ResearchNodeKind.METHOD,
+        definitions=("method",),
+    )
+    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    compilation = compile_research_portfolio_graph(_revision(portfolio), portfolio)
+
+    with pytest.raises(TypeError, match="must satisfy ResearchImplementationResolverPort"):
+        compile_research_os_lowering(
+            compilation,
+            resolver=_FalseyResolver(),
+        )

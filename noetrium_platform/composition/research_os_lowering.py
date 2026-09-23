@@ -235,9 +235,15 @@ def compile_callable_method_definition(
         )
     if resolved is not None and resolver is not None:
         raise ValueError("method lowering accepts resolved or resolver, not both")
-    selected = resolved or (
-        resolver or ImportResearchImplementationResolver()
-    ).resolve(definition)
+    selected = (
+        resolved
+        if resolved is not None
+        else (
+            resolver
+            if resolver is not None
+            else ImportResearchImplementationResolver()
+        ).resolve(definition)
+    )
     if (
         selected.definition_id != definition.definition_id
         or selected.declared != definition.implementation
@@ -336,9 +342,15 @@ def compile_callable_machine_definition(
         )
     if resolved is not None and resolver is not None:
         raise ValueError("machine lowering accepts resolved or resolver, not both")
-    selected = resolved or (
-        resolver or ImportResearchImplementationResolver()
-    ).resolve(definition)
+    selected = (
+        resolved
+        if resolved is not None
+        else (
+            resolver
+            if resolver is not None
+            else ImportResearchImplementationResolver()
+        ).resolve(definition)
+    )
     if (
         selected.definition_id != definition.definition_id
         or selected.declared != definition.implementation
@@ -493,6 +505,14 @@ class LoweredResearchOSGraphNode:
             for row in self.machine_programs
         ):
             raise ValueError("lowered machine program kind does not match node target")
+        executable_ids = set(method_ids) | set(machine_ids)
+        if executable_ids != set(implementation_ids):
+            missing = tuple(sorted(set(implementation_ids) - executable_ids))
+            extra = tuple(sorted(executable_ids - set(implementation_ids)))
+            raise ValueError(
+                "paper implementations must lower exactly once to executable "
+                f"Machine IR; missing={missing}, extra={extra}"
+            )
 
         ordered_implementations = tuple(
             sorted(self.implementations, key=lambda row: row.definition_id)
@@ -605,7 +625,11 @@ class ResearchOSLoweringCompiler:
         self,
         resolver: ResearchImplementationResolverPort | None = None,
     ) -> None:
-        resolved = resolver or ImportResearchImplementationResolver()
+        resolved = (
+            resolver
+            if resolver is not None
+            else ImportResearchImplementationResolver()
+        )
         if not isinstance(resolved, ResearchImplementationResolverPort):
             raise TypeError(
                 "Research OS lowering resolver must satisfy "
@@ -641,14 +665,21 @@ class ResearchOSLoweringCompiler:
                     )
                 else:
                     machine_kind = _NODE_MACHINE_KINDS.get(node.node.kind)
-                    if machine_kind is not None:
-                        machine_programs.append(
-                            compile_callable_machine_definition(
-                                definition,
-                                machine_kind=machine_kind,
-                                resolved=resolved,
-                            )
+                    if machine_kind is None:
+                        raise ResearchImplementationResolutionError(
+                            "research node has a paper implementation but no "
+                            "canonical Machine lowering target: "
+                            f"node={node.graph_node_id} "
+                            f"kind={node.node.kind.value} "
+                            f"definition={definition.definition_id}"
                         )
+                    machine_programs.append(
+                        compile_callable_machine_definition(
+                            definition,
+                            machine_kind=machine_kind,
+                            resolved=resolved,
+                        )
+                    )
         return LoweredResearchOSGraphNode(
             source=node,
             target=_NODE_TARGETS[node.node.kind],
