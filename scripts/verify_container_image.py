@@ -144,15 +144,26 @@ python - "$work" <<'PY'
 import json
 import sys
 from pathlib import Path
-from noetrium.api import ResearchOS
+from noetrium.api import (
+    ResearchExecutionTarget,
+    ResearchGraphRevision,
+    ResearchOS,
+)
 from noetrium_platform.product.research_os import bind_research_os
 from noetrium_platform.product.reference import ReferenceResearchOSPort
 
 root = Path(sys.argv[1])
 research_os = bind_research_os(ReferenceResearchOSPort())
 assert isinstance(research_os, ResearchOS)
+revision = ResearchGraphRevision(
+    "qualification",
+    "0" * 64,
+    (),
+    "container qualification",
+)
+target = ResearchExecutionTarget("container-reference", revision)
 for action in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile"):
-    result = getattr(research_os, action)("container-reference")
+    result = getattr(research_os, action)(target)
     (root / f"{action}.json").write_text(
         json.dumps(
             {
@@ -160,8 +171,12 @@ for action in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile"):
                 "command": action,
                 "result": {
                     "action": result.action.value,
-                    "target": result.target,
+                    "execution_id": result.target.execution_id,
+                    "research_revision_digest": (
+                        result.target.research_revision_digest
+                    ),
                     "state": result.state,
+                    "control_revision_digest": result.control_revision_digest,
                 },
             },
             sort_keys=True,
