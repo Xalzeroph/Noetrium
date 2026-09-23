@@ -356,6 +356,7 @@ class ResearchGraphCutSwitchFence:
     """Exact source-cut transaction fence for an atomic active-ref switch."""
 
     source_execution_id: str
+    active_cut_generation: int
     execution_generation: int
     graph_control: ResearchGraphControlRecord
     node_controls: tuple[ResearchGraphNodeControlRecord, ...]
@@ -363,6 +364,10 @@ class ResearchGraphCutSwitchFence:
 
     def __post_init__(self) -> None:
         _text(self.source_execution_id, "research graph cut fence source_execution_id")
+        if type(self.active_cut_generation) is not int or self.active_cut_generation < 1:
+            raise ValueError(
+                "research graph cut fence active_cut_generation must be positive"
+            )
         if type(self.execution_generation) is not int or self.execution_generation < 1:
             raise ValueError(
                 "research graph cut fence execution_generation must be positive"
@@ -389,6 +394,7 @@ class ResearchGraphCutSwitchFence:
             canonical_digest(
                 {
                     "source_execution_id": self.source_execution_id,
+                    "active_cut_generation": self.active_cut_generation,
                     "execution_generation": self.execution_generation,
                     "graph_control": (
                         self.graph_control.phase.value,
