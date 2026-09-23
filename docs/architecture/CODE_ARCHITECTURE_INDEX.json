@@ -13077,6 +13077,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphActiveCutStorePort",
+      "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphCutSwitchFence"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphAttemptRecord",
       "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphAttemptState"
     },
@@ -13089,6 +13094,16 @@
       "kind": "references",
       "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlStorePort",
       "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlRecord"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphCutSwitchFence",
+      "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlRecord"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphCutSwitchFence",
+      "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphNodeControlRecord"
     },
     {
       "kind": "references",
@@ -40615,7 +40630,7 @@
         "snapshot"
       ],
       "kind": "dataclass",
-      "line": 138,
+      "line": 139,
       "methods": [
         "__post_init__"
       ],
@@ -40640,7 +40655,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 31,
+      "line": 32,
       "methods": [
         "__post_init__",
         "from_compilation"
@@ -40670,7 +40685,7 @@
         "snapshot"
       ],
       "kind": "dataclass",
-      "line": 157,
+      "line": 158,
       "methods": [
         "__post_init__"
       ],
@@ -40696,7 +40711,7 @@
         "target_cut"
       ],
       "kind": "dataclass",
-      "line": 206,
+      "line": 207,
       "methods": [
         "__post_init__",
         "can_switch",
@@ -40726,7 +40741,7 @@
         "source_state"
       ],
       "kind": "dataclass",
-      "line": 82,
+      "line": 83,
       "methods": [
         "__post_init__"
       ],
@@ -40752,7 +40767,7 @@
         "REUSE_CANDIDATE"
       ],
       "kind": "enum",
-      "line": 73,
+      "line": 74,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_migration",
       "name": "ResearchOSNodeMigrationDisposition",
@@ -40772,7 +40787,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 126,
+      "line": 127,
       "methods": [
         "materialize_reuse"
       ],
@@ -40797,7 +40812,7 @@
         "source_cut_id"
       ],
       "kind": "dataclass",
-      "line": 110,
+      "line": 111,
       "methods": [
         "__post_init__"
       ],
@@ -79572,7 +79587,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 355,
+      "line": 419,
       "methods": [
         "__post_init__"
       ],
@@ -79594,7 +79609,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 682,
+      "line": 746,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -79728,7 +79743,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 546,
+      "line": 610,
       "methods": [
         "control_state",
         "request_drain",
@@ -79749,13 +79764,40 @@
       "top_system": "execution"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "active_cut_generation",
+        "execution_generation",
+        "fence_digest",
+        "graph_control",
+        "node_controls",
+        "source_execution_id"
+      ],
+      "kind": "dataclass",
+      "line": 355,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphCutSwitchFence",
+      "nesting": [
+        "ResearchGraphCutSwitchFence"
+      ],
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphCutSwitchFence",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
       "bases": [
         "RuntimeError"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 395,
+      "line": 459,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -79773,7 +79815,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 399,
+      "line": 463,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -79822,7 +79864,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 404,
+      "line": 468,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -79939,7 +79981,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 616,
+      "line": 680,
       "methods": [
         "node_control_state",
         "request_node_drain",
@@ -80021,7 +80063,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 374,
+      "line": 438,
       "methods": [
         "__init__"
       ],
@@ -80069,7 +80111,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 32,
+      "line": 33,
       "methods": [
         "__init__",
         "_connection",
@@ -101958,8 +102000,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3404,
-    "classes": 3325,
+    "association_edges": 3407,
+    "classes": 3326,
     "constructor_edges": 927,
     "inheritance_edges": 148,
     "module_import_edges": 5048,
@@ -143070,7 +143112,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "d2dbd38ad9ebaa204b8f49be17d69302afc537a3",
+  "source_git_sha": "2799036014b7b01fcb5212e8155ebf364ab81c95",
   "system_import_edges": [
     {
       "count": 90,

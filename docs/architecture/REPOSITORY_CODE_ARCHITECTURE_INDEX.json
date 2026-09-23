@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3623,
-    "python_import_edges": 6836,
-    "symbols": 4817,
-    "tracked_files": 4252,
+    "python_files": 3624,
+    "python_import_edges": 6839,
+    "symbols": 4820,
+    "tracked_files": 4253,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4811,
+    "python": 4814,
     "typescript": 5
   },
   "parse_errors": [],
@@ -32019,6 +32019,24 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_research_graph_timestamp_bounds_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_timestamp_bounds_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_timestamp_bounds_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_research_os_artifact_migration_v1",
       "source_role": "tests",
       "target_module": "noetrium",
@@ -41093,7 +41111,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2666,
+      "count": 2669,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41156,11 +41174,11 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 779,
+    "tests": 780,
     "tooling": 77
   },
   "role_symbol_counts": {
-    "core_platform": 3326,
+    "core_platform": 3327,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -41168,11 +41186,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 403,
     "sdk": 5,
-    "tests": 955,
+    "tests": 957,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "d2dbd38ad9ebaa204b8f49be17d69302afc537a3",
+  "source_git_sha": "2799036014b7b01fcb5212e8155ebf364ab81c95",
   "symbols": [
     {
       "bases": [],
@@ -64292,7 +64310,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 31,
+      "line": 32,
       "methods": [
         "__post_init__",
         "from_compilation"
@@ -64317,7 +64335,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 73,
+      "line": 74,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_migration",
       "name": "ResearchOSNodeMigrationDisposition",
@@ -64340,7 +64358,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 82,
+      "line": 83,
       "methods": [
         "__post_init__"
       ],
@@ -64363,7 +64381,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 110,
+      "line": 111,
       "methods": [
         "__post_init__"
       ],
@@ -64383,7 +64401,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 126,
+      "line": 127,
       "methods": [
         "materialize_reuse"
       ],
@@ -64405,7 +64423,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 138,
+      "line": 139,
       "methods": [
         "__post_init__"
       ],
@@ -64432,7 +64450,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 157,
+      "line": 158,
       "methods": [
         "__post_init__"
       ],
@@ -64456,7 +64474,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 206,
+      "line": 207,
       "methods": [
         "__post_init__",
         "can_switch",
@@ -100086,6 +100104,31 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "source_execution_id: str",
+        "active_cut_generation: int",
+        "execution_generation: int",
+        "graph_control: ResearchGraphControlRecord",
+        "node_controls: tuple[ResearchGraphNodeControlRecord, ...]",
+        "fence_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 355,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphCutSwitchFence",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphCutSwitchFence",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "logical_execution_id: str",
         "cut_id: str",
         "research_revision_digest: str",
@@ -100094,7 +100137,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 355,
+      "line": 419,
       "methods": [
         "__post_init__"
       ],
@@ -100112,7 +100155,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 374,
+      "line": 438,
       "methods": [
         "__init__"
       ],
@@ -100130,7 +100173,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 395,
+      "line": 459,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -100146,7 +100189,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 399,
+      "line": 463,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -100164,7 +100207,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 404,
+      "line": 468,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -100199,7 +100242,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 546,
+      "line": 610,
       "methods": [
         "control_state",
         "request_drain",
@@ -100226,7 +100269,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 616,
+      "line": 680,
       "methods": [
         "node_control_state",
         "request_node_drain",
@@ -100252,7 +100295,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 682,
+      "line": 746,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -100269,7 +100312,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 32,
+      "line": 33,
       "methods": [
         "__init__",
         "_connection",
@@ -137692,6 +137735,42 @@
       "name": "_RacingActiveCutStore",
       "path": "tests/test_research_os_migration_v1.py",
       "qualname": "tests.test_research_os_migration_v1._RacingActiveCutStore",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 705,
+      "methods": [
+        "__init__",
+        "active_cut",
+        "move_active_cut"
+      ],
+      "module": "tests.test_research_os_migration_v1",
+      "name": "_SourceControlRacingActiveCutStore",
+      "path": "tests/test_research_os_migration_v1.py",
+      "qualname": "tests.test_research_os_migration_v1._SourceControlRacingActiveCutStore",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 814,
+      "methods": [
+        "__init__",
+        "active_cut",
+        "move_active_cut"
+      ],
+      "module": "tests.test_research_os_migration_v1",
+      "name": "_ABAActiveCutStore",
+      "path": "tests/test_research_os_migration_v1.py",
+      "qualname": "tests.test_research_os_migration_v1._ABAActiveCutStore",
       "role": "tests"
     },
     {
