@@ -237,38 +237,6 @@
     ],
     "components": []
   },
-  "environment/instance": {
-    "system": "environment",
-    "parent": "environment",
-    "package_prefix": "noetrium_platform.capabilities.environment.instance",
-    "node_kind": "facet",
-    "canonical_authority": "environment",
-    "owns": "environment instance identity, readiness and lifecycle",
-    "must_not_own": "host supervision implementation",
-    "shape": [
-      "api"
-    ],
-    "downstream_surface": "public",
-    "requires": [],
-    "provides": [],
-    "components": []
-  },
-  "environment/specification": {
-    "system": "environment",
-    "parent": "environment",
-    "package_prefix": "noetrium_platform.capabilities.environment.specification",
-    "node_kind": "facet",
-    "canonical_authority": "environment",
-    "owns": "environment definition and immutable spec identity",
-    "must_not_own": "live host process state",
-    "shape": [
-      "api"
-    ],
-    "downstream_surface": "public",
-    "requires": [],
-    "provides": [],
-    "components": []
-  },
   "execution/capability": {
     "system": "execution",
     "parent": "execution",
@@ -1078,54 +1046,6 @@
       }
     ]
   },
-  "observability/tracing": {
-    "system": "observability",
-    "parent": "observability",
-    "package_prefix": "noetrium_platform.evidence.observability.tracing",
-    "node_kind": "projection",
-    "canonical_authority": null,
-    "owns": "trace/span identity and propagation",
-    "must_not_own": "business operation truth",
-    "shape": [
-      "api"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [],
-    "provides": [],
-    "components": []
-  },
-  "operator/audit": {
-    "system": "operator",
-    "parent": "operator",
-    "package_prefix": "noetrium_platform.product.operator.audit",
-    "node_kind": "product_surface",
-    "canonical_authority": null,
-    "owns": "audit/reporting views across system authorities",
-    "must_not_own": "new durable truth",
-    "shape": [
-      "api"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [],
-    "provides": [],
-    "components": []
-  },
-  "operator/command": {
-    "system": "operator",
-    "parent": "operator",
-    "package_prefix": "noetrium_platform.product.operator.command",
-    "node_kind": "product_surface",
-    "canonical_authority": null,
-    "owns": "operator command intent and command result contracts",
-    "must_not_own": "domain command execution",
-    "shape": [
-      "api"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [],
-    "provides": [],
-    "components": []
-  },
   "operator/maintenance": {
     "system": "operator",
     "parent": "operator",
@@ -1141,22 +1061,6 @@
     "requires": [
       "runtime"
     ],
-    "provides": [],
-    "components": []
-  },
-  "operator/query": {
-    "system": "operator",
-    "parent": "operator",
-    "package_prefix": "noetrium_platform.product.operator.query",
-    "node_kind": "product_surface",
-    "canonical_authority": null,
-    "owns": "operator read/query contracts",
-    "must_not_own": "durable state mutation",
-    "shape": [
-      "api"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [],
     "provides": [],
     "components": []
   },

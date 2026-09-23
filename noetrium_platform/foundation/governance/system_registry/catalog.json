@@ -123,9 +123,7 @@
     "components": [
       "environment/catalog",
       "environment/category",
-      "environment/embodied",
-      "environment/instance",
-      "environment/specification"
+      "environment/embodied"
     ],
     "node_kind": "authority",
     "canonical_authority": "environment",
@@ -488,8 +486,7 @@
       "observability/diagnostic",
       "observability/logging",
       "observability/status",
-      "observability/telemetry",
-      "observability/tracing"
+      "observability/telemetry"
     ],
     "node_kind": "projection",
     "canonical_authority": null,
@@ -532,10 +529,7 @@
     ],
     "provides": [],
     "components": [
-      "operator/audit",
-      "operator/command",
-      "operator/maintenance",
-      "operator/query"
+      "operator/maintenance"
     ],
     "node_kind": "product_surface",
     "canonical_authority": null,
