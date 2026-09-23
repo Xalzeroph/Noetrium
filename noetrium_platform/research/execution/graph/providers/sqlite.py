@@ -1698,6 +1698,22 @@ class SQLiteResearchGraphExecutionStore:
                             attempt_id,
                         ),
                     )
+                    node_control = self._node_control_tx(
+                        conn,
+                        execution_id,
+                        node_id,
+                    )
+                    if node_control.phase is not (
+                        ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+                    ):
+                        self._write_node_control_phase_tx(
+                            conn,
+                            execution_id,
+                            node_id,
+                            expected_generation=node_control.generation,
+                            phase=ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+                            now_ns=now_ns,
+                        )
                 self._bump_generation(conn, execution_id)
             return self._snapshot_tx(conn, execution_id)
 
