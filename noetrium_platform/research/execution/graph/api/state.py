@@ -550,6 +550,14 @@ class ResearchGraphControlStorePort(Protocol):
         now_ns: int,
     ) -> ResearchGraphControlRecord: ...
 
+    def require_recovery(
+        self,
+        execution_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphControlRecord: ...
+
     def settle_recovery(
         self,
         execution_id: str,
