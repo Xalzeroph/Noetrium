@@ -60,9 +60,9 @@ class ResearchOSLoweringTarget(StrEnum):
     RUN_MACHINE = "run-machine"
     EVALUATION_MACHINE = "evaluation-machine"
     OPTIMIZATION_MACHINE = "optimization-machine"
-    WORKBENCH = "workbench"
-    PUBLICATION = "publication"
-    CUSTOM = "custom"
+    ANALYSIS_MACHINE = "analysis-machine"
+    PUBLICATION_MACHINE = "publication-machine"
+    CUSTOM_MACHINE = "custom-machine"
 
 
 _NODE_TARGETS: dict[ResearchNodeKind, ResearchOSLoweringTarget] = {
@@ -72,16 +72,16 @@ _NODE_TARGETS: dict[ResearchNodeKind, ResearchOSLoweringTarget] = {
     ResearchNodeKind.RUN: ResearchOSLoweringTarget.RUN_MACHINE,
     ResearchNodeKind.TRIAL: ResearchOSLoweringTarget.EXPERIMENTATION,
     ResearchNodeKind.EVALUATION: ResearchOSLoweringTarget.EVALUATION_MACHINE,
-    ResearchNodeKind.ANALYSIS: ResearchOSLoweringTarget.WORKBENCH,
+    ResearchNodeKind.ANALYSIS: ResearchOSLoweringTarget.ANALYSIS_MACHINE,
     ResearchNodeKind.OPTIMIZATION: ResearchOSLoweringTarget.OPTIMIZATION_MACHINE,
-    ResearchNodeKind.SELECTION: ResearchOSLoweringTarget.WORKBENCH,
+    ResearchNodeKind.SELECTION: ResearchOSLoweringTarget.ANALYSIS_MACHINE,
     ResearchNodeKind.ABLATION: ResearchOSLoweringTarget.EXPERIMENTATION,
     ResearchNodeKind.ROBUSTNESS: ResearchOSLoweringTarget.EXPERIMENTATION,
     ResearchNodeKind.SCALING: ResearchOSLoweringTarget.EXPERIMENTATION,
-    ResearchNodeKind.FIGURE: ResearchOSLoweringTarget.WORKBENCH,
-    ResearchNodeKind.TABLE: ResearchOSLoweringTarget.WORKBENCH,
-    ResearchNodeKind.PUBLICATION: ResearchOSLoweringTarget.PUBLICATION,
-    ResearchNodeKind.CUSTOM: ResearchOSLoweringTarget.CUSTOM,
+    ResearchNodeKind.FIGURE: ResearchOSLoweringTarget.ANALYSIS_MACHINE,
+    ResearchNodeKind.TABLE: ResearchOSLoweringTarget.ANALYSIS_MACHINE,
+    ResearchNodeKind.PUBLICATION: ResearchOSLoweringTarget.PUBLICATION_MACHINE,
+    ResearchNodeKind.CUSTOM: ResearchOSLoweringTarget.CUSTOM_MACHINE,
 }
 if set(_NODE_TARGETS) != set(ResearchNodeKind):
     raise RuntimeError("Research OS lowering table must cover every ResearchNodeKind")
@@ -91,6 +91,12 @@ _NODE_MACHINE_KINDS: dict[ResearchNodeKind, MachineKind] = {
     ResearchNodeKind.RUN: MachineKind.RUN,
     ResearchNodeKind.EVALUATION: MachineKind.EVALUATION,
     ResearchNodeKind.OPTIMIZATION: MachineKind.OPTIMIZATION,
+    ResearchNodeKind.ANALYSIS: MachineKind.ANALYSIS,
+    ResearchNodeKind.SELECTION: MachineKind.ANALYSIS,
+    ResearchNodeKind.FIGURE: MachineKind.ANALYSIS,
+    ResearchNodeKind.TABLE: MachineKind.ANALYSIS,
+    ResearchNodeKind.PUBLICATION: MachineKind.PUBLICATION,
+    ResearchNodeKind.CUSTOM: MachineKind.RUNTIME,
 }
 
 

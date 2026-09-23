@@ -72,6 +72,27 @@ class EvaluationConcern(StrEnum):
     FINALIZATION = "finalization"
 
 
+class AnalysisConcern(StrEnum):
+    TRANSFORM = "transform"
+    STATISTICS = "statistics"
+    COMPARISON = "comparison"
+    SELECTION = "selection"
+    AGGREGATION = "aggregation"
+    FIGURE = "figure"
+    TABLE = "table"
+    CLAIM = "claim"
+
+
+class PublicationConcern(StrEnum):
+    ASSEMBLY = "assembly"
+    VALIDATION = "validation"
+    CLAIM_BINDING = "claim_binding"
+    FIGURE_BINDING = "figure_binding"
+    TABLE_BINDING = "table_binding"
+    MANIFEST = "manifest"
+    FINALIZATION = "finalization"
+
+
 class OptimizationConcern(StrEnum):
     PROPOSAL = "proposal"
     MUTATION = "mutation"
@@ -112,6 +133,8 @@ _KIND_PREFIX = {
     MachineKind.MEMORY: "memory",
     MachineKind.EVALUATION: "evaluation",
     MachineKind.OPTIMIZATION: "optimization",
+    MachineKind.ANALYSIS: "analysis",
+    MachineKind.PUBLICATION: "publication",
     MachineKind.EXPERIMENT: "experiment",
     MachineKind.RUN: "run",
 }
@@ -334,6 +357,66 @@ class EvaluationProgramBuilder(DomainProgramBuilder):
         return self
 
 
+class AnalysisProgramBuilder(DomainProgramBuilder):
+    @classmethod
+    def create(
+        cls, *, program_id: str, version: str, state_schema: str,
+        entrypoint: str, required_capabilities: tuple[str, ...] = (),
+    ) -> "AnalysisProgramBuilder":
+        base = DomainProgramBuilder.create(
+            program_id=program_id, kind=MachineKind.ANALYSIS, version=version,
+            state_schema=state_schema, entrypoint=entrypoint,
+            required_capabilities=required_capabilities,
+        )
+        return cls(base._builder, MachineKind.ANALYSIS)
+
+    def semantic(
+        self, node_id: str, concern: AnalysisConcern, operation: str, *,
+        configuration: JsonObject | None = None,
+        next_node: str | None = None,
+        required_capabilities: tuple[str, ...] = (),
+    ) -> "AnalysisProgramBuilder":
+        if not isinstance(concern, AnalysisConcern):
+            raise TypeError("analysis concern must be AnalysisConcern")
+        config = {} if configuration is None else dict(configuration)
+        config["analysis_concern"] = concern.value
+        self.custom(
+            node_id, operation, configuration=config, next_node=next_node,
+            required_capabilities=required_capabilities,
+        )
+        return self
+
+
+class PublicationProgramBuilder(DomainProgramBuilder):
+    @classmethod
+    def create(
+        cls, *, program_id: str, version: str, state_schema: str,
+        entrypoint: str, required_capabilities: tuple[str, ...] = (),
+    ) -> "PublicationProgramBuilder":
+        base = DomainProgramBuilder.create(
+            program_id=program_id, kind=MachineKind.PUBLICATION, version=version,
+            state_schema=state_schema, entrypoint=entrypoint,
+            required_capabilities=required_capabilities,
+        )
+        return cls(base._builder, MachineKind.PUBLICATION)
+
+    def semantic(
+        self, node_id: str, concern: PublicationConcern, operation: str, *,
+        configuration: JsonObject | None = None,
+        next_node: str | None = None,
+        required_capabilities: tuple[str, ...] = (),
+    ) -> "PublicationProgramBuilder":
+        if not isinstance(concern, PublicationConcern):
+            raise TypeError("publication concern must be PublicationConcern")
+        config = {} if configuration is None else dict(configuration)
+        config["publication_concern"] = concern.value
+        self.custom(
+            node_id, operation, configuration=config, next_node=next_node,
+            required_capabilities=required_capabilities,
+        )
+        return self
+
+
 class OptimizationProgramBuilder(DomainProgramBuilder):
     @classmethod
     def create(
@@ -425,6 +508,8 @@ class ResearchRunProgramBuilder(DomainProgramBuilder):
 
 
 __all__ = [
+    "AnalysisConcern",
+    "AnalysisProgramBuilder",
     "DomainProgramBuilder",
     "EnvironmentConcern",
     "EnvironmentProgramBuilder",
@@ -438,6 +523,8 @@ __all__ = [
     "OptimizationProgramBuilder",
     "ParticipantConcern",
     "ParticipantProgramBuilder",
+    "PublicationConcern",
+    "PublicationProgramBuilder",
     "ResearchRunProgramBuilder",
     "RunConcern",
     "RuntimeConcern",

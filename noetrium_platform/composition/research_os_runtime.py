@@ -71,6 +71,9 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             ResearchOSLoweringTarget.RUN_MACHINE,
             ResearchOSLoweringTarget.EVALUATION_MACHINE,
             ResearchOSLoweringTarget.OPTIMIZATION_MACHINE,
+            ResearchOSLoweringTarget.ANALYSIS_MACHINE,
+            ResearchOSLoweringTarget.PUBLICATION_MACHINE,
+            ResearchOSLoweringTarget.CUSTOM_MACHINE,
         }
     )
 

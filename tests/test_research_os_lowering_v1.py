@@ -325,3 +325,28 @@ def test_falsey_invalid_resolver_is_not_silently_replaced() -> None:
             compilation,
             resolver=_FalseyResolver(),
         )
+
+
+def test_analysis_publication_and_custom_nodes_lower_to_universal_machine() -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.metric("analysis-impl", implementation=_metric)
+    builder.metric("publication-impl", implementation=_metric)
+    builder.metric("custom-impl", implementation=_metric)
+    builder.analysis("analysis", definitions=("analysis-impl",))
+    builder.publication("publication", definitions=("publication-impl",))
+    builder.node(
+        "custom",
+        kind=api.ResearchNodeKind.CUSTOM,
+        definitions=("custom-impl",),
+    )
+    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    plan = compile_research_os_lowering(
+        compile_research_portfolio_graph(_revision(portfolio), portfolio)
+    )
+    by_id = {node.source.node.node_id: node for node in plan.nodes}
+    assert by_id["analysis"].target is ResearchOSLoweringTarget.ANALYSIS_MACHINE
+    assert by_id["analysis"].machine_programs[0].program.kind is MachineKind.ANALYSIS
+    assert by_id["publication"].target is ResearchOSLoweringTarget.PUBLICATION_MACHINE
+    assert by_id["publication"].machine_programs[0].program.kind is MachineKind.PUBLICATION
+    assert by_id["custom"].target is ResearchOSLoweringTarget.CUSTOM_MACHINE
+    assert by_id["custom"].machine_programs[0].program.kind is MachineKind.RUNTIME

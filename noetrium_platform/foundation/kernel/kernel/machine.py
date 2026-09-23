@@ -25,6 +25,8 @@ class MachineKind(StrEnum):
     ENVIRONMENT = "environment"
     EVALUATION = "evaluation"
     OPTIMIZATION = "optimization"
+    ANALYSIS = "analysis"
+    PUBLICATION = "publication"
 
 
 class MachineStatus(StrEnum):

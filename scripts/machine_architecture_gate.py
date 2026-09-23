@@ -61,6 +61,8 @@ def _check_machine_families() -> int:
         MachineKind.ENVIRONMENT,
         MachineKind.EVALUATION,
         MachineKind.OPTIMIZATION,
+        MachineKind.ANALYSIS,
+        MachineKind.PUBLICATION,
     }
     if set(kinds) != expected_kinds:
         missing = sorted(kind.value for kind in expected_kinds - set(kinds))

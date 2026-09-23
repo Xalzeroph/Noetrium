@@ -28,6 +28,7 @@ PROGRAMMABLE_MACHINE_KINDS = (
     MachineKind.EXPERIMENT, MachineKind.RUN, MachineKind.RUNTIME,
     MachineKind.PARTICIPANT, MachineKind.MEMORY, MachineKind.ENVIRONMENT,
     MachineKind.EVALUATION, MachineKind.OPTIMIZATION,
+    MachineKind.ANALYSIS, MachineKind.PUBLICATION,
 )
 _PROGRAM_STATE_KEY = "_program"
 

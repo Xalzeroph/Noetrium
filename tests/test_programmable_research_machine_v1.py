@@ -98,6 +98,7 @@ def test_all_programmable_domains_share_one_kernel_command_abi() -> None:
         MachineKind.EXPERIMENT, MachineKind.RUN, MachineKind.RUNTIME,
         MachineKind.PARTICIPANT, MachineKind.MEMORY, MachineKind.ENVIRONMENT,
         MachineKind.EVALUATION, MachineKind.OPTIMIZATION,
+        MachineKind.ANALYSIS, MachineKind.PUBLICATION,
     ):
         assert programmable_machine_family(kind).command_kinds == expected
 
