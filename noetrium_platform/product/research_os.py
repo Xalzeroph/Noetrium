@@ -691,27 +691,31 @@ class ResearchPortfolioBuilder:
 
 @dataclass(frozen=True, slots=True)
 class ResearchGraphRevision:
+    portfolio_id: str
     portfolio_digest: str
     parent_revision_digests: tuple[str, ...] = ()
     message: str = ""
     revision_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
+        _token(self.portfolio_id, "research revision portfolio_id")
         require_sha256(self.portfolio_digest, "research revision portfolio_digest")
         parents = self.parent_revision_digests
+        if type(parents) is not tuple:
+            raise TypeError("research revision parents must be a tuple")
         for parent in parents:
             require_sha256(parent, "research parent revision")
         if len(parents) != len(set(parents)):
             raise ValueError("research revision parents must not contain duplicates")
-        if not isinstance(self.message, str):
+        if type(self.message) is not str:
             raise TypeError("research revision message must be text")
-        object.__setattr__(self, "parent_revision_digests", parents)
         object.__setattr__(
             self,
             "revision_digest",
             canonical_digest(
                 {
-                    "portfolio_digest": self.portfolio_digest,
+                    "subject_id": self.portfolio_id,
+                    "payload_digest": self.portfolio_digest,
                     "parents": parents,
                     "message": self.message,
                 }
@@ -721,20 +725,27 @@ class ResearchGraphRevision:
 
 @dataclass(frozen=True, slots=True)
 class ResearchBranch:
+    portfolio_id: str
     name: str
     revision_digest: str
+    generation: int
 
     def __post_init__(self) -> None:
+        _token(self.portfolio_id, "research branch portfolio_id")
         _token(self.name, "research branch")
         require_sha256(self.revision_digest, "research branch revision")
+        if type(self.generation) is not int or self.generation <= 0:
+            raise ValueError("research branch generation must be positive")
 
 
 @dataclass(frozen=True, slots=True)
 class ResearchTag:
+    portfolio_id: str
     name: str
     revision_digest: str
 
     def __post_init__(self) -> None:
+        _token(self.portfolio_id, "research tag portfolio_id")
         _token(self.name, "research tag")
         require_sha256(self.revision_digest, "research tag revision")
 
@@ -763,11 +774,13 @@ class ResearchNodeImpact:
 
 @dataclass(frozen=True, slots=True)
 class ResearchRevisionDiff:
+    portfolio_id: str
     left_revision_digest: str
     right_revision_digest: str
     impacts: tuple[ResearchNodeImpact, ...]
 
     def __post_init__(self) -> None:
+        _token(self.portfolio_id, "research diff portfolio_id")
         require_sha256(self.left_revision_digest, "left research revision")
         require_sha256(self.right_revision_digest, "right research revision")
         if type(self.impacts) is not tuple or any(
@@ -833,24 +846,31 @@ class ResearchOS(Protocol):
         self,
         portfolio: ResearchPortfolio,
         *,
-        parents: tuple[str, ...] = (),
+        parents: tuple[ResearchGraphRevision, ...] = (),
         message: str = "",
     ) -> ResearchGraphRevision: ...
 
     def diff(
         self,
-        left_revision_digest: str,
-        right_revision_digest: str,
+        left: ResearchGraphRevision,
+        right: ResearchGraphRevision,
     ) -> ResearchRevisionDiff: ...
 
-    def branch(self, name: str, revision_digest: str) -> ResearchBranch: ...
+    def branch(
+        self,
+        name: str,
+        revision: ResearchGraphRevision,
+        *,
+        expected: ResearchGraphRevision | None = None,
+    ) -> ResearchBranch: ...
 
-    def tag(self, name: str, revision_digest: str) -> ResearchTag: ...
+    def tag(self, name: str, revision: ResearchGraphRevision) -> ResearchTag: ...
 
     def merge(
         self,
-        left_revision_digest: str,
-        right_revision_digest: str,
+        portfolio: ResearchPortfolio,
+        left: ResearchGraphRevision,
+        right: ResearchGraphRevision,
         *,
         message: str = "",
     ) -> ResearchGraphRevision: ...
@@ -872,24 +892,31 @@ class ResearchOSPort(Protocol):
         self,
         portfolio: ResearchPortfolio,
         *,
-        parents: tuple[str, ...],
+        parents: tuple[ResearchGraphRevision, ...],
         message: str,
     ) -> ResearchGraphRevision: ...
 
     def diff(
         self,
-        left_revision_digest: str,
-        right_revision_digest: str,
+        left: ResearchGraphRevision,
+        right: ResearchGraphRevision,
     ) -> ResearchRevisionDiff: ...
 
-    def branch(self, name: str, revision_digest: str) -> ResearchBranch: ...
+    def branch(
+        self,
+        name: str,
+        revision: ResearchGraphRevision,
+        *,
+        expected: ResearchGraphRevision | None,
+    ) -> ResearchBranch: ...
 
-    def tag(self, name: str, revision_digest: str) -> ResearchTag: ...
+    def tag(self, name: str, revision: ResearchGraphRevision) -> ResearchTag: ...
 
     def merge(
         self,
-        left_revision_digest: str,
-        right_revision_digest: str,
+        portfolio: ResearchPortfolio,
+        left: ResearchGraphRevision,
+        right: ResearchGraphRevision,
         *,
         message: str,
     ) -> ResearchGraphRevision: ...
@@ -910,34 +937,65 @@ class _BoundResearchOS:
         self,
         portfolio: ResearchPortfolio,
         *,
-        parents: tuple[str, ...] = (),
+        parents: tuple[ResearchGraphRevision, ...] = (),
         message: str = "",
     ) -> ResearchGraphRevision:
+        if type(parents) is not tuple or any(
+            type(parent) is not ResearchGraphRevision for parent in parents
+        ):
+            raise TypeError("research commit parents must be ResearchGraphRevision tuple")
+        if any(parent.portfolio_id != portfolio.portfolio_id for parent in parents):
+            raise ValueError("research commit parents must belong to the same portfolio")
         return self._port.commit(portfolio, parents=parents, message=message)
 
     def diff(
         self,
-        left_revision_digest: str,
-        right_revision_digest: str,
+        left: ResearchGraphRevision,
+        right: ResearchGraphRevision,
     ) -> ResearchRevisionDiff:
-        return self._port.diff(left_revision_digest, right_revision_digest)
+        if type(left) is not ResearchGraphRevision or type(right) is not ResearchGraphRevision:
+            raise TypeError("research diff requires ResearchGraphRevision values")
+        if left.portfolio_id != right.portfolio_id:
+            raise ValueError("research diff revisions must belong to the same portfolio")
+        return self._port.diff(left, right)
 
-    def branch(self, name: str, revision_digest: str) -> ResearchBranch:
-        return self._port.branch(name, revision_digest)
+    def branch(
+        self,
+        name: str,
+        revision: ResearchGraphRevision,
+        *,
+        expected: ResearchGraphRevision | None = None,
+    ) -> ResearchBranch:
+        if type(revision) is not ResearchGraphRevision:
+            raise TypeError("research branch requires ResearchGraphRevision")
+        if expected is not None:
+            if type(expected) is not ResearchGraphRevision:
+                raise TypeError("research expected branch revision must be ResearchGraphRevision")
+            if expected.portfolio_id != revision.portfolio_id:
+                raise ValueError("research branch revisions must belong to the same portfolio")
+        return self._port.branch(name, revision, expected=expected)
 
-    def tag(self, name: str, revision_digest: str) -> ResearchTag:
-        return self._port.tag(name, revision_digest)
+    def tag(self, name: str, revision: ResearchGraphRevision) -> ResearchTag:
+        if type(revision) is not ResearchGraphRevision:
+            raise TypeError("research tag requires ResearchGraphRevision")
+        return self._port.tag(name, revision)
 
     def merge(
         self,
-        left_revision_digest: str,
-        right_revision_digest: str,
+        portfolio: ResearchPortfolio,
+        left: ResearchGraphRevision,
+        right: ResearchGraphRevision,
         *,
         message: str = "",
     ) -> ResearchGraphRevision:
+        if type(left) is not ResearchGraphRevision or type(right) is not ResearchGraphRevision:
+            raise TypeError("research merge requires ResearchGraphRevision parents")
+        if left.portfolio_id != portfolio.portfolio_id or right.portfolio_id != portfolio.portfolio_id:
+            raise ValueError("research merge parents must belong to the resolved portfolio")
         return self._port.merge(
-            left_revision_digest,
-            right_revision_digest,
+            portfolio,
+            left,
+            right,
             message=message,
         )
 
