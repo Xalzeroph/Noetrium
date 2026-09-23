@@ -4,7 +4,7 @@ from threading import Event
 
 import pytest
 
-from noetrium.api import bind_research_execution_pool
+from noetrium_platform.platform import bind_research_execution_pool
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     ExecutionLaneKind,
