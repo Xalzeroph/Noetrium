@@ -41,7 +41,11 @@ def _metric(value):
 
 
 class _Control:
-    def control(self, request):
+    def __init__(self) -> None:
+        self.calls = []
+
+    def control(self, request, portfolio):
+        self.calls.append((request, portfolio))
         return api.ResearchControlReceipt(
             request.action,
             request.target,
@@ -98,17 +102,18 @@ def _portfolio(method) -> api.ResearchPortfolio:
 def _binding(root: Path):
     revisions = SQLitePortfolioRevisionStore(root / "portfolio.sqlite3")
     blobs = DirectoryArtifactBlobStore(root / "blobs")
-    return revisions, blobs, bind_portfolio_research_os(
+    control = _Control()
+    return revisions, blobs, control, bind_portfolio_research_os(
         revisions,
         blobs,
-        control=_Control(),
+        control=control,
     )
 
 
 def test_durable_research_os_reopens_revision_graph_and_minimally_invalidates(
     tmp_path: Path,
 ) -> None:
-    revisions, _, research_os = _binding(tmp_path)
+    revisions, _, _, _, _, research_os = _binding(tmp_path)
     first_portfolio = _portfolio(_method_v1)
     first = research_os.commit(first_portfolio, message="first")
     branch = research_os.branch("main", first)
@@ -129,7 +134,7 @@ def test_durable_research_os_reopens_revision_graph_and_minimally_invalidates(
     assert stored.payload_size_bytes > 0
     assert stored.revision_digest == first.revision_digest
 
-    _, _, reopened = _binding(tmp_path)
+    _, _, reopened_control, reopened = _binding(tmp_path)
     diff = reopened.diff(first, second)
     impacts = {
         (row.program_id, row.node_id): row.state
@@ -147,12 +152,16 @@ def test_durable_research_os_reopens_revision_graph_and_minimally_invalidates(
     resumed = reopened.resume(execution)
     assert resumed.action is api.ResearchControlAction.RESUME
     assert resumed.target == execution
+    assert len(reopened_control.calls) == 1
+    control_request, control_portfolio = reopened_control.calls[0]
+    assert control_request.target.revision == second
+    assert control_portfolio == second_portfolio
 
 
 def test_branch_compare_and_swap_rejects_stale_human_or_agent_edit(
     tmp_path: Path,
 ) -> None:
-    _, _, research_os = _binding(tmp_path)
+    _, _, _, _, research_os = _binding(tmp_path)
     first = research_os.commit(_portfolio(_method_v1), message="first")
     research_os.branch("main", first)
     second = research_os.commit(
@@ -169,7 +178,7 @@ def test_branch_compare_and_swap_rejects_stale_human_or_agent_edit(
 def test_explicit_resolved_merge_preserves_both_parent_revisions(
     tmp_path: Path,
 ) -> None:
-    _, _, research_os = _binding(tmp_path)
+    _, _, _, _, research_os = _binding(tmp_path)
     base = research_os.commit(_portfolio(_method_v1), message="base")
     left = research_os.commit(
         _portfolio(_method_v2),
@@ -226,10 +235,10 @@ def test_platform_resolved_requirements_round_trip_through_artifact_cas(
     )
     portfolio = api.ResearchPortfolio("declarative-suite", (builder.freeze(),))
 
-    _, _, research_os = _binding(tmp_path)
+    _, _, _, _, research_os = _binding(tmp_path)
     revision = research_os.commit(portfolio, message="declarative cut")
 
-    _, _, reopened = _binding(tmp_path)
+    _, _, _, _, reopened = _binding(tmp_path)
     diff = reopened.diff(revision, revision)
     assert tuple(row.state for row in diff.impacts) == (
         api.ResearchImpactState.UNCHANGED,
@@ -249,7 +258,7 @@ def test_top_level_portfolio_compiles_into_one_multi_paper_execution_graph(
         (paper_a, paper_b),
         (cross,),
     )
-    _, _, research_os = _binding(tmp_path)
+    _, _, _, _, research_os = _binding(tmp_path)
     revision = research_os.commit(portfolio, message="multi-paper graph")
 
     compilation = compile_research_portfolio_graph(revision, portfolio)
@@ -274,7 +283,7 @@ def test_top_level_portfolio_compiles_into_one_multi_paper_execution_graph(
 def test_compiled_semantic_digests_invalidate_only_transitive_descendants(
     tmp_path: Path,
 ) -> None:
-    _, _, research_os = _binding(tmp_path)
+    _, _, _, _, research_os = _binding(tmp_path)
     first_portfolio = _portfolio(_method_v1)
     first_revision = research_os.commit(first_portfolio, message="first")
     second_portfolio = _portfolio(_method_v2)

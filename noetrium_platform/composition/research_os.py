@@ -476,7 +476,13 @@ def diff_research_portfolios(
 
 @runtime_checkable
 class ResearchOSControlPort(Protocol):
-    def control(self, request: ResearchControlRequest) -> ResearchControlReceipt: ...
+    """Internal execution control over an already verified immutable portfolio."""
+
+    def control(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt: ...
 
 
 class PortfolioBackedResearchOSPort:
@@ -635,7 +641,10 @@ class PortfolioBackedResearchOSPort:
     def control(self, request: ResearchControlRequest) -> ResearchControlReceipt:
         if self._control is None:
             raise RuntimeError("Research OS runtime control is not bound")
-        receipt = self._control.control(request)
+        portfolio = self._load(request.target.revision)
+        if portfolio.portfolio_digest != request.target.revision.portfolio_digest:
+            raise ValueError("Research OS control portfolio/revision digest drifted")
+        receipt = self._control.control(request, portfolio)
         if type(receipt) is not ResearchControlReceipt:
             raise TypeError("Research OS control returned invalid receipt")
         if receipt.action is not request.action or receipt.target != request.target:
