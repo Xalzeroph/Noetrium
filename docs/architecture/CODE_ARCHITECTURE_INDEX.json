@@ -12282,16 +12282,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.platform.ExperimentBinding",
-      "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.platform.QualifiedProjectModelBinding",
-      "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.product.operator.api.facade.ResearchApplicationPort",
       "target": "noetrium_platform.product.operator.api.facade.ResearchRequest"
     },
@@ -76631,130 +76621,6 @@
       "top_system": "resource"
     },
     {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 206,
-      "methods": [
-        "__init__",
-        "store",
-        "close",
-        "__enter__",
-        "__exit__"
-      ],
-      "module": "noetrium_platform.platform",
-      "name": "DirectoryRunArtifactBinding",
-      "nesting": [
-        "DirectoryRunArtifactBinding"
-      ],
-      "qualname": "noetrium_platform.platform.DirectoryRunArtifactBinding",
-      "system_key": null,
-      "top_system": null
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 475,
-      "methods": [
-        "__init__",
-        "_task_group_for",
-        "aggregation",
-        "execute",
-        "close",
-        "__enter__",
-        "__exit__"
-      ],
-      "module": "noetrium_platform.platform",
-      "name": "ExperimentBinding",
-      "nesting": [
-        "ExperimentBinding"
-      ],
-      "qualname": "noetrium_platform.platform.ExperimentBinding",
-      "system_key": null,
-      "top_system": null
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 734,
-      "methods": [
-        "__init__",
-        "spec",
-        "identity",
-        "capabilities",
-        "open_session",
-        "close",
-        "__enter__",
-        "__exit__"
-      ],
-      "module": "noetrium_platform.platform",
-      "name": "MinecraftEnvironmentBinding",
-      "nesting": [
-        "MinecraftEnvironmentBinding"
-      ],
-      "qualname": "noetrium_platform.platform.MinecraftEnvironmentBinding",
-      "system_key": null,
-      "top_system": null
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 899,
-      "methods": [
-        "__init__",
-        "profile",
-        "provider",
-        "model_requests",
-        "bind",
-        "diagnose",
-        "close",
-        "__enter__",
-        "__exit__"
-      ],
-      "module": "noetrium_platform.platform",
-      "name": "QualifiedProjectModelBinding",
-      "nesting": [
-        "QualifiedProjectModelBinding"
-      ],
-      "qualname": "noetrium_platform.platform.QualifiedProjectModelBinding",
-      "system_key": null,
-      "top_system": null
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 685,
-      "methods": [
-        "__init__",
-        "lifecycle",
-        "pipeline",
-        "statistics",
-        "figures",
-        "csv_reader",
-        "jsonl_reader",
-        "table_renderer",
-        "figure_renderer",
-        "svg_renderer"
-      ],
-      "module": "noetrium_platform.platform",
-      "name": "ResearchWorkbenchBinding",
-      "nesting": [
-        "ResearchWorkbenchBinding"
-      ],
-      "qualname": "noetrium_platform.platform.ResearchWorkbenchBinding",
-      "system_key": null,
-      "top_system": null
-    },
-    {
       "bases": [
         "StrEnum"
       ],
@@ -100849,26 +100715,6 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.platform.ExperimentBinding",
-      "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.platform.ExperimentBinding",
-      "target": "noetrium_platform.research.experimentation.api.program.ExperimentProgramBinding"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.platform.ExperimentBinding",
-      "target": "noetrium_platform.research.experimentation.lifecycle.study.algorithms.BasicStudyMetricAggregator"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.platform.QualifiedProjectModelBinding",
-      "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
-    },
-    {
-      "kind": "constructs",
       "source": "noetrium_platform.product.operator.api.facade.ResearchFacade",
       "target": "noetrium_platform.product.operator.api.facade.ResearchRequest"
     },
@@ -101879,13 +101725,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3389,
-    "classes": 3327,
-    "constructor_edges": 922,
+    "association_edges": 3387,
+    "classes": 3322,
+    "constructor_edges": 918,
     "inheritance_edges": 145,
-    "module_import_edges": 5076,
+    "module_import_edges": 5031,
     "parse_errors": 0,
-    "python_modules": 1928,
+    "python_modules": 1927,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -119121,186 +118967,6 @@
     {
       "source": "noetrium_platform.infrastructure.resources.resolution.runtime.resolver",
       "target": "noetrium_platform.infrastructure.resources.resolution.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.environment.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.environment.category.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.environment.category.composition"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.environment.minecraft.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.environment.minecraft.composition.environment"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.model.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.model.providers"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.model.request.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.model.serving.endpoint.composition"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.model.serving.providers"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.participant.agent.runtime"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.participant.method.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.capabilities.participant.method.runtime"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.composition.concurrency"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.composition.managed_research_runtime"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.composition.method_runtime"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.composition.model_requests"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.composition.operator.run_control_application"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.composition.research_campaign"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.composition.research_execution_pool"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.evidence.artifact.content.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.foundation.kernel.concurrency.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.foundation.portfolio.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.foundation.scope.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.infrastructure.lifecycle.host.composition.authorities"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.infrastructure.lifecycle.process.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.composition"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.infrastructure.resources.compute.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.infrastructure.resources.directory.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.execution.policy.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.execution.workflow.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.execution.workflow.providers"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.execution.workflow.runtime"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.api.campaign"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.api.program"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.lifecycle.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.composition"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.resource.composition"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifacts"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.composition.control"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.lifecycle.study.algorithms"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.workbench.api"
-    },
-    {
-      "source": "noetrium_platform.platform",
-      "target": "noetrium_platform.research.experimentation.workbench.composition"
     },
     {
       "source": "noetrium_platform.product",
@@ -139682,59 +139348,6 @@
     },
     {
       "imports": [
-        "noetrium_platform.api",
-        "noetrium_platform.capabilities.environment.api",
-        "noetrium_platform.capabilities.environment.category.api",
-        "noetrium_platform.capabilities.environment.category.composition",
-        "noetrium_platform.capabilities.environment.minecraft.api",
-        "noetrium_platform.capabilities.environment.minecraft.composition.environment",
-        "noetrium_platform.capabilities.model.api",
-        "noetrium_platform.capabilities.model.providers",
-        "noetrium_platform.capabilities.model.request.api",
-        "noetrium_platform.capabilities.model.serving.endpoint.composition",
-        "noetrium_platform.capabilities.model.serving.providers",
-        "noetrium_platform.capabilities.participant.agent.runtime",
-        "noetrium_platform.capabilities.participant.method.api",
-        "noetrium_platform.capabilities.participant.method.runtime",
-        "noetrium_platform.composition.concurrency",
-        "noetrium_platform.composition.managed_research_runtime",
-        "noetrium_platform.composition.method_runtime",
-        "noetrium_platform.composition.model_requests",
-        "noetrium_platform.composition.operator.run_control_application",
-        "noetrium_platform.composition.research_campaign",
-        "noetrium_platform.composition.research_execution_pool",
-        "noetrium_platform.evidence.artifact.content.api",
-        "noetrium_platform.foundation.kernel.concurrency.api",
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.foundation.portfolio.api",
-        "noetrium_platform.foundation.scope.api",
-        "noetrium_platform.infrastructure.lifecycle.host.composition.authorities",
-        "noetrium_platform.infrastructure.lifecycle.process.api",
-        "noetrium_platform.infrastructure.lifecycle.process.supervision.composition",
-        "noetrium_platform.infrastructure.resources.compute.api",
-        "noetrium_platform.infrastructure.resources.directory.api",
-        "noetrium_platform.research.execution.policy.api",
-        "noetrium_platform.research.execution.workflow.api",
-        "noetrium_platform.research.execution.workflow.providers",
-        "noetrium_platform.research.execution.workflow.runtime",
-        "noetrium_platform.research.experimentation.api.campaign",
-        "noetrium_platform.research.experimentation.api.program",
-        "noetrium_platform.research.experimentation.lifecycle.api",
-        "noetrium_platform.research.experimentation.lifecycle.checkpoint.composition",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.resource.composition",
-        "noetrium_platform.research.experimentation.lifecycle.run.composition.artifacts",
-        "noetrium_platform.research.experimentation.lifecycle.run.composition.control",
-        "noetrium_platform.research.experimentation.lifecycle.study.algorithms",
-        "noetrium_platform.research.experimentation.workbench.api",
-        "noetrium_platform.research.experimentation.workbench.composition"
-      ],
-      "module": "noetrium_platform.platform",
-      "path": "noetrium_platform/platform.py",
-      "system_key": null,
-      "top_system": null
-    },
-    {
-      "imports": [
         "noetrium_platform"
       ],
       "module": "noetrium_platform.product",
@@ -143116,7 +142729,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "8afd3efbcf7d55829cab38ef86be131ef5bb1a77",
+  "source_git_sha": "f7c2d7ed57b87f59a959217788859382f425a811",
   "system_import_edges": [
     {
       "count": 90,
