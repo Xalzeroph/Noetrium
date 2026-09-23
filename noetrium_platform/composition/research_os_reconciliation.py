@@ -8,10 +8,6 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphReconciliationDisposition,
 )
 
-from .research_os_graph import CompiledResearchOSGraphNode
-from .research_os_lowering import LoweredResearchOSGraphNode
-
-
 def _text(value: object, field_name: str) -> str:
     if type(value) is not str or not value.strip() or value != value.strip():
         raise ValueError(f"{field_name} must be canonical non-empty text")
@@ -82,12 +78,15 @@ class ResearchOSNodeReconciliationProof:
 
     def validate(
         self,
-        node: CompiledResearchOSGraphNode,
-        lowering: LoweredResearchOSGraphNode,
+        node: object,
+        lowering: object,
         *,
         execution_cut_id: str,
         attempt_id: str,
     ) -> None:
+        from .research_os_graph import CompiledResearchOSGraphNode
+        from .research_os_lowering import LoweredResearchOSGraphNode
+
         if type(node) is not CompiledResearchOSGraphNode:
             raise TypeError("reconciliation validation requires compiled graph node")
         if type(lowering) is not LoweredResearchOSGraphNode:
@@ -118,8 +117,8 @@ class ResearchOSReconciliationIndeterminate(RuntimeError):
 class ResearchOSNodeReconciliationPort(Protocol):
     def reconcile_node(
         self,
-        node: CompiledResearchOSGraphNode,
-        lowering: LoweredResearchOSGraphNode,
+        node: object,
+        lowering: object,
         *,
         execution_cut_id: str,
         attempt_id: str,
