@@ -710,6 +710,34 @@ class StrictResearchOSControl(
                     "cross-cut value reuse changed canonical output value: "
                     f"{node.graph_node_id}:{output.name}"
                 )
+            if output.kind is ResearchValueKind.ARTIFACT:
+                if self._artifact_lineage is None:
+                    raise ResearchOSExecutionUnsupported(
+                        "cross-cut ARTIFACT reuse requires ArtifactLineageRelationPort"
+                    )
+                if (
+                    source_reference.content_digest is None
+                    or target_reference.content_digest is None
+                ):
+                    raise ValueError(
+                        "cross-cut ARTIFACT reuse lost immutable content digest"
+                    )
+                reuse_edge = ArtifactLineageEdge(
+                    ArtifactContentIdentity(
+                        source_reference.authority_ref,
+                        source_reference.content_digest,
+                    ),
+                    ArtifactContentIdentity(
+                        target_reference.authority_ref,
+                        target_reference.content_digest,
+                    ),
+                    "reused_from",
+                )
+                stored_edge = self._artifact_lineage.add(reuse_edge)
+                if stored_edge != reuse_edge:
+                    raise RuntimeError(
+                        "artifact lineage authority changed immutable reuse edge"
+                    )
             rows.append(
                 {
                     "name": output.name,
