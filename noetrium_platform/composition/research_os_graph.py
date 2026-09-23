@@ -366,6 +366,7 @@ def bind_research_portfolio_scheduler(
     execution_id: str | None = None,
     lease_seconds: float = 30.0,
     scheduler_owner_id: str | None = None,
+    selected_node_ids: tuple[str, ...] | None = None,
 ) -> ResearchGraphScheduler:
     return ResearchGraphScheduler(
         compilation.plan,
@@ -378,6 +379,7 @@ def bind_research_portfolio_scheduler(
         execution_id=execution_id,
         lease_seconds=lease_seconds,
         scheduler_owner_id=scheduler_owner_id,
+        selected_node_ids=selected_node_ids,
     )
 
 
