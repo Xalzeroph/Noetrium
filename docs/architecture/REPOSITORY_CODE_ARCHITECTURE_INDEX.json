@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3614,
-    "python_import_edges": 6776,
-    "symbols": 4802,
-    "tracked_files": 4243,
+    "python_files": 3615,
+    "python_import_edges": 6777,
+    "symbols": 4805,
+    "tracked_files": 4244,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4796,
+    "python": 4799,
     "typescript": 5
   },
   "parse_errors": [],
@@ -5514,6 +5514,12 @@
       "source_module": "noetrium_platform.composition.research_os",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.product.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_checkpoint",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -40673,7 +40679,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2591,
+      "count": 2592,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -40789,7 +40795,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1926,
+    "core_platform": 1927,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
@@ -40800,7 +40806,7 @@
     "tooling": 76
   },
   "role_symbol_counts": {
-    "core_platform": 3319,
+    "core_platform": 3322,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -40812,7 +40818,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "7cddecc5ea6bf4f0e0cd6e9760b27e478292a960",
+  "source_git_sha": "dbd83472cde4d57ff834e4d7ed7d0d3dc7baa0c0",
   "symbols": [
     {
       "bases": [],
@@ -63206,6 +63212,70 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "execution_cut_id: str",
+        "graph_node_id: str",
+        "semantic_digest: str",
+        "lowering_digest: str",
+        "authority_id: str",
+        "machine_cut: MachineCut",
+        "evidence_digests: tuple[str, ...]",
+        "proof_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 20,
+      "methods": [
+        "__post_init__",
+        "validate"
+      ],
+      "module": "noetrium_platform.composition.research_os_checkpoint",
+      "name": "ResearchOSNodeCheckpointProof",
+      "path": "noetrium_platform/composition/research_os_checkpoint.py",
+      "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSNodeCheckpointProof",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 95,
+      "methods": [],
+      "module": "noetrium_platform.composition.research_os_checkpoint",
+      "name": "ResearchOSCheckpointIndeterminate",
+      "path": "noetrium_platform/composition/research_os_checkpoint.py",
+      "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSCheckpointIndeterminate",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 100,
+      "methods": [
+        "checkpoint_node"
+      ],
+      "module": "noetrium_platform.composition.research_os_checkpoint",
+      "name": "ResearchOSNodeCheckpointPort",
+      "path": "noetrium_platform/composition/research_os_checkpoint.py",
+      "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSNodeCheckpointPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "graph_node_id: str",
         "semantic_digest: str",
         "lowering_digest: str",
@@ -64078,7 +64148,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 64,
+      "line": 69,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeUnsupported",
@@ -64094,7 +64164,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 68,
+      "line": 73,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeFailure",
@@ -64110,7 +64180,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 72,
+      "line": 77,
       "methods": [
         "__init__",
         "admit",
@@ -64121,6 +64191,7 @@
         "_execute_experiment",
         "_execute_method",
         "_execute_program",
+        "checkpoint_node",
         "reconcile_node",
         "_lower_program_digest",
         "_recovered_result",
