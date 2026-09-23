@@ -900,6 +900,57 @@ class ResearchRevisionDiff:
             raise TypeError("research revision impacts must be typed tuple")
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchExecutionTarget:
+    """Stable live-execution identity bound to one immutable scientific revision."""
+
+    execution_id: str
+    revision: ResearchGraphRevision
+    node: ResearchNodeRef | None = None
+    target_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _token(self.execution_id, "research execution_id")
+        if type(self.revision) is not ResearchGraphRevision:
+            raise TypeError("research execution target requires ResearchGraphRevision")
+        if self.node is not None and type(self.node) is not ResearchNodeRef:
+            raise TypeError("research execution node must be ResearchNodeRef when provided")
+        object.__setattr__(
+            self,
+            "target_digest",
+            canonical_digest(
+                {
+                    "execution_id": self.execution_id,
+                    "portfolio_id": self.revision.portfolio_id,
+                    "research_revision_digest": self.revision.revision_digest,
+                    "node": (
+                        None
+                        if self.node is None
+                        else {
+                            "program_id": self.node.program_id,
+                            "node_id": self.node.node_id,
+                        }
+                    ),
+                }
+            ),
+        )
+
+    @property
+    def portfolio_id(self) -> str:
+        return self.revision.portfolio_id
+
+    @property
+    def research_revision_digest(self) -> str:
+        return self.revision.revision_digest
+
+    def for_node(self, program_id: str, node_id: str) -> "ResearchExecutionTarget":
+        return ResearchExecutionTarget(
+            self.execution_id,
+            self.revision,
+            ResearchNodeRef(program_id, node_id),
+        )
+
+
 class ResearchControlAction(StrEnum):
     RUN = "run"
     INSPECT = "inspect"
@@ -916,35 +967,36 @@ class ResearchControlAction(StrEnum):
 @dataclass(frozen=True, slots=True)
 class ResearchControlRequest:
     action: ResearchControlAction
-    target: str
+    target: ResearchExecutionTarget
     payload: JsonValue = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.action, ResearchControlAction):
             raise TypeError("research control action must be typed")
-        if not isinstance(self.target, str) or not self.target.strip():
-            raise ValueError("research control target must be non-empty")
-        object.__setattr__(self, "target", self.target.strip())
+        if type(self.target) is not ResearchExecutionTarget:
+            raise TypeError("research control target must be ResearchExecutionTarget")
         object.__setattr__(self, "payload", freeze_json(self.payload))
 
 
 @dataclass(frozen=True, slots=True)
 class ResearchControlReceipt:
     action: ResearchControlAction
-    target: str
+    target: ResearchExecutionTarget
     state: str
-    revision_digest: str
+    control_revision_digest: str
     payload: JsonValue = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.action, ResearchControlAction):
             raise TypeError("research control receipt action must be typed")
-        if not isinstance(self.target, str) or not self.target.strip():
-            raise ValueError("research control receipt target must be non-empty")
+        if type(self.target) is not ResearchExecutionTarget:
+            raise TypeError("research control receipt target must be ResearchExecutionTarget")
         if not isinstance(self.state, str) or not self.state.strip():
             raise ValueError("research control receipt state must be non-empty")
-        require_sha256(self.revision_digest, "research control revision")
-        object.__setattr__(self, "target", self.target.strip())
+        require_sha256(
+            self.control_revision_digest,
+            "research control state revision",
+        )
         object.__setattr__(self, "state", self.state.strip())
         object.__setattr__(self, "payload", freeze_json(self.payload))
 
@@ -986,16 +1038,16 @@ class ResearchOS(Protocol):
         message: str = "",
     ) -> ResearchGraphRevision: ...
 
-    def run(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
-    def inspect(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
-    def pause(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
-    def drain(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
-    def interrupt(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
-    def resume(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
-    def retry(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
-    def cancel(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
-    def checkpoint(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
-    def reconcile(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def run(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def inspect(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def pause(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def drain(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def interrupt(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def resume(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def retry(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def cancel(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def checkpoint(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def reconcile(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt: ...
 
 
 class ResearchOSPort(Protocol):
@@ -1113,46 +1165,48 @@ class _BoundResearchOS:
     def _control(
         self,
         action: ResearchControlAction,
-        target: str,
+        target: ResearchExecutionTarget,
         payload: JsonInput = None,
     ) -> ResearchControlReceipt:
+        if type(target) is not ResearchExecutionTarget:
+            raise TypeError("research OS control requires ResearchExecutionTarget")
         receipt = self._port.control(
             ResearchControlRequest(action, target, freeze_json(payload))
         )
         if type(receipt) is not ResearchControlReceipt:
             raise TypeError("research OS control port returned invalid receipt")
-        if receipt.action is not action or receipt.target != target.strip():
+        if receipt.action is not action or receipt.target != target:
             raise ValueError("research OS control receipt identity drifted")
         return receipt
 
-    def run(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def run(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.RUN, target, payload)
 
-    def inspect(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def inspect(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.INSPECT, target, payload)
 
-    def pause(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def pause(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.PAUSE, target, payload)
 
-    def drain(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def drain(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.DRAIN, target, payload)
 
-    def interrupt(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def interrupt(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.INTERRUPT, target, payload)
 
-    def resume(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def resume(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.RESUME, target, payload)
 
-    def retry(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def retry(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.RETRY, target, payload)
 
-    def cancel(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def cancel(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.CANCEL, target, payload)
 
-    def checkpoint(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def checkpoint(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.CHECKPOINT, target, payload)
 
-    def reconcile(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
+    def reconcile(self, target: ResearchExecutionTarget, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.RECONCILE, target, payload)
 
 
@@ -1369,6 +1423,7 @@ __all__ = [
     "ResearchDefinition",
     "ResearchDefinitionKind",
     "ResearchDependency",
+    "ResearchExecutionTarget",
     "ResearchGraphRevision",
     "ResearchImpactState",
     "ResearchImplementation",
