@@ -137,15 +137,19 @@ def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
 
         reference_code = (
             "import json,sys;"
-            "from noetrium.api import ResearchOS;"
+            "from noetrium.api import ResearchExecutionTarget,ResearchGraphRevision,ResearchOS;"
             "from noetrium_platform.product.research_os import bind_research_os;"
             "from noetrium_platform.product.reference import ReferenceResearchOSPort;"
-            "action=sys.argv[1];target=sys.argv[2];"
+            "action=sys.argv[1];execution_id=sys.argv[2];"
             "research_os=bind_research_os(ReferenceResearchOSPort());"
             "assert isinstance(research_os,ResearchOS);"
+            "revision=ResearchGraphRevision('qualification','0'*64,(),'installed qualification');"
+            "target=ResearchExecutionTarget(execution_id,revision);"
             "result=getattr(research_os,action)(target);"
             "print(json.dumps({'ok':True,'command':action,'result':"
-            "{'action':result.action.value,'target':result.target,'state':result.state}},"
+            "{'action':result.action.value,'execution_id':result.target.execution_id,"
+            "'research_revision_digest':result.target.research_revision_digest,"
+            "'state':result.state,'control_revision_digest':result.control_revision_digest}},"
             "sort_keys=True))"
         )
         for command in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile"):
