@@ -15,6 +15,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     JsonObject,
     JsonValue,
+    MachineCut,
     MachineStatus,
     canonical_bytes,
     canonical_digest,
@@ -42,6 +43,10 @@ from noetrium_platform.research.execution.workflow.runtime import (
     UniversalMethodMachine,
 )
 
+from .research_os_checkpoint import (
+    ResearchOSCheckpointIndeterminate,
+    ResearchOSNodeCheckpointProof,
+)
 from .research_os_experiment import (
     ResearchOSExperimentRuntimeBinding,
     ResearchOSExperimentRuntimeBindingPort,
@@ -609,6 +614,61 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 f"status={result.status.value}"
             )
         return result.previous_value
+
+    def checkpoint_node(
+        self,
+        node: CompiledResearchOSGraphNode,
+        lowering: LoweredResearchOSGraphNode,
+        *,
+        execution_cut_id: str,
+    ) -> ResearchOSNodeCheckpointProof:
+        if type(node) is not CompiledResearchOSGraphNode:
+            raise TypeError("canonical checkpoint requires compiled graph node")
+        if type(lowering) is not LoweredResearchOSGraphNode:
+            raise TypeError("canonical checkpoint requires lowered graph node")
+        if lowering.source != node:
+            raise ValueError("canonical checkpoint node/lowering identity drifted")
+        require_sha256(execution_cut_id, "canonical checkpoint execution_cut_id")
+        machine_id = self._machine_id(
+            execution_cut_id,
+            node.graph_node_id,
+            lowering.lowering_digest,
+        )
+        journal = (
+            self._method_journal
+            if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE
+            else self._machine_journal
+        )
+        head = journal.latest(machine_id)
+        if head is None:
+            raise ResearchOSCheckpointIndeterminate(
+                "lower Machine has no accepted journal head"
+            )
+        expected_program_digest = self._lower_program_digest(lowering)
+        if head.program_digest != expected_program_digest:
+            raise CanonicalResearchOSRuntimeFailure(
+                "lower Machine journal program identity drifted during checkpoint"
+            )
+        if head.accepted_status not in {
+            MachineStatus.COMPLETED,
+            MachineStatus.FAILED,
+            MachineStatus.WAITING,
+            MachineStatus.INTERRUPTED,
+        }:
+            raise ResearchOSCheckpointIndeterminate(
+                "lower Machine head is not at a checkpoint-safe status: "
+                f"{head.accepted_status.value}"
+            )
+        cut = MachineCut.from_commit(head)
+        return ResearchOSNodeCheckpointProof(
+            execution_cut_id,
+            node.graph_node_id,
+            node.semantic_digest,
+            lowering.lowering_digest,
+            "machine-journal",
+            cut,
+            (head.commit_id,),
+        )
 
     def reconcile_node(
         self,
