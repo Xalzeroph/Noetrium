@@ -400,7 +400,7 @@ class UniversalMethodMachine:
 
     def _request(self, program: MethodProgram, runtime: MethodRuntimeContext, input_value: object,
                  state: _ExecutionState, node_id: str, visit: int) -> MethodNodeRequest:
-        operation_id = self._operation_id(runtime.execution.run_id, program, node_id, visit)
+        operation_id = self._operation_id(runtime.execution, program, node_id, visit)
         context = runtime.execution.child(
             span_id=f"method:{node_id}:{state.sequence}",
             operation_id=operation_id,
@@ -435,7 +435,7 @@ class UniversalMethodMachine:
         if dispatcher is None:
             node_result = self._invoke_node_body(runtime, node, request)
             return node_result, tuple(node_result.effect_receipts)
-        operation_id = self._operation_id(runtime.execution.run_id, program, request.node_id, request.visit)
+        operation_id = self._operation_id(runtime.execution, program, request.node_id, request.visit)
         payload = {
             "program_digest": program.program_digest,
             "node_id": request.node_id,
@@ -456,7 +456,7 @@ class UniversalMethodMachine:
             handler=lambda _envelope: self._invoke_node_body(runtime, node, request),
             digest_output=True,
             effect_projector=lambda output: tuple(output.effect_receipts),
-            idempotency_key=f"method:{program.program_digest}:{request.node_id}:{request.visit}",
+            idempotency_key=self._node_idempotency_key(runtime.execution, program, request.node_id, request.visit),
         )
         node_result = dispatcher.require(operation)
         if not isinstance(node_result, MethodNodeResult):
@@ -477,7 +477,7 @@ class UniversalMethodMachine:
             if not isinstance(result, MethodNodeResult):
                 raise TypeError("method node handler must return MethodNodeResult")
             return result, tuple(result.effect_receipts)
-        operation_id = self._operation_id(runtime.execution.run_id, program, request.node_id, request.visit)
+        operation_id = self._operation_id(runtime.execution, program, request.node_id, request.visit)
         payload = {
             "program_digest": program.program_digest,
             "node_id": request.node_id,
@@ -498,7 +498,7 @@ class UniversalMethodMachine:
             handler=lambda _envelope: self._invoke_node_body_async(runtime, node, request),
             digest_output=True,
             effect_projector=lambda output: tuple(output.effect_receipts),
-            idempotency_key=f"method:{program.program_digest}:{request.node_id}:{request.visit}",
+            idempotency_key=self._node_idempotency_key(runtime.execution, program, request.node_id, request.visit),
         )
         require = getattr(dispatcher, "require", None)
         if not callable(require):
@@ -645,7 +645,10 @@ class UniversalMethodMachine:
                 raise RuntimeError("capability node requires MethodRuntimeContext.capabilities")
             capability_id = UniversalMethodMachine._capability_id(node, request)
             descriptor = runtime.capabilities.describe(capability_id)
-            key = f"method:{request.context.run_id}:{request.node_id}:{request.visit}"
+            key = UniversalMethodMachine._capability_idempotency_key(
+                request.context,
+                capability_id,
+            )
             capability_payload = (
                 request.previous_value
                 if request.previous_value is not None
@@ -825,8 +828,76 @@ class UniversalMethodMachine:
         return counts
 
     @staticmethod
-    def _operation_id(run_id: str, program: MethodProgram, node_id: str, visit: int) -> str:
-        return f"method:{run_id}:{program.program_digest[:16]}:{node_id}:{visit}"
+    def _semantic_execution_scope(context: ExecutionContext) -> dict[str, JsonValue]:
+        return {
+            "run_id": context.run_id,
+            "study_id": context.study_id,
+            "condition_id": context.condition_id,
+            "lifetime_id": context.lifetime_id,
+            "branch_id": context.branch_id,
+            "task_id": context.task_id,
+        }
+
+    @staticmethod
+    def _node_semantic_identity(
+        context: ExecutionContext,
+        program: MethodProgram,
+        node_id: str,
+        visit: int,
+    ) -> str:
+        return canonical_digest({
+            "scope": UniversalMethodMachine._semantic_execution_scope(context),
+            "program_digest": program.program_digest,
+            "node_id": node_id,
+            "visit": visit,
+        })
+
+    @staticmethod
+    def _operation_id(
+        context: ExecutionContext,
+        program: MethodProgram,
+        node_id: str,
+        visit: int,
+    ) -> str:
+        identity = UniversalMethodMachine._node_semantic_identity(
+            context,
+            program,
+            node_id,
+            visit,
+        )
+        return f"method:{context.run_id}:{identity[:24]}"
+
+    @staticmethod
+    def _node_idempotency_key(
+        context: ExecutionContext,
+        program: MethodProgram,
+        node_id: str,
+        visit: int,
+    ) -> str:
+        return (
+            "method-node:"
+            + UniversalMethodMachine._node_semantic_identity(
+                context,
+                program,
+                node_id,
+                visit,
+            )
+        )
+
+    @staticmethod
+    def _capability_idempotency_key(
+        context: ExecutionContext,
+        capability_id: str,
+    ) -> str:
+        if not isinstance(context.operation_id, str) or not context.operation_id.strip():
+            raise RuntimeError(
+                "method capability invocation requires a stable operation identity"
+            )
+        return "method-capability:" + canonical_digest({
+            "scope": UniversalMethodMachine._semantic_execution_scope(context),
+            "operation_id": context.operation_id,
+            "capability_id": capability_id,
+        })
 
     @staticmethod
     def _evidence_obligations(program: MethodProgram) -> tuple[str, ...]:
