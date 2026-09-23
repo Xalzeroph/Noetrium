@@ -10,6 +10,11 @@ from noetrium_platform.evidence.artifact.content.api import (
     ArtifactBlobRef,
     ArtifactBlobStorePort,
 )
+from noetrium_platform.evidence.artifact.retention.api import (
+    ArtifactRetentionNotFound,
+    ArtifactRetentionPort,
+    ArtifactRetentionState,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     JsonValue,
     canonical_bytes,
@@ -40,6 +45,7 @@ class ResearchOSArtifactValueAuthority:
         self,
         blobs: ArtifactBlobStorePort,
         registry: ArtifactRegistryPort,
+        retention: ArtifactRetentionPort,
     ) -> None:
         if not isinstance(blobs, ArtifactBlobStorePort):
             raise TypeError(
@@ -49,8 +55,13 @@ class ResearchOSArtifactValueAuthority:
             raise TypeError(
                 "Research OS artifact value authority requires ArtifactRegistryPort"
             )
+        if not isinstance(retention, ArtifactRetentionPort):
+            raise TypeError(
+                "Research OS artifact value authority requires ArtifactRetentionPort"
+            )
         self._blobs = blobs
         self._registry = registry
+        self._retention = retention
 
     @staticmethod
     def _artifact_id(subject: ResearchOSValueSubject) -> str:
@@ -118,6 +129,46 @@ class ResearchOSArtifactValueAuthority:
             )
         return value
 
+    @staticmethod
+    def _expected_retention(
+        subject: ResearchOSValueSubject,
+        artifact_id: str,
+    ) -> ArtifactRetentionState:
+        return ArtifactRetentionState(
+            artifact_id=artifact_id,
+            retention=ArtifactRetention.RUN,
+            pinned=True,
+            generation=1,
+            reason_refs=(subject.subject_digest,),
+        )
+
+    def _ensure_retention(
+        self,
+        subject: ResearchOSValueSubject,
+        artifact_id: str,
+    ) -> ArtifactRetentionState:
+        expected = self._expected_retention(subject, artifact_id)
+        try:
+            current = self._retention.get(artifact_id)
+        except ArtifactRetentionNotFound:
+            current = self._retention.compare_and_set(
+                artifact_id,
+                expected_generation=0,
+                retention=expected.retention,
+                pinned=expected.pinned,
+                reason_refs=expected.reason_refs,
+            )
+        if (
+            current.artifact_id != expected.artifact_id
+            or current.retention is not expected.retention
+            or current.pinned is not expected.pinned
+            or current.reason_refs != expected.reason_refs
+        ):
+            raise ValueError(
+                "Research OS artifact effective retention/pinning drifted"
+            )
+        return current
+
     @classmethod
     def _validate_record(
         cls,
@@ -182,6 +233,7 @@ class ResearchOSArtifactValueAuthority:
             raise RuntimeError(
                 "Research OS artifact registry changed immutable artifact record"
             )
+        self._ensure_retention(subject, stored.artifact_id)
         return ResearchOSValueReference(
             subject,
             self.authority_id,
@@ -197,6 +249,7 @@ class ResearchOSArtifactValueAuthority:
             raise TypeError("Research OS artifact lookup subject must be typed")
         record = self._registry.get(self._artifact_id(subject))
         ref = self._validate_record(subject, record)
+        self._ensure_retention(subject, record.artifact_id)
         if not self._blobs.verify(ref):
             raise RuntimeError(
                 "Research OS artifact blob failed integrity verification"
@@ -233,6 +286,10 @@ class ResearchOSArtifactValueAuthority:
     ) -> str:
         resolved = self.resolve(reference)
         record = self._registry.get(reference.authority_ref)
+        retention = self._ensure_retention(
+            reference.subject,
+            record.artifact_id,
+        )
         return canonical_digest(
             {
                 "authority_id": self.authority_id,
@@ -241,6 +298,10 @@ class ResearchOSArtifactValueAuthority:
                 "scope": record.scope.key,
                 "content_digest": record.digest,
                 "resolved_value_digest": canonical_digest(resolved),
+                "retention": retention.retention.value,
+                "pinned": retention.pinned,
+                "retention_generation": retention.generation,
+                "retention_reason_refs": retention.reason_refs,
             }
         )
 
