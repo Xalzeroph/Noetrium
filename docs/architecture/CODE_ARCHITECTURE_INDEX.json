@@ -4757,6 +4757,21 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.composition.research_os_execution.ResearchOSNodeReconciliationPort",
+      "target": "noetrium_platform.composition.research_os_execution.ResearchOSNodeReconciliationProof"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_execution.ResearchOSNodeReconciliationPort",
+      "target": "noetrium_platform.composition.research_os_graph.CompiledResearchOSGraphNode"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_execution.ResearchOSNodeReconciliationPort",
+      "target": "noetrium_platform.composition.research_os_lowering.LoweredResearchOSGraphNode"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.composition.research_os_execution.ResearchOSNodeRuntimePort",
       "target": "noetrium_platform.composition.research_os_execution.ResearchOSNodeAdmission"
     },
@@ -39662,7 +39677,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 132,
+      "line": 190,
       "methods": [
         "__post_init__",
         "admission"
@@ -39681,7 +39696,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 312,
+      "line": 370,
       "methods": [
         "__init__",
         "execute",
@@ -39703,7 +39718,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 222,
+      "line": 280,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -39727,7 +39742,7 @@
         "semantic_digest"
       ],
       "kind": "dataclass",
-      "line": 67,
+      "line": 68,
       "methods": [
         "__post_init__"
       ],
@@ -39749,7 +39764,57 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 110,
+      "line": 176,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "noetrium_platform.composition.research_os_execution",
+      "name": "ResearchOSNodeReconciliationPort",
+      "nesting": [
+        "ResearchOSNodeReconciliationPort"
+      ],
+      "qualname": "noetrium_platform.composition.research_os_execution.ResearchOSNodeReconciliationPort",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "attempt_id",
+        "disposition",
+        "execution_cut_id",
+        "failure_message",
+        "failure_type",
+        "graph_node_id",
+        "proof_digest"
+      ],
+      "kind": "dataclass",
+      "line": 133,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.research_os_execution",
+      "name": "ResearchOSNodeReconciliationProof",
+      "nesting": [
+        "ResearchOSNodeReconciliationProof"
+      ],
+      "qualname": "noetrium_platform.composition.research_os_execution.ResearchOSNodeReconciliationProof",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 111,
       "methods": [
         "admit",
         "execute"
@@ -39770,7 +39835,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 454,
+      "line": 512,
       "methods": [
         "__init__",
         "control",
@@ -39789,6 +39854,7 @@
         "_retry_descendants",
         "_retry",
         "_checkpoint",
+        "_reconcile",
         "_execution_receipt"
       ],
       "module": "noetrium_platform.composition.research_os_execution",
@@ -101291,8 +101357,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3374,
-    "classes": 3307,
+    "association_edges": 3377,
+    "classes": 3309,
     "constructor_edges": 920,
     "inheritance_edges": 145,
     "module_import_edges": 5030,
@@ -142274,7 +142340,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "207da5dfdcb79d236ec582fe18ab70de9a1b5fc8",
+  "source_git_sha": "ddaba626ead0c39f080ae00a8cde27d8895a019d",
   "system_import_edges": [
     {
       "count": 90,

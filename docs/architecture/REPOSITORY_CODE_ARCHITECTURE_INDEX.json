@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3612,
     "python_import_edges": 6769,
-    "symbols": 4790,
+    "symbols": 4792,
     "tracked_files": 4241,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4784,
+    "python": 4786,
     "typescript": 5
   },
   "parse_errors": [],
@@ -40758,7 +40758,7 @@
     "tooling": 75
   },
   "role_symbol_counts": {
-    "core_platform": 3308,
+    "core_platform": 3310,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -40770,7 +40770,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "207da5dfdcb79d236ec582fe18ab70de9a1b5fc8",
+  "source_git_sha": "ddaba626ead0c39f080ae00a8cde27d8895a019d",
   "symbols": [
     {
       "bases": [],
@@ -63151,7 +63151,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 67,
+      "line": 68,
       "methods": [
         "__post_init__"
       ],
@@ -63171,7 +63171,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 110,
+      "line": 111,
       "methods": [
         "admit",
         "execute"
@@ -63180,6 +63180,52 @@
       "name": "ResearchOSNodeRuntimePort",
       "path": "noetrium_platform/composition/research_os_execution.py",
       "qualname": "noetrium_platform.composition.research_os_execution.ResearchOSNodeRuntimePort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "graph_node_id: str",
+        "execution_cut_id: str",
+        "attempt_id: str",
+        "disposition: ResearchGraphReconciliationDisposition",
+        "proof_digest: str",
+        "failure_type: str | None",
+        "failure_message: str | None"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 133,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.research_os_execution",
+      "name": "ResearchOSNodeReconciliationProof",
+      "path": "noetrium_platform/composition/research_os_execution.py",
+      "qualname": "noetrium_platform.composition.research_os_execution.ResearchOSNodeReconciliationProof",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 176,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "noetrium_platform.composition.research_os_execution",
+      "name": "ResearchOSNodeReconciliationPort",
+      "path": "noetrium_platform/composition/research_os_execution.py",
+      "qualname": "noetrium_platform.composition.research_os_execution.ResearchOSNodeReconciliationPort",
       "role": "core_platform"
     },
     {
@@ -63197,7 +63243,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 132,
+      "line": 190,
       "methods": [
         "__post_init__",
         "admission"
@@ -63216,7 +63262,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 222,
+      "line": 280,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -63230,7 +63276,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 312,
+      "line": 370,
       "methods": [
         "__init__",
         "execute",
@@ -63250,7 +63296,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 454,
+      "line": 512,
       "methods": [
         "__init__",
         "control",
@@ -63269,6 +63315,7 @@
         "_retry_descendants",
         "_retry",
         "_checkpoint",
+        "_reconcile",
         "_execution_receipt"
       ],
       "module": "noetrium_platform.composition.research_os_execution",
