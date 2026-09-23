@@ -20,6 +20,7 @@ from noetrium_platform.product.research_os import (
     ResearchPortfolio,
 )
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphActiveCutStorePort,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
@@ -341,6 +342,8 @@ class StrictResearchOSControl(ResearchOSControlPort):
     ) -> None:
         if not isinstance(execution_store, ResearchGraphExecutionStorePort):
             raise TypeError("Research OS control requires graph execution store")
+        if not isinstance(execution_store, ResearchGraphActiveCutStorePort):
+            raise TypeError("Research OS control requires active-cut CAS store")
         if type(execution_pool) is not ResearchExecutionPool:
             raise TypeError("Research OS control requires explicit execution pool")
         if not isinstance(runtime, ResearchOSNodeRuntimePort):

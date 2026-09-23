@@ -256,3 +256,136 @@ def test_unimplemented_control_action_fails_closed(tmp_path: Path) -> None:
             research_os.pause(target)
     finally:
         pool.close()
+
+
+
+class _ExecutionStoreWithoutActiveCut:
+    def ensure_execution(self, execution_id, plan):
+        raise AssertionError("unused")
+
+    def snapshot(self, execution_id):
+        raise AssertionError("unused")
+
+    def recover_expired(self, execution_id, *, now_ns):
+        raise AssertionError("unused")
+
+    def mark_ready(self, execution_id, node_id, *, now_ns):
+        raise AssertionError("unused")
+
+    def claim(
+        self,
+        execution_id,
+        node_id,
+        *,
+        owner_id,
+        now_ns,
+        lease_expires_at_ns,
+    ):
+        raise AssertionError("unused")
+
+    def mark_running(
+        self,
+        execution_id,
+        node_id,
+        *,
+        attempt_id,
+        owner_id,
+        now_ns,
+    ):
+        raise AssertionError("unused")
+
+    def renew_lease(
+        self,
+        execution_id,
+        node_id,
+        *,
+        attempt_id,
+        owner_id,
+        now_ns,
+        lease_expires_at_ns,
+    ):
+        raise AssertionError("unused")
+
+    def mark_succeeded(
+        self,
+        execution_id,
+        node_id,
+        *,
+        attempt_id,
+        owner_id,
+        now_ns,
+    ):
+        raise AssertionError("unused")
+
+    def mark_failed(
+        self,
+        execution_id,
+        node_id,
+        *,
+        attempt_id,
+        owner_id,
+        now_ns,
+        failure_type,
+        failure_message,
+    ):
+        raise AssertionError("unused")
+
+    def mark_retry_wait(
+        self,
+        execution_id,
+        node_id,
+        *,
+        attempt_id,
+        owner_id,
+        now_ns,
+        retry_not_before_ns,
+        failure_type,
+        failure_message,
+    ):
+        raise AssertionError("unused")
+
+    def mark_blocked(self, execution_id, node_id, *, blockers):
+        raise AssertionError("unused")
+
+    def reconcile_node(
+        self,
+        execution_id,
+        node_id,
+        *,
+        disposition,
+        now_ns,
+    ):
+        raise AssertionError("unused")
+
+    def mark_reused(
+        self,
+        execution_id,
+        node_id,
+        *,
+        source_execution_id,
+        source_node_id,
+        semantic_digest,
+        proof_digest,
+        now_ns,
+    ):
+        raise AssertionError("unused")
+
+    def reuse_record(self, execution_id, node_id):
+        raise AssertionError("unused")
+
+    def attempts(self, execution_id, node_id):
+        raise AssertionError("unused")
+
+
+def test_control_requires_explicit_active_cut_cas_authority() -> None:
+    pool = _pool()
+    try:
+        with pytest.raises(TypeError, match="active-cut CAS store"):
+            StrictResearchOSControl(
+                _ExecutionStoreWithoutActiveCut(),
+                pool,
+                _Runtime(),
+                ResearchOSValueRouter((_ValueAuthority(),)),
+            )
+    finally:
+        pool.close()
