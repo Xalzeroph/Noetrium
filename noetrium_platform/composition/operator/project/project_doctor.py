@@ -33,21 +33,16 @@ _PACKAGE = re.compile(r"[a-z][a-z0-9_]*")
 _PROBE_TIMEOUT_S = 30
 _PROBE_SCRIPT = r'''
 from noetrium import api
-from __PACKAGE__.method import METHOD_PROGRAM, METHOD_SPEC
-from __PACKAGE__.study import STUDY_SPEC, build_study
+from __PACKAGE__.research import PORTFOLIO, PROGRAM
 
-if not isinstance(METHOD_SPEC, api.AgentMethodSpec):
-    raise TypeError("method module must export AgentMethodSpec")
-if not isinstance(METHOD_PROGRAM, api.MethodProgram):
-    raise TypeError("method module must compile MethodProgram")
-if not isinstance(STUDY_SPEC, api.AgentStudySpec):
-    raise TypeError("study module must export AgentStudySpec")
-if METHOD_SPEC.method_id != STUDY_SPEC.method_id:
-    raise ValueError("method and study must share one method identity")
-if not callable(build_study):
-    raise TypeError("study module must export build_study")
-if not callable(api.compile_research_method):
-    raise TypeError("unified API must expose compile_research_method")
+if not isinstance(PROGRAM, api.ResearchProgram):
+    raise TypeError("research module must export ResearchProgram")
+if not isinstance(PORTFOLIO, api.ResearchPortfolio):
+    raise TypeError("research module must export ResearchPortfolio")
+if PORTFOLIO.programs != (PROGRAM,):
+    raise ValueError("project portfolio must contain the authored program")
+if not PROGRAM.nodes or not PROGRAM.definitions:
+    raise ValueError("research program must contain definitions and nodes")
 print("ready")
 '''
 
@@ -193,8 +188,7 @@ def doctor_project(
         package = ""
     required_files = () if not package else (
         _MANIFEST_PATH,
-        f"src/{package}/method.py",
-        f"src/{package}/study.py",
+        f"src/{package}/research.py",
         "tests/test_generated_project.py",
     )
     files_ok = bool(required_files) and all(
@@ -230,7 +224,7 @@ def doctor_project(
     checks.append(_check(
         "standard_bindings",
         compile_ready,
-        "method, study and MethodProgram share one identity through noetrium.api",
+        "whole-project ResearchProgram and ResearchPortfolio compile through noetrium.api",
         "resolve project compile readiness: " + compile_detail,
     ))
 

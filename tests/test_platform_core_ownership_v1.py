@@ -8,12 +8,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_unified_api_is_the_only_root_product_entrypoint() -> None:
     assert not (ROOT / "noetrium/platform.py").exists()
+    assert not (ROOT / "noetrium_platform/platform.py").exists()
 
     from noetrium import api
-    import noetrium_platform.platform as platform_owner
+    from noetrium_platform.product import api as product_api
 
-    for name in platform_owner.__all__:
-        assert api.resolve(name) is getattr(platform_owner, name)
+    assert api.__all__ == product_api.__all__
+    for name in api.__all__:
+        assert getattr(api, name) is getattr(product_api, name)
 
 
 def test_host_route_provider_is_constructed_at_one_authority() -> None:

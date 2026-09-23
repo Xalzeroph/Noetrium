@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.reproduction import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
+from research.reproductions.contracts import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
 REPRODUCTION=ReproductionDefinition(
     package="foreact_cvpr2026",lifecycle=ReproductionLifecycle.PROTOCOL_BOUND,
     identity=ReproductionIdentity(method_id="foreact_cvpr2026",title="ForeAct: Steering Your VLA with Efficient Visual Foresight Planning",paper_uri="https://openaccess.thecvf.com/content/CVPR2026/html/Zhang_ForeAct_Steering_Your_VLA_with_Efficient_Visual_Foresight_Planning_CVPR_2026_paper.html",year=2026,paper_revision="CVPR 2026 final proceedings"),

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.reproduction import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
+from research.reproductions.contracts import ReferenceBaseline, ReportedResult, ReproductionAssetKind, ReproductionAssetRef, ReproductionCatalog, ReproductionDefinition, ReproductionIdentity, ReproductionLifecycle
 REPRODUCTION=ReproductionDefinition(
     package="mmbench_gui_cvpr2026",lifecycle=ReproductionLifecycle.PROTOCOL_BOUND,
     identity=ReproductionIdentity(method_id="mmbench_gui_cvpr2026",title="MMBench-GUI: A Unified Hierarchical Evaluation Framework for Multi-Platform GUI Agents",paper_uri="https://openaccess.thecvf.com/content/CVPR2026/html/Wang_MMBench-GUI_A_Unified_Hierarchical_Evaluation_Framework_for_Multi-Platform_GUI_Agents_CVPR_2026_paper.html",year=2026,paper_revision="CVPR 2026 final proceedings"),

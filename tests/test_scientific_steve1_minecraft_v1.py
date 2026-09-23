@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from pathlib import Path
 
-from noetrium.api import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
@@ -21,7 +21,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRunStatus,
     MethodRuntimeContext,
 )
-from noetrium_platform.research.reproduction import ReproductionAssetKind
+from research.reproductions.contracts import ReproductionAssetKind
 
 from research.reproductions.steve1_minecraft.definition import REPRODUCTION
 from research.reproductions.steve1_minecraft.fidelity import (
@@ -191,7 +191,7 @@ def test_steve1_method_program_externalizes_recurrent_state(
         max_steps=4,
     )
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         STEVE1_METHOD_PROGRAM,
         runtime=runtime,
         initial_state=initial_state,

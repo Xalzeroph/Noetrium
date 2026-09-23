@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from noetrium_platform.research.provenance import MethodSourceLaneKind
-from noetrium_platform.research.reproduction import ReproductionAssetKind
+from research.reproductions.provenance import MethodSourceLaneKind
+from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.aflow.definition import REPRODUCTION
 from research.reproductions.aflow.fidelity import (
     AFLOW_FIDELITY,

@@ -1,7 +1,17 @@
 from __future__ import annotations
 
-from noetrium import api
 from noetrium.contracts import canonical_digest, require_sha256
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkCutSpec,
+    BenchmarkSourceKind,
+    BenchmarkSourceSpec,
+    BenchmarkTaskSet,
+    TaskArtifactSpec,
+    TaskDefinition,
+    TaskPackageSpec,
+    TaskSetSplit,
+    TaskVerifierIsolation,
+)
 
 from collections import Counter
 from dataclasses import dataclass
@@ -56,10 +66,10 @@ def srdd_revision() -> str:
     )
 
 
-def build_srdd_source() -> api.BenchmarkSourceSpec:
-    return api.BenchmarkSourceSpec(
+def build_srdd_source() -> BenchmarkSourceSpec:
+    return BenchmarkSourceSpec(
         source_id=SRDD_BENCHMARK_ID,
-        kind=api.BenchmarkSourceKind.CUSTOM,
+        kind=BenchmarkSourceKind.CUSTOM,
         revision_id=srdd_revision(),
         locator=SRDD_REPOSITORY,
         content_digest=SRDD_SOURCE_CONTENT_DIGEST,
@@ -81,7 +91,7 @@ def build_srdd_source() -> api.BenchmarkSourceSpec:
 
 def build_srdd_task_set(
     records: tuple[SrddTaskRecord, ...],
-) -> api.BenchmarkTaskSet:
+) -> BenchmarkTaskSet:
     """Freeze the official 1,200-task SRDD cut used by ChatDev evaluation."""
 
     if type(records) is not tuple or any(
@@ -110,7 +120,7 @@ def build_srdd_task_set(
 
     revision = srdd_revision()
     tasks = tuple(
-        api.TaskDefinition(
+        TaskDefinition(
             task_id=row.task_id,
             revision_id=revision,
             family=row.category,
@@ -121,7 +131,7 @@ def build_srdd_task_set(
                 f"software-name:{row.software_name}",
                 f"subcategory:{row.category}",
             ),
-            package=api.TaskPackageSpec(
+            package=TaskPackageSpec(
                 package_schema_id="srdd.software-project-package.v1",
                 instruction_digest=row.content_digest,
                 environment_requirement_id=(
@@ -130,9 +140,9 @@ def build_srdd_task_set(
                 verifier_requirement_id=(
                     "benchmark.srdd.chatdev-paper-metrics.verifier"
                 ),
-                verifier_isolation=api.TaskVerifierIsolation.SEPARATE,
+                verifier_isolation=TaskVerifierIsolation.SEPARATE,
                 artifacts=(
-                    api.TaskArtifactSpec(
+                    TaskArtifactSpec(
                         "generated_software_repository",
                         "workspace.tar.gz",
                         True,
@@ -144,7 +154,7 @@ def build_srdd_task_set(
     )
     task_ids = tuple(row.task_id for row in ordered)
     category_splits = tuple(
-        api.TaskSetSplit(
+        TaskSetSplit(
             f"category:{category}",
             tuple(
                 row.task_id
@@ -154,7 +164,7 @@ def build_srdd_task_set(
         )
         for category in sorted(category_counts)
     )
-    return api.BenchmarkCutSpec(
+    return BenchmarkCutSpec(
         benchmark_id=SRDD_BENCHMARK_ID,
         revision_id=revision,
         source_digest=SRDD_SOURCE_CONTENT_DIGEST,
@@ -162,7 +172,7 @@ def build_srdd_task_set(
     ).build(
         tasks,
         splits=(
-            api.TaskSetSplit(SRDD_SPLIT_ID, task_ids),
+            TaskSetSplit(SRDD_SPLIT_ID, task_ids),
             *category_splits,
         ),
         selection_policy={

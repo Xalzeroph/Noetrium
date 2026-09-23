@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from noetrium.api import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
@@ -257,7 +257,7 @@ def test_vima_method_program_runs_autoregressive_embodied_loop(
         action_bounds=bounds,
     )
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         VIMA_METHOD_PROGRAM,
         runtime=runtime,
         initial_state=initial_state,

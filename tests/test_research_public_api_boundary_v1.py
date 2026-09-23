@@ -49,7 +49,12 @@ def test_user_facing_quickstarts_use_one_module_style_downstream_api() -> None:
     assert violations == []
 
 
-def test_unified_api_is_the_declared_catalog_entrypoint() -> None:
+def test_unified_api_is_exactly_the_product_research_os_surface() -> None:
     from noetrium import api
+    from noetrium_platform.product import api as product_api
 
-    assert api.catalog().entrypoint == "noetrium.api"
+    assert tuple(api.__all__) == tuple(product_api.__all__)
+    assert "ResearchOS" in api.__all__
+    assert "ResearchProgramBuilder" in api.__all__
+    assert not hasattr(api, "catalog")
+    assert not hasattr(api, "MethodProgram")

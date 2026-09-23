@@ -18,7 +18,7 @@ from noetrium.contracts.discovery import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_generated_catalog_covers_exact_registry() -> None:
+def test_generated_catalog_covers_exact_registry_as_internal_metadata() -> None:
     registry = json.loads(
         (ROOT / "noetrium_platform/foundation/governance/system_registry/catalog.json")
         .read_text(encoding="utf-8")
@@ -26,12 +26,11 @@ def test_generated_catalog_covers_exact_registry() -> None:
     catalog = load_downstream_capability_catalog()
     assert {row.system_key for row in catalog.systems} == set(registry)
     assert catalog.entrypoint == "noetrium.api"
-    assert catalog.symbol_index
-    assert catalog.direct_symbol_sources
-    assert not (set(catalog.direct_symbol_sources) & set(catalog.ambiguous_symbol_sources))
-    assert len(catalog.symbol_index) > len(catalog.direct_symbol_sources)
-    assert set(catalog.direct_symbol_sources).isdisjoint(catalog.ambiguous_symbol_sources)
+    assert catalog.symbol_index == {}
+    assert catalog.ambiguous_symbol_sources == {}
     assert catalog.topology_digest
+    assert all(surface.downstream_surface == "metadata_only" for surface in catalog.systems)
+    assert all(surface.api_modules == () for surface in catalog.systems)
     assert (
         ROOT / "docs/architecture/VNEXT_SYSTEM_CATALOG.json"
     ).read_bytes() == (
@@ -39,91 +38,61 @@ def test_generated_catalog_covers_exact_registry() -> None:
     ).read_bytes()
 
 
-def test_generated_facades_are_importable() -> None:
+def test_generated_system_facades_are_metadata_only() -> None:
     catalog = load_downstream_capability_catalog()
     for surface in catalog.systems:
         assert surface.facade_module is not None
         module = importlib.import_module(surface.facade_module)
-        assert hasattr(module, "__all__")
         assert module.SYSTEM_KEY == surface.system_key
-        for name in module.__all__:
-            assert hasattr(module, name), (
-                f"{surface.system_key}: missing generated export {name}"
-            )
+        assert module.__all__ == ()
 
 
-def test_low_level_runtime_contracts_are_not_default_downstream_api() -> None:
+def test_noetrium_api_is_exact_product_surface() -> None:
+    from noetrium import api
+    from noetrium_platform.product import api as product_api
+
+    assert tuple(api.__all__) == tuple(product_api.__all__)
+    for name in product_api.__all__:
+        assert getattr(api, name) is getattr(product_api, name)
+
+    retired = (
+        "MethodProgram",
+        "MethodProgramBuilder",
+        "CapabilityRequest",
+        "EnvironmentProviderPort",
+        "StudyExecutionPlan",
+        "ResearchCampaignPlan",
+        "bind_research_campaign",
+        "bind_research_execution_pool",
+        "catalog",
+        "search",
+        "describe",
+        "owners",
+        "resolve",
+    )
+    for name in retired:
+        assert not hasattr(api, name)
+
+
+def test_product_surface_contains_research_os_authoring_and_control() -> None:
     from noetrium import api
 
-    assert not hasattr(api, "system")
-    for name in (
-        "PersistentSessionSpec",
-        "PersistentSessionRuntimePort",
-        "RuntimeControllerCommand",
-        "LocalCommandRunnerPort",
-        "DeploymentStatusIdentity",
-    ):
-        assert api.owners(name) == ()
-        assert api.search(name) == ()
-        assert api.describe(name) == ()
-        with pytest.raises(AttributeError):
-            api.resolve(name)
-
-def test_reference_components_are_visible_through_unified_api() -> None:
-    from noetrium import api
-
-    graph = api.VersionedMemoryGraph(api.MemoryGraphSnapshot("g0", (), ()))
-    assert graph.snapshot().generation == "g0"
-
-    # Reference layers stay outside runtime topology while remaining reachable
-    # through the one product API.
-    assert importlib.util.find_spec("noetrium.contracts.systems.components") is None
+    required = {
+        "ResearchOS",
+        "ResearchOSPort",
+        "ResearchPortfolio",
+        "ResearchProgram",
+        "ResearchProgramBuilder",
+        "ResearchGraphRevision",
+        "ResearchDependency",
+        "ResearchNode",
+        "ResearchDefinition",
+        "ResearchControlAction",
+    }
+    assert required <= set(api.__all__)
 
 
-def test_unified_api_supports_symbol_search_and_schema_discovery() -> None:
-    from noetrium import api
-
-    matches = api.search("AgentMethodSpec")
-    assert matches
-    assert matches[0].symbol == "AgentMethodSpec"
-    assert api.owners("AgentMethodSpec")
-    schemas = api.describe("AgentMethodSpec")
-    assert schemas
-    assert all(row["schema"]["name"] == "AgentMethodSpec" for row in schemas)
-
-    assert api.search("definitely-not-a-noetrium-symbol") == ()
-    assert api.describe("definitely-not-a-noetrium-symbol") == ()
-
-
-def test_unified_api_resolution_index_and_unknown_suggestions() -> None:
-    from noetrium import api
-
-    assert api.catalog().direct_source("AgentMethodSpec")
-    assert not api.catalog().ambiguous_sources("AgentMethodSpec")
-    assert api.resolve("AgentMethodSpec") is api.AgentMethodSpec
-
-    with pytest.raises(AttributeError, match="did you mean"):
-        api.resolve("AgentMethodSpe")
-
-
-def test_unified_api_discovers_registry_and_helper_surfaces() -> None:
-    from noetrium import api
-
-    for symbol in ("AgentMethodSpec", "VersionedMemoryGraph", "MultiAgentRuntime"):
-        matches = api.search(symbol)
-        assert matches
-        assert matches[0].symbol == symbol
-        assert api.owners(symbol)
-        assert api.describe(symbol)
-        assert api.resolve(symbol) is getattr(api, symbol)
-
-    helper = api.describe("VersionedMemoryGraph")
-    assert any(row["module"] == "components.api" for row in helper)
-    multi = api.describe("MultiAgentRuntime")
-    assert any(row["module"] == "orchestration.api" for row in multi)
-
-
-def test_catalog_exposes_stable_document_and_surface_fingerprints() -> None:
+def test_catalog_keeps_capability_topology_without_exposing_system_symbols() -> None:
     catalog = load_downstream_capability_catalog()
     assert len(catalog.catalog_digest) == 64
     assert all(len(surface.interface_digest) == 64 for surface in catalog.systems)
@@ -180,6 +149,7 @@ def test_generator_readme_drift_fails_closed(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(module, "render_catalog", lambda _root, _surfaces: b"{}\n")
     monkeypatch.setattr(module, "render_markdown", lambda _root, _surfaces: b"")
     monkeypatch.setattr(module, "render_root_contract_init", lambda _root: "")
+    monkeypatch.setattr(module, "render_unified_api_stub", lambda _root, _surfaces: ("", 0))
     monkeypatch.setattr(module, "_CONVENIENCE_FACADES", {})
     monkeypatch.setattr(module, "_readme_paths", lambda _root: (readme,))
     monkeypatch.setattr(module, "_write_or_check", lambda *_args, **_kwargs: True)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.research.provenance import MethodSourceLane, MethodSourceLaneKind
+from research.reproductions.provenance import MethodSourceLane, MethodSourceLaneKind
 from .source import SOURCE_SENTIENT_OSS_SURROGATE
 
 AGENT_Q_PAPER_URI = "https://arxiv.org/abs/2408.07199"

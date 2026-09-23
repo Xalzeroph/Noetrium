@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from noetrium.api import ResearchFacade
+from noetrium_platform.product.operator.api import ResearchFacade
 from noetrium_platform.product.operator.reference import ReferenceResearchApplication
 from noetrium_platform.product.operator.reference.application import ReferencePhase, ReferenceState
 from noetrium_platform.composition.operator.wiring.research import main

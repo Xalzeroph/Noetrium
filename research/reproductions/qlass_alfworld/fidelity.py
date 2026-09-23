@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.research.provenance import MethodSourceLane, MethodSourceLaneKind
+from research.reproductions.provenance import MethodSourceLane, MethodSourceLaneKind
 from .source import SOURCE_LATER_RELEASED_QLASS_CODE, SOURCE_PAPER_ERA_REPOSITORY_STATE
 
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from noetrium_platform.capabilities.participant.binding.api import (
     ParticipantConfigurationResolverPort,
-    ParticipantImplementationResolverPort,
     ParticipantRuntimeEndpointFactory,
     ParticipantSessionRuntimeResolverPort,
 )
@@ -11,6 +10,9 @@ from noetrium_platform.capabilities.participant.core.api import (
     ParticipantRuntimeBinding,
 )
 from noetrium_platform.capabilities.participant.core.api import ParticipantRuntimeHandle
+from noetrium_platform.capabilities.participant.definition.api import (
+    ParticipantImplementationCatalogPort,
+)
 
 
 class LocalParticipantResolver:
@@ -18,7 +20,7 @@ class LocalParticipantResolver:
 
     def __init__(
         self,
-        implementations: ParticipantImplementationResolverPort,
+        implementations: ParticipantImplementationCatalogPort,
         runtimes: ParticipantSessionRuntimeResolverPort,
         configurations: ParticipantConfigurationResolverPort,
         endpoint_factory: ParticipantRuntimeEndpointFactory,

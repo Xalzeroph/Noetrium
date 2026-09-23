@@ -431,3 +431,21 @@ __all__ = [
 
 from .program_execution_authoring import program_execution_capability_payload
 __all__ = tuple(__all__) + ("program_execution_capability_payload",)
+
+from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphExecutionReport,
+    ResearchGraphNode,
+    ResearchGraphNodeExecutorPort,
+    ResearchGraphNodeResult,
+    ResearchGraphNodeState,
+    ResearchGraphPlan,
+)
+
+__all__ = tuple(__all__) + (
+    "ResearchGraphExecutionReport",
+    "ResearchGraphNode",
+    "ResearchGraphNodeExecutorPort",
+    "ResearchGraphNodeResult",
+    "ResearchGraphNodeState",
+    "ResearchGraphPlan",
+)

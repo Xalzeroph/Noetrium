@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from noetrium.api import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
@@ -120,7 +120,7 @@ def test_react_method_program_steps_think_then_overrides_visible_observation(tmp
         agent_loop=ReactAlfworldAgentLoop(model),
     )
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         REACT_ALFWORLD_METHOD_PROGRAM,
         runtime=runtime,
         initial_state=react_alfworld_initial_state(
@@ -163,7 +163,7 @@ def test_react_method_program_enforces_paper_turn_budget_as_method_semantics(tmp
         agent_loop=ReactAlfworldAgentLoop(model),
     )
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         REACT_ALFWORLD_METHOD_PROGRAM,
         runtime=runtime,
         initial_state=react_alfworld_initial_state(base_prompt="DEMO\n", initial_observation="Start."),

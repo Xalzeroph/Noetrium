@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from noetrium.api import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
@@ -109,7 +109,7 @@ def test_swe_agent_method_program_runs_command_observation_submit_loop(tmp_path)
     agent = _SequenceAgent()
     software = _SoftwareCommandCapability()
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         SWE_AGENT_PAPER_ERA_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(
             execution=_context(),

@@ -19,7 +19,7 @@ from noetrium_platform.composition.operator.project.project_platform_identity im
 _FIXED_PLATFORM = InstalledPlatformIdentity("0.1.0", "a" * 64)
 
 
-def test_project_doctor_rejects_method_study_identity_drift(
+def test_project_doctor_rejects_invalid_research_graph_drift(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
@@ -37,12 +37,12 @@ def test_project_doctor_rejects_method_study_identity_drift(
         ProjectCreateRequest("identity-drift", "0.1.0", root)
     )
 
-    study = root / "src" / "identity_drift" / "study.py"
-    source = study.read_text(encoding="utf-8")
-    study.write_text(
+    research = root / "src" / "identity_drift" / "research.py"
+    source = research.read_text(encoding="utf-8")
+    research.write_text(
         source.replace(
-            "api.AgentStudySpec(method_id=METHOD_SPEC.method_id)",
-            "api.AgentStudySpec(method_id='different-method')",
+            'depends_on=("evaluate",)',
+            'depends_on=("missing-upstream",)',
         ),
         encoding="utf-8",
     )

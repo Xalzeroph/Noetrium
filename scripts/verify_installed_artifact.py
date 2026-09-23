@@ -24,7 +24,7 @@ class InstalledArtifactReceipt:
     schema: str
     qualification_scope: str
     npe_verified: bool
-    operator_smoke_actions: tuple[str, ...]
+    research_os_smoke_actions: tuple[str, ...]
     artifact_name: str
     artifact_sha256: str
     artifact_size: int
@@ -137,25 +137,28 @@ def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
 
         reference_code = (
             "import json,sys;"
-            "from pathlib import Path;"
-            "from noetrium.api import ResearchFacade;"
-            "from noetrium_platform.product.operator.reference import ReferenceResearchApplication;"
-            "root=Path(sys.argv[1]);action=sys.argv[2];target=sys.argv[3];"
-            "facade=ResearchFacade(ReferenceResearchApplication(root));"
-            "result=getattr(facade,action)(target);"
+            "from noetrium.api import ResearchExecutionTarget,ResearchGraphRevision,ResearchOS;"
+            "from noetrium_platform.product.research_os import bind_research_os;"
+            "from noetrium_platform.product.reference import ReferenceResearchOSPort;"
+            "action=sys.argv[1];execution_id=sys.argv[2];"
+            "research_os=bind_research_os(ReferenceResearchOSPort());"
+            "assert isinstance(research_os,ResearchOS);"
+            "revision=ResearchGraphRevision('qualification','0'*64,(),'installed qualification');"
+            "target=ResearchExecutionTarget(execution_id,revision);"
+            "result=getattr(research_os,action)(target);"
             "print(json.dumps({'ok':True,'command':action,'result':"
-            "{'action':result.action.value,'target':result.target,'state':result.state}},"
+            "{'action':result.action.value,'execution_id':result.target.execution_id,"
+            "'research_revision_digest':result.target.research_revision_digest,"
+            "'state':result.state,'control_revision_digest':result.control_revision_digest}},"
             "sort_keys=True))"
         )
-        reference_state = work / "reference-state"
-        for command in ("run", "inspect", "stop", "resume", "reconcile", "evidence"):
+        for command in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile"):
             receipt = _run(
                 [
                     str(python),
                     "-I",
                     "-c",
                     reference_code,
-                    str(reference_state),
                     command,
                     "installed-reference",
                 ],
@@ -168,10 +171,10 @@ def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
             commands.append(receipt)
 
         return InstalledArtifactReceipt(
-            schema="noetrium.installed-artifact-verification.v2",
-            qualification_scope="operator-smoke-only",
+            schema="noetrium.installed-artifact-verification.v3",
+            qualification_scope="research-os-smoke-only",
             npe_verified=False,
-            operator_smoke_actions=("run", "inspect", "stop", "resume", "reconcile", "evidence"),
+            research_os_smoke_actions=("run", "inspect", "pause", "resume", "checkpoint", "reconcile"),
             artifact_name=artifact.name,
             artifact_sha256=_sha256(artifact),
             artifact_size=artifact.stat().st_size,

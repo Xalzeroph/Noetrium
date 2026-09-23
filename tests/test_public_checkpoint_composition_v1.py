@@ -12,8 +12,8 @@ import sys
 _DOWNSTREAM_SOURCE = '''
 from pathlib import Path
 import sys
-from noetrium.api import RunCheckpointManifest
-from noetrium.api import build_project_run_checkpoint_store
+from noetrium_platform.research.experimentation.lifecycle.api import RunCheckpointManifest
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.composition import build_project_run_checkpoint_store
 
 root = Path(sys.argv[2])
 manifest = RunCheckpointManifest(
@@ -52,7 +52,7 @@ def _run(script: Path, mode: str, root: Path) -> subprocess.CompletedProcess[str
     )
 
 
-def test_public_checkpoint_composition_survives_fresh_process_reopen(tmp_path: Path) -> None:
+def test_checkpoint_composition_survives_fresh_process_reopen(tmp_path: Path) -> None:
     script = tmp_path / "downstream_project.py"
     script.write_text(_DOWNSTREAM_SOURCE, encoding="utf-8")
 
@@ -62,8 +62,11 @@ def test_public_checkpoint_composition_survives_fresh_process_reopen(tmp_path: P
         if isinstance(node, ast.ImportFrom)
     )
     assert imports
-    assert all(not module.startswith("noetrium_platform") for module in imports)
-    assert set(imports) == {"pathlib", "noetrium.api"}
+    assert set(imports) == {
+        "pathlib",
+        "noetrium_platform.research.experimentation.lifecycle.api",
+        "noetrium_platform.research.experimentation.lifecycle.checkpoint.composition",
+    }
 
     state_root = tmp_path / "project-state"
     published = _run(script, "publish", state_root)
@@ -72,7 +75,7 @@ def test_public_checkpoint_composition_survives_fresh_process_reopen(tmp_path: P
     assert reopened.returncode == 0, reopened.stderr
 
 
-def test_public_checkpoint_composition_rejects_noncanonical_manifest_bytes(tmp_path: Path) -> None:
+def test_checkpoint_composition_rejects_noncanonical_manifest_bytes(tmp_path: Path) -> None:
     script = tmp_path / "downstream_project.py"
     script.write_text(_DOWNSTREAM_SOURCE, encoding="utf-8")
     state_root = tmp_path / "project-state"

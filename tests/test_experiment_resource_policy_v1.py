@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from noetrium.api import (
+from noetrium_platform.platform import (
     ComputeDemand, ResourcePolicy, bind_experiment_resources, bind_research_execution_pool,
 )
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind

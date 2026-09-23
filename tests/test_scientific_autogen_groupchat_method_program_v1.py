@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium.api import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentRequest,
@@ -77,7 +77,7 @@ def test_autogen_groupchat_dynamic_speaker_fallback_interrupt_and_resume(tmp_pat
     agents = _GroupChatAgents()
     state_root = tmp_path / "machine"
 
-    first = run_method_program(
+    first = execute_method_program_canonically(
         program,
         runtime=MethodRuntimeContext(_context(), agent_loop=agents),
         initial_state=autogen_groupchat_initial_state(
@@ -104,7 +104,7 @@ def test_autogen_groupchat_dynamic_speaker_fallback_interrupt_and_resume(tmp_pat
         "user_proxy",
     )
 
-    resumed = run_method_program(
+    resumed = execute_method_program_canonically(
         program,
         runtime=MethodRuntimeContext(_context(), agent_loop=agents),
         resume=True,

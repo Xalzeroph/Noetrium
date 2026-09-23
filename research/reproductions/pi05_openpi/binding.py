@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from noetrium import api
+from noetrium_platform.capabilities.environment.embodied.api import (
+    ActionKind,
+    ActionSpec,
+    EmbodiedActionCommand,
+    EmbodimentKind,
+    EmbodimentSpec,
+    SensorModality,
+    SensorSpec,
+)
 
 from collections.abc import Sequence
 import json
@@ -14,15 +22,15 @@ def build_pi05_embodiment_spec(
     *,
     embodiment_id: str = "pi05.reference",
     revision: str = "openpi-8999e55c",
-) -> api.EmbodimentSpec:
+) -> EmbodimentSpec:
     """Bind π0.5 observation/action semantics directly to Noetrium's embodied ABI."""
 
     fidelity = PI05_OPENPI_FIDELITY
     image_height, image_width = fidelity.image_resolution
     sensors = tuple(
-        api.SensorSpec(
+        SensorSpec(
             sensor_id=image_key,
-            modality=api.SensorModality.RGB,
+            modality=SensorModality.RGB,
             frame_id=image_key,
             dtype="float32",
             shape=(image_height, image_width, 3),
@@ -30,9 +38,9 @@ def build_pi05_embodiment_spec(
         )
         for image_key in fidelity.image_keys
     ) + (
-        api.SensorSpec(
+        SensorSpec(
             sensor_id="state",
-            modality=api.SensorModality.PROPRIOCEPTION,
+            modality=SensorModality.PROPRIOCEPTION,
             frame_id="robot",
             dtype="float32",
             shape=(fidelity.action_dim,),
@@ -43,9 +51,9 @@ def build_pi05_embodiment_spec(
         ),
     )
     actions = (
-        api.ActionSpec(
+        ActionSpec(
             action_id="pi05.action_chunk",
-            kind=api.ActionKind.OTHER,
+            kind=ActionKind.OTHER,
             dimensions=fidelity.action_dim,
             dtype="float32",
             metadata={
@@ -55,10 +63,10 @@ def build_pi05_embodiment_spec(
             },
         ),
     )
-    return api.EmbodimentSpec(
+    return EmbodimentSpec(
         embodiment_id=embodiment_id,
         revision=revision,
-        kind=api.EmbodimentKind.OTHER,
+        kind=EmbodimentKind.OTHER,
         sensors=sensors,
         actions=actions,
         root_frame="robot",
@@ -77,7 +85,7 @@ def build_pi05_action_command(
     episode_id: str,
     sequence: int,
     issued_at_ns: int,
-) -> api.EmbodiedActionCommand:
+) -> EmbodiedActionCommand:
     """Encode one 50×32 π0.5 continuous action chunk without flattening its semantics."""
 
     fidelity = PI05_OPENPI_FIDELITY
@@ -110,7 +118,7 @@ def build_pi05_action_command(
         sort_keys=True,
         separators=(",", ":"),
     ).encode("utf-8")
-    return api.EmbodiedActionCommand(
+    return EmbodiedActionCommand(
         command_id=command_id,
         episode_id=episode_id,
         action_id="pi05.action_chunk",

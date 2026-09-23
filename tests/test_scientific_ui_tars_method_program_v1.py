@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from noetrium.api import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.capabilities.environment.api import (
     EnvironmentQuery,
     EnvironmentQueryResult,
@@ -152,7 +152,7 @@ def test_ui_tars_program_queries_current_screen_executes_multi_action_prediction
     capabilities = _Capabilities(screen)
     agent = _Agent()
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         UI_TARS_DESKTOP_V001_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(
             execution=_context(),
@@ -198,7 +198,7 @@ def test_ui_tars_program_fails_closed_after_snapshot_failure_limit(tmp_path) -> 
         def run(self, request: MethodAgentRequest) -> MethodAgentResult:
             raise AssertionError("model must not run without a valid screenshot")
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         UI_TARS_DESKTOP_V001_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(
             execution=_context(),

@@ -1,9 +1,11 @@
-name: platform-projection-sync
+name: canonical-projection-sync
 
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
+      - "codex/**"
     paths:
       # Keep this trigger aligned with the source sets scanned by the canonical
       # projection generators. A source that can change a derived architecture
@@ -12,6 +14,7 @@ on:
       - "noetrium/**"
       - "components/**"
       - "orchestration/**"
+      - "research/**"
       - "scripts/update_generated_docs.py"
       - "scripts/generate_authority_disposition_matrix.py"
       - "scripts/generate_downstream_contracts.py"
@@ -22,6 +25,8 @@ on:
       - "scripts/readme_i18n.py"
       - "scripts/check_readme_i18n.py"
       - "scripts/generate_code_architecture_map.py"
+      - "scripts/generate_repository_code_architecture_map.py"
+      - "scripts/sync_architecture_maps.py"
       - "scripts/sync_platform_architecture_map.py"
       - "sdk/**"
       - "examples/**"
@@ -32,7 +37,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: platform-projection-main
+  group: platform-projection-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -40,10 +45,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout main
+      - name: Checkout source branch
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
 
       - name: Set up Python
@@ -61,21 +66,27 @@ jobs:
           git config user.name "Xalzeroph"
           git config user.email "203086430+Xalzeroph@users.noreply.github.com"
 
-          for attempt in 1 2 3 4 5; do
-            echo "platform projection convergence attempt ${attempt}"
-            git fetch origin main
-            git reset --hard origin/main
+          target_branch="${GITHUB_REF_NAME}"
+          if [[ -z "${target_branch}" ]]; then
+            echo "Projection target branch is empty."
+            exit 1
+          fi
 
-            # main may have advanced to a source cut with new optional generator
+          for attempt in 1 2 3 4 5; do
+            echo "platform projection convergence attempt ${attempt} branch=${target_branch}"
+            git fetch origin "${target_branch}"
+            git reset --hard "origin/${target_branch}"
+
+            # The source branch may have advanced to a source cut with new optional generator
             # dependencies. Reinstalling the editable package keeps the retry
             # loop bound to the exact cut it is projecting.
             python -m pip install -e .
 
             python scripts/update_generated_docs.py
-            python scripts/sync_platform_architecture_map.py
+            python scripts/sync_architecture_maps.py
 
             python scripts/update_generated_docs.py --check
-            python scripts/sync_platform_architecture_map.py --check
+            python scripts/sync_architecture_maps.py --check
 
             if [[ -z "$(git status --porcelain --untracked-files=all)" ]]; then
               echo "Platform projections are current."
@@ -87,16 +98,16 @@ jobs:
             git commit -m "chore(projections): refresh canonical derived artifacts"
 
             # The lease binds the projection commit to the exact source head it
-            # was generated from. If main advances between fetch and push, do
-            # not publish a stale projection; reset to the new head and rebuild.
+            # was generated from. If the branch advances between fetch and push,
+            # do not publish a stale projection; reset to the new head and rebuild.
             if git push \
-              --force-with-lease="refs/heads/main:${source_sha}" \
-              origin HEAD:main; then
-              echo "Published platform projection for source cut ${source_sha}."
+              --force-with-lease="refs/heads/${target_branch}:${source_sha}" \
+              origin "HEAD:${target_branch}"; then
+              echo "Published platform projection for source cut ${source_sha} branch=${target_branch}."
               exit 0
             fi
 
-            echo "main advanced during projection publication; retrying"
+            echo "source branch advanced during projection publication; retrying"
           done
 
           echo "Platform projection convergence did not stabilize after 5 attempts."

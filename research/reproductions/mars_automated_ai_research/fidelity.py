@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
-from noetrium_platform.research.provenance import MethodSourceLane, MethodSourceLaneKind
+from research.reproductions.provenance import MethodSourceLane, MethodSourceLaneKind
 from .source import SOURCE_OFFICIAL_GENERATED_CODE_AND_TRAJECTORIES
 
 MARS_PAPER_URI = "https://arxiv.org/abs/2602.02660"

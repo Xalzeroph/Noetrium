@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from noetrium.api import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
@@ -27,7 +27,7 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRunStatus,
     MethodRuntimeContext,
 )
-from noetrium_platform.research.reproduction import ReproductionAssetKind
+from research.reproductions.contracts import ReproductionAssetKind
 
 from research.reproductions.minedojo.benchmark import (
     MINEDOJO_REVISION_ID,
@@ -383,7 +383,7 @@ def test_mineagent_method_program_runs_deterministic_minecraft_loop(
         max_steps=4,
     )
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         MINEAGENT_METHOD_PROGRAM,
         runtime=runtime,
         initial_state=initial_state,

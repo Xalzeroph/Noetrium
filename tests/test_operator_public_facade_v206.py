@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from noetrium.api import (
+from noetrium_platform.product.operator.api import (
     ResearchAction,
     ResearchFacade,
     ResearchOperationFailure,

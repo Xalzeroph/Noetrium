@@ -3,45 +3,11 @@ System: resource/lease
 Authority: resource_lease
 Canonical authority: resource/lease
 Node kind: authority
-Downstream surface: public
-API exports: available
+Downstream surface: metadata_only
+API exports: none (metadata-only facade)
 This module is regenerated from the canonical registry and API exports.
 """
 
-from noetrium_platform.infrastructure.resources.lease.api import (
-    LeaseState,
-    ResourceIdentity,
-    ResourceKind,
-    ResourceLease,
-    ResourceOwner,
-    ResourceOwnership,
-    ResourceLeasePort,
-    ResourceLeaseConflict,
-    ResourceLeaseExpired,
-    ResourceOwnershipConflict,
-    ResourceOwnershipPort,
-)
-
-from noetrium_platform.infrastructure.resources.lease.api.contracts import (
-    LeaseState as contracts__LeaseState,
-    ResourceIdentity as contracts__ResourceIdentity,
-    ResourceKind as contracts__ResourceKind,
-    ResourceLease as contracts__ResourceLease,
-    ResourceOwner as contracts__ResourceOwner,
-    ResourceOwnership as contracts__ResourceOwnership,
-)
-
-from noetrium_platform.infrastructure.resources.lease.api.errors import (
-    ResourceLeaseConflict as errors__ResourceLeaseConflict,
-    ResourceLeaseExpired as errors__ResourceLeaseExpired,
-    ResourceOwnershipConflict as errors__ResourceOwnershipConflict,
-)
-
-from noetrium_platform.infrastructure.resources.lease.api.ports import (
-    ResourceLeasePort as ports__ResourceLeasePort,
-    ResourceOwnershipPort as ports__ResourceOwnershipPort,
-)
-
 SYSTEM_KEY = 'resource/lease'
 PACKAGE_PREFIX = 'noetrium_platform.infrastructure.resources.lease'
-__all__ = ('LeaseState', 'ResourceIdentity', 'ResourceKind', 'ResourceLease', 'ResourceOwner', 'ResourceOwnership', 'ResourceLeasePort', 'ResourceLeaseConflict', 'ResourceLeaseExpired', 'ResourceOwnershipConflict', 'ResourceOwnershipPort', 'contracts__LeaseState', 'contracts__ResourceIdentity', 'contracts__ResourceKind', 'contracts__ResourceLease', 'contracts__ResourceOwner', 'contracts__ResourceOwnership', 'errors__ResourceLeaseConflict', 'errors__ResourceLeaseExpired', 'errors__ResourceOwnershipConflict', 'ports__ResourceLeasePort', 'ports__ResourceOwnershipPort')
+__all__ = ()

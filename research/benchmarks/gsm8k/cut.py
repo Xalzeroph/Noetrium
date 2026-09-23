@@ -1,7 +1,16 @@
 from __future__ import annotations
 
-from noetrium import api
 from noetrium.contracts import require_sha256
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkCutSpec,
+    BenchmarkSourceKind,
+    BenchmarkSourceSpec,
+    BenchmarkTaskSet,
+    TaskDefinition,
+    TaskPackageSpec,
+    TaskSetSplit,
+    TaskVerifierIsolation,
+)
 
 from dataclasses import dataclass
 
@@ -48,11 +57,11 @@ def gsm8k_revision(dataset_content_sha256: str) -> str:
     )
 
 
-def build_gsm8k_source(*, dataset_content_sha256: str) -> api.BenchmarkSourceSpec:
+def build_gsm8k_source(*, dataset_content_sha256: str) -> BenchmarkSourceSpec:
     require_sha256(dataset_content_sha256, "GSM8K dataset_content_sha256")
-    return api.BenchmarkSourceSpec(
+    return BenchmarkSourceSpec(
         source_id=GSM8K_BENCHMARK_ID,
-        kind=api.BenchmarkSourceKind.GIT,
+        kind=BenchmarkSourceKind.GIT,
         revision_id=gsm8k_revision(dataset_content_sha256),
         locator=GSM8K_REPOSITORY,
         content_digest=dataset_content_sha256,
@@ -72,7 +81,7 @@ def build_gsm8k_task_set(
     *,
     dataset_content_sha256: str,
     require_full_split_cardinality: bool = True,
-) -> api.BenchmarkTaskSet:
+) -> BenchmarkTaskSet:
     """Freeze the official GSM8K JSONL cut without importing its runtime."""
 
     if type(records) is not tuple or not records:
@@ -98,7 +107,7 @@ def build_gsm8k_task_set(
 
     revision = gsm8k_revision(dataset_content_sha256)
     tasks = tuple(
-        api.TaskDefinition(
+        TaskDefinition(
             task_id=row.task_id,
             revision_id=revision,
             family="grade_school_math",
@@ -111,25 +120,25 @@ def build_gsm8k_task_set(
                 f"answer-digest:{row.answer_digest}",
                 f"answer-marker:{GSM8K_FINAL_ANSWER_MARKER}",
             ),
-            package=api.TaskPackageSpec(
+            package=TaskPackageSpec(
                 package_schema_id="gsm8k.free-response-package.v1",
                 instruction_digest=row.question_digest,
                 environment_requirement_id=None,
                 verifier_requirement_id="benchmark.gsm8k.exact-numeric.verifier",
-                verifier_isolation=api.TaskVerifierIsolation.SEPARATE,
+                verifier_isolation=TaskVerifierIsolation.SEPARATE,
             ),
         )
         for row in ordered
     )
     split_ids = tuple(sorted({row.split_id for row in ordered}))
     splits = tuple(
-        api.TaskSetSplit(
+        TaskSetSplit(
             split_id,
             tuple(row.task_id for row in ordered if row.split_id == split_id),
         )
         for split_id in split_ids
     )
-    return api.BenchmarkCutSpec(
+    return BenchmarkCutSpec(
         benchmark_id=GSM8K_BENCHMARK_ID,
         revision_id=revision,
         source_digest=dataset_content_sha256,
@@ -144,7 +153,7 @@ def build_gsm8k_task_set(
             "dataset_content_sha256": dataset_content_sha256,
             "splits": tuple((row.split_id, row.task_ids) for row in splits),
             "answer_marker": GSM8K_FINAL_ANSWER_MARKER,
-            "verifier_isolation": api.TaskVerifierIsolation.SEPARATE.value,
+            "verifier_isolation": TaskVerifierIsolation.SEPARATE.value,
         },
     )
 

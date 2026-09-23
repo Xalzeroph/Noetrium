@@ -12,7 +12,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 _SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-_ACTIONS = ("run", "inspect", "stop", "resume", "reconcile", "evidence")
+_ACTIONS = ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")
 _MARKER = "CONTAINER_PRODUCT_SMOKE="
 _WHEEL_LABEL = "org.opencontainers.image.noetrium.wheel.sha256"
 _DISTRIBUTION_LABEL = (
@@ -34,7 +34,7 @@ class ContainerVerificationReceipt:
     schema: str
     qualification_scope: str
     npe_verified: bool
-    operator_smoke_actions: tuple[str, ...]
+    research_os_smoke_actions: tuple[str, ...]
     image: str
     image_id: str
     source_sha: str
@@ -144,13 +144,26 @@ python - "$work" <<'PY'
 import json
 import sys
 from pathlib import Path
-from noetrium.api import ResearchFacade
-from noetrium_platform.product.operator.reference import ReferenceResearchApplication
+from noetrium.api import (
+    ResearchExecutionTarget,
+    ResearchGraphRevision,
+    ResearchOS,
+)
+from noetrium_platform.product.research_os import bind_research_os
+from noetrium_platform.product.reference import ReferenceResearchOSPort
 
 root = Path(sys.argv[1])
-facade = ResearchFacade(ReferenceResearchApplication(root / "state"))
-for action in ("run", "inspect", "stop", "resume", "reconcile", "evidence"):
-    result = getattr(facade, action)("container-reference")
+research_os = bind_research_os(ReferenceResearchOSPort())
+assert isinstance(research_os, ResearchOS)
+revision = ResearchGraphRevision(
+    "qualification",
+    "0" * 64,
+    (),
+    "container qualification",
+)
+target = ResearchExecutionTarget("container-reference", revision)
+for action in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile"):
+    result = getattr(research_os, action)(target)
     (root / f"{action}.json").write_text(
         json.dumps(
             {
@@ -158,8 +171,12 @@ for action in ("run", "inspect", "stop", "resume", "reconcile", "evidence"):
                 "command": action,
                 "result": {
                     "action": result.action.value,
-                    "target": result.target,
+                    "execution_id": result.target.execution_id,
+                    "research_revision_digest": (
+                        result.target.research_revision_digest
+                    ),
                     "state": result.state,
+                    "control_revision_digest": result.control_revision_digest,
                 },
             },
             sort_keys=True,
@@ -175,7 +192,7 @@ from pathlib import Path
 import noetrium
 root = Path(sys.argv[1])
 provenance = json.loads((root / "provenance.json").read_text(encoding="utf-8"))
-actions = ("run", "inspect", "stop", "resume", "reconcile", "evidence")
+actions = ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")
 for action in actions:
     payload = json.loads((root / f"{action}.json").read_text(encoding="utf-8"))
     if payload.get("ok") is not True or payload.get("command") != action:
@@ -286,9 +303,9 @@ def verify_container_image(
 
     return ContainerVerificationReceipt(
         schema="noetrium.container-verification.v3",
-        qualification_scope="operator-smoke-only",
+        qualification_scope="research-os-smoke-only",
         npe_verified=False,
-        operator_smoke_actions=tuple(_ACTIONS),
+        research_os_smoke_actions=tuple(_ACTIONS),
         image=image,
         image_id=image_id,
         source_sha=source_sha,

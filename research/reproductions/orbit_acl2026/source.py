@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.provenance import MethodSourceLane, MethodSourceLaneKind, MethodSourceRegistry, PublicationSourceLane
+from research.reproductions.provenance import MethodSourceLane, MethodSourceLaneKind, MethodSourceRegistry, PublicationSourceLane
 PUBLICATION=PublicationSourceLane(lane_id="final_publication",venue="ACL",year=2026,publication_id="2026.acl-long.1822",publication_uri="https://aclanthology.org/2026.acl-long.1822/",revision="ACL 2026 final proceedings paper")
 
 OFFICIAL_REPOSITORY_CUT=MethodSourceLane(

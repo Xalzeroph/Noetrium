@@ -17,6 +17,15 @@ def test_registered_boundaries_do_not_reexport_concrete_layers():
     assert audit_registered_public_facades(root) == []
 
 
+def test_canonical_registry_has_no_lower_system_downstream_public_surface():
+    from noetrium_platform.foundation.governance.system_registry.api import system_catalog
+
+    assert all(
+        descriptor.downstream_surface is DownstreamSurfaceMode.METADATA_ONLY
+        for descriptor in system_catalog()
+    )
+
+
 def test_nested_api_facade_cannot_reexport_its_runtime_layer(tmp_path, monkeypatch):
     package = tmp_path / "noetrium_platform" / "sample"
     (package / "api").mkdir(parents=True)

@@ -3,58 +3,11 @@ System: scope
 Authority: scope_tree
 Canonical authority: scope
 Node kind: authority
-Downstream surface: public
-API exports: available
+Downstream surface: metadata_only
+API exports: none (metadata-only facade)
 This module is regenerated from the canonical registry and API exports.
 """
 
-from noetrium_platform.foundation.scope.api import (
-    PLATFORM_SCOPE,
-    PathFlavor,
-    ScopeIdentity,
-    ScopeKind,
-    ScopeLink,
-    ScopePathPort,
-    ScopeRegistryPort,
-    is_absolute_target_path,
-    require_absolute_target_path,
-    scope_from_data,
-    scope_to_data,
-)
-
-from noetrium_platform.foundation.scope.api.codec import (
-    scope_from_data as codec__scope_from_data,
-    scope_to_data as codec__scope_to_data,
-)
-
-from noetrium_platform.foundation.scope.api.contracts import (
-    PLATFORM_SCOPE as contracts__PLATFORM_SCOPE,
-    ScopeIdentity as contracts__ScopeIdentity,
-    ScopeKind as contracts__ScopeKind,
-    ScopeLink as contracts__ScopeLink,
-)
-
-from noetrium_platform.foundation.scope.api.ports import (
-    ScopeRegistryPort as ports__ScopeRegistryPort,
-)
-
-from noetrium_platform.foundation.scope.path.api import (
-    PathFlavor as api__PathFlavor,
-    ScopePathPort as api__ScopePathPort,
-    is_absolute_target_path as api__is_absolute_target_path,
-    require_absolute_target_path as api__require_absolute_target_path,
-)
-
-from noetrium_platform.foundation.scope.path.api.contracts import (
-    PathFlavor as contracts__PathFlavor,
-    is_absolute_target_path as contracts__is_absolute_target_path,
-    require_absolute_target_path as contracts__require_absolute_target_path,
-)
-
-from noetrium_platform.foundation.scope.path.api.ports import (
-    ScopePathPort as ports__ScopePathPort,
-)
-
 SYSTEM_KEY = 'scope'
 PACKAGE_PREFIX = 'noetrium_platform.foundation.scope'
-__all__ = ('PLATFORM_SCOPE', 'PathFlavor', 'ScopeIdentity', 'ScopeKind', 'ScopeLink', 'ScopePathPort', 'ScopeRegistryPort', 'is_absolute_target_path', 'require_absolute_target_path', 'scope_from_data', 'scope_to_data', 'codec__scope_from_data', 'codec__scope_to_data', 'contracts__PLATFORM_SCOPE', 'contracts__ScopeIdentity', 'contracts__ScopeKind', 'contracts__ScopeLink', 'ports__ScopeRegistryPort', 'api__PathFlavor', 'api__ScopePathPort', 'api__is_absolute_target_path', 'api__require_absolute_target_path', 'contracts__PathFlavor', 'contracts__is_absolute_target_path', 'contracts__require_absolute_target_path', 'ports__ScopePathPort')
+__all__ = ()

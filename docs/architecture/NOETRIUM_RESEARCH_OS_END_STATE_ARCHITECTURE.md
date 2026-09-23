@@ -4,6 +4,8 @@
 > Date: 2026-09-10
 > Scope: Noetrium 全系统、VM 家族、Run Kernel、研究执行与可复现性
 
+> **2026-09-23 top-level supersession notice:** 当前最高层产品/科研边界已经收敛为 `Research OS -> ResearchPortfolio -> ResearchProgram -> ResearchGraphRevision -> canonical ResearchGraph IR`。下层 Method/Experiment/Run/Model/Environment/Participant/Artifact/Evidence/Resource 等系统保留各自 authority，只向 Research OS 编译/组合，不再作为普通下游 SDK 暴露。Operator/CLI 是 Research OS 下的运维投影而不是最高层 authority。执行层历史 `ResearchProgram(kind=...)` 是非 Method Machine IR，后续应更名为 `ResearchMachineProgram` 以消除与顶层 ResearchProgram 的语义冲突。Git-like revision/branch/tag/diff/merge、增量 invalidation/reuse、pause/drain/interrupt/resume 与 durable attempt/lease/checkpoint/reconciliation 是顶层演进方向；已接受执行历史保持不可变。
+
 > **2026-09-19 supersession notice:** 本文保留 2026-09-10 的架构推演与历史上下文；其中 VM 家族、Agent Turn VM、Runtime 边界和通用执行宿主的具体设计，现由 `UNIVERSAL_RESEARCH_MACHINE_ARCHITECTURE_20260919.md` 规范性覆盖。当前实现以 `MachineExecutor + Machine Journal + MethodProgram/ResearchProgram + ResearchProgramHost` 为准；Agent 不再是 Machine kind，Agent Turn 是 ParticipantProgram，Runtime 是论文可编程执行语义而不是 kernel 名称。
 
 ## 1. 结论先行
@@ -1081,7 +1083,7 @@ MLIR 的多层表示与渐进 lowering 为此提供设计启发，但本方案�
 支持外部代码不等于兼容旧 Noetrium API；它是生态接入能力。
 接入深度与沙箱安全正交：Wrapped task 也必须接受权限隔离，Managed program 也不能自动被信任。
 所有接入方式公开保证清单；组合程序的保证按路径与依赖推导，不能由最强子组件替整体背书。
-Provider 缺失或后端不能满足要求时明确拒绝或由用户接受降级，禁止静默改变实验条件。
+Provider 缺失、资格失效或后端不能满足冻结要求时必须直接拒绝执行；Research OS 不提供运行时降级路径。若要更换 Provider、模型、精度、上下文、能力、数据或验证器，必须形成新的显式 revision，重新准入并产生新的 execution identity。
 缓存命中记录复用来源；它不是新的独立重复实验，不能增加统计样本数。
 Bazel 的 action cache/CAS 及其环境依赖风险说明复用必须锁定实际输入与工具依赖；本文据此限制缓存范围。[Bazel Remote Caching](https://bazel.build/remote/caching)
 
@@ -1290,8 +1292,8 @@ schema 相同只是必要条件之一；时间、单位、顺序、效果类别�
 组合验证分为静态可判定项、运行准入项和只能依赖领域检验的假设。
 对无法判定的性质返回 unknown 或要求明确接受，不能把通用编译器包装为任意程序证明器。
 记录 Offer 与测试依据并不使第三方声明自动可信；受信任边界和实际验证仍需独立表达。
-运行中权限撤销、Provider 漂移或输入失效时重新检查相关条件，必要时暂停或降级标记。
-降级只能在允许范围内发生并留下记录，不能让 UI 继续显示原保证全部成立。
+运行中权限撤销、Provider 漂移或输入失效时必须重新检查相关条件并暂停、隔离或失败关闭；不得继续执行为“降级状态”。
+任何会改变冻结研究语义、质量保证或 provider identity 的替换都必须创建新的 revision、重新准入并启动新的 execution；旧 execution 保持原始事实，不被原地改写。
 
 ### 42.3 端到端验证的分工
 
@@ -1779,12 +1781,13 @@ previous historical section.
 - Production provider qualification remains outside this metadata boundary
   and must still be supplied through explicit typed composition ports.
 
-## 63. R20: Single product composition owner
+## 63. R20: Single Research OS product surface
 
-The public product bindings have one implementation owner:
-`noetrium_platform.platform`. The historical `noetrium.platform` forwarding
-module has been removed; downstream projects use only `noetrium.api`, which
-lazily projects registered contracts and stable composition helpers. This
+The downstream product surface has one semantic owner:
+`noetrium_platform.product.api` / Research OS. Both historical Level-0
+composition modules `noetrium.platform` and `noetrium_platform.platform`
+are removed. Downstream projects use only `noetrium.api`, which
+projects only the Research OS product contract; lower-system composition helpers are internal. This
 closes the previous horizontal split where multiple root facades assembled
 environment, model, method, experiment, workbench, and agent capabilities.
 

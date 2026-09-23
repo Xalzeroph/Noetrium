@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from noetrium import api
+from noetrium_platform.capabilities.participant.capability.api import (
+    CapabilityDescriptor,
+    CapabilityRequest,
+    GuardDecision,
+    GuardVerdict,
+)
 
 import re
 from collections.abc import Mapping
@@ -55,18 +60,18 @@ class SWEAgentCommandGuard:
         self._policy = policy
         self._capability_id = capability_id
 
-    def evaluate(self, descriptor: api.CapabilityDescriptor, request: api.CapabilityRequest) -> api.GuardDecision:
+    def evaluate(self, descriptor: CapabilityDescriptor, request: CapabilityRequest) -> GuardDecision:
         if descriptor.capability_id != self._capability_id or request.capability_id != self._capability_id:
-            return api.GuardDecision(self.guard_id, api.GuardVerdict.ABSTAIN)
+            return GuardDecision(self.guard_id, GuardVerdict.ABSTAIN)
         payload = request.payload
         if not isinstance(payload, Mapping):
-            return api.GuardDecision(self.guard_id, api.GuardVerdict.DENY, "malformed_software_command")
+            return GuardDecision(self.guard_id, GuardVerdict.DENY, "malformed_software_command")
         command = payload.get("command")
         if not isinstance(command, str) or not command.strip():
-            return api.GuardDecision(self.guard_id, api.GuardVerdict.DENY, "malformed_software_command")
+            return GuardDecision(self.guard_id, GuardVerdict.DENY, "malformed_software_command")
         if self._policy.should_block(command):
-            return api.GuardDecision(self.guard_id, api.GuardVerdict.DENY, "unsupported_interactive_or_blocked_command")
-        return api.GuardDecision(self.guard_id, api.GuardVerdict.ALLOW)
+            return GuardDecision(self.guard_id, GuardVerdict.DENY, "unsupported_interactive_or_blocked_command")
+        return GuardDecision(self.guard_id, GuardVerdict.ALLOW)
 
 
 @dataclass(frozen=True, slots=True)

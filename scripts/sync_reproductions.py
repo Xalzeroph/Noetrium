@@ -15,13 +15,13 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, thaw_json
-from noetrium_platform.research.provenance import (
+from research.reproductions.provenance import (
     MethodSourceLane,
     MethodSourceRegistry,
     PublicationSourceLane,
     SourceLane,
 )
-from noetrium_platform.research.reproduction import (
+from research.reproductions.contracts import (
     ReferenceBaseline,
     ReportedResult,
     ReproductionAssetRef,
@@ -35,10 +35,10 @@ from noetrium_platform.research.reproduction import (
 PROJECTION_SCHEMA = "noetrium.reproduction.projection.v7"
 REPRODUCTION_CATALOG_SCHEMA = "noetrium.reproduction-catalog.projection.v1"
 REPRODUCTION_CATALOG_AUTHORITY = "generated_from_typed_reproduction_definitions"
-_ALLOWED_DEFINITION_IMPORTS = {"__future__", "noetrium_platform.research.reproduction"}
+_ALLOWED_DEFINITION_IMPORTS = {"__future__", "research.reproductions.contracts"}
 _ALLOWED_SOURCE_IMPORTS = {
     "__future__",
-    "noetrium_platform.research.provenance",
+    "research.reproductions.provenance",
 }
 
 

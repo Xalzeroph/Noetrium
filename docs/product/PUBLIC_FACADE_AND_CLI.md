@@ -1,115 +1,177 @@
-# Unified downstream API and `noetrium` CLI
+# Unified Research OS downstream API and `noetrium` CLI
 
-The common product boundary is intentionally small:
+The downstream contract is intentionally singular.
 
-- Python contracts: `noetrium.api`; product composition: `noetrium.api`
-- CLI: `noetrium`
-- lifecycle intents: `run`, `inspect`, `stop`, `resume`, `reconcile`, `evidence`
-- existing forensic tools: `research diagnose ...`
-- existing management tools: `research manage ...`
+- Python authoring/control API: `noetrium.api`
+- Canonical owner: `noetrium_platform.product.api`
+- Human/operator entrypoint: `noetrium`
+- Lower Model, Environment, Participant, Method, Experimentation, Execution,
+  Artifact, Evidence, Resource, Runtime, Reliability, and Portfolio APIs are
+  internal platform authorities, not downstream SDK surfaces.
 
-`ResearchFacade` owns only product intent translation. It does not own run state, effect certainty, checkpoints, environment truth, model truth, or scientific success. A real application is injected through `ResearchApplicationPort` and must return a typed `ResearchResult` whose action and target match the request.
+## Research OS boundary
 
-There is deliberately no ambient service locator and no implicit default production application.
+Downstream research code describes scientific intent through:
 
-## Python
+- `ResearchProgram` / `ResearchProgramBuilder`
+- `ResearchPortfolio`
+- `ResearchDefinition` and automatically derived `ResearchImplementation`
+- `ResearchNode`, `ResearchDependency`, typed inputs and outputs
+- immutable `ResearchGraphRevision`, branches, tags, and revision diffs
+- one `ResearchOS` control facade for run, inspect, pause, drain, interrupt,
+  resume, retry, cancel, checkpoint, and reconcile
+
+The product layer owns no domain truth. It composes lower authorities and
+projects their capabilities through one stable research-facing model.
+
+A downstream project must not assemble model serving, environment providers,
+resource schedulers, experiment pools, checkpoint stores, evidence stores, or
+recovery infrastructure. Those remain platform composition responsibilities.
+
+## Authoring
+
+A project authors the entire scientific program in one top-level module.
 
 ```python
-from noetrium.api import ResearchFacade
+from noetrium import api
 
-facade = ResearchFacade(my_application)
-result = facade.inspect("run-123")
+
+def paper_method(payload=None):
+    return payload
+
+
+def benchmark():
+    return ()
+
+
+def primary_metric(value):
+    return 0.0 if value is None else 1.0
+
+
+builder = api.ResearchProgramBuilder("my-paper")
+builder.method("method", implementation=paper_method)
+builder.benchmark("benchmark", implementation=benchmark)
+builder.metric("primary-metric", implementation=primary_metric)
+
+builder.experiment(
+    "main",
+    definitions=("method", "benchmark"),
+    outputs=(
+        api.ResearchOutputSpec("trajectory", api.ResearchValueKind.ARTIFACT),
+    ),
+)
+builder.evaluation(
+    "evaluate",
+    definitions=("primary-metric",),
+    outputs=(
+        api.ResearchOutputSpec("score", api.ResearchValueKind.METRIC),
+    ),
+)
+builder.depends(
+    "evaluate",
+    "main",
+    bindings=(
+        api.ResearchInputBinding(
+            "trajectory",
+            "trajectory",
+            api.ResearchValueKind.ARTIFACT,
+        ),
+    ),
+)
+builder.analysis("analysis", depends_on=("evaluate",))
+
+PROGRAM = builder.freeze()
+PORTFOLIO = api.ResearchPortfolio("my-paper", (PROGRAM,))
 ```
 
-The request payload is recursively frozen at the facade boundary so callers cannot mutate an in-flight intent after dispatch.
+Authors do not calculate implementation hashes. A named module-scope callable
+is converted into a `ResearchImplementation` automatically by freezing its
+import-resolvable module/qualname and canonical callable-source digest. This
+keeps authoring diffs fine-grained: changing an unrelated metric does not
+invalidate a method. Runtime compilation adds the referenced dependency closure,
+Git cut, environment, model, provider, and release provenance without changing
+this authoring ergonomics.
 
-## CLI project binding
+## Project scaffold
 
-Lifecycle commands resolve one downstream project. The project root defaults to
-the current directory, and the target defaults to the project identity:
+`noetrium project create <project-id>` creates one project shape.
 
-```bash
-noetrium run
-noetrium inspect
-noetrium evidence
-noetrium run run-123 --project ./my-project
-noetrium run --project ./my-project --config ./runtime.json
-```
+The generated scientific surface is:
 
-If lifecycle execution is required, the project adds
-`src/<package>/application.py` with
-`build_application(config_path)`. The optional `--config` path is passed to
-that project-owned factory. There is no module-factory CLI, ambient service
-locator, or second application authority source.
+- `src/<package>/research.py` — the complete ResearchProgram/Portfolio authoring
+  module;
+- `project.manifest.json` — platform-managed project identity/provenance;
+- `tests/test_generated_project.py` — installed-package conformance coverage.
 
-The bundled `noetrium_platform.product.operator.reference` application exists
-only as an internal qualification fixture. It is deterministic and checksummed,
-but it is not a product entrypoint and it is **not** a substitute for
-RunMachine/effect authority.
+The scaffold deliberately does not generate `method.py`, `study.py`,
+`application.py`, provider stubs, checkpoint plumbing, model bindings,
+environment bindings, or resource configuration glue.
 
-## Failure rules
+`noetrium project doctor --project .` verifies the template revision,
+manifest/platform provenance, exact generated files, the downstream import
+boundary, and the top-level ResearchProgram/ResearchPortfolio contract.
 
-- Missing application bindings fail closed.
-- Result action/target drift is rejected.
-- Corrupt reference state fails checksum verification.
-- Decoded reference state is modeled as immutable typed `ReferenceState` / `ReferenceEvent` values; exact fields and lifecycle transitions are validated before any state is accepted or persisted.
-- Real external-effect uncertainty must remain with the owning runtime/reliability authority; the product layer never converts missing evidence into success.
-
-## Generic run-control binding
-
-`bind_run_control_application(...)` translates product intents onto a typed `RunControlPort`. The adapter validates exact run identity, manifest digest, expected **RunMachine revision**, and resume checkpoint/cycle identity before dispatch. It does not persist run state, execute lifecycle effects itself, or infer external-effect certainty.
-
-`RunControlReceipt` is a typed projection over the authoritative `RunMachine` cut. Lifecycle phase, control revision, checkpoint head, prepared-operation state, and accepted transition history come from the shared Machine Journal; RunControl itself owns no second phase/generation ledger. Failed or recovery-required state-changing receipts surface as `ResearchOperationFailure` carrying that Machine-backed projection.
-
-## ROLE 03 run-control binding
-
-`noetrium.api.bind_run_control_application(...)` is the canonical product adapter for `RunControlPort`. RunControl coordinates external lifecycle effects, reconciliation, checkpoint verification, and evidence, but the authoritative lifecycle state is the shared journal-backed `RunMachine`. Product code never persists a second run-state projection.
-
-The binding requires one explicit `run_id`, its exact `run_manifest_digest`, and an injected `RunControlPort`. Payloads are exact and revision-fenced:
-
-- `run`, `stop`, `reconcile`: `{"expected_revision": N}`
-- `inspect`, `evidence`: no payload, or an optional `expected_revision`
-- `resume`: `expected_revision`, `restore_checkpoint_id`, and an exact `restore_cycle_identity` object containing `run_id`, `decision_cycle_id`, `session_id`, `task_id`, and `trace_id`
-
-The adapter rejects target, manifest, `MachineCut`, and evidence identity drift even when a downstream object is otherwise typed. A state-changing command that produces `failed` or `recovery_required`, or a `RunControlActionFailure`, raises `ResearchOperationFailure` carrying the authoritative Machine-backed `ResearchResult`. The CLI never rewrites uncertain external-effect state into success.
-
-This closes the ROLE 06 consumer side of `CSR-06-GENERIC-RUN-LIFECYCLE-OPERATOR-HANDOFF-20260829`; final availability still depends on the ROLE 03 run-control implementation being present in the integrated source cut.
-
-## Section 42 receipt-authority dependency
-
-The product envelope must preserve producer-owned authority rather than invent semantics from a status string. `RunControlReceipt` carries the authoritative `MachineCut`, derives `control_revision` from that cut, and includes any pending prepared control operation plus checkpoint/evidence projections. There is no separate run-control event sequence or receipt-reference authority. The receipt still does not claim task or scientific validity; `ResearchResult` remains a product projection.
-
-ROLE06 also waits for the ROLE01 PSC-03 neutral diagnostic metadata envelope instead of creating a competing diagnostic taxonomy.
-
-## Downstream project experience
-
-`noetrium project create <project-id>` creates one project shape in `./<project-id>` at version `0.1.0`. Destination and `--version` remain optional explicit overrides. There are no author/provider template profiles and no `--template` selector.
-
-The generated project contains the canonical manifest plus only the common
-scientific authoring surface:
-
-- `method.py` with a compilable `AgentMethodSpec`;
-- `study.py` with an `AgentStudySpec`;
-- an installed-package conformance test.
-
-Project identity exists only in `project.manifest.json`/package metadata; the
-scaffold does not generate a duplicate `project.py`. It also does not generate
-provider stubs, `research.py`, or a runtime application. All platform contracts
-are imported through `noetrium.api`.
-
-Provider/runtime/application code is an optional extension of the same project, not a second project type. If lifecycle execution is needed, the project adds `application.py` with `build_application(config_path)`; `noetrium run --project ... [--config ...]` loads it explicitly. A project without that optional module remains fully valid for method/study compilation and fails lifecycle execution with a clear "no runtime application" error.
-
-`noetrium project doctor --project .` verifies the single template revision,
-manifest identity/provenance, exact generated scientific files, the
-`noetrium.api` import boundary, and typed Method/Study compilation.
 `noetrium project test --project .` builds and installs the downstream package
-into an isolated temporary site-packages before running its generated contract
-suite. Source-tree-only success is not accepted.
+in isolation before running its generated contract suite. Source-tree-only
+success is not accepted.
 
-## NPE reference authority
+## Revisions and live control
 
-The historical `noetrium_platform.product.operator.reference` workload remains a narrow internal distribution smoke fixture only. It persists synthetic smoke state and therefore is **not** authoritative RunMachine lifecycle evidence.
+Scientific edits produce immutable research revisions rather than overwriting
+accepted history.
 
-Claim-grade NPE reference acceptance composes producer-owned contracts through a downstream-owned binding: the project supplies a typed ROLE03 `RunControlPort`, while the public ROLE06 adapter translates its receipts. The verifier exercises the public research compiler, the explicit binding seam, and the complete revision-fenced `run -> inspect -> stop -> resume -> reconcile -> evidence` lifecycle in separate fresh processes. The historical Operator smoke workload remains excluded.
+```text
+working definition
+      |
+      v
+validate / compile
+      |
+      v
+ResearchGraphRevision rN
+      |
+      +-- branch / tag / diff / merge
+      |
+      +-- run / inspect / pause / drain / interrupt
+          resume / retry / cancel / checkpoint / reconcile
+```
 
-The clean-room driver is deliberately materialized inside the generated downstream project and imports only `noetrium.api` and the Python standard library. It owns no Platform authority; it is a deterministic qualification binding whose state is stored at an explicit run-local path and reopened by a fresh process. Missing, malformed or non-finalized lifecycle receipts remain fail-closed.
+Execution history remains append-only. A future graph-diff/invalidation layer
+uses revision identity to reuse unaffected completed work and mark only affected
+descendants stale or invalidated.
+
+Operational placement changes such as worker/GPU assignment must remain
+separate from scientific identity. Scientific changes such as methods,
+benchmarks, metrics, prompts, protocols, seeds, or environment semantics create
+new research identity.
+
+## Operator layer
+
+The CLI/operator packages are internal product tooling beneath the Research OS.
+Their legacy lifecycle facade and deterministic reference workload may remain
+as implementation/conformance fixtures while migration is in progress, but
+they are not exported by `noetrium.api` and are not a downstream extension
+protocol.
+
+Release qualification exercises the installed Research OS facade directly.
+Wheel/sdist and exact-distribution container smoke checks use the internal
+`ReferenceResearchOSPort` only as a deterministic conformance port.
+
+## Failure and recovery principles
+
+The unified surface must preserve lower-authority uncertainty rather than
+inventing success:
+
+- missing required bindings fail closed;
+- an accepted revision is immutable;
+- pause/drain/interrupt are explicit control operations;
+- retries preserve logical operation identity;
+- checkpoints accelerate recovery but do not replace journal truth;
+- external-effect uncertainty is reconciled by the owning runtime/reliability
+  authority;
+- one paper/node failure does not invalidate unrelated portfolio branches;
+- future live graph edits create a new revision and invalidate only the minimal
+  affected subgraph.
+
+The public API stays small even as lower platform capability grows. New lower
+systems integrate upward into Research OS compilation/composition; they do not
+create new downstream APIs.

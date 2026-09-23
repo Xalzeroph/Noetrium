@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from noetrium.api import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
@@ -203,7 +203,7 @@ def test_saycan_method_program_plans_before_any_skill_execution(
         agent_loop=SayCanLanguageScoringAgentLoop(scorer),
     )
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         SAYCAN_METHOD_PROGRAM,
         runtime=runtime,
         initial_state=initial_state,
@@ -234,7 +234,7 @@ def test_saycan_method_program_preserves_five_step_demo_budget(
         agent_loop=SayCanLanguageScoringAgentLoop(scorer),
     )
 
-    result = run_method_program(
+    result = execute_method_program_canonically(
         SAYCAN_METHOD_PROGRAM,
         runtime=runtime,
         initial_state=saycan_initial_state(

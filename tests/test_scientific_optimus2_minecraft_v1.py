@@ -23,8 +23,8 @@ from noetrium_platform.research.execution.workflow.api import (
 from noetrium_platform.research.execution.workflow.runtime import (
     UniversalMethodMachine,
 )
-from noetrium_platform.research.provenance import MethodSourceLaneKind
-from noetrium_platform.research.reproduction import ReproductionAssetKind
+from research.reproductions.provenance import MethodSourceLaneKind
+from research.reproductions.contracts import ReproductionAssetKind
 
 from research.reproductions.optimus2_minecraft.definition import REPRODUCTION
 from research.reproductions.optimus2_minecraft.fidelity import (

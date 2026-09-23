@@ -1,15 +1,11 @@
-"""Internal authority for modules projected through the unified downstream API.
+"""Canonical source list for the unified downstream Research OS API.
 
-Only Product/application composition sources may feed the unified Level-0 API.
-Lower layers must be rolled up through adjacent facades first.
+Registered lower systems are composition authorities, not independent downstream
+SDKs. The product layer is the sole source projected through noetrium.api.
 """
 from __future__ import annotations
 
 UNIFIED_API_EXTRA_MODULES = (
-    "noetrium.contracts.json",
-    "noetrium_platform.platform",
-    "components.api",
-    "orchestration.api",
     "noetrium_platform.product.api",
 )
 

@@ -70,8 +70,8 @@ accepted method state + pinned evidence source
 → canonical request body + compiled prompt + tool schema bundle
 → content-addressed durable references
 → frozen ModelRequestEnvelope
-→ admitted model-role binding set
-→ actual deployment/model selection
+→ exact frozen model-role binding
+→ exact qualified deployment/model identity
 → ModelBindingSelectionReceipt
 → reconstruct + verify exact model-visible request
 → model serving provider
@@ -79,9 +79,10 @@ accepted method state + pinned evidence source
 → method-node result
 ```
 
-A provider fallback is legal only inside the previously admitted binding set. The
-actual selected model/deployment and fallback cause are evidence; undeclared fallback
-fails closed.
+Runtime provider fallback is not legal, including inside a previously admitted set.
+The execution is bound to one exact qualified model/deployment identity. If that binding
+is unavailable, unqualified, revoked, or drifted, the request fails closed. Selecting a
+different binding requires a new explicit revision/admission/execution identity.
 
 ## 4. Participant and simulated-user path
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodProgramIdentity
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
-from noetrium.api import run_method_program
+from noetrium_platform.platform import run_method_program
 from noetrium_platform.research.execution.workflow.api import (
     MethodNodeKind,
     MethodNodeResult,

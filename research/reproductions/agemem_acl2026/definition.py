@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.reproduction import (
+from research.reproductions.contracts import (
     ReferenceBaseline,
     ReportedResult,
     ReproductionAssetKind,

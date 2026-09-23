@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from noetrium.api import (
+from noetrium_platform.platform import (
     bind_research_campaign,
     bind_research_execution_pool,
 )

@@ -179,6 +179,15 @@ def _load_registry() -> dict[str, dict[str, object]]:
 
 
 def _system_for_module(module: str, registry: dict[str, dict[str, object]]) -> str | None:
+    # Global composition is the internal implementation/wiring plane of the
+    # Research OS. It is intentionally not a registry node and owns no durable
+    # authority. Project it under Research OS so architecture views include the
+    # real cross-authority wiring without inventing another semantic layer.
+    if module == "noetrium_platform.composition" or module.startswith(
+        "noetrium_platform.composition."
+    ):
+        return "research_os"
+
     candidates: list[tuple[int, str]] = []
     for key, descriptor in registry.items():
         prefix = descriptor.get("package_prefix")
@@ -345,10 +354,16 @@ def _render_cross_system_graph(
 
 def _render_runtime_flow(available: set[str]) -> list[str]:
     # This is a code/topology projection, not a second authority declaration.
+    # Research OS is the single public product surface; lower systems retain their
+    # own canonical authority and are reached through compiled research work.
     candidate_edges = [
-        ("operator", "experimentation", "intent/control"),
-        ("portfolio", "experimentation", "project/study context"),
-        ("experimentation", "execution", "run/workload"),
+        ("governance", "research_os", "registry/contracts"),
+        ("research_os", "portfolio", "revision/branch/tag metadata"),
+        ("research_os", "artifact", "program/portfolio CAS"),
+        ("research_os", "scope", "scope resolution"),
+        ("research_os", "execution", "compile/control ResearchGraph"),
+        ("portfolio", "execution", "immutable research revision"),
+        ("execution", "experimentation", "study/experiment workload"),
         ("execution", "participant", "method/session"),
         ("execution", "model", "model request"),
         ("execution", "environment", "capability/effect"),
@@ -356,6 +371,8 @@ def _render_runtime_flow(available: set[str]) -> list[str]:
         ("resource", "runtime", "placement/runtime binding"),
         ("execution", "data", "facts/state"),
         ("execution", "artifact", "immutable evidence"),
+        ("experimentation", "data", "trial/evaluation facts"),
+        ("experimentation", "artifact", "results/evidence"),
         ("model", "artifact", "request/output evidence"),
         ("environment", "data", "observations"),
         ("environment", "artifact", "assets/evidence"),
