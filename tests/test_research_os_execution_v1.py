@@ -11,6 +11,7 @@ from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_execution import (
     ResearchOSExecutionUnsupported,
     ResearchOSNodeAdmission,
+    ResearchOSNodeReconciliationProof,
     StrictResearchOSControl,
 )
 from noetrium_platform.composition.research_os_value_authorities import (
@@ -50,6 +51,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphControlPhase,
     ResearchGraphExecutionConflict,
     ResearchGraphLiveNodeState,
+    ResearchGraphReconciliationDisposition,
 )
 from noetrium_platform.research.execution.graph.providers import (
     SQLiteResearchGraphExecutionStore,
@@ -134,6 +136,62 @@ class _Runtime:
         if node.graph_node_id == "paper::consume":
             return {"seen": inputs["source"]["value"]}
         raise AssertionError(node.graph_node_id)
+
+
+class _FailOnceSourceRuntime(_Runtime):
+    def __init__(self) -> None:
+        super().__init__()
+        self.failed_once = False
+
+    def execute(
+        self,
+        context,
+        node,
+        lowering,
+        inputs,
+        *,
+        execution_cut_id,
+        deadline,
+    ):
+        if node.graph_node_id == "paper::source" and not self.failed_once:
+            context.checkpoint()
+            self.executed.append(node.graph_node_id)
+            self.failed_once = True
+            raise RuntimeError("source failed once")
+        return super().execute(
+            context,
+            node,
+            lowering,
+            inputs,
+            execution_cut_id=execution_cut_id,
+            deadline=deadline,
+        )
+
+
+class _ReconcilingRuntime(_Runtime):
+    def reconcile(
+        self,
+        node,
+        lowering,
+        *,
+        execution_cut_id,
+        attempt_id,
+    ):
+        return ResearchOSNodeReconciliationProof(
+            node.graph_node_id,
+            execution_cut_id,
+            attempt_id,
+            ResearchGraphReconciliationDisposition.RETRY,
+            canonical_digest(
+                {
+                    "runtime": "test-reconciliation",
+                    "graph_node_id": node.graph_node_id,
+                    "lowering_digest": lowering.lowering_digest,
+                    "execution_cut_id": execution_cut_id,
+                    "attempt_id": attempt_id,
+                }
+            ),
+        )
 
 
 def _portfolio() -> api.ResearchPortfolio:
@@ -381,26 +439,130 @@ def test_running_interrupt_fences_attempt_and_requires_reconciliation(
         pool.close()
 
 
-def test_retry_and_reconcile_remain_proof_gated(tmp_path: Path) -> None:
-    runtime = _Runtime()
+def test_exact_retry_resets_failed_root_and_blocked_descendants(
+    tmp_path: Path,
+) -> None:
+    runtime = _FailOnceSourceRuntime()
     values = ResearchOSValueRouter((_ValueAuthority(),))
-    _graph, pool, research_os = _bound(tmp_path, runtime, values)
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
     try:
         portfolio = _portfolio()
-        revision = research_os.commit(portfolio, message="proof-gated-control")
-        target = api.ResearchExecutionTarget("execution-proof-gated", revision)
-        research_os.run(target)
+        revision = research_os.commit(portfolio, message="retry")
+        target = api.ResearchExecutionTarget("execution-retry", revision)
+
+        first = research_os.run(target)
+        assert first.state == "failed"
+        active = graph.active_cut(target.execution_id)
+        assert active is not None
+        before = graph.snapshot(active.cut_id)
+        assert before.node("paper::source").state is ResearchGraphLiveNodeState.FAILED
+        assert before.node("paper::consume").state is ResearchGraphLiveNodeState.BLOCKED
 
         with pytest.raises(
             ResearchOSExecutionUnsupported,
-            match="canonical graph retry plan",
+            match="explicit ResearchNodeRef",
         ):
             research_os.retry(target)
+
+        retried = research_os.retry(target.for_node("paper", "source"))
+        assert retried.state == "succeeded"
+        after = graph.snapshot(active.cut_id)
+        assert after.node("paper::source").state is ResearchGraphLiveNodeState.SUCCEEDED
+        assert after.node("paper::consume").state is ResearchGraphLiveNodeState.SUCCEEDED
+        assert runtime.executed == [
+            "paper::source",
+            "paper::source",
+            "paper::consume",
+        ]
+    finally:
+        pool.close()
+
+
+def test_reconcile_requires_lower_authority_proof_seam(tmp_path: Path) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="reconcile-gated")
+        target = api.ResearchExecutionTarget("execution-reconcile-gated", revision)
+        compilation = compile_research_portfolio_graph(revision, portfolio)
+        cut = ResearchOSExecutionCut.from_compilation(target.execution_id, compilation)
+        graph.ensure_execution(cut.cut_id, compilation.plan)
+        graph.move_active_cut(target.execution_id, cut.cut_id)
+        graph.mark_ready(cut.cut_id, "paper::source", now_ns=1)
+        claimed = graph.claim(
+            cut.cut_id,
+            "paper::source",
+            owner_id="worker-a",
+            now_ns=2,
+            lease_expires_at_ns=100,
+        )
+        assert claimed.attempt_id is not None
+        graph.mark_running(
+            cut.cut_id,
+            "paper::source",
+            attempt_id=claimed.attempt_id,
+            owner_id="worker-a",
+            now_ns=3,
+        )
+        research_os.interrupt(target)
+
         with pytest.raises(
             ResearchOSExecutionUnsupported,
-            match="lower-authority effect/execution proof",
+            match="no lower-authority reconciliation proof seam",
         ):
-            research_os.reconcile(target)
+            research_os.reconcile(target.for_node("paper", "source"))
+    finally:
+        pool.close()
+
+
+def test_reconcile_proof_replays_publication_closure_then_resumes(
+    tmp_path: Path,
+) -> None:
+    runtime = _ReconcilingRuntime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="reconcile")
+        target = api.ResearchExecutionTarget("execution-reconcile", revision)
+        compilation = compile_research_portfolio_graph(revision, portfolio)
+        cut = ResearchOSExecutionCut.from_compilation(target.execution_id, compilation)
+        graph.ensure_execution(cut.cut_id, compilation.plan)
+        graph.move_active_cut(target.execution_id, cut.cut_id)
+        graph.mark_ready(cut.cut_id, "paper::source", now_ns=1)
+        claimed = graph.claim(
+            cut.cut_id,
+            "paper::source",
+            owner_id="worker-a",
+            now_ns=2,
+            lease_expires_at_ns=100,
+        )
+        assert claimed.attempt_id is not None
+        graph.mark_running(
+            cut.cut_id,
+            "paper::source",
+            attempt_id=claimed.attempt_id,
+            owner_id="worker-a",
+            now_ns=3,
+        )
+
+        interrupted = research_os.interrupt(target)
+        assert interrupted.state == "recovery_required"
+
+        reconciled = research_os.reconcile(target.for_node("paper", "source"))
+        assert reconciled.state == "paused"
+        assert reconciled.payload["reconciliation_disposition"] == "retry"
+        assert reconciled.payload["control_phase"] == ResearchGraphControlPhase.PAUSED.value
+        middle = graph.snapshot(cut.cut_id)
+        assert middle.node("paper::source").state is ResearchGraphLiveNodeState.RETRY_WAIT
+
+        resumed = research_os.resume(target)
+        assert resumed.state == "succeeded"
+        final = graph.snapshot(cut.cut_id)
+        assert final.node("paper::source").state is ResearchGraphLiveNodeState.SUCCEEDED
+        assert final.node("paper::consume").state is ResearchGraphLiveNodeState.SUCCEEDED
     finally:
         pool.close()
 
@@ -474,6 +636,16 @@ class _ExecutionStoreWithoutActiveCut:
         now_ns,
         failure_type,
         failure_message,
+    ):
+        raise AssertionError("unused")
+
+    def retry_failed_subgraph(
+        self,
+        execution_id,
+        failed_node_id,
+        *,
+        descendant_node_ids,
+        retry_not_before_ns,
     ):
         raise AssertionError("unused")
 
