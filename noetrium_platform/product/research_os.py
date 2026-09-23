@@ -110,14 +110,18 @@ class ResearchImplementation:
                 "research implementation must be a module-resolvable named callable"
             )
         require_sha256(self.source_digest, "research implementation source_digest")
+        module = self.module.strip()
+        qualname = self.qualname.strip()
+        object.__setattr__(self, "module", module)
+        object.__setattr__(self, "qualname", qualname)
         object.__setattr__(
             self,
             "implementation_digest",
             canonical_digest(
                 {
                     "implementation_id": self.implementation_id,
-                    "module": self.module.strip(),
-                    "qualname": self.qualname.strip(),
+                    "module": module,
+                    "qualname": qualname,
                     "source_digest": self.source_digest,
                 }
             ),
@@ -137,6 +141,10 @@ class ResearchImplementation:
             raise ValueError("research implementation callable has no module identity")
         if type(qualname) is not str or not qualname.strip():
             raise ValueError("research implementation callable has no qualname identity")
+        if module.strip() == "__main__":
+            raise ValueError(
+                "research implementation must live in an importable module, not __main__"
+            )
         if "<locals>" in qualname or "<lambda>" in qualname:
             raise ValueError(
                 "research implementation must be declared at module scope with a name"
@@ -445,9 +453,73 @@ class ResearchProgram:
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchNodeRef:
+    program_id: str
+    node_id: str
+
+    def __post_init__(self) -> None:
+        _token(self.program_id, "research node reference program_id")
+        _token(self.node_id, "research node reference node_id")
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchPortfolioDependency:
+    upstream: ResearchNodeRef
+    downstream: ResearchNodeRef
+    bindings: tuple[ResearchInputBinding, ...] = ()
+    dependency_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.upstream) is not ResearchNodeRef:
+            raise TypeError("portfolio upstream must be ResearchNodeRef")
+        if type(self.downstream) is not ResearchNodeRef:
+            raise TypeError("portfolio downstream must be ResearchNodeRef")
+        if self.upstream == self.downstream:
+            raise ValueError("portfolio dependency cannot target itself")
+        if self.upstream.program_id == self.downstream.program_id:
+            raise ValueError(
+                "same-program dependencies belong inside ResearchProgram"
+            )
+        if type(self.bindings) is not tuple or any(
+            type(row) is not ResearchInputBinding for row in self.bindings
+        ):
+            raise TypeError("portfolio dependency bindings must be typed tuple")
+        bindings = tuple(sorted(self.bindings, key=lambda row: row.input_name))
+        names = tuple(row.input_name for row in bindings)
+        if len(names) != len(set(names)):
+            raise ValueError("portfolio dependency input names must be unique")
+        object.__setattr__(self, "bindings", bindings)
+        object.__setattr__(
+            self,
+            "dependency_digest",
+            canonical_digest(
+                {
+                    "upstream": (
+                        self.upstream.program_id,
+                        self.upstream.node_id,
+                    ),
+                    "downstream": (
+                        self.downstream.program_id,
+                        self.downstream.node_id,
+                    ),
+                    "bindings": tuple(
+                        {
+                            "input_name": row.input_name,
+                            "output_name": row.output_name,
+                            "kind": row.kind.value,
+                        }
+                        for row in bindings
+                    ),
+                }
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchPortfolio:
     portfolio_id: str
     programs: tuple[ResearchProgram, ...]
+    dependencies: tuple[ResearchPortfolioDependency, ...] = ()
     portfolio_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -456,11 +528,111 @@ class ResearchPortfolio:
             type(row) is not ResearchProgram for row in self.programs
         ):
             raise TypeError("research portfolio programs must be non-empty typed tuple")
+        if type(self.dependencies) is not tuple or any(
+            type(row) is not ResearchPortfolioDependency
+            for row in self.dependencies
+        ):
+            raise TypeError("research portfolio dependencies must be typed tuple")
         programs = tuple(sorted(self.programs, key=lambda row: row.program_id))
         ids = tuple(row.program_id for row in programs)
         if len(ids) != len(set(ids)):
             raise ValueError("research portfolio program identities must be unique")
+        program_by_id = {row.program_id: row for row in programs}
+        node_by_ref = {
+            ResearchNodeRef(program.program_id, node.node_id): node
+            for program in programs
+            for node in program.nodes
+        }
+        dependencies = tuple(
+            sorted(
+                self.dependencies,
+                key=lambda row: (
+                    row.downstream.program_id,
+                    row.downstream.node_id,
+                    row.upstream.program_id,
+                    row.upstream.node_id,
+                    row.dependency_digest,
+                ),
+            )
+        )
+        seen_edges: set[tuple[ResearchNodeRef, ResearchNodeRef]] = set()
+        downstream_inputs: dict[ResearchNodeRef, set[str]] = {
+            ref: set() for ref in node_by_ref
+        }
+        upstream_by_downstream: dict[ResearchNodeRef, list[ResearchNodeRef]] = {
+            ref: [] for ref in node_by_ref
+        }
+
+        for program in programs:
+            for edge in program.dependencies:
+                upstream = ResearchNodeRef(program.program_id, edge.upstream_node_id)
+                downstream = ResearchNodeRef(program.program_id, edge.downstream_node_id)
+                upstream_by_downstream[downstream].append(upstream)
+                downstream_inputs[downstream].update(
+                    binding.input_name for binding in edge.bindings
+                )
+
+        for dependency in dependencies:
+            if dependency.upstream not in node_by_ref:
+                raise ValueError(
+                    "portfolio dependency references unknown upstream node: "
+                    f"{dependency.upstream.program_id}:{dependency.upstream.node_id}"
+                )
+            if dependency.downstream not in node_by_ref:
+                raise ValueError(
+                    "portfolio dependency references unknown downstream node: "
+                    f"{dependency.downstream.program_id}:{dependency.downstream.node_id}"
+                )
+            edge_key = (dependency.upstream, dependency.downstream)
+            if edge_key in seen_edges:
+                raise ValueError("portfolio dependencies must not repeat an edge")
+            seen_edges.add(edge_key)
+            upstream_node = node_by_ref[dependency.upstream]
+            output_keys = {
+                (row.kind, row.name) for row in upstream_node.outputs
+            }
+            names = downstream_inputs[dependency.downstream]
+            for binding in dependency.bindings:
+                if (binding.kind, binding.output_name) not in output_keys:
+                    raise ValueError(
+                        "portfolio dependency references missing upstream output "
+                        f"{binding.kind.value}:{binding.output_name}"
+                    )
+                if binding.input_name in names:
+                    raise ValueError(
+                        "portfolio downstream node receives duplicate input "
+                        f"{binding.input_name!r}"
+                    )
+                names.add(binding.input_name)
+            upstream_by_downstream[dependency.downstream].append(
+                dependency.upstream
+            )
+
+        visiting: set[ResearchNodeRef] = set()
+        visited: set[ResearchNodeRef] = set()
+
+        def visit(ref: ResearchNodeRef) -> None:
+            if ref in visited:
+                return
+            if ref in visiting:
+                raise ValueError(
+                    "research portfolio dependency cycle at "
+                    f"{ref.program_id}:{ref.node_id}"
+                )
+            visiting.add(ref)
+            for upstream in upstream_by_downstream[ref]:
+                visit(upstream)
+            visiting.remove(ref)
+            visited.add(ref)
+
+        for ref in sorted(
+            node_by_ref,
+            key=lambda row: (row.program_id, row.node_id),
+        ):
+            visit(ref)
+
         object.__setattr__(self, "programs", programs)
+        object.__setattr__(self, "dependencies", dependencies)
         object.__setattr__(
             self,
             "portfolio_digest",
@@ -468,8 +640,56 @@ class ResearchPortfolio:
                 {
                     "portfolio_id": self.portfolio_id,
                     "programs": tuple(row.program_digest for row in programs),
+                    "dependencies": tuple(
+                        row.dependency_digest for row in dependencies
+                    ),
                 }
             ),
+        )
+
+
+class ResearchPortfolioBuilder:
+    """Compose many papers/programs into one cross-program research graph."""
+
+    def __init__(self, portfolio_id: str) -> None:
+        _token(portfolio_id, "research portfolio_id")
+        self._portfolio_id = portfolio_id
+        self._programs: dict[str, ResearchProgram] = {}
+        self._dependencies: list[ResearchPortfolioDependency] = []
+
+    def program(self, program: ResearchProgram) -> "ResearchPortfolioBuilder":
+        if type(program) is not ResearchProgram:
+            raise TypeError("portfolio builder requires ResearchProgram")
+        if program.program_id in self._programs:
+            raise ValueError(
+                f"duplicate research program: {program.program_id}"
+            )
+        self._programs[program.program_id] = program
+        return self
+
+    def depends(
+        self,
+        *,
+        downstream_program_id: str,
+        downstream_node_id: str,
+        upstream_program_id: str,
+        upstream_node_id: str,
+        bindings: tuple[ResearchInputBinding, ...] = (),
+    ) -> "ResearchPortfolioBuilder":
+        self._dependencies.append(
+            ResearchPortfolioDependency(
+                ResearchNodeRef(upstream_program_id, upstream_node_id),
+                ResearchNodeRef(downstream_program_id, downstream_node_id),
+                bindings,
+            )
+        )
+        return self
+
+    def freeze(self) -> ResearchPortfolio:
+        return ResearchPortfolio(
+            self._portfolio_id,
+            tuple(self._programs.values()),
+            tuple(self._dependencies),
         )
 
 
@@ -482,7 +702,7 @@ class ResearchGraphRevision:
 
     def __post_init__(self) -> None:
         require_sha256(self.portfolio_digest, "research revision portfolio_digest")
-        parents = tuple(sorted(self.parent_revision_digests))
+        parents = self.parent_revision_digests
         for parent in parents:
             require_sha256(parent, "research parent revision")
         if len(parents) != len(set(parents)):
@@ -948,6 +1168,9 @@ __all__ = [
     "ResearchNode",
     "ResearchNodeImpact",
     "ResearchNodeKind",
+    "ResearchPortfolioDependency",
+    "ResearchPortfolioBuilder",
+    "ResearchNodeRef",
     "ResearchOS",
     "ResearchOSPort",
     "ResearchOutputSpec",
