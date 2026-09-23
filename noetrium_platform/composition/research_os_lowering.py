@@ -772,9 +772,30 @@ class ResearchOSLoweringCompiler:
     def compile(
         self,
         compilation: CompiledResearchOSGraph,
+        *,
+        selected_node_ids: tuple[str, ...] | None = None,
     ) -> ResearchOSLoweringPlan:
         if type(compilation) is not CompiledResearchOSGraph:
             raise TypeError("Research OS lowering requires CompiledResearchOSGraph")
+        nodes = compilation.nodes
+        if selected_node_ids is not None:
+            if type(selected_node_ids) is not tuple or not selected_node_ids or any(
+                type(node_id) is not str or not node_id.strip()
+                for node_id in selected_node_ids
+            ):
+                raise TypeError("Research OS lowering selection must be a non-empty text tuple")
+            selected = set(selected_node_ids)
+            if len(selected) != len(selected_node_ids):
+                raise ValueError("Research OS lowering selection node ids must be unique")
+            known = {node.graph_node_id for node in compilation.nodes}
+            unknown = tuple(sorted(selected - known))
+            if unknown:
+                raise ValueError(
+                    f"Research OS lowering selection references unknown nodes: {unknown}"
+                )
+            nodes = tuple(
+                node for node in compilation.nodes if node.graph_node_id in selected
+            )
         return ResearchOSLoweringPlan(
             compilation.plan.graph_id,
             compilation.plan.graph_digest,
@@ -788,7 +809,7 @@ class ResearchOSLoweringCompiler:
                         compilation.plan.research_revision_digest
                     ),
                 )
-                for node in compilation.nodes
+                for node in nodes
             ),
         )
 
@@ -798,11 +819,15 @@ def compile_research_os_lowering(
     *,
     resolver: ResearchImplementationResolverPort | None = None,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
+    selected_node_ids: tuple[str, ...] | None = None,
 ) -> ResearchOSLoweringPlan:
     return ResearchOSLoweringCompiler(
         resolver,
         experiment_closures,
-    ).compile(compilation)
+    ).compile(
+        compilation,
+        selected_node_ids=selected_node_ids,
+    )
 
 
 __all__ = [
