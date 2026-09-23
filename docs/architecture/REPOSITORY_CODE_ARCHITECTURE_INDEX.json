@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3614,
-    "python_import_edges": 6769,
-    "symbols": 4805,
-    "tracked_files": 4243,
+    "python_files": 3612,
+    "python_import_edges": 6767,
+    "symbols": 4786,
+    "tracked_files": 4241,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4799,
+    "python": 4780,
     "typescript": 5
   },
   "parse_errors": [],
@@ -15705,18 +15705,6 @@
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.research.provenance",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.reproduction",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "noetrium_platform.substrate.api",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.data.api",
@@ -15791,8 +15779,8 @@
     {
       "source_module": "research.authoring.frontier_2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.authoring.frontier_2026.study",
@@ -16661,8 +16649,8 @@
     {
       "source_module": "research.reproductions.adacm2_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.adacm2_memory.memory",
@@ -16685,8 +16673,8 @@
     {
       "source_module": "research.reproductions.adacm2_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.adacm2_memory.study",
@@ -16715,8 +16703,8 @@
     {
       "source_module": "research.reproductions.adaptagent_acl2025.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.adaptagent_acl2025.program",
@@ -16727,8 +16715,8 @@
     {
       "source_module": "research.reproductions.adaptagent_acl2025.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.adaptagent_acl2025.study",
@@ -16745,8 +16733,8 @@
     {
       "source_module": "research.reproductions.adas_meta_agent_search.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.adas_meta_agent_search.program",
@@ -16775,8 +16763,8 @@
     {
       "source_module": "research.reproductions.adas_meta_agent_search.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.adas_meta_agent_search.study",
@@ -16799,8 +16787,8 @@
     {
       "source_module": "research.reproductions.aflow.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.aflow.fidelity",
@@ -16823,8 +16811,8 @@
     {
       "source_module": "research.reproductions.aflow.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.aflow.study",
@@ -16847,8 +16835,8 @@
     {
       "source_module": "research.reproductions.agemem_acl2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agemem_acl2026.program",
@@ -16859,8 +16847,8 @@
     {
       "source_module": "research.reproductions.agemem_acl2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agemem_acl2026.study",
@@ -16877,20 +16865,20 @@
     {
       "source_module": "research.reproductions.agent_q_surrogate.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agent_q_surrogate.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agent_q_surrogate.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agent_q_surrogate.study",
@@ -16913,8 +16901,8 @@
     {
       "source_module": "research.reproductions.agent_s3.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agent_s3.source",
@@ -16925,8 +16913,8 @@
     {
       "source_module": "research.reproductions.agentless_swebench.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agentless_swebench.program",
@@ -16949,8 +16937,8 @@
     {
       "source_module": "research.reproductions.agentless_swebench.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agentless_swebench.study",
@@ -16973,8 +16961,8 @@
     {
       "source_module": "research.reproductions.agentsquare.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.agentsquare.fidelity",
@@ -17051,32 +17039,32 @@
     {
       "source_module": "research.reproductions.ai_scientist_v1.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ai_scientist_v1.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ai_scientist_v2.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ai_scientist_v2.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.astranav_memory_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.astranav_memory_cvpr2026.program",
@@ -17087,8 +17075,8 @@
     {
       "source_module": "research.reproductions.astranav_memory_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.astranav_memory_cvpr2026.study",
@@ -17099,8 +17087,8 @@
     {
       "source_module": "research.reproductions.autogen_agentchat.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.autogen_agentchat.program",
@@ -17123,8 +17111,8 @@
     {
       "source_module": "research.reproductions.autogen_agentchat.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.autogen_agentchat.study",
@@ -17147,8 +17135,8 @@
     {
       "source_module": "research.reproductions.camel_role_playing.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.camel_role_playing.program",
@@ -17171,8 +17159,8 @@
     {
       "source_module": "research.reproductions.camel_role_playing.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.camel_role_playing.study",
@@ -17207,8 +17195,8 @@
     {
       "source_module": "research.reproductions.cer_acl2025.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.cer_acl2025.program",
@@ -17237,8 +17225,8 @@
     {
       "source_module": "research.reproductions.ces_gui_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ces_gui_cvpr2026.program",
@@ -17249,8 +17237,8 @@
     {
       "source_module": "research.reproductions.ces_gui_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ces_gui_cvpr2026.study",
@@ -17261,8 +17249,8 @@
     {
       "source_module": "research.reproductions.chain_of_thought_gsm8k.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.chain_of_thought_gsm8k.program",
@@ -17357,8 +17345,8 @@
     {
       "source_module": "research.reproductions.chain_of_thought_gsm8k.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.chain_of_thought_gsm8k.study",
@@ -17387,8 +17375,8 @@
     {
       "source_module": "research.reproductions.chatdev_v1.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.chatdev_v1.environment",
@@ -17495,8 +17483,8 @@
     {
       "source_module": "research.reproductions.code_as_policies.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.code_as_policies.hierarchy",
@@ -17537,8 +17525,8 @@
     {
       "source_module": "research.reproductions.code_as_policies.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.code_as_policies.study",
@@ -17561,8 +17549,8 @@
     {
       "source_module": "research.reproductions.cogagent.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.cogagent.program",
@@ -17615,8 +17603,8 @@
     {
       "source_module": "research.reproductions.crossha_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.crossha_cvpr2026.program",
@@ -17627,8 +17615,8 @@
     {
       "source_module": "research.reproductions.crossha_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.crossha_cvpr2026.study",
@@ -17639,8 +17627,8 @@
     {
       "source_module": "research.reproductions.d3d_vlp_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.d3d_vlp_cvpr2026.program",
@@ -17651,8 +17639,8 @@
     {
       "source_module": "research.reproductions.d3d_vlp_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.d3d_vlp_cvpr2026.study",
@@ -17669,8 +17657,8 @@
     {
       "source_module": "research.reproductions.dars_acl2025.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.dars_acl2025.program",
@@ -17699,8 +17687,8 @@
     {
       "source_module": "research.reproductions.dejavu_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.dejavu_cvpr2026.program",
@@ -17711,8 +17699,8 @@
     {
       "source_module": "research.reproductions.dejavu_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.dejavu_cvpr2026.study",
@@ -17729,8 +17717,8 @@
     {
       "source_module": "research.reproductions.deps_minecraft.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.deps_minecraft.program",
@@ -17759,8 +17747,8 @@
     {
       "source_module": "research.reproductions.deps_minecraft.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.deps_minecraft.study",
@@ -17789,8 +17777,8 @@
     {
       "source_module": "research.reproductions.drvideo.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.drvideo.program",
@@ -17837,8 +17825,8 @@
     {
       "source_module": "research.reproductions.eaglet_acl2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.eaglet_acl2026.program",
@@ -17849,8 +17837,8 @@
     {
       "source_module": "research.reproductions.eaglet_acl2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.eaglet_acl2026.study",
@@ -17867,8 +17855,8 @@
     {
       "source_module": "research.reproductions.echotrail_gui_cvprf2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.echotrail_gui_cvprf2026.program",
@@ -17879,8 +17867,8 @@
     {
       "source_module": "research.reproductions.echotrail_gui_cvprf2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.echotrail_gui_cvprf2026.study",
@@ -17897,8 +17885,8 @@
     {
       "source_module": "research.reproductions.ego2web_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ego2web_cvpr2026.program",
@@ -17909,8 +17897,8 @@
     {
       "source_module": "research.reproductions.ego2web_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ego2web_cvpr2026.study",
@@ -17933,8 +17921,8 @@
     {
       "source_module": "research.reproductions.embodied_videoagent_iccv2025.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.embodied_videoagent_iccv2025.program",
@@ -17945,8 +17933,8 @@
     {
       "source_module": "research.reproductions.embodied_videoagent_iccv2025.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.embodied_videoagent_iccv2025.study",
@@ -17981,14 +17969,14 @@
     {
       "source_module": "research.reproductions.exact_vwa.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.exact_vwa.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.exact_vwa.source",
@@ -18029,8 +18017,8 @@
     {
       "source_module": "research.reproductions.flash_vstream_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.flash_vstream_memory.memory",
@@ -18053,8 +18041,8 @@
     {
       "source_module": "research.reproductions.flash_vstream_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.flash_vstream_memory.study",
@@ -18083,8 +18071,8 @@
     {
       "source_module": "research.reproductions.flow_modularized_agentic_workflow.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.flow_modularized_agentic_workflow.fidelity",
@@ -18119,8 +18107,8 @@
     {
       "source_module": "research.reproductions.flow_modularized_agentic_workflow.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.flow_modularized_agentic_workflow.study",
@@ -18155,8 +18143,8 @@
     {
       "source_module": "research.reproductions.foreact_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.foreact_cvpr2026.program",
@@ -18167,8 +18155,8 @@
     {
       "source_module": "research.reproductions.foreact_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.foreact_cvpr2026.study",
@@ -18179,14 +18167,14 @@
     {
       "source_module": "research.reproductions.gats.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.gats.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.gats.source",
@@ -18215,8 +18203,8 @@
     {
       "source_module": "research.reproductions.generative_agents_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.generative_agents_memory.program",
@@ -18239,8 +18227,8 @@
     {
       "source_module": "research.reproductions.generative_agents_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.generative_agents_memory.study",
@@ -18263,8 +18251,8 @@
     {
       "source_module": "research.reproductions.gorilla_apibench.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.gorilla_apibench.selection",
@@ -18281,14 +18269,14 @@
     {
       "source_module": "research.reproductions.gorilla_apibench.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.hats_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.hats_cvpr2026.program",
@@ -18299,8 +18287,8 @@
     {
       "source_module": "research.reproductions.hats_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.hats_cvpr2026.study",
@@ -18311,8 +18299,8 @@
     {
       "source_module": "research.reproductions.hugginggpt.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.hugginggpt.program",
@@ -18359,8 +18347,8 @@
     {
       "source_module": "research.reproductions.implement_acl2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.implement_acl2026.program",
@@ -18371,8 +18359,8 @@
     {
       "source_module": "research.reproductions.implement_acl2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.implement_acl2026.study",
@@ -18389,8 +18377,8 @@
     {
       "source_module": "research.reproductions.ishift_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ishift_cvpr2026.program",
@@ -18401,8 +18389,8 @@
     {
       "source_module": "research.reproductions.ishift_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ishift_cvpr2026.study",
@@ -18425,8 +18413,8 @@
     {
       "source_module": "research.reproductions.jarvis1_minecraft.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.jarvis1_minecraft.memory",
@@ -18467,8 +18455,8 @@
     {
       "source_module": "research.reproductions.jarvis1_minecraft.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.jarvis1_minecraft.study",
@@ -18515,14 +18503,14 @@
     {
       "source_module": "research.reproductions.lats_webshop.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lats_webshop.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lats_webshop.program",
@@ -18551,8 +18539,8 @@
     {
       "source_module": "research.reproductions.lats_webshop.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lats_webshop.study",
@@ -18575,20 +18563,20 @@
     {
       "source_module": "research.reproductions.lits_math500.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lits_math500.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lits_math500.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lits_math500.study",
@@ -18611,20 +18599,20 @@
     {
       "source_module": "research.reproductions.live_swe_agent.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.live_swe_agent.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lmee_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lmee_cvpr2026.program",
@@ -18635,8 +18623,8 @@
     {
       "source_module": "research.reproductions.lmee_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lmee_cvpr2026.study",
@@ -18653,8 +18641,8 @@
     {
       "source_module": "research.reproductions.lvagent_iccv2025.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lvagent_iccv2025.program",
@@ -18665,8 +18653,8 @@
     {
       "source_module": "research.reproductions.lvagent_iccv2025.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.lvagent_iccv2025.study",
@@ -18701,8 +18689,8 @@
     {
       "source_module": "research.reproductions.ma_lmm_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ma_lmm_memory.memory",
@@ -18725,8 +18713,8 @@
     {
       "source_module": "research.reproductions.ma_lmm_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ma_lmm_memory.study",
@@ -18749,26 +18737,26 @@
     {
       "source_module": "research.reproductions.mars_automated_ai_research.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.mars_automated_ai_research.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.mars_automated_ai_research.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.mem_gallery_acl2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.mem_gallery_acl2026.program",
@@ -18779,8 +18767,8 @@
     {
       "source_module": "research.reproductions.mem_gallery_acl2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.mem_gallery_acl2026.study",
@@ -18797,8 +18785,8 @@
     {
       "source_module": "research.reproductions.memevolve.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.memevolve.source",
@@ -18809,8 +18797,8 @@
     {
       "source_module": "research.reproductions.memgpt_classic.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.memgpt_classic.program",
@@ -18839,8 +18827,8 @@
     {
       "source_module": "research.reproductions.memgpt_classic.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.memgpt_classic.study",
@@ -18863,8 +18851,8 @@
     {
       "source_module": "research.reproductions.metagpt_software_company.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.metagpt_software_company.program",
@@ -18887,8 +18875,8 @@
     {
       "source_module": "research.reproductions.metagpt_software_company.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.metagpt_software_company.study",
@@ -18917,8 +18905,8 @@
     {
       "source_module": "research.reproductions.minedojo.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.minedojo.program",
@@ -18977,8 +18965,8 @@
     {
       "source_module": "research.reproductions.mm_mem_acl2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.mm_mem_acl2026.program",
@@ -18989,8 +18977,8 @@
     {
       "source_module": "research.reproductions.mm_mem_acl2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.mm_mem_acl2026.study",
@@ -19007,8 +18995,8 @@
     {
       "source_module": "research.reproductions.mmbench_gui_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.mmbench_gui_cvpr2026.program",
@@ -19019,8 +19007,8 @@
     {
       "source_module": "research.reproductions.mmbench_gui_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.mmbench_gui_cvpr2026.study",
@@ -19037,8 +19025,8 @@
     {
       "source_module": "research.reproductions.motus_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.motus_cvpr2026.program",
@@ -19049,8 +19037,8 @@
     {
       "source_module": "research.reproductions.motus_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.motus_cvpr2026.study",
@@ -19073,8 +19061,8 @@
     {
       "source_module": "research.reproductions.moviechat_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.moviechat_memory.memory",
@@ -19097,8 +19085,8 @@
     {
       "source_module": "research.reproductions.moviechat_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.moviechat_memory.study",
@@ -19121,14 +19109,14 @@
     {
       "source_module": "research.reproductions.multiagent_debate.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.multiagent_debate.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.openwebvoyager_acl2025.benchmark",
@@ -19139,8 +19127,8 @@
     {
       "source_module": "research.reproductions.openwebvoyager_acl2025.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.openwebvoyager_acl2025.program",
@@ -19151,8 +19139,8 @@
     {
       "source_module": "research.reproductions.openwebvoyager_acl2025.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.openwebvoyager_acl2025.study",
@@ -19181,8 +19169,8 @@
     {
       "source_module": "research.reproductions.optimus1_minecraft.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.optimus1_minecraft.memory",
@@ -19229,8 +19217,8 @@
     {
       "source_module": "research.reproductions.optimus1_minecraft.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.optimus1_minecraft.study",
@@ -19265,8 +19253,8 @@
     {
       "source_module": "research.reproductions.optimus2_minecraft.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.optimus2_minecraft.program",
@@ -19295,8 +19283,8 @@
     {
       "source_module": "research.reproductions.optimus2_minecraft.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.optimus2_minecraft.study",
@@ -19319,8 +19307,8 @@
     {
       "source_module": "research.reproductions.optimusvla_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.optimusvla_cvpr2026.program",
@@ -19331,8 +19319,8 @@
     {
       "source_module": "research.reproductions.optimusvla_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.optimusvla_cvpr2026.study",
@@ -19343,8 +19331,8 @@
     {
       "source_module": "research.reproductions.orbit_acl2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.orbit_acl2026.program",
@@ -19355,8 +19343,8 @@
     {
       "source_module": "research.reproductions.orbit_acl2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.orbit_acl2026.study",
@@ -19373,8 +19361,8 @@
     {
       "source_module": "research.reproductions.os_symphony_acl2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.os_symphony_acl2026.program",
@@ -19385,8 +19373,8 @@
     {
       "source_module": "research.reproductions.os_symphony_acl2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.os_symphony_acl2026.study",
@@ -19409,8 +19397,8 @@
     {
       "source_module": "research.reproductions.pi05_openpi.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.pi05_openpi.source",
@@ -19439,8 +19427,8 @@
     {
       "source_module": "research.reproductions.providellm_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.providellm_memory.memory",
@@ -19457,8 +19445,8 @@
     {
       "source_module": "research.reproductions.providellm_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.providellm_memory.study",
@@ -19499,14 +19487,14 @@
     {
       "source_module": "research.reproductions.qlass_alfworld.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.qlass_alfworld.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.qlass_alfworld.program",
@@ -19535,8 +19523,8 @@
     {
       "source_module": "research.reproductions.qlass_alfworld.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.qlass_alfworld.study",
@@ -19565,8 +19553,8 @@
     {
       "source_module": "research.reproductions.r2d2_acl2025.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.r2d2_acl2025.program",
@@ -19577,8 +19565,8 @@
     {
       "source_module": "research.reproductions.r2d2_acl2025.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.r2d2_acl2025.study",
@@ -19595,14 +19583,14 @@
     {
       "source_module": "research.reproductions.rap_reasoning.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.rap_reasoning.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.rap_reasoning.program",
@@ -19625,8 +19613,8 @@
     {
       "source_module": "research.reproductions.rap_reasoning.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.rap_reasoning.study",
@@ -19649,14 +19637,14 @@
     {
       "source_module": "research.reproductions.react_alfworld.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.react_alfworld.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.react_alfworld.program",
@@ -19685,8 +19673,8 @@
     {
       "source_module": "research.reproductions.react_alfworld.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.react_alfworld.study",
@@ -19709,8 +19697,8 @@
     {
       "source_module": "research.reproductions.refact_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.refact_cvpr2026.program",
@@ -19721,8 +19709,8 @@
     {
       "source_module": "research.reproductions.refact_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.refact_cvpr2026.study",
@@ -19739,14 +19727,14 @@
     {
       "source_module": "research.reproductions.reflexion_alfworld.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.reflexion_alfworld.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.reflexion_alfworld.program",
@@ -19775,8 +19763,8 @@
     {
       "source_module": "research.reproductions.reflexion_alfworld.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.reflexion_alfworld.study",
@@ -19811,8 +19799,8 @@
     {
       "source_module": "research.reproductions.rewind_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.rewind_memory.memory",
@@ -19835,8 +19823,8 @@
     {
       "source_module": "research.reproductions.rewind_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.rewind_memory.study",
@@ -19859,8 +19847,8 @@
     {
       "source_module": "research.reproductions.roboagent_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.roboagent_cvpr2026.program",
@@ -19871,8 +19859,8 @@
     {
       "source_module": "research.reproductions.roboagent_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.roboagent_cvpr2026.study",
@@ -19895,8 +19883,8 @@
     {
       "source_module": "research.reproductions.saycan.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.saycan.program",
@@ -19949,8 +19937,8 @@
     {
       "source_module": "research.reproductions.seeclick.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.seeclick.program",
@@ -19997,8 +19985,8 @@
     {
       "source_module": "research.reproductions.self_consistency_gsm8k.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.self_consistency_gsm8k.program",
@@ -20111,8 +20099,8 @@
     {
       "source_module": "research.reproductions.self_consistency_gsm8k.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.self_consistency_gsm8k.study",
@@ -20135,8 +20123,8 @@
     {
       "source_module": "research.reproductions.self_refine.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.self_refine.program",
@@ -20183,8 +20171,8 @@
     {
       "source_module": "research.reproductions.star_toggle_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.star_toggle_cvpr2026.program",
@@ -20195,8 +20183,8 @@
     {
       "source_module": "research.reproductions.star_toggle_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.star_toggle_cvpr2026.study",
@@ -20225,8 +20213,8 @@
     {
       "source_module": "research.reproductions.steve1_minecraft.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.steve1_minecraft.program",
@@ -20255,8 +20243,8 @@
     {
       "source_module": "research.reproductions.steve1_minecraft.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.steve1_minecraft.study",
@@ -20279,8 +20267,8 @@
     {
       "source_module": "research.reproductions.storm_wiki.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.storm_wiki.pipeline",
@@ -20339,8 +20327,8 @@
     {
       "source_module": "research.reproductions.swe_agent_swebench.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.swe_agent_swebench.history",
@@ -20369,8 +20357,8 @@
     {
       "source_module": "research.reproductions.swe_agent_swebench.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.swe_agent_swebench.study",
@@ -20393,8 +20381,8 @@
     {
       "source_module": "research.reproductions.toolformer.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.toolformer.program",
@@ -20441,8 +20429,8 @@
     {
       "source_module": "research.reproductions.toolllm_toolbench.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.toolllm_toolbench.program",
@@ -20489,8 +20477,8 @@
     {
       "source_module": "research.reproductions.toolllm_toolbench.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.toolllm_toolbench.study",
@@ -20513,14 +20501,14 @@
     {
       "source_module": "research.reproductions.tree_of_thoughts.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.tree_of_thoughts.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.tree_of_thoughts.program",
@@ -20543,8 +20531,8 @@
     {
       "source_module": "research.reproductions.tree_of_thoughts.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.tree_of_thoughts.study",
@@ -20585,20 +20573,20 @@
     {
       "source_module": "research.reproductions.tree_search_language_model_agents.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.tree_search_language_model_agents.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.tree_search_language_model_agents.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.tree_search_language_model_agents.study",
@@ -20621,8 +20609,8 @@
     {
       "source_module": "research.reproductions.ui_agile_cvprf2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ui_agile_cvprf2026.program",
@@ -20633,8 +20621,8 @@
     {
       "source_module": "research.reproductions.ui_agile_cvprf2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ui_agile_cvprf2026.study",
@@ -20645,8 +20633,8 @@
     {
       "source_module": "research.reproductions.ui_tars_desktop_v001.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ui_tars_desktop_v001.program",
@@ -20675,8 +20663,8 @@
     {
       "source_module": "research.reproductions.ui_tars_desktop_v001.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.ui_tars_desktop_v001.study",
@@ -20699,8 +20687,8 @@
     {
       "source_module": "research.reproductions.vca_video.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.vca_video.program",
@@ -20759,8 +20747,8 @@
     {
       "source_module": "research.reproductions.videoagent_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.videoagent_memory.memory",
@@ -20813,8 +20801,8 @@
     {
       "source_module": "research.reproductions.videoagent_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.videoagent_memory.study",
@@ -20843,8 +20831,8 @@
     {
       "source_module": "research.reproductions.videoarm_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.videoarm_cvpr2026.program",
@@ -20855,8 +20843,8 @@
     {
       "source_module": "research.reproductions.videoarm_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.videoarm_cvpr2026.study",
@@ -20885,8 +20873,8 @@
     {
       "source_module": "research.reproductions.videollamb_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.videollamb_memory.memory",
@@ -20903,8 +20891,8 @@
     {
       "source_module": "research.reproductions.videollamb_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.videollamb_memory.study",
@@ -20927,8 +20915,8 @@
     {
       "source_module": "research.reproductions.vilomem_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.vilomem_cvpr2026.program",
@@ -20939,8 +20927,8 @@
     {
       "source_module": "research.reproductions.vilomem_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.vilomem_cvpr2026.study",
@@ -20963,8 +20951,8 @@
     {
       "source_module": "research.reproductions.vima_embodied.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.vima_embodied.environment",
@@ -21047,8 +21035,8 @@
     {
       "source_module": "research.reproductions.vima_embodied.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.vima_embodied.study",
@@ -21113,8 +21101,8 @@
     {
       "source_module": "research.reproductions.voyager_minecraft.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.voyager_minecraft.program",
@@ -21161,8 +21149,8 @@
     {
       "source_module": "research.reproductions.voyager_minecraft.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.voyager_minecraft.study",
@@ -21191,8 +21179,8 @@
     {
       "source_module": "research.reproductions.watch_learn_cvpr2026.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.watch_learn_cvpr2026.program",
@@ -21203,8 +21191,8 @@
     {
       "source_module": "research.reproductions.watch_learn_cvpr2026.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.watch_learn_cvpr2026.study",
@@ -21227,8 +21215,8 @@
     {
       "source_module": "research.reproductions.webagent_r1_emnlp2025.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.webagent_r1_emnlp2025.program",
@@ -21239,8 +21227,8 @@
     {
       "source_module": "research.reproductions.webagent_r1_emnlp2025.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.webagent_r1_emnlp2025.study",
@@ -21269,8 +21257,8 @@
     {
       "source_module": "research.reproductions.webvoyager.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.webvoyager.program",
@@ -21329,8 +21317,8 @@
     {
       "source_module": "research.reproductions.worldmm_memory.definition",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.worldmm_memory.memory",
@@ -21377,8 +21365,8 @@
     {
       "source_module": "research.reproductions.worldmm_memory.source",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.worldmm_memory.study",
@@ -22217,14 +22205,14 @@
     {
       "source_module": "scripts.sync_reproductions",
       "source_role": "tooling",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "scripts.sync_reproductions",
       "source_role": "tooling",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "scripts.update_generated_docs",
@@ -33689,18 +33677,6 @@
     {
       "source_module": "tests.test_scientific_aflow_fidelity_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_aflow_fidelity_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_aflow_fidelity_v1",
-      "source_role": "tests",
       "target_module": "research.reproductions.aflow.definition",
       "target_role": "research_reproductions"
     },
@@ -33714,6 +33690,18 @@
       "source_module": "tests.test_scientific_aflow_fidelity_v1",
       "source_role": "tests",
       "target_module": "research.reproductions.aflow.source",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_aflow_fidelity_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_aflow_fidelity_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
     },
     {
@@ -34241,13 +34229,13 @@
     {
       "source_module": "tests.test_scientific_code_as_policies_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.code_as_policies",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_scientific_code_as_policies_v1",
       "source_role": "tests",
-      "target_module": "research.reproductions.code_as_policies",
+      "target_module": "research.reproductions.contracts",
       "target_role": "research_reproductions"
     },
     {
@@ -34295,13 +34283,13 @@
     {
       "source_module": "tests.test_scientific_deps_minecraft_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.benchmarks.deps_minecraft",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_scientific_deps_minecraft_v1",
       "source_role": "tests",
-      "target_module": "research.benchmarks.deps_minecraft",
+      "target_module": "research.reproductions.contracts",
       "target_role": "research_reproductions"
     },
     {
@@ -35195,8 +35183,8 @@
     {
       "source_module": "tests.test_scientific_minedojo_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_scientific_minedojo_v1",
@@ -35321,8 +35309,8 @@
     {
       "source_module": "tests.test_scientific_optimus1_minecraft_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_scientific_optimus1_minecraft_v1",
@@ -35381,14 +35369,8 @@
     {
       "source_module": "tests.test_scientific_optimus2_minecraft_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_scientific_optimus2_minecraft_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_scientific_optimus2_minecraft_v1",
@@ -35412,6 +35394,12 @@
       "source_module": "tests.test_scientific_optimus2_minecraft_v1",
       "source_role": "tests",
       "target_module": "research.reproductions.optimus2_minecraft.source",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_optimus2_minecraft_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
     },
     {
@@ -35717,8 +35705,8 @@
     {
       "source_module": "tests.test_scientific_recent_2025_2026_wave_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_scientific_reference_self_refine",
@@ -35783,8 +35771,8 @@
     {
       "source_module": "tests.test_scientific_reproduction_authority_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_scientific_research_model_roles_v1",
@@ -36077,8 +36065,8 @@
     {
       "source_module": "tests.test_scientific_steve1_minecraft_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_scientific_steve1_minecraft_v1",
@@ -36461,13 +36449,13 @@
     {
       "source_module": "tests.test_scientific_videoagent_egoschema_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.reproduction",
-      "target_role": "core_platform"
+      "target_module": "research.benchmarks.egoschema",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_scientific_videoagent_egoschema_v1",
       "source_role": "tests",
-      "target_module": "research.benchmarks.egoschema",
+      "target_module": "research.reproductions.contracts",
       "target_role": "research_reproductions"
     },
     {
@@ -37919,8 +37907,8 @@
     {
       "source_module": "tests.test_source_provenance_registry_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.provenance",
-      "target_role": "core_platform"
+      "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_sqlite_atomic_state_scope_v1",
@@ -40631,7 +40619,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2590,
+      "count": 2588,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -40676,7 +40664,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 807,
+      "count": 614,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -40686,12 +40674,12 @@
       "target_role": "public_facade"
     },
     {
-      "count": 140,
+      "count": 333,
       "source_role": "research_reproductions",
       "target_role": "research_reproductions"
     },
     {
-      "count": 2622,
+      "count": 2609,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -40711,7 +40699,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 290,
+      "count": 303,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -40726,7 +40714,7 @@
       "target_role": "tooling"
     },
     {
-      "count": 110,
+      "count": 108,
       "source_role": "tooling",
       "target_role": "core_platform"
     },
@@ -40736,13 +40724,18 @@
       "target_role": "public_facade"
     },
     {
+      "count": 2,
+      "source_role": "tooling",
+      "target_role": "research_reproductions"
+    },
+    {
       "count": 16,
       "source_role": "tooling",
       "target_role": "tooling"
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1927,
+    "core_platform": 1925,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
@@ -40753,7 +40746,7 @@
     "tooling": 75
   },
   "role_symbol_counts": {
-    "core_platform": 3323,
+    "core_platform": 3304,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -40765,7 +40758,7 @@
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "b29416b83189a77c30b4eebe5f77e851f4c26f6b",
+  "source_git_sha": "c6ea93b7556edc504927436b72e7029b09214d59",
   "symbols": [
     {
       "bases": [],
@@ -115142,473 +115135,6 @@
       "name": "WorkloadMethodBinding",
       "path": "noetrium_platform/research/experimentation/workload/runtime/operation.py",
       "qualname": "noetrium_platform.research.experimentation.workload.runtime.operation.WorkloadMethodBinding",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "OFFICIAL_EXECUTABLE",
-        "LATER_RELEASED_EXECUTABLE",
-        "OFFICIAL_ARTIFACT",
-        "SURROGATE",
-        "INDEPENDENT",
-        "PAPER_PROVENANCE",
-        "CANDIDATE"
-      ],
-      "kind": "enum",
-      "language": "python",
-      "line": 23,
-      "methods": [
-        "executable"
-      ],
-      "module": "noetrium_platform.research.provenance",
-      "name": "MethodSourceLaneKind",
-      "path": "noetrium_platform/research/provenance.py",
-      "qualname": "noetrium_platform.research.provenance.MethodSourceLaneKind",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "lane_id: str",
-        "kind: MethodSourceLaneKind",
-        "repository: str",
-        "commit: str",
-        "artifacts: tuple[str, ...]",
-        "lane_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 45,
-      "methods": [
-        "__post_init__",
-        "executable"
-      ],
-      "module": "noetrium_platform.research.provenance",
-      "name": "MethodSourceLane",
-      "path": "noetrium_platform/research/provenance.py",
-      "qualname": "noetrium_platform.research.provenance.MethodSourceLane",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "lane_id: str",
-        "venue: str",
-        "year: int",
-        "publication_id: str",
-        "publication_uri: str",
-        "revision: str | None",
-        "content_sha256: str | None",
-        "kind: MethodSourceLaneKind",
-        "lane_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 114,
-      "methods": [
-        "__post_init__",
-        "executable"
-      ],
-      "module": "noetrium_platform.research.provenance",
-      "name": "PublicationSourceLane",
-      "path": "noetrium_platform/research/provenance.py",
-      "qualname": "noetrium_platform.research.provenance.PublicationSourceLane",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "lanes: tuple[SourceLane, ...]",
-        "registry_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 187,
-      "methods": [
-        "__post_init__",
-        "repositories",
-        "publication_uris"
-      ],
-      "module": "noetrium_platform.research.provenance",
-      "name": "MethodSourceRegistry",
-      "path": "noetrium_platform/research/provenance.py",
-      "qualname": "noetrium_platform.research.provenance.MethodSourceRegistry",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "CATALOGUED",
-        "PROTOCOL_BOUND",
-        "RUNNABLE",
-        "PILOT",
-        "MATCHED_REPRODUCTION",
-        "BLOCKED",
-        "PAPER_ONLY",
-        "ARTIFACT_ONLY"
-      ],
-      "kind": "enum",
-      "language": "python",
-      "line": 54,
-      "methods": [],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionLifecycle",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionLifecycle",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "FIDELITY",
-        "STUDY",
-        "BENCHMARK",
-        "METHOD_PROGRAM",
-        "RESEARCH_PROGRAM",
-        "SEMANTICS",
-        "SUPPORT"
-      ],
-      "kind": "enum",
-      "language": "python",
-      "line": 65,
-      "methods": [],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionAssetKind",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionAssetKind",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "SUBSTITUTION",
-        "UNRESOLVED"
-      ],
-      "kind": "enum",
-      "language": "python",
-      "line": 75,
-      "methods": [],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionDeltaKind",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionDeltaKind",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "PILOT",
-        "MATCHED_RESULT"
-      ],
-      "kind": "enum",
-      "language": "python",
-      "line": 80,
-      "methods": [],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionEvidenceKind",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionEvidenceKind",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "SATISFIED",
-        "NOT_APPLICABLE",
-        "UNRESOLVED"
-      ],
-      "kind": "enum",
-      "language": "python",
-      "line": 85,
-      "methods": [],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionMatchCriterionStatus",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionMatchCriterionStatus",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "method_id: str",
-        "title: str",
-        "paper_uri: str",
-        "year: int",
-        "paper_revision: str | None",
-        "identity_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 101,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionIdentity",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionIdentity",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "domains: tuple[str, ...]",
-        "families: tuple[str, ...]",
-        "priority: int",
-        "benchmark_ids: tuple[str, ...]",
-        "platform_pressure: tuple[str, ...]",
-        "method_owned: tuple[str, ...]",
-        "platform_owned: tuple[str, ...]",
-        "catalog_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 135,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionCatalog",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionCatalog",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "kind: ReproductionAssetKind",
-        "path: str",
-        "declaration_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 181,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionAssetRef",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionAssetRef",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "claim_id: str",
-        "metric_id: str",
-        "value: int | float",
-        "qualifiers: JsonObject",
-        "claim_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 200,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReportedResult",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReportedResult",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "baseline_id: str",
-        "description: str",
-        "qualifiers: JsonObject",
-        "baseline_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 231,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReferenceBaseline",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReferenceBaseline",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "kind: ReproductionDeltaKind",
-        "description: str",
-        "delta_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 258,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionDelta",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionDelta",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "criterion_id: str",
-        "status: ReproductionMatchCriterionStatus",
-        "authority_digest: str",
-        "detail: str",
-        "criterion_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 275,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionMatchCriterion",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionMatchCriterion",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "qualification_id: str",
-        "decision: ReproductionEvidenceKind",
-        "run_id: str",
-        "run_manifest_digest: str",
-        "evidence_bundle_digest: str",
-        "claim_ids: tuple[str, ...]",
-        "criteria: tuple[ReproductionMatchCriterion, ...]",
-        "qualification_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 309,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionEvidenceQualification",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionEvidenceQualification",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "evidence_id: str",
-        "kind: ReproductionEvidenceKind",
-        "run_id: str",
-        "run_manifest_digest: str",
-        "bundle_id: str",
-        "evidence_bundle_digest: str",
-        "manifest_ref: str",
-        "manifest_sha256: str",
-        "claim_ids: tuple[str, ...]",
-        "qualification: ReproductionEvidenceQualification | None",
-        "evidence_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 424,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionEvidenceRef",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionEvidenceRef",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "package: str",
-        "lifecycle: ReproductionLifecycle",
-        "identity: ReproductionIdentity",
-        "catalog: ReproductionCatalog",
-        "assets: tuple[ReproductionAssetRef, ...]",
-        "primary_executable: str | None",
-        "reported_results: tuple[ReportedResult, ...]",
-        "reference_baselines: tuple[ReferenceBaseline, ...]",
-        "deltas: tuple[ReproductionDelta, ...]",
-        "blockers: tuple[str, ...]",
-        "evidence_refs: tuple[ReproductionEvidenceRef, ...]",
-        "scientific_tests: tuple[str, ...]",
-        "definition_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 542,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.reproduction",
-      "name": "ReproductionDefinition",
-      "path": "noetrium_platform/research/reproduction.py",
-      "qualname": "noetrium_platform.research.reproduction.ReproductionDefinition",
       "role": "core_platform"
     },
     {
