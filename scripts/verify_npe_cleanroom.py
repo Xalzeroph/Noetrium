@@ -11,6 +11,9 @@ import sys
 import tempfile
 
 
+_COMMAND_TIMEOUT_S = 180
+
+
 @dataclass(frozen=True, slots=True)
 class CommandReceipt:
     name: str
@@ -37,8 +40,8 @@ class NpeCleanRoomReceipt:
     doctor_ready: bool
     generated_tests_passed: bool
     public_import_boundary_passed: bool
-    reference_lifecycle_complete: bool
-    fresh_process_reopen_passed: bool
+    research_program_loaded: bool
+    fresh_process_identity_stable: bool
     npe_verified: bool
     blocker_codes: tuple[str, ...]
     commands: tuple[CommandReceipt, ...]
@@ -63,6 +66,7 @@ def _venv_python(root: Path) -> Path:
 def _noetrium_executable(root: Path) -> Path:
     return root / ("Scripts/noetrium.exe" if os.name == "nt" else "bin/noetrium")
 
+
 def _create_venv(root: Path) -> bool:
     try:
         import venv
@@ -70,7 +74,6 @@ def _create_venv(root: Path) -> bool:
         return False
     venv.EnvBuilder(with_pip=True, clear=True).create(root)
     return True
-
 
 
 def _reject_json_constant(token: str) -> object:
@@ -88,21 +91,28 @@ def _strict_json_object(raw: str) -> dict[str, object] | None:
 
     try:
         value = json.loads(
-            raw, parse_constant=_reject_json_constant, object_pairs_hook=object_from_pairs
+            raw,
+            parse_constant=_reject_json_constant,
+            object_pairs_hook=object_from_pairs,
         )
     except (json.JSONDecodeError, ValueError):
         return None
     return value if isinstance(value, dict) else None
 
 
-def _receipt(name: str, argv: list[str], completed: subprocess.CompletedProcess[str]) -> CommandReceipt:
-    stdout = completed.stdout or ""
-    stderr = completed.stderr or ""
-    selected = stdout if completed.returncode == 0 else stderr
+def _command_receipt(
+    name: str,
+    argv: list[str],
+    *,
+    returncode: int,
+    stdout: str,
+    stderr: str,
+) -> CommandReceipt:
+    selected = stdout if returncode == 0 else stderr
     return CommandReceipt(
         name=name,
         argv=tuple(argv),
-        returncode=completed.returncode,
+        returncode=returncode,
         stdout_sha256=_sha256_bytes(stdout.encode("utf-8")),
         stderr_sha256=_sha256_bytes(stderr.encode("utf-8")),
         stdout_tail=stdout[-4000:],
@@ -113,17 +123,41 @@ def _receipt(name: str, argv: list[str], completed: subprocess.CompletedProcess[
     )
 
 
-def _run(name: str, argv: list[str], *, cwd: Path, env: dict[str, str]) -> CommandReceipt:
-    completed = subprocess.run(
+def _run(
+    name: str,
+    argv: list[str],
+    *,
+    cwd: Path,
+    env: dict[str, str],
+) -> CommandReceipt:
+    try:
+        completed = subprocess.run(
+            argv,
+            cwd=cwd,
+            env=env,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=_COMMAND_TIMEOUT_S,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout if isinstance(exc.stdout, str) else ""
+        stderr = exc.stderr if isinstance(exc.stderr, str) else ""
+        return _command_receipt(
+            name,
+            argv,
+            returncode=124,
+            stdout=stdout,
+            stderr=stderr or "command timed out",
+        )
+    return _command_receipt(
+        name,
         argv,
-        cwd=cwd,
-        env=env,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
+        returncode=completed.returncode,
+        stdout=completed.stdout or "",
+        stderr=completed.stderr or "",
     )
-    return _receipt(name, argv, completed)
 
 
 def _json_output(receipt: CommandReceipt) -> dict[str, object] | None:
@@ -177,12 +211,12 @@ def _blocked_receipt(
     doctor_ready: bool = False,
     generated_tests_passed: bool = False,
     public_import_boundary_passed: bool = False,
-    reference_lifecycle_complete: bool = False,
-    fresh_process_reopen_passed: bool = False,
+    research_program_loaded: bool = False,
+    fresh_process_identity_stable: bool = False,
     npe_verified: bool = False,
 ) -> NpeCleanRoomReceipt:
     return NpeCleanRoomReceipt(
-        schema="noetrium.npe-clean-room.v3",
+        schema="noetrium.npe-clean-room.v4",
         artifact_name=artifact.name,
         artifact_sha256=_sha256_file(artifact),
         artifact_size=artifact.stat().st_size,
@@ -194,15 +228,15 @@ def _blocked_receipt(
         doctor_ready=doctor_ready,
         generated_tests_passed=generated_tests_passed,
         public_import_boundary_passed=public_import_boundary_passed,
-        reference_lifecycle_complete=reference_lifecycle_complete,
-        fresh_process_reopen_passed=fresh_process_reopen_passed,
+        research_program_loaded=research_program_loaded,
+        fresh_process_identity_stable=fresh_process_identity_stable,
         npe_verified=npe_verified,
         blocker_codes=tuple(blockers),
         commands=tuple(commands),
     )
 
 
-def _reference_project_package(project: Path) -> str | None:
+def _research_project_package(project: Path) -> str | None:
     src = project / "src"
     packages = tuple(
         candidate.name
@@ -215,138 +249,60 @@ def _reference_project_package(project: Path) -> str | None:
     return packages[0] if len(packages) == 1 else None
 
 
-def _materialize_reference_lifecycle(project: Path, package: str, run_id: str, manifest_digest: str) -> bool:
-    template = Path(__file__).with_name("npe_reference_lifecycle_template.py")
-    if not template.is_file() or template.is_symlink():
-        return False
-    source = template.read_text(encoding="utf-8")
-    source = source.replace("__RUN_ID__", run_id)
-    source = source.replace("__RUN_MANIFEST_DIGEST__", manifest_digest)
-    destination = project / "src" / package / "reference_lifecycle.py"
-    destination.write_text(source, encoding="utf-8", newline="\n")
-    return True
-
-
-def _reference_command(
+def _research_identity_command(
     python: Path,
     project: Path,
     package: str,
-    action: str,
-    state_path: Path,
-    payload: dict[str, object],
 ) -> list[str]:
-    bootstrap = (
-        "import runpy,sys;"
-        "project_src,module_name,*module_args=sys.argv[1:];"
+    code = (
+        "import importlib,json,sys;"
+        "project_src,module_name=sys.argv[1:];"
         "sys.path.insert(0,project_src);"
-        "sys.argv=[module_name,*module_args];"
-        "runpy.run_module(module_name,run_name='__main__')"
+        "module=importlib.import_module(module_name);"
+        "from noetrium import api;"
+        "program=module.PROGRAM;portfolio=module.PORTFOLIO;"
+        "assert isinstance(program,api.ResearchProgram);"
+        "assert isinstance(portfolio,api.ResearchPortfolio);"
+        "assert portfolio.programs==(program,);"
+        "print(json.dumps({"
+        "'program_id':program.program_id,"
+        "'program_digest':program.program_digest,"
+        "'portfolio_id':portfolio.portfolio_id,"
+        "'portfolio_digest':portfolio.portfolio_digest"
+        "},sort_keys=True))"
     )
-    encoded_payload = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     return [
-        str(python), "-I", "-c", bootstrap,
+        str(python),
+        "-I",
+        "-c",
+        code,
         str((project / "src").resolve()),
-        f"{package}.reference_lifecycle",
-        action,
-        str(state_path.resolve()),
-        encoded_payload,
+        f"{package}.research",
     ]
 
 
-def _reference_step_facts(
+def _research_identity_facts(
     receipt: CommandReceipt,
-    *,
-    action: str,
-    expected_state: str,
-    expected_revision: int,
-    require_evidence: bool = False,
-) -> tuple[bool, str]:
+) -> dict[str, str] | None:
     document = _json_output(receipt)
-    if receipt.returncode != 0 or not isinstance(document, dict) or document.get("ok") is not True:
-        return False, "command did not return a successful machine receipt"
-    if document.get("action") != action or document.get("state") != expected_state:
-        return False, "lifecycle action/state receipt does not match the expected projection"
-    payload = document.get("payload")
-    if not isinstance(payload, dict) or payload.get("control_revision") != expected_revision:
-        return False, "lifecycle generation receipt does not match the expected revision"
-    if require_evidence:
-        evidence = payload.get("evidence_bundle")
-        outcomes = payload.get("outcomes")
-        if not isinstance(evidence, dict) or not isinstance(outcomes, dict):
-            return False, "evidence receipt projection is incomplete"
-        if outcomes.get("evidence") != "finalized_valid":
-            return False, "evidence receipt is not finalized_valid"
-    return True, ""
-
-
-def _run_reference_lifecycle(
-    python: Path,
-    project: Path,
-    package: str,
-    state_path: Path,
-    env: dict[str, str],
-    commands: list[CommandReceipt],
-) -> tuple[bool, bool, tuple[str, ...]]:
-    cycle = {
-        "run_id": "npe-reference-run",
-        "decision_cycle_id": "cycle-1",
-        "session_id": "session-1",
-        "task_id": "task-1",
-        "trace_id": "trace-1",
-    }
-    steps = (
-        ("run", {"expected_revision": 1}, "running", 3, False),
-        ("inspect", {"expected_revision": 3}, "running", 3, False),
-        ("stop", {"expected_revision": 3}, "stopped", 5, False),
-        ("resume", {
-            "expected_revision": 5,
-            "restore_checkpoint_id": "checkpoint-1",
-            "restore_cycle_identity": cycle,
-        }, "running", 7, False),
-        ("reconcile", {"expected_revision": 7}, "running", 7, False),
-        ("evidence", {"expected_revision": 7}, "running", 7, True),
+    if receipt.returncode != 0 or document is None:
+        return None
+    required = (
+        "program_id",
+        "program_digest",
+        "portfolio_id",
+        "portfolio_digest",
     )
-    blockers: list[str] = []
-    lifecycle_ok = True
-    for action, payload, expected_state, generation, require_evidence in steps:
-        receipt = _run(
-            f"reference-lifecycle-{action}",
-            _reference_command(python, project, package, action, state_path, payload),
-            cwd=project,
-            env=env,
-        )
-        commands.append(receipt)
-        passed, detail = _reference_step_facts(
-            receipt,
-            action=action,
-            expected_state=expected_state,
-            expected_revision=generation,
-            require_evidence=require_evidence,
-        )
-        if not passed:
-            lifecycle_ok = False
-            blockers.append(f"REFERENCE_LIFECYCLE_FAILED:{action}:{detail}")
-
-    reopen = _run(
-        "reference-lifecycle-fresh-inspect",
-        _reference_command(
-            python, project, package, "inspect", state_path,
-            {"expected_revision": 7},
-        ),
-        cwd=project,
-        env=env,
-    )
-    commands.append(reopen)
-    reopen_ok, detail = _reference_step_facts(
-        reopen,
-        action="inspect",
-        expected_state="running",
-        expected_revision=7,
-        require_evidence=True,
-    )
-    if not reopen_ok:
-        blockers.append(f"REFERENCE_REOPEN_FAILED:{detail}")
-    return lifecycle_ok and not blockers, reopen_ok, tuple(blockers)
+    if set(document) != set(required):
+        return None
+    if any(not isinstance(document[key], str) or not document[key] for key in required):
+        return None
+    if any(
+        len(document[key]) != 64
+        for key in ("program_digest", "portfolio_digest")
+    ):
+        return None
+    return {key: str(document[key]) for key in required}
 
 
 def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
@@ -376,13 +332,26 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
 
         install = _run(
             "install-artifact",
-            [str(python), "-m", "pip", "install", "--disable-pip-version-check", "--no-input", "--no-deps", str(artifact)],
+            [
+                str(python),
+                "-m",
+                "pip",
+                "install",
+                "--disable-pip-version-check",
+                "--no-input",
+                "--no-deps",
+                str(artifact),
+            ],
             cwd=work,
             env=env,
         )
         commands.append(install)
         if install.returncode != 0:
-            return _blocked_receipt(artifact, commands=commands, blockers=["ARTIFACT_INSTALL_FAILED"])
+            return _blocked_receipt(
+                artifact,
+                commands=commands,
+                blockers=["ARTIFACT_INSTALL_FAILED"],
+            )
 
         metadata_code = (
             "import importlib.metadata,json,noetrium;"
@@ -399,19 +368,22 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
         metadata_document = _json_output(metadata)
         installed_version = (
             metadata_document.get("version")
-            if isinstance(metadata_document, dict) and isinstance(metadata_document.get("version"), str)
+            if isinstance(metadata_document, dict)
+            and isinstance(metadata_document.get("version"), str)
             else None
         )
         module_file = (
             metadata_document.get("module_file")
-            if isinstance(metadata_document, dict) and isinstance(metadata_document.get("module_file"), str)
+            if isinstance(metadata_document, dict)
+            and isinstance(metadata_document.get("module_file"), str)
             else None
         )
         import_isolated = False
         if module_file is not None:
             try:
-                module_path = Path(module_file).resolve()
-                import_isolated = venv_root.resolve() in module_path.parents
+                import_isolated = (
+                    venv_root.resolve() in Path(module_file).resolve().parents
+                )
             except OSError:
                 import_isolated = False
         if metadata.returncode != 0 or installed_version is None or module_file is None:
@@ -429,15 +401,26 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
                 module_file=module_file,
             )
 
-        create_argv = [
-            str(noetrium), "project", "create", "npe-reference", str(project),
-            "--version", "0.0.1",
-        ]
-        create = _run("project-create", create_argv, cwd=work, env=env)
+        create = _run(
+            "project-create",
+            [
+                str(noetrium),
+                "project",
+                "create",
+                "npe-reference",
+                str(project),
+                "--version",
+                "0.0.1",
+            ],
+            cwd=work,
+            env=env,
+        )
         commands.append(create)
         create_document = _json_output(create)
-        project_created = create.returncode == 0 and bool(
-            isinstance(create_document, dict) and create_document.get("ok") is True
+        project_created = (
+            create.returncode == 0
+            and isinstance(create_document, dict)
+            and create_document.get("ok") is True
         )
         if not project_created:
             return _blocked_receipt(
@@ -456,7 +439,12 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
             env=env,
         )
         commands.append(doctor)
-        doctor_ready, public_boundary, template_revision, doctor_blockers = _doctor_facts(doctor)
+        (
+            doctor_ready,
+            public_boundary,
+            template_revision,
+            doctor_blockers,
+        ) = _doctor_facts(doctor)
 
         generated_tests = _run(
             "project-test",
@@ -466,82 +454,105 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
         )
         commands.append(generated_tests)
         test_document = _json_output(generated_tests)
-        tests_passed = generated_tests.returncode == 0 and bool(
-            isinstance(test_document, dict) and test_document.get("ok") is True
+        tests_passed = (
+            generated_tests.returncode == 0
+            and isinstance(test_document, dict)
+            and test_document.get("ok") is True
         )
 
         if not doctor_ready:
-            blockers.extend(f"DOCTOR_BLOCKED:{check_id}" for check_id in doctor_blockers)
-            if "standard_bindings" in doctor_blockers:
-                blockers.append("URE_STANDARD_BINDINGS_UNAVAILABLE")
+            blockers.extend(
+                f"DOCTOR_BLOCKED:{check_id}"
+                for check_id in doctor_blockers
+            )
         if not tests_passed:
             blockers.append("GENERATED_TESTS_FAILED")
         if not public_boundary:
             blockers.append("PUBLIC_IMPORT_BOUNDARY_FAILED")
 
-        reference_complete = False
-        fresh_reopen = False
+        research_program_loaded = False
+        fresh_process_identity_stable = False
         if doctor_ready and tests_passed and public_boundary:
-            package = _reference_project_package(project)
+            package = _research_project_package(project)
             if package is None:
-                blockers.append("REFERENCE_PROJECT_PACKAGE_INVALID")
+                blockers.append("RESEARCH_PROJECT_PACKAGE_INVALID")
             else:
-                reference_run_id = "npe-reference-run"
-                reference_manifest_digest = hashlib.sha256(
-                    b"noetrium:npe-reference:manifest:v1"
-                ).hexdigest()
-                if not _materialize_reference_lifecycle(
-                    project, package, reference_run_id, reference_manifest_digest
-                ):
-                    blockers.append("REFERENCE_DRIVER_TEMPLATE_MISSING")
+                first = _run(
+                    "research-program-load-1",
+                    _research_identity_command(python, project, package),
+                    cwd=project,
+                    env=env,
+                )
+                commands.append(first)
+                first_identity = _research_identity_facts(first)
+                research_program_loaded = first_identity is not None
+                if not research_program_loaded:
+                    blockers.append("RESEARCH_PROGRAM_LOAD_FAILED")
                 else:
-                    reference_complete, fresh_reopen, reference_blockers = _run_reference_lifecycle(
-                        python,
-                        project,
-                        package,
-                        root / "work" / "npe-reference-state.json",
-                        env,
-                        commands,
+                    second = _run(
+                        "research-program-load-2",
+                        _research_identity_command(python, project, package),
+                        cwd=project,
+                        env=env,
                     )
-                    blockers.extend(reference_blockers)
+                    commands.append(second)
+                    second_identity = _research_identity_facts(second)
+                    fresh_process_identity_stable = (
+                        second_identity is not None
+                        and second_identity == first_identity
+                    )
+                    if not fresh_process_identity_stable:
+                        blockers.append("RESEARCH_IDENTITY_DRIFT")
 
         verified = (
             doctor_ready
             and tests_passed
             and public_boundary
-            and reference_complete
-            and fresh_reopen
+            and research_program_loaded
+            and fresh_process_identity_stable
             and not blockers
         )
         return _blocked_receipt(
             artifact,
             commands=commands,
-            blockers=blockers or ["NPE_ACCEPTANCE_INCOMPLETE"] if not verified else [],
+            blockers=(
+                blockers
+                if blockers
+                else ([] if verified else ["NPE_ACCEPTANCE_INCOMPLETE"])
+            ),
             installed_version=installed_version,
             module_file=module_file,
             installed_import_isolated=True,
             template_revision=template_revision,
-            project_created=project_created,
+            project_created=True,
             doctor_ready=doctor_ready,
             generated_tests_passed=tests_passed,
             public_import_boundary_passed=public_boundary,
-            reference_lifecycle_complete=reference_complete,
-            fresh_process_reopen_passed=fresh_reopen,
+            research_program_loaded=research_program_loaded,
+            fresh_process_identity_stable=fresh_process_identity_stable,
             npe_verified=verified,
         )
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Verify Section-37 NPE from an installed artifact")
+    parser = argparse.ArgumentParser(
+        description="Verify Research OS NPE from an installed artifact"
+    )
     parser.add_argument("artifact", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
     try:
         receipt = verify_npe_cleanroom(args.artifact)
     except Exception as exc:
-        print(f"NPE_CLEAN_ROOM_FAIL {type(exc).__qualname__}: {exc}", file=sys.stderr)
+        print(
+            f"NPE_CLEAN_ROOM_FAIL {type(exc).__qualname__}: {exc}",
+            file=sys.stderr,
+        )
         return 1
-    document = json.dumps(asdict(receipt), ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    document = (
+        json.dumps(asdict(receipt), ensure_ascii=False, sort_keys=True, indent=2)
+        + "\n"
+    )
     if args.output is not None:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(document, encoding="utf-8", newline="\n")
