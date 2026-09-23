@@ -50,6 +50,16 @@ class ExecutionPermitPort(Protocol):
         cancellation: CancellationTokenPort | None,
     ) -> ExecutionPermitLeasePort: ...
 
+    def acquire_many(
+        self,
+        owner_group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        permit_count: int,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ) -> tuple[ExecutionPermitLeasePort, ...]: ...
+
 
 class TaskContextPort(CancellationTokenPort, Protocol):
     @property
@@ -133,6 +143,13 @@ class TaskGroupPort(ExecutorPort, Protocol):
         capacity: int | None = None,
     ) -> SerialActorPort: ...
 
+    def submit_atomic_batch(
+        self,
+        items: tuple[tuple[ExecutionSpec, Callable[..., T]], ...],
+        *,
+        deadline: Deadline | None = None,
+    ) -> tuple[TaskHandlePort[T], ...]: ...
+
     def cancel(self, reason: str) -> None: ...
     def wait(self, *, timeout: float | None = None) -> None: ...
     def assert_healthy(self) -> None: ...
@@ -193,6 +210,16 @@ class ExecutionAuthorityProviderPort(Protocol):
         **kwargs: Any,
     ) -> Any: ...
 
+    def submit_atomic_batch(
+        self,
+        owner_group_id: str,
+        lane_kind: ExecutionLaneKind,
+        fns: tuple[Callable[[], T], ...],
+        *,
+        deadline: Deadline | None = None,
+        cancellation: CancellationTokenPort | None = None,
+    ) -> tuple[Any, ...]: ...
+
 
 class ExecutorProviderPort(Protocol):
     def submit(
@@ -204,6 +231,15 @@ class ExecutorProviderPort(Protocol):
         cancellation: CancellationTokenPort | None = None,
         **kwargs: Any,
     ) -> Any: ...
+
+    def submit_atomic_batch(
+        self,
+        fns: tuple[Callable[[], T], ...],
+        *,
+        deadline: Deadline | None = None,
+        cancellation: CancellationTokenPort | None = None,
+    ) -> tuple[Any, ...]: ...
+
     def close(self, *, wait: bool = True, cancel_pending: bool = False) -> None: ...
 
 
