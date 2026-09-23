@@ -452,6 +452,15 @@ class ResearchGraphExecutionStorePort(Protocol):
         now_ns: int,
     ) -> ResearchGraphExecutionSnapshot: ...
 
+    def retry_failed_subgraph(
+        self,
+        execution_id: str,
+        failed_node_id: str,
+        *,
+        descendant_node_ids: tuple[str, ...],
+        retry_not_before_ns: int,
+    ) -> ResearchGraphExecutionSnapshot: ...
+
     def schedule_retry(
         self,
         execution_id: str,
