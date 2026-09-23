@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import noetrium.api as api
+from noetrium_platform.product.research_os import bind_research_os
 
 
 def _sem_method_v1(payload=None):
@@ -284,7 +285,8 @@ def test_portfolio_rejects_cross_program_dependency_cycle() -> None:
 
 def test_research_os_unifies_revision_and_live_control() -> None:
     port = _Port()
-    research_os = api.ResearchOS(port)
+    research_os = bind_research_os(port)
+    assert isinstance(research_os, api.ResearchOS)
     portfolio = api.ResearchPortfolio("main", (_program(),))
 
     revision = research_os.commit(portfolio, message="initial SEM graph")
