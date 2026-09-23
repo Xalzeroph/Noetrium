@@ -1256,11 +1256,41 @@ class StrictResearchOSControl(
         request: ResearchControlRequest,
         portfolio: ResearchPortfolio,
     ) -> ResearchControlReceipt:
-        self._require_whole_graph_control(request)
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported("DRAIN does not accept opaque control payload")
         compilation, cut, active, snapshot, control = self._active_execution_state(
-            request,
-            portfolio,
+            request, portfolio,
         )
+        if request.target.node is not None:
+            node = self._target_graph_node(request, compilation)
+            node_control = self._store.node_control_state(cut.cut_id, node.graph_node_id)
+            node_control = self._store.request_node_drain(
+                cut.cut_id,
+                node.graph_node_id,
+                expected_generation=node_control.generation,
+                now_ns=time.time_ns(),
+            )
+            record = self._store.snapshot(cut.cut_id).node(node.graph_node_id)
+            if record.state not in {
+                ResearchGraphLiveNodeState.CLAIMED,
+                ResearchGraphLiveNodeState.RUNNING,
+                ResearchGraphLiveNodeState.RECONCILE_REQUIRED,
+            }:
+                node_control = self._store.pause_node_if_quiescent(
+                    cut.cut_id,
+                    node.graph_node_id,
+                    expected_generation=node_control.generation,
+                    now_ns=time.time_ns(),
+                )
+            snapshot = self._store.snapshot(cut.cut_id)
+            return self._durable_control_receipt(
+                request, compilation, cut, active, snapshot, control,
+                state=(
+                    "node_paused"
+                    if node_control.phase is ResearchGraphNodeControlPhase.PAUSED
+                    else "node_draining"
+                ),
+            )
         control = self._store.request_drain(
             cut.cut_id,
             expected_generation=control.generation,
@@ -1283,12 +1313,7 @@ class StrictResearchOSControl(
             )
             snapshot = self._store.snapshot(cut.cut_id)
         return self._durable_control_receipt(
-            request,
-            compilation,
-            cut,
-            active,
-            snapshot,
-            control,
+            request, compilation, cut, active, snapshot, control,
         )
 
     def _pause(
@@ -1296,11 +1321,25 @@ class StrictResearchOSControl(
         request: ResearchControlRequest,
         portfolio: ResearchPortfolio,
     ) -> ResearchControlReceipt:
-        self._require_whole_graph_control(request)
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported("PAUSE does not accept opaque control payload")
         compilation, cut, active, _snapshot, control = self._active_execution_state(
-            request,
-            portfolio,
+            request, portfolio,
         )
+        if request.target.node is not None:
+            node = self._target_graph_node(request, compilation)
+            node_control = self._store.node_control_state(cut.cut_id, node.graph_node_id)
+            node_control = self._store.pause_node_if_quiescent(
+                cut.cut_id,
+                node.graph_node_id,
+                expected_generation=node_control.generation,
+                now_ns=time.time_ns(),
+            )
+            snapshot = self._store.snapshot(cut.cut_id)
+            return self._durable_control_receipt(
+                request, compilation, cut, active, snapshot, control,
+                state="node_paused",
+            )
         control = self._store.pause_if_quiescent(
             cut.cut_id,
             expected_generation=control.generation,
@@ -1308,12 +1347,7 @@ class StrictResearchOSControl(
         )
         snapshot = self._store.snapshot(cut.cut_id)
         return self._durable_control_receipt(
-            request,
-            compilation,
-            cut,
-            active,
-            snapshot,
-            control,
+            request, compilation, cut, active, snapshot, control,
             state="paused",
         )
 
@@ -1322,11 +1356,29 @@ class StrictResearchOSControl(
         request: ResearchControlRequest,
         portfolio: ResearchPortfolio,
     ) -> ResearchControlReceipt:
-        self._require_whole_graph_control(request)
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported("INTERRUPT does not accept opaque control payload")
         compilation, cut, active, _snapshot, control = self._active_execution_state(
-            request,
-            portfolio,
+            request, portfolio,
         )
+        if request.target.node is not None:
+            node = self._target_graph_node(request, compilation)
+            node_control = self._store.node_control_state(cut.cut_id, node.graph_node_id)
+            node_control = self._store.interrupt_node(
+                cut.cut_id,
+                node.graph_node_id,
+                expected_generation=node_control.generation,
+                now_ns=time.time_ns(),
+            )
+            snapshot = self._store.snapshot(cut.cut_id)
+            return self._durable_control_receipt(
+                request, compilation, cut, active, snapshot, control,
+                state=(
+                    "node_recovery_required"
+                    if node_control.phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+                    else "node_paused"
+                ),
+            )
         control = self._store.interrupt(
             cut.cut_id,
             expected_generation=control.generation,
@@ -1334,12 +1386,7 @@ class StrictResearchOSControl(
         )
         snapshot = self._store.snapshot(cut.cut_id)
         return self._durable_control_receipt(
-            request,
-            compilation,
-            cut,
-            active,
-            snapshot,
-            control,
+            request, compilation, cut, active, snapshot, control,
         )
 
     def _resume(
@@ -1347,11 +1394,40 @@ class StrictResearchOSControl(
         request: ResearchControlRequest,
         portfolio: ResearchPortfolio,
     ) -> ResearchControlReceipt:
-        self._require_whole_graph_control(request)
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported("RESUME does not accept opaque control payload")
         compilation, cut, active, _snapshot, control = self._active_execution_state(
-            request,
-            portfolio,
+            request, portfolio,
         )
+        if request.target.node is not None:
+            if control.phase is not ResearchGraphControlPhase.ACTIVE:
+                raise ResearchGraphExecutionConflict(
+                    "node resume requires active graph-wide control; "
+                    f"actual={control.phase.value}"
+                )
+            node = self._target_graph_node(request, compilation)
+            node_control = self._store.node_control_state(cut.cut_id, node.graph_node_id)
+            node_control = self._store.resume_node(
+                cut.cut_id,
+                node.graph_node_id,
+                expected_generation=node_control.generation,
+                now_ns=time.time_ns(),
+            )
+            if node_control.phase is not ResearchGraphNodeControlPhase.ACTIVE:
+                raise ResearchGraphExecutionConflict(
+                    "Research OS node resume did not produce active node control"
+                )
+            prepared = prepare_research_os_execution(
+                request.target,
+                portfolio,
+                self._runtime,
+                self._values,
+                experiment_closures=self._experiment_closures,
+                artifact_lineage=self._artifact_lineage,
+            )
+            if prepared.compilation != compilation or prepared.cut != cut:
+                raise ValueError("Research OS node resume preflight identity drifted")
+            return self._drive(request, prepared, active.generation)
         control = self._store.resume(
             cut.cut_id,
             expected_generation=control.generation,
@@ -1378,11 +1454,28 @@ class StrictResearchOSControl(
         request: ResearchControlRequest,
         portfolio: ResearchPortfolio,
     ) -> ResearchControlReceipt:
-        self._require_whole_graph_control(request)
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported("CANCEL does not accept opaque control payload")
         compilation, cut, active, _snapshot, control = self._active_execution_state(
-            request,
-            portfolio,
+            request, portfolio,
         )
+        if request.target.node is not None:
+            node = self._target_graph_node(request, compilation)
+            node_control = self._store.node_control_state(cut.cut_id, node.graph_node_id)
+            descendants = self._retry_descendants(compilation, node.graph_node_id)
+            self._store.cancel_node_subgraph(
+                cut.cut_id,
+                node.graph_node_id,
+                descendant_node_ids=descendants,
+                expected_generation=node_control.generation,
+                now_ns=time.time_ns(),
+            )
+            snapshot = self._store.snapshot(cut.cut_id)
+            return self._durable_control_receipt(
+                request, compilation, cut, active, snapshot, control,
+                state="node_cancelled",
+                extra={"cancelled_descendant_node_ids": descendants},
+            )
         control = self._store.cancel_if_quiescent(
             cut.cut_id,
             expected_generation=control.generation,
@@ -1390,16 +1483,10 @@ class StrictResearchOSControl(
         )
         snapshot = self._store.snapshot(cut.cut_id)
         return self._durable_control_receipt(
-            request,
-            compilation,
-            cut,
-            active,
-            snapshot,
-            control,
+            request, compilation, cut, active, snapshot, control,
             state="cancelled",
         )
 
-    @staticmethod
     def _retry_descendants(
         compilation: CompiledResearchOSGraph,
         root_node_id: str,
