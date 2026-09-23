@@ -146,7 +146,9 @@ class PreparedResearchOSExecution:
     compilation: CompiledResearchOSGraph
     lowering: ResearchOSLoweringPlan
     cut: ResearchOSExecutionCut
+    selected_node_ids: tuple[str, ...]
     admissions: tuple[ResearchOSNodeAdmission, ...]
+    selection_digest: str = field(init=False)
     preflight_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -158,6 +160,22 @@ class PreparedResearchOSExecution:
             raise TypeError("prepared research execution lowering must be typed")
         if type(self.cut) is not ResearchOSExecutionCut:
             raise TypeError("prepared research execution cut must be typed")
+        if type(self.selected_node_ids) is not tuple or not self.selected_node_ids or any(
+            type(node_id) is not str or not node_id.strip()
+            for node_id in self.selected_node_ids
+        ):
+            raise TypeError(
+                "prepared research execution selection must be a non-empty text tuple"
+            )
+        selected = tuple(sorted(self.selected_node_ids))
+        if len(selected) != len(set(selected)):
+            raise ValueError("prepared research execution selection must be unique")
+        graph_ids = tuple(node.graph_node_id for node in self.compilation.nodes)
+        unknown = tuple(sorted(set(selected) - set(graph_ids)))
+        if unknown:
+            raise ValueError(
+                f"prepared research execution selection has unknown nodes: {unknown}"
+            )
         if type(self.admissions) is not tuple or any(
             type(row) is not ResearchOSNodeAdmission
             for row in self.admissions
@@ -167,11 +185,10 @@ class PreparedResearchOSExecution:
         ordered = tuple(
             sorted(self.admissions, key=lambda row: row.graph_node_id)
         )
-        graph_ids = tuple(node.graph_node_id for node in self.compilation.nodes)
         admission_ids = tuple(row.graph_node_id for row in ordered)
-        if admission_ids != graph_ids:
+        if admission_ids != selected:
             raise ValueError(
-                "prepared research execution admission closure is incomplete"
+                "prepared research execution admission closure does not match selection"
             )
         if self.compilation.revision != self.target.revision:
             raise ValueError("prepared research execution revision drifted")
@@ -195,6 +212,10 @@ class PreparedResearchOSExecution:
             node.source.graph_node_id: node
             for node in self.lowering.nodes
         }
+        if tuple(sorted(lowered)) != selected:
+            raise ValueError(
+                "prepared research execution lowering closure does not match selection"
+            )
         for admission in ordered:
             compiled = by_id[admission.graph_node_id]
             lowered_node = lowered[admission.graph_node_id]
@@ -203,7 +224,16 @@ class PreparedResearchOSExecution:
             if admission.lowering_digest != lowered_node.lowering_digest:
                 raise ValueError("research node admission lowering identity drifted")
 
+        object.__setattr__(self, "selected_node_ids", selected)
         object.__setattr__(self, "admissions", ordered)
+        selection_digest = canonical_digest(
+            {
+                "graph_digest": self.compilation.plan.graph_digest,
+                "research_revision_digest": self.target.research_revision_digest,
+                "selected_node_ids": selected,
+            }
+        )
+        object.__setattr__(self, "selection_digest", selection_digest)
         object.__setattr__(
             self,
             "preflight_digest",
@@ -213,6 +243,7 @@ class PreparedResearchOSExecution:
                     "graph_digest": self.compilation.plan.graph_digest,
                     "lowering_digest": self.lowering.lowering_digest,
                     "cut_id": self.cut.cut_id,
+                    "selection_digest": selection_digest,
                     "admissions": tuple(
                         row.admission_digest
                         for row in ordered
@@ -235,6 +266,35 @@ class ResearchOSExecutionUnsupported(RuntimeError):
     pass
 
 
+def _execution_selection_node_ids(
+    compilation: CompiledResearchOSGraph,
+    target: ResearchExecutionTarget,
+) -> tuple[str, ...]:
+    if type(compilation) is not CompiledResearchOSGraph:
+        raise TypeError("research execution selection requires compiled graph")
+    if type(target) is not ResearchExecutionTarget:
+        raise TypeError("research execution selection requires typed target")
+    if target.node is None:
+        return tuple(node.graph_node_id for node in compilation.nodes)
+    matches = tuple(node for node in compilation.nodes if node.ref == target.node)
+    if len(matches) != 1:
+        raise ResearchOSExecutionUnsupported(
+            "node-scoped RUN target does not identify exactly one ResearchGraph node"
+        )
+    by_id = {node.node_id: node for node in compilation.plan.nodes}
+    selected: set[str] = set()
+
+    def include(node_id: str) -> None:
+        if node_id in selected:
+            return
+        selected.add(node_id)
+        for dependency in by_id[node_id].depends_on_node_ids:
+            include(dependency)
+
+    include(matches[0].graph_node_id)
+    return tuple(sorted(selected))
+
+
 def prepare_research_os_execution(
     target: ResearchExecutionTarget,
     portfolio: ResearchPortfolio,
@@ -250,10 +310,6 @@ def prepare_research_os_execution(
         raise TypeError("research execution preflight target must be typed")
     if type(portfolio) is not ResearchPortfolio:
         raise TypeError("research execution preflight portfolio must be typed")
-    if target.node is not None:
-        raise ResearchOSExecutionUnsupported(
-            "node-scoped RUN requires canonical subgraph execution semantics"
-        )
     if portfolio.portfolio_id != target.portfolio_id:
         raise ValueError("research execution portfolio identity drifted")
     if portfolio.portfolio_digest != target.revision.portfolio_digest:
@@ -267,11 +323,18 @@ def prepare_research_os_execution(
         target.revision,
         portfolio,
     )
+    selected_node_ids = _execution_selection_node_ids(compilation, target)
     lowering = compile_research_os_lowering(
         compilation,
         experiment_closures=experiment_closures,
+        selected_node_ids=selected_node_ids,
     )
-    validate_research_os_value_authorities(compilation, values)
+    validate_research_os_value_authorities(
+        compilation,
+        values,
+        selected_node_ids=selected_node_ids,
+    )
+    selected = set(selected_node_ids)
     requires_artifact_lineage = any(
         output.kind is ResearchValueKind.ARTIFACT
         and any(
@@ -280,6 +343,7 @@ def prepare_research_os_execution(
             for binding in edge.bindings
         )
         for node in compilation.nodes
+        if node.graph_node_id in selected
         for output in node.node.outputs
     )
     if requires_artifact_lineage and artifact_lineage is None:
@@ -301,6 +365,8 @@ def prepare_research_os_execution(
     }
     admissions: list[ResearchOSNodeAdmission] = []
     for node in compilation.nodes:
+        if node.graph_node_id not in selected:
+            continue
         admission = runtime.admit(node, lowered[node.graph_node_id])
         if type(admission) is not ResearchOSNodeAdmission:
             raise TypeError("research runtime returned invalid node admission")
@@ -317,6 +383,7 @@ def prepare_research_os_execution(
         compilation,
         lowering,
         cut,
+        selected_node_ids,
         tuple(admissions),
     )
 
