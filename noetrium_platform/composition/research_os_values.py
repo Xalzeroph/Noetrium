@@ -132,8 +132,8 @@ class ResearchOSValueRouter:
         self,
         authorities: tuple[ResearchOSValueAuthorityPort, ...],
     ) -> None:
-        if type(authorities) is not tuple or not authorities:
-            raise ValueError("research value router requires explicit authorities")
+        if type(authorities) is not tuple:
+            raise TypeError("research value router authorities must be a tuple")
         by_kind: dict[ResearchValueKind, ResearchOSValueAuthorityPort] = {}
         by_id: dict[str, ResearchOSValueAuthorityPort] = {}
         for authority in authorities:
