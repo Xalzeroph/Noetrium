@@ -25,6 +25,8 @@ _KIND_VALUES = {
     "ENVIRONMENT": "environment",
     "EVALUATION": "evaluation",
     "OPTIMIZATION": "optimization",
+    "ANALYSIS": "analysis",
+    "PUBLICATION": "publication",
 }
 
 
