@@ -1310,6 +1310,84 @@ class SQLiteResearchGraphExecutionStore:
                 self._bump_generation(conn, execution_id)
             return self._snapshot_tx(conn, execution_id)
 
+    def retry_failed_subgraph(
+        self,
+        execution_id: str,
+        failed_node_id: str,
+        *,
+        descendant_node_ids: tuple[str, ...],
+        retry_not_before_ns: int,
+    ) -> ResearchGraphExecutionSnapshot:
+        if type(failed_node_id) is not str or not failed_node_id.strip():
+            raise ValueError("research graph retry failed_node_id must be non-empty")
+        if type(descendant_node_ids) is not tuple:
+            raise TypeError("research graph retry descendants must be a tuple")
+        descendants = tuple(sorted(descendant_node_ids))
+        if (
+            len(descendants) != len(set(descendants))
+            or failed_node_id in descendants
+            or any(type(node_id) is not str or not node_id.strip() for node_id in descendants)
+        ):
+            raise ValueError(
+                "research graph retry descendants must be unique non-empty node ids "
+                "excluding the failed root"
+            )
+        if type(retry_not_before_ns) is not int or retry_not_before_ns < 0:
+            raise ValueError("research graph retry_not_before_ns must be non-negative")
+        with self._transaction() as conn:
+            self._execution_tx(conn, execution_id)
+            root = self._node_tx(conn, execution_id, failed_node_id)
+            if root.state is not ResearchGraphLiveNodeState.FAILED:
+                raise ResearchGraphExecutionConflict(
+                    "research graph retry root must be definitively failed"
+                )
+            debt = self._reconciliation_node_ids_tx(conn, execution_id)
+            if debt:
+                raise ResearchGraphExecutionConflict(
+                    "research graph retry is blocked by reconciliation debt: "
+                    f"{debt}"
+                )
+            active = self._active_node_rows_tx(conn, execution_id)
+            if active:
+                raise ResearchGraphExecutionConflict(
+                    "research graph retry requires a quiescent cut"
+                )
+            for node_id in descendants:
+                record = self._node_tx(conn, execution_id, node_id)
+                if record.state not in {
+                    ResearchGraphLiveNodeState.PENDING,
+                    ResearchGraphLiveNodeState.READY,
+                    ResearchGraphLiveNodeState.BLOCKED,
+                }:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph retry descendant has non-resettable state: "
+                        f"{node_id}={record.state.value}"
+                    )
+            conn.execute(
+                "UPDATE research_graph_nodes SET state=?,retry_not_before_ns=?,"
+                "failure_type=NULL,failure_message=NULL,blockers_json='[]' "
+                "WHERE execution_id=? AND node_id=?",
+                (
+                    ResearchGraphLiveNodeState.RETRY_WAIT.value,
+                    retry_not_before_ns,
+                    execution_id,
+                    failed_node_id,
+                ),
+            )
+            for node_id in descendants:
+                conn.execute(
+                    "UPDATE research_graph_nodes SET state=?,retry_not_before_ns=NULL,"
+                    "failure_type=NULL,failure_message=NULL,blockers_json='[]' "
+                    "WHERE execution_id=? AND node_id=?",
+                    (
+                        ResearchGraphLiveNodeState.PENDING.value,
+                        execution_id,
+                        node_id,
+                    ),
+                )
+            self._bump_generation(conn, execution_id)
+            return self._snapshot_tx(conn, execution_id)
+
     def schedule_retry(
         self,
         execution_id: str,
