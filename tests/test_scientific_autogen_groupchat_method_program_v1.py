@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium.api import run_method_program
+from noetrium_platform.platform import run_method_program
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentRequest,
