@@ -17,6 +17,8 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionNotFound,
     ResearchGraphExecutionSnapshot,
     ResearchGraphLiveNodeState,
+    ResearchGraphNodeControlPhase,
+    ResearchGraphNodeControlRecord,
     ResearchGraphNodeExecutionRecord,
     ResearchGraphPlan,
     ResearchGraphReconciliationDisposition,
@@ -31,7 +33,7 @@ class SQLiteResearchGraphExecutionStore:
     effects, evidence and provider state stay in their lower canonical authorities.
     """
 
-    SCHEMA_VERSION = 2
+    SCHEMA_VERSION = 3
 
     def __init__(self, path: str | Path, *, timeout_seconds: float = 30.0) -> None:
         if timeout_seconds <= 0:
@@ -102,6 +104,17 @@ class SQLiteResearchGraphExecutionStore:
             "phase TEXT NOT NULL,"
             "generation INTEGER NOT NULL,"
             "updated_at_ns INTEGER NOT NULL,"
+            "FOREIGN KEY(execution_id) REFERENCES research_graph_executions(execution_id)"
+            ")"
+        )
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS research_graph_node_control("
+            "execution_id TEXT NOT NULL,"
+            "node_id TEXT NOT NULL,"
+            "phase TEXT NOT NULL,"
+            "generation INTEGER NOT NULL,"
+            "updated_at_ns INTEGER NOT NULL,"
+            "PRIMARY KEY(execution_id,node_id),"
             "FOREIGN KEY(execution_id) REFERENCES research_graph_executions(execution_id)"
             ")"
         )
@@ -233,6 +246,16 @@ class SQLiteResearchGraphExecutionStore:
         )
 
     @staticmethod
+    def _decode_node_control(row: tuple[object, ...]) -> ResearchGraphNodeControlRecord:
+        return ResearchGraphNodeControlRecord(
+            execution_id=str(row[0]),
+            node_id=str(row[1]),
+            phase=ResearchGraphNodeControlPhase(str(row[2])),
+            generation=int(row[3]),
+            updated_at_ns=int(row[4]),
+        )
+
+    @staticmethod
     def _decode_control(row: tuple[object, ...]) -> ResearchGraphControlRecord:
         return ResearchGraphControlRecord(
             execution_id=str(row[0]),
@@ -256,6 +279,50 @@ class SQLiteResearchGraphExecutionStore:
                 f"{execution_id}:control"
             )
         return self._decode_control(row)
+
+    def _node_control_tx(
+        self,
+        conn: sqlite3.Connection,
+        execution_id: str,
+        node_id: str,
+    ) -> ResearchGraphNodeControlRecord:
+        row = conn.execute(
+            "SELECT execution_id,node_id,phase,generation,updated_at_ns "
+            "FROM research_graph_node_control WHERE execution_id=? AND node_id=?",
+            (execution_id, node_id),
+        ).fetchone()
+        if row is None:
+            raise ResearchGraphExecutionNotFound(
+                f"{execution_id}:{node_id}:control"
+            )
+        return self._decode_node_control(row)
+
+    @staticmethod
+    def _write_node_control_phase_tx(
+        conn: sqlite3.Connection,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        phase: ResearchGraphNodeControlPhase,
+        now_ns: int,
+    ) -> None:
+        updated = conn.execute(
+            "UPDATE research_graph_node_control "
+            "SET phase=?,generation=generation+1,updated_at_ns=? "
+            "WHERE execution_id=? AND node_id=? AND generation=?",
+            (
+                phase.value,
+                now_ns,
+                execution_id,
+                node_id,
+                expected_generation,
+            ),
+        )
+        if updated.rowcount != 1:
+            raise ResearchGraphExecutionConflict(
+                "research graph node control compare-and-swap conflict"
+            )
 
     @staticmethod
     def _active_node_rows_tx(
@@ -431,6 +498,19 @@ class SQLiteResearchGraphExecutionStore:
                     ),
                 )
                 conn.executemany(
+                    "INSERT INTO research_graph_node_control("
+                    "execution_id,node_id,phase,generation,updated_at_ns"
+                    ") VALUES(?,?,?,1,0)",
+                    (
+                        (
+                            execution_id,
+                            node.node_id,
+                            ResearchGraphNodeControlPhase.ACTIVE.value,
+                        )
+                        for node in plan.nodes
+                    ),
+                )
+                conn.executemany(
                     "INSERT INTO research_graph_nodes("
                     "execution_id,node_id,semantic_digest,state,attempt_number,"
                     "blockers_json) VALUES(?,?,?,?,0,'[]')",
@@ -464,6 +544,17 @@ class SQLiteResearchGraphExecutionStore:
                     raise RuntimeError(
                         "durable research graph execution lost control state"
                     )
+                node_controls = conn.execute(
+                    "SELECT node_id FROM research_graph_node_control "
+                    "WHERE execution_id=? ORDER BY node_id",
+                    (execution_id,),
+                ).fetchall()
+                expected_control_ids = tuple(node.node_id for node in plan.nodes)
+                actual_control_ids = tuple(str(row[0]) for row in node_controls)
+                if actual_control_ids != expected_control_ids:
+                    raise ResearchGraphExecutionConflict(
+                        "durable graph node control identity differs from immutable plan"
+                    )
                 existing = conn.execute(
                     "SELECT node_id,semantic_digest FROM research_graph_nodes "
                     "WHERE execution_id=? ORDER BY node_id",
@@ -490,6 +581,311 @@ class SQLiteResearchGraphExecutionStore:
         with self._connection() as conn:
             self._execution_tx(conn, execution_id)
             return self._control_tx(conn, execution_id)
+
+    def node_control_state(
+        self,
+        execution_id: str,
+        node_id: str,
+    ) -> ResearchGraphNodeControlRecord:
+        with self._connection() as conn:
+            self._execution_tx(conn, execution_id)
+            self._node_tx(conn, execution_id, node_id)
+            return self._node_control_tx(conn, execution_id, node_id)
+
+    def request_node_drain(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord:
+        now_ns = self._require_now(now_ns)
+        with self._transaction() as conn:
+            self._node_tx(conn, execution_id, node_id)
+            current = self._node_control_tx(conn, execution_id, node_id)
+            if current.generation != expected_generation:
+                raise ResearchGraphExecutionConflict(
+                    "research graph node control compare-and-swap conflict"
+                )
+            if current.phase in {
+                ResearchGraphNodeControlPhase.DRAINING,
+                ResearchGraphNodeControlPhase.PAUSED,
+            }:
+                return current
+            if current.phase is not ResearchGraphNodeControlPhase.ACTIVE:
+                raise ResearchGraphExecutionConflict(
+                    f"cannot drain node from control phase {current.phase.value}"
+                )
+            self._write_node_control_phase_tx(
+                conn, execution_id, node_id,
+                expected_generation=expected_generation,
+                phase=ResearchGraphNodeControlPhase.DRAINING,
+                now_ns=now_ns,
+            )
+            return self._node_control_tx(conn, execution_id, node_id)
+
+    def pause_node_if_quiescent(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord:
+        now_ns = self._require_now(now_ns)
+        with self._transaction() as conn:
+            node = self._node_tx(conn, execution_id, node_id)
+            current = self._node_control_tx(conn, execution_id, node_id)
+            if current.generation != expected_generation:
+                raise ResearchGraphExecutionConflict(
+                    "research graph node control compare-and-swap conflict"
+                )
+            if current.phase is ResearchGraphNodeControlPhase.PAUSED:
+                return current
+            if current.phase not in {
+                ResearchGraphNodeControlPhase.ACTIVE,
+                ResearchGraphNodeControlPhase.DRAINING,
+            }:
+                raise ResearchGraphExecutionConflict(
+                    f"cannot pause node from control phase {current.phase.value}"
+                )
+            if node.state in {
+                ResearchGraphLiveNodeState.CLAIMED,
+                ResearchGraphLiveNodeState.RUNNING,
+            }:
+                raise ResearchGraphExecutionConflict(
+                    "research graph node pause requires quiescence or prior interrupt"
+                )
+            if node.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
+                raise ResearchGraphExecutionConflict(
+                    "research graph node pause is blocked by reconciliation debt"
+                )
+            if node.state in {
+                ResearchGraphLiveNodeState.SUCCEEDED,
+                ResearchGraphLiveNodeState.REUSED,
+                ResearchGraphLiveNodeState.FAILED,
+                ResearchGraphLiveNodeState.CANCELLED,
+            }:
+                raise ResearchGraphExecutionConflict(
+                    "terminal graph node cannot be paused"
+                )
+            self._write_node_control_phase_tx(
+                conn, execution_id, node_id,
+                expected_generation=expected_generation,
+                phase=ResearchGraphNodeControlPhase.PAUSED,
+                now_ns=now_ns,
+            )
+            return self._node_control_tx(conn, execution_id, node_id)
+
+    def resume_node(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord:
+        now_ns = self._require_now(now_ns)
+        with self._transaction() as conn:
+            node = self._node_tx(conn, execution_id, node_id)
+            current = self._node_control_tx(conn, execution_id, node_id)
+            if current.generation != expected_generation:
+                raise ResearchGraphExecutionConflict(
+                    "research graph node control compare-and-swap conflict"
+                )
+            if current.phase is ResearchGraphNodeControlPhase.ACTIVE:
+                return current
+            if current.phase is not ResearchGraphNodeControlPhase.PAUSED:
+                raise ResearchGraphExecutionConflict(
+                    f"cannot resume node from control phase {current.phase.value}"
+                )
+            if node.state in {
+                ResearchGraphLiveNodeState.SUCCEEDED,
+                ResearchGraphLiveNodeState.REUSED,
+                ResearchGraphLiveNodeState.FAILED,
+                ResearchGraphLiveNodeState.CANCELLED,
+                ResearchGraphLiveNodeState.RECONCILE_REQUIRED,
+            }:
+                raise ResearchGraphExecutionConflict(
+                    "terminal or uncertain graph node cannot be resumed"
+                )
+            self._write_node_control_phase_tx(
+                conn, execution_id, node_id,
+                expected_generation=expected_generation,
+                phase=ResearchGraphNodeControlPhase.ACTIVE,
+                now_ns=now_ns,
+            )
+            return self._node_control_tx(conn, execution_id, node_id)
+
+    def interrupt_node(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord:
+        now_ns = self._require_now(now_ns)
+        with self._transaction() as conn:
+            node = self._node_tx(conn, execution_id, node_id)
+            current = self._node_control_tx(conn, execution_id, node_id)
+            if current.generation != expected_generation:
+                raise ResearchGraphExecutionConflict(
+                    "research graph node control compare-and-swap conflict"
+                )
+            if current.phase not in {
+                ResearchGraphNodeControlPhase.ACTIVE,
+                ResearchGraphNodeControlPhase.DRAINING,
+            }:
+                raise ResearchGraphExecutionConflict(
+                    f"cannot interrupt node from control phase {current.phase.value}"
+                )
+            if node.state is ResearchGraphLiveNodeState.CLAIMED:
+                if node.attempt_id is None:
+                    raise RuntimeError("claimed graph node lost attempt identity")
+                conn.execute(
+                    "UPDATE research_graph_nodes SET state=?,attempt_id=NULL,"
+                    "lease_owner_id=NULL,lease_expires_at_ns=NULL,retry_not_before_ns=NULL "
+                    "WHERE execution_id=? AND node_id=?",
+                    (ResearchGraphLiveNodeState.PENDING.value, execution_id, node_id),
+                )
+                conn.execute(
+                    "UPDATE research_graph_attempts SET state=?,finished_at_ns=? "
+                    "WHERE attempt_id=?",
+                    (ResearchGraphAttemptState.EXPIRED_BEFORE_START.value, now_ns, node.attempt_id),
+                )
+                self._bump_generation(conn, execution_id)
+                phase = ResearchGraphNodeControlPhase.PAUSED
+            elif node.state is ResearchGraphLiveNodeState.RUNNING:
+                if node.attempt_id is None:
+                    raise RuntimeError("running graph node lost attempt identity")
+                conn.execute(
+                    "UPDATE research_graph_nodes SET state=?,lease_owner_id=NULL,"
+                    "lease_expires_at_ns=NULL,retry_not_before_ns=NULL "
+                    "WHERE execution_id=? AND node_id=?",
+                    (ResearchGraphLiveNodeState.RECONCILE_REQUIRED.value, execution_id, node_id),
+                )
+                conn.execute(
+                    "UPDATE research_graph_attempts SET state=?,finished_at_ns=? "
+                    "WHERE attempt_id=?",
+                    (ResearchGraphAttemptState.RECONCILE_REQUIRED.value, now_ns, node.attempt_id),
+                )
+                self._bump_generation(conn, execution_id)
+                phase = ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+            elif node.state in {
+                ResearchGraphLiveNodeState.PENDING,
+                ResearchGraphLiveNodeState.READY,
+                ResearchGraphLiveNodeState.RETRY_WAIT,
+            }:
+                phase = ResearchGraphNodeControlPhase.PAUSED
+            else:
+                raise ResearchGraphExecutionConflict(
+                    f"graph node state cannot be interrupted: {node.state.value}"
+                )
+            self._write_node_control_phase_tx(
+                conn, execution_id, node_id,
+                expected_generation=expected_generation,
+                phase=phase,
+                now_ns=now_ns,
+            )
+            return self._node_control_tx(conn, execution_id, node_id)
+
+    def settle_node_recovery(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord:
+        now_ns = self._require_now(now_ns)
+        with self._transaction() as conn:
+            node = self._node_tx(conn, execution_id, node_id)
+            current = self._node_control_tx(conn, execution_id, node_id)
+            if current.generation != expected_generation:
+                raise ResearchGraphExecutionConflict(
+                    "research graph node control compare-and-swap conflict"
+                )
+            if current.phase is ResearchGraphNodeControlPhase.PAUSED:
+                return current
+            if current.phase is not ResearchGraphNodeControlPhase.RECOVERY_REQUIRED:
+                raise ResearchGraphExecutionConflict(
+                    "node recovery settlement requires recovery_required control"
+                )
+            if node.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
+                raise ResearchGraphExecutionConflict(
+                    "node recovery cannot settle before reconciliation completes"
+                )
+            self._write_node_control_phase_tx(
+                conn, execution_id, node_id,
+                expected_generation=expected_generation,
+                phase=ResearchGraphNodeControlPhase.PAUSED,
+                now_ns=now_ns,
+            )
+            return self._node_control_tx(conn, execution_id, node_id)
+
+    def cancel_node_subgraph(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        descendant_node_ids: tuple[str, ...],
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphNodeControlRecord:
+        now_ns = self._require_now(now_ns)
+        if type(descendant_node_ids) is not tuple or any(
+            type(value) is not str or not value.strip()
+            for value in descendant_node_ids
+        ):
+            raise TypeError("cancel descendant_node_ids must be a text tuple")
+        targets = tuple(sorted({node_id, *descendant_node_ids}))
+        with self._transaction() as conn:
+            root_control = self._node_control_tx(conn, execution_id, node_id)
+            if root_control.generation != expected_generation:
+                raise ResearchGraphExecutionConflict(
+                    "research graph node control compare-and-swap conflict"
+                )
+            records = {
+                target: self._node_tx(conn, execution_id, target)
+                for target in targets
+            }
+            forbidden = tuple(
+                sorted(
+                    (target, record.state.value)
+                    for target, record in records.items()
+                    if record.state in {
+                        ResearchGraphLiveNodeState.CLAIMED,
+                        ResearchGraphLiveNodeState.RUNNING,
+                        ResearchGraphLiveNodeState.RECONCILE_REQUIRED,
+                        ResearchGraphLiveNodeState.SUCCEEDED,
+                        ResearchGraphLiveNodeState.REUSED,
+                        ResearchGraphLiveNodeState.FAILED,
+                    }
+                )
+            )
+            if forbidden:
+                raise ResearchGraphExecutionConflict(
+                    f"node subgraph cannot be cancelled from terminal/active states: {forbidden}"
+                )
+            for target in targets:
+                control = self._node_control_tx(conn, execution_id, target)
+                conn.execute(
+                    "UPDATE research_graph_nodes SET state=?,attempt_id=NULL,"
+                    "lease_owner_id=NULL,lease_expires_at_ns=NULL,retry_not_before_ns=NULL,"
+                    "failure_type=NULL,failure_message=NULL,blockers_json='[]' "
+                    "WHERE execution_id=? AND node_id=?",
+                    (ResearchGraphLiveNodeState.CANCELLED.value, execution_id, target),
+                )
+                self._write_node_control_phase_tx(
+                    conn, execution_id, target,
+                    expected_generation=control.generation,
+                    phase=ResearchGraphNodeControlPhase.CANCELLED,
+                    now_ns=now_ns,
+                )
+            self._bump_generation(conn, execution_id)
+            return self._node_control_tx(conn, execution_id, node_id)
 
     def request_drain(
         self,
