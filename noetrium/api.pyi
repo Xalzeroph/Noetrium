@@ -8,6 +8,7 @@ from noetrium_platform.product.api import (
     ResearchDefinition as ResearchDefinition,
     ResearchDefinitionKind as ResearchDefinitionKind,
     ResearchDependency as ResearchDependency,
+    ResearchExecutionTarget as ResearchExecutionTarget,
     ResearchGraphRevision as ResearchGraphRevision,
     ResearchImpactState as ResearchImpactState,
     ResearchImplementation as ResearchImplementation,
