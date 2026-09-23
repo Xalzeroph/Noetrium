@@ -4,6 +4,8 @@
 > Date: 2026-09-10
 > Scope: Noetrium 全系统、VM 家族、Run Kernel、研究执行与可复现性
 
+> **2026-09-23 top-level supersession notice:** 当前最高层产品/科研边界已经收敛为 `Research OS -> ResearchPortfolio -> ResearchProgram -> ResearchGraphRevision -> canonical ResearchGraph IR`。下层 Method/Experiment/Run/Model/Environment/Participant/Artifact/Evidence/Resource 等系统保留各自 authority，只向 Research OS 编译/组合，不再作为普通下游 SDK 暴露。Operator/CLI 是 Research OS 下的运维投影而不是最高层 authority。执行层历史 `ResearchProgram(kind=...)` 是非 Method Machine IR，后续应更名为 `ResearchMachineProgram` 以消除与顶层 ResearchProgram 的语义冲突。Git-like revision/branch/tag/diff/merge、增量 invalidation/reuse、pause/drain/interrupt/resume 与 durable attempt/lease/checkpoint/reconciliation 是顶层演进方向；已接受执行历史保持不可变。
+
 > **2026-09-19 supersession notice:** 本文保留 2026-09-10 的架构推演与历史上下文；其中 VM 家族、Agent Turn VM、Runtime 边界和通用执行宿主的具体设计，现由 `UNIVERSAL_RESEARCH_MACHINE_ARCHITECTURE_20260919.md` 规范性覆盖。当前实现以 `MachineExecutor + Machine Journal + MethodProgram/ResearchProgram + ResearchProgramHost` 为准；Agent 不再是 Machine kind，Agent Turn 是 ParticipantProgram，Runtime 是论文可编程执行语义而不是 kernel 名称。
 
 ## 1. 结论先行
