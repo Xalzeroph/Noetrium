@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from concurrent.futures import Future, ProcessPoolExecutor, ThreadPoolExecutor
 import multiprocessing as mp
-from threading import Condition, Lock
+from threading import Condition, Event, Lock
 import time
 from typing import Any, Callable, Generic, TypeVar
 
@@ -60,11 +60,22 @@ class _BoundedExecutor:
 
     _ADMISSION_POLL_SECONDS = 0.05
 
-    def __init__(self, executor: ThreadPoolExecutor | ProcessPoolExecutor, *, max_in_flight: int) -> None:
+    def __init__(
+        self,
+        executor: ThreadPoolExecutor | ProcessPoolExecutor,
+        *,
+        max_in_flight: int,
+        max_parallelism: int,
+    ) -> None:
         if max_in_flight <= 0:
             raise ValueError("max_in_flight must be positive")
+        if max_parallelism <= 0:
+            raise ValueError("max_parallelism must be positive")
+        if max_parallelism > max_in_flight:
+            raise ValueError("max_parallelism cannot exceed max_in_flight")
         self._executor = executor
         self._max_in_flight = int(max_in_flight)
+        self._max_parallelism = int(max_parallelism)
         self._available = int(max_in_flight)
         self._condition = Condition()
         self._closed = False
@@ -79,14 +90,22 @@ class _BoundedExecutor:
             return "executor capacity wait cancelled"
         return cancellation.reason or "executor capacity wait cancelled"
 
-    def _acquire_slot(
+    def _acquire_slots(
         self,
+        count: int,
         *,
         deadline: Deadline | None,
         cancellation: CancellationTokenPort | None,
+        require_parallelism: bool = False,
     ) -> None:
+        if type(count) is not int or count <= 0:
+            raise ValueError("executor slot count must be a positive integer")
+        if count > self._max_in_flight:
+            raise ValueError("executor batch exceeds bounded in-flight capacity")
+        if require_parallelism and count > self._max_parallelism:
+            raise ValueError("executor batch exceeds physical worker parallelism")
         with self._condition:
-            while self._available <= 0:
+            while self._available < count:
                 if self._closed:
                     raise RuntimeError("executor is closed")
                 if self._cancelled(cancellation):
@@ -94,9 +113,10 @@ class _BoundedExecutor:
                 remaining = None if deadline is None else deadline.remaining_seconds
                 if remaining is not None and remaining <= 0:
                     raise TimeoutError("executor capacity wait deadline expired")
-                wait_for = self._ADMISSION_POLL_SECONDS if remaining is None else min(
-                    self._ADMISSION_POLL_SECONDS,
-                    remaining,
+                wait_for = (
+                    self._ADMISSION_POLL_SECONDS
+                    if remaining is None
+                    else min(self._ADMISSION_POLL_SECONDS, remaining)
                 )
                 self._condition.wait(wait_for)
             if self._closed:
@@ -105,14 +125,31 @@ class _BoundedExecutor:
                 raise TaskCancelled(self._cancel_reason(cancellation))
             if deadline is not None and deadline.expired:
                 raise TimeoutError("executor capacity wait deadline expired")
-            self._available -= 1
+            self._available -= count
 
-    def _release_slot(self) -> None:
+    def _acquire_slot(
+        self,
+        *,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ) -> None:
+        self._acquire_slots(
+            1,
+            deadline=deadline,
+            cancellation=cancellation,
+        )
+
+    def _release_slots(self, count: int) -> None:
+        if type(count) is not int or count <= 0:
+            raise ValueError("executor release count must be a positive integer")
         with self._condition:
-            self._available += 1
+            self._available += count
             if self._available > self._max_in_flight:
                 raise RuntimeError("executor capacity slot accounting overflow")
             self._condition.notify_all()
+
+    def _release_slot(self) -> None:
+        self._release_slots(1)
 
     def submit(
         self,
@@ -154,11 +191,93 @@ class _BoundedExecutor:
 
 
 class BoundedThreadExecutor(_BoundedExecutor):
-    def __init__(self, *, max_workers: int, max_in_flight: int, thread_name_prefix: str = "platform-io") -> None:
+    def __init__(
+        self,
+        *,
+        max_workers: int,
+        max_in_flight: int,
+        thread_name_prefix: str = "platform-io",
+    ) -> None:
         super().__init__(
-            ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix=thread_name_prefix),
+            ThreadPoolExecutor(
+                max_workers=max_workers,
+                thread_name_prefix=thread_name_prefix,
+            ),
             max_in_flight=max_in_flight,
+            max_parallelism=max_workers,
         )
+
+    def submit_atomic_batch(
+        self,
+        fns: tuple[Callable[[], T], ...],
+        *,
+        deadline: Deadline | None = None,
+        cancellation: CancellationTokenPort | None = None,
+    ) -> tuple[_FutureHandle[T], ...]:
+        if not isinstance(fns, tuple) or not fns:
+            raise ValueError("atomic executor batch requires a non-empty tuple")
+        if any(not callable(fn) for fn in fns):
+            raise TypeError("atomic executor batch entries must be callable")
+        count = len(fns)
+        self._acquire_slots(
+            count,
+            deadline=deadline,
+            cancellation=cancellation,
+            require_parallelism=True,
+        )
+        start = Event()
+        abort = Event()
+        futures: list[Future[T]] = []
+
+        def invoke(fn: Callable[[], T]) -> T:
+            start.wait()
+            if abort.is_set():
+                raise RuntimeError("atomic executor batch aborted before start")
+            if self._cancelled(cancellation):
+                raise TaskCancelled(self._cancel_reason(cancellation))
+            if deadline is not None and deadline.expired:
+                raise TimeoutError("atomic executor batch deadline expired before start")
+            return fn()
+
+        try:
+            with self._condition:
+                if self._closed:
+                    raise RuntimeError("executor is closed")
+                if self._cancelled(cancellation):
+                    raise TaskCancelled(self._cancel_reason(cancellation))
+                if deadline is not None and deadline.expired:
+                    raise TimeoutError("atomic executor batch deadline expired")
+                for fn in fns:
+                    future = self._executor.submit(invoke, fn)
+                    future.add_done_callback(
+                        lambda _future: self._release_slot()
+                    )
+                    futures.append(future)
+        except BaseException:
+            abort.set()
+            start.set()
+            not_submitted = count - len(futures)
+            if not_submitted:
+                self._release_slots(not_submitted)
+            for future in futures:
+                future.cancel()
+            raise
+
+        if self._cancelled(cancellation):
+            abort.set()
+            start.set()
+            for future in futures:
+                future.cancel()
+            raise TaskCancelled(self._cancel_reason(cancellation))
+        if deadline is not None and deadline.expired:
+            abort.set()
+            start.set()
+            for future in futures:
+                future.cancel()
+            raise TimeoutError("atomic executor batch deadline expired")
+
+        start.set()
+        return tuple(_FutureHandle(future) for future in futures)
 
 
 class BoundedProcessExecutor(_BoundedExecutor):
@@ -171,6 +290,7 @@ class BoundedProcessExecutor(_BoundedExecutor):
         super().__init__(
             ProcessPoolExecutor(max_workers=max_workers, mp_context=context),
             max_in_flight=max_in_flight,
+            max_parallelism=max_workers,
         )
 
     def map(self, fn, values, *, chunksize: int = 1):
