@@ -431,6 +431,20 @@ class SQLiteResearchGraphExecutionStore:
                 "research graph attempt/lease ownership mismatch"
             )
 
+    @staticmethod
+    def _require_unexpired_lease(
+        current: ResearchGraphNodeExecutionRecord,
+        *,
+        now_ns: int,
+    ) -> None:
+        if (
+            current.lease_expires_at_ns is None
+            or current.lease_expires_at_ns <= now_ns
+        ):
+            raise ResearchGraphExecutionConflict(
+                "research graph lease expired; stale worker is fenced"
+            )
+
     def mark_running(
         self,
         execution_id: str,
@@ -449,13 +463,7 @@ class SQLiteResearchGraphExecutionStore:
                 owner_id=owner_id,
                 expected_state=ResearchGraphLiveNodeState.CLAIMED,
             )
-            if (
-                current.lease_expires_at_ns is None
-                or current.lease_expires_at_ns <= now_ns
-            ):
-                raise ResearchGraphExecutionConflict(
-                    "research graph claim expired before execution started"
-                )
+            self._require_unexpired_lease(current, now_ns=now_ns)
             conn.execute(
                 "UPDATE research_graph_nodes SET state=? "
                 "WHERE execution_id=? AND node_id=?",
@@ -500,13 +508,7 @@ class SQLiteResearchGraphExecutionStore:
                 attempt_id=attempt_id,
                 owner_id=owner_id,
             )
-            if (
-                current.lease_expires_at_ns is None
-                or current.lease_expires_at_ns <= now_ns
-            ):
-                raise ResearchGraphExecutionConflict(
-                    "cannot renew an already expired research graph lease"
-                )
+            self._require_unexpired_lease(current, now_ns=now_ns)
             if lease_expires_at_ns <= current.lease_expires_at_ns:
                 raise ValueError("research graph lease renewal must extend the lease")
             conn.execute(
@@ -540,6 +542,7 @@ class SQLiteResearchGraphExecutionStore:
                 owner_id=owner_id,
                 expected_state=ResearchGraphLiveNodeState.RUNNING,
             )
+            self._require_unexpired_lease(current, now_ns=now_ns)
             conn.execute(
                 "UPDATE research_graph_nodes SET state=?,attempt_id=NULL,"
                 "lease_owner_id=NULL,lease_expires_at_ns=NULL "
@@ -586,6 +589,7 @@ class SQLiteResearchGraphExecutionStore:
                 owner_id=owner_id,
                 expected_state=ResearchGraphLiveNodeState.RUNNING,
             )
+            self._require_unexpired_lease(current, now_ns=now_ns)
             conn.execute(
                 "UPDATE research_graph_nodes SET state=?,attempt_id=NULL,"
                 "lease_owner_id=NULL,lease_expires_at_ns=NULL,"

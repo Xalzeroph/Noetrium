@@ -247,8 +247,8 @@
   },
   "execution": {
     "authority": "execution_operations",
-    "must_not_own": "provider storage and domain truth",
-    "owns": "workflow and operation orchestration contracts",
+    "must_not_own": "provider storage, scientific result truth, effect truth, evidence truth or lower domain state",
+    "owns": "workflow, canonical research-graph scheduling lifecycle, node attempt/lease state and operation orchestration contracts",
     "package_prefix": "noetrium_platform.research.execution",
     "parent": null,
     "shape": [
@@ -281,6 +281,7 @@
     ],
     "components": [
       "execution/capability",
+      "execution/graph",
       "execution/policy",
       "execution/research_program",
       "execution/workflow"

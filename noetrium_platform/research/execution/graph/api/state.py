@@ -160,6 +160,11 @@ class ResearchGraphNodeExecutionRecord:
         ):
             raise ValueError("only failed graph nodes may carry failure metadata")
 
+    @property
+    def fencing_token(self) -> int:
+        """Monotonic per-node fencing token for the current or last attempt."""
+        return self.attempt_number
+
 
 @dataclass(frozen=True, slots=True)
 class ResearchGraphAttemptRecord:
@@ -196,6 +201,11 @@ class ResearchGraphAttemptRecord:
         _optional_ns(self.finished_at_ns, "research graph attempt finished_at_ns")
         _optional_text(self.failure_type, "research graph attempt failure_type")
         _optional_text(self.failure_message, "research graph attempt failure_message")
+
+    @property
+    def fencing_token(self) -> int:
+        """Monotonic per-node token; stale attempts carry lower tokens."""
+        return self.attempt_number
 
 
 @dataclass(frozen=True, slots=True)

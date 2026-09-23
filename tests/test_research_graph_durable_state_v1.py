@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import pytest
+
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphAttemptState,
+    ResearchGraphExecutionConflict,
     ResearchGraphLiveNodeState,
     ResearchGraphNode,
     ResearchGraphPlan,
@@ -137,3 +140,48 @@ def test_failed_node_can_enter_durable_retry_wait_and_reclaim(tmp_path) -> None:
     )
     assert second.attempt_number == 2
     assert second.attempt_id != first.attempt_id
+
+
+def test_expired_running_lease_fences_stale_worker_terminal_commit(tmp_path) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    store.ensure_execution("execution-fence", _plan())
+    store.mark_ready("execution-fence", "a", now_ns=10)
+    claim = store.claim(
+        "execution-fence",
+        "a",
+        owner_id="scheduler-old",
+        now_ns=10,
+        lease_expires_at_ns=20,
+    )
+    running = store.mark_running(
+        "execution-fence",
+        "a",
+        attempt_id=claim.attempt_id or "",
+        owner_id="scheduler-old",
+        now_ns=11,
+    )
+    assert running.fencing_token == 1
+    assert store.attempts("execution-fence", "a")[0].fencing_token == 1
+
+    with pytest.raises(ResearchGraphExecutionConflict, match="stale worker is fenced"):
+        store.mark_succeeded(
+            "execution-fence",
+            "a",
+            attempt_id=claim.attempt_id or "",
+            owner_id="scheduler-old",
+            now_ns=21,
+        )
+
+    recovered = store.recover_expired("execution-fence", now_ns=21)
+    assert recovered.node("a").state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+
+    with pytest.raises(ResearchGraphExecutionConflict):
+        store.mark_failed(
+            "execution-fence",
+            "a",
+            attempt_id=claim.attempt_id or "",
+            owner_id="scheduler-old",
+            now_ns=22,
+            failure_type="LateWorker",
+            failure_message="stale completion",
+        )
