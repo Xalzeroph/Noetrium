@@ -92,8 +92,18 @@ class _Runtime:
             ),
         )
 
-    def execute(self, context, node, lowering, inputs, *, deadline):
+    def execute(
+        self,
+        context,
+        node,
+        lowering,
+        inputs,
+        *,
+        execution_cut_id,
+        deadline,
+    ):
         del lowering, deadline
+        assert len(execution_cut_id) == 64
         context.checkpoint()
         self.executed.append(node.graph_node_id)
         if node.graph_node_id == "paper::source":

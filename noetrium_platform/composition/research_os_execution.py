@@ -111,6 +111,7 @@ class ResearchOSNodeRuntimePort(Protocol):
         lowering: LoweredResearchOSGraphNode,
         inputs: JsonObject,
         *,
+        execution_cut_id: str,
         deadline: Deadline | None,
     ) -> JsonValue: ...
 
@@ -320,6 +321,7 @@ class PreparedResearchOSNodeExecutor:
             node,
             lowering,
             inputs,
+            execution_cut_id=self._prepared.cut.cut_id,
             deadline=deadline,
         )
         publish_research_os_node_outputs(
