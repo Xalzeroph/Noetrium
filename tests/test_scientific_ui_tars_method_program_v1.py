@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from noetrium.api import run_method_program
+from noetrium_platform.platform import run_method_program
 from noetrium_platform.capabilities.environment.api import (
     EnvironmentQuery,
     EnvironmentQueryResult,
