@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 import hashlib
 import inspect
-from pathlib import Path
 import re
 from typing import Protocol, runtime_checkable
 
@@ -87,9 +86,10 @@ class ResearchImplementation:
     """Import-resolvable authoring implementation with automatic source identity.
 
     The callable itself is never embedded in a frozen ResearchProgram.  The module
-    and qualname are stable resolution coordinates; the complete owning module
-    source is normalized and digested so any code edit changes authoring identity.
-    Runtime compilation may bind additional Git, dependency, environment, model,
+    and qualname are stable resolution coordinates; the exact callable source is
+    normalized and digested so unrelated definitions do not invalidate each other.
+    Runtime compilation binds the callable dependency closure plus Git, dependency,
+    environment, model,
     and provider provenance without asking downstream authors to calculate hashes.
     """
 
@@ -149,16 +149,12 @@ class ResearchImplementation:
             raise ValueError(
                 "research implementation must be declared at module scope with a name"
             )
-        source_file = inspect.getsourcefile(implementation)
-        if source_file is None:
-            raise ValueError("research implementation source file cannot be resolved")
-        source_path = Path(source_file)
-        if not source_path.is_file():
-            raise ValueError("research implementation source file does not exist")
         try:
-            source = source_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeError) as exc:
-            raise ValueError("research implementation source is not canonical UTF-8") from exc
+            source = inspect.getsource(implementation)
+        except (OSError, TypeError) as exc:
+            raise ValueError(
+                "research implementation callable source cannot be resolved"
+            ) from exc
         normalized = source.replace("\r\n", "\n").replace("\r", "\n")
         source_digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
         return cls(
