@@ -731,6 +731,46 @@ class SQLiteResearchGraphExecutionStore:
             )
             return self._control_tx(conn, execution_id)
 
+    def require_recovery(
+        self,
+        execution_id: str,
+        *,
+        expected_generation: int,
+        now_ns: int,
+    ) -> ResearchGraphControlRecord:
+        now_ns = self._require_now(now_ns)
+        with self._transaction() as conn:
+            self._execution_tx(conn, execution_id)
+            current = self._control_tx(conn, execution_id)
+            if current.generation != expected_generation:
+                raise ResearchGraphExecutionConflict(
+                    "research graph control compare-and-swap conflict"
+                )
+            if current.phase is ResearchGraphControlPhase.RECOVERY_REQUIRED:
+                return current
+            if current.phase not in {
+                ResearchGraphControlPhase.ACTIVE,
+                ResearchGraphControlPhase.DRAINING,
+            }:
+                raise ResearchGraphExecutionConflict(
+                    "research graph recovery-required transition is invalid from "
+                    f"{current.phase.value}"
+                )
+            debt = self._reconciliation_node_ids_tx(conn, execution_id)
+            if not debt:
+                raise ResearchGraphExecutionConflict(
+                    "research graph cannot enter recovery_required without "
+                    "reconciliation debt"
+                )
+            self._write_control_phase_tx(
+                conn,
+                execution_id,
+                expected_generation=expected_generation,
+                phase=ResearchGraphControlPhase.RECOVERY_REQUIRED,
+                now_ns=now_ns,
+            )
+            return self._control_tx(conn, execution_id)
+
     def settle_recovery(
         self,
         execution_id: str,
