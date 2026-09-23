@@ -1,13 +1,26 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 import importlib
 from typing import Callable, Protocol, runtime_checkable
 
+from noetrium_platform.capabilities.participant.method.api import (
+    MethodIdentity,
+    MethodProgramIdentity,
+)
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.research.execution.workflow.api import (
+    MethodExecutionClass,
+    MethodNodeRequest,
+    MethodNodeResult,
+    MethodProgram,
+    MethodProgramBuilder,
+)
 from noetrium_platform.product.research_os import (
     ResearchDefinition,
+    ResearchDefinitionKind,
     ResearchImplementation,
     ResearchNodeKind,
 )
@@ -135,6 +148,70 @@ class ImportResearchImplementationResolver:
             declared,
             value,
         )
+
+
+
+def compile_callable_method_definition(
+    definition: ResearchDefinition,
+    *,
+    resolver: ResearchImplementationResolverPort | None = None,
+) -> MethodProgram:
+    """Compile one ordinary paper METHOD callable into the canonical UMM IR.
+
+    The author callable is treated as one pure semantic compute boundary: the
+    wrapper itself performs no provider I/O. External effects still have to flow
+    through MethodProgram capabilities/runtime ports, so this helper cannot
+    silently become a second execution authority.
+    """
+
+    if type(definition) is not ResearchDefinition:
+        raise TypeError("callable method lowering requires ResearchDefinition")
+    if definition.kind is not ResearchDefinitionKind.METHOD:
+        raise ValueError("callable method lowering requires METHOD definition")
+    if definition.implementation is None:
+        raise ResearchImplementationResolutionError(
+            "METHOD definition has no paper implementation"
+        )
+    resolved = (resolver or ImportResearchImplementationResolver()).resolve(definition)
+    declared = resolved.declared
+    implementation = resolved.implementation
+
+    def invoke(request: MethodNodeRequest) -> MethodNodeResult:
+        value = implementation(request.input_value)
+        if type(value) is MethodNodeResult:
+            return value
+        return MethodNodeResult(value=value)
+
+    config_value = definition.config
+    configuration = (
+        dict(config_value)
+        if isinstance(config_value, Mapping)
+        else {"research_definition_config": config_value}
+    )
+    configuration["research_definition_id"] = definition.definition_id
+    configuration["research_implementation_digest"] = (
+        declared.implementation_digest
+    )
+    identity = MethodProgramIdentity(
+        MethodIdentity(
+            method_id=definition.definition_id,
+            implementation_version=declared.source_digest,
+            abi_version="research-os.callable-method.v1",
+            schema_version="json",
+            artifact_digest=declared.implementation_digest,
+        ),
+        configuration_digest=canonical_digest(definition.config),
+    )
+    builder = MethodProgramBuilder(identity, entrypoint="invoke")
+    builder.return_node(
+        "invoke",
+        f"research-os.method:{definition.definition_id}",
+        invoke,
+    )
+    return builder.build(
+        configuration=configuration,
+        execution_class=MethodExecutionClass.EFFECT_RECORDED,
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -328,5 +405,6 @@ __all__ = [
     "ResearchOSLoweringPlan",
     "ResearchOSLoweringTarget",
     "ResolvedResearchImplementation",
+    "compile_callable_method_definition",
     "compile_research_os_lowering",
 ]

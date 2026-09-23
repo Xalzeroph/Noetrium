@@ -5,11 +5,19 @@ import pytest
 from noetrium_platform.composition.research_os_lowering import (
     ResearchImplementationResolutionError,
     ResearchOSLoweringTarget,
+    compile_callable_method_definition,
     compile_research_os_lowering,
 )
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.research.execution.workflow.api import (
+    MethodRunStatus,
+    MethodRuntimeContext,
+)
+from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 from noetrium_platform.product import research_os as api
 
 
@@ -127,3 +135,36 @@ def test_import_resolution_fails_closed_when_frozen_source_identity_drifted() ->
         match="source drifted",
     ):
         compile_research_os_lowering(compilation)
+
+
+def test_plain_method_callable_compiles_to_machine_backed_umm_program(tmp_path) -> None:
+    builder = api.ResearchProgramBuilder("paper")
+    builder.method("method", implementation=_method, config={"mode": "test"})
+    definition = builder.freeze().definitions[0]
+
+    program = compile_callable_method_definition(definition)
+    assert program.program_identity.implementation.method_id == "method"
+    assert program.program_identity.implementation.artifact_digest == (
+        definition.implementation_digest
+    )
+    assert program.graph.entrypoint == "invoke"
+    assert program.configuration["research_definition_id"] == "method"
+
+    runtime = bind_standard_method_runtime(
+        program,
+        MethodRuntimeContext(
+            ExecutionContext("research-os-run", "trace", "method-node")
+        ),
+        state_root=tmp_path / "method-state",
+        machine_id="research-os:paper:method",
+    )
+    result = UniversalMethodMachine(max_steps=4).run(
+        program,
+        runtime=runtime,
+        input_value={"candidate": 7},
+    )
+
+    assert result.status is MethodRunStatus.SUCCEEDED
+    assert result.value == {"candidate": 7}
+    assert result.program_digest == program.program_digest
+    assert (tmp_path / "method-state" / "journal").is_dir()
