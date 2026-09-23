@@ -34,6 +34,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
     ResearchGraphLiveNodeState,
+    ResearchGraphReconciliationDisposition,
 )
 
 from .research_os import ResearchOSControlPort
@@ -49,6 +50,10 @@ from .research_os_lowering import (
     LoweredResearchOSGraphNode,
     ResearchOSLoweringPlan,
     compile_research_os_lowering,
+)
+from .research_os_reconciliation import (
+    ResearchOSNodeReconciliationPort,
+    ResearchOSNodeReconciliationProof,
 )
 from .research_os_migration import (
     ResearchOSExecutionCut,
@@ -389,16 +394,39 @@ class PreparedResearchOSNodeExecutor:
             execution_cut_id=self._prepared.cut.cut_id,
             deadline=deadline,
         )
+        self.publish_recovered_result(
+            node,
+            result,
+            input_references=input_references,
+        )
+
+    def publish_recovered_result(
+        self,
+        node: CompiledResearchOSGraphNode,
+        result: JsonValue,
+        *,
+        input_references: dict[str, ResearchOSValueReference] | None = None,
+    ) -> tuple[ResearchOSValueReference, ...]:
+        if type(node) is not CompiledResearchOSGraphNode:
+            raise TypeError("recovered output publication requires compiled graph node")
+        references = (
+            lookup_research_os_node_input_references(
+                self._prepared.cut.cut_id,
+                self._prepared.compilation,
+                node,
+                self._values,
+            )
+            if input_references is None
+            else input_references
+        )
         output_references = publish_research_os_node_outputs(
             self._prepared.cut.cut_id,
             node,
             self._values,
             result,
         )
-        self._record_artifact_lineage(
-            input_references,
-            output_references,
-        )
+        self._record_artifact_lineage(references, output_references)
+        return output_references
 
     def _record_artifact_lineage(
         self,
@@ -531,10 +559,7 @@ class StrictResearchOSControl(ResearchOSControlPort):
         if request.action is ResearchControlAction.RETRY:
             return self._retry(request, portfolio)
         if request.action is ResearchControlAction.RECONCILE:
-            raise ResearchOSExecutionUnsupported(
-                "RECONCILE requires a lower-authority effect/execution proof; "
-                "Research OS will not accept a caller-supplied disposition as truth"
-            )
+            return self._reconcile(request, portfolio)
         raise ResearchOSExecutionUnsupported(
             "Research OS control action has no canonical durable implementation: "
             f"{request.action.value}"
@@ -984,6 +1009,125 @@ class StrictResearchOSControl(ResearchOSControlPort):
         if prepared.compilation != compilation or prepared.cut != cut:
             raise ValueError("Research OS retry preflight identity drifted")
         return self._drive(request, prepared, active.generation)
+
+    def _reconcile(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported(
+                "RECONCILE never accepts caller-selected recovery disposition"
+            )
+        if request.target.node is None:
+            raise ResearchOSExecutionUnsupported(
+                "RECONCILE requires an explicit ResearchNodeRef"
+            )
+        if not isinstance(self._runtime, ResearchOSNodeReconciliationPort):
+            raise ResearchOSExecutionUnsupported(
+                "Research OS runtime has no lower-authority reconciliation port"
+            )
+
+        compilation, cut, active, snapshot, control = self._active_execution_state(
+            request,
+            portfolio,
+        )
+        if control.phase is not ResearchGraphControlPhase.RECOVERY_REQUIRED:
+            raise ResearchGraphExecutionConflict(
+                "RECONCILE requires recovery_required graph control"
+            )
+        matches = tuple(
+            node for node in compilation.nodes if node.ref == request.target.node
+        )
+        if len(matches) != 1:
+            raise ResearchGraphExecutionConflict(
+                "reconciliation target does not identify exactly one graph node"
+            )
+        node = matches[0]
+        record = snapshot.node(node.graph_node_id)
+        if record.state is not ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
+            raise ResearchGraphExecutionConflict(
+                "target graph node does not require reconciliation"
+            )
+        if record.attempt_id is None:
+            raise RuntimeError("reconciliation-required node lost attempt identity")
+
+        whole_target = ResearchExecutionTarget(
+            request.target.execution_id,
+            request.target.revision,
+        )
+        prepared = prepare_research_os_execution(
+            whole_target,
+            portfolio,
+            self._runtime,
+            self._values,
+            experiment_closures=self._experiment_closures,
+            artifact_lineage=self._artifact_lineage,
+        )
+        if prepared.compilation != compilation or prepared.cut != cut:
+            raise ValueError("Research OS reconciliation preflight identity drifted")
+        lowered = {
+            row.source.graph_node_id: row for row in prepared.lowering.nodes
+        }
+        lowering = lowered[node.graph_node_id]
+        proof = self._runtime.reconcile_node(
+            node,
+            lowering,
+            execution_cut_id=cut.cut_id,
+            attempt_id=record.attempt_id,
+        )
+        if type(proof) is not ResearchOSNodeReconciliationProof:
+            raise TypeError("Research OS runtime returned invalid reconciliation proof")
+        proof.validate(
+            node,
+            lowering,
+            execution_cut_id=cut.cut_id,
+            attempt_id=record.attempt_id,
+        )
+
+        if proof.disposition is ResearchGraphReconciliationDisposition.SUCCEEDED:
+            PreparedResearchOSNodeExecutor(
+                prepared,
+                self._runtime,
+                self._values,
+                artifact_lineage=self._artifact_lineage,
+            ).publish_recovered_result(node, proof.result)
+
+        self._store.resolve_reconciliation(
+            cut.cut_id,
+            node.graph_node_id,
+            disposition=proof.disposition,
+            now_ns=time.time_ns(),
+            retry_not_before_ns=(
+                time.time_ns()
+                if proof.disposition is ResearchGraphReconciliationDisposition.RETRY
+                else None
+            ),
+            failure_type=proof.failure_type,
+            failure_message=proof.failure_message,
+        )
+        snapshot = self._store.snapshot(cut.cut_id)
+        control = self._store.control_state(cut.cut_id)
+        if not snapshot.reconciliation_required_node_ids:
+            control = self._store.settle_recovery(
+                cut.cut_id,
+                expected_generation=control.generation,
+                now_ns=time.time_ns(),
+            )
+            snapshot = self._store.snapshot(cut.cut_id)
+        return self._durable_control_receipt(
+            request,
+            compilation,
+            cut,
+            active,
+            snapshot,
+            control,
+            extra={
+                "reconciliation_proof_digest": proof.proof_digest,
+                "reconciliation_authority_id": proof.authority_id,
+                "reconciliation_disposition": proof.disposition.value,
+            },
+        )
 
     def _checkpoint(
         self,
