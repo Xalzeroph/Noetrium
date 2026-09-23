@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3612,
-    "python_import_edges": 6769,
-    "symbols": 4790,
-    "tracked_files": 4241,
+    "python_files": 3613,
+    "python_import_edges": 6774,
+    "symbols": 4801,
+    "tracked_files": 4242,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4784,
+    "python": 4795,
     "typescript": 5
   },
   "parse_errors": [],
@@ -5661,6 +5661,18 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.composition.research_os_reconciliation",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_reconciliation",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.composition.research_os_runtime",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.method_runtime",
@@ -5688,6 +5700,12 @@
       "source_module": "noetrium_platform.composition.research_os_runtime",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.product.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_runtime",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.graph.api",
       "target_role": "core_platform"
     },
     {
@@ -32009,6 +32027,12 @@
     {
       "source_module": "tests.test_research_os_experiment_closure_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_reconciliation",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_experiment_closure_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_os_runtime",
       "target_role": "core_platform"
     },
@@ -32070,6 +32094,12 @@
       "source_module": "tests.test_research_os_experiment_closure_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.portfolio.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_experiment_closure_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
       "target_role": "core_platform"
     },
     {
@@ -40631,7 +40661,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2588,
+      "count": 2591,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -40691,7 +40721,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2611,
+      "count": 2613,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -40747,7 +40777,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1925,
+    "core_platform": 1926,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
@@ -40758,7 +40788,7 @@
     "tooling": 75
   },
   "role_symbol_counts": {
-    "core_platform": 3308,
+    "core_platform": 3318,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -40766,11 +40796,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 403,
     "sdk": 5,
-    "tests": 948,
+    "tests": 949,
     "tooling": 36
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "207da5dfdcb79d236ec582fe18ab70de9a1b5fc8",
+  "source_git_sha": "12f3a7539edbcc6caef67ed841f639e5ccbd11b4",
   "symbols": [
     {
       "bases": [],
@@ -63102,7 +63132,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 478,
+      "line": 479,
       "methods": [
         "control"
       ],
@@ -63113,12 +63143,33 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 490,
+      "methods": [
+        "active_revision_digest",
+        "migrate"
+      ],
+      "module": "noetrium_platform.composition.research_os",
+      "name": "ResearchOSRevisionMigrationPort",
+      "path": "noetrium_platform/composition/research_os.py",
+      "qualname": "noetrium_platform.composition.research_os.ResearchOSRevisionMigrationPort",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 488,
+      "line": 504,
       "methods": [
         "__init__",
         "_public_revision",
@@ -63151,7 +63202,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 67,
+      "line": 78,
       "methods": [
         "__post_init__"
       ],
@@ -63171,7 +63222,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 110,
+      "line": 121,
       "methods": [
         "admit",
         "execute"
@@ -63197,7 +63248,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 132,
+      "line": 143,
       "methods": [
         "__post_init__",
         "admission"
@@ -63216,7 +63267,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 222,
+      "line": 233,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -63230,10 +63281,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 312,
+      "line": 323,
       "methods": [
         "__init__",
         "execute",
+        "publish_recovered_result",
         "_record_artifact_lineage"
       ],
       "module": "noetrium_platform.composition.research_os_execution",
@@ -63250,9 +63302,12 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 454,
+      "line": 488,
       "methods": [
         "__init__",
+        "active_revision_digest",
+        "_migration_reuse_proofs",
+        "migrate",
         "control",
         "_require_whole_graph_control",
         "_active_execution_state",
@@ -63268,6 +63323,7 @@
         "_cancel",
         "_retry_descendants",
         "_retry",
+        "_reconcile",
         "_checkpoint",
         "_execution_receipt"
       ],
@@ -63298,7 +63354,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 32,
+      "line": 33,
       "methods": [
         "__post_init__",
         "validate_source"
@@ -63317,12 +63373,33 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 187,
+      "line": 188,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_experiment",
       "name": "ResearchOSExperimentClosureMissing",
       "path": "noetrium_platform/composition/research_os_experiment.py",
       "qualname": "noetrium_platform.composition.research_os_experiment.ResearchOSExperimentClosureMissing",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 193,
+      "methods": [
+        "identity_digest",
+        "reconcile"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment",
+      "name": "ResearchOSExperimentReconciliationPort",
+      "path": "noetrium_platform/composition/research_os_experiment.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment.ResearchOSExperimentReconciliationPort",
       "role": "core_platform"
     },
     {
@@ -63337,14 +63414,16 @@
         "adapter: BoundStudyExecutionPort",
         "aggregation: StudyMetricAggregationPort",
         "artifacts: RunArtifactStorePort",
+        "reconciliation: ResearchOSExperimentReconciliationPort",
         "adapter_identity_digest: str",
         "aggregation_identity_digest: str",
         "artifact_store_identity_digest: str",
+        "reconciliation_identity_digest: str",
         "runtime_binding_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 192,
+      "line": 213,
       "methods": [
         "__post_init__",
         "validate_closure"
@@ -63365,7 +63444,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 274,
+      "line": 311,
       "methods": [
         "resolve"
       ],
@@ -63385,7 +63464,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 282,
+      "line": 319,
       "methods": [
         "resolve"
       ],
@@ -63518,9 +63597,9 @@
         "RUN_MACHINE",
         "EVALUATION_MACHINE",
         "OPTIMIZATION_MACHINE",
-        "WORKBENCH",
-        "PUBLICATION",
-        "CUSTOM"
+        "ANALYSIS_MACHINE",
+        "PUBLICATION_MACHINE",
+        "CUSTOM_MACHINE"
       ],
       "kind": "enum",
       "language": "python",
@@ -63540,7 +63619,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 97,
+      "line": 103,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchImplementationResolutionError",
@@ -63560,7 +63639,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 102,
+      "line": 108,
       "methods": [
         "__post_init__"
       ],
@@ -63580,7 +63659,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 117,
+      "line": 123,
       "methods": [
         "resolve"
       ],
@@ -63596,7 +63675,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 124,
+      "line": 130,
       "methods": [
         "resolve"
       ],
@@ -63619,7 +63698,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 300,
+      "line": 306,
       "methods": [
         "__post_init__"
       ],
@@ -63640,7 +63719,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 413,
+      "line": 419,
       "methods": [
         "__post_init__"
       ],
@@ -63667,7 +63746,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 427,
+      "line": 433,
       "methods": [
         "__post_init__"
       ],
@@ -63691,7 +63770,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 596,
+      "line": 602,
       "methods": [
         "__post_init__",
         "node"
@@ -63708,7 +63787,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 644,
+      "line": 650,
       "methods": [
         "__init__",
         "compile_node",
@@ -63733,7 +63812,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 26,
+      "line": 28,
       "methods": [
         "__post_init__",
         "from_compilation"
@@ -63758,7 +63837,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 68,
+      "line": 70,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_migration",
       "name": "ResearchOSNodeMigrationDisposition",
@@ -63781,7 +63860,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 77,
+      "line": 79,
       "methods": [
         "__post_init__"
       ],
@@ -63804,7 +63883,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 105,
+      "line": 107,
       "methods": [
         "__post_init__"
       ],
@@ -63826,7 +63905,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 121,
+      "line": 123,
       "methods": [
         "__post_init__"
       ],
@@ -63850,7 +63929,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 140,
+      "line": 142,
       "methods": [
         "__post_init__"
       ],
@@ -63874,7 +63953,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 176,
+      "line": 178,
       "methods": [
         "__post_init__",
         "can_switch",
@@ -63888,6 +63967,38 @@
       "role": "core_platform"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "execution_cut_id: str",
+        "graph_node_id: str",
+        "semantic_digest: str",
+        "lowering_digest: str",
+        "attempt_id: str",
+        "disposition: ResearchGraphReconciliationDisposition",
+        "authority_id: str",
+        "evidence_digests: tuple[str, ...]",
+        "result: JsonValue",
+        "failure_type: str | None",
+        "failure_message: str | None",
+        "proof_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 23,
+      "methods": [
+        "__post_init__",
+        "validate"
+      ],
+      "module": "noetrium_platform.composition.research_os_reconciliation",
+      "name": "ResearchOSNodeReconciliationProof",
+      "path": "noetrium_platform/composition/research_os_reconciliation.py",
+      "qualname": "noetrium_platform.composition.research_os_reconciliation.ResearchOSNodeReconciliationProof",
+      "role": "core_platform"
+    },
+    {
       "bases": [
         "RuntimeError"
       ],
@@ -63895,7 +64006,43 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 54,
+      "line": 126,
+      "methods": [],
+      "module": "noetrium_platform.composition.research_os_reconciliation",
+      "name": "ResearchOSReconciliationIndeterminate",
+      "path": "noetrium_platform/composition/research_os_reconciliation.py",
+      "qualname": "noetrium_platform.composition.research_os_reconciliation.ResearchOSReconciliationIndeterminate",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 131,
+      "methods": [
+        "reconcile_node"
+      ],
+      "module": "noetrium_platform.composition.research_os_reconciliation",
+      "name": "ResearchOSNodeReconciliationPort",
+      "path": "noetrium_platform/composition/research_os_reconciliation.py",
+      "qualname": "noetrium_platform.composition.research_os_reconciliation.ResearchOSNodeReconciliationPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 64,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeUnsupported",
@@ -63911,7 +64058,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 58,
+      "line": 68,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeFailure",
@@ -63927,7 +64074,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 62,
+      "line": 72,
       "methods": [
         "__init__",
         "admit",
@@ -63938,6 +64085,9 @@
         "_execute_experiment",
         "_execute_method",
         "_execute_program",
+        "reconcile_node",
+        "_lower_program_digest",
+        "_recovered_result",
         "_machine_id"
       ],
       "module": "noetrium_platform.composition.research_os_runtime",
@@ -63966,6 +64116,7 @@
         "publish",
         "lookup",
         "resolve",
+        "reuse",
         "reuse_proof"
       ],
       "module": "noetrium_platform.composition.research_os_value_authorities",
@@ -64050,13 +64201,33 @@
     },
     {
       "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 125,
+      "methods": [
+        "reuse"
+      ],
+      "module": "noetrium_platform.composition.research_os_values",
+      "name": "ResearchOSValueReusePort",
+      "path": "noetrium_platform/composition/research_os_values.py",
+      "qualname": "noetrium_platform.composition.research_os_values.ResearchOSValueReusePort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
         "RuntimeError"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 124,
+      "line": 135,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_values",
       "name": "ResearchOSValueAuthorityMissing",
@@ -64070,7 +64241,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 128,
+      "line": 139,
       "methods": [
         "__init__",
         "require_kinds",
@@ -64078,6 +64249,7 @@
         "publish",
         "lookup",
         "resolve",
+        "reuse",
         "reuse_proof",
         "_validate_reference"
       ],
@@ -80961,7 +81133,9 @@
         "MEMORY",
         "ENVIRONMENT",
         "EVALUATION",
-        "OPTIMIZATION"
+        "OPTIMIZATION",
+        "ANALYSIS",
+        "PUBLICATION"
       ],
       "kind": "enum",
       "language": "python",
@@ -80989,7 +81163,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 30,
+      "line": 32,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.machine",
       "name": "MachineStatus",
@@ -81005,7 +81179,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 40,
+      "line": 42,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.machine",
       "name": "MachineError",
@@ -81021,7 +81195,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 44,
+      "line": 46,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.machine",
       "name": "MachineConflict",
@@ -81037,7 +81211,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 48,
+      "line": 50,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.machine",
       "name": "MachineIntegrityError",
@@ -81058,7 +81232,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 53,
+      "line": 55,
       "methods": [
         "__post_init__"
       ],
@@ -81084,7 +81258,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 72,
+      "line": 74,
       "methods": [
         "__post_init__"
       ],
@@ -81108,7 +81282,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 104,
+      "line": 106,
       "methods": [
         "__post_init__"
       ],
@@ -81137,7 +81311,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 121,
+      "line": 123,
       "methods": [
         "__post_init__"
       ],
@@ -81180,7 +81354,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 162,
+      "line": 164,
       "methods": [
         "__post_init__"
       ],
@@ -81227,7 +81401,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 279,
+      "line": 281,
       "methods": [
         "__post_init__"
       ],
@@ -81251,7 +81425,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 402,
+      "line": 404,
       "methods": [
         "__post_init__",
         "from_commit",
@@ -81278,7 +81452,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 449,
+      "line": 451,
       "methods": [
         "__post_init__"
       ],
@@ -81304,7 +81478,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 483,
+      "line": 485,
       "methods": [
         "__post_init__"
       ],
@@ -81324,7 +81498,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 501,
+      "line": 503,
       "methods": [
         "open",
         "step",
@@ -97828,7 +98002,8 @@
         "RETRY",
         "CANCEL",
         "CHECKPOINT",
-        "RECONCILE"
+        "RECONCILE",
+        "MIGRATE"
       ],
       "kind": "enum",
       "language": "python",
@@ -97852,7 +98027,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 982,
+      "line": 983,
       "methods": [
         "__post_init__"
       ],
@@ -97876,7 +98051,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 996,
+      "line": 997,
       "methods": [
         "__post_init__"
       ],
@@ -97896,7 +98071,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 1019,
+      "line": 1020,
       "methods": [
         "commit",
         "diff",
@@ -97912,7 +98087,8 @@
         "retry",
         "cancel",
         "checkpoint",
-        "reconcile"
+        "reconcile",
+        "migrate"
       ],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchOS",
@@ -97928,7 +98104,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 1067,
+      "line": 1069,
       "methods": [
         "commit",
         "diff",
@@ -97949,7 +98125,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1104,
+      "line": 1106,
       "methods": [
         "__init__",
         "commit",
@@ -97967,7 +98143,8 @@
         "retry",
         "cancel",
         "checkpoint",
-        "reconcile"
+        "reconcile",
+        "migrate"
       ],
       "module": "noetrium_platform.product.research_os",
       "name": "_BoundResearchOS",
@@ -97981,7 +98158,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1233,
+      "line": 1238,
       "methods": [
         "__init__",
         "definition",
@@ -100680,6 +100857,55 @@
       ],
       "decorators": [],
       "fields": [
+        "TRANSFORM",
+        "STATISTICS",
+        "COMPARISON",
+        "SELECTION",
+        "AGGREGATION",
+        "FIGURE",
+        "TABLE",
+        "CLAIM"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 75,
+      "methods": [],
+      "module": "noetrium_platform.research.execution.machines.domains",
+      "name": "AnalysisConcern",
+      "path": "noetrium_platform/research/execution/machines/domains.py",
+      "qualname": "noetrium_platform.research.execution.machines.domains.AnalysisConcern",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "ASSEMBLY",
+        "VALIDATION",
+        "CLAIM_BINDING",
+        "FIGURE_BINDING",
+        "TABLE_BINDING",
+        "MANIFEST",
+        "FINALIZATION"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 86,
+      "methods": [],
+      "module": "noetrium_platform.research.execution.machines.domains",
+      "name": "PublicationConcern",
+      "path": "noetrium_platform/research/execution/machines/domains.py",
+      "qualname": "noetrium_platform.research.execution.machines.domains.PublicationConcern",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
         "PROPOSAL",
         "MUTATION",
         "EVALUATION",
@@ -100691,7 +100917,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 75,
+      "line": 96,
       "methods": [],
       "module": "noetrium_platform.research.execution.machines.domains",
       "name": "OptimizationConcern",
@@ -100717,7 +100943,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 86,
+      "line": 107,
       "methods": [],
       "module": "noetrium_platform.research.execution.machines.domains",
       "name": "ExperimentConcern",
@@ -100741,7 +100967,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 98,
+      "line": 119,
       "methods": [],
       "module": "noetrium_platform.research.execution.machines.domains",
       "name": "RunConcern",
@@ -100760,7 +100986,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 121,
+      "line": 144,
       "methods": [
         "create",
         "operation",
@@ -100781,7 +101007,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 175,
+      "line": 198,
       "methods": [
         "create",
         "semantic"
@@ -100800,7 +101026,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 219,
+      "line": 242,
       "methods": [
         "create",
         "semantic"
@@ -100819,7 +101045,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 249,
+      "line": 272,
       "methods": [
         "create",
         "semantic"
@@ -100838,7 +101064,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 279,
+      "line": 302,
       "methods": [
         "create",
         "semantic"
@@ -100857,7 +101083,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 307,
+      "line": 330,
       "methods": [
         "create",
         "semantic"
@@ -100876,7 +101102,45 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 337,
+      "line": 360,
+      "methods": [
+        "create",
+        "semantic"
+      ],
+      "module": "noetrium_platform.research.execution.machines.domains",
+      "name": "AnalysisProgramBuilder",
+      "path": "noetrium_platform/research/execution/machines/domains.py",
+      "qualname": "noetrium_platform.research.execution.machines.domains.AnalysisProgramBuilder",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "DomainProgramBuilder"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 390,
+      "methods": [
+        "create",
+        "semantic"
+      ],
+      "module": "noetrium_platform.research.execution.machines.domains",
+      "name": "PublicationProgramBuilder",
+      "path": "noetrium_platform/research/execution/machines/domains.py",
+      "qualname": "noetrium_platform.research.execution.machines.domains.PublicationProgramBuilder",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "DomainProgramBuilder"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 420,
       "methods": [
         "create",
         "semantic"
@@ -100895,7 +101159,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 367,
+      "line": 450,
       "methods": [
         "create",
         "semantic"
@@ -100914,7 +101178,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 397,
+      "line": 480,
       "methods": [
         "create",
         "semantic"
@@ -101721,7 +101985,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 53,
+      "line": 54,
       "methods": [
         "__post_init__"
       ],
@@ -101748,7 +102012,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 77,
+      "line": 78,
       "methods": [
         "__post_init__",
         "node",
@@ -101766,7 +102030,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 146,
+      "line": 147,
       "methods": [
         "__init__",
         "node",
@@ -101794,7 +102058,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 179,
+      "line": 180,
       "methods": [
         "__post_init__"
       ],
@@ -101825,7 +102089,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 201,
+      "line": 202,
       "methods": [
         "__post_init__"
       ],
@@ -101845,7 +102109,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 237,
+      "line": 238,
       "methods": [
         "identity_digest",
         "resolve",
@@ -101865,7 +102129,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 246,
+      "line": 247,
       "methods": [
         "__init__",
         "register",
@@ -101886,7 +102150,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 416,
+      "line": 417,
       "methods": [
         "__init__",
         "_state",
@@ -135229,7 +135493,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 298,
+      "line": 299,
       "methods": [
         "identity_digest"
       ],
@@ -136626,7 +136890,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 283,
+      "line": 289,
       "methods": [
         "__init__",
         "resolve"
@@ -136643,7 +136907,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 308,
+      "line": 314,
       "methods": [
         "execute_bound",
         "execute_bound_variant"
@@ -136660,7 +136924,23 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 321,
+      "line": 327,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "tests.test_research_os_experiment_closure_v1",
+      "name": "_ExperimentReconciliation",
+      "path": "tests/test_research_os_experiment_closure_v1.py",
+      "qualname": "tests.test_research_os_experiment_closure_v1._ExperimentReconciliation",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 356,
       "methods": [
         "call"
       ],
@@ -136676,7 +136956,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 329,
+      "line": 364,
       "methods": [
         "__init__",
         "resolve"
@@ -136749,11 +137029,12 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 51,
+      "line": 59,
       "methods": [
         "publish",
         "lookup",
         "resolve",
+        "reuse",
         "reuse_proof"
       ],
       "module": "tests.test_research_os_runtime_v1",
