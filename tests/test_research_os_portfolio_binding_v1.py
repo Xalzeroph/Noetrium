@@ -271,3 +271,44 @@ def test_top_level_portfolio_compiles_into_one_multi_paper_execution_graph(
     assert by_id["paper-b::main"].depends_on_node_ids == ("paper-a::analysis",)
     assert all(len(row.semantic_digest) == 64 for row in plan.nodes)
 
+def test_compiled_semantic_digests_invalidate_only_transitive_descendants(
+    tmp_path: Path,
+) -> None:
+    _, _, research_os = _binding(tmp_path)
+    first_portfolio = _portfolio(_method_v1)
+    first_revision = research_os.commit(first_portfolio, message="first")
+    second_portfolio = _portfolio(_method_v2)
+    second_revision = research_os.commit(
+        second_portfolio,
+        parents=(first_revision,),
+        message="second",
+    )
+
+    first = compile_research_portfolio_graph(
+        first_revision,
+        first_portfolio,
+    )
+    second = compile_research_portfolio_graph(
+        second_revision,
+        second_portfolio,
+    )
+    first_digests = {
+        node.graph_node_id: node.semantic_digest
+        for node in first.nodes
+    }
+    second_digests = {
+        node.graph_node_id: node.semantic_digest
+        for node in second.nodes
+    }
+
+    assert first_digests["paper-a::main"] != second_digests["paper-a::main"]
+    assert (
+        first_digests["paper-a::evaluate"]
+        != second_digests["paper-a::evaluate"]
+    )
+    assert (
+        first_digests["paper-a::analysis"]
+        != second_digests["paper-a::analysis"]
+    )
+    assert first_digests["paper-b::main"] == second_digests["paper-b::main"]
+
