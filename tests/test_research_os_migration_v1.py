@@ -389,6 +389,7 @@ class _RacingActiveCutStore:
         cut_id: str,
         *,
         expected_cut_id: str | None = None,
+        source_fence=None,
     ):
         if not self._raced:
             self._raced = True
@@ -401,6 +402,7 @@ class _RacingActiveCutStore:
             logical_execution_id,
             cut_id,
             expected_cut_id=expected_cut_id,
+            source_fence=source_fence,
         )
 
 
