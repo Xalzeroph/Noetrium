@@ -124,10 +124,18 @@ def _decode_definition(value: object, field: str) -> ResearchDefinition:
         ),
         field,
     )
+    implementation_raw = row["implementation"]
     definition = ResearchDefinition(
         _text(row["definition_id"], field + ".definition_id"),
         ResearchDefinitionKind(_text(row["kind"], field + ".kind")),
-        _decode_implementation(row["implementation"], field + ".implementation"),
+        (
+            None
+            if implementation_raw is None
+            else _decode_implementation(
+                implementation_raw,
+                field + ".implementation",
+            )
+        ),
         row["config"],
     )
     if definition.definition_digest != _text(
