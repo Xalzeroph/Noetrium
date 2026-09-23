@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3615,
-    "python_import_edges": 6777,
-    "symbols": 4805,
-    "tracked_files": 4244,
+    "python_files": 3616,
+    "python_import_edges": 6780,
+    "symbols": 4807,
+    "tracked_files": 4245,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4799,
+    "python": 4801,
     "typescript": 5
   },
   "parse_errors": [],
@@ -21843,6 +21843,18 @@
       "target_role": "tooling"
     },
     {
+      "source_module": "scripts.research_os_scale_readiness_gate",
+      "source_role": "tooling",
+      "target_module": "noetrium_platform.foundation.governance.architecture.gating.quality",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "scripts.research_os_scale_readiness_gate",
+      "source_role": "tooling",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "scripts.run_reproduction_fleet",
       "source_role": "tooling",
       "target_module": "noetrium_platform.research.execution.workflow.api",
@@ -31919,6 +31931,12 @@
     {
       "source_module": "tests.test_research_os_execution_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_checkpoint",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_os_execution",
       "target_role": "core_platform"
     },
@@ -40739,7 +40757,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2615,
+      "count": 2616,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -40774,7 +40792,7 @@
       "target_role": "tooling"
     },
     {
-      "count": 108,
+      "count": 110,
       "source_role": "tooling",
       "target_role": "core_platform"
     },
@@ -40803,7 +40821,7 @@
     "reference_orchestration": 10,
     "research_reproductions": 760,
     "tests": 773,
-    "tooling": 76
+    "tooling": 77
   },
   "role_symbol_counts": {
     "core_platform": 3322,
@@ -40815,10 +40833,10 @@
     "research_reproductions": 403,
     "sdk": 5,
     "tests": 949,
-    "tooling": 36
+    "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "dbd83472cde4d57ff834e4d7ed7d0d3dc7baa0c0",
+  "source_git_sha": "1f87c8fa4c4ba7b531894e4114c9d9ed90aa97d9",
   "symbols": [
     {
       "bases": [],
@@ -63284,7 +63302,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 79,
+      "line": 83,
       "methods": [
         "__post_init__"
       ],
@@ -63304,7 +63322,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 122,
+      "line": 126,
       "methods": [
         "admit",
         "execute"
@@ -63332,7 +63350,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 144,
+      "line": 148,
       "methods": [
         "__post_init__",
         "admission"
@@ -63351,7 +63369,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 265,
+      "line": 269,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -63365,7 +63383,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 391,
+      "line": 395,
       "methods": [
         "__init__",
         "execute",
@@ -63387,7 +63405,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 556,
+      "line": 560,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -127024,6 +127042,46 @@
     {
       "bases": [],
       "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "name: str",
+        "passed: bool",
+        "evidence: dict[str, object]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 19,
+      "methods": [],
+      "module": "scripts.research_os_scale_readiness_gate",
+      "name": "ReadinessCriterion",
+      "path": "scripts/research_os_scale_readiness_gate.py",
+      "qualname": "scripts.research_os_scale_readiness_gate.ReadinessCriterion",
+      "role": "tooling"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "schema: str",
+        "claim_ready: bool",
+        "criteria: tuple[ReadinessCriterion, ...]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 26,
+      "methods": [],
+      "module": "scripts.research_os_scale_readiness_gate",
+      "name": "ResearchOSScaleReadiness",
+      "path": "scripts/research_os_scale_readiness_gate.py",
+      "qualname": "scripts.research_os_scale_readiness_gate.ResearchOSScaleReadiness",
+      "role": "tooling"
+    },
+    {
+      "bases": [],
+      "decorators": [
         "dataclass(frozen=True)"
       ],
       "fields": [
@@ -136912,7 +136970,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 61,
+      "line": 65,
       "methods": [
         "publish",
         "lookup",
@@ -136931,11 +136989,12 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 99,
+      "line": 103,
       "methods": [
         "__init__",
         "admit",
-        "execute"
+        "execute",
+        "checkpoint_node"
       ],
       "module": "tests.test_research_os_execution_v1",
       "name": "_Runtime",
@@ -136949,7 +137008,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 546,
+      "line": 613,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -136981,7 +137040,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 683,
+      "line": 750,
       "methods": [
         "execute"
       ],
