@@ -260,16 +260,6 @@ class ResearchGraphScheduler:
                     node.semantic_digest,
                     ResearchGraphNodeState.SUCCEEDED,
                 )
-                node_control = node_control_store.node_control_state(
-                    execution_id, node_id
-                )
-                if node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
-                    node_control_store.pause_node_if_quiescent(
-                        execution_id,
-                        node_id,
-                        expected_generation=node_control.generation,
-                        now_ns=time.time_ns(),
-                    )
             except BaseException as exc:
                 handle.cancel()
                 failure = _reportable_failure(exc)
