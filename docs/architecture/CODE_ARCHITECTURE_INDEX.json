@@ -6327,21 +6327,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.ExecutionCapacityDiagnosticSnapshot",
-      "target": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.AdmissionPressureDiagnostic"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.ExecutionCapacityDiagnosticSnapshot",
-      "target": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.GroupExecutionDiagnostic"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.ExecutionCapacityDiagnosticSnapshot",
-      "target": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.SerialMailboxDiagnostic"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.evidence.observability.logging.record.api.binding.LoggingSystemBinding",
       "target": "noetrium_platform.evidence.observability.logging.record.api.ports.LoggingSystemPort"
     },
@@ -12404,16 +12389,6 @@
       "kind": "references",
       "source": "noetrium_platform.product.operator.api.project_experience.ProjectTestStageReceipt",
       "target": "noetrium_platform.product.operator.api.project_experience.ProjectTestStage"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.product.operator.maintenance.api.control_plan.ControlStep",
-      "target": "noetrium_platform.product.operator.maintenance.api.control_plan.ControlAction"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.product.operator.maintenance.api.control_plan.ServerStartupPlan",
-      "target": "noetrium_platform.product.operator.maintenance.api.control_plan.ControlStep"
     },
     {
       "kind": "references",
@@ -46654,129 +46629,6 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
-        "identity",
-        "in_flight",
-        "max_in_flight",
-        "scope",
-        "utilization_ratio",
-        "waiting"
-      ],
-      "kind": "dataclass",
-      "line": 7,
-      "methods": [],
-      "module": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts",
-      "name": "AdmissionPressureDiagnostic",
-      "nesting": [
-        "AdmissionPressureDiagnostic"
-      ],
-      "qualname": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.AdmissionPressureDiagnostic",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "active_heartbeats",
-        "admitted_total",
-        "cancelled_total",
-        "closed",
-        "closing",
-        "converged",
-        "cumulative_queue_wait_seconds",
-        "failed_heartbeats",
-        "groups",
-        "max_queue_wait_seconds",
-        "oldest_wait_seconds",
-        "pressure",
-        "queued_total",
-        "rejected_total",
-        "serial_mailboxes",
-        "shutdown_failure_type",
-        "timed_out_total"
-      ],
-      "kind": "dataclass",
-      "line": 49,
-      "methods": [],
-      "module": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts",
-      "name": "ExecutionCapacityDiagnosticSnapshot",
-      "nesting": [
-        "ExecutionCapacityDiagnosticSnapshot"
-      ],
-      "qualname": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.ExecutionCapacityDiagnosticSnapshot",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "cancelled",
-        "closed",
-        "closing",
-        "converged",
-        "group_id",
-        "resource_id",
-        "task_cancelled",
-        "task_failed",
-        "task_pending",
-        "task_running",
-        "task_succeeded",
-        "task_total",
-        "tenant_id"
-      ],
-      "kind": "dataclass",
-      "line": 17,
-      "methods": [],
-      "module": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts",
-      "name": "GroupExecutionDiagnostic",
-      "nesting": [
-        "GroupExecutionDiagnostic"
-      ],
-      "qualname": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.GroupExecutionDiagnostic",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "capacity",
-        "coalesced_submissions_total",
-        "failed_work_items_total",
-        "fill_ratio",
-        "lane_id",
-        "logical_outstanding",
-        "mailbox_full_events_total",
-        "max_fill_ratio",
-        "owner_group_id",
-        "queued_work_items",
-        "running"
-      ],
-      "kind": "dataclass",
-      "line": 34,
-      "methods": [],
-      "module": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts",
-      "name": "SerialMailboxDiagnostic",
-      "nesting": [
-        "SerialMailboxDiagnostic"
-      ],
-      "qualname": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts.SerialMailboxDiagnostic",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
         "configuration_digest",
         "descriptor",
         "provider_identity"
@@ -77313,77 +77165,6 @@
       "top_system": "research_os"
     },
     {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "INVENTORY_HOST",
-        "START_MODEL_SERVICES",
-        "START_STUDY",
-        "STATUS",
-        "VERIFY_METHOD_ENV_ABI",
-        "VERIFY_MODEL_CERTIFICATES",
-        "VERIFY_PROMPTS",
-        "VERIFY_RELEASE",
-        "VERIFY_RUNTIME_QUALIFICATION",
-        "WAIT_MODEL_READY"
-      ],
-      "kind": "enum",
-      "line": 7,
-      "methods": [],
-      "module": "noetrium_platform.product.operator.maintenance.api.control_plan",
-      "name": "ControlAction",
-      "nesting": [
-        "ControlAction"
-      ],
-      "qualname": "noetrium_platform.product.operator.maintenance.api.control_plan.ControlAction",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "action",
-        "mutating",
-        "success_evidence"
-      ],
-      "kind": "dataclass",
-      "line": 21,
-      "methods": [],
-      "module": "noetrium_platform.product.operator.maintenance.api.control_plan",
-      "name": "ControlStep",
-      "nesting": [
-        "ControlStep"
-      ],
-      "qualname": "noetrium_platform.product.operator.maintenance.api.control_plan.ControlStep",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "steps"
-      ],
-      "kind": "dataclass",
-      "line": 28,
-      "methods": [],
-      "module": "noetrium_platform.product.operator.maintenance.api.control_plan",
-      "name": "ServerStartupPlan",
-      "nesting": [
-        "ServerStartupPlan"
-      ],
-      "qualname": "noetrium_platform.product.operator.maintenance.api.control_plan.ServerStartupPlan",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -102098,13 +101879,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3394,
-    "classes": 3334,
+    "association_edges": 3389,
+    "classes": 3327,
     "constructor_edges": 922,
     "inheritance_edges": 145,
-    "module_import_edges": 5081,
+    "module_import_edges": 5076,
     "parse_errors": 0,
-    "python_modules": 1939,
+    "python_modules": 1928,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -111654,22 +111435,6 @@
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
-      "source": "noetrium_platform.evidence.observability.diagnostic.snapshot.api",
-      "target": "noetrium_platform.evidence.observability.diagnostic.snapshot.contracts"
-    },
-    {
-      "source": "noetrium_platform.evidence.observability.diagnostic.snapshot.runtime",
-      "target": "noetrium_platform.evidence.observability.diagnostic.snapshot.execution_capacity"
-    },
-    {
-      "source": "noetrium_platform.evidence.observability.diagnostic.snapshot.runtime.execution_capacity",
-      "target": "noetrium_platform.evidence.observability.diagnostic.snapshot.api"
-    },
-    {
-      "source": "noetrium_platform.evidence.observability.diagnostic.snapshot.runtime.execution_capacity",
-      "target": "noetrium_platform.evidence.observability.status.api"
-    },
-    {
       "source": "noetrium_platform.evidence.observability.logging.composition",
       "target": "noetrium_platform.evidence.observability.api"
     },
@@ -119564,10 +119329,6 @@
     {
       "source": "noetrium_platform.product.operator.api.json_rendering",
       "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.product.operator.maintenance.api",
-      "target": "noetrium_platform.product.operator.maintenance.control_plan"
     },
     {
       "source": "noetrium_platform.product.operator.reference",
@@ -131301,62 +131062,6 @@
     },
     {
       "imports": [],
-      "module": "noetrium_platform.evidence.observability.diagnostic",
-      "path": "noetrium_platform/evidence/observability/diagnostic/__init__.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.evidence.observability.diagnostic.api",
-      "path": "noetrium_platform/evidence/observability/diagnostic/api/__init__.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.evidence.observability.diagnostic.api.boundary",
-      "path": "noetrium_platform/evidence/observability/diagnostic/api/boundary.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "imports": [
-        "noetrium_platform.evidence.observability.diagnostic.snapshot.contracts"
-      ],
-      "module": "noetrium_platform.evidence.observability.diagnostic.snapshot.api",
-      "path": "noetrium_platform/evidence/observability/diagnostic/snapshot/api/__init__.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.evidence.observability.diagnostic.snapshot.api.contracts",
-      "path": "noetrium_platform/evidence/observability/diagnostic/snapshot/api/contracts.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "imports": [
-        "noetrium_platform.evidence.observability.diagnostic.snapshot.execution_capacity"
-      ],
-      "module": "noetrium_platform.evidence.observability.diagnostic.snapshot.runtime",
-      "path": "noetrium_platform/evidence/observability/diagnostic/snapshot/runtime/__init__.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "imports": [
-        "noetrium_platform.evidence.observability.diagnostic.snapshot.api",
-        "noetrium_platform.evidence.observability.status.api"
-      ],
-      "module": "noetrium_platform.evidence.observability.diagnostic.snapshot.runtime.execution_capacity",
-      "path": "noetrium_platform/evidence/observability/diagnostic/snapshot/runtime/execution_capacity.py",
-      "system_key": "observability",
-      "top_system": "observability"
-    },
-    {
-      "imports": [],
       "module": "noetrium_platform.evidence.observability.logging",
       "path": "noetrium_platform/evidence/observability/logging/__init__.py",
       "system_key": "observability",
@@ -140104,36 +139809,6 @@
       "top_system": "research_os"
     },
     {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.maintenance",
-      "path": "noetrium_platform/product/operator/maintenance/__init__.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [
-        "noetrium_platform.product.operator.maintenance.control_plan"
-      ],
-      "module": "noetrium_platform.product.operator.maintenance.api",
-      "path": "noetrium_platform/product/operator/maintenance/api/__init__.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.maintenance.api.boundary",
-      "path": "noetrium_platform/product/operator/maintenance/api/boundary.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [],
-      "module": "noetrium_platform.product.operator.maintenance.api.control_plan",
-      "path": "noetrium_platform/product/operator/maintenance/api/control_plan.py",
-      "system_key": "operator",
-      "top_system": "research_os"
-    },
-    {
       "imports": [
         "noetrium_platform.product.operator.application"
       ],
@@ -143439,9 +143114,9 @@
     }
   ],
   "parse_errors": [],
-  "registry_sha256": "d75d6aa6bb9b8fc44e4dff4705d1fab16c72ad9ab704825aa3ff703bf4627e27",
+  "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "c794a3512b1591498791f494c757fd4ca4a87e3b",
+  "source_git_sha": "8afd3efbcf7d55829cab38ef86be131ef5bb1a77",
   "system_import_edges": [
     {
       "count": 90,
@@ -143534,7 +143209,7 @@
       "target": "governance"
     },
     {
-      "count": 200,
+      "count": 196,
       "source": "observability",
       "target": "observability"
     },
@@ -143639,7 +143314,7 @@
       "target": "reliability"
     },
     {
-      "count": 297,
+      "count": 296,
       "source": "research_os",
       "target": "research_os"
     },
