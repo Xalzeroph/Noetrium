@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.research.reproduction import ReproductionLifecycle
+from research.reproductions.contracts import ReproductionLifecycle
 from research.benchmarks.egoschema import (
     EGOSCHEMA_PUBLIC_COUNT,
     EGOSCHEMA_PUBLIC_SPLIT,

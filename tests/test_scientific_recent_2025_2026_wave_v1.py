@@ -1,6 +1,6 @@
 from __future__ import annotations
 import importlib
-from noetrium_platform.research.reproduction import ReproductionAssetKind
+from research.reproductions.contracts import ReproductionAssetKind
 
 WAVE = (
     ("videoarm_cvpr2026", 2026, 2, 5, True),
