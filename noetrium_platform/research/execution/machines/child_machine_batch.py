@@ -12,11 +12,8 @@ the batch result is only a deterministic projection over those child links.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from enum import StrEnum
-from threading import Barrier, BrokenBarrierError
-from time import monotonic_ns
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import (
@@ -115,6 +112,10 @@ class ChildResearchMachineBatchRequest:
             )
         if type(self.require_concurrent) is not bool:
             raise TypeError("child batch require_concurrent must be boolean")
+        if self.require_concurrent and len(self.items) < 2:
+            raise ValueError(
+                "concurrent child batch requires at least two items"
+            )
         object.__setattr__(
             self,
             "request_digest",
@@ -410,144 +411,6 @@ class BatchCapableRegisteredChildResearchMachineExecutor:
         return self._batch.execute(request)
 
 
-class ThreadPoolChildResearchBatchMechanics(
-    ChildResearchMachineBatchMechanicsPort
-):
-    """Concurrent dispatch for independent child Machines.
-
-    This provider owns only physical dispatch mechanics. Each child still
-    commits to its ordinary ResearchProgramHost/MachineJournal authority.
-    When a batch explicitly requires concurrency, the complete ready set must
-    fit within max_workers; otherwise execution fails closed rather than
-    silently degrading to a serial or partial schedule.
-    """
-
-    def __init__(
-        self,
-        executor: RegisteredChildResearchMachineExecutor,
-        *,
-        max_workers: int,
-    ) -> None:
-        if not isinstance(executor, RegisteredChildResearchMachineExecutor):
-            raise TypeError(
-                "thread-pool child batch mechanics requires registered child executor"
-            )
-        if type(max_workers) is not int or max_workers < 2:
-            raise ValueError(
-                "thread-pool child batch max_workers must be at least two"
-            )
-        self._executor = executor
-        self._max_workers = max_workers
-
-    @property
-    def identity_digest(self) -> str:
-        return canonical_digest({
-            "mechanics": "registered-thread-pool-child-research-batch",
-            "version": 1,
-            "max_workers": self._max_workers,
-            "child_executor_identity_digest": self._executor.identity_digest,
-        })
-
-    def execute_batch(
-        self,
-        request: ChildResearchMachineBatchRequest,
-    ) -> ChildResearchMachineBatchMechanicsResult:
-        if not isinstance(request, ChildResearchMachineBatchRequest):
-            raise TypeError(
-                "thread-pool child batch mechanics requires typed batch request"
-            )
-        item_count = len(request.items)
-        if item_count == 1:
-            execution = self._executor.execute(request.items[0].request)
-            return ChildResearchMachineBatchMechanicsResult(
-                request_digest=request.request_digest,
-                mode=ChildBatchExecutionMode.SERIAL,
-                executions=(execution,),
-                receipt={
-                    "mechanics": "registered-thread-pool-child-research-batch",
-                    "max_workers": self._max_workers,
-                    "worker_count": 1,
-                    "items": 1,
-                },
-            )
-        if request.require_concurrent and item_count > self._max_workers:
-            raise ValueError(
-                "concurrent child batch ready set exceeds thread-pool worker capacity"
-            )
-
-        worker_count = min(self._max_workers, item_count)
-        barrier = Barrier(item_count) if worker_count == item_count else None
-
-        def run_item(index: int, item: ChildResearchMachineBatchItem):
-            entered_ns = monotonic_ns()
-            if barrier is not None:
-                try:
-                    barrier.wait(timeout=30.0)
-                except BrokenBarrierError as exc:
-                    raise RuntimeError(
-                        "child batch concurrency barrier failed"
-                    ) from exc
-            dispatch_ns = monotonic_ns()
-            execution = self._executor.execute(item.request)
-            finished_ns = monotonic_ns()
-            return (
-                index,
-                execution,
-                {
-                    "participant_id": item.participant_id,
-                    "child_machine_id": item.request.child_machine_id,
-                    "worker_entered_ns": entered_ns,
-                    "dispatch_ns": dispatch_ns,
-                    "finished_ns": finished_ns,
-                },
-            )
-
-        with ThreadPoolExecutor(
-            max_workers=worker_count,
-            thread_name_prefix="noetrium-child-batch",
-        ) as pool:
-            futures = tuple(
-                pool.submit(run_item, index, item)
-                for index, item in enumerate(request.items)
-            )
-            rows = tuple(future.result() for future in futures)
-
-        ordered = tuple(sorted(rows, key=lambda row: row[0]))
-        executions = tuple(row[1] for row in ordered)
-        intervals = tuple(row[2] for row in ordered)
-        mode = (
-            ChildBatchExecutionMode.CONCURRENT
-            if worker_count > 1
-            else ChildBatchExecutionMode.SERIAL
-        )
-        evidence = ()
-        if mode is ChildBatchExecutionMode.CONCURRENT:
-            evidence = (
-                canonical_digest({
-                    "schema": "noetrium.child-batch-concurrency-evidence.v1",
-                    "request_digest": request.request_digest,
-                    "mechanics_identity_digest": self.identity_digest,
-                    "worker_count": worker_count,
-                    "full_ready_set_synchronized": barrier is not None,
-                    "intervals": intervals,
-                }),
-            )
-        return ChildResearchMachineBatchMechanicsResult(
-            request_digest=request.request_digest,
-            mode=mode,
-            executions=executions,
-            evidence_digests=evidence,
-            receipt={
-                "mechanics": "registered-thread-pool-child-research-batch",
-                "max_workers": self._max_workers,
-                "worker_count": worker_count,
-                "items": item_count,
-                "full_ready_set_synchronized": barrier is not None,
-                "intervals": intervals,
-            },
-        )
-
-
 class RegisteredSerialChildResearchBatchMechanics(
     ChildResearchMachineBatchMechanicsPort
 ):
@@ -605,5 +468,4 @@ __all__ = [
     "ChildResearchMachineBatchMechanicsResult",
     "ChildResearchMachineBatchRequest",
     "RegisteredSerialChildResearchBatchMechanics",
-    "ThreadPoolChildResearchBatchMechanics",
 ]
