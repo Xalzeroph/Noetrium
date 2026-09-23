@@ -1,7 +1,16 @@
 from __future__ import annotations
 
-from noetrium import api
 from noetrium.contracts import require_sha256
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkCutSpec,
+    BenchmarkSourceKind,
+    BenchmarkSourceSpec,
+    BenchmarkTaskSet,
+    TaskDefinition,
+    TaskPackageSpec,
+    TaskSetSplit,
+    TaskVerifierIsolation,
+)
 
 from dataclasses import dataclass
 
@@ -57,11 +66,11 @@ def build_mgsm_source(
     *,
     dataset_revision: str,
     dataset_content_sha256: str,
-) -> api.BenchmarkSourceSpec:
+) -> BenchmarkSourceSpec:
     require_sha256(dataset_content_sha256, "MGSM dataset_content_sha256")
-    return api.BenchmarkSourceSpec(
+    return BenchmarkSourceSpec(
         source_id=MGSM_BENCHMARK_ID,
-        kind=api.BenchmarkSourceKind.HUGGINGFACE,
+        kind=BenchmarkSourceKind.HUGGINGFACE,
         revision_id=mgsm_adas_revision(dataset_revision),
         locator=MGSM_DATASET_LOCATOR,
         content_digest=dataset_content_sha256,
@@ -80,7 +89,7 @@ def build_mgsm_adas_task_set(
     dataset_revision: str,
     dataset_content_sha256: str,
     paper_shuffle_task_ids: tuple[str, ...],
-) -> api.BenchmarkTaskSet:
+) -> BenchmarkTaskSet:
     """Freeze the MGSM cut and exact ADAS search/evaluation permutation.
 
     The caller supplies the task order emitted by the paper-era seeded shuffle.
@@ -119,7 +128,7 @@ def build_mgsm_adas_task_set(
     tasks = tuple(
         sorted(
             (
-                api.TaskDefinition(
+                TaskDefinition(
                     task_id=row.task_id,
                     revision_id=revision,
                     family=row.language,
@@ -129,11 +138,11 @@ def build_mgsm_adas_task_set(
                         f"language:{row.language}",
                         f"source-index:{row.index}",
                     ),
-                    package=api.TaskPackageSpec(
+                    package=TaskPackageSpec(
                         package_schema_id="mgsm.numeric-answer-package.v1",
                         instruction_digest=row.content_digest,
                         verifier_requirement_id="benchmark.mgsm.numeric-answer.verifier",
-                        verifier_isolation=api.TaskVerifierIsolation.SEPARATE,
+                        verifier_isolation=TaskVerifierIsolation.SEPARATE,
                     ),
                 )
                 for row in canonical_rows
@@ -146,7 +155,7 @@ def build_mgsm_adas_task_set(
     test_ids = paper_shuffle_task_ids[
         test_start : test_start + MGSM_ADAS_TEST_SIZE
     ]
-    return api.BenchmarkCutSpec(
+    return BenchmarkCutSpec(
         benchmark_id=MGSM_BENCHMARK_ID,
         revision_id=revision,
         source_digest=dataset_content_sha256,
@@ -154,8 +163,8 @@ def build_mgsm_adas_task_set(
     ).build(
         tasks,
         splits=(
-            api.TaskSetSplit(MGSM_ADAS_TEST_SPLIT, test_ids),
-            api.TaskSetSplit(MGSM_ADAS_VALID_SPLIT, valid_ids),
+            TaskSetSplit(MGSM_ADAS_TEST_SPLIT, test_ids),
+            TaskSetSplit(MGSM_ADAS_VALID_SPLIT, valid_ids),
         ),
         selection_policy={
             "source_order_languages": MGSM_LANGUAGES,

@@ -1,7 +1,14 @@
 from __future__ import annotations
 
-from noetrium import api
 from noetrium.contracts import require_sha256
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkCutSpec,
+    BenchmarkSourceKind,
+    BenchmarkSourceSpec,
+    BenchmarkTaskSet,
+    TaskDefinition,
+    TaskSetSplit,
+)
 
 from collections import defaultdict
 from dataclasses import dataclass
@@ -29,11 +36,11 @@ class TaskRecord:
         return f"envqa:{self.split_id}:{self.task_key}"
 
 
-def build_source_spec(*, content_digest: str) -> api.BenchmarkSourceSpec:
+def build_source_spec(*, content_digest: str) -> BenchmarkSourceSpec:
     require_sha256(content_digest, "Env-QA source content_digest")
-    return api.BenchmarkSourceSpec(
+    return BenchmarkSourceSpec(
         source_id=BENCHMARK_ID,
-        kind=api.BenchmarkSourceKind.GIT,
+        kind=BenchmarkSourceKind.GIT,
         revision_id=REVISION,
         locator=OFFICIAL_REPOSITORY,
         content_digest=content_digest,
@@ -41,7 +48,7 @@ def build_source_spec(*, content_digest: str) -> api.BenchmarkSourceSpec:
     )
 
 
-def build_task_set(records: tuple[TaskRecord, ...], *, source_digest: str) -> api.BenchmarkTaskSet:
+def build_task_set(records: tuple[TaskRecord, ...], *, source_digest: str) -> BenchmarkTaskSet:
     if type(records) is not tuple or not records or any(type(row) is not TaskRecord for row in records):
         raise TypeError("Env-QA records must be a non-empty TaskRecord tuple")
     require_sha256(source_digest, "Env-QA source_digest")
@@ -49,7 +56,7 @@ def build_task_set(records: tuple[TaskRecord, ...], *, source_digest: str) -> ap
     if len(task_ids) != len(set(task_ids)):
         raise ValueError("Env-QA task identities must be unique")
     tasks = tuple(sorted((
-        api.TaskDefinition(
+        TaskDefinition(
             task_id=row.task_id,
             revision_id=REVISION,
             family="envqa",
@@ -63,10 +70,10 @@ def build_task_set(records: tuple[TaskRecord, ...], *, source_digest: str) -> ap
     for row in records:
         splits[row.split_id].append(row.task_id)
     split_rows = tuple(
-        api.TaskSetSplit(split_id, tuple(sorted(ids)))
+        TaskSetSplit(split_id, tuple(sorted(ids)))
         for split_id, ids in sorted(splits.items())
     )
-    return api.BenchmarkCutSpec(
+    return BenchmarkCutSpec(
         benchmark_id=BENCHMARK_ID,
         revision_id=REVISION,
         source_digest=source_digest,

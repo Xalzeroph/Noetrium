@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from noetrium import api
-from noetrium.contracts import canonical_digest
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkCutSpec,
+    BenchmarkTaskSet,
+    TaskDefinition,
+    TaskSetSplit,
+)
 
 from dataclasses import dataclass
 
@@ -48,7 +52,7 @@ def build_game24_paper_task_set(
     records: tuple[Game24TaskRecord, ...],
     *,
     source_digest: str,
-) -> api.BenchmarkTaskSet:
+) -> BenchmarkTaskSet:
     """Freeze the exact 100-puzzle ToT Game24 evaluation range."""
 
     if type(records) is not tuple or any(type(row) is not Game24TaskRecord for row in records):
@@ -61,7 +65,7 @@ def build_game24_paper_task_set(
 
     ordered = tuple(by_index[index] for index in expected_indices)
     tasks = tuple(
-        api.TaskDefinition(
+        TaskDefinition(
             task_id=row.task_id,
             revision_id=GAME24_PAPER_REVISION,
             family="game24",
@@ -71,7 +75,7 @@ def build_game24_paper_task_set(
         )
         for row in ordered
     )
-    return api.BenchmarkCutSpec(
+    return BenchmarkCutSpec(
         benchmark_id=GAME24_BENCHMARK_ID,
         revision_id=GAME24_PAPER_REVISION,
         source_digest=source_digest,
@@ -79,7 +83,7 @@ def build_game24_paper_task_set(
     ).build(
         tasks,
         splits=(
-            api.TaskSetSplit(
+            TaskSetSplit(
                 GAME24_PAPER_SPLIT,
                 tuple(row.task_id for row in ordered),
             ),
