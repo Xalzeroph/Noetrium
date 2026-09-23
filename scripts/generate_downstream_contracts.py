@@ -635,51 +635,25 @@ def render_unified_api_stub(
     root: Path,
     surfaces: tuple[SystemSurface, ...],
 ) -> tuple[str, int]:
-    direct, _ambiguous = _unified_resolution_sources(root, surfaces)
-
-    reserved = {
-        "ApiSymbolMatch",
-        "DownstreamCapabilityCatalog",
-        "DownstreamSystemSurface",
-        "catalog",
-        "resolve",
-        "owners",
-        "search",
-        "describe",
-        "interface_schema",
-    }
+    direct, ambiguous = _unified_resolution_sources(root, surfaces)
+    if ambiguous:
+        raise RuntimeError(
+            "Research OS public API contains ambiguous symbols: "
+            + ", ".join(sorted(ambiguous))
+        )
     selected = {
         symbol: module
         for symbol, module in direct.items()
-        if symbol not in reserved
+        if module == "noetrium_platform.product.api"
     }
-
     by_module: dict[str, list[str]] = {}
     for symbol, module in sorted(selected.items()):
         by_module.setdefault(module, []).append(symbol)
 
     lines = [
         f'""" {_MARKER}.',
-        "Static typing projection for the single noetrium.api downstream entrypoint.",
+        "Static typing projection for the single Noetrium Research OS API.",
         '"""',
-        "from typing import Any",
-        "",
-        "from noetrium.contracts.discovery import (",
-        "    DownstreamCapabilityCatalog as DownstreamCapabilityCatalog,",
-        "    DownstreamSystemSurface as DownstreamSystemSurface,",
-        ")",
-        "",
-        "class ApiSymbolMatch:",
-        "    symbol: str",
-        "    owners: tuple[str, ...]",
-        "",
-        "def catalog() -> DownstreamCapabilityCatalog: ...",
-        "def system(system_key: str) -> Any: ...",
-        "def resolve(symbol: str) -> Any: ...",
-        "def owners(symbol: str) -> tuple[str, ...]: ...",
-        "def search(query: str, *, limit: int = 50) -> tuple[ApiSymbolMatch, ...]: ...",
-        "def describe(symbol: str) -> tuple[dict[str, Any], ...]: ...",
-        "def interface_schema() -> dict[str, Any]: ...",
         "",
     ]
     for module in sorted(by_module):
@@ -687,8 +661,6 @@ def render_unified_api_stub(
         for symbol in sorted(by_module[module]):
             lines.append(f"    {symbol} as {symbol},")
         lines.extend([")", ""])
-    lines.append("def __getattr__(name: str) -> Any: ...")
-    lines.append("")
     return "\n".join(lines), len(selected)
 
 
@@ -858,22 +830,22 @@ def render_markdown(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
     lines = [
         "# Noetrium downstream capability catalog",
         "",
-        "This file is generated from the canonical system registry and public API exports.",
+        "This file documents internal system topology plus the single Product Research OS downstream surface.",
         "Do not edit it manually; run python scripts/update_generated_docs.py.",
         "",
         "## How downstream projects use Noetrium",
         "",
-        "1. Import only the unified noetrium.api surface.",
-        "2. Use api.<Symbol> from the Product authoring surface. Lower platform layers are not downstream entrypoints.",
-        "3. Use api.search(), api.describe(), api.catalog(), and api.interface_schema() for discovery; do not import noetrium_platform implementation modules.",
-        "4. Run python scripts/update_generated_docs.py after changing a registry descriptor or public API export.",
+        "1. Import only the unified noetrium.api Research OS surface.",
+        "2. Author methods, benchmarks, metrics, experiments, analyses, and portfolio graphs through ResearchProgramBuilder.",
+        "3. Control live research through ResearchOS; lower platform APIs are composition-only internals.",
+        "4. Run python scripts/update_generated_docs.py after changing registry topology or the Product API.",
         "",
         "Example:",
         "",
         "    from noetrium import api",
         "",
-        "    MethodSpec = api.AgentMethodSpec",
-        "    MinecraftBridgePort = api.MinecraftBridgePort",
+        "    program = api.ResearchProgramBuilder(\"paper\")",
+        "    os = api.ResearchOS(port)",
         "",
         f"- Registered systems: {len(surfaces)}",
         f"- Public API modules: {total_modules}",
@@ -926,12 +898,12 @@ def render_readme_interface_block(surfaces: tuple[SystemSurface, ...]) -> str:
         README_BLOCK_START,
         "### Public interface catalog",
         "",
-        "Noetrium is a general-purpose research-systems platform for long-running agents, stateful environments, model providers, experiments, and other evidence-driven workloads. The complete downstream interface is generated from the canonical registry, so the list stays synchronized with the code.",
+        "Noetrium exposes one high-level Research OS API. Registered lower systems remain internal composition authorities and are listed here only as architecture metadata.",
         "",
         f"- {len(surfaces)} registered system surfaces; {total_modules} public API modules; {total_symbols} public symbols.",
         "- Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json",
         "- Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md",
-        "- Import rule: downstream code uses the single noetrium.api surface; generated system facades are registry material, not separate product entrypoints.",
+        "- Import rule: downstream code uses only noetrium.api; lower system facades are internal registry material.",
         "",
         "| Capability domain | Registered surfaces |",
         "| --- | ---: |",
@@ -940,12 +912,11 @@ def render_readme_interface_block(surfaces: tuple[SystemSurface, ...]) -> str:
         lines.append(f"| {domain} | {system_count} |")
     lines.extend([
         "",
-        "Discover and use every capability through the same API:",
+        "Author and control research through the same top-level API:",
         "",
         "    from noetrium import api",
-        "    MinecraftBridgePort = api.MinecraftBridgePort",
-        "    AgentMemoryPort = api.AgentMemoryPort",
-        "    matches = api.search(\"memory\")",
+        "    program = api.ResearchProgramBuilder(\"paper\")",
+        "    research_os = api.ResearchOS(port)",
         "",
         "After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.",
         README_BLOCK_END,
