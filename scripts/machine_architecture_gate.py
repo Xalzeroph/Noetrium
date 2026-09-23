@@ -532,6 +532,55 @@ def _check_document(doc_path: Path) -> None:
     if missing:
         raise SystemExit("architecture document/code state mismatch: " + ", ".join(missing))
 
+
+def _check_research_workspace_contract_boundary() -> int:
+    """Research-workspace metadata must not become a platform-core authority."""
+
+    retired = (
+        ROOT / "noetrium_platform/research/provenance.py",
+        ROOT / "noetrium_platform/research/reproduction.py",
+    )
+    leaked_files = tuple(
+        str(path.relative_to(ROOT))
+        for path in retired
+        if path.exists()
+    )
+    if leaked_files:
+        raise SystemExit(
+            "research workspace metadata leaked into platform core: "
+            + ", ".join(leaked_files)
+        )
+
+    forbidden_imports = (
+        "noetrium_platform.research.provenance",
+        "noetrium_platform.research.reproduction",
+    )
+    violations: list[str] = []
+    workspace = ROOT / "research"
+    checked = 0
+    for path in sorted(workspace.rglob("*.py")):
+        if "__pycache__" in path.parts:
+            continue
+        checked += 1
+        source = path.read_text(encoding="utf-8")
+        escaped = tuple(
+            token
+            for token in forbidden_imports
+            if token in source
+        )
+        if escaped:
+            violations.append(
+                f"{path.relative_to(ROOT)}:{','.join(escaped)}"
+            )
+    if violations:
+        raise SystemExit(
+            "research workspace imports retired platform-root metadata contracts: "
+            + "; ".join(violations)
+        )
+    return checked
+
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--strict-unclassified", action="store_true")
@@ -563,6 +612,7 @@ def main() -> int:
     research_machine_bypass_checks = _check_research_machine_bypasses()
     research_program_host_checks = _check_research_program_host_unification()
     research_machine_public_exports = _check_research_machine_public_surface()
+    research_workspace_contract_checks = _check_research_workspace_contract_boundary()
     capability_index = _check_capability_index()
     sdk_surfaces = _check_sdk_surfaces()
     print(json.dumps({
@@ -577,6 +627,7 @@ def main() -> int:
         "research_machine_bypass_checks": research_machine_bypass_checks,
         "research_program_host_checks": research_program_host_checks,
         "research_machine_public_exports": research_machine_public_exports,
+        "research_workspace_contract_checks": research_workspace_contract_checks,
         "capability_index": capability_index,
         "sdk_surfaces": sdk_surfaces,
         "qualification_ports": all(callable(value) for value in (
