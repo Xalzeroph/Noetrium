@@ -483,7 +483,6 @@
     ],
     "components": [
       "observability/capture",
-      "observability/diagnostic",
       "observability/logging",
       "observability/status",
       "observability/telemetry"
@@ -528,9 +527,7 @@
       "scope"
     ],
     "provides": [],
-    "components": [
-      "operator/maintenance"
-    ],
+    "components": [],
     "node_kind": "product_surface",
     "canonical_authority": null,
     "downstream_surface": "metadata_only"

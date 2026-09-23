@@ -869,35 +869,6 @@
     "provides": [],
     "components": []
   },
-  "observability/diagnostic": {
-    "system": "observability",
-    "parent": "observability",
-    "package_prefix": "noetrium_platform.evidence.observability.diagnostic",
-    "node_kind": "projection",
-    "canonical_authority": null,
-    "owns": "operator-facing diagnostic correlation contracts",
-    "must_not_own": "failure/state authority",
-    "shape": [
-      "api"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [],
-    "provides": [],
-    "components": [],
-    "internal_facets": [
-      {
-        "key": "observability/diagnostic/snapshot",
-        "package_prefix": "noetrium_platform.evidence.observability.diagnostic.snapshot",
-        "node_kind": "projection",
-        "owns": "portable diagnostic snapshots assembled from existing authorities",
-        "must_not_own": "new business truth",
-        "shape": [
-          "api",
-          "runtime"
-        ]
-      }
-    ]
-  },
   "observability/logging": {
     "system": "observability",
     "parent": "observability",
@@ -1045,24 +1016,6 @@
         ]
       }
     ]
-  },
-  "operator/maintenance": {
-    "system": "operator",
-    "parent": "operator",
-    "package_prefix": "noetrium_platform.product.operator.maintenance",
-    "node_kind": "product_surface",
-    "canonical_authority": null,
-    "owns": "maintenance workflows and administrative actions",
-    "must_not_own": "provider internals",
-    "shape": [
-      "api"
-    ],
-    "downstream_surface": "metadata_only",
-    "requires": [
-      "runtime"
-    ],
-    "provides": [],
-    "components": []
   },
   "participant/binding": {
     "system": "participant",

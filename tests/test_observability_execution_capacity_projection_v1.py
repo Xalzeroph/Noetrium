@@ -9,9 +9,6 @@ from noetrium_platform.research.execution.policy.api import (
     ResourceAdmissionSnapshot,
     TenantAdmissionSnapshot,
 )
-from noetrium_platform.evidence.observability.diagnostic.snapshot.runtime import (
-    project_execution_capacity_diagnostic,
-)
 from noetrium_platform.evidence.observability.telemetry.metric.composition import build_default_registry
 from noetrium_platform.evidence.observability.telemetry.metric.runtime import project_execution_capacity_metrics
 from noetrium_platform.composition.execution_observability import build_execution_capacity_facts
@@ -138,19 +135,6 @@ class ExecutionCapacityProjectionTests(unittest.TestCase):
         self.assertEqual(mailbox.timestamp, 123.0)
         for row in rows:
             registry.validate_observation(row.metric, row.value, dict(row.dimensions))
-
-    def test_diagnostic_projects_operator_view_without_source_authority_imports(self) -> None:
-        admission, concurrency = _source_snapshots()
-        facts = build_execution_capacity_facts(admission=admission, concurrency=concurrency)
-        snapshot = project_execution_capacity_diagnostic(facts)
-
-        global_pressure = next(row for row in snapshot.pressure if row.scope == "global")
-        self.assertEqual(global_pressure.utilization_ratio, 3 / 8)
-        self.assertEqual(snapshot.groups[0].task_total, 2)
-        self.assertEqual(snapshot.serial_mailboxes[0].fill_ratio, 0.5)
-        self.assertEqual(snapshot.serial_mailboxes[0].max_fill_ratio, 0.75)
-        self.assertEqual(snapshot.serial_mailboxes[0].coalesced_submissions_total, 4)
-        self.assertEqual(snapshot.failed_heartbeats, 1)
 
 
 if __name__ == "__main__":
