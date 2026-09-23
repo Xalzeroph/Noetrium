@@ -38659,7 +38659,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 53,
+      "line": 54,
       "methods": [
         "__init__",
         "plan",
@@ -83380,7 +83380,7 @@
         "plan"
       ],
       "kind": "dataclass",
-      "line": 138,
+      "line": 211,
       "methods": [
         "__post_init__"
       ],
@@ -83403,7 +83403,7 @@
         "research_plan"
       ],
       "kind": "dataclass",
-      "line": 127,
+      "line": 200,
       "methods": [
         "__post_init__"
       ],
@@ -83424,11 +83424,12 @@
       "fields": [
         "binding",
         "definition",
+        "depends_on_lane_ids",
         "lane_id",
         "resolution"
       ],
       "kind": "dataclass",
-      "line": 110,
+      "line": 171,
       "methods": [
         "__post_init__"
       ],
@@ -83448,7 +83449,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 283,
+      "line": 395,
       "methods": [
         "execute"
       ],
@@ -83472,11 +83473,12 @@
         "lanes"
       ],
       "kind": "dataclass",
-      "line": 250,
+      "line": 355,
       "methods": [
         "__post_init__",
         "succeeded_lane_ids",
-        "failed_lane_ids"
+        "failed_lane_ids",
+        "blocked_lane_ids"
       ],
       "module": "noetrium_platform.research.experimentation.api.campaign",
       "name": "ResearchCampaignExecutionReport",
@@ -83493,6 +83495,7 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "blocked_by_lane_ids",
         "failure_message",
         "failure_type",
         "lane_id",
@@ -83502,7 +83505,7 @@
         "study_plan_digest"
       ],
       "kind": "dataclass",
-      "line": 218,
+      "line": 301,
       "methods": [
         "__post_init__"
       ],
@@ -83521,11 +83524,12 @@
       ],
       "decorators": [],
       "fields": [
+        "BLOCKED",
         "FAILED",
         "SUCCEEDED"
       ],
       "kind": "enum",
-      "line": 212,
+      "line": 294,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.api.campaign",
       "name": "ResearchCampaignLaneState",
@@ -83547,7 +83551,7 @@
         "studies"
       ],
       "kind": "dataclass",
-      "line": 76,
+      "line": 130,
       "methods": [
         "__post_init__"
       ],
@@ -83566,6 +83570,7 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "depends_on_lane_ids",
         "lane_id",
         "plan",
         "research_plan_digest",
@@ -83597,7 +83602,7 @@
         "lane_id"
       ],
       "kind": "dataclass",
-      "line": 197,
+      "line": 279,
       "methods": [
         "__post_init__"
       ],
@@ -139130,7 +139135,7 @@
   "parse_errors": [],
   "registry_sha256": "aaab5b90bc9a5fde2121df4c1c6e70c9bb90f7f09d5f6eaaff61907eb06cb1d3",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "a9baedaccc1b7fa8de0e2e95179d471c9cf8bbdb",
+  "source_git_sha": "0911eb901148106c2ee6214d2ce5d0a3e4911026",
   "system_import_edges": [
     {
       "count": 90,

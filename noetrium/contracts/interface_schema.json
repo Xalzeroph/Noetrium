@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "e4031a0ddf4829088e6cda1b79b5bb85a7ad620fd8c855f57fda8e39ece1ee05",
+  "interface_digest": "64e4e844c31973cb314f04d5e7a4330a8ea3014e249b37b58be54c2effbef0c6",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -31465,6 +31465,11 @@
                   "annotation": "ResearchBindingContribution",
                   "default": null,
                   "name": "binding"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "depends_on_lane_ids"
                 }
               ],
               "kind": "class",
@@ -31619,6 +31624,28 @@
                   "schema_id": "noetrium.interface-schema",
                   "schema_version": "1",
                   "signature": "@property"
+                },
+                {
+                  "decorators": [
+                    "property"
+                  ],
+                  "doc": null,
+                  "kind": "method",
+                  "name": "blocked_lane_ids",
+                  "parameters": [
+                    {
+                      "annotation": null,
+                      "default": null,
+                      "kind": "positional_or_keyword",
+                      "name": "self",
+                      "receiver": true,
+                      "required": false
+                    }
+                  ],
+                  "return_annotation": "tuple[str, ...]",
+                  "schema_id": "noetrium.interface-schema",
+                  "schema_version": "1",
+                  "signature": "@property"
                 }
               ],
               "name": "ResearchCampaignExecutionReport",
@@ -31666,6 +31693,11 @@
                   "annotation": "str | None",
                   "default": "None",
                   "name": "failure_message"
+                },
+                {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "blocked_by_lane_ids"
                 }
               ],
               "kind": "class",
@@ -31706,7 +31738,8 @@
               "kind": "class",
               "members": [
                 "SUCCEEDED",
-                "FAILED"
+                "FAILED",
+                "BLOCKED"
               ],
               "methods": [],
               "name": "ResearchCampaignLaneState",
@@ -31787,6 +31820,11 @@
                   "name": "plan"
                 },
                 {
+                  "annotation": "tuple[str, ...]",
+                  "default": "()",
+                  "name": "depends_on_lane_ids"
+                },
+                {
                   "annotation": "str",
                   "default": "field(init=False)",
                   "name": "study_digest"
@@ -31846,6 +31884,14 @@
                       "name": "compiled",
                       "receiver": false,
                       "required": true
+                    },
+                    {
+                      "annotation": "tuple[str, ...]",
+                      "default": "()",
+                      "kind": "keyword_only",
+                      "name": "depends_on_lane_ids",
+                      "receiver": false,
+                      "required": false
                     }
                   ],
                   "return_annotation": "'ResearchCampaignStudy'",
