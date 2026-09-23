@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from noetrium.api import (
+from noetrium_platform.capabilities.environment.api import (
     EnvironmentCapability,
     EnvironmentProviderPort,
 )
-from noetrium.api import (
+from noetrium_platform.platform import (
     MinecraftEnvironmentBinding,
     bind_bundled_minecraft_environment,
 )
