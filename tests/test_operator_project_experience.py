@@ -93,12 +93,12 @@ def test_unified_scaffold_contains_only_scientific_authoring_files(
         ProjectCreateRequest("demo.project-alpha", "0.1.0", root)
     )
     generated = set(receipt.generated_files)
-    assert "src/demo_project_alpha/method.py" in generated
-    assert "src/demo_project_alpha/study.py" in generated
+    assert "src/demo_project_alpha/research.py" in generated
     assert "tests/test_generated_project.py" in generated
     for retired in (
         "project.py",
-        "research.py",
+        "method.py",
+        "study.py",
         "requirements.py",
         "participant_provider.py",
         "model_provider.py",
@@ -296,46 +296,28 @@ def test_project_create_cli_defaults_destination_and_version(
     assert manifest.project.identity.version == "0.1.0"
 
 
-def test_runtime_application_is_optional_extension_of_same_project(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+def test_generated_project_has_no_legacy_application_extension(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _bind_fixed_platform(monkeypatch)
     root = tmp_path / "project-route"
-    project_scaffold.create_project(
+    receipt = project_scaffold.create_project(
         ProjectCreateRequest("project-route", "0.1.0", root)
     )
+    generated = set(receipt.generated_files)
+    assert "src/project_route/research.py" in generated
+    assert "src/project_route/application.py" not in generated
 
-    assert main(["run", "--project", str(root)]) == 2
-    missing = json.loads(capsys.readouterr().err)
-    assert "no runtime application" in missing["error"].lower()
+    from noetrium import api
 
-    application = root / "src" / "project_route" / "application.py"
-    application.write_text(
-        "from noetrium.api import ResearchResult\n\n"
-        "class Application:\n"
-        "    def __init__(self, config_path):\n"
-        "        self.config_path = config_path\n"
-        "    def execute(self, request):\n"
-        "        return ResearchResult(request.action, request.target, 'accepted', "
-        "{'route': 'project', 'config': None if self.config_path is None else str(self.config_path)})\n\n"
-        "def build_application(config_path):\n"
-        "    return Application(config_path)\n",
-        encoding="utf-8",
-    )
-    config = root / "runtime.json"
-    config.write_text("{}", encoding="utf-8")
-    assert main(["run", "--project", str(root), "--config", str(config)]) == 0
-    result = json.loads(capsys.readouterr().out)
-    assert result["result"]["target"] == "project-route"
-    assert result["result"]["state"] == "accepted"
-    assert result["result"]["payload"] == {
-        "route": "project",
-        "config": str(config),
-    }
+    assert not hasattr(api, "ResearchResult")
+    assert not hasattr(api, "ResearchFacade")
 
 
-def test_root_product_api_exports_project_test_stage_types() -> None:
-    from noetrium.api import ProjectTestStageReceipt
+def test_operator_project_test_types_are_internal_not_downstream_api() -> None:
+    from noetrium import api
+    from noetrium_platform.product.operator.api import ProjectTestStageReceipt
 
+    assert not hasattr(api, "ProjectTestStageReceipt")
     receipt = ProjectTestStageReceipt(ProjectTestStage.BUILD_INSTALL, ("python",), 0)
     assert receipt.passed
