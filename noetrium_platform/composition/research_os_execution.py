@@ -358,6 +358,8 @@ class StrictResearchOSControl(ResearchOSControlPort):
         execution_pool: ResearchExecutionPool,
         runtime: ResearchOSNodeRuntimePort,
         values: ResearchOSValueRouter,
+        *,
+        experiment_closures: ResearchOSExperimentClosurePort | None = None,
     ) -> None:
         if not isinstance(execution_store, ResearchGraphExecutionStorePort):
             raise TypeError("Research OS control requires graph execution store")
@@ -369,10 +371,19 @@ class StrictResearchOSControl(ResearchOSControlPort):
             raise TypeError("Research OS control requires typed node runtime")
         if type(values) is not ResearchOSValueRouter:
             raise TypeError("Research OS control requires typed value router")
+        if experiment_closures is not None and not isinstance(
+            experiment_closures,
+            ResearchOSExperimentClosurePort,
+        ):
+            raise TypeError(
+                "Research OS control experiment_closures must satisfy "
+                "ResearchOSExperimentClosurePort"
+            )
         self._store = execution_store
         self._pool = execution_pool
         self._runtime = runtime
         self._values = values
+        self._experiment_closures = experiment_closures
 
     def control(
         self,
