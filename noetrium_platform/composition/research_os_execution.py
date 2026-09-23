@@ -529,11 +529,7 @@ class StrictResearchOSControl(ResearchOSControlPort):
         if request.action is ResearchControlAction.CHECKPOINT:
             return self._checkpoint(request, portfolio)
         if request.action is ResearchControlAction.RETRY:
-            raise ResearchOSExecutionUnsupported(
-                "RETRY requires a canonical graph retry plan that resets the exact "
-                "failed node and its blocked descendants without bypassing "
-                "reconciliation debt; no implicit retry is permitted"
-            )
+            return self._retry(request, portfolio)
         if request.action is ResearchControlAction.RECONCILE:
             raise ResearchOSExecutionUnsupported(
                 "RECONCILE requires a lower-authority effect/execution proof; "
@@ -899,6 +895,91 @@ class StrictResearchOSControl(ResearchOSControlPort):
             control,
             state="cancelled",
         )
+
+    @staticmethod
+    def _retry_descendants(
+        compilation: CompiledResearchOSGraph,
+        root_node_id: str,
+    ) -> tuple[str, ...]:
+        dependents: dict[str, list[str]] = {
+            node.graph_node_id: [] for node in compilation.nodes
+        }
+        for node in compilation.plan.nodes:
+            for dependency in node.depends_on_node_ids:
+                dependents[dependency].append(node.node_id)
+        seen: set[str] = set()
+        frontier = list(dependents[root_node_id])
+        while frontier:
+            node_id = frontier.pop()
+            if node_id in seen:
+                continue
+            seen.add(node_id)
+            frontier.extend(dependents[node_id])
+        return tuple(sorted(seen))
+
+    def _retry(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        if request.payload is not None:
+            raise ResearchOSExecutionUnsupported(
+                "RETRY does not accept an opaque retry policy payload"
+            )
+        if request.target.node is None:
+            raise ResearchOSExecutionUnsupported(
+                "RETRY requires an explicit ResearchNodeRef; whole-graph retry "
+                "would hide the failed scientific boundary"
+            )
+        compilation, cut, active, _snapshot, control = self._active_execution_state(
+            request,
+            portfolio,
+        )
+        if control.phase not in {
+            ResearchGraphControlPhase.ACTIVE,
+            ResearchGraphControlPhase.PAUSED,
+        }:
+            raise ResearchGraphExecutionConflict(
+                "research graph retry requires active or paused control, "
+                f"actual={control.phase.value}"
+            )
+        matches = tuple(
+            node
+            for node in compilation.nodes
+            if node.ref == request.target.node
+        )
+        if len(matches) != 1:
+            raise ResearchGraphExecutionConflict(
+                "retry target does not identify exactly one compiled graph node"
+            )
+        root = matches[0]
+        descendants = self._retry_descendants(
+            compilation,
+            root.graph_node_id,
+        )
+        self._store.retry_failed_subgraph(
+            cut.cut_id,
+            root.graph_node_id,
+            descendant_node_ids=descendants,
+            retry_not_before_ns=time.time_ns(),
+        )
+        if control.phase is ResearchGraphControlPhase.PAUSED:
+            control = self._store.resume(
+                cut.cut_id,
+                expected_generation=control.generation,
+                now_ns=time.time_ns(),
+            )
+        prepared = prepare_research_os_execution(
+            request.target,
+            portfolio,
+            self._runtime,
+            self._values,
+            experiment_closures=self._experiment_closures,
+            artifact_lineage=self._artifact_lineage,
+        )
+        if prepared.compilation != compilation or prepared.cut != cut:
+            raise ValueError("Research OS retry preflight identity drifted")
+        return self._drive(request, prepared, active.generation)
 
     def _checkpoint(
         self,
