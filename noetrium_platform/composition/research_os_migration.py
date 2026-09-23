@@ -152,17 +152,24 @@ class ResearchOSExecutionMigrationMaterialization:
         if type(self.snapshot) is not ResearchGraphExecutionSnapshot:
             raise TypeError("research migration materialization snapshot must be typed")
         reused = tuple(sorted(self.reused_node_ids))
-        rerun = tuple(sorted(self.restart_node_ids))
-        if len(reused) != len(set(reused)) or len(rerun) != len(set(rerun)):
-            raise ValueError("research migration materialization node ids must be unique")
-        if set(reused) & set(rerun):
-            raise ValueError("research migration reused/rerun node sets must be disjoint")
+        restart = tuple(sorted(self.restart_node_ids))
+        if (
+            len(reused) != len(set(reused))
+            or len(restart) != len(set(restart))
+        ):
+            raise ValueError(
+                "research migration materialization node ids must be unique"
+            )
+        if set(reused) & set(restart):
+            raise ValueError(
+                "research migration reused/restart node sets must be disjoint"
+            )
         if self.active_cut.cut_id != self.plan.target_cut.cut_id:
             raise ValueError("research migration active cut does not match target cut")
         if self.snapshot.execution_id != self.plan.target_cut.cut_id:
             raise ValueError("research migration snapshot does not match target cut")
         object.__setattr__(self, "reused_node_ids", reused)
-        object.__setattr__(self, "restart_node_ids", rerun)
+        object.__setattr__(self, "restart_node_ids", restart)
 
 
 @dataclass(frozen=True, slots=True)

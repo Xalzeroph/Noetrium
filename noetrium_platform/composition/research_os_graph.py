@@ -6,7 +6,11 @@ from typing import Protocol, runtime_checkable
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_graph import ResearchGraphScheduler
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline
-from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+from noetrium_platform.foundation.kernel.kernel import (
+    ExecutionContext,
+    canonical_digest,
+    require_sha256,
+)
 from noetrium_platform.product.research_os import (
     ResearchDefinition,
     ResearchGraphRevision,
@@ -317,7 +321,7 @@ class ResearchOSNodeExecutionPort(Protocol):
 
     def execute(
         self,
-        context: object,
+        context: ExecutionContext,
         node: CompiledResearchOSGraphNode,
         *,
         deadline: Deadline | None,
