@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.provenance import MethodSourceRegistry, PublicationSourceLane
+from research.reproductions.provenance import MethodSourceRegistry, PublicationSourceLane
 
 PUBLICATION = PublicationSourceLane(
     lane_id="final_publication",

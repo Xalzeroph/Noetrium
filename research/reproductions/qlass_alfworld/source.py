@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.provenance import (
+from research.reproductions.provenance import (
     MethodSourceLane,
     MethodSourceLaneKind,
     MethodSourceRegistry,
