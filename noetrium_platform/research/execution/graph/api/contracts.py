@@ -123,6 +123,7 @@ class ResearchGraphNodeState(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     BLOCKED = "blocked"
+    CANCELLED = "cancelled"
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,9 +154,12 @@ class ResearchGraphNodeResult:
         if len(blockers) != len(set(blockers)):
             raise ValueError("research graph blockers must be unique")
         object.__setattr__(self, "blocked_by_node_ids", blockers)
-        if self.state is ResearchGraphNodeState.SUCCEEDED:
+        if self.state in {
+            ResearchGraphNodeState.SUCCEEDED,
+            ResearchGraphNodeState.CANCELLED,
+        }:
             if self.failure_type is not None or self.failure_message is not None or blockers:
-                raise ValueError("successful research graph node cannot carry failure metadata")
+                raise ValueError("successful/cancelled research graph node cannot carry failure metadata")
         elif self.state is ResearchGraphNodeState.FAILED:
             if blockers:
                 raise ValueError("failed research graph node cannot carry blockers")
@@ -206,6 +210,14 @@ class ResearchGraphExecutionReport:
             node.node_id
             for node in self.nodes
             if node.state is ResearchGraphNodeState.FAILED
+        )
+
+    @property
+    def cancelled_node_ids(self) -> tuple[str, ...]:
+        return tuple(
+            node.node_id
+            for node in self.nodes
+            if node.state is ResearchGraphNodeState.CANCELLED
         )
 
     @property
