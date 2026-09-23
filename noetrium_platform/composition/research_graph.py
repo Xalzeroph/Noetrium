@@ -299,6 +299,7 @@ class ResearchGraphScheduler:
                         in {
                             ResearchGraphNodeState.FAILED,
                             ResearchGraphNodeState.BLOCKED,
+                            ResearchGraphNodeState.CANCELLED,
                         }
                     )
                     if not blockers:
@@ -675,6 +676,7 @@ class ResearchGraphScheduler:
                         in {
                             ResearchGraphNodeState.FAILED,
                             ResearchGraphNodeState.BLOCKED,
+                            ResearchGraphNodeState.CANCELLED,
                         }
                     )
                     if not blockers:
