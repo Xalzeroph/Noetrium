@@ -23,6 +23,7 @@ from noetrium_platform.product.research_os import (
     ResearchControlReceipt,
     ResearchControlRequest,
     ResearchExecutionTarget,
+    ResearchGraphRevision,
     ResearchPortfolio,
     ResearchValueKind,
 )
@@ -57,11 +58,16 @@ from .research_os_reconciliation import (
 )
 from .research_os_migration import (
     ResearchOSExecutionCut,
+    ResearchOSExecutionMigrationPlan,
+    ResearchOSReuseProof,
     activate_research_os_execution_cut,
+    materialize_research_os_execution_migration,
+    plan_research_os_execution_migration,
 )
 from .research_os_values import (
     ResearchOSValueReference,
     ResearchOSValueRouter,
+    ResearchOSValueSubject,
     lookup_research_os_node_input_references,
     publish_research_os_node_outputs,
     validate_research_os_value_authorities,
@@ -530,6 +536,229 @@ class StrictResearchOSControl(ResearchOSControlPort):
                 "ArtifactLineageRelationPort"
             )
         self._artifact_lineage = artifact_lineage
+
+    def active_revision_digest(self, execution_id: str) -> str:
+        if type(execution_id) is not str or not execution_id.strip():
+            raise ValueError("Research OS execution_id must be non-empty")
+        active = self._store.active_cut(execution_id)
+        if active is None:
+            raise ResearchGraphExecutionConflict(
+                "Research OS execution has no active durable cut"
+            )
+        snapshot = self._store.snapshot(active.cut_id)
+        return snapshot.research_revision_digest
+
+    def _migration_reuse_proofs(
+        self,
+        plan: ResearchOSExecutionMigrationPlan,
+        source: CompiledResearchOSGraph,
+        lowering: ResearchOSLoweringPlan,
+        snapshot,
+    ) -> tuple[ResearchOSReuseProof, ...]:
+        if not isinstance(self._runtime, ResearchOSNodeReconciliationPort):
+            raise ResearchOSExecutionUnsupported(
+                "revision migration requires lower-authority execution proof support"
+            )
+        proofs: list[ResearchOSReuseProof] = []
+        for graph_node_id in plan.reuse_candidate_node_ids:
+            node = source.node(graph_node_id)
+            lowered = lowering.node(graph_node_id)
+            record = snapshot.node(graph_node_id)
+            if (
+                record.state is not ResearchGraphLiveNodeState.SUCCEEDED
+                or record.attempt_id is None
+            ):
+                raise ResearchGraphExecutionConflict(
+                    "reuse candidate lost definitive succeeded attempt identity: "
+                    f"{graph_node_id}"
+                )
+            lower_proof = self._runtime.reconcile_node(
+                node,
+                lowered,
+                execution_cut_id=plan.source_cut.cut_id,
+                attempt_id=record.attempt_id,
+            )
+            if type(lower_proof) is not ResearchOSNodeReconciliationProof:
+                raise TypeError(
+                    "revision migration runtime returned invalid lower execution proof"
+                )
+            lower_proof.validate(
+                node,
+                lowered,
+                execution_cut_id=plan.source_cut.cut_id,
+                attempt_id=record.attempt_id,
+            )
+            if (
+                lower_proof.disposition
+                is not ResearchGraphReconciliationDisposition.SUCCEEDED
+            ):
+                raise ResearchGraphExecutionConflict(
+                    "reuse candidate is not proven succeeded by lower authority: "
+                    f"{graph_node_id}"
+                )
+
+            output_proofs = []
+            outputs = node.node.outputs
+            for output in outputs:
+                subject = ResearchOSValueSubject(
+                    plan.source_cut.cut_id,
+                    graph_node_id,
+                    output.name,
+                    output.kind,
+                    node.semantic_digest,
+                )
+                reference = self._values.lookup(subject)
+                resolved = self._values.resolve(reference)
+                if len(outputs) == 1:
+                    expected = lower_proof.result
+                else:
+                    if not isinstance(lower_proof.result, dict):
+                        raise ResearchGraphExecutionConflict(
+                            "multi-output reuse proof lost canonical result mapping: "
+                            f"{graph_node_id}"
+                        )
+                    if output.name not in lower_proof.result:
+                        raise ResearchGraphExecutionConflict(
+                            "multi-output reuse proof is missing declared output: "
+                            f"{graph_node_id}:{output.name}"
+                        )
+                    expected = lower_proof.result[output.name]
+                if resolved != expected:
+                    raise ResearchGraphExecutionConflict(
+                        "stored Research OS output does not match lower succeeded result: "
+                        f"{graph_node_id}:{output.name}"
+                    )
+                output_proofs.append(
+                    {
+                        "name": output.name,
+                        "kind": output.kind.value,
+                        "reference_digest": reference.reference_digest,
+                        "authority_reuse_proof": self._values.reuse_proof(reference),
+                        "resolved_value_digest": canonical_digest(resolved),
+                    }
+                )
+
+            proofs.append(
+                ResearchOSReuseProof(
+                    graph_node_id,
+                    plan.source_cut.cut_id,
+                    node.semantic_digest,
+                    canonical_digest(
+                        {
+                            "schema": "noetrium.research-os-reuse-proof.v2",
+                            "lower_proof_digest": lower_proof.proof_digest,
+                            "lower_authority_id": lower_proof.authority_id,
+                            "lower_evidence_digests": lower_proof.evidence_digests,
+                            "outputs": tuple(output_proofs),
+                        }
+                    ),
+                )
+            )
+        return tuple(proofs)
+
+    def migrate(
+        self,
+        request: ResearchControlRequest,
+        source_revision: ResearchGraphRevision,
+        source_portfolio: ResearchPortfolio,
+        target_portfolio: ResearchPortfolio,
+    ) -> ResearchControlReceipt:
+        if type(request) is not ResearchControlRequest:
+            raise TypeError("Research OS migration request must be typed")
+        if request.action is not ResearchControlAction.MIGRATE:
+            raise ValueError("Research OS migration requires MIGRATE action")
+        self._require_whole_graph_control(request)
+        if type(source_revision) is not ResearchGraphRevision:
+            raise TypeError("Research OS migration source revision must be typed")
+        if type(source_portfolio) is not ResearchPortfolio:
+            raise TypeError("Research OS migration source portfolio must be typed")
+        if type(target_portfolio) is not ResearchPortfolio:
+            raise TypeError("Research OS migration target portfolio must be typed")
+        if source_revision.portfolio_id != request.target.portfolio_id:
+            raise ValueError("Research OS migration source portfolio identity drifted")
+        if source_revision.revision_digest == request.target.revision.revision_digest:
+            raise ResearchGraphExecutionConflict(
+                "Research OS migration requires a different target revision"
+            )
+
+        source = compile_research_portfolio_graph(
+            source_revision,
+            source_portfolio,
+        )
+        target = compile_research_portfolio_graph(
+            request.target.revision,
+            target_portfolio,
+        )
+        source_cut = ResearchOSExecutionCut.from_compilation(
+            request.target.execution_id,
+            source,
+        )
+        active = self._store.active_cut(request.target.execution_id)
+        if active is None or active.cut_id != source_cut.cut_id:
+            raise ResearchGraphExecutionConflict(
+                "Research OS migration source is not the active durable cut"
+            )
+        snapshot = self._store.snapshot(source_cut.cut_id)
+        source_control = self._store.control_state(source_cut.cut_id)
+        if source_control.phase is not ResearchGraphControlPhase.PAUSED:
+            raise ResearchGraphExecutionConflict(
+                "Research OS migration requires a paused source cut; "
+                "DRAIN or PAUSE before changing revisions, "
+                f"actual={source_control.phase.value}"
+            )
+        if snapshot.reconciliation_required_node_ids:
+            raise ResearchGraphExecutionConflict(
+                "Research OS migration is blocked by reconciliation debt"
+            )
+
+        plan = plan_research_os_execution_migration(
+            request.target.execution_id,
+            source,
+            target,
+            snapshot,
+        )
+        if not plan.can_switch:
+            raise ResearchGraphExecutionConflict(
+                "Research OS migration source cut is not safely switchable"
+            )
+        source_lowering = compile_research_os_lowering(
+            source,
+            experiment_closures=self._experiment_closures,
+        )
+        reuse_proofs = self._migration_reuse_proofs(
+            plan,
+            source,
+            source_lowering,
+            snapshot,
+        )
+        materialized = materialize_research_os_execution_migration(
+            plan,
+            target,
+            self._store,
+            reuse_proofs=reuse_proofs,
+            now_ns=time.time_ns(),
+        )
+        target_control = self._store.control_state(plan.target_cut.cut_id)
+        if target_control.phase is not ResearchGraphControlPhase.PAUSED:
+            raise ResearchGraphExecutionConflict(
+                "Research OS migration target did not remain paused after cut switch"
+            )
+        return self._durable_control_receipt(
+            request,
+            target,
+            plan.target_cut,
+            materialized.active_cut,
+            materialized.snapshot,
+            target_control,
+            state="paused",
+            extra={
+                "migration_digest": plan.migration_digest,
+                "source_cut_id": plan.source_cut.cut_id,
+                "target_cut_id": plan.target_cut.cut_id,
+                "reused_node_ids": materialized.reused_node_ids,
+                "restart_node_ids": materialized.restart_node_ids,
+            },
+        )
 
     def control(
         self,
