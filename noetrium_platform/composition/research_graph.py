@@ -13,6 +13,9 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 )
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphControlPhase,
+    ResearchGraphControlRecord,
+    ResearchGraphControlStorePort,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
@@ -43,6 +46,19 @@ def _reportable_failure(exc: BaseException) -> BaseException:
     if len(unique) == 1:
         return rows[0]
     return exc
+
+
+class ResearchGraphControlHalt(RuntimeError):
+    """Scheduler stopped at a durable graph-control boundary."""
+
+    def __init__(self, control: ResearchGraphControlRecord) -> None:
+        if type(control) is not ResearchGraphControlRecord:
+            raise TypeError("research graph control halt requires typed control record")
+        self.control = control
+        super().__init__(
+            "research graph scheduler halted by durable control: "
+            f"{control.execution_id} -> {control.phase.value}"
+        )
 
 
 class ResearchGraphScheduler:
@@ -292,6 +308,25 @@ class ResearchGraphScheduler:
         now_ns = time.time_ns()
         store.ensure_execution(execution_id, self._plan)
         snapshot = store.recover_expired(execution_id, now_ns=now_ns)
+        control_store = (
+            store if isinstance(store, ResearchGraphControlStorePort) else None
+        )
+        if control_store is not None:
+            control = control_store.control_state(execution_id)
+            if control.phase in {
+                ResearchGraphControlPhase.PAUSED,
+                ResearchGraphControlPhase.RECOVERY_REQUIRED,
+                ResearchGraphControlPhase.CANCELLED,
+            }:
+                raise ResearchGraphControlHalt(control)
+            if control.phase is ResearchGraphControlPhase.DRAINING:
+                control = control_store.pause_if_quiescent(
+                    execution_id,
+                    expected_generation=control.generation,
+                    now_ns=now_ns,
+                )
+                raise ResearchGraphControlHalt(control)
+
         active = tuple(
             node.node_id
             for node in snapshot.nodes
@@ -445,6 +480,32 @@ class ResearchGraphScheduler:
 
         try:
             while pending or running:
+                current_control = (
+                    None
+                    if control_store is None
+                    else control_store.control_state(execution_id)
+                )
+                if current_control is not None:
+                    if current_control.phase in {
+                        ResearchGraphControlPhase.PAUSED,
+                        ResearchGraphControlPhase.RECOVERY_REQUIRED,
+                        ResearchGraphControlPhase.CANCELLED,
+                    }:
+                        for _node_id, (
+                            _node,
+                            handle,
+                            _attempt_id,
+                            _renewal,
+                        ) in tuple(running.items()):
+                            handle.cancel()
+                        raise ResearchGraphControlHalt(current_control)
+                    draining = (
+                        current_control.phase
+                        is ResearchGraphControlPhase.DRAINING
+                    )
+                else:
+                    draining = False
+
                 if deadline is not None and deadline.expired:
                     for _node_id, (_node, handle, _attempt_id, _renewal) in tuple(
                         running.items()
@@ -487,54 +548,57 @@ class ResearchGraphScheduler:
                     progressed = True
 
                 now_ns = time.time_ns()
-                for node_id in tuple(sorted(pending)):
-                    node = pending[node_id]
-                    if not all(
-                        dependency in results
-                        and results[dependency].state
-                        is ResearchGraphNodeState.SUCCEEDED
-                        for dependency in node.depends_on_node_ids
-                    ):
-                        continue
-                    current = live[node_id]
-                    if (
-                        current.state is ResearchGraphLiveNodeState.RETRY_WAIT
-                        and current.retry_not_before_ns is not None
-                        and current.retry_not_before_ns > now_ns
-                    ):
-                        continue
-                    if current.state is not ResearchGraphLiveNodeState.READY:
-                        current = store.mark_ready(
-                            execution_id,
-                            node_id,
-                            now_ns=now_ns,
+                if not draining:
+                    for node_id in tuple(sorted(pending)):
+                        node = pending[node_id]
+                        if not all(
+                            dependency in results
+                            and results[dependency].state
+                            is ResearchGraphNodeState.SUCCEEDED
+                            for dependency in node.depends_on_node_ids
+                        ):
+                            continue
+                        current = live[node_id]
+                        if (
+                            current.state is ResearchGraphLiveNodeState.RETRY_WAIT
+                            and current.retry_not_before_ns is not None
+                            and current.retry_not_before_ns > now_ns
+                        ):
+                            continue
+                        if current.state is not ResearchGraphLiveNodeState.READY:
+                            current = store.mark_ready(
+                                execution_id,
+                                node_id,
+                                now_ns=now_ns,
+                            )
+                            live[node_id] = current
+                        try:
+                            claim = store.claim(
+                                execution_id,
+                                node_id,
+                                owner_id=self._scheduler_owner_id,
+                                now_ns=now_ns,
+                                lease_expires_at_ns=now_ns + self._lease_ns,
+                            )
+                        except ResearchGraphExecutionConflict:
+                            current_snapshot = store.snapshot(execution_id)
+                            live[node_id] = current_snapshot.node(node_id)
+                            raise
+                        live[node_id] = claim
+                        attempt_id = claim.attempt_id
+                        if attempt_id is None:
+                            raise RuntimeError(
+                                "claimed research graph node lost attempt id"
+                            )
+                        handle = submit(node, attempt_id)
+                        running[node_id] = (
+                            node,
+                            handle,
+                            attempt_id,
+                            now_ns + renewal_interval_ns,
                         )
-                        live[node_id] = current
-                    try:
-                        claim = store.claim(
-                            execution_id,
-                            node_id,
-                            owner_id=self._scheduler_owner_id,
-                            now_ns=now_ns,
-                            lease_expires_at_ns=now_ns + self._lease_ns,
-                        )
-                    except ResearchGraphExecutionConflict:
-                        current_snapshot = store.snapshot(execution_id)
-                        live[node_id] = current_snapshot.node(node_id)
-                        raise
-                    live[node_id] = claim
-                    attempt_id = claim.attempt_id
-                    if attempt_id is None:
-                        raise RuntimeError("claimed research graph node lost attempt id")
-                    handle = submit(node, attempt_id)
-                    running[node_id] = (
-                        node,
-                        handle,
-                        attempt_id,
-                        now_ns + renewal_interval_ns,
-                    )
-                    del pending[node_id]
-                    progressed = True
+                        del pending[node_id]
+                        progressed = True
 
                 completed = tuple(
                     sorted(
@@ -568,6 +632,18 @@ class ResearchGraphScheduler:
                         attempt_id,
                         now_ns + renewal_interval_ns,
                     )
+
+                if draining and not running:
+                    if control_store is None or current_control is None:
+                        raise RuntimeError(
+                            "draining graph lost durable control authority"
+                        )
+                    paused = control_store.pause_if_quiescent(
+                        execution_id,
+                        expected_generation=current_control.generation,
+                        now_ns=time.time_ns(),
+                    )
+                    raise ResearchGraphControlHalt(paused)
 
                 if pending and not running and not progressed:
                     if reconciliation_required:
@@ -643,4 +719,4 @@ class ResearchGraphScheduler:
         return False
 
 
-__all__ = ["ResearchGraphScheduler"]
+__all__ = ["ResearchGraphControlHalt", "ResearchGraphScheduler"]
