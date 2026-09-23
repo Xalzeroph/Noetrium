@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3617,
-    "python_import_edges": 6783,
-    "symbols": 4807,
-    "tracked_files": 4246,
+    "python_files": 3622,
+    "python_import_edges": 6830,
+    "symbols": 4815,
+    "tracked_files": 4251,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4801,
+    "python": 4809,
     "typescript": 5
   },
   "parse_errors": [],
@@ -5412,6 +5412,30 @@
       "source_module": "noetrium_platform.composition.research_campaign",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.study.algorithms",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_child_machine_batch",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_child_machine_batch",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_child_machine_batch",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.machines.child_machine",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_child_machine_batch",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.machines.child_machine_batch",
       "target_role": "core_platform"
     },
     {
@@ -23703,6 +23727,24 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_atomic_task_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_atomic_task_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_atomic_task_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_authority_decomposition_v27",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.model.request.prompt.runtime.active_pointer",
@@ -30183,6 +30225,42 @@
       "target_role": "tooling"
     },
     {
+      "source_module": "tests.test_pooled_child_research_machine_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_child_machine_batch",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_pooled_child_research_machine_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_pooled_child_research_machine_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_pooled_child_research_machine_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_pooled_child_research_machine_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.machines",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_pooled_child_research_machine_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_portfolio_revision_store_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.portfolio.api",
@@ -31779,6 +31857,42 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_research_graph_cancellation_propagation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_cancellation_propagation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_cancellation_propagation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_cancellation_propagation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_cancellation_propagation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_cancellation_propagation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_research_graph_durable_state_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -31872,6 +31986,102 @@
       "source_module": "tests.test_research_graph_scheduler_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_execution",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_value_authorities",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_values",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.catalog.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.content.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.contracts",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.lineage.relation.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.retention.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.portfolio.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_artifact_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
       "target_role": "core_platform"
     },
     {
@@ -32296,6 +32506,66 @@
     },
     {
       "source_module": "tests.test_research_os_migration_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_execution",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_values",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.portfolio.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_multi_program_selection_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.graph.providers",
       "target_role": "core_platform"
@@ -34589,6 +34859,24 @@
     {
       "source_module": "tests.test_scientific_flow_modularized_workflow_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_child_machine_batch",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_scientific_flow_modularized_workflow_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_scientific_flow_modularized_workflow_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_scientific_flow_modularized_workflow_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
@@ -34596,6 +34884,12 @@
       "source_module": "tests.test_scientific_flow_modularized_workflow_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.machines.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_scientific_flow_modularized_workflow_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.api",
       "target_role": "core_platform"
     },
     {
@@ -38865,18 +39159,6 @@
       "target_role": "tooling"
     },
     {
-      "source_module": "tests.test_thread_pool_child_research_machine_batch_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_thread_pool_child_research_machine_batch_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.research.execution.machines",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "tests.test_tmux_cwd_identity_v157",
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.lifecycle.session.api",
@@ -40715,7 +40997,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2592,
+      "count": 2596,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -40775,12 +41057,12 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2619,
+      "count": 2660,
       "source_role": "tests",
       "target_role": "core_platform"
     },
     {
-      "count": 15,
+      "count": 17,
       "source_role": "tests",
       "target_role": "public_facade"
     },
@@ -40831,18 +41113,18 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1927,
+    "core_platform": 1928,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 774,
+    "tests": 778,
     "tooling": 77
   },
   "role_symbol_counts": {
-    "core_platform": 3322,
+    "core_platform": 3326,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -40850,11 +41132,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 403,
     "sdk": 5,
-    "tests": 949,
+    "tests": 953,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "55e4789c1606cbf707fd11cdc2beb60af12f9bca",
+  "source_git_sha": "784e018fabd5d051b6100482279250132dbb6082",
   "symbols": [
     {
       "bases": [],
@@ -63106,6 +63388,27 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "ChildResearchMachineBatchMechanicsPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 25,
+      "methods": [
+        "__init__",
+        "identity_digest",
+        "_task_id",
+        "execute_batch"
+      ],
+      "module": "noetrium_platform.composition.research_child_machine_batch",
+      "name": "PooledChildResearchBatchMechanics",
+      "path": "noetrium_platform/composition/research_child_machine_batch.py",
+      "qualname": "noetrium_platform.composition.research_child_machine_batch.PooledChildResearchBatchMechanics",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
@@ -63144,7 +63447,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 52,
+      "line": 55,
       "methods": [
         "__init__"
       ],
@@ -63155,12 +63458,30 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 68,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.composition.research_graph",
+      "name": "ResearchGraphNodeControlHalt",
+      "path": "noetrium_platform/composition/research_graph.py",
+      "qualname": "noetrium_platform.composition.research_graph.ResearchGraphNodeControlHalt",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 65,
+      "line": 84,
       "methods": [
         "__init__",
         "plan",
@@ -63320,7 +63641,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 83,
+      "line": 85,
       "methods": [
         "__post_init__"
       ],
@@ -63340,7 +63661,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 126,
+      "line": 128,
       "methods": [
         "admit",
         "execute"
@@ -63368,7 +63689,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 148,
+      "line": 150,
       "methods": [
         "__post_init__",
         "admission"
@@ -63387,7 +63708,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 269,
+      "line": 271,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -63401,7 +63722,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 395,
+      "line": 397,
       "methods": [
         "__init__",
         "execute",
@@ -63423,7 +63744,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 560,
+      "line": 562,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -63433,6 +63754,7 @@
         "control",
         "_require_whole_graph_control",
         "_active_execution_state",
+        "_target_graph_node",
         "_states",
         "_durable_control_receipt",
         "_run",
@@ -78217,7 +78539,8 @@
       "language": "python",
       "line": 37,
       "methods": [
-        "acquire"
+        "acquire",
+        "acquire_many"
       ],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.ports",
       "name": "ExecutionPermitPort",
@@ -78234,7 +78557,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 54,
+      "line": 64,
       "methods": [
         "group_id",
         "task_id",
@@ -78256,7 +78579,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 67,
+      "line": 77,
       "methods": [
         "task_id",
         "lane_kind",
@@ -78279,7 +78602,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 79,
+      "line": 89,
       "methods": [
         "task_id",
         "cancel",
@@ -78299,7 +78622,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 86,
+      "line": 96,
       "methods": [
         "submit"
       ],
@@ -78317,7 +78640,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 98,
+      "line": 108,
       "methods": [
         "actor_id",
         "submit",
@@ -78338,11 +78661,12 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 123,
+      "line": 133,
       "methods": [
         "group_id",
         "cancellation",
         "open_serial_actor",
+        "submit_atomic_batch",
         "cancel",
         "wait",
         "assert_healthy",
@@ -78363,7 +78687,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 143,
+      "line": 160,
       "methods": [
         "register",
         "snapshot"
@@ -78382,7 +78706,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 157,
+      "line": 174,
       "methods": [
         "heartbeats",
         "open_task_group",
@@ -78405,10 +78729,11 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 176,
+      "line": 193,
       "methods": [
         "ensure_serial_lane",
-        "submit"
+        "submit",
+        "submit_atomic_batch"
       ],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.ports",
       "name": "ExecutionAuthorityProviderPort",
@@ -78424,9 +78749,10 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 197,
+      "line": 224,
       "methods": [
         "submit",
+        "submit_atomic_batch",
         "close"
       ],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.ports",
@@ -78444,7 +78770,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 210,
+      "line": 246,
       "methods": [
         "map"
       ],
@@ -78462,7 +78788,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 214,
+      "line": 250,
       "methods": [
         "lane_id",
         "submit",
@@ -78486,7 +78812,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 256,
+      "line": 292,
       "methods": [
         "create",
         "close"
@@ -78505,7 +78831,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 266,
+      "line": 302,
       "methods": [
         "schedule_once",
         "schedule_fixed_delay",
@@ -78606,7 +78932,9 @@
         "__init__",
         "_cancelled",
         "_cancel_reason",
+        "_acquire_slots",
         "_acquire_slot",
+        "_release_slots",
         "_release_slot",
         "submit",
         "close"
@@ -78625,9 +78953,10 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 156,
+      "line": 193,
       "methods": [
-        "__init__"
+        "__init__",
+        "submit_atomic_batch"
       ],
       "module": "noetrium_platform.foundation.kernel.concurrency.providers.executors",
       "name": "BoundedThreadExecutor",
@@ -78643,7 +78972,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 164,
+      "line": 283,
       "methods": [
         "__init__",
         "map"
@@ -78976,8 +79305,10 @@
         "ensure_serial_lane",
         "_check_wait",
         "_acquire",
+        "_acquire_many",
         "_release",
         "_submit_serial",
+        "submit_atomic_batch",
         "submit"
       ],
       "module": "noetrium_platform.foundation.kernel.concurrency.runtime.execution",
@@ -79134,6 +79465,7 @@
         "_reserve_task",
         "_submit_contextual",
         "submit",
+        "submit_atomic_batch",
         "_submit_blocking",
         "_submit_async_io",
         "_submit_serial",
@@ -99342,7 +99674,8 @@
       "fields": [
         "SUCCEEDED",
         "FAILED",
-        "BLOCKED"
+        "BLOCKED",
+        "CANCELLED"
       ],
       "kind": "enum",
       "language": "python",
@@ -99369,7 +99702,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 129,
+      "line": 130,
       "methods": [
         "__post_init__"
       ],
@@ -99392,11 +99725,12 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 174,
+      "line": 178,
       "methods": [
         "__post_init__",
         "succeeded_node_ids",
         "failed_node_ids",
+        "cancelled_node_ids",
         "blocked_node_ids"
       ],
       "module": "noetrium_platform.research.execution.graph.api.contracts",
@@ -99415,7 +99749,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 221,
+      "line": 233,
       "methods": [
         "execute"
       ],
@@ -99440,7 +99774,8 @@
         "SUCCEEDED",
         "REUSED",
         "FAILED",
-        "BLOCKED"
+        "BLOCKED",
+        "CANCELLED"
       ],
       "kind": "enum",
       "language": "python",
@@ -99470,7 +99805,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 53,
+      "line": 54,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphAttemptState",
@@ -99490,7 +99825,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 65,
+      "line": 66,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphReconciliationDisposition",
@@ -99512,7 +99847,53 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 71,
+      "line": 72,
+      "methods": [],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphNodeControlPhase",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphNodeControlPhase",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "execution_id: str",
+        "node_id: str",
+        "phase: ResearchGraphNodeControlPhase",
+        "generation: int",
+        "updated_at_ns: int"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 83,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphNodeControlRecord",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphNodeControlRecord",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "ACTIVE",
+        "DRAINING",
+        "PAUSED",
+        "RECOVERY_REQUIRED",
+        "CANCELLED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 100,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphControlPhase",
@@ -99533,7 +99914,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 86,
+      "line": 115,
       "methods": [
         "__post_init__"
       ],
@@ -99564,7 +99945,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 102,
+      "line": 131,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -99596,7 +99977,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 209,
+      "line": 245,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -99622,7 +100003,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 251,
+      "line": 287,
       "methods": [
         "__post_init__",
         "node",
@@ -99650,7 +100031,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 297,
+      "line": 333,
       "methods": [
         "__post_init__"
       ],
@@ -99674,7 +100055,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 319,
+      "line": 355,
       "methods": [
         "__post_init__"
       ],
@@ -99692,7 +100073,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 338,
+      "line": 374,
       "methods": [
         "__init__"
       ],
@@ -99710,7 +100091,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 359,
+      "line": 395,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -99726,7 +100107,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 363,
+      "line": 399,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -99744,7 +100125,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 368,
+      "line": 404,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -99779,7 +100160,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 510,
+      "line": 546,
       "methods": [
         "control_state",
         "request_drain",
@@ -99806,7 +100187,33 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 580,
+      "line": 616,
+      "methods": [
+        "node_control_state",
+        "request_node_drain",
+        "pause_node_if_quiescent",
+        "resume_node",
+        "interrupt_node",
+        "settle_node_recovery",
+        "cancel_node_subgraph"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphNodeControlStorePort",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphNodeControlStorePort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 682,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -99823,7 +100230,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 27,
+      "line": 29,
       "methods": [
         "__init__",
         "_connection",
@@ -99833,8 +100240,11 @@
         "_decode_node",
         "_decode_attempt",
         "_decode_reuse",
+        "_decode_node_control",
         "_decode_control",
         "_control_tx",
+        "_node_control_tx",
+        "_write_node_control_phase_tx",
         "_active_node_rows_tx",
         "_reconciliation_node_ids_tx",
         "_write_control_phase_tx",
@@ -99847,6 +100257,13 @@
         "ensure_execution",
         "snapshot",
         "control_state",
+        "node_control_state",
+        "request_node_drain",
+        "pause_node_if_quiescent",
+        "resume_node",
+        "interrupt_node",
+        "settle_node_recovery",
+        "cancel_node_subgraph",
         "request_drain",
         "pause_if_quiescent",
         "resume",
@@ -100394,7 +100811,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 50,
+      "line": 47,
       "methods": [],
       "module": "noetrium_platform.research.execution.machines.child_machine_batch",
       "name": "ChildBatchExecutionMode",
@@ -100414,7 +100831,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 56,
+      "line": 53,
       "methods": [
         "__post_init__"
       ],
@@ -100439,7 +100856,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 80,
+      "line": 77,
       "methods": [
         "__post_init__"
       ],
@@ -100463,7 +100880,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 135,
+      "line": 136,
       "methods": [
         "__post_init__"
       ],
@@ -100483,7 +100900,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 178,
+      "line": 179,
       "methods": [
         "identity_digest",
         "execute_batch"
@@ -100504,7 +100921,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 191,
+      "line": 192,
       "methods": [
         "identity_digest",
         "execute_batch"
@@ -100531,7 +100948,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 204,
+      "line": 205,
       "methods": [
         "__post_init__",
         "links",
@@ -100549,7 +100966,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 283,
+      "line": 284,
       "methods": [
         "__init__",
         "identity_digest",
@@ -100567,7 +100984,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 367,
+      "line": 368,
       "methods": [
         "__init__",
         "identity_digest",
@@ -100589,27 +101006,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 413,
-      "methods": [
-        "__init__",
-        "identity_digest",
-        "execute_batch"
-      ],
-      "module": "noetrium_platform.research.execution.machines.child_machine_batch",
-      "name": "ThreadPoolChildResearchBatchMechanics",
-      "path": "noetrium_platform/research/execution/machines/child_machine_batch.py",
-      "qualname": "noetrium_platform.research.execution.machines.child_machine_batch.ThreadPoolChildResearchBatchMechanics",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "ChildResearchMachineBatchMechanicsPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 551,
+      "line": 414,
       "methods": [
         "__init__",
         "identity_digest",
@@ -136945,6 +137342,22 @@
       "role": "tests"
     },
     {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 20,
+      "methods": [
+        "execute"
+      ],
+      "module": "tests.test_research_graph_cancellation_propagation_v1",
+      "name": "_NeverExecute",
+      "path": "tests/test_research_graph_cancellation_propagation_v1.py",
+      "qualname": "tests.test_research_graph_cancellation_propagation_v1._NeverExecute",
+      "role": "tests"
+    },
+    {
       "bases": [
         "ResearchGraphNodeExecutorPort"
       ],
@@ -137186,6 +137599,67 @@
       "name": "_FalseyResolver",
       "path": "tests/test_research_os_lowering_v1.py",
       "qualname": "tests.test_research_os_lowering_v1._FalseyResolver",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 358,
+      "methods": [
+        "__init__",
+        "active_cut",
+        "move_active_cut"
+      ],
+      "module": "tests.test_research_os_migration_v1",
+      "name": "_RacingActiveCutStore",
+      "path": "tests/test_research_os_migration_v1.py",
+      "qualname": "tests.test_research_os_migration_v1._RacingActiveCutStore",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass"
+      ],
+      "fields": [
+        "authority_id: str",
+        "supported_kinds: frozenset[api.ResearchValueKind]",
+        "rows: dict[str, JsonValue]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 33,
+      "methods": [
+        "publish",
+        "lookup",
+        "resolve",
+        "reuse_proof"
+      ],
+      "module": "tests.test_research_os_multi_program_selection_v1",
+      "name": "_DataAuthority",
+      "path": "tests/test_research_os_multi_program_selection_v1.py",
+      "qualname": "tests.test_research_os_multi_program_selection_v1._DataAuthority",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 71,
+      "methods": [
+        "__init__",
+        "admit",
+        "execute"
+      ],
+      "module": "tests.test_research_os_multi_program_selection_v1",
+      "name": "_Runtime",
+      "path": "tests/test_research_os_multi_program_selection_v1.py",
+      "qualname": "tests.test_research_os_multi_program_selection_v1._Runtime",
       "role": "tests"
     },
     {
@@ -138978,7 +139452,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 104,
+      "line": 109,
       "methods": [
         "__init__",
         "run"
@@ -138995,7 +139469,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 124,
+      "line": 129,
       "methods": [
         "__init__",
         "identity_digest",
