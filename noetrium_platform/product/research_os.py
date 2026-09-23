@@ -13,7 +13,7 @@ import hashlib
 import inspect
 from pathlib import Path
 import re
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import (
     JsonInput,
@@ -829,6 +829,48 @@ class ResearchControlReceipt:
         object.__setattr__(self, "payload", freeze_json(self.payload))
 
 
+@runtime_checkable
+class ResearchOS(Protocol):
+    """Bound top-level Research OS capability presented to downstream authors."""
+
+    def commit(
+        self,
+        portfolio: ResearchPortfolio,
+        *,
+        parents: tuple[str, ...] = (),
+        message: str = "",
+    ) -> ResearchGraphRevision: ...
+
+    def diff(
+        self,
+        left_revision_digest: str,
+        right_revision_digest: str,
+    ) -> ResearchRevisionDiff: ...
+
+    def branch(self, name: str, revision_digest: str) -> ResearchBranch: ...
+
+    def tag(self, name: str, revision_digest: str) -> ResearchTag: ...
+
+    def merge(
+        self,
+        left_revision_digest: str,
+        right_revision_digest: str,
+        *,
+        message: str = "",
+    ) -> ResearchGraphRevision: ...
+
+    def run(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def inspect(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def pause(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def drain(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def interrupt(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def resume(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def retry(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def cancel(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def checkpoint(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+    def reconcile(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt: ...
+
+
 class ResearchOSPort(Protocol):
     def commit(
         self,
@@ -859,13 +901,8 @@ class ResearchOSPort(Protocol):
     def control(self, request: ResearchControlRequest) -> ResearchControlReceipt: ...
 
 
-class ResearchOS:
-    """The only downstream runtime/control facade.
-
-    Concrete composition owns all lower-system bindings. This facade never asks a
-    downstream project to assemble model, environment, experiment, execution,
-    resource, evidence, or reliability systems itself.
-    """
+class _BoundResearchOS:
+    """Internal facade over one platform-composed ResearchOSPort."""
 
     def __init__(self, port: ResearchOSPort) -> None:
         required = ("commit", "diff", "branch", "tag", "merge", "control")
@@ -952,6 +989,12 @@ class ResearchOS:
 
     def reconcile(self, target: str, payload: JsonInput = None) -> ResearchControlReceipt:
         return self._control(ResearchControlAction.RECONCILE, target, payload)
+
+
+def bind_research_os(port: ResearchOSPort) -> ResearchOS:
+    """Internal composition seam; downstream projects never bind ports themselves."""
+
+    return _BoundResearchOS(port)
 
 
 class ResearchProgramBuilder:
