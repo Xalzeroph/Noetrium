@@ -67,9 +67,9 @@ def _workflow_policy() -> ReadinessCriterion:
     )
 
 
-def _projection_clean() -> ReadinessCriterion:
+def _projection_build() -> ReadinessCriterion:
     completed = subprocess.run(
-        [sys.executable, "scripts/sync_architecture_maps.py", "--check"],
+        [sys.executable, "scripts/sync_architecture_maps.py", "--verify-build"],
         cwd=ROOT,
         text=True,
         stdout=subprocess.PIPE,
@@ -77,7 +77,7 @@ def _projection_clean() -> ReadinessCriterion:
         check=False,
     )
     return ReadinessCriterion(
-        "architecture_projection_clean",
+        "architecture_projection_build",
         completed.returncode == 0,
         {
             "returncode": completed.returncode,
@@ -242,7 +242,7 @@ def evaluate() -> ResearchOSScaleReadiness:
     criteria = (
         _architecture_topology(),
         _workflow_policy(),
-        _projection_clean(),
+        _projection_build(),
         _no_degradation(),
         _unmanaged_executor_constructors(),
         _canonical_graph_resource_binding(),
