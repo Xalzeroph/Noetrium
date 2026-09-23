@@ -145,10 +145,12 @@ import json
 import sys
 from pathlib import Path
 from noetrium.api import ResearchOS
+from noetrium_platform.product.research_os import bind_research_os
 from noetrium_platform.product.reference import ReferenceResearchOSPort
 
 root = Path(sys.argv[1])
-research_os = ResearchOS(ReferenceResearchOSPort())
+research_os = bind_research_os(ReferenceResearchOSPort())
+assert isinstance(research_os, ResearchOS)
 for action in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile"):
     result = getattr(research_os, action)("container-reference")
     (root / f"{action}.json").write_text(
