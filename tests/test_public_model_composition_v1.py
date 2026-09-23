@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from noetrium_platform.evidence.artifact.content.api import MultimodalPart
 
-from noetrium.api import complete_project_model, invoke_multimodal_model
+from noetrium_platform.platform import complete_project_model, invoke_multimodal_model
 from noetrium_platform.capabilities.model.api import (
     ModelProviderProfile,
     MultimodalRequest,
