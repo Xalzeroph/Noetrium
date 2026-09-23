@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from pathlib import Path
 
-from noetrium_platform.platform import run_method_program
+from tests._canonical_method_execution import execute_method_program_canonically
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityRequest,
@@ -163,7 +163,7 @@ def test_jarvis1_public_offline_method_retries_subgoal_then_advances(
 ) -> None:
     journal = InMemoryMachineJournal()
     controller = _ControllerCapability()
-    result = run_method_program(
+    result = execute_method_program_canonically(
         JARVIS1_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(
             execution=_context(),
@@ -210,7 +210,7 @@ def test_jarvis1_public_offline_method_fails_closed_without_plan(
     tmp_path: Path,
 ) -> None:
     journal = InMemoryMachineJournal()
-    result = run_method_program(
+    result = execute_method_program_canonically(
         JARVIS1_METHOD_PROGRAM,
         runtime=MethodRuntimeContext(
             execution=_context(),
