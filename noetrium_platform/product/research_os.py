@@ -511,6 +511,125 @@ class ResearchPortfolioDependency:
         )
 
 
+RESEARCH_PORTFOLIO_SCHEMA = "noetrium.research-portfolio.v1"
+
+
+def _research_binding_document(binding: ResearchInputBinding) -> dict[str, object]:
+    return {
+        "input_name": binding.input_name,
+        "output_name": binding.output_name,
+        "kind": binding.kind.value,
+    }
+
+
+def _research_implementation_document(
+    implementation: ResearchImplementation,
+) -> dict[str, object]:
+    return {
+        "implementation_id": implementation.implementation_id,
+        "module": implementation.module,
+        "qualname": implementation.qualname,
+        "source_digest": implementation.source_digest,
+        "implementation_digest": implementation.implementation_digest,
+    }
+
+
+def _research_definition_document(
+    definition: ResearchDefinition,
+) -> dict[str, object]:
+    return {
+        "definition_id": definition.definition_id,
+        "kind": definition.kind.value,
+        "implementation": _research_implementation_document(
+            definition.implementation
+        ),
+        "config": definition.config,
+        "definition_digest": definition.definition_digest,
+    }
+
+
+def _research_node_document(node: ResearchNode) -> dict[str, object]:
+    return {
+        "node_id": node.node_id,
+        "kind": node.kind.value,
+        "definition_ids": node.definition_ids,
+        "outputs": tuple(
+            {"name": output.name, "kind": output.kind.value}
+            for output in node.outputs
+        ),
+        "config": node.config,
+        "node_digest": node.node_digest,
+    }
+
+
+def _research_dependency_document(
+    dependency: ResearchDependency,
+) -> dict[str, object]:
+    return {
+        "upstream_node_id": dependency.upstream_node_id,
+        "downstream_node_id": dependency.downstream_node_id,
+        "bindings": tuple(
+            _research_binding_document(binding)
+            for binding in dependency.bindings
+        ),
+        "dependency_digest": dependency.dependency_digest,
+    }
+
+
+def _research_program_document(program: ResearchProgram) -> dict[str, object]:
+    return {
+        "program_id": program.program_id,
+        "definitions": tuple(
+            _research_definition_document(definition)
+            for definition in program.definitions
+        ),
+        "nodes": tuple(
+            _research_node_document(node)
+            for node in program.nodes
+        ),
+        "dependencies": tuple(
+            _research_dependency_document(dependency)
+            for dependency in program.dependencies
+        ),
+        "program_digest": program.program_digest,
+    }
+
+
+def _research_portfolio_dependency_document(
+    dependency: ResearchPortfolioDependency,
+) -> dict[str, object]:
+    return {
+        "upstream": {
+            "program_id": dependency.upstream.program_id,
+            "node_id": dependency.upstream.node_id,
+        },
+        "downstream": {
+            "program_id": dependency.downstream.program_id,
+            "node_id": dependency.downstream.node_id,
+        },
+        "bindings": tuple(
+            _research_binding_document(binding)
+            for binding in dependency.bindings
+        ),
+        "dependency_digest": dependency.dependency_digest,
+    }
+
+
+def _research_portfolio_document(portfolio: "ResearchPortfolio") -> dict[str, object]:
+    return {
+        "schema": RESEARCH_PORTFOLIO_SCHEMA,
+        "portfolio_id": portfolio.portfolio_id,
+        "programs": tuple(
+            _research_program_document(program)
+            for program in portfolio.programs
+        ),
+        "dependencies": tuple(
+            _research_portfolio_dependency_document(dependency)
+            for dependency in portfolio.dependencies
+        ),
+    }
+
+
 @dataclass(frozen=True, slots=True)
 class ResearchPortfolio:
     portfolio_id: str
@@ -632,15 +751,7 @@ class ResearchPortfolio:
         object.__setattr__(
             self,
             "portfolio_digest",
-            canonical_digest(
-                {
-                    "portfolio_id": self.portfolio_id,
-                    "programs": tuple(row.program_digest for row in programs),
-                    "dependencies": tuple(
-                        row.dependency_digest for row in dependencies
-                    ),
-                }
-            ),
+            canonical_digest(_research_portfolio_document(self)),
         )
 
 
