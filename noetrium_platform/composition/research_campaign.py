@@ -47,7 +47,7 @@ class ResearchCampaignBinding:
         plan: ResearchCampaignPlan,
         bindings: tuple[ResearchCampaignStudyBinding, ...],
         *,
-        execution_pool: ResearchExecutionPool | None = None,
+        execution_pool: ResearchExecutionPool,
         tenant_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
         task_group_id: str | None = None,
@@ -58,6 +58,10 @@ class ResearchCampaignBinding:
             type(row) is not ResearchCampaignStudyBinding for row in bindings
         ):
             raise TypeError("campaign bindings must be ResearchCampaignStudyBinding tuple")
+        if not isinstance(execution_pool, ResearchExecutionPool):
+            raise TypeError(
+                "research campaign requires explicit ResearchExecutionPool"
+            )
         if tenant_id is not None and (
             not isinstance(tenant_id, str) or not tenant_id.strip()
         ):
@@ -78,8 +82,7 @@ class ResearchCampaignBinding:
             )
         self._plan = plan
         self._bindings: Mapping[str, ResearchCampaignStudyBinding] = by_lane
-        self._pool = execution_pool or ResearchExecutionPool()
-        self._owns_pool = execution_pool is None
+        self._pool = execution_pool
         self._tenant_id = tenant_id
         self._priority = priority
         self._task_group_id = task_group_id
@@ -220,8 +223,6 @@ class ResearchCampaignBinding:
         if self._closed:
             return
         self._closed = True
-        if self._owns_pool:
-            self._pool.close(deadline=deadline)
 
     def __enter__(self) -> "ResearchCampaignBinding":
         if self._closed:
