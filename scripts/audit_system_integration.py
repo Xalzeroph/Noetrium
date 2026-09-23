@@ -540,6 +540,15 @@ def build_report() -> dict:
         "layer_disconnected_count": sum(
             row.status in disconnected_statuses for row in layer_rows
         ),
+        "layer_attention_nodes": {
+            status: tuple(
+                row.node_key
+                for row in layer_rows
+                if row.status == status
+            )
+            for status in sorted(disconnected_statuses | {"catalog-only"})
+            if any(row.status == status for row in layer_rows)
+        },
         "topology_errors": tuple(sorted(set(topology_errors))),
         "layers": [asdict(row) for row in layer_rows],
     }
@@ -654,6 +663,7 @@ def main(argv: list[str] | None = None) -> int:
         "internal_facet_count": report["internal_facet_count"],
         "layer_status_counts": report["layer_status_counts"],
         "layer_disconnected_count": report["layer_disconnected_count"],
+        "layer_attention_nodes": report["layer_attention_nodes"],
         "topology_errors": report["topology_errors"],
     }, indent=2, sort_keys=True))
     if args.fail_on_shape and (
