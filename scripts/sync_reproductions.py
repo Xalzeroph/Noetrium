@@ -39,6 +39,7 @@ from research.reproductions.research_os import (
 
 PROJECTION_SCHEMA = "noetrium.reproduction.projection.v8"
 REPRODUCTION_CATALOG_SCHEMA = "noetrium.reproduction-catalog.projection.v1"
+REPRODUCTION_RESEARCH_OS_STATUS_SCHEMA = "noetrium.reproduction-research-os-status.v1"
 REPRODUCTION_CATALOG_AUTHORITY = "generated_from_typed_reproduction_definitions"
 _ALLOWED_DEFINITION_IMPORTS = {"__future__", "research.reproductions.contracts"}
 _ALLOWED_SOURCE_IMPORTS = {
@@ -403,6 +404,7 @@ def sync(*, check: bool) -> int:
         )
     )
     rows: list[tuple[ReproductionDefinition, MethodSourceRegistry]] = []
+    projections: list[dict[str, Any]] = []
     drift: list[str] = []
 
     for package_dir in package_dirs:
@@ -411,7 +413,9 @@ def sync(*, check: bool) -> int:
         _validate_paths(package_dir, definition)
         rows.append((definition, sources))
         projection_path = package_dir / "reproduction.json"
-        expected = _render_json(_projection(definition, sources))
+        projection = _projection(definition, sources)
+        projections.append(projection)
+        expected = _render_json(projection)
         current = projection_path.read_text(encoding="utf-8") if projection_path.is_file() else ""
         if current != expected:
             if check:
@@ -436,6 +440,53 @@ def sync(*, check: bool) -> int:
             drift.append(reproduction_catalog_path.relative_to(ROOT).as_posix())
         else:
             reproduction_catalog_path.write_text(expected_catalog, encoding="utf-8")
+
+    status_rows = [
+        {
+            "package": projection["package"],
+            "lifecycle": projection["lifecycle"],
+            "execution_state": projection["research_os"]["execution_state"],
+            "program_id": projection["research_os"]["program_id"],
+            "program_digest": projection["research_os"]["program_digest"],
+            "benchmark_ids": projection["catalog"]["benchmark_ids"],
+            "execution_requirements": projection["research_os"]["execution_requirements"],
+        }
+        for projection in sorted(projections, key=lambda row: row["package"])
+    ]
+    state_counts: dict[str, int] = {}
+    requirement_kind_counts: dict[str, int] = {}
+    for row in status_rows:
+        state = str(row["execution_state"])
+        state_counts[state] = state_counts.get(state, 0) + 1
+        for requirement in row["execution_requirements"]:
+            kind = str(requirement["kind"])
+            requirement_kind_counts[kind] = requirement_kind_counts.get(kind, 0) + 1
+    status_document = {
+        "schema": REPRODUCTION_RESEARCH_OS_STATUS_SCHEMA,
+        "authority": REPRODUCTION_CATALOG_AUTHORITY,
+        "package_count": len(status_rows),
+        "state_counts": {
+            key: state_counts[key] for key in sorted(state_counts)
+        },
+        "requirement_kind_counts": {
+            key: requirement_kind_counts[key]
+            for key in sorted(requirement_kind_counts)
+        },
+        "packages": status_rows,
+    }
+    status_document["status_digest"] = canonical_digest(status_document)
+    status_path = ROOT / "research/catalog/reproduction_research_os_status.json"
+    expected_status = _render_json(status_document)
+    current_status = (
+        status_path.read_text(encoding="utf-8")
+        if status_path.is_file()
+        else ""
+    )
+    if current_status != expected_status:
+        if check:
+            drift.append(status_path.relative_to(ROOT).as_posix())
+        else:
+            status_path.write_text(expected_status, encoding="utf-8")
 
     # Typed reproduction definitions plus their required source registries are the
     # discovery authority. Do not require a second hand-maintained seed/publication
