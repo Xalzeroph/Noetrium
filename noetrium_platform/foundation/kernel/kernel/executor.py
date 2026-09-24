@@ -114,6 +114,17 @@ class MachineExecutor:
         with self._lock:
             latest = self.journal.latest(self.machine_id)
             if latest is not None:
+                if latest.program_digest != self.program.program_digest:
+                    raise MachineIntegrityError(
+                        "journal head belongs to a different program"
+                    )
+                if (
+                    latest.program_lock_digest
+                    != self.program.program_lock.lock_digest
+                ):
+                    raise MachineIntegrityError(
+                        "journal head belongs to a different ProgramLock"
+                    )
                 self._snapshot = MachineSnapshot(
                     machine_id=self.machine_id,
                     revision=latest.revision,
@@ -306,7 +317,8 @@ class MachineExecutor:
                 previous_commit_id=state.parent_commit_id,
                 before_state_digest=proposal.before_state_digest,
                 input_digest=proposal.input_digest,
-                program_digest=proposal.program_digest,
+                program_digest=self.program.program_digest,
+                program_lock_digest=self.program.program_lock.lock_digest,
                 machine_kind=proposal.machine_kind,
                 machine_version=proposal.machine_version,
                 input_refs=proposal.input_refs,
@@ -348,8 +360,17 @@ class MachineExecutor:
             for commit in history:
                 if commit.machine_id != self.machine_id:
                     raise MachineIntegrityError("journal contains a foreign machine commit")
-                if commit.program_digest is not None and commit.program_digest != self.program.program_digest:
-                    raise MachineIntegrityError("journal commit belongs to a different program")
+                if commit.program_digest != self.program.program_digest:
+                    raise MachineIntegrityError(
+                        "journal commit belongs to a different program"
+                    )
+                if (
+                    commit.program_lock_digest
+                    != self.program.program_lock.lock_digest
+                ):
+                    raise MachineIntegrityError(
+                        "journal commit belongs to a different ProgramLock"
+                    )
                 if commit.previous_commit_id != previous:
                     raise MachineIntegrityError("journal replay predecessor chain is invalid")
                 if commit.before_state_digest is not None and previous is not None:
