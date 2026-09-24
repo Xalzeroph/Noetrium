@@ -83,8 +83,19 @@ def test_cli_materializer_loader_passes_runtime_context_to_factory() -> None:
         def materialize_prerequisites(self, requirements):
             raise AssertionError(requirements)
 
-        def materialize_owners(self, requirements, fleet):
+        def materialize_manifests(self, requirements, fleet):
             raise AssertionError((requirements, fleet))
+
+        def materialize_execution_owners(
+            self,
+            requirements,
+            capability_requirements,
+            fleet,
+            manifests,
+        ):
+            raise AssertionError(
+                (requirements, capability_requirements, fleet, manifests)
+            )
 
     module_name = "_noetrium_test_fleet_materializer_context"
     module = ModuleType(module_name)
