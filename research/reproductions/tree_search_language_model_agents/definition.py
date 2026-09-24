@@ -34,6 +34,10 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
+            kind=ReproductionAssetKind('method_program'),
+            path='research/reproductions/tree_search_language_model_agents/program.py',
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind('support'),
             path='research/reproductions/tree_search_language_model_agents/branch.py',
         ),
@@ -46,6 +50,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/tree_search_language_model_agents/study.py',
         ),
     ),
+    primary_executable='research/reproductions/tree_search_language_model_agents/program.py',
     reported_results=(
     ),
     reference_baselines=(
