@@ -37,9 +37,6 @@ class ForensicIndex:
             raise PermissionError("read-only forensic index cannot mutate")
         return self.writer
 
-    def add_event(self, event: EventEnvelope) -> None: self._write().add_event(event)
-    def add_failure(self, failure: FailureEnvelope) -> None: self._write().add_failure(failure)
-    def add_mutation(self, mutation: MutationRecord) -> None: self._write().add_mutation(mutation)
     def add_raw_payload(self, kind: str, payload: dict[str, object]) -> None: self._write().add_raw_payload(kind, payload)
     def project_event(self,event:EventEnvelope,*,rows:int,tail_hash:str)->None: self._write().project_event(event,rows=rows,tail_hash=tail_hash)
     def project_events_batch(self,items:tuple[tuple[EventEnvelope,int,str],...])->None: self._write().project_events_batch(items)
