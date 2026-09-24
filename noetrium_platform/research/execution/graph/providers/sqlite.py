@@ -20,6 +20,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionNotFound,
     ResearchGraphExecutionSnapshot,
+    ResearchGraphLeaseRenewal,
     ResearchGraphLiveNodeState,
     ResearchGraphNodeControlPhase,
     ResearchGraphNodeControlRecord,
@@ -1560,45 +1561,84 @@ class SQLiteResearchGraphExecutionStore:
             self._bump_generation(conn, execution_id)
             return self._node_tx(conn, execution_id, node_id)
 
-    def renew_lease(
+    def renew_leases(
         self,
         execution_id: str,
-        node_id: str,
+        renewals: tuple[ResearchGraphLeaseRenewal, ...],
         *,
-        attempt_id: str,
-        owner_id: str,
         now_ns: int,
-        lease_expires_at_ns: int,
-    ) -> ResearchGraphNodeExecutionRecord:
+    ) -> tuple[ResearchGraphNodeExecutionRecord, ...]:
         now_ns = self._require_now(now_ns)
-        lease_expires_at_ns = self._require_timestamp_ns(
-            lease_expires_at_ns,
-            "research graph renewed lease_expires_at_ns",
-        )
-        if lease_expires_at_ns <= now_ns:
-            raise ValueError("research graph renewed lease must expire after now")
+        if type(renewals) is not tuple or not renewals or any(
+            type(row) is not ResearchGraphLeaseRenewal for row in renewals
+        ):
+            raise TypeError(
+                "research graph lease renewals must be a non-empty typed tuple"
+            )
+        ordered = tuple(sorted(renewals, key=lambda row: row.node_id))
+        node_ids = tuple(row.node_id for row in ordered)
+        attempt_ids = tuple(row.attempt_id for row in ordered)
+        if len(node_ids) != len(set(node_ids)):
+            raise ValueError("research graph lease renewal node ids must be unique")
+        if len(attempt_ids) != len(set(attempt_ids)):
+            raise ValueError("research graph lease renewal attempt ids must be unique")
+        normalized_expiries = {
+            row.node_id: self._require_timestamp_ns(
+                row.lease_expires_at_ns,
+                "research graph renewed lease_expires_at_ns",
+            )
+            for row in ordered
+        }
+        if any(value <= now_ns for value in normalized_expiries.values()):
+            raise ValueError("research graph renewed leases must expire after now")
+
         with self._transaction() as conn:
-            current = self._node_tx(conn, execution_id, node_id)
-            self._require_active(
-                current,
-                attempt_id=attempt_id,
-                owner_id=owner_id,
-            )
-            self._require_unexpired_lease(current, now_ns=now_ns)
-            if lease_expires_at_ns <= current.lease_expires_at_ns:
-                raise ValueError("research graph lease renewal must extend the lease")
-            conn.execute(
-                "UPDATE research_graph_nodes SET lease_expires_at_ns=? "
-                "WHERE execution_id=? AND node_id=?",
-                (lease_expires_at_ns, execution_id, node_id),
-            )
-            conn.execute(
-                "UPDATE research_graph_attempts SET lease_expires_at_ns=? "
-                "WHERE attempt_id=?",
-                (lease_expires_at_ns, attempt_id),
-            )
+            self._execution_tx(conn, execution_id)
+            current_by_node: dict[str, ResearchGraphNodeExecutionRecord] = {}
+            for renewal in ordered:
+                current = self._node_tx(conn, execution_id, renewal.node_id)
+                self._require_active(
+                    current,
+                    attempt_id=renewal.attempt_id,
+                    owner_id=renewal.owner_id,
+                )
+                self._require_unexpired_lease(current, now_ns=now_ns)
+                expires_at_ns = normalized_expiries[renewal.node_id]
+                if (
+                    current.lease_expires_at_ns is None
+                    or expires_at_ns <= current.lease_expires_at_ns
+                ):
+                    raise ValueError(
+                        "research graph lease renewal must extend every lease"
+                    )
+                current_by_node[renewal.node_id] = current
+
+            for renewal in ordered:
+                expires_at_ns = normalized_expiries[renewal.node_id]
+                conn.execute(
+                    "UPDATE research_graph_nodes SET lease_expires_at_ns=? "
+                    "WHERE execution_id=? AND node_id=?",
+                    (expires_at_ns, execution_id, renewal.node_id),
+                )
+                updated = conn.execute(
+                    "UPDATE research_graph_attempts SET lease_expires_at_ns=? "
+                    "WHERE execution_id=? AND node_id=? AND attempt_id=?",
+                    (
+                        expires_at_ns,
+                        execution_id,
+                        renewal.node_id,
+                        renewal.attempt_id,
+                    ),
+                )
+                if updated.rowcount != 1:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph lease renewal lost exact attempt identity"
+                    )
             self._bump_generation(conn, execution_id)
-            return self._node_tx(conn, execution_id, node_id)
+            return tuple(
+                self._node_tx(conn, execution_id, renewal.node_id)
+                for renewal in ordered
+            )
 
     def mark_succeeded(
         self,
