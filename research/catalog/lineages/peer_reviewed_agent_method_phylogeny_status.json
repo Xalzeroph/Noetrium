@@ -1118,7 +1118,7 @@
       "reproductions": [
         {
           "package": "vima_embodied",
-          "package_digest": "8ce4d2889de67dc1837d4d2037cce3491c44987c808b7a3c87f613eb49bbcb54",
+          "package_digest": "1358dcd67381c4202a2f7d357b09781fa26df4240f1daa6b1c5ab886d0013f9c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "vima-bench"
@@ -1171,7 +1171,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/vima_embodied/environment.py",
-              "content_sha256": "2367212ba5093c4cde31b3f9a175706f46706ad29b30af7dcbc1575d8b4455eb"
+              "content_sha256": "09ce02c170be3c84921f39cf224770e91e934ab423912f65e98f35ff1b83140c"
             },
             {
               "kind": "support",
@@ -2006,7 +2006,7 @@
       "reproductions": [
         {
           "package": "videoagent_memory",
-          "package_digest": "8ceccc183ee6466ecf967f2eb510f5cdaefbe2dbace01d956bd9ad4184fc74a1",
+          "package_digest": "399839ef95c61afecb704142e7a538f73769e11505e9e00b9893b61b344869fc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egoschema"
@@ -2055,12 +2055,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/videoagent_memory/program.py",
-              "content_sha256": "104d1d98f4b8227eb993787f1f2add54526696555692991f148a292ec1303418"
+              "content_sha256": "41bfef9d38e8e5580d4e7cc6383fb91768011b8f6f9f4f260b34f34d39c549d3"
             },
             {
               "kind": "research_program",
               "path": "research/reproductions/videoagent_memory/memory.py",
-              "content_sha256": "4ed26eb0b218cdf5392a6dae9e4f99c6c81641f2f5794296e072f800ceffce0d"
+              "content_sha256": "5da06afa304a4fca738fb685342565d65c9d1b34798bdd9414043bcc9303612c"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "0eed316667971e37cc27897e4e3281a3713c2e587d1fba482ff4e92bb6c5d68a"
+  "projection_digest": "eec9a2b29bf254b3fc1e87ca31019dfbbf023638632f9a1bb6d1ed2e4af96b5c"
 }

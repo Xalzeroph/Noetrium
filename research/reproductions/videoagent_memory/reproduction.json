@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoagent_memory",
-  "package_digest": "8ceccc183ee6466ecf967f2eb510f5cdaefbe2dbace01d956bd9ad4184fc74a1",
+  "package_digest": "399839ef95c61afecb704142e7a538f73769e11505e9e00b9893b61b344869fc",
   "definition_digest": "b6a07d721d7dd58c2212cbab3afce909293e26aeebaaafddd8228fe68fdf8381",
   "source_registry_digest": "2c4ad0c7f51054bfd49d84df431ced1c43641a42cd98243c8343899ebc7ce56e",
   "lifecycle": "protocol_bound",
@@ -137,13 +137,13 @@
       "kind": "method_program",
       "path": "research/reproductions/videoagent_memory/program.py",
       "declaration_digest": "7bbf279e6c62f1cea91e90c38ba30f7749a13cb185ab54fd015247a1524d3067",
-      "content_sha256": "104d1d98f4b8227eb993787f1f2add54526696555692991f148a292ec1303418"
+      "content_sha256": "41bfef9d38e8e5580d4e7cc6383fb91768011b8f6f9f4f260b34f34d39c549d3"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/videoagent_memory/memory.py",
       "declaration_digest": "2c2806369379898635c6a1bde4d8c1535d25f50c66678cfa326ab5565c577eed",
-      "content_sha256": "4ed26eb0b218cdf5392a6dae9e4f99c6c81641f2f5794296e072f800ceffce0d"
+      "content_sha256": "5da06afa304a4fca738fb685342565d65c9d1b34798bdd9414043bcc9303612c"
     },
     {
       "kind": "study",
