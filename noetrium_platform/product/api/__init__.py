@@ -4,15 +4,6 @@ All lower Noetrium systems are internal composition authorities. Downstream
 research projects author and control work through the Research OS only.
 """
 
-from ..research_blueprint import (
-    RESEARCH_PROJECT_BLUEPRINT_SCHEMA,
-    ResearchDefinitionRef,
-    ResearchProjectBlueprint,
-    decode_research_project_blueprint,
-    encode_research_project_blueprint,
-    research_project_blueprint_document,
-)
-
 from ..research_os import (
     ResearchBranch,
     ResearchControlAction,
@@ -71,10 +62,4 @@ __all__ = [
     "ResearchRevisionDiff",
     "ResearchTag",
     "ResearchValueKind",
-    "RESEARCH_PROJECT_BLUEPRINT_SCHEMA",
-    "ResearchDefinitionRef",
-    "ResearchProjectBlueprint",
-    "decode_research_project_blueprint",
-    "encode_research_project_blueprint",
-    "research_project_blueprint_document",
 ]
