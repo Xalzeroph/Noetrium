@@ -421,11 +421,10 @@
         "key": "experimentation/lifecycle/experiment",
         "package_prefix": "noetrium_platform.research.experimentation.lifecycle.experiment",
         "node_kind": "facet",
-        "owns": "experiment definitions, variants and experiment lifecycle",
-        "must_not_own": "runtime process state",
+        "owns": "experiment definitions, variants and execution-neutral lifecycle semantics",
+        "must_not_own": "runtime process state or an independent execution loop",
         "shape": [
-          "api",
-          "runtime"
+          "api"
         ]
       },
       {
