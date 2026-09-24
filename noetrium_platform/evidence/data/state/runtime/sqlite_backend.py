@@ -29,7 +29,10 @@ class SQLiteStateWriteSession(AbstractContextManager["SQLiteStateWriteSession"])
     def __init__(self, backend: "SQLiteStateBackend") -> None:
         self.backend = backend
         self.conn = backend.connect_writer()
-        begin_immediate_sqlite_transaction(self.conn, timeout_seconds=self.timeout_seconds)
+        begin_immediate_sqlite_transaction(
+            self.conn,
+            timeout_seconds=backend.timeout_seconds,
+        )
         self._complete = False
 
     def read(self, aggregate_id: str) -> EncodedAggregate | None:

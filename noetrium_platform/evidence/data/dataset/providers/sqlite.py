@@ -51,6 +51,44 @@ class SQLiteDatasetRegistry:
             timeout_seconds=self.timeout_seconds,
         )
 
+    @classmethod
+    def _ensure_schema(cls, db: sqlite3.Connection) -> None:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS datasets(
+                dataset_key TEXT PRIMARY KEY,
+                dataset_id TEXT NOT NULL,
+                version TEXT NOT NULL,
+                scope_kind TEXT NOT NULL,
+                scope_id TEXT NOT NULL,
+                content_sha256 TEXT NOT NULL,
+                schema_ref TEXT,
+                parents_json TEXT NOT NULL,
+                tags_json TEXT NOT NULL,
+                metadata_json TEXT NOT NULL,
+                record_sha256 TEXT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_datasets_identity
+                ON datasets(dataset_id,version);
+            CREATE INDEX IF NOT EXISTS idx_datasets_scope
+                ON datasets(scope_kind,scope_id,dataset_key);
+            CREATE TABLE IF NOT EXISTS dataset_tags(
+                dataset_key TEXT NOT NULL,
+                tag TEXT NOT NULL,
+                PRIMARY KEY(dataset_key,tag),
+                FOREIGN KEY(dataset_key) REFERENCES datasets(dataset_key)
+                    ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_dataset_tags_tag
+                ON dataset_tags(tag,dataset_key);
+            """
+        )
+        columns = tuple(row[1] for row in db.execute("PRAGMA table_info(datasets)"))
+        if columns != cls._COLUMNS:
+            raise DatasetRegistryCorruptionError(
+                f"unsupported dataset registry schema columns: {columns!r}"
+            )
+
     @staticmethod
     def _parent_documents(dataset: DatasetVersion) -> tuple[dict[str, str], ...]:
         return tuple(
