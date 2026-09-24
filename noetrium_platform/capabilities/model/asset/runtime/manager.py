@@ -6,12 +6,12 @@ import json
 from threading import RLock
 
 from noetrium_platform.substrate.api import ScopeIdentity
+from noetrium_platform.foundation.kernel.kernel import DurableCarrierReferenceClosure
 
 from noetrium_platform.capabilities.model.asset.api import (
     ManagedModelAsset,
     ModelAssetGcAssessment,
     ModelAssetMode,
-    ModelAssetReferenceClosure,
     ModelAssetOrigin,
     ModelAssetStats,
     ModelAssetStoragePort,
@@ -206,7 +206,7 @@ class ModelAssetManager:
         self,
         model_id: str,
         *,
-        closures: tuple[ModelAssetReferenceClosure, ...] = (),
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> ModelAssetGcAssessment:
         references = self._references.references(model_id)
         if references:
