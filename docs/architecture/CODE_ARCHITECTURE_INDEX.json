@@ -49366,7 +49366,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 151,
+      "line": 148,
       "methods": [
         "__init__",
         "_load",
@@ -49389,7 +49389,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 119,
+      "line": 116,
       "methods": [
         "__init__",
         "_key",
@@ -79669,7 +79669,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 759,
+      "line": 764,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -80045,6 +80045,7 @@
       "line": 693,
       "methods": [
         "node_control_state",
+        "node_control_snapshot",
         "request_node_drain",
         "pause_node_if_quiescent",
         "resume_node",
@@ -80202,6 +80203,7 @@
         "node_state",
         "control_state",
         "node_control_state",
+        "node_control_snapshot",
         "request_node_drain",
         "pause_node_if_quiescent",
         "resume_node",
@@ -143202,7 +143204,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "678ae750e953e4e5554c7f35150978296bb39c33",
+  "source_git_sha": "56f80797756050a00611b875e891ff5e9cbe4927",
   "system_import_edges": [
     {
       "count": 90,

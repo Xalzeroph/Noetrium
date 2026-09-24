@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3630,
-    "python_import_edges": 6869,
+    "python_import_edges": 6870,
     "symbols": 4826,
     "tracked_files": 4259,
     "typescript_javascript_files": 11
@@ -40781,6 +40781,12 @@
     {
       "source_module": "tests.test_universal_method_machine_abi_v2",
       "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.workflow.providers.method_checkpoint",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_universal_method_machine_abi_v2",
+      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.workflow.runtime",
       "target_role": "core_platform"
     },
@@ -41291,7 +41297,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2695,
+      "count": 2696,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41370,7 +41376,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "678ae750e953e4e5554c7f35150978296bb39c33",
+  "source_git_sha": "56f80797756050a00611b875e891ff5e9cbe4927",
   "symbols": [
     {
       "bases": [],
@@ -72442,7 +72448,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 119,
+      "line": 116,
       "methods": [
         "__init__",
         "_key",
@@ -72461,7 +72467,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 151,
+      "line": 148,
       "methods": [
         "__init__",
         "_load",
@@ -100494,6 +100500,7 @@
       "line": 693,
       "methods": [
         "node_control_state",
+        "node_control_snapshot",
         "request_node_drain",
         "pause_node_if_quiescent",
         "resume_node",
@@ -100517,7 +100524,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 759,
+      "line": 764,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -100564,6 +100571,7 @@
         "node_state",
         "control_state",
         "node_control_state",
+        "node_control_snapshot",
         "request_node_drain",
         "pause_node_if_quiescent",
         "resume_node",
@@ -130328,9 +130336,10 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 38,
+      "line": 39,
       "methods": [
         "test_identity_and_live_snapshot_are_separate",
+        "test_host_inventory_rejects_ambiguous_fabric_topology",
         "test_planner_prefers_nvlink_and_local_numa",
         "test_host_runtime_identity_mismatch_is_not_requalified_silently",
         "test_unrelated_transient_port_does_not_invalidate_host_qualification",
@@ -145315,7 +145324,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 111,
+      "line": 112,
       "methods": [
         "run"
       ],
@@ -145331,7 +145340,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 151,
+      "line": 152,
       "methods": [
         "run_async"
       ],
@@ -145347,7 +145356,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 177,
+      "line": 178,
       "methods": [
         "validate"
       ],
@@ -145363,7 +145372,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 215,
+      "line": 216,
       "methods": [
         "record_checkpoint",
         "record_result",
@@ -145381,7 +145390,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 255,
+      "line": 256,
       "methods": [
         "run_async"
       ],
@@ -145397,7 +145406,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 283,
+      "line": 284,
       "methods": [
         "run"
       ],
