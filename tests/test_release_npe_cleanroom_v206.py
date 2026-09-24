@@ -62,7 +62,7 @@ def _doctor(
         "command": "project doctor",
         "result": {
             "project_root": "project",
-            "template_revision": "noetrium.project-template.v9",
+            "template_revision": "noetrium.project-template.v10",
             "checks": checks,
         },
     }
@@ -129,7 +129,7 @@ def test_doctor_facts_preserve_public_boundary_and_v9_template() -> None:
     ready, public_boundary, template, blockers = npe._doctor_facts(receipt)
     assert ready is False
     assert public_boundary is True
-    assert template == "noetrium.project-template.v9"
+    assert template == "noetrium.project-template.v10"
     assert blockers == ("standard_bindings",)
 
 
