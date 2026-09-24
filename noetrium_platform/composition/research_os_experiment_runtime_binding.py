@@ -81,6 +81,56 @@ class ResearchOSExperimentReconciliationResolverPort(Protocol):
     ) -> ResearchOSExperimentReconciliationPort: ...
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchOSExperimentRuntimeComponents:
+    """Owner-system resolvers consumed by the Research OS composition root."""
+
+    study_execution: ResearchOSExperimentStudyExecutionResolverPort
+    aggregation: ResearchOSExperimentAggregationResolverPort
+    reconciliation: ResearchOSExperimentReconciliationResolverPort
+
+    def __post_init__(self) -> None:
+        if not isinstance(
+            self.study_execution,
+            ResearchOSExperimentStudyExecutionResolverPort,
+        ):
+            raise TypeError(
+                "Experiment runtime components require Study execution resolver"
+            )
+        if not isinstance(
+            self.aggregation,
+            ResearchOSExperimentAggregationResolverPort,
+        ):
+            raise TypeError(
+                "Experiment runtime components require aggregation resolver"
+            )
+        if not isinstance(
+            self.reconciliation,
+            ResearchOSExperimentReconciliationResolverPort,
+        ):
+            raise TypeError(
+                "Experiment runtime components require reconciliation resolver"
+            )
+
+    def bind(
+        self,
+        artifacts: ResearchOSExperimentArtifactStoreFactoryPort,
+    ) -> "ResearchOSExperimentRuntimeBindingAuthority":
+        if not isinstance(
+            artifacts,
+            ResearchOSExperimentArtifactStoreFactoryPort,
+        ):
+            raise TypeError(
+                "Experiment runtime components require Artifact-store factory"
+            )
+        return ResearchOSExperimentRuntimeBindingAuthority(
+            study_execution=self.study_execution,
+            aggregation=self.aggregation,
+            artifacts=artifacts,
+            reconciliation=self.reconciliation,
+        )
+
+
 class ResearchOSExperimentRuntimeBindingAuthority(
     ResearchOSExperimentRuntimeBindingPort
 ):
@@ -190,6 +240,7 @@ __all__ = [
     "ResearchOSExperimentAggregationBinding",
     "ResearchOSExperimentAggregationResolverPort",
     "ResearchOSExperimentReconciliationResolverPort",
+    "ResearchOSExperimentRuntimeComponents",
     "ResearchOSExperimentRuntimeBindingAuthority",
     "ResearchOSExperimentStudyExecutionBinding",
     "ResearchOSExperimentStudyExecutionResolverPort",
