@@ -139,3 +139,64 @@ def test_artifact_value_authority_rebinds_same_content_across_execution_cuts(tmp
     assert retention.retention is ArtifactRetention.RUN
     assert retention.pinned
     assert retention.reason_refs == (target.subject_digest,)
+
+
+
+def test_immutable_value_authority_covers_every_research_value_kind(tmp_path) -> None:
+    authority = ResearchOSImmutableValueAuthority(
+        DirectoryArtifactBlobStore(tmp_path / "blobs"),
+        SQLiteArtifactRegistry(tmp_path / "artifacts.sqlite3"),
+        SQLiteArtifactRetentionStore(tmp_path / "retention.sqlite3"),
+    )
+
+    assert authority.supported_kinds == frozenset(ResearchValueKind)
+    for index, kind in enumerate(ResearchValueKind):
+        source = ResearchOSValueSubject(
+            canonical_digest({"cut": f"source-{kind.value}"}),
+            "paper::node",
+            f"value-{index}",
+            kind,
+            canonical_digest({"semantic": kind.value}),
+        )
+        value = {"kind": kind.value, "index": index}
+        published = authority.publish(source, value)
+        assert authority.lookup(source) == published
+        assert authority.resolve(published) == value
+
+        target = ResearchOSValueSubject(
+            canonical_digest({"cut": f"target-{kind.value}"}),
+            source.graph_node_id,
+            source.output_name,
+            kind,
+            source.semantic_digest,
+        )
+        reused = authority.reuse(published, target)
+        assert reused.subject == target
+        assert reused.content_digest == published.content_digest
+        assert authority.resolve(reused) == value
+        assert len(authority.reuse_proof(reused)) == 64
+
+
+def test_immutable_value_reuse_rejects_cross_kind_rebinding(tmp_path) -> None:
+    authority = ResearchOSImmutableValueAuthority(
+        DirectoryArtifactBlobStore(tmp_path / "blobs"),
+        SQLiteArtifactRegistry(tmp_path / "artifacts.sqlite3"),
+        SQLiteArtifactRetentionStore(tmp_path / "retention.sqlite3"),
+    )
+    source = ResearchOSValueSubject(
+        canonical_digest({"cut": "source"}),
+        "paper::node",
+        "value",
+        ResearchValueKind.DATA,
+        canonical_digest({"semantic": "same"}),
+    )
+    published = authority.publish(source, {"value": 1})
+    target = ResearchOSValueSubject(
+        canonical_digest({"cut": "target"}),
+        source.graph_node_id,
+        source.output_name,
+        ResearchValueKind.METRIC,
+        source.semantic_digest,
+    )
+    with pytest.raises(ValueError, match="reuse kind drifted"):
+        authority.reuse(published, target)
