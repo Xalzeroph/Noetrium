@@ -14,6 +14,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     ExecutionLaneKind,
     ExecutionPermitRejected,
     ExecutionSpec,
+    HeartbeatSpec,
     TaskFailurePolicy,
     TaskFailureScope,
 )
@@ -131,6 +132,14 @@ class _DurableAttemptBook:
                     "research graph renewal lost local attempt identity"
                 )
             self._attempts[node_id] = (attempt_id, next_renewal_ns)
+
+    def snapshot(self) -> tuple[tuple[str, str, int], ...]:
+        with self._lock:
+            return tuple(
+                (node_id, attempt_id, next_renewal_ns)
+                for node_id, (attempt_id, next_renewal_ns)
+                in sorted(self._attempts.items())
+            )
 
     def drop(self, node_id: str) -> tuple[str, int] | None:
         with self._lock:
@@ -820,22 +829,15 @@ class ResearchGraphScheduler:
         store: ResearchGraphExecutionStorePort,
         node_control_store: ResearchGraphNodeControlStorePort,
         execution_id: str,
-        running: dict[str, tuple[ResearchGraphNode, object]],
         attempts: _DurableAttemptBook,
-        live: dict[str, ResearchGraphNodeExecutionRecord],
         renewal_interval_ns: int,
         now_ns: int,
     ) -> None:
-        due_attempts: dict[str, tuple[str, int]] = {}
-        for node_id in tuple(sorted(running)):
-            _node, handle = running[node_id]
-            attempt = attempts.current(node_id)
-            if handle.done() or attempt is None:
-                continue
-            attempt_id, next_renewal = attempt
-            if now_ns >= next_renewal:
-                due_attempts[node_id] = (attempt_id, next_renewal)
-
+        due_attempts = {
+            node_id: (attempt_id, next_renewal)
+            for node_id, attempt_id, next_renewal in attempts.snapshot()
+            if now_ns >= next_renewal
+        }
         if not due_attempts:
             return
 
@@ -858,7 +860,6 @@ class ResearchGraphScheduler:
         renewal_rows: list[ResearchGraphLeaseRenewal] = []
         renewal_node_ids: list[str] = []
         for node_id in due_ids:
-            _node, handle = running[node_id]
             attempt_id, _next_renewal = due_attempts[node_id]
             current = current_by_id[node_id]
             node_control = control_by_id[node_id]
@@ -875,10 +876,9 @@ class ResearchGraphScheduler:
                     ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
                     ResearchGraphNodeControlPhase.CANCELLED,
                 }:
-                    handle.cancel()
                     continue
                 raise ResearchGraphExecutionConflict(
-                    "running scheduler attempt lost authoritative node state"
+                    "durable lease heartbeat lost authoritative node state"
                 )
             renewal_rows.append(
                 ResearchGraphLeaseRenewal(
@@ -906,11 +906,15 @@ class ResearchGraphScheduler:
         for node_id in renewal_node_ids:
             attempt = attempts.current(node_id)
             if attempt is None:
-                raise ResearchGraphExecutionConflict(
-                    "renewed research graph node lost local attempt"
-                )
+                # Completion may have durably terminalized the same exact
+                # attempt while the batch was in flight. No new owner identity
+                # is inferred from that local disappearance.
+                continue
             attempt_id, _next_renewal = attempt
-            live[node_id] = renewed_by_node[node_id]
+            if attempt_id != due_attempts[node_id][0]:
+                raise ResearchGraphExecutionConflict(
+                    "renewed research graph node changed local attempt identity"
+                )
             attempts.renew(
                 node_id,
                 attempt_id,
@@ -1055,6 +1059,77 @@ class ResearchGraphScheduler:
         attempts = _DurableAttemptBook()
         completion_queue: Queue[str] = Queue()
         submission_counts: dict[str, int] = {}
+        lease_transition_lock = RLock()
+
+        try:
+            lease_group = self._pool.open_control_group(
+                f"{base_group_id}:lease-control:{uuid4().hex}",
+                tenant_id=self._tenant_id,
+                resource_id=f"research-graph-lease:{self._plan.graph_id}",
+                priority=ExecutionPriority.CRITICAL,
+                admission_mode=AdmissionMode.BLOCK,
+                deadline=deadline,
+                failure_policy=TaskFailurePolicy.FAIL_FAST,
+            )
+        except BaseException:
+            self._pool.close_orchestration_group(
+                opportunistic_group,
+                cancel_pending=True,
+                deadline=deadline,
+            )
+            self._pool.close_orchestration_group(
+                fair_group,
+                cancel_pending=True,
+                deadline=deadline,
+            )
+            raise
+
+        def renew_owned_leases(context) -> None:
+            context.checkpoint()
+            with lease_transition_lock:
+                self._renew_due_durable_leases(
+                    store=store,
+                    node_control_store=node_control_store,
+                    execution_id=execution_id,
+                    attempts=attempts,
+                    renewal_interval_ns=renewal_interval_ns,
+                    now_ns=time.time_ns(),
+                )
+            context.checkpoint()
+
+        try:
+            lease_heartbeat = self._pool.control_heartbeats.register(
+                lease_group.group_id,
+                HeartbeatSpec(
+                    heartbeat_id=(
+                        f"research-graph-lease:{execution_id}:"
+                        f"{self._scheduler_owner_id}:{uuid4().hex}"
+                    ),
+                    lane_id=f"research-graph-lease-renewal:{execution_id}",
+                    interval_seconds=renewal_interval_ns / 1_000_000_000,
+                    initial_delay_seconds=renewal_interval_ns / 1_000_000_000,
+                    lane_capacity=1,
+                ),
+                renew_owned_leases,
+                deadline=deadline,
+            )
+        except BaseException:
+            self._pool.close_control_group(
+                lease_group,
+                cancel_pending=True,
+                deadline=deadline,
+            )
+            self._pool.close_orchestration_group(
+                opportunistic_group,
+                cancel_pending=True,
+                deadline=deadline,
+            )
+            self._pool.close_orchestration_group(
+                fair_group,
+                cancel_pending=True,
+                deadline=deadline,
+            )
+            raise
 
         def submit(
             node: ResearchGraphNode,
@@ -1122,23 +1197,25 @@ class ResearchGraphScheduler:
             )
 
         def record_completion(node_id: str) -> None:
-            self._record_durable_completion(
-                node_id=node_id,
-                store=store,
-                control_store=control_store,
-                node_control_store=node_control_store,
-                execution_id=execution_id,
-                running=running,
-                attempts=attempts,
-                live=live,
-                pending=pending,
-                results=results,
-                reconciliation_required=reconciliation_required,
-                frontier=frontier,
-            )
+            with lease_transition_lock:
+                self._record_durable_completion(
+                    node_id=node_id,
+                    store=store,
+                    control_store=control_store,
+                    node_control_store=node_control_store,
+                    execution_id=execution_id,
+                    running=running,
+                    attempts=attempts,
+                    live=live,
+                    pending=pending,
+                    results=results,
+                    reconciliation_required=reconciliation_required,
+                    frontier=frontier,
+                )
 
         try:
             while pending or running:
+                lease_heartbeat.assert_healthy()
                 current_control = control_store.control_state(execution_id)
                 if current_control.phase in {
                     ResearchGraphControlPhase.PAUSED,
@@ -1317,22 +1394,6 @@ class ResearchGraphScheduler:
                         del pending[node_id]
                         progressed = True
 
-                # The scheduler remains the durable attempt owner until a
-                # terminal result is committed. Renew before consuming local
-                # completion notifications so a finished worker cannot lose its
-                # lease merely while its result waits in the scheduler queue.
-                now_ns = time.time_ns()
-                self._renew_due_durable_leases(
-                    store=store,
-                    node_control_store=node_control_store,
-                    execution_id=execution_id,
-                    running=running,
-                    attempts=attempts,
-                    live=live,
-                    renewal_interval_ns=renewal_interval_ns,
-                    now_ns=now_ns,
-                )
-
                 completed: list[str] = []
                 while True:
                     try:
@@ -1372,21 +1433,6 @@ class ResearchGraphScheduler:
                     continue
 
                 wait_seconds = 0.05
-                renewal_deadlines = tuple(
-                    attempt[1]
-                    for node_id in running
-                    if (attempt := attempts.current(node_id)) is not None
-                )
-                if renewal_deadlines:
-                    next_renewal_ns = min(renewal_deadlines)
-                    wait_seconds = min(
-                        wait_seconds,
-                        max(
-                            0.0,
-                            (next_renewal_ns - time.time_ns())
-                            / 1_000_000_000,
-                        ),
-                    )
                 if deadline is not None:
                     wait_seconds = min(
                         wait_seconds,
@@ -1425,6 +1471,7 @@ class ResearchGraphScheduler:
             )
         finally:
             close_errors: list[BaseException] = []
+            worker_convergence_failed = False
             for owned_group in (opportunistic_group, fair_group):
                 try:
                     self._pool.close_orchestration_group(
@@ -1434,6 +1481,25 @@ class ResearchGraphScheduler:
                             if deadline is not None
                             else False
                         ),
+                        deadline=deadline,
+                    )
+                except BaseException as exc:
+                    close_errors.append(exc)
+                    try:
+                        if not owned_group.snapshot().converged:
+                            worker_convergence_failed = True
+                    except BaseException:
+                        worker_convergence_failed = True
+
+            # Never stop the ownership heartbeat under a worker whose physical
+            # convergence is unproven. The pool remains the owner and its final
+            # close is the retry boundary for that fail-closed state.
+            if not worker_convergence_failed:
+                try:
+                    lease_heartbeat.cancel()
+                    self._pool.close_control_group(
+                        lease_group,
+                        cancel_pending=True,
                         deadline=deadline,
                     )
                 except BaseException as exc:
