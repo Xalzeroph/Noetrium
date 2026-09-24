@@ -2,15 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.research.experimentation.lifecycle.run.api.ports import DecisionCycleRuntimePort, RunRuntimePort
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentTrialProtocolIdentity
 
 
 @dataclass(frozen=True, slots=True)
 class ExperimentRuntimeComponents:
     trial_protocol_identity: ExperimentTrialProtocolIdentity
-    cycle_runtime: DecisionCycleRuntimePort
-    run_runtime: RunRuntimePort
+    cycle_runtime: object
+    run_runtime: object
 
 
 __all__ = ["ExperimentRuntimeComponents"]
