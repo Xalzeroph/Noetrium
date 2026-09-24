@@ -225,7 +225,7 @@ def test_checkpoint_restore_plus_action_wal_recovers_applied_effect_without_seco
         # Construct the exact journal identity without relying on private runtime objects.
         # The action is authorized by the last verified joint checkpoint; environment
         # generation is deliberately not part of the stable action identity.
-        from noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime import identity_context
+        from tests_runtime_harness import identity_context
         context = replace(identity_context(c2, spec()), checkpoint_id=checkpoint1)
         request = ActionRequest("action_dc2", "move", {"n": 2}, context)
         intent = environment_effect_intent(request, participant_component(next(row for row in spec().participants if row.role == "environment")), operation_id="dc2:environment.act")
