@@ -278,8 +278,11 @@ class SQLitePortfolioRevisionStore:
         if expected_revision_digest is not None:
             require_sha256(expected_revision_digest, "portfolio expected branch revision")
         with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="portfolio branch",
+            ):
                 self._revision_tx(conn, subject_id, revision_digest)
                 row = conn.execute(
                     "SELECT revision_digest,generation FROM portfolio_branches "
@@ -303,7 +306,6 @@ class SQLitePortfolioRevisionStore:
                             "portfolio branch compare-and-swap revision mismatch"
                         )
                     if current_digest == revision_digest:
-                        conn.commit()
                         return PortfolioBranchRef(
                             subject_id, name, current_digest, generation
                         )
@@ -326,12 +328,7 @@ class SQLitePortfolioRevisionStore:
                         raise PortfolioRevisionConflict(
                             "portfolio branch compare-and-swap lost authority"
                         )
-                conn.commit()
                 return result
-            except BaseException:
-                if conn.in_transaction:
-                    conn.rollback()
-                raise
 
     def branch(self, subject_id: str, name: str) -> PortfolioBranchRef:
         with self._connection() as conn:
@@ -354,8 +351,11 @@ class SQLitePortfolioRevisionStore:
     ) -> PortfolioTagRef:
         require_sha256(revision_digest, "portfolio tag revision_digest")
         with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="portfolio tag",
+            ):
                 self._revision_tx(conn, subject_id, revision_digest)
                 row = conn.execute(
                     "SELECT revision_digest FROM portfolio_tags "
@@ -367,18 +367,12 @@ class SQLitePortfolioRevisionStore:
                     current = PortfolioTagRef(subject_id, name, str(row[0]))
                     if current != candidate:
                         raise PortfolioRevisionConflict("portfolio tag is immutable")
-                    conn.commit()
                     return current
                 conn.execute(
                     "INSERT INTO portfolio_tags(subject_id,name,revision_digest) VALUES(?,?,?)",
                     (subject_id, name, revision_digest),
                 )
-                conn.commit()
                 return candidate
-            except BaseException:
-                if conn.in_transaction:
-                    conn.rollback()
-                raise
 
     def resolve_tag(self, subject_id: str, name: str) -> PortfolioTagRef:
         with self._connection() as conn:
