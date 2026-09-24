@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 import math
 
-from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, freeze_json, thaw_json
+from noetrium.api import JsonObject, JsonValue, freeze_json, thaw_json
 
 _FLOW_STATUSES = {"pending", "in_progress", "completed", "failed"}
 
