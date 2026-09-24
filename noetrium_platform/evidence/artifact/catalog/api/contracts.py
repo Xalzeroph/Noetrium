@@ -74,9 +74,18 @@ class ArtifactQuery:
     scope: ScopeIdentity | None = None
     kind: ArtifactKind | None = None
     producer_component_id: str | None = None
+    digest: str | None = None
     limit: int = 1000
 
     def __post_init__(self) -> None:
+        if self.digest is not None and (
+            type(self.digest) is not str
+            or len(self.digest) != 64
+            or any(char not in "0123456789abcdef" for char in self.digest)
+        ):
+            raise ValueError(
+                "artifact query digest must be lowercase SHA-256"
+            )
         if isinstance(self.limit, bool) or not isinstance(self.limit, int) or not 1 <= self.limit <= 10_000:
             raise ValueError("artifact query limit must be an integer in [1, 10000]")
 
