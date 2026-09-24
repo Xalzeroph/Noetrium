@@ -354,6 +354,30 @@ class ResearchExecutionPool:
             deadline=deadline,
         )
 
+    @staticmethod
+    def _close_domain_for_physical_convergence(
+        runtime,
+        *,
+        deadline: Deadline | None,
+    ) -> BaseException | None:
+        """Close one execution domain and classify only physical non-convergence.
+
+        The concurrency runtime intentionally reports historical logical child
+        failures from close() even after every owned task/lane/provider has
+        physically joined. Those failures remain visible in topology/evidence
+        and through normal task health checks, but they must not pin physical
+        resources forever during terminal teardown.
+        """
+
+        try:
+            runtime.close(deadline=deadline)
+        except BaseException as exc:
+            snapshot = runtime.topology_snapshot()
+            if snapshot.converged:
+                return None
+            return exc
+        return None
+
     def quiesce_workloads(
         self,
         *,
@@ -371,16 +395,20 @@ class ResearchExecutionPool:
             return
         self._workloads_quiescing = True
         errors: list[BaseException] = []
-        try:
-            self._experiments.close(deadline=deadline)
-        except BaseException as exc:
-            errors.append(exc)
-        # Even when experiment convergence reports an error, model-I/O still
-        # receives a bounded close attempt so shutdown does not strand workers.
-        try:
-            self._model_io.close(deadline=deadline)
-        except BaseException as exc:
-            errors.append(exc)
+        experiment_error = self._close_domain_for_physical_convergence(
+            self._experiments,
+            deadline=deadline,
+        )
+        if experiment_error is not None:
+            errors.append(experiment_error)
+        # Even when experiment convergence is unproven, model-I/O still receives
+        # a bounded close attempt so shutdown does not strand workers.
+        model_io_error = self._close_domain_for_physical_convergence(
+            self._model_io,
+            deadline=deadline,
+        )
+        if model_io_error is not None:
+            errors.append(model_io_error)
         if errors:
             raise ExceptionGroup(
                 "research execution workload quiesce failed",
@@ -406,10 +434,12 @@ class ResearchExecutionPool:
         self._closing = True
         errors: list[BaseException] = []
         for runtime in (self._orchestration, self._experiments, self._model_io):
-            try:
-                runtime.close(deadline=deadline)
-            except BaseException as exc:
-                errors.append(exc)
+            error = self._close_domain_for_physical_convergence(
+                runtime,
+                deadline=deadline,
+            )
+            if error is not None:
+                errors.append(error)
         try:
             self._model_admission.close()
         except BaseException as exc:
