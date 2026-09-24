@@ -5,7 +5,11 @@ import sqlite3
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import open_durable_sqlite_writer
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    is_sqlite_lock_contention,
+    open_durable_sqlite_writer,
+)
 from noetrium_platform.research.execution.operation.command.api import CommandId
 from noetrium_platform.research.execution.operation.api import (
     EffectId,
@@ -44,15 +48,12 @@ class SQLiteOperationStore:
     def _initialize(self) -> None:
         retry_until_deadline(
             self._initialize_once,
-            should_retry=lambda exc: isinstance(exc, sqlite3.OperationalError)
-            and "locked" in str(exc).lower(),
+            should_retry=is_sqlite_lock_contention,
             timeout_seconds=30.0,
         )
 
     def _initialize_once(self) -> None:
         with closing(self._connect()) as db, db:
-            if db.execute("PRAGMA journal_mode").fetchone()[0].lower() != "wal":
-                db.execute("PRAGMA journal_mode=WAL").fetchone()
             db.execute(
                 """CREATE TABLE IF NOT EXISTS operations (
                 operation_id TEXT PRIMARY KEY,
@@ -155,7 +156,7 @@ class SQLiteOperationStore:
         if snapshot.state is not OperationState.CREATED or snapshot.version != 0:
             raise ValueError("new durable operation must start at CREATED version 0")
         with closing(self._connect()) as db, db:
-            db.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(db, timeout_seconds=30.0)
             row = db.execute(
                 "SELECT * FROM operations WHERE operation_id=?",
                 (snapshot.operation_id.value,),
