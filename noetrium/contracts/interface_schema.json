@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "6c042a700860acdee6adc434a61bcbee9a4bf090c15ea7bd33446d8a84af2df7",
+  "interface_digest": "46c04b02d457b907e9ac27fb4eba0a9a870b313cce163742dbf4ef405ba5bd82",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -272,6 +272,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "ResearchMethodProgramImplementation",
+              "origin_module": "..research_os",
+              "origin_name": "ResearchMethodProgramImplementation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "ResearchInputBinding",
               "origin_module": "..research_os",
               "origin_name": "ResearchInputBinding",
@@ -417,6 +426,7 @@
             "ResearchGraphRevision",
             "ResearchImpactState",
             "ResearchImplementation",
+            "ResearchMethodProgramImplementation",
             "ResearchInputBinding",
             "ResearchNode",
             "ResearchNodeImpact",

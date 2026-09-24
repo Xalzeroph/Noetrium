@@ -20,6 +20,7 @@ from noetrium_platform.product.api import (
     ResearchGraphRevision,
     ResearchImpactState,
     ResearchImplementation,
+    ResearchMethodProgramImplementation,
     ResearchInputBinding,
     ResearchNode,
     ResearchNodeImpact,
@@ -39,4 +40,4 @@ from noetrium_platform.product.api import (
 
 SYSTEM_KEY = 'research_os'
 PACKAGE_PREFIX = 'noetrium_platform.product'
-__all__ = ('ResearchBranch', 'ResearchControlAction', 'ResearchControlReceipt', 'ResearchControlRequest', 'ResearchDefinition', 'ResearchDefinitionKind', 'ResearchDependency', 'ResearchExecutionTarget', 'ResearchGraphRevision', 'ResearchImpactState', 'ResearchImplementation', 'ResearchInputBinding', 'ResearchNode', 'ResearchNodeImpact', 'ResearchNodeKind', 'ResearchPortfolioDependency', 'ResearchPortfolioBuilder', 'ResearchNodeRef', 'ResearchOS', 'ResearchOutputSpec', 'ResearchPortfolio', 'ResearchProgram', 'ResearchProgramBuilder', 'ResearchRevisionDiff', 'ResearchTag', 'ResearchValueKind')
+__all__ = ('ResearchBranch', 'ResearchControlAction', 'ResearchControlReceipt', 'ResearchControlRequest', 'ResearchDefinition', 'ResearchDefinitionKind', 'ResearchDependency', 'ResearchExecutionTarget', 'ResearchGraphRevision', 'ResearchImpactState', 'ResearchImplementation', 'ResearchMethodProgramImplementation', 'ResearchInputBinding', 'ResearchNode', 'ResearchNodeImpact', 'ResearchNodeKind', 'ResearchPortfolioDependency', 'ResearchPortfolioBuilder', 'ResearchNodeRef', 'ResearchOS', 'ResearchOutputSpec', 'ResearchPortfolio', 'ResearchProgram', 'ResearchProgramBuilder', 'ResearchRevisionDiff', 'ResearchTag', 'ResearchValueKind')

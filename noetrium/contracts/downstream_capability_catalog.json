@@ -1,6 +1,6 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "e1849019370a52f5504c7a7853075b3f75f23b0f7e046b1c85c2ddc74019cde8",
+  "catalog_digest": "0921854a96b108dac4c4c765b8fdd8ad3a5750f3f9a7bf917f367a58fd87e5b5",
   "direct_symbol_sources": {
     "ResearchBranch": "noetrium_platform.product.api",
     "ResearchControlAction": "noetrium_platform.product.api",
@@ -14,6 +14,7 @@
     "ResearchImpactState": "noetrium_platform.product.api",
     "ResearchImplementation": "noetrium_platform.product.api",
     "ResearchInputBinding": "noetrium_platform.product.api",
+    "ResearchMethodProgramImplementation": "noetrium_platform.product.api",
     "ResearchNode": "noetrium_platform.product.api",
     "ResearchNodeImpact": "noetrium_platform.product.api",
     "ResearchNodeKind": "noetrium_platform.product.api",
@@ -67,6 +68,9 @@
       "research_os"
     ],
     "ResearchInputBinding": [
+      "research_os"
+    ],
+    "ResearchMethodProgramImplementation": [
       "research_os"
     ],
     "ResearchNode": [
@@ -698,6 +702,7 @@
             "ResearchGraphRevision",
             "ResearchImpactState",
             "ResearchImplementation",
+            "ResearchMethodProgramImplementation",
             "ResearchInputBinding",
             "ResearchNode",
             "ResearchNodeImpact",
@@ -720,7 +725,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "01ffd7e15c74764581ea990417f16758c0d0655d737467c5c72d8dddff51991a",
+      "interface_digest": "210d0aba5c929a9da76b2ab8f4e3281403895225565b712486cbbb4f1f7c336d",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",

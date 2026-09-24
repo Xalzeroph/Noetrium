@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3637,
     "python_import_edges": 6906,
-    "symbols": 4831,
+    "symbols": 4833,
     "tracked_files": 4266,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4825,
+    "python": 4827,
     "typescript": 5
   },
   "parse_errors": [],
@@ -41580,7 +41580,7 @@
     "tooling": 78
   },
   "role_symbol_counts": {
-    "core_platform": 3330,
+    "core_platform": 3332,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -41592,7 +41592,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "14ffd64c4db50123afeb8eec1d1771525b6720c1",
+  "source_git_sha": "ceac6692be422176dcb199cb9320863b235b9a25",
   "symbols": [
     {
       "bases": [],
@@ -63984,7 +63984,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 479,
+      "line": 517,
       "methods": [
         "control"
       ],
@@ -64004,7 +64004,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 490,
+      "line": 528,
       "methods": [
         "active_revision_digest",
         "migrate"
@@ -64021,7 +64021,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 504,
+      "line": 542,
       "methods": [
         "__init__",
         "_public_revision",
@@ -64525,7 +64525,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 52,
+      "line": 53,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchOSLoweringTarget",
@@ -64541,7 +64541,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 104,
+      "line": 105,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchImplementationResolutionError",
@@ -64561,7 +64561,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 109,
+      "line": 110,
       "methods": [
         "__post_init__"
       ],
@@ -64569,6 +64569,28 @@
       "name": "ResolvedResearchImplementation",
       "path": "noetrium_platform/composition/research_os_lowering.py",
       "qualname": "noetrium_platform.composition.research_os_lowering.ResolvedResearchImplementation",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "definition_id: str",
+        "declared: ResearchMethodProgramImplementation",
+        "program: MethodProgram"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 125,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.research_os_lowering",
+      "name": "ResolvedResearchMethodProgramImplementation",
+      "path": "noetrium_platform/composition/research_os_lowering.py",
+      "qualname": "noetrium_platform.composition.research_os_lowering.ResolvedResearchMethodProgramImplementation",
       "role": "core_platform"
     },
     {
@@ -64581,7 +64603,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 124,
+      "line": 152,
       "methods": [
         "resolve"
       ],
@@ -64597,7 +64619,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 131,
+      "line": 159,
       "methods": [
         "resolve"
       ],
@@ -64620,7 +64642,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 307,
+      "line": 376,
       "methods": [
         "__post_init__"
       ],
@@ -64641,7 +64663,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 420,
+      "line": 489,
       "methods": [
         "__post_init__"
       ],
@@ -64659,7 +64681,7 @@
       "fields": [
         "source: CompiledResearchOSGraphNode",
         "target: ResearchOSLoweringTarget",
-        "implementations: tuple[ResolvedResearchImplementation, ...]",
+        "implementations: tuple[ResolvedResearchImplementation | ResolvedResearchMethodProgramImplementation, ...]",
         "platform_requirements: tuple[ResearchDefinition, ...]",
         "method_programs: tuple[LoweredResearchMethodProgram, ...]",
         "machine_programs: tuple[LoweredResearchMachineProgram, ...]",
@@ -64668,7 +64690,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 434,
+      "line": 503,
       "methods": [
         "__post_init__"
       ],
@@ -64693,7 +64715,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 603,
+      "line": 679,
       "methods": [
         "__post_init__",
         "node"
@@ -64710,7 +64732,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 655,
+      "line": 731,
       "methods": [
         "__init__",
         "compile_node",
@@ -98473,7 +98495,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 43,
+      "line": 44,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchDefinitionKind",
@@ -98506,7 +98528,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 56,
+      "line": 57,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchNodeKind",
@@ -98529,7 +98551,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 75,
+      "line": 76,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchValueKind",
@@ -98546,12 +98568,37 @@
         "implementation_id: str",
         "module: str",
         "qualname: str",
+        "program_digest: str",
+        "implementation_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 86,
+      "methods": [
+        "__post_init__",
+        "from_symbol"
+      ],
+      "module": "noetrium_platform.product.research_os",
+      "name": "ResearchMethodProgramImplementation",
+      "path": "noetrium_platform/product/research_os.py",
+      "qualname": "noetrium_platform.product.research_os.ResearchMethodProgramImplementation",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "implementation_id: str",
+        "module: str",
+        "qualname: str",
         "source_digest: str",
         "implementation_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 85,
+      "line": 173,
       "methods": [
         "__post_init__",
         "from_callable"
@@ -98570,13 +98617,13 @@
       "fields": [
         "definition_id: str",
         "kind: ResearchDefinitionKind",
-        "implementation: ResearchImplementation | None",
+        "implementation: ResearchImplementation | ResearchMethodProgramImplementation | None",
         "config: JsonValue",
         "definition_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 169,
+      "line": 257,
       "methods": [
         "__post_init__",
         "implementation_id",
@@ -98600,7 +98647,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 221,
+      "line": 322,
       "methods": [
         "__post_init__"
       ],
@@ -98622,7 +98669,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 232,
+      "line": 333,
       "methods": [
         "__post_init__"
       ],
@@ -98645,7 +98692,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 245,
+      "line": 346,
       "methods": [
         "__post_init__",
         "after"
@@ -98671,7 +98718,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 294,
+      "line": 395,
       "methods": [
         "__post_init__"
       ],
@@ -98695,7 +98742,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 338,
+      "line": 439,
       "methods": [
         "__post_init__"
       ],
@@ -98716,7 +98763,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 464,
+      "line": 565,
       "methods": [
         "__post_init__"
       ],
@@ -98739,7 +98786,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 474,
+      "line": 575,
       "methods": [
         "__post_init__"
       ],
@@ -98762,7 +98809,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 648,
+      "line": 761,
       "methods": [
         "__post_init__"
       ],
@@ -98778,7 +98825,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 772,
+      "line": 885,
       "methods": [
         "__init__",
         "program",
@@ -98805,7 +98852,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 818,
+      "line": 931,
       "methods": [
         "__post_init__"
       ],
@@ -98828,7 +98875,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 852,
+      "line": 965,
       "methods": [
         "__post_init__"
       ],
@@ -98850,7 +98897,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 867,
+      "line": 980,
       "methods": [
         "__post_init__"
       ],
@@ -98875,7 +98922,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 878,
+      "line": 991,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchImpactState",
@@ -98895,7 +98942,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 888,
+      "line": 1001,
       "methods": [
         "__post_init__"
       ],
@@ -98918,7 +98965,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 901,
+      "line": 1014,
       "methods": [
         "__post_init__"
       ],
@@ -98941,7 +98988,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 918,
+      "line": 1031,
       "methods": [
         "__post_init__",
         "portfolio_id",
@@ -98974,7 +99021,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 968,
+      "line": 1081,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchControlAction",
@@ -98994,7 +99041,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 983,
+      "line": 1096,
       "methods": [
         "__post_init__"
       ],
@@ -99018,7 +99065,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 997,
+      "line": 1110,
       "methods": [
         "__post_init__"
       ],
@@ -99038,7 +99085,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 1020,
+      "line": 1133,
       "methods": [
         "commit",
         "diff",
@@ -99071,7 +99118,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 1069,
+      "line": 1182,
       "methods": [
         "commit",
         "diff",
@@ -99092,7 +99139,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1106,
+      "line": 1219,
       "methods": [
         "__init__",
         "commit",
@@ -99125,11 +99172,12 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1238,
+      "line": 1351,
       "methods": [
         "__init__",
         "definition",
         "method",
+        "method_program",
         "benchmark",
         "metric",
         "dataset",
@@ -100672,12 +100720,14 @@
         "node_state",
         "node_states",
         "mark_ready",
+        "mark_ready_many",
         "claim",
         "mark_running",
         "renew_leases",
         "mark_succeeded",
         "mark_failed",
         "mark_blocked",
+        "mark_blocked_many",
         "recover_expired",
         "retry_failed_subgraph",
         "resolve_reconciliation",
@@ -100702,7 +100752,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 642,
+      "line": 656,
       "methods": [
         "control_state",
         "request_drain",
@@ -100729,7 +100779,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 712,
+      "line": 726,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -100757,7 +100807,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 789,
+      "line": 803,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -100823,6 +100873,7 @@
         "active_cut",
         "move_active_cut",
         "mark_ready",
+        "mark_ready_many",
         "claim",
         "_require_active",
         "_require_unexpired_lease",
@@ -100831,6 +100882,7 @@
         "mark_succeeded",
         "mark_failed",
         "mark_blocked",
+        "mark_blocked_many",
         "recover_expired",
         "retry_failed_subgraph",
         "resolve_reconciliation",
