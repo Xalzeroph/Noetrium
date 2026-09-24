@@ -140,6 +140,7 @@ def test_server_readiness_requires_rcon_after_tcp_and_retries_connection_refused
     probe = MinecraftServerReadinessProbe(
         tcp=Tcp(),  # type: ignore[arg-type]
         rcon=Rcon(),  # type: ignore[arg-type]
+        task_group=make_task_group("minecraft-rcon-readiness"),
         poll_interval_s=0.001,
     )
 
