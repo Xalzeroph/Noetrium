@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.substrate.api import ScopeIdentity
 from noetrium_platform.substrate.api import ResolutionPolicy
 
@@ -54,9 +55,11 @@ class EnvironmentProfileMaterialization:
 
     profile_id: str
     profile_revision: str
+    build_input_digest: str
     runtime_identity_digest: str
     deployment_receipt_digest: str
     runtime_reference: str
+    materialization_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         if (
@@ -69,6 +72,7 @@ class EnvironmentProfileMaterialization:
             )
         for field_name, value in (
             ("profile_revision", self.profile_revision),
+            ("build_input_digest", self.build_input_digest),
             ("runtime_identity_digest", self.runtime_identity_digest),
             ("deployment_receipt_digest", self.deployment_receipt_digest),
         ):
@@ -90,7 +94,21 @@ class EnvironmentProfileMaterialization:
                 "environment profile materialization runtime_reference "
                 "must be canonical non-empty text"
             )
-
+        object.__setattr__(
+            self,
+            "materialization_digest",
+            canonical_digest(
+                {
+                    "schema": "noetrium.environment-profile-materialization.v1",
+                    "profile_id": self.profile_id,
+                    "profile_revision": self.profile_revision,
+                    "build_input_digest": self.build_input_digest,
+                    "runtime_identity_digest": self.runtime_identity_digest,
+                    "deployment_receipt_digest": self.deployment_receipt_digest,
+                    "runtime_reference": self.runtime_reference,
+                }
+            ),
+        )
 
 class EnvironmentInstanceState(StrEnum):
     CLEAN = "clean"
@@ -171,6 +189,7 @@ class EnvironmentInstance:
     backend: str
     runtime_reference: str
     runtime_identity_digest: str
+    materialization_digest: str
     scope: ScopeIdentity
     profile_id: str
     profile_revision: str
@@ -186,6 +205,7 @@ class EnvironmentInstance:
         for field_name, value in (
             ("resolved_spec_digest", self.resolved_spec_digest),
             ("runtime_identity_digest", self.runtime_identity_digest),
+            ("materialization_digest", self.materialization_digest),
             ("profile_revision", self.profile_revision),
         ):
             if (
@@ -225,6 +245,7 @@ class EnvironmentCleanlinessProof:
     instance_id: str
     profile_revision: str
     runtime_identity_digest: str
+    materialization_digest: str
     generation: int
     kind: EnvironmentCleanlinessKind
     proof_digest: str
@@ -235,6 +256,7 @@ class EnvironmentCleanlinessProof:
         for label, value in (
             ("profile_revision", self.profile_revision),
             ("runtime_identity_digest", self.runtime_identity_digest),
+            ("materialization_digest", self.materialization_digest),
             ("proof_digest", self.proof_digest),
         ):
             if (
