@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.research.experimentation.lifecycle.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium_platform.research.experimentation.lifecycle.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from noetrium import api
+
+canonical_digest = api.canonical_digest
+ExperimentTrialProtocolIdentity = api.ExperimentTrialProtocolIdentity
+BenchmarkTaskSet = api.BenchmarkTaskSet
+MeasurementDefinition = api.MeasurementDefinition
+ReplayLevel = api.ReplayLevel
+ResearchStudyDefinition = api.ResearchStudyDefinition
+Study = api.Study
+StudyModel = api.StudyModel
+StudyParticipant = api.StudyParticipant
+TrialBudget = api.TrialBudget
+
+
 from research.benchmarks.lvu import LVU_BENCHMARK_ID
 
 from .benchmark import ADACM2_LVU_PROTOCOL, ADACM2_LVU_TEST_SPLIT
