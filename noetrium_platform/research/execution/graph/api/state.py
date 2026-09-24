@@ -506,6 +506,12 @@ class ResearchGraphExecutionStorePort(Protocol):
         node_id: str,
     ) -> ResearchGraphNodeExecutionRecord: ...
 
+    def node_states(
+        self,
+        execution_id: str,
+        node_ids: tuple[str, ...],
+    ) -> tuple[ResearchGraphNodeExecutionRecord, ...]: ...
+
     def mark_ready(
         self,
         execution_id: str,
@@ -715,6 +721,12 @@ class ResearchGraphNodeControlStorePort(Protocol):
     def node_control_snapshot(
         self,
         execution_id: str,
+    ) -> tuple[ResearchGraphNodeControlRecord, ...]: ...
+
+    def node_control_states(
+        self,
+        execution_id: str,
+        node_ids: tuple[str, ...],
     ) -> tuple[ResearchGraphNodeControlRecord, ...]: ...
 
     def request_node_drain(
