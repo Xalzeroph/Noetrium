@@ -8,7 +8,7 @@ from noetrium_platform.capabilities.environment.api import (
     ExecutionContext,
     Observation,
 )
-from noetrium_platform.composition.environment_replay import (
+from noetrium_platform.capabilities.environment.api import (
     EnvironmentReplayError,
     replay_environment_prefix,
 )
