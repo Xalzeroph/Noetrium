@@ -106,7 +106,7 @@ CLEAN/DIRTY/IN_USE(unbound abort) --destroy--> DESTROYED
 
 Each checkout increments `EnvironmentInstance.generation`. `EnvironmentCleanlinessProof` binds the instance id, immutable profile revision, exact generation, proof kind and proof digest. A proof from generation N cannot certify generation N+1. `reusable_instances()` returns only CLEAN instances.
 
-The same authority exposes `profile_references()` and `assess_profile_gc()`. Local GC eligibility requires zero live bindings and every catalog instance for that profile revision to be DESTROYED. Final GC additionally fails closed when Execution reports resumable executions or Evidence reports retained dependencies. Environment never claims those external truths itself; it consumes their proof inputs when assessing physical deletion safety.
+The same authority exposes `profile_references()` and `assess_profile_gc()`. Local GC eligibility requires zero live bindings and every catalog instance for that profile revision to be DESTROYED. Final GC is stricter: Execution and Evidence must both provide complete closure results. An unknown/missing external reference set is blocking; an explicit empty tuple means that authority has proven closure. Environment never claims those external truths itself, and physical deletion is eligible only when local references are closed, Execution reports no resumable execution, and Evidence reports no retained dependency.
 
 ## Profile-local doctors
 
