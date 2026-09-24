@@ -272,10 +272,6 @@ def _check_research_machine_bypasses() -> int:
         "noetrium_platform/research/experimentation/lifecycle/run/api/identity_ports.py",
         "noetrium_platform/research/experimentation/lifecycle/run/runtime/diagnostics.py",
         "noetrium_platform/research/experimentation/lifecycle/run/api/diagnostics.py",
-        "noetrium_platform/research/experimentation/lifecycle/experiment/api/ports.py",
-        "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/components.py",
-        "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/component_binding.py",
-        "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/workflow_surfaces.py",
         "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/engine.py",
         "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/trial_cycle.py",
     )
