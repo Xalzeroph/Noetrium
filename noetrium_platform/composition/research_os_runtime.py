@@ -244,7 +244,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                     "version": 1,
                     "target": lowering.target.value,
                     "program_digest": lowered.program.program_digest,
-                    "operation_digest": lowered.operation.implementation_digest,
+                    "operations_digest": lowered.operations_digest,
                     "journal": "directory-machine-journal",
                     "max_steps": self._max_steps,
                 }
@@ -588,7 +588,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 f"{lowering.target.value}:{lowered.definition_id}"
             ),
             program=lowered.program,
-            operations=(lowered.operation,),
+            operations=lowered.operations,
             journal=self._machine_journal,
             max_steps=self._max_steps,
             dependency_identity={
