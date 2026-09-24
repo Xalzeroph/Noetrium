@@ -48,7 +48,7 @@ from noetrium_platform.product.research_os import (
 )
 
 
-RESEARCH_PORTFOLIO_MEDIA_TYPE = "application/vnd.noetrium.research-portfolio.v2+json"
+RESEARCH_PORTFOLIO_MEDIA_TYPE = "application/vnd.noetrium.research-portfolio.v3+json"
 
 
 def _object(value: object, field: str) -> dict[str, object]:
