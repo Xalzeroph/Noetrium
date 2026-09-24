@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3669,
-    "python_import_edges": 7110,
+    "python_files": 3670,
+    "python_import_edges": 7119,
     "symbols": 4856,
-    "tracked_files": 4299,
+    "tracked_files": 4300,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -13332,6 +13332,60 @@
       "source_module": "noetrium_platform.product.reference.research_os",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.product.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.environment.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.participant.capability.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.participant.method.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.environment_capabilities",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.machines.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
       "target_role": "core_platform"
     },
     {
@@ -42677,7 +42731,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2653,
+      "count": 2662,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42793,7 +42847,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1927,
+    "core_platform": 1928,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
@@ -42816,7 +42870,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "3a3ce43f4a29dea7c366bcafc68975ff44e03a07",
+  "source_git_sha": "fc677d1aae7fb0943eaf58db3880f0cddfc89aa3",
   "symbols": [
     {
       "bases": [],

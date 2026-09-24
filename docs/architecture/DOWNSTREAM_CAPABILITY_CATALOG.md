@@ -19,7 +19,7 @@ Example:
 
 - Registered systems: 31
 - Public API modules: 1
-- Public symbols: 28
+- Public symbols: 116
 - Registry digest: 31c2f26c4e934ccbbedf934a7302bfeb1e84861690f74b58e58aa61411a41de9
 
 ## Capability domains
@@ -39,7 +39,7 @@ Example:
 | platform | 1 | 0 | 0 |
 | portfolio | 1 | 0 | 0 |
 | reliability | 3 | 0 | 0 |
-| research_os | 1 | 1 | 28 |
+| research_os | 1 | 1 | 116 |
 | resource | 2 | 0 | 0 |
 | runtime | 1 | 0 | 0 |
 | scope | 1 | 0 | 0 |
@@ -399,7 +399,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.product.api ?w^~)?t ResearchBranch, ResearchControlAction, ResearchControlReceipt, ResearchControlRequest, ResearchDefinition, ResearchDefinitionKind, ResearchDependency, ResearchExecutionTarget, ResearchGraphRevision, ResearchImpactState, ResearchImplementation, ResearchMethodProgramBindingKind, ResearchMethodProgramImplementation, ResearchInputBinding, ResearchNode, ResearchNodeImpact, ResearchNodeKind, ResearchPortfolioDependency, ResearchPortfolioBuilder, ResearchNodeRef, ResearchOS, ResearchOutputSpec, ResearchPortfolio, ResearchProgram, ResearchProgramBuilder, ResearchRevisionDiff, ResearchTag, ResearchValueKind
+- noetrium_platform.product.api ?w^~)?t ResearchBranch, ResearchControlAction, ResearchControlReceipt, ResearchControlRequest, ResearchDefinition, ResearchDefinitionKind, ResearchDependency, ResearchExecutionTarget, ResearchGraphRevision, ResearchImpactState, ResearchImplementation, ResearchMethodProgramBindingKind, ResearchMethodProgramImplementation, ResearchInputBinding, ResearchNode, ResearchNodeImpact, ResearchNodeKind, ResearchPortfolioDependency, ResearchPortfolioBuilder, ResearchNodeRef, ResearchOS, ResearchOutputSpec, ResearchPortfolio, ResearchProgram, ResearchProgramBuilder, ResearchRevisionDiff, ResearchTag, ResearchValueKind, ActionRequest, ActionResult, AgentMethodSpec, AgentPhaseSpec, BenchmarkTaskSet, CapabilityDescriptor, CapabilityPort, CapabilityRequest, CapabilityResult, CapabilitySelectionReference, CapabilitySelectionView, ChildFailurePolicy, ChildMachineLink, ChildResearchMachineBatchItem, ChildResearchMachineBatchPort, ChildResearchMachineBatchRequest, ChildResearchMachineExecution, ChildResearchMachineRequest, DomainProgramBuilder, EffectCertainty, EffectClass, EffectReceipt, EnvironmentConcern, EnvironmentProgramBuilder, EnvironmentSession, EvaluationConcern, EvaluationProgramBuilder, ExecutionContext, ExperimentConcern, ExperimentProgramBuilder, ExperimentTrialProtocolIdentity, GuardDecision, GuardVerdict, MachineJournalPort, MachineResearchProgram, MachineResearchProgramBuilder, MachineSnapshotStorePort, MachineStatus, MeasurementDefinition, MemoryConcern, MemoryProgramBuilder, MethodAgentRequest, MethodAgentResult, MethodEvent, MethodExecutionClass, MethodIdentity, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodProgram, MethodProgramBuilder, MethodProgramIdentity, MethodRunResult, MethodRunStatus, MethodRuntimeContext, MethodRuntimePort, MethodWorkflow, OptimizationConcern, OptimizationProgramBuilder, ParticipantConcern, ParticipantProgramBuilder, ProgramNode, ProgramNodeRequest, ProgramNodeResult, ProgramRule, ProgramRuleSet, ReplayLevel, ResearchHostOperation, ResearchProgramHost, ResearchRunProgramBuilder, ResearchStudyDefinition, RunConcern, RuntimeConcern, RuntimeModule, RuntimeModuleBuilder, RuntimeProgramBuilder, Study, StudyModel, StudyParticipant, TrialBudget, environment_action_capability_payload, environment_branch_action_spec, environment_fork_action_payload, environment_query_capability_payload, environment_replay_action_payload, environment_reset_capability_payload, program_execution_capability_payload
 
 ### resource
 

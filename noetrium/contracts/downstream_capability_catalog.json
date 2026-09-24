@@ -1,7 +1,75 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "b506ac2e4c9806099324e9250895fa55b8180d8fc7cd09d7fc9931e9ff5d12a1",
+  "catalog_digest": "aaf0c3ed4b22bfe5d2d25a03dfb40a1334a13585aa4a69906b89943decbfca56",
   "direct_symbol_sources": {
+    "ActionRequest": "noetrium_platform.product.api",
+    "ActionResult": "noetrium_platform.product.api",
+    "AgentMethodSpec": "noetrium_platform.product.api",
+    "AgentPhaseSpec": "noetrium_platform.product.api",
+    "BenchmarkTaskSet": "noetrium_platform.product.api",
+    "CapabilityDescriptor": "noetrium_platform.product.api",
+    "CapabilityPort": "noetrium_platform.product.api",
+    "CapabilityRequest": "noetrium_platform.product.api",
+    "CapabilityResult": "noetrium_platform.product.api",
+    "CapabilitySelectionReference": "noetrium_platform.product.api",
+    "CapabilitySelectionView": "noetrium_platform.product.api",
+    "ChildFailurePolicy": "noetrium_platform.product.api",
+    "ChildMachineLink": "noetrium_platform.product.api",
+    "ChildResearchMachineBatchItem": "noetrium_platform.product.api",
+    "ChildResearchMachineBatchPort": "noetrium_platform.product.api",
+    "ChildResearchMachineBatchRequest": "noetrium_platform.product.api",
+    "ChildResearchMachineExecution": "noetrium_platform.product.api",
+    "ChildResearchMachineRequest": "noetrium_platform.product.api",
+    "DomainProgramBuilder": "noetrium_platform.product.api",
+    "EffectCertainty": "noetrium_platform.product.api",
+    "EffectClass": "noetrium_platform.product.api",
+    "EffectReceipt": "noetrium_platform.product.api",
+    "EnvironmentConcern": "noetrium_platform.product.api",
+    "EnvironmentProgramBuilder": "noetrium_platform.product.api",
+    "EnvironmentSession": "noetrium_platform.product.api",
+    "EvaluationConcern": "noetrium_platform.product.api",
+    "EvaluationProgramBuilder": "noetrium_platform.product.api",
+    "ExecutionContext": "noetrium_platform.product.api",
+    "ExperimentConcern": "noetrium_platform.product.api",
+    "ExperimentProgramBuilder": "noetrium_platform.product.api",
+    "ExperimentTrialProtocolIdentity": "noetrium_platform.product.api",
+    "GuardDecision": "noetrium_platform.product.api",
+    "GuardVerdict": "noetrium_platform.product.api",
+    "MachineJournalPort": "noetrium_platform.product.api",
+    "MachineResearchProgram": "noetrium_platform.product.api",
+    "MachineResearchProgramBuilder": "noetrium_platform.product.api",
+    "MachineSnapshotStorePort": "noetrium_platform.product.api",
+    "MachineStatus": "noetrium_platform.product.api",
+    "MeasurementDefinition": "noetrium_platform.product.api",
+    "MemoryConcern": "noetrium_platform.product.api",
+    "MemoryProgramBuilder": "noetrium_platform.product.api",
+    "MethodAgentRequest": "noetrium_platform.product.api",
+    "MethodAgentResult": "noetrium_platform.product.api",
+    "MethodEvent": "noetrium_platform.product.api",
+    "MethodExecutionClass": "noetrium_platform.product.api",
+    "MethodIdentity": "noetrium_platform.product.api",
+    "MethodNodeKind": "noetrium_platform.product.api",
+    "MethodNodeRequest": "noetrium_platform.product.api",
+    "MethodNodeResult": "noetrium_platform.product.api",
+    "MethodNodeSpec": "noetrium_platform.product.api",
+    "MethodProgram": "noetrium_platform.product.api",
+    "MethodProgramBuilder": "noetrium_platform.product.api",
+    "MethodProgramIdentity": "noetrium_platform.product.api",
+    "MethodRunResult": "noetrium_platform.product.api",
+    "MethodRunStatus": "noetrium_platform.product.api",
+    "MethodRuntimeContext": "noetrium_platform.product.api",
+    "MethodRuntimePort": "noetrium_platform.product.api",
+    "MethodWorkflow": "noetrium_platform.product.api",
+    "OptimizationConcern": "noetrium_platform.product.api",
+    "OptimizationProgramBuilder": "noetrium_platform.product.api",
+    "ParticipantConcern": "noetrium_platform.product.api",
+    "ParticipantProgramBuilder": "noetrium_platform.product.api",
+    "ProgramNode": "noetrium_platform.product.api",
+    "ProgramNodeRequest": "noetrium_platform.product.api",
+    "ProgramNodeResult": "noetrium_platform.product.api",
+    "ProgramRule": "noetrium_platform.product.api",
+    "ProgramRuleSet": "noetrium_platform.product.api",
+    "ReplayLevel": "noetrium_platform.product.api",
     "ResearchBranch": "noetrium_platform.product.api",
     "ResearchControlAction": "noetrium_platform.product.api",
     "ResearchControlReceipt": "noetrium_platform.product.api",
@@ -11,6 +79,7 @@
     "ResearchDependency": "noetrium_platform.product.api",
     "ResearchExecutionTarget": "noetrium_platform.product.api",
     "ResearchGraphRevision": "noetrium_platform.product.api",
+    "ResearchHostOperation": "noetrium_platform.product.api",
     "ResearchImpactState": "noetrium_platform.product.api",
     "ResearchImplementation": "noetrium_platform.product.api",
     "ResearchInputBinding": "noetrium_platform.product.api",
@@ -27,14 +96,237 @@
     "ResearchPortfolioDependency": "noetrium_platform.product.api",
     "ResearchProgram": "noetrium_platform.product.api",
     "ResearchProgramBuilder": "noetrium_platform.product.api",
+    "ResearchProgramHost": "noetrium_platform.product.api",
     "ResearchRevisionDiff": "noetrium_platform.product.api",
+    "ResearchRunProgramBuilder": "noetrium_platform.product.api",
+    "ResearchStudyDefinition": "noetrium_platform.product.api",
     "ResearchTag": "noetrium_platform.product.api",
-    "ResearchValueKind": "noetrium_platform.product.api"
+    "ResearchValueKind": "noetrium_platform.product.api",
+    "RunConcern": "noetrium_platform.product.api",
+    "RuntimeConcern": "noetrium_platform.product.api",
+    "RuntimeModule": "noetrium_platform.product.api",
+    "RuntimeModuleBuilder": "noetrium_platform.product.api",
+    "RuntimeProgramBuilder": "noetrium_platform.product.api",
+    "Study": "noetrium_platform.product.api",
+    "StudyModel": "noetrium_platform.product.api",
+    "StudyParticipant": "noetrium_platform.product.api",
+    "TrialBudget": "noetrium_platform.product.api",
+    "environment_action_capability_payload": "noetrium_platform.product.api",
+    "environment_branch_action_spec": "noetrium_platform.product.api",
+    "environment_fork_action_payload": "noetrium_platform.product.api",
+    "environment_query_capability_payload": "noetrium_platform.product.api",
+    "environment_replay_action_payload": "noetrium_platform.product.api",
+    "environment_reset_capability_payload": "noetrium_platform.product.api",
+    "program_execution_capability_payload": "noetrium_platform.product.api"
   },
   "entrypoint": "noetrium.api",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v5",
   "symbol_index": {
+    "ActionRequest": [
+      "research_os"
+    ],
+    "ActionResult": [
+      "research_os"
+    ],
+    "AgentMethodSpec": [
+      "research_os"
+    ],
+    "AgentPhaseSpec": [
+      "research_os"
+    ],
+    "BenchmarkTaskSet": [
+      "research_os"
+    ],
+    "CapabilityDescriptor": [
+      "research_os"
+    ],
+    "CapabilityPort": [
+      "research_os"
+    ],
+    "CapabilityRequest": [
+      "research_os"
+    ],
+    "CapabilityResult": [
+      "research_os"
+    ],
+    "CapabilitySelectionReference": [
+      "research_os"
+    ],
+    "CapabilitySelectionView": [
+      "research_os"
+    ],
+    "ChildFailurePolicy": [
+      "research_os"
+    ],
+    "ChildMachineLink": [
+      "research_os"
+    ],
+    "ChildResearchMachineBatchItem": [
+      "research_os"
+    ],
+    "ChildResearchMachineBatchPort": [
+      "research_os"
+    ],
+    "ChildResearchMachineBatchRequest": [
+      "research_os"
+    ],
+    "ChildResearchMachineExecution": [
+      "research_os"
+    ],
+    "ChildResearchMachineRequest": [
+      "research_os"
+    ],
+    "DomainProgramBuilder": [
+      "research_os"
+    ],
+    "EffectCertainty": [
+      "research_os"
+    ],
+    "EffectClass": [
+      "research_os"
+    ],
+    "EffectReceipt": [
+      "research_os"
+    ],
+    "EnvironmentConcern": [
+      "research_os"
+    ],
+    "EnvironmentProgramBuilder": [
+      "research_os"
+    ],
+    "EnvironmentSession": [
+      "research_os"
+    ],
+    "EvaluationConcern": [
+      "research_os"
+    ],
+    "EvaluationProgramBuilder": [
+      "research_os"
+    ],
+    "ExecutionContext": [
+      "research_os"
+    ],
+    "ExperimentConcern": [
+      "research_os"
+    ],
+    "ExperimentProgramBuilder": [
+      "research_os"
+    ],
+    "ExperimentTrialProtocolIdentity": [
+      "research_os"
+    ],
+    "GuardDecision": [
+      "research_os"
+    ],
+    "GuardVerdict": [
+      "research_os"
+    ],
+    "MachineJournalPort": [
+      "research_os"
+    ],
+    "MachineResearchProgram": [
+      "research_os"
+    ],
+    "MachineResearchProgramBuilder": [
+      "research_os"
+    ],
+    "MachineSnapshotStorePort": [
+      "research_os"
+    ],
+    "MachineStatus": [
+      "research_os"
+    ],
+    "MeasurementDefinition": [
+      "research_os"
+    ],
+    "MemoryConcern": [
+      "research_os"
+    ],
+    "MemoryProgramBuilder": [
+      "research_os"
+    ],
+    "MethodAgentRequest": [
+      "research_os"
+    ],
+    "MethodAgentResult": [
+      "research_os"
+    ],
+    "MethodEvent": [
+      "research_os"
+    ],
+    "MethodExecutionClass": [
+      "research_os"
+    ],
+    "MethodIdentity": [
+      "research_os"
+    ],
+    "MethodNodeKind": [
+      "research_os"
+    ],
+    "MethodNodeRequest": [
+      "research_os"
+    ],
+    "MethodNodeResult": [
+      "research_os"
+    ],
+    "MethodNodeSpec": [
+      "research_os"
+    ],
+    "MethodProgram": [
+      "research_os"
+    ],
+    "MethodProgramBuilder": [
+      "research_os"
+    ],
+    "MethodProgramIdentity": [
+      "research_os"
+    ],
+    "MethodRunResult": [
+      "research_os"
+    ],
+    "MethodRunStatus": [
+      "research_os"
+    ],
+    "MethodRuntimeContext": [
+      "research_os"
+    ],
+    "MethodRuntimePort": [
+      "research_os"
+    ],
+    "MethodWorkflow": [
+      "research_os"
+    ],
+    "OptimizationConcern": [
+      "research_os"
+    ],
+    "OptimizationProgramBuilder": [
+      "research_os"
+    ],
+    "ParticipantConcern": [
+      "research_os"
+    ],
+    "ParticipantProgramBuilder": [
+      "research_os"
+    ],
+    "ProgramNode": [
+      "research_os"
+    ],
+    "ProgramNodeRequest": [
+      "research_os"
+    ],
+    "ProgramNodeResult": [
+      "research_os"
+    ],
+    "ProgramRule": [
+      "research_os"
+    ],
+    "ProgramRuleSet": [
+      "research_os"
+    ],
+    "ReplayLevel": [
+      "research_os"
+    ],
     "ResearchBranch": [
       "research_os"
     ],
@@ -60,6 +352,9 @@
       "research_os"
     ],
     "ResearchGraphRevision": [
+      "research_os"
+    ],
+    "ResearchHostOperation": [
       "research_os"
     ],
     "ResearchImpactState": [
@@ -110,13 +405,70 @@
     "ResearchProgramBuilder": [
       "research_os"
     ],
+    "ResearchProgramHost": [
+      "research_os"
+    ],
     "ResearchRevisionDiff": [
+      "research_os"
+    ],
+    "ResearchRunProgramBuilder": [
+      "research_os"
+    ],
+    "ResearchStudyDefinition": [
       "research_os"
     ],
     "ResearchTag": [
       "research_os"
     ],
     "ResearchValueKind": [
+      "research_os"
+    ],
+    "RunConcern": [
+      "research_os"
+    ],
+    "RuntimeConcern": [
+      "research_os"
+    ],
+    "RuntimeModule": [
+      "research_os"
+    ],
+    "RuntimeModuleBuilder": [
+      "research_os"
+    ],
+    "RuntimeProgramBuilder": [
+      "research_os"
+    ],
+    "Study": [
+      "research_os"
+    ],
+    "StudyModel": [
+      "research_os"
+    ],
+    "StudyParticipant": [
+      "research_os"
+    ],
+    "TrialBudget": [
+      "research_os"
+    ],
+    "environment_action_capability_payload": [
+      "research_os"
+    ],
+    "environment_branch_action_spec": [
+      "research_os"
+    ],
+    "environment_fork_action_payload": [
+      "research_os"
+    ],
+    "environment_query_capability_payload": [
+      "research_os"
+    ],
+    "environment_replay_action_payload": [
+      "research_os"
+    ],
+    "environment_reset_capability_payload": [
+      "research_os"
+    ],
+    "program_execution_capability_payload": [
       "research_os"
     ]
   },
@@ -722,7 +1074,95 @@
             "ResearchProgramBuilder",
             "ResearchRevisionDiff",
             "ResearchTag",
-            "ResearchValueKind"
+            "ResearchValueKind",
+            "ActionRequest",
+            "ActionResult",
+            "AgentMethodSpec",
+            "AgentPhaseSpec",
+            "BenchmarkTaskSet",
+            "CapabilityDescriptor",
+            "CapabilityPort",
+            "CapabilityRequest",
+            "CapabilityResult",
+            "CapabilitySelectionReference",
+            "CapabilitySelectionView",
+            "ChildFailurePolicy",
+            "ChildMachineLink",
+            "ChildResearchMachineBatchItem",
+            "ChildResearchMachineBatchPort",
+            "ChildResearchMachineBatchRequest",
+            "ChildResearchMachineExecution",
+            "ChildResearchMachineRequest",
+            "DomainProgramBuilder",
+            "EffectCertainty",
+            "EffectClass",
+            "EffectReceipt",
+            "EnvironmentConcern",
+            "EnvironmentProgramBuilder",
+            "EnvironmentSession",
+            "EvaluationConcern",
+            "EvaluationProgramBuilder",
+            "ExecutionContext",
+            "ExperimentConcern",
+            "ExperimentProgramBuilder",
+            "ExperimentTrialProtocolIdentity",
+            "GuardDecision",
+            "GuardVerdict",
+            "MachineJournalPort",
+            "MachineResearchProgram",
+            "MachineResearchProgramBuilder",
+            "MachineSnapshotStorePort",
+            "MachineStatus",
+            "MeasurementDefinition",
+            "MemoryConcern",
+            "MemoryProgramBuilder",
+            "MethodAgentRequest",
+            "MethodAgentResult",
+            "MethodEvent",
+            "MethodExecutionClass",
+            "MethodIdentity",
+            "MethodNodeKind",
+            "MethodNodeRequest",
+            "MethodNodeResult",
+            "MethodNodeSpec",
+            "MethodProgram",
+            "MethodProgramBuilder",
+            "MethodProgramIdentity",
+            "MethodRunResult",
+            "MethodRunStatus",
+            "MethodRuntimeContext",
+            "MethodRuntimePort",
+            "MethodWorkflow",
+            "OptimizationConcern",
+            "OptimizationProgramBuilder",
+            "ParticipantConcern",
+            "ParticipantProgramBuilder",
+            "ProgramNode",
+            "ProgramNodeRequest",
+            "ProgramNodeResult",
+            "ProgramRule",
+            "ProgramRuleSet",
+            "ReplayLevel",
+            "ResearchHostOperation",
+            "ResearchProgramHost",
+            "ResearchRunProgramBuilder",
+            "ResearchStudyDefinition",
+            "RunConcern",
+            "RuntimeConcern",
+            "RuntimeModule",
+            "RuntimeModuleBuilder",
+            "RuntimeProgramBuilder",
+            "Study",
+            "StudyModel",
+            "StudyParticipant",
+            "TrialBudget",
+            "environment_action_capability_payload",
+            "environment_branch_action_spec",
+            "environment_fork_action_payload",
+            "environment_query_capability_payload",
+            "environment_replay_action_payload",
+            "environment_reset_capability_payload",
+            "program_execution_capability_payload"
           ]
         }
       ],
@@ -730,7 +1170,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "ec434289e70bdbaa065803a5faf4e44a5363a51e195f61e36c766267425704f6",
+      "interface_digest": "fa0625b9792670307ac92e190d0483f8d5ab8243c805c32e786d6ebc02d36b0b",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",

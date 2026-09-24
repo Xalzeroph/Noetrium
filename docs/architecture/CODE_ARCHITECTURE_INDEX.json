@@ -102404,9 +102404,9 @@
     "classes": 3337,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5103,
+    "module_import_edges": 5113,
     "parse_errors": 0,
-    "python_modules": 1927,
+    "python_modules": 1928,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -119949,6 +119949,10 @@
     },
     {
       "source": "noetrium_platform.product.api",
+      "target": "noetrium_platform.research_authoring"
+    },
+    {
+      "source": "noetrium_platform.product.api",
       "target": "noetrium_platform.research_os"
     },
     {
@@ -120050,6 +120054,42 @@
     {
       "source": "noetrium_platform.product.reference.research_os",
       "target": "noetrium_platform.product.research_os"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.capabilities.environment.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.capabilities.participant.capability.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.capabilities.participant.method.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.composition.environment_capabilities"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.research.execution.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.research.execution.machines.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.research.execution.workflow.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.research.experimentation.lifecycle.api"
     },
     {
       "source": "noetrium_platform.product.research_os",
@@ -140430,6 +140470,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.research_authoring",
         "noetrium_platform.research_os"
       ],
       "module": "noetrium_platform.product.api",
@@ -140582,6 +140623,23 @@
       ],
       "module": "noetrium_platform.product.reference.research_os",
       "path": "noetrium_platform/product/reference/research_os.py",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "imports": [
+        "noetrium_platform.capabilities.environment.api",
+        "noetrium_platform.capabilities.participant.capability.api",
+        "noetrium_platform.capabilities.participant.method.api",
+        "noetrium_platform.composition.environment_capabilities",
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.research.execution.api",
+        "noetrium_platform.research.execution.machines.api",
+        "noetrium_platform.research.execution.workflow.api",
+        "noetrium_platform.research.experimentation.lifecycle.api"
+      ],
+      "module": "noetrium_platform.product.research_authoring",
+      "path": "noetrium_platform/product/research_authoring.py",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -143788,7 +143846,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "3a3ce43f4a29dea7c366bcafc68975ff44e03a07",
+  "source_git_sha": "fc677d1aae7fb0943eaf58db3880f0cddfc89aa3",
   "system_import_edges": [
     {
       "count": 85,
@@ -143941,17 +143999,17 @@
       "target": "data"
     },
     {
-      "count": 46,
+      "count": 47,
       "source": "research_os",
       "target": "environment"
     },
     {
-      "count": 79,
+      "count": 82,
       "source": "research_os",
       "target": "execution"
     },
     {
-      "count": 26,
+      "count": 27,
       "source": "research_os",
       "target": "experimentation"
     },
@@ -143971,12 +144029,12 @@
       "target": "observability"
     },
     {
-      "count": 62,
+      "count": 64,
       "source": "research_os",
       "target": "participant"
     },
     {
-      "count": 119,
+      "count": 120,
       "source": "research_os",
       "target": "platform"
     },
@@ -143991,7 +144049,7 @@
       "target": "reliability"
     },
     {
-      "count": 318,
+      "count": 319,
       "source": "research_os",
       "target": "research_os"
     },

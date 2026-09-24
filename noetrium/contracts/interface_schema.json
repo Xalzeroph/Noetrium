@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "b8e2acee3ec1a2df7b02edee67dc071f79dfa6bd9b7dddb30146908bcd3751b3",
+  "interface_digest": "30c29be5203c7a3c24a93bb5523f75adc1b1880922546009609c424695beffff",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -421,6 +421,798 @@
               "origin_name": "ResearchValueKind",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ActionRequest",
+              "origin_module": "..research_authoring",
+              "origin_name": "ActionRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ActionResult",
+              "origin_module": "..research_authoring",
+              "origin_name": "ActionResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "AgentMethodSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "AgentMethodSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "AgentPhaseSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "AgentPhaseSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "BenchmarkTaskSet",
+              "origin_module": "..research_authoring",
+              "origin_name": "BenchmarkTaskSet",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CapabilityDescriptor",
+              "origin_module": "..research_authoring",
+              "origin_name": "CapabilityDescriptor",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CapabilityPort",
+              "origin_module": "..research_authoring",
+              "origin_name": "CapabilityPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CapabilityRequest",
+              "origin_module": "..research_authoring",
+              "origin_name": "CapabilityRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CapabilityResult",
+              "origin_module": "..research_authoring",
+              "origin_name": "CapabilityResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CapabilitySelectionReference",
+              "origin_module": "..research_authoring",
+              "origin_name": "CapabilitySelectionReference",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "CapabilitySelectionView",
+              "origin_module": "..research_authoring",
+              "origin_name": "CapabilitySelectionView",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildFailurePolicy",
+              "origin_module": "..research_authoring",
+              "origin_name": "ChildFailurePolicy",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildMachineLink",
+              "origin_module": "..research_authoring",
+              "origin_name": "ChildMachineLink",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchItem",
+              "origin_module": "..research_authoring",
+              "origin_name": "ChildResearchMachineBatchItem",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchPort",
+              "origin_module": "..research_authoring",
+              "origin_name": "ChildResearchMachineBatchPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineBatchRequest",
+              "origin_module": "..research_authoring",
+              "origin_name": "ChildResearchMachineBatchRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineExecution",
+              "origin_module": "..research_authoring",
+              "origin_name": "ChildResearchMachineExecution",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ChildResearchMachineRequest",
+              "origin_module": "..research_authoring",
+              "origin_name": "ChildResearchMachineRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "DomainProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "DomainProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EffectCertainty",
+              "origin_module": "..research_authoring",
+              "origin_name": "EffectCertainty",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EffectClass",
+              "origin_module": "..research_authoring",
+              "origin_name": "EffectClass",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EffectReceipt",
+              "origin_module": "..research_authoring",
+              "origin_name": "EffectReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EnvironmentConcern",
+              "origin_module": "..research_authoring",
+              "origin_name": "EnvironmentConcern",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EnvironmentProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "EnvironmentProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EnvironmentSession",
+              "origin_module": "..research_authoring",
+              "origin_name": "EnvironmentSession",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EvaluationConcern",
+              "origin_module": "..research_authoring",
+              "origin_name": "EvaluationConcern",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EvaluationProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "EvaluationProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExecutionContext",
+              "origin_module": "..research_authoring",
+              "origin_name": "ExecutionContext",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExperimentConcern",
+              "origin_module": "..research_authoring",
+              "origin_name": "ExperimentConcern",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExperimentProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "ExperimentProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExperimentTrialProtocolIdentity",
+              "origin_module": "..research_authoring",
+              "origin_name": "ExperimentTrialProtocolIdentity",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "GuardDecision",
+              "origin_module": "..research_authoring",
+              "origin_name": "GuardDecision",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "GuardVerdict",
+              "origin_module": "..research_authoring",
+              "origin_name": "GuardVerdict",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MachineJournalPort",
+              "origin_module": "..research_authoring",
+              "origin_name": "MachineJournalPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MachineResearchProgram",
+              "origin_module": "..research_authoring",
+              "origin_name": "MachineResearchProgram",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MachineResearchProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "MachineResearchProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MachineSnapshotStorePort",
+              "origin_module": "..research_authoring",
+              "origin_name": "MachineSnapshotStorePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MachineStatus",
+              "origin_module": "..research_authoring",
+              "origin_name": "MachineStatus",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MeasurementDefinition",
+              "origin_module": "..research_authoring",
+              "origin_name": "MeasurementDefinition",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryConcern",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryConcern",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodAgentRequest",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodAgentRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodAgentResult",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodAgentResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodEvent",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodEvent",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodExecutionClass",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodExecutionClass",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodIdentity",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodIdentity",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodNodeKind",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodNodeKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodNodeRequest",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodNodeRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodNodeResult",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodNodeResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodNodeSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodNodeSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodProgram",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodProgram",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodProgramIdentity",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodProgramIdentity",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodRunResult",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodRunResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodRunStatus",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodRunStatus",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodRuntimeContext",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodRuntimeContext",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodRuntimePort",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodRuntimePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodWorkflow",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodWorkflow",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "OptimizationConcern",
+              "origin_module": "..research_authoring",
+              "origin_name": "OptimizationConcern",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "OptimizationProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "OptimizationProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ParticipantConcern",
+              "origin_module": "..research_authoring",
+              "origin_name": "ParticipantConcern",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ParticipantProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "ParticipantProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramNode",
+              "origin_module": "..research_authoring",
+              "origin_name": "ProgramNode",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramNodeRequest",
+              "origin_module": "..research_authoring",
+              "origin_name": "ProgramNodeRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramNodeResult",
+              "origin_module": "..research_authoring",
+              "origin_name": "ProgramNodeResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramRule",
+              "origin_module": "..research_authoring",
+              "origin_name": "ProgramRule",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ProgramRuleSet",
+              "origin_module": "..research_authoring",
+              "origin_name": "ProgramRuleSet",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ReplayLevel",
+              "origin_module": "..research_authoring",
+              "origin_name": "ReplayLevel",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchHostOperation",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchHostOperation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchProgramHost",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchProgramHost",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchRunProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchRunProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchStudyDefinition",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchStudyDefinition",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RunConcern",
+              "origin_module": "..research_authoring",
+              "origin_name": "RunConcern",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RuntimeConcern",
+              "origin_module": "..research_authoring",
+              "origin_name": "RuntimeConcern",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RuntimeModule",
+              "origin_module": "..research_authoring",
+              "origin_name": "RuntimeModule",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RuntimeModuleBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "RuntimeModuleBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RuntimeProgramBuilder",
+              "origin_module": "..research_authoring",
+              "origin_name": "RuntimeProgramBuilder",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "Study",
+              "origin_module": "..research_authoring",
+              "origin_name": "Study",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "StudyModel",
+              "origin_module": "..research_authoring",
+              "origin_name": "StudyModel",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "StudyParticipant",
+              "origin_module": "..research_authoring",
+              "origin_name": "StudyParticipant",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TrialBudget",
+              "origin_module": "..research_authoring",
+              "origin_name": "TrialBudget",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "environment_action_capability_payload",
+              "origin_module": "..research_authoring",
+              "origin_name": "environment_action_capability_payload",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "environment_branch_action_spec",
+              "origin_module": "..research_authoring",
+              "origin_name": "environment_branch_action_spec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "environment_fork_action_payload",
+              "origin_module": "..research_authoring",
+              "origin_name": "environment_fork_action_payload",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "environment_query_capability_payload",
+              "origin_module": "..research_authoring",
+              "origin_name": "environment_query_capability_payload",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "environment_replay_action_payload",
+              "origin_module": "..research_authoring",
+              "origin_name": "environment_replay_action_payload",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "environment_reset_capability_payload",
+              "origin_module": "..research_authoring",
+              "origin_name": "environment_reset_capability_payload",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "program_execution_capability_payload",
+              "origin_module": "..research_authoring",
+              "origin_name": "program_execution_capability_payload",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -451,7 +1243,95 @@
             "ResearchProgramBuilder",
             "ResearchRevisionDiff",
             "ResearchTag",
-            "ResearchValueKind"
+            "ResearchValueKind",
+            "ActionRequest",
+            "ActionResult",
+            "AgentMethodSpec",
+            "AgentPhaseSpec",
+            "BenchmarkTaskSet",
+            "CapabilityDescriptor",
+            "CapabilityPort",
+            "CapabilityRequest",
+            "CapabilityResult",
+            "CapabilitySelectionReference",
+            "CapabilitySelectionView",
+            "ChildFailurePolicy",
+            "ChildMachineLink",
+            "ChildResearchMachineBatchItem",
+            "ChildResearchMachineBatchPort",
+            "ChildResearchMachineBatchRequest",
+            "ChildResearchMachineExecution",
+            "ChildResearchMachineRequest",
+            "DomainProgramBuilder",
+            "EffectCertainty",
+            "EffectClass",
+            "EffectReceipt",
+            "EnvironmentConcern",
+            "EnvironmentProgramBuilder",
+            "EnvironmentSession",
+            "EvaluationConcern",
+            "EvaluationProgramBuilder",
+            "ExecutionContext",
+            "ExperimentConcern",
+            "ExperimentProgramBuilder",
+            "ExperimentTrialProtocolIdentity",
+            "GuardDecision",
+            "GuardVerdict",
+            "MachineJournalPort",
+            "MachineResearchProgram",
+            "MachineResearchProgramBuilder",
+            "MachineSnapshotStorePort",
+            "MachineStatus",
+            "MeasurementDefinition",
+            "MemoryConcern",
+            "MemoryProgramBuilder",
+            "MethodAgentRequest",
+            "MethodAgentResult",
+            "MethodEvent",
+            "MethodExecutionClass",
+            "MethodIdentity",
+            "MethodNodeKind",
+            "MethodNodeRequest",
+            "MethodNodeResult",
+            "MethodNodeSpec",
+            "MethodProgram",
+            "MethodProgramBuilder",
+            "MethodProgramIdentity",
+            "MethodRunResult",
+            "MethodRunStatus",
+            "MethodRuntimeContext",
+            "MethodRuntimePort",
+            "MethodWorkflow",
+            "OptimizationConcern",
+            "OptimizationProgramBuilder",
+            "ParticipantConcern",
+            "ParticipantProgramBuilder",
+            "ProgramNode",
+            "ProgramNodeRequest",
+            "ProgramNodeResult",
+            "ProgramRule",
+            "ProgramRuleSet",
+            "ReplayLevel",
+            "ResearchHostOperation",
+            "ResearchProgramHost",
+            "ResearchRunProgramBuilder",
+            "ResearchStudyDefinition",
+            "RunConcern",
+            "RuntimeConcern",
+            "RuntimeModule",
+            "RuntimeModuleBuilder",
+            "RuntimeProgramBuilder",
+            "Study",
+            "StudyModel",
+            "StudyParticipant",
+            "TrialBudget",
+            "environment_action_capability_payload",
+            "environment_branch_action_spec",
+            "environment_fork_action_payload",
+            "environment_query_capability_payload",
+            "environment_replay_action_payload",
+            "environment_reset_capability_payload",
+            "program_execution_capability_payload"
           ]
         }
       ],
