@@ -360,11 +360,17 @@ class ResearchParticipantBindingRegistration:
             raise TypeError(
                 "Research participant registration requires BindingResolution"
             )
+        domain_binding_digest = (
+            None
+            if self.resolution.binding is None
+            else self.resolution.binding.digest()
+        )
         expected = canonical_digest(
             {
                 "project_manifest_digest": self.project_manifest_digest,
                 "research_requirement_digest": self.research_requirement_digest,
-                "resolution_digest": self.resolution.projection_digest,
+                "resolution_projection_digest": self.resolution.projection_digest,
+                "domain_binding_digest": domain_binding_digest,
             }
         )
         if self.registration_digest:
@@ -498,7 +504,15 @@ class ResearchModelRoleBindingRegistration:
                 "project_manifest_digest": self.project_manifest_digest,
                 "research_requirement_digest": self.research_requirement_digest,
                 "resolutions": tuple(
-                    row.projection_digest for row in self.resolutions
+                    {
+                        "projection_digest": row.projection_digest,
+                        "domain_binding_digest": (
+                            None
+                            if row.binding is None
+                            else row.binding.digest()
+                        ),
+                    }
+                    for row in self.resolutions
                 ),
             }
         )
