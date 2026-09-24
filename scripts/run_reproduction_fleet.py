@@ -19,7 +19,9 @@ from research.reproductions import build_research
 from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.research_os import (
     compile_reproduction_research_program,
+    discover_reproduction_definitions,
     executable_reproduction_definitions,
+    is_research_os_executable,
     resolve_execution_requirements,
     resolve_method_program_binding,
     resolve_research_program_bindings,
@@ -152,7 +154,11 @@ def _lane(definition) -> Lane:
 
 
 def build_plan() -> dict:
+    inventory = discover_reproduction_definitions()
     executable = executable_reproduction_definitions()
+    non_executable = tuple(
+        row for row in inventory if not is_research_os_executable(row)
+    )
     lanes = tuple(
         sorted((_lane(row) for row in executable), key=lambda row: row.package)
     )
@@ -184,8 +190,16 @@ def build_plan() -> dict:
         graph_node_count = 0
 
     document = {
-        "schema": "noetrium.reproduction-fleet-plan.v5",
+        "schema": "noetrium.reproduction-fleet-plan.v6",
+        "inventory_reproduction_count": len(inventory),
         "executable_reproduction_count": len(lanes),
+        "non_executable_reproduction_count": len(non_executable),
+        "non_executable_packages": tuple(
+            row.package for row in non_executable
+        ),
+        "non_executable_lifecycle": {
+            row.package: row.lifecycle.value for row in non_executable
+        },
         "research_os_compiled_count": sum(
             row.state != "compile_failed" for row in lanes
         ),
@@ -229,7 +243,9 @@ def main() -> int:
     print(json.dumps({
         key: payload[key]
         for key in (
+            "inventory_reproduction_count",
             "executable_reproduction_count",
+            "non_executable_reproduction_count",
             "research_os_compiled_count",
             "compile_failure_count",
             "exact_study_binding_count",
