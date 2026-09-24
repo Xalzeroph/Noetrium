@@ -113,6 +113,7 @@ class RunBinding:
         require_sha256(self.machine_implementation_digest, "machine_implementation_digest")
         require_sha256(self.program_digest, "program_digest")
         require_sha256(self.program_lock_digest, "program_lock_digest")
+        require_sha256(self.program_lock_digest, "program_lock_digest")
         if type(self.capability_provider_versions) is not tuple:
             raise TypeError("capability_provider_versions must be a tuple")
         for item in self.capability_provider_versions:
