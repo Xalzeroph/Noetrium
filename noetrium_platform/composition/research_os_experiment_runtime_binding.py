@@ -10,10 +10,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import require_sha256
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BoundStudyExecutionPort,
+    DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
     StudyMetricAggregationPort,
+)
+from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
+    BasicStudyMetricAggregator,
 )
 
 from .research_os_experiment import (
@@ -43,10 +47,19 @@ class ResearchOSExperimentStudyExecutionBinding:
 
 @dataclass(frozen=True, slots=True)
 class ResearchOSExperimentAggregationBinding:
+    requirement_id: str
     aggregation: StudyMetricAggregationPort
     identity_digest: str
 
     def __post_init__(self) -> None:
+        if (
+            type(self.requirement_id) is not str
+            or not self.requirement_id.strip()
+            or self.requirement_id != self.requirement_id.strip()
+        ):
+            raise ValueError(
+                "Experiment aggregation binding requirement_id must be canonical text"
+            )
         if not callable(getattr(self.aggregation, "aggregate", None)):
             raise TypeError(
                 "Experiment aggregation binding requires StudyMetricAggregationPort"
@@ -63,6 +76,104 @@ class ResearchOSExperimentStudyExecutionResolverPort(Protocol):
         self,
         closure: ResearchOSExperimentClosure,
     ) -> ResearchOSExperimentStudyExecutionBinding: ...
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchOSExperimentAggregationProvider:
+    requirement_id: str
+    aggregation: StudyMetricAggregationPort
+    identity_digest: str
+
+    def __post_init__(self) -> None:
+        ResearchOSExperimentAggregationBinding(
+            self.requirement_id,
+            self.aggregation,
+            self.identity_digest,
+        )
+
+
+class ResearchOSExperimentAggregationRegistry:
+    """Exact Study aggregation authority keyed by scientific requirement id."""
+
+    def __init__(
+        self,
+        providers: tuple[ResearchOSExperimentAggregationProvider, ...],
+    ) -> None:
+        if type(providers) is not tuple or not providers:
+            raise TypeError(
+                "Experiment aggregation registry requires non-empty typed tuple"
+            )
+        if any(
+            type(row) is not ResearchOSExperimentAggregationProvider
+            for row in providers
+        ):
+            raise TypeError(
+                "Experiment aggregation registry providers must be typed"
+            )
+        ordered = tuple(sorted(providers, key=lambda row: row.requirement_id))
+        ids = tuple(row.requirement_id for row in ordered)
+        if len(ids) != len(set(ids)):
+            raise ValueError(
+                "Experiment aggregation registry requirement ids must be unique"
+            )
+        self._providers = ordered
+        self._identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.experiment-aggregation-registry.v1",
+                "providers": tuple(
+                    (row.requirement_id, row.identity_digest)
+                    for row in ordered
+                ),
+            }
+        )
+
+    @classmethod
+    def canonical(cls) -> "ResearchOSExperimentAggregationRegistry":
+        identity = canonical_digest(
+            {
+                "schema": "noetrium.study-aggregation-provider.v1",
+                "requirement_id": DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
+                "algorithm": "mean-variance-standard-error",
+                "algorithm_version": "1",
+            }
+        )
+        return cls(
+            (
+                ResearchOSExperimentAggregationProvider(
+                    DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
+                    BasicStudyMetricAggregator(),
+                    identity,
+                ),
+            )
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
+
+    def resolve(
+        self,
+        closure: ResearchOSExperimentClosure,
+    ) -> ResearchOSExperimentAggregationBinding:
+        if type(closure) is not ResearchOSExperimentClosure:
+            raise TypeError(
+                "Experiment aggregation registry requires ResearchOSExperimentClosure"
+            )
+        requirement_id = closure.definition.aggregation_requirement_id
+        matches = tuple(
+            row for row in self._providers
+            if row.requirement_id == requirement_id
+        )
+        if len(matches) != 1:
+            raise LookupError(
+                f"no unique Experiment aggregation provider for {requirement_id!r}"
+            )
+        provider = matches[0]
+        return ResearchOSExperimentAggregationBinding(
+            provider.requirement_id,
+            provider.aggregation,
+            provider.identity_digest,
+        )
 
 
 @runtime_checkable
@@ -205,6 +316,13 @@ class ResearchOSExperimentRuntimeBindingAuthority(
             raise TypeError(
                 "aggregation resolver returned invalid Experiment binding"
             )
+        if (
+            aggregation.requirement_id
+            != closure.definition.aggregation_requirement_id
+        ):
+            raise ValueError(
+                "aggregation resolver changed Study aggregation requirement identity"
+            )
 
         reconciliation = self._reconciliation.resolve(closure)
         if not isinstance(
@@ -238,6 +356,8 @@ class ResearchOSExperimentRuntimeBindingAuthority(
 
 __all__ = [
     "ResearchOSExperimentAggregationBinding",
+    "ResearchOSExperimentAggregationRegistry",
+    "ResearchOSExperimentAggregationProvider",
     "ResearchOSExperimentAggregationResolverPort",
     "ResearchOSExperimentReconciliationResolverPort",
     "ResearchOSExperimentRuntimeComponents",
