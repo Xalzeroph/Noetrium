@@ -110,21 +110,29 @@ class MachineExecutor:
     def machine_id(self) -> str:
         return self.identity.machine_id
 
+    def _assert_commit_program_identity(
+        self,
+        commit: MachineCommit,
+    ) -> None:
+        if not isinstance(commit, MachineCommit):
+            raise TypeError("machine executable identity requires MachineCommit")
+        if commit.program_digest != self.program.program_digest:
+            raise MachineIntegrityError(
+                "journal commit belongs to a different program"
+            )
+        if (
+            commit.program_lock_digest
+            != self.program.program_lock.lock_digest
+        ):
+            raise MachineIntegrityError(
+                "journal commit belongs to a different ProgramLock"
+            )
+
     def open(self, initial_state: JsonObject | None = None) -> MachineSnapshot:
         with self._lock:
             latest = self.journal.latest(self.machine_id)
             if latest is not None:
-                if latest.program_digest != self.program.program_digest:
-                    raise MachineIntegrityError(
-                        "journal head belongs to a different program"
-                    )
-                if (
-                    latest.program_lock_digest
-                    != self.program.program_lock.lock_digest
-                ):
-                    raise MachineIntegrityError(
-                        "journal head belongs to a different ProgramLock"
-                    )
+                self._assert_commit_program_identity(latest)
                 self._snapshot = MachineSnapshot(
                     machine_id=self.machine_id,
                     revision=latest.revision,
@@ -195,6 +203,7 @@ class MachineExecutor:
 
     def _existing_command(self, command: MachineCommand) -> MachineCommit | None:
         for commit in self.journal.commits(self.machine_id):
+            self._assert_commit_program_identity(commit)
             if commit.command_id != command.command_id:
                 continue
             # expected_revision is an optimistic-concurrency fence, not part of
@@ -360,17 +369,7 @@ class MachineExecutor:
             for commit in history:
                 if commit.machine_id != self.machine_id:
                     raise MachineIntegrityError("journal contains a foreign machine commit")
-                if commit.program_digest != self.program.program_digest:
-                    raise MachineIntegrityError(
-                        "journal commit belongs to a different program"
-                    )
-                if (
-                    commit.program_lock_digest
-                    != self.program.program_lock.lock_digest
-                ):
-                    raise MachineIntegrityError(
-                        "journal commit belongs to a different ProgramLock"
-                    )
+                self._assert_commit_program_identity(commit)
                 if commit.previous_commit_id != previous:
                     raise MachineIntegrityError("journal replay predecessor chain is invalid")
                 if commit.before_state_digest is not None and previous is not None:
