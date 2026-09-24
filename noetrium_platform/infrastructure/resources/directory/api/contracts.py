@@ -5,7 +5,13 @@ from enum import StrEnum
 from pathlib import Path
 
 from noetrium_platform.foundation.governance.api import ScopeIdentity, scope_to_data
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierReferenceClosure,
+    canonical_digest,
+    durable_carrier_closure_complete,
+    durable_carrier_gc_eligible,
+    validate_durable_carrier_closures,
+)
 
 
 class WorkspaceMetadataFailureCode(StrEnum):
@@ -75,7 +81,7 @@ class WorkspaceGcAssessment:
     workspace_id: str
     scope: ScopeIdentity
     category: str
-    closures: tuple[WorkspaceReferenceClosure, ...] = ()
+    closures: tuple[DurableCarrierReferenceClosure, ...] = ()
     workspace_identity_digest: str = field(init=False)
     proof_digest: str = field(init=False)
 
@@ -93,20 +99,7 @@ class WorkspaceGcAssessment:
                 or "\\" in value
             ):
                 raise ValueError(f"invalid workspace GC {label}")
-        if type(self.closures) is not tuple or any(
-            type(value) is not WorkspaceReferenceClosure
-            for value in self.closures
-        ):
-            raise TypeError(
-                "workspace GC closures must be WorkspaceReferenceClosure tuple"
-            )
-        authorities = tuple(value.authority for value in self.closures)
-        if authorities != tuple(
-            sorted(set(authorities), key=lambda value: value.value)
-        ):
-            raise ValueError(
-                "workspace GC closures must have unique canonical authority order"
-            )
+        validate_durable_carrier_closures(self.closures)
 
         identity_digest = canonical_digest(
             {
@@ -140,15 +133,11 @@ class WorkspaceGcAssessment:
 
     @property
     def closure_complete(self) -> bool:
-        return tuple(value.authority for value in self.closures) == tuple(
-            sorted(WorkspaceClosureAuthority, key=lambda value: value.value)
-        )
+        return durable_carrier_closure_complete(self.closures)
 
     @property
     def eligible(self) -> bool:
-        return self.closure_complete and all(
-            not value.retained_reference_ids for value in self.closures
-        )
+        return durable_carrier_gc_eligible(self.closures)
 
 
 class ManagedDirectoryKind(StrEnum):
