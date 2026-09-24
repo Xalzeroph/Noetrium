@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-import hashlib
 import json
 from pathlib import Path
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes, durable_unlink
 
 
@@ -140,19 +140,19 @@ class ReleaseRegressionState:
 
 def test_inventory_digest(relative_test_files: tuple[str, ...]) -> str:
     raw = "\n".join(relative_test_files).encode("utf-8")
-    return hashlib.sha256(raw).hexdigest()
+    return sha256_bytes(raw)
 
 
 def shard_identity_digest(relative_test_files: tuple[str, ...]) -> str:
     if not relative_test_files:
         raise ValueError("release regression shard cannot be empty")
     raw = "\n".join(relative_test_files).encode("utf-8")
-    return hashlib.sha256(raw).hexdigest()
+    return sha256_bytes(raw)
 
 
 def regression_plan_digest(planned_shards: tuple[ReleaseRegressionShardPlan, ...]) -> str:
     if not planned_shards:
-        return hashlib.sha256(b"release-regression-plan:empty").hexdigest()
+        return sha256_bytes(b"release-regression-plan:empty")
     raw = json.dumps(
         [
             {
@@ -165,7 +165,7 @@ def regression_plan_digest(planned_shards: tuple[ReleaseRegressionShardPlan, ...
         sort_keys=True,
         separators=(",", ":"),
     ).encode("utf-8")
-    return hashlib.sha256(raw).hexdigest()
+    return sha256_bytes(raw)
 
 
 def default_regression_state_path(root: Path) -> Path:
