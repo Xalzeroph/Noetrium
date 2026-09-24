@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium.api import canonical_digest
 
 
 AFLOW_PAPER_ERA_COMMIT = "072839af7f75948d91d3784154128ab2456831f0"

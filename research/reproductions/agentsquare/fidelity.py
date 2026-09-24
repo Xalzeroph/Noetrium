@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium.api import canonical_digest
 
 AGENTSQUARE_LATER_OFFICIAL_COMMIT = "8f5b3fe5d8a32f9b59d20370823bef2a2c86928c"
 
