@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chatdev_v1",
-  "package_digest": "90f0aadd068b29db509e0a739e08f9b22d756453d04de0978a5c3667b9476213",
+  "package_digest": "c0df5fedf901db622ff22af0b8538de1c00e80abb262b11b0b50553319a6a861",
   "definition_digest": "596185b0e8a4c8ff69611e15bb9504734d6d7575f0a187ab1214d235499e61d2",
   "source_registry_digest": "ef8ddd9ce1f6e9a889a6c727ad6145b62925d7559d7022c815721004d1c57702",
   "lifecycle": "protocol_bound",
@@ -102,31 +102,31 @@
       "kind": "method_program",
       "path": "research/reproductions/chatdev_v1/program.py",
       "declaration_digest": "48f8fe7c09d9686c1e7b154acc7738b706846aba9ef263c81d1b5e286e396242",
-      "content_sha256": "412f0532fbd3c200822a908e97f997dd32160a3d1597316d342137be5d03a96c"
+      "content_sha256": "b0bc4bbfdd87cbb3a36735e5747fbd8077c2a68e74f143bcd17146da0dfe7358"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/chatdev_v1/environment.py",
       "declaration_digest": "979fd03cda20203ba96dcafcf2acd8b142e065b9ab9a4d005ffbbd5cc2ad4fc0",
-      "content_sha256": "bb6fe4b838cfc232a34d02b8ffc01bdd050e975ffe007545ac24205fe5ce445e"
+      "content_sha256": "805400d61a3a45ef3042e01e678849ebb651efe54afaef8de25ff38adadd67af"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/chatdev_v1/runtime.py",
       "declaration_digest": "a6680fb41432d2bfbf309ddd761e50d1a5e1936b237d49cd9fc5fe02459d2207",
-      "content_sha256": "e41a1919e7130a32445f44320ffcb2f2840d625e8ebe4bdeb075003ae30d5b3c"
+      "content_sha256": "56ae40d7b2816ad7e0949761d21741c8866f3892098b2905330a3850f6b6e10a"
     },
     {
       "kind": "study",
       "path": "research/reproductions/chatdev_v1/study.py",
       "declaration_digest": "37320fc0759d79f291c09466826f67cb178053bd988fd206ee61719771a71d2e",
-      "content_sha256": "ec67a636554bb96eff41817e9e2a9373c660641a05d7caf328a51b2749c8dfb0"
+      "content_sha256": "805bb44f98b244168f2619faef00986617dd5bb18ebf57a605634bb0ca0bd437"
     },
     {
       "kind": "support",
       "path": "research/reproductions/chatdev_v1/chain.py",
       "declaration_digest": "dd4eff6ffe9ca6910735ba81eb63a06398477470ff9787e97f3191d1deb9094a",
-      "content_sha256": "5bc98506e18272f6c155f131e4704424dcca1301ae5eee38be946bf6b316e3c6"
+      "content_sha256": "e2785b8c68fc3f57a4f874183fa04c0f4e4063878757c925567f2249355b7825"
     },
     {
       "kind": "support",

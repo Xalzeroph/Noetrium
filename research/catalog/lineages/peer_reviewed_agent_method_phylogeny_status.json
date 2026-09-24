@@ -299,7 +299,7 @@
       "reproductions": [
         {
           "package": "code_as_policies",
-          "package_digest": "78e5e5259eea87f5192be824413f7c506687065c7cc53e734291eabc88b6ab66",
+          "package_digest": "8bc37bcc6109f7f6d3593e515bcfe4d71cf8523d893119fcd8752ae724f636df",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "robocodegen-37"
@@ -348,17 +348,17 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/code_as_policies/program.py",
-              "content_sha256": "d89a59d075970bd2265b83f91761b48db6ccc2aac8e87b07b45b992845aa3f85"
+              "content_sha256": "8f03896922f584c08dd1ef29e9ba53329db6000329d18dc11bd5bef9231c05e0"
             },
             {
               "kind": "semantics",
               "path": "research/reproductions/code_as_policies/hierarchy.py",
-              "content_sha256": "2f3ebd4f577c3ae23f7d887618e53bfa4df36d631909b17b1d7823eace49d66f"
+              "content_sha256": "1d5537ccbb3e88832775c34965990bcd6d296c9cb2c3d1d986a925ab7c811dc9"
             },
             {
               "kind": "study",
               "path": "research/reproductions/code_as_policies/study.py",
-              "content_sha256": "edd88abbc76fda924a0cac0e80b2e70657feeedf6fe641168b4360728da67f41"
+              "content_sha256": "fee504f820fb4b18c4fbae9ba7e30e4de38d3fa16a9cea6da1cb0d477731dcfe"
             },
             {
               "kind": "support",
@@ -1270,7 +1270,7 @@
       "reproductions": [
         {
           "package": "chatdev_v1",
-          "package_digest": "90f0aadd068b29db509e0a739e08f9b22d756453d04de0978a5c3667b9476213",
+          "package_digest": "c0df5fedf901db622ff22af0b8538de1c00e80abb262b11b0b50553319a6a861",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "srdd"
@@ -1302,27 +1302,27 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/chatdev_v1/program.py",
-              "content_sha256": "412f0532fbd3c200822a908e97f997dd32160a3d1597316d342137be5d03a96c"
+              "content_sha256": "b0bc4bbfdd87cbb3a36735e5747fbd8077c2a68e74f143bcd17146da0dfe7358"
             },
             {
               "kind": "research_program",
               "path": "research/reproductions/chatdev_v1/environment.py",
-              "content_sha256": "bb6fe4b838cfc232a34d02b8ffc01bdd050e975ffe007545ac24205fe5ce445e"
+              "content_sha256": "805400d61a3a45ef3042e01e678849ebb651efe54afaef8de25ff38adadd67af"
             },
             {
               "kind": "research_program",
               "path": "research/reproductions/chatdev_v1/runtime.py",
-              "content_sha256": "e41a1919e7130a32445f44320ffcb2f2840d625e8ebe4bdeb075003ae30d5b3c"
+              "content_sha256": "56ae40d7b2816ad7e0949761d21741c8866f3892098b2905330a3850f6b6e10a"
             },
             {
               "kind": "study",
               "path": "research/reproductions/chatdev_v1/study.py",
-              "content_sha256": "ec67a636554bb96eff41817e9e2a9373c660641a05d7caf328a51b2749c8dfb0"
+              "content_sha256": "805bb44f98b244168f2619faef00986617dd5bb18ebf57a605634bb0ca0bd437"
             },
             {
               "kind": "support",
               "path": "research/reproductions/chatdev_v1/chain.py",
-              "content_sha256": "5bc98506e18272f6c155f131e4704424dcca1301ae5eee38be946bf6b316e3c6"
+              "content_sha256": "e2785b8c68fc3f57a4f874183fa04c0f4e4063878757c925567f2249355b7825"
             },
             {
               "kind": "support",
@@ -1370,7 +1370,7 @@
       "reproductions": [
         {
           "package": "cogagent",
-          "package_digest": "3228890502140796d742fceee9f711e588b6f4720958e4754c4fb06b8ccec242",
+          "package_digest": "2d046258d401b3b3cccdc8be9071b98e8a04d4b57c950f4b782fc06212cd5071",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mind2web"
@@ -1401,7 +1401,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/cogagent/study.py",
-              "content_sha256": "67779ea17ea25e8684773c2ddebe3a0687fe3f56a81e89ef703d8faf4a6f116b"
+              "content_sha256": "55eade91b8d1870f8ac9454c0d473f521a60d658a8d81a03d07becf8debd166a"
             }
           ],
           "blockers": [
@@ -2552,7 +2552,7 @@
       "reproductions": [
         {
           "package": "agentsquare",
-          "package_digest": "6ade04cad3cf9b79dbc90c86e47b6792ad40b7dd0a9c2560548e15e300a3eaf0",
+          "package_digest": "cca10c3b4be0a4d71d97895ee73923507d922f2b85f5e43ffe0642a9e3780f63",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "agentboard-pddl",
@@ -2594,7 +2594,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/agentsquare/study.py",
-              "content_sha256": "aaa6ac850c3396f23143fe1cb93064ecf3053bb2a0a016894596d393a39a19b2"
+              "content_sha256": "332466095416284579b8989ecde72cdd74a472702ecc96cd072ded7ae1b9b292"
             }
           ],
           "blockers": [
@@ -3056,7 +3056,7 @@
       "reproductions": [
         {
           "package": "crossha_cvpr2026",
-          "package_digest": "8c268b372636919c4ea3548f41370746ce055db67c34d37e7ee89d2e0d0046d8",
+          "package_digest": "d7edd682e4efe752e4fdeeb8f5338ead1ef87edfbcd396df973541cc728371c0",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minecraft-openha"
@@ -3088,7 +3088,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/crossha_cvpr2026/program.py",
-              "content_sha256": "18ae60b1b9ecc039a2cd703fdee5700b4a25962f707992ad6c19d088a4aa56fe"
+              "content_sha256": "79b61887ae11c4056ed35a51fffd1ea2bbb2c32807b20b99d351eb66ef2ca95f"
             },
             {
               "kind": "study",
@@ -3118,7 +3118,7 @@
       "reproductions": [
         {
           "package": "d3d_vlp_cvpr2026",
-          "package_digest": "6b7ebf9fc5e8a48436be5d327c9f5518d1682f7db314baa3c68e83298118ba6c",
+          "package_digest": "8c7eda3bbe318df00154e88a669f0fea8faf11f1b846fc74fcbf28c5ab77c32d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hm3d-ovon",
@@ -3154,7 +3154,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/d3d_vlp_cvpr2026/program.py",
-              "content_sha256": "9824b3ef646e4eb1695a6c868687c31a337594677394822b58ff6297c316a2c4"
+              "content_sha256": "b3e0c68d101d20a0fb529c1eea1575dd01fcfa816c98578435f116c3a39d0d29"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "8199d1cc5407c9d17da3e06796cc6d384bfea6f123f66d64ba6237157afd5d7f"
+  "projection_digest": "c532eaeac580bd34691a56cfef1559071c694de7c6aad8fc1ef70d2ce6df25fa"
 }

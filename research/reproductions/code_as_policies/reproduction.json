@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "code_as_policies",
-  "package_digest": "78e5e5259eea87f5192be824413f7c506687065c7cc53e734291eabc88b6ab66",
+  "package_digest": "8bc37bcc6109f7f6d3593e515bcfe4d71cf8523d893119fcd8752ae724f636df",
   "definition_digest": "5530735edb89956345e7651c7c7e7328f4ae400791789f5a58f1ec30833ec13c",
   "source_registry_digest": "e1872de17b63bc7ff35434899df6e865b802ced52f48f4b8b3757d34b8c9f15d",
   "lifecycle": "protocol_bound",
@@ -132,19 +132,19 @@
       "kind": "method_program",
       "path": "research/reproductions/code_as_policies/program.py",
       "declaration_digest": "cf7888757baf793ef4738bfea7f799a48524d626c71341deaa402cdb79691b24",
-      "content_sha256": "d89a59d075970bd2265b83f91761b48db6ccc2aac8e87b07b45b992845aa3f85"
+      "content_sha256": "8f03896922f584c08dd1ef29e9ba53329db6000329d18dc11bd5bef9231c05e0"
     },
     {
       "kind": "semantics",
       "path": "research/reproductions/code_as_policies/hierarchy.py",
       "declaration_digest": "cae4bde0014bbb0ba21313f290173b577d62e4b2ff19d7328475c93cc4a6b948",
-      "content_sha256": "2f3ebd4f577c3ae23f7d887618e53bfa4df36d631909b17b1d7823eace49d66f"
+      "content_sha256": "1d5537ccbb3e88832775c34965990bcd6d296c9cb2c3d1d986a925ab7c811dc9"
     },
     {
       "kind": "study",
       "path": "research/reproductions/code_as_policies/study.py",
       "declaration_digest": "d614c87f5c66abe78e4ea8d57c037a9581641dc867d3b6889be7d4a79957fb20",
-      "content_sha256": "edd88abbc76fda924a0cac0e80b2e70657feeedf6fe641168b4360728da67f41"
+      "content_sha256": "fee504f820fb4b18c4fbae9ba7e30e4de38d3fa16a9cea6da1cb0d477731dcfe"
     },
     {
       "kind": "support",
