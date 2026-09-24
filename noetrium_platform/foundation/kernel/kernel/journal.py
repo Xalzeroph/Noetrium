@@ -469,7 +469,7 @@ class _DirectoryJournalCache:
         self.file_identity = file_identity
 
 
-class DirectoryMachineJournal(MachineJournalPort):
+class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
     """Crash-durable append-only journal with derived incremental acceleration.
 
     The journal file remains the sole authority. The in-process cache is
@@ -842,6 +842,210 @@ class DirectoryMachineJournal(MachineJournalPort):
     def commits(self, machine_id: str) -> tuple[MachineCommit, ...]:
         return self._history(machine_id)
 
+    def assess_gc(
+        self,
+        machine_id: str,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> MachineJournalGcAssessment:
+        if (
+            type(machine_id) is not str
+            or not machine_id.strip()
+            or machine_id != machine_id.strip()
+        ):
+            raise ValueError("machine journal GC machine_id must be canonical text")
+        with InterprocessFileLock(self._lock_path(machine_id)):
+            retirement = self._load_retirement(machine_id)
+            if retirement is None:
+                if self._quarantine_path(machine_id).exists():
+                    raise MachineIntegrityError(
+                        "machine journal quarantine exists without durable retirement proof"
+                    )
+                (
+                    terminal_commit_id,
+                    terminal_revision,
+                    content_sha256,
+                    byte_size,
+                ) = self._gc_identity_locked(machine_id)
+            else:
+                terminal_commit_id = str(retirement["terminal_commit_id"])
+                terminal_revision = int(retirement["terminal_revision"])
+                content_sha256 = str(retirement["content_sha256"])
+                byte_size = int(retirement["byte_size"])
+            return MachineJournalGcAssessment(
+                machine_id=machine_id,
+                terminal_commit_id=terminal_commit_id,
+                terminal_revision=terminal_revision,
+                content_sha256=content_sha256,
+                byte_size=byte_size,
+                closures=closures,
+            )
+
+    @staticmethod
+    def _require_retirement_matches_gc(
+        retirement: dict[str, object],
+        gc: MachineJournalGcAssessment,
+    ) -> MachineJournalRetirementPhase:
+        if (
+            retirement["machine_id"] != gc.machine_id
+            or retirement["terminal_commit_id"] != gc.terminal_commit_id
+            or retirement["terminal_revision"] != gc.terminal_revision
+            or retirement["content_sha256"] != gc.content_sha256
+            or retirement["byte_size"] != gc.byte_size
+        ):
+            raise RuntimeError(
+                "machine journal retirement identity changed across retry"
+            )
+        if retirement["gc_proof_digest"] != gc.proof_digest:
+            raise RuntimeError(
+                "machine journal GC proof changed across retry"
+            )
+        phase = retirement["phase"]
+        if not isinstance(phase, MachineJournalRetirementPhase):
+            raise MachineIntegrityError(
+                "machine journal retirement phase is not typed"
+            )
+        return phase
+
+    @staticmethod
+    def _validate_quarantine_identity(
+        quarantine: Path,
+        gc: MachineJournalGcAssessment,
+    ) -> None:
+        if quarantine.is_symlink() or not quarantine.is_file():
+            raise RuntimeError(
+                "machine journal quarantine is not an owned regular file"
+            )
+        try:
+            raw = quarantine.read_bytes()
+        except OSError as exc:
+            raise MachineIntegrityError(
+                "cannot read quarantined machine journal"
+            ) from exc
+        if len(raw) != gc.byte_size or sha256(raw).hexdigest() != gc.content_sha256:
+            raise RuntimeError(
+                "machine journal quarantine identity changed after retirement"
+            )
+
+    @staticmethod
+    def _move_journal_to_quarantine(path: Path, quarantine: Path) -> None:
+        quarantine.parent.mkdir(parents=True, exist_ok=True)
+        fsync_directory(quarantine.parent.parent)
+        if quarantine.exists():
+            raise RuntimeError(
+                "machine journal quarantine identity already exists"
+            )
+        try:
+            path.rename(quarantine)
+        except OSError:
+            # Rename may have committed even if the caller lost the
+            # acknowledgement. Only that exact postcondition is recoverable.
+            if path.exists() or not quarantine.exists():
+                raise
+        fsync_directory(path.parent)
+        fsync_directory(quarantine.parent)
+
+    def purge(
+        self,
+        machine_id: str,
+        *,
+        gc: MachineJournalGcAssessment,
+    ) -> bool:
+        if (
+            type(gc) is not MachineJournalGcAssessment
+            or gc.machine_id != machine_id
+        ):
+            raise RuntimeError(
+                "machine journal GC assessment does not bind the exact machine identity"
+            )
+        if not gc.eligible:
+            raise RuntimeError(
+                "machine journal GC requires complete execution, evidence, and recovery "
+                "closure with zero retained references"
+            )
+
+        path = self._log_path(machine_id)
+        quarantine = self._quarantine_path(machine_id)
+        with InterprocessFileLock(self._lock_path(machine_id)):
+            retirement = self._load_retirement(machine_id)
+            if retirement is None:
+                if quarantine.exists():
+                    raise RuntimeError(
+                        "machine journal quarantine exists without durable retirement proof"
+                    )
+                current = self._gc_identity_locked(machine_id)
+                self._require_gc_identity(gc, current)
+                self._publish_retirement(
+                    gc,
+                    MachineJournalRetirementPhase.RETIRED,
+                )
+                retirement = self._load_retirement(machine_id)
+                if retirement is None:
+                    raise MachineIntegrityError(
+                        "machine journal retirement publication disappeared"
+                    )
+
+            phase = self._require_retirement_matches_gc(retirement, gc)
+
+            if phase is MachineJournalRetirementPhase.PURGED:
+                if path.exists() or quarantine.exists():
+                    raise RuntimeError(
+                        "purged machine journal carrier reappeared as unowned residue"
+                    )
+                with self._cache_lock:
+                    self._cache.pop(machine_id, None)
+                return True
+
+            if phase is MachineJournalRetirementPhase.RETIRED:
+                if path.exists() and quarantine.exists():
+                    raise RuntimeError(
+                        "machine journal retirement split live/quarantine truth"
+                    )
+                if quarantine.exists():
+                    # The rename committed but QUARANTINED publication did not.
+                    self._validate_quarantine_identity(quarantine, gc)
+                    self._publish_retirement(
+                        gc,
+                        MachineJournalRetirementPhase.QUARANTINED,
+                    )
+                    phase = MachineJournalRetirementPhase.QUARANTINED
+                elif path.exists():
+                    self._require_gc_identity(
+                        gc,
+                        self._gc_identity_locked(machine_id),
+                    )
+                    self._move_journal_to_quarantine(path, quarantine)
+                    self._validate_quarantine_identity(quarantine, gc)
+                    self._publish_retirement(
+                        gc,
+                        MachineJournalRetirementPhase.QUARANTINED,
+                    )
+                    phase = MachineJournalRetirementPhase.QUARANTINED
+                else:
+                    raise RuntimeError(
+                        "retired machine journal lost both live and quarantine carriers"
+                    )
+
+            if phase is MachineJournalRetirementPhase.QUARANTINED:
+                if path.exists():
+                    raise RuntimeError(
+                        "quarantined machine journal live path reappeared as unowned residue"
+                    )
+                if quarantine.exists():
+                    self._validate_quarantine_identity(quarantine, gc)
+                    durable_unlink(quarantine)
+                self._publish_retirement(
+                    gc,
+                    MachineJournalRetirementPhase.PURGED,
+                )
+                with self._cache_lock:
+                    self._cache.pop(machine_id, None)
+                return True
+
+            raise RuntimeError(
+                f"unsupported machine journal retirement phase: {phase.value}"
+            )
+
     def _machine_ids(self) -> tuple[str, ...]:
         ids: set[str] = set()
         for path in sorted(self.logs.glob("*.journal")):
@@ -880,5 +1084,8 @@ class DirectoryMachineJournal(MachineJournalPort):
 __all__ = [
     "DirectoryMachineJournal",
     "InMemoryMachineJournal",
+    "MachineJournalGcAssessment",
+    "MachineJournalGcPort",
     "MachineJournalPort",
+    "MachineJournalRetirementPhase",
 ]
