@@ -381,6 +381,8 @@ host substrate
 
 Environment identity is pinned at runtime as `profile_id + profile_revision`, separate from the stable category such as `web`, `minecraft`, `gui`, `embodied`, `software` or `text_world`. This allows a new profile revision to become active without changing or contaminating executions that started on an older revision.
 
+Lifecycle admission is fail-closed. New executions select only the active default revision. A draining revision requires explicit `--allow-draining` recovery intent for an already-pinned execution; a retired revision requires `--allow-retired` historical-recovery intent. Merely naming an old profile with `--profiles` is not enough to reactivate it.
+
 Retirement is logical deletion: new work stops binding the revision, but historical identity is retained. Physical image/cache garbage collection is only safe after there are no active or resumable references and no retained evidence depends on the revision.
 
 Profile-specific readiness checks are image-local hooks rather than a central switch statement. A new environment category can therefore be added with a registry row, image recipe, optional Compose overlay and doctor hook without editing central deployment code.
