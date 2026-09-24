@@ -297,6 +297,7 @@ class ExperimentProgramBinding:
         aggregation: StudyMetricAggregationPort,
         *,
         execution_binding_digest: str,
+        execution_id: str,
         task_group: TaskGroupPort | None = None,
     ) -> None:
         if not isinstance(compiled, CompiledExperimentProgram):
@@ -309,10 +310,15 @@ class ExperimentProgramBinding:
             execution_binding_digest,
             "experiment execution_binding_digest",
         )
+        require_sha256(
+            execution_id,
+            "experiment execution_id",
+        )
         self.compiled = compiled
         self.adapter = adapter
         self.aggregation = aggregation
         self.execution_binding_digest = execution_binding_digest
+        self.execution_id = execution_id
         self.task_group = task_group
         self._assignment_by_digest = {
             row.assignment_digest: row for row in compiled.plan.assignments
@@ -361,7 +367,14 @@ class ExperimentProgramBinding:
 
             def execute(unit: StudyExecutionUnit):
                 bindings = tuple(self._binding_by_variant[row.variant_id] for row in unit.assignments)
-                values = tuple(self.adapter.execute_bound(unit, bindings, plan.plan_digest))
+                values = tuple(
+                    self.adapter.execute_bound(
+                        unit,
+                        bindings,
+                        plan.plan_digest,
+                        execution_id=self.execution_id,
+                    )
+                )
                 expected = {row.assignment_digest for row in unit.assignments}
                 actual = tuple(row.assignment.assignment_digest for row in values)
                 if len(actual) != len(set(actual)) or set(actual) != expected:
@@ -382,6 +395,7 @@ class ExperimentProgramBinding:
                 assignment,
                 self._binding_by_variant[assignment.variant_id],
                 plan.plan_digest,
+                execution_id=self.execution_id,
             )
 
         observations = self._parallel(assignments, execute_variant, batch_id=batch.batch_id)
@@ -406,6 +420,7 @@ class ExperimentProgramBinding:
                 "batch_plan_digest": self.compiled.batch_plan_digest,
                 "protocol_digest": self.compiled.plan.protocol.protocol_digest,
                 "execution_binding_digest": self.execution_binding_digest,
+                "execution_id": self.execution_id,
                 "required_capabilities": self.compiled.program.required_capabilities,
                 "batches": tuple(
                     row.batch_digest for row in self.compiled.batches
@@ -424,6 +439,7 @@ class ExperimentProgramBinding:
                 "binding_digest": self.compiled.plan.binding_digest,
                 "batch_plan_digest": self.compiled.batch_plan_digest,
                 "execution_binding_digest": self.execution_binding_digest,
+                "execution_id": self.execution_id,
             },
             binding=None,
         )
