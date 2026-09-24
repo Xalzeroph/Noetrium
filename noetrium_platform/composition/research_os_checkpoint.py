@@ -4,14 +4,12 @@ from dataclasses import dataclass, field
 from typing import Mapping, Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import (
-    JsonInput,
     JsonObject,
     JsonValue,
     MachineCut,
     canonical_digest,
     freeze_json,
     require_sha256,
-    thaw_json,
 )
 
 
@@ -197,8 +195,6 @@ class ResearchOSGraphCheckpointCorruptionError(ValueError):
 
 @runtime_checkable
 class ResearchOSGraphCheckpointStorePort(Protocol):
-    durability: str
-
     def publish(
         self,
         checkpoint: ResearchOSGraphCheckpoint,
