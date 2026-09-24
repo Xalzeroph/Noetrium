@@ -16,6 +16,7 @@ from noetrium_platform.capabilities.environment.category.runtime.catalog import 
 )
 from noetrium_platform.capabilities.environment.software.api import (
     SoftwareActionKind,
+    SoftwareActionTimeoutError,
     SoftwareEnvironmentSpec,
 )
 from noetrium_platform.capabilities.environment.software.composition import (
@@ -27,6 +28,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.infrastructure.lifecycle.process.api import (
     LocalCommandResult,
+    LocalCommandTimeoutError,
 )
 
 
@@ -192,5 +194,53 @@ def test_repository_workspace_provider_rejects_path_escape_and_action_drift(
             "same-id",
             SoftwareActionKind.READ.value,
             {"path": "other.py"},
+            _context(),
+        ))
+
+
+def test_repository_workspace_translates_process_timeout(
+    tmp_path: Path,
+) -> None:
+    class _TimeoutRunner:
+        def run(
+            self,
+            argv,
+            *,
+            cwd=None,
+            environment=None,
+            timeout_seconds=None,
+        ):
+            del argv, cwd, environment, timeout_seconds
+            raise LocalCommandTimeoutError(
+                "software-test",
+                "simulated timeout",
+            )
+
+    (tmp_path / "main.py").write_text("print('v1')\n", encoding="utf-8")
+    spec = SoftwareEnvironmentSpec(
+        environment_id="software.repository.timeout",
+        revision="1",
+        workspace_root=str(tmp_path.resolve()),
+        repository_digest=canonical_digest({"fixture": "timeout"}),
+        supported_actions=(SoftwareActionKind.TEST,),
+    )
+    provider = build_local_repository_software_provider(
+        root=tmp_path,
+        spec=spec,
+        command_runner=_TimeoutRunner(),
+        command_runner_identity_digest=canonical_digest({
+            "runner": "timeout-test",
+        }),
+    )
+    session = provider.open_session(session_id="timeout", services=object())
+
+    with pytest.raises(
+        SoftwareActionTimeoutError,
+        match="software test action timed out",
+    ):
+        session.act(ActionRequest(
+            "timeout-1",
+            SoftwareActionKind.TEST.value,
+            {"argv": ("python", "main.py"), "timeout_seconds": 0.01},
             _context(),
         ))
