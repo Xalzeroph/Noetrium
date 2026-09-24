@@ -47,7 +47,6 @@ class InMemoryResourceLeaseRegistry:
                 raise ValueError(
                     "lease observation time must be finite and positive"
                 )
-            return value
 
         reading = self._clock.read()
         anchor = self._clock_anchor
