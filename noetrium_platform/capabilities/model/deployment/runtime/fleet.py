@@ -55,6 +55,14 @@ class ModelFleetRuntime:
     def stop_all(self) -> tuple[ModelDeploymentStatus, ...]:
         return tuple(self._run_fleet_action(spec, self._runtime.stop) for spec in self._catalog.deployments())
 
+    def shutdown_all(self) -> tuple[ModelDeploymentStatus, ...]:
+        """Stop physical model processes while preserving desired deployment state."""
+
+        return tuple(
+            self._run_fleet_action(spec, self._runtime.shutdown)
+            for spec in self._catalog.deployments()
+        )
+
     @staticmethod
     def _management_failure_status(spec: ModelDeploymentSpec, exc: Exception) -> ModelDeploymentStatus:
         runtime_state = ModelRuntimeState.MISSING if isinstance(exc, (FileNotFoundError, KeyError)) else ModelRuntimeState.ERROR
