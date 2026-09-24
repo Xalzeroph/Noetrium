@@ -8,8 +8,8 @@ WORK_ROOT="${NOETRIUM_BUILD_WORK_ROOT:-$ROOT/.noetrium/environment-images}"
 BOOTSTRAP_MANAGED_LABEL="io.noetrium.bootstrap-managed"
 BOOTSTRAP_MANAGED_VALUE="control-v1"
 BOOT_ID="$(cat /proc/sys/kernel/random/boot_id 2>/dev/null || printf 'unknown')"
-OWNER_START="$(awk '{print $22}' "/proc/$/stat" 2>/dev/null || printf 'unknown')"
-BOOTSTRAP_CONTAINER_NAME="noetrium-bootstrap-$(printf '%s' "$BOOT_ID" | tr -cd '[:alnum:]' | cut -c1-12)-$"
+OWNER_START="$(awk '{print $22}' "/proc/$$/stat" 2>/dev/null || printf 'unknown')"
+BOOTSTRAP_CONTAINER_NAME="noetrium-bootstrap-$(printf '%s' "$BOOT_ID" | tr -cd '[:alnum:]' | cut -c1-12)-$$"
 BOOTSTRAP_ACTIVE=0
 
 bootstrap_owner_alive() {
@@ -61,7 +61,7 @@ run_bootstrap_container() {
   docker run --rm --init --restart no \
     --name "$BOOTSTRAP_CONTAINER_NAME" \
     --label "$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE" \
-    --label "io.noetrium.bootstrap-owner-pid=$" \
+    --label "io.noetrium.bootstrap-owner-pid=$$" \
     --label "io.noetrium.bootstrap-owner-boot=$BOOT_ID" \
     --label "io.noetrium.bootstrap-owner-start=$OWNER_START" \
     "$@"
