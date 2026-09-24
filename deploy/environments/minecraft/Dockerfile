@@ -5,6 +5,13 @@ FROM ${JAVA_RUNTIME_IMAGE} AS java-runtime
 
 FROM ${PLATFORM_BASE_IMAGE}
 
+ARG NOETRIUM_ENVIRONMENT_PROFILE_ID
+ARG NOETRIUM_ENVIRONMENT_CATEGORY_ID
+ARG NOETRIUM_ENVIRONMENT_PROFILE_REVISION
+LABEL org.opencontainers.image.noetrium.environment.profile-id="${NOETRIUM_ENVIRONMENT_PROFILE_ID}" \
+      org.opencontainers.image.noetrium.environment.category-id="${NOETRIUM_ENVIRONMENT_CATEGORY_ID}" \
+      org.opencontainers.image.noetrium.environment.profile-revision="${NOETRIUM_ENVIRONMENT_PROFILE_REVISION}"
+
 ARG NODE_VERSION=22.22.2
 ENV JAVA_HOME=/opt/java/openjdk \
     MC_DATA_DIR=/var/lib/minecraft \
