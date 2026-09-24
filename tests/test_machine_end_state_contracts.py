@@ -126,6 +126,7 @@ def test_run_binding_captures_exact_machine_and_program_identity(tmp_path: Path)
         "machine-abi.v2",
         canonical_digest(identity),
         program.program_digest,
+        program.program_lock.lock_digest,
         (("provider", "1"),),
         ("run.state.v1",),
         "environment.v1",
@@ -133,10 +134,15 @@ def test_run_binding_captures_exact_machine_and_program_identity(tmp_path: Path)
     )
     assert binding.machine_implementation_digest == canonical_digest(runtime.identity)
     assert binding.program_digest == runtime.program.program_digest
+    assert (
+        binding.program_lock_digest
+        == runtime.program.program_lock.lock_digest
+    )
     assert binding.binding_digest == canonical_digest({
         "kernel_abi_version": binding.kernel_abi_version,
         "machine_implementation_digest": binding.machine_implementation_digest,
         "program_digest": binding.program_digest,
+        "program_lock_digest": binding.program_lock_digest,
         "capability_provider_versions": binding.capability_provider_versions,
         "schema_versions": binding.schema_versions,
         "environment_version": binding.environment_version,
