@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 1,
     "python_files": 3690,
-    "python_import_edges": 7149,
-    "symbols": 4998,
+    "python_import_edges": 7151,
+    "symbols": 4999,
     "tracked_files": 4326,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4992,
+    "python": 4993,
     "typescript": 5
   },
   "parse_errors": [
@@ -10634,6 +10634,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.retry",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
@@ -13271,6 +13277,12 @@
       "source_module": "noetrium_platform.infrastructure.resources.container.api.contracts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.lease.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.retry",
       "target_role": "core_platform"
     },
     {
@@ -42916,7 +42928,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2590,
+      "count": 2592,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43051,11 +43063,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1037,
+    "tests": 1038,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "68d311e67e5221a869baa0eb0d50b605c3dee7cf",
+  "source_git_sha": "bd10aa504012d5ec6bcd4e41a1ce37a1f4522a48",
   "symbols": [
     {
       "bases": [],
@@ -99172,7 +99184,6 @@
         "release",
         "get",
         "active",
-        "reconcile",
         "expire_orphans",
         "retire_orphan"
       ],
@@ -99190,7 +99201,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 77,
+      "line": 74,
       "methods": [
         "start",
         "assert_healthy",
@@ -99210,7 +99221,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 83,
+      "line": 80,
       "methods": [
         "create"
       ],
@@ -99228,7 +99239,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 87,
+      "line": 84,
       "methods": [
         "allocate",
         "allocate_auto",
@@ -100447,7 +100458,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 17,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
       "name": "DockerContainerRuntimeError",
@@ -100463,7 +100474,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 21,
       "methods": [
         "__init__",
         "docker_executable",
@@ -143323,7 +143334,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 40,
+      "line": 42,
       "methods": [
         "__init__",
         "probe"
@@ -143340,7 +143351,24 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 327,
+      "line": 52,
+      "methods": [
+        "__init__",
+        "probe"
+      ],
+      "module": "tests.test_resource_endpoint_atomicity_v2",
+      "name": "_MutableProbe",
+      "path": "tests/test_resource_endpoint_atomicity_v2.py",
+      "qualname": "tests.test_resource_endpoint_atomicity_v2._MutableProbe",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 413,
       "methods": [
         "renew_many"
       ],
@@ -143356,7 +143384,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 402,
+      "line": 488,
       "methods": [
         "probe"
       ],

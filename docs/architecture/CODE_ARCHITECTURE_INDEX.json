@@ -76988,7 +76988,6 @@
         "release",
         "get",
         "active",
-        "reconcile",
         "expire_orphans",
         "retire_orphan"
       ],
@@ -77008,7 +77007,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 87,
+      "line": 84,
       "methods": [
         "allocate",
         "allocate_auto",
@@ -77057,7 +77056,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 83,
+      "line": 80,
       "methods": [
         "create"
       ],
@@ -77077,7 +77076,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 77,
+      "line": 74,
       "methods": [
         "start",
         "assert_healthy",
@@ -78427,7 +78426,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 21,
       "methods": [
         "__init__",
         "docker_executable",
@@ -78454,7 +78453,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 16,
+      "line": 17,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
       "name": "DockerContainerRuntimeError",
@@ -103251,7 +103250,7 @@
     "classes": 3360,
     "constructor_edges": 920,
     "inheritance_edges": 146,
-    "module_import_edges": 5013,
+    "module_import_edges": 5015,
     "parse_errors": 0,
     "python_modules": 1912,
     "registry_authorities": 20,
@@ -117388,6 +117387,10 @@
       "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.api"
     },
     {
+      "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
+      "target": "noetrium_platform.foundation.kernel.kernel.retry"
+    },
+    {
       "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
     },
@@ -120742,6 +120745,10 @@
     {
       "source": "noetrium_platform.infrastructure.resources.container.providers",
       "target": "noetrium_platform.infrastructure.resources.container.docker_cli"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
+      "target": "noetrium_platform.foundation.kernel.kernel.retry"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
@@ -137415,7 +137422,9 @@
       "top_system": "runtime"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.retry"
+      ],
       "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
       "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/runtime/parent_bound_child.py",
       "system_key": "runtime",
@@ -140722,6 +140731,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.retry",
         "noetrium_platform.infrastructure.resources.container.api"
       ],
       "module": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
@@ -144057,7 +144067,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "68d311e67e5221a869baa0eb0d50b605c3dee7cf",
+  "source_git_sha": "bd10aa504012d5ec6bcd4e41a1ce37a1f4522a48",
   "system_import_edges": [
     {
       "count": 85,
@@ -144280,7 +144290,7 @@
       "target": "governance"
     },
     {
-      "count": 13,
+      "count": 14,
       "source": "resource",
       "target": "platform"
     },
@@ -144290,7 +144300,7 @@
       "target": "resource"
     },
     {
-      "count": 76,
+      "count": 77,
       "source": "runtime",
       "target": "platform"
     },
