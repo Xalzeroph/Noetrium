@@ -6,7 +6,11 @@ import threading
 
 import pytest
 
-from noetrium_platform.foundation.kernel.kernel import ComponentIdentity
+from noetrium_platform.foundation.kernel.kernel import (
+    ComponentIdentity,
+    DurableCarrierClosureAuthority,
+    DurableCarrierReferenceClosure,
+)
 from noetrium_platform.capabilities.participant.core.api import ParticipantCheckpoint
 from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity, ParticipantRuntimeBinding
 from noetrium_platform.research.experimentation.lifecycle.api import (
@@ -46,6 +50,29 @@ def manifest(payloads: tuple[RunParticipantPayload, ...], *, checkpoint_id="cp1"
         decision_cycle_id="dc",
         cycle_identity_digest="cycle-digest",
         participant_snapshots=tuple(row.ref for row in payloads),
+    )
+
+
+def closed_gc(store: DirectoryRunCheckpointStore, checkpoint_id: str):
+    return store.assess_gc(
+        checkpoint_id,
+        closures=(
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EVIDENCE,
+                "1" * 64,
+                (),
+            ),
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
+                "2" * 64,
+                (),
+            ),
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.RECOVERY,
+                "3" * 64,
+                (),
+            ),
+        ),
     )
 
 
@@ -400,3 +427,145 @@ def test_checkpoint_blob_retry_discards_hard_kill_staging_residue(
     assert blob_path.read_bytes() == payloads[0].checkpoint.opaque_payload
     assert not stranded.exists()
     assert tuple(store.blob_staging.iterdir()) == ()
+
+
+def test_checkpoint_gc_requires_complete_durable_carrier_closure(
+    tmp_path: Path,
+) -> None:
+    store = DirectoryRunCheckpointStore(tmp_path / "gc-closure")
+    payloads = (participant_payload("method", b"gc", generation="g1"),)
+    owned = manifest(payloads, checkpoint_id="gc-closure")
+    store.publish(owned, payloads)
+
+    partial = store.assess_gc(
+        owned.checkpoint_id,
+        closures=(
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
+                "4" * 64,
+                (),
+            ),
+        ),
+    )
+    assert not partial.closure_complete
+    assert not partial.eligible
+    with pytest.raises(RuntimeError, match="complete execution, evidence"):
+        store.purge(owned.checkpoint_id, gc=partial)
+    assert store.load(owned.checkpoint_id).manifest == owned
+
+
+def test_checkpoint_gc_preserves_shared_cas_until_last_reference(
+    tmp_path: Path,
+) -> None:
+    store = DirectoryRunCheckpointStore(tmp_path / "gc-shared")
+    shared = participant_payload("method", b"shared-cas", generation="g1")
+    first = manifest((shared,), checkpoint_id="shared-first")
+    second = manifest((shared,), checkpoint_id="shared-second")
+    store.publish(first, (shared,))
+    store.publish(second, (shared,))
+
+    digest = shared.checkpoint.ref.payload_sha256
+    blob_path = store._blob_path(digest)
+    assert blob_path.exists()
+
+    assert store.purge(first.checkpoint_id, gc=closed_gc(store, first.checkpoint_id))
+    assert blob_path.exists()
+    assert store.load(second.checkpoint_id).participant_payloads == (shared,)
+
+    assert store.purge(second.checkpoint_id, gc=closed_gc(store, second.checkpoint_id))
+    assert not blob_path.exists()
+    with pytest.raises(RunCheckpointConflict, match="retired"):
+        store.publish(first, (shared,))
+
+
+def test_pending_checkpoint_can_only_be_gc_after_recovery_closure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store as store_module
+
+    store = DirectoryRunCheckpointStore(tmp_path / "gc-pending")
+    payloads = (participant_payload("method", b"pending-owned", generation="g1"),)
+    owned = manifest(payloads, checkpoint_id="pending-gc")
+    real_atomic_replace = store_module.atomic_replace_bytes
+    failed = False
+
+    def fail_manifest_once(path, payload):
+        nonlocal failed
+        if path.parent == store.manifests and not failed:
+            failed = True
+            raise OSError("simulated manifest publication crash")
+        return real_atomic_replace(path, payload)
+
+    monkeypatch.setattr(store_module, "atomic_replace_bytes", fail_manifest_once)
+    with pytest.raises(OSError, match="publication crash"):
+        store.publish(owned, payloads)
+    monkeypatch.setattr(store_module, "atomic_replace_bytes", real_atomic_replace)
+
+    digest = payloads[0].checkpoint.ref.payload_sha256
+    assert store._intents.load(owned.checkpoint_id) is not None
+    assert store._blob_path(digest).exists()
+
+    gc = closed_gc(store, owned.checkpoint_id)
+    assert gc.persistence_state.value == "pending"
+    assert gc.eligible
+    assert store.purge(owned.checkpoint_id, gc=gc)
+    assert store._intents.load(owned.checkpoint_id) is None
+    assert not store._blob_path(digest).exists()
+    with pytest.raises(RunCheckpointConflict, match="retired"):
+        store.publish(owned, payloads)
+
+
+def test_checkpoint_gc_retry_is_bound_to_original_proof(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store as store_module
+
+    store = DirectoryRunCheckpointStore(tmp_path / "gc-proof-retry")
+    payloads = (participant_payload("method", b"retry-owned", generation="g1"),)
+    owned = manifest(payloads, checkpoint_id="gc-proof-retry")
+    store.publish(owned, payloads)
+    original = closed_gc(store, owned.checkpoint_id)
+
+    real_unlink = store_module.durable_unlink
+    manifest_path = store._manifest_path(owned.checkpoint_id)
+    failed = False
+
+    def fail_manifest_unlink_once(path):
+        nonlocal failed
+        if path == manifest_path and not failed:
+            failed = True
+            raise OSError("simulated crash after retirement publication")
+        return real_unlink(path)
+
+    monkeypatch.setattr(store_module, "durable_unlink", fail_manifest_unlink_once)
+    with pytest.raises(OSError, match="after retirement publication"):
+        store.purge(owned.checkpoint_id, gc=original)
+
+    monkeypatch.setattr(store_module, "durable_unlink", real_unlink)
+    changed = store.assess_gc(
+        owned.checkpoint_id,
+        closures=(
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EVIDENCE,
+                "a" * 64,
+                (),
+            ),
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
+                "b" * 64,
+                (),
+            ),
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.RECOVERY,
+                "c" * 64,
+                (),
+            ),
+        ),
+    )
+    with pytest.raises(RuntimeError, match="GC proof changed"):
+        store.purge(owned.checkpoint_id, gc=changed)
+
+    assert store.purge(owned.checkpoint_id, gc=original)
+    assert not manifest_path.exists()
