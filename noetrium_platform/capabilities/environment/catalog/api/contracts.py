@@ -85,6 +85,7 @@ class EnvironmentInstance:
     resolved_spec_digest: str
     backend: str
     runtime_reference: str
+    runtime_identity_digest: str
     scope: ScopeIdentity
     profile_id: str
     profile_revision: str
@@ -97,14 +98,27 @@ class EnvironmentInstance:
             raise ValueError("environment instance_id must be non-empty")
         if not self.profile_id.strip():
             raise ValueError("environment instance profile_id must be non-empty")
-        revision = self.profile_revision
-        if (
-            len(revision) != 64
-            or any(ch not in "0123456789abcdef" for ch in revision)
+        for field_name, value in (
+            ("resolved_spec_digest", self.resolved_spec_digest),
+            ("runtime_identity_digest", self.runtime_identity_digest),
+            ("profile_revision", self.profile_revision),
         ):
-            raise ValueError(
-                "environment instance profile_revision must be lowercase sha256"
-            )
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"environment instance {field_name} must be lowercase sha256"
+                )
+        for field_name, value in (
+            ("backend", self.backend),
+            ("runtime_reference", self.runtime_reference),
+        ):
+            if type(value) is not str or not value.strip() or value != value.strip():
+                raise ValueError(
+                    f"environment instance {field_name} must be canonical non-empty text"
+                )
         if type(self.state) is not EnvironmentInstanceState:
             raise TypeError("environment instance state must be EnvironmentInstanceState")
         if isinstance(self.generation, bool) or self.generation < 0:
@@ -125,6 +139,7 @@ class EnvironmentInstance:
 class EnvironmentCleanlinessProof:
     instance_id: str
     profile_revision: str
+    runtime_identity_digest: str
     generation: int
     kind: EnvironmentCleanlinessKind
     proof_digest: str
@@ -134,6 +149,7 @@ class EnvironmentCleanlinessProof:
             raise ValueError("environment cleanliness proof instance_id must be non-empty")
         for label, value in (
             ("profile_revision", self.profile_revision),
+            ("runtime_identity_digest", self.runtime_identity_digest),
             ("proof_digest", self.proof_digest),
         ):
             if (
