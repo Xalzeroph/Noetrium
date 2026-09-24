@@ -16,7 +16,7 @@ def _fleet_module():
 def test_reproduction_fleet_is_complete_and_current_research_os_clean() -> None:
     payload = _fleet_module().build_plan()
 
-    assert payload["schema"] == "noetrium.reproduction-fleet-plan.v8"
+    assert payload["schema"] == "noetrium.reproduction-fleet-plan.v9"
     assert payload["inventory_reproduction_count"] >= 100
     assert (
         payload["executable_reproduction_count"]
@@ -31,6 +31,8 @@ def test_reproduction_fleet_is_complete_and_current_research_os_clean() -> None:
     assert len(payload["portfolio_digest"]) == 64
     assert len(payload["graph_digest"]) == 64
     assert len(payload["plan_digest"]) == 64
+    assert payload["materialized_study_count"] >= payload["materialization_ready_count"]
+    assert payload["study_authority_requirement_count"] == payload["materialized_study_count"]
 
     lane_packages = tuple(row["package"] for row in payload["lanes"])
     assert len(lane_packages) == len(set(lane_packages))
