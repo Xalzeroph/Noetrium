@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.lifecycle.api import (
+from noetrium.api import (
     BenchmarkTaskSet,
     ResearchStudyDefinition,
 )
