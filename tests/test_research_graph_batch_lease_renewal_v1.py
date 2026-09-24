@@ -16,6 +16,16 @@ from noetrium_platform.research.execution.graph.providers import (
 )
 
 
+class _BatchReadStore(SQLiteResearchGraphExecutionStore):
+    def __init__(self, path) -> None:
+        super().__init__(path)
+        self.single_node_read_count = 0
+
+    def _node_tx(self, conn, execution_id, node_id):
+        self.single_node_read_count += 1
+        return super()._node_tx(conn, execution_id, node_id)
+
+
 def _plan() -> ResearchGraphPlan:
     return ResearchGraphPlan(
         "batch-lease-renewal",
@@ -53,7 +63,7 @@ def _running_attempt(
 def test_batch_lease_renewal_is_atomic_and_bumps_generation_once(
     tmp_path: Path,
 ) -> None:
-    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    store = _BatchReadStore(tmp_path / "graph.sqlite3")
     store.ensure_execution("execution", _plan())
     a = _running_attempt(store, "a", "scheduler")
     b = _running_attempt(store, "b", "scheduler")
@@ -62,6 +72,7 @@ def test_batch_lease_renewal_is_atomic_and_bumps_generation_once(
     before_a = store.node_state("execution", "a")
     before_b = store.node_state("execution", "b")
 
+    store.single_node_read_count = 0
     with pytest.raises(
         ResearchGraphExecutionConflict,
         match="ownership mismatch",
@@ -84,6 +95,7 @@ def test_batch_lease_renewal_is_atomic_and_bumps_generation_once(
             ),
             now_ns=4,
         )
+    assert store.single_node_read_count == 0
 
     after_failed = store.snapshot("execution")
     assert after_failed.generation == before.generation
@@ -94,6 +106,7 @@ def test_batch_lease_renewal_is_atomic_and_bumps_generation_once(
         before_b.lease_expires_at_ns
     )
 
+    store.single_node_read_count = 0
     renewed = store.renew_leases(
         "execution",
         (
@@ -113,6 +126,7 @@ def test_batch_lease_renewal_is_atomic_and_bumps_generation_once(
         now_ns=4,
     )
 
+    assert store.single_node_read_count == 0
     assert tuple(row.node_id for row in renewed) == ("a", "b")
     assert all(row.lease_expires_at_ns == 200 for row in renewed)
     after_success = store.snapshot("execution")
