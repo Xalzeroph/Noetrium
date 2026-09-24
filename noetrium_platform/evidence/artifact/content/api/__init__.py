@@ -1,6 +1,7 @@
 """artifact.content api boundary."""
 
 from .blob import (
+    ArtifactBlobFencePort,
     ArtifactBlobGeneration,
     ArtifactBlobLifecyclePort,
     ArtifactBlobLifecycleState,
@@ -44,6 +45,7 @@ from .materialization import (
 
 __all__ = [
     "MultimodalPart",
+    "ArtifactBlobFencePort",
     "ArtifactBlobGeneration",
     "ArtifactBlobLifecyclePort",
     "ArtifactBlobLifecycleState",
