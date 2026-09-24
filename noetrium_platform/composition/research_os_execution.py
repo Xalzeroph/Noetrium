@@ -1491,26 +1491,17 @@ class StrictResearchOSControl(
                 raise ResearchGraphExecutionConflict(
                     "Research OS node resume did not produce active node control"
                 )
-            prepared = prepare_research_os_execution(
-                request.target,
-                portfolio,
-                self._runtime,
-                self._values,
-                experiment_closures=self._experiment_closures,
-                artifact_lineage=self._artifact_lineage,
+        else:
+            control = self._store.resume(
+                cut.cut_id,
+                expected_generation=control.generation,
+                now_ns=time.time_ns(),
             )
-            if prepared.compilation != compilation or prepared.cut != cut:
-                raise ValueError("Research OS node resume preflight identity drifted")
-            return self._drive(request, prepared, active.generation)
-        control = self._store.resume(
-            cut.cut_id,
-            expected_generation=control.generation,
-            now_ns=time.time_ns(),
-        )
-        if control.phase is not ResearchGraphControlPhase.ACTIVE:
-            raise ResearchGraphExecutionConflict(
-                "Research OS resume did not produce active graph control"
-            )
+            if control.phase is not ResearchGraphControlPhase.ACTIVE:
+                raise ResearchGraphExecutionConflict(
+                    "Research OS resume did not produce active graph control"
+                )
+
         prepared = prepare_research_os_execution(
             request.target,
             portfolio,
@@ -1608,16 +1599,7 @@ class StrictResearchOSControl(
                 "research graph retry requires active or paused control, "
                 f"actual={control.phase.value}"
             )
-        matches = tuple(
-            node
-            for node in compilation.nodes
-            if node.ref == request.target.node
-        )
-        if len(matches) != 1:
-            raise ResearchGraphExecutionConflict(
-                "retry target does not identify exactly one compiled graph node"
-            )
-        root = matches[0]
+        root = self._target_graph_node(request, compilation)
         root_control = self._store.node_control_state(
             cut.cut_id,
             root.graph_node_id,
@@ -1699,14 +1681,7 @@ class StrictResearchOSControl(
             request,
             portfolio,
         )
-        matches = tuple(
-            node for node in compilation.nodes if node.ref == request.target.node
-        )
-        if len(matches) != 1:
-            raise ResearchGraphExecutionConflict(
-                "reconciliation target does not identify exactly one graph node"
-            )
-        node = matches[0]
+        node = self._target_graph_node(request, compilation)
         node_control = self._store.node_control_state(
             cut.cut_id,
             node.graph_node_id,
@@ -1842,16 +1817,11 @@ class StrictResearchOSControl(
                 f"{snapshot.reconciliation_required_node_ids}"
             )
 
-        if request.target.node is None:
-            selected_nodes = compilation.nodes
-        else:
-            selected_nodes = tuple(
-                node for node in compilation.nodes if node.ref == request.target.node
-            )
-            if len(selected_nodes) != 1:
-                raise ResearchGraphExecutionConflict(
-                    "checkpoint target does not identify exactly one graph node"
-                )
+        selected_nodes = (
+            compilation.nodes
+            if request.target.node is None
+            else (self._target_graph_node(request, compilation),)
+        )
 
         selected_ids = {node.graph_node_id for node in selected_nodes}
         active_nodes = tuple(
