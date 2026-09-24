@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
     JsonObject,
     JsonValue,
     MachineJournalPort,
@@ -12,7 +12,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     freeze_json,
     thaw_json,
 )
-from noetrium_platform.research.execution.machines.api import (
+from noetrium.api import (
     MemoryConcern,
     MemoryProgramBuilder,
     ProgramNodeRequest,
