@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3627,
-    "python_import_edges": 6861,
-    "symbols": 4825,
-    "tracked_files": 4256,
+    "python_files": 3630,
+    "python_import_edges": 6869,
+    "symbols": 4826,
+    "tracked_files": 4259,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4819,
+    "python": 4820,
     "typescript": 5
   },
   "parse_errors": [],
@@ -5495,6 +5495,12 @@
     {
       "source_module": "noetrium_platform.composition.research_graph",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_graph_frontier",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_graph",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
       "target_role": "core_platform"
     },
@@ -5514,6 +5520,12 @@
       "source_module": "noetrium_platform.composition.research_graph",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_graph_frontier",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.graph.api",
       "target_role": "core_platform"
     },
     {
@@ -31893,6 +31905,24 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_research_graph_claim_control_fence_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_claim_control_fence_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_claim_control_fence_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_research_graph_cut_switch_fence_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -31926,6 +31956,24 @@
       "source_module": "tests.test_research_graph_durable_state_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_frontier_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_graph_frontier",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_frontier_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_frontier_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
       "target_role": "core_platform"
     },
     {
@@ -41183,7 +41231,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2596,
+      "count": 2598,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -41243,7 +41291,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2689,
+      "count": 2695,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41299,18 +41347,18 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1928,
+    "core_platform": 1929,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 783,
+    "tests": 785,
     "tooling": 77
   },
   "role_symbol_counts": {
-    "core_platform": 3328,
+    "core_platform": 3329,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -41322,7 +41370,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "f896f34aa6961d6a6a94315f0cf5db951cd17ffb",
+  "source_git_sha": "678ae750e953e4e5554c7f35150978296bb39c33",
   "symbols": [
     {
       "bases": [],
@@ -63633,7 +63681,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 55,
+      "line": 58,
       "methods": [
         "__init__"
       ],
@@ -63651,7 +63699,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 68,
+      "line": 71,
       "methods": [
         "__init__"
       ],
@@ -63667,7 +63715,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 84,
+      "line": 87,
       "methods": [
         "__init__",
         "plan",
@@ -63681,6 +63729,27 @@
       "name": "ResearchGraphScheduler",
       "path": "noetrium_platform/composition/research_graph.py",
       "qualname": "noetrium_platform.composition.research_graph.ResearchGraphScheduler",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 21,
+      "methods": [
+        "__init__",
+        "ready_node_ids",
+        "blocked_nodes",
+        "consume_ready",
+        "restore_ready",
+        "record_terminal"
+      ],
+      "module": "noetrium_platform.composition.research_graph_frontier",
+      "name": "ResearchGraphDependencyFrontier",
+      "path": "noetrium_platform/composition/research_graph_frontier.py",
+      "qualname": "noetrium_platform.composition.research_graph_frontier.ResearchGraphDependencyFrontier",
       "role": "core_platform"
     },
     {
@@ -64116,7 +64185,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 37,
+      "line": 38,
       "methods": [
         "__post_init__"
       ],
@@ -64141,7 +64210,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 63,
+      "line": 64,
       "methods": [
         "__post_init__",
         "incoming_dependency_digests",
@@ -64162,11 +64231,12 @@
         "revision: ResearchGraphRevision",
         "portfolio: ResearchPortfolio",
         "plan: ResearchGraphPlan",
-        "nodes: tuple[CompiledResearchOSGraphNode, ...]"
+        "nodes: tuple[CompiledResearchOSGraphNode, ...]",
+        "_node_ids: tuple[str, ...]"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 125,
+      "line": 126,
       "methods": [
         "__post_init__",
         "node"
@@ -64187,7 +64257,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 319,
+      "line": 324,
       "methods": [
         "execute"
       ],
@@ -64205,7 +64275,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 331,
+      "line": 336,
       "methods": [
         "__init__",
         "execute"
@@ -64233,7 +64303,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 51,
+      "line": 52,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchOSLoweringTarget",
@@ -64249,7 +64319,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 103,
+      "line": 104,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchImplementationResolutionError",
@@ -64269,7 +64339,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 108,
+      "line": 109,
       "methods": [
         "__post_init__"
       ],
@@ -64289,7 +64359,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 123,
+      "line": 124,
       "methods": [
         "resolve"
       ],
@@ -64305,7 +64375,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 130,
+      "line": 131,
       "methods": [
         "resolve"
       ],
@@ -64328,7 +64398,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 306,
+      "line": 307,
       "methods": [
         "__post_init__"
       ],
@@ -64349,7 +64419,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 419,
+      "line": 420,
       "methods": [
         "__post_init__"
       ],
@@ -64376,7 +64446,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 433,
+      "line": 434,
       "methods": [
         "__post_init__"
       ],
@@ -64396,11 +64466,12 @@
         "graph_digest: str",
         "research_revision_digest: str",
         "nodes: tuple[LoweredResearchOSGraphNode, ...]",
-        "lowering_digest: str"
+        "lowering_digest: str",
+        "_node_ids: tuple[str, ...]"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 602,
+      "line": 603,
       "methods": [
         "__post_init__",
         "node"
@@ -64417,7 +64488,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 650,
+      "line": 655,
       "methods": [
         "__init__",
         "compile_node",
@@ -99986,7 +100057,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 32,
+      "line": 33,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphLiveNodeState",
@@ -100012,7 +100083,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 54,
+      "line": 55,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphAttemptState",
@@ -100032,7 +100103,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 66,
+      "line": 67,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphReconciliationDisposition",
@@ -100054,7 +100125,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 72,
+      "line": 73,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphNodeControlPhase",
@@ -100076,7 +100147,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 83,
+      "line": 84,
       "methods": [
         "__post_init__"
       ],
@@ -100100,7 +100171,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 100,
+      "line": 101,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphControlPhase",
@@ -100121,7 +100192,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 115,
+      "line": 116,
       "methods": [
         "__post_init__"
       ],
@@ -100152,7 +100223,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 131,
+      "line": 132,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -100184,7 +100255,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 245,
+      "line": 246,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -100210,7 +100281,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 287,
+      "line": 288,
       "methods": [
         "__post_init__",
         "node",
@@ -100238,7 +100309,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 333,
+      "line": 340,
       "methods": [
         "__post_init__"
       ],
@@ -100263,7 +100334,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 355,
+      "line": 362,
       "methods": [
         "__post_init__"
       ],
@@ -100287,7 +100358,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 419,
+      "line": 426,
       "methods": [
         "__post_init__"
       ],
@@ -100305,7 +100376,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 438,
+      "line": 445,
       "methods": [
         "__init__"
       ],
@@ -100323,7 +100394,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 459,
+      "line": 466,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -100339,7 +100410,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 463,
+      "line": 470,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -100357,10 +100428,11 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 468,
+      "line": 475,
       "methods": [
         "ensure_execution",
         "snapshot",
+        "node_state",
         "mark_ready",
         "claim",
         "mark_running",
@@ -100392,7 +100464,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 610,
+      "line": 623,
       "methods": [
         "control_state",
         "request_drain",
@@ -100419,7 +100491,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 680,
+      "line": 693,
       "methods": [
         "node_control_state",
         "request_node_drain",
@@ -100445,7 +100517,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 746,
+      "line": 759,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -100489,6 +100561,7 @@
         "_require_now",
         "ensure_execution",
         "snapshot",
+        "node_state",
         "control_state",
         "node_control_state",
         "request_node_drain",
@@ -137752,6 +137825,7 @@
       "methods": [
         "ensure_execution",
         "snapshot",
+        "node_state",
         "recover_expired",
         "mark_ready",
         "claim",
@@ -137780,7 +137854,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 953,
+      "line": 956,
       "methods": [
         "execute"
       ],
