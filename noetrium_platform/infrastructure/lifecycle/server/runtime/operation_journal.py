@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 import hashlib
 import os
 from pathlib import Path
@@ -148,7 +150,7 @@ class JsonlServerOperationJournal(ServerOperationJournalPort):
                 with self.path.open("ab") as stream:
                     stream.write(encoded)
                     stream.flush()
-                    os.fsync(stream.fileno())
+                    flush_file_descriptor(stream.fileno())
                 if created:
                     fsync_directory(self.path.parent)
 
