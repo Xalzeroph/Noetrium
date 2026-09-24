@@ -227,6 +227,53 @@ class ResearchProjectManifestRequirement:
             raise ValueError("ProjectManifest requirement digest drifted")
 
 
+class ResearchBindingRequirementMissing(LookupError):
+    """An exact owner-system Research binding requirement has no registration."""
+
+    def __init__(
+        self,
+        *,
+        stage: str,
+        requirement_id: str,
+        requirement_digest: str,
+    ) -> None:
+        if (
+            type(stage) is not str
+            or not stage.strip()
+            or stage != stage.strip()
+        ):
+            raise ValueError("missing Research binding stage must be canonical text")
+        if (
+            type(requirement_id) is not str
+            or not requirement_id.strip()
+            or requirement_id != requirement_id.strip()
+        ):
+            raise ValueError(
+                "missing Research binding requirement_id must be canonical text"
+            )
+        if (
+            type(requirement_digest) is not str
+            or len(requirement_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in requirement_digest)
+        ):
+            raise ValueError(
+                "missing Research binding requirement_digest must be lowercase SHA-256"
+            )
+        self.stage = stage
+        self.requirement_id = requirement_id
+        self.requirement_digest = requirement_digest
+        self.error_digest = canonical_digest(
+            {
+                "stage": stage,
+                "requirement_id": requirement_id,
+                "requirement_digest": requirement_digest,
+            }
+        )
+        super().__init__(
+            f"no exact {stage} binding registration for {requirement_id!r}"
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class ResearchBindingResolutionContext:
     """Frozen input shared with owner-system binding resolvers."""
@@ -353,9 +400,15 @@ class ResearchProjectManifestRegistry:
         key = (definition.project_id, definition.study_id)
         manifest = self._coverage.get(key)
         if manifest is None:
-            raise LookupError(
-                "no exact ProjectManifest for "
-                f"project={definition.project_id!r} study={definition.study_id!r}"
+            requirement = ResearchProjectManifestRequirement.from_study(
+                definition
+            )
+            raise ResearchBindingRequirementMissing(
+                stage="project_manifest",
+                requirement_id=(
+                    definition.project_id + ":" + definition.study_id
+                ),
+                requirement_digest=requirement.requirement_digest,
             )
         if definition.study_id not in manifest.study_ids:
             raise ValueError("ProjectManifest Study coverage drifted")
@@ -502,9 +555,10 @@ class ResearchCapabilityBindingRegistry:
         )
         registration = self._by_key.get(key)
         if registration is None:
-            raise LookupError(
-                "no exact Capability binding registration for "
-                f"{requirement.requirement_id!r}"
+            raise ResearchBindingRequirementMissing(
+                stage="capability",
+                requirement_id=requirement.requirement_id,
+                requirement_digest=requirement_digest,
             )
         for resolution in registration.resolutions:
             if resolution.binding is None:
@@ -641,9 +695,10 @@ class ResearchParticipantBindingRegistry:
             )
         )
         if registration is None:
-            raise LookupError(
-                "no exact Participant binding registration for "
-                f"role={requirement.role!r}"
+            raise ResearchBindingRequirementMissing(
+                stage="participant",
+                requirement_id=requirement.role,
+                requirement_digest=requirement.requirement_digest,
             )
         resolution = registration.resolution
         if resolution.binding is not None:
@@ -780,9 +835,10 @@ class ResearchModelRoleBindingRegistry:
         )
         if registration is None:
             if requirement.required:
-                raise LookupError(
-                    "no exact Model binding registration for "
-                    f"role={requirement.role!r}"
+                raise ResearchBindingRequirementMissing(
+                    stage="model",
+                    requirement_id=requirement.role,
+                    requirement_digest=requirement.requirement_digest,
                 )
             return ()
         for resolution in registration.resolutions:
@@ -1098,6 +1154,7 @@ __all__ = [
     "ResearchBindingAuthority",
     "ResearchBindingAuthorityPort",
     "ResearchBindingAuthorityError",
+    "ResearchBindingRequirementMissing",
     "ResearchBindingResolutionContext",
     "ResearchCapabilityBindingResolverPort",
     "ResearchModelRoleBindingRegistry",
