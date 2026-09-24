@@ -228,7 +228,7 @@ class ResearchCapabilityBindingRegistration:
                 "requirement_id": self.requirement_id,
                 "requirement_digest": self.requirement_digest,
                 "resolutions": tuple(
-                    row.resolution_digest for row in self.resolutions
+                    row.projection_digest for row in self.resolutions
                 ),
             }
         )
@@ -364,7 +364,7 @@ class ResearchParticipantBindingRegistration:
             {
                 "project_manifest_digest": self.project_manifest_digest,
                 "research_requirement_digest": self.research_requirement_digest,
-                "resolution_digest": self.resolution.resolution_digest,
+                "resolution_digest": self.resolution.projection_digest,
             }
         )
         if self.registration_digest:
@@ -498,7 +498,7 @@ class ResearchModelRoleBindingRegistration:
                 "project_manifest_digest": self.project_manifest_digest,
                 "research_requirement_digest": self.research_requirement_digest,
                 "resolutions": tuple(
-                    row.resolution_digest for row in self.resolutions
+                    row.projection_digest for row in self.resolutions
                 ),
             }
         )
