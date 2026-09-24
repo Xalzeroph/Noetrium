@@ -211,7 +211,7 @@ class RecoveryLeaseAdapter:
                 "cannot release runtime recovery lease owned by a different owner/manifest"
             )
         try:
-            self._leases.release(current.lease_id)
+            self._leases.release(current.lease_id, fencing_token=current.fencing_token)
         except (ResourceLeaseConflict, ResourceLeaseExpired) as exc:
             raise RecoveryLeaseBusy("runtime recovery lease release lost authority") from exc
 
