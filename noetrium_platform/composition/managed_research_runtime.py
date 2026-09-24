@@ -162,29 +162,41 @@ class ManagedResearchRuntime:
         except BaseException as exc:
             errors.append(exc)
 
+        workloads_quiesced = False
         try:
-            statuses = self.management.models.fleet.shutdown_all()
-            failed = tuple(
-                row
-                for row in statuses
-                if row.runtime_state
-                not in {ModelRuntimeState.STOPPED, ModelRuntimeState.MISSING}
-            )
-            if failed:
-                raise RuntimeError(
-                    "model processes survived runtime shutdown: "
-                    + ",".join(
-                        f"{row.deployment_id}:{row.runtime_state.value}"
-                        for row in failed
-                    )
-                )
+            self.execution_pool.quiesce_workloads()
+            workloads_quiesced = True
         except BaseException as exc:
             errors.append(exc)
 
-        try:
-            self.resources.shutdown_cleanup()
-        except BaseException as exc:
-            errors.append(exc)
+        # Releasing ephemeral resources is safe only after every workload domain
+        # has physically joined. If workload quiescence cannot be proven, leave
+        # leases/resources fenced for TTL + next-start reconciliation rather
+        # than releasing them underneath potentially live work.
+        if workloads_quiesced:
+            try:
+                statuses = self.management.models.fleet.shutdown_all()
+                failed = tuple(
+                    row
+                    for row in statuses
+                    if row.runtime_state
+                    not in {ModelRuntimeState.STOPPED, ModelRuntimeState.MISSING}
+                )
+                if failed:
+                    raise RuntimeError(
+                        "model processes survived runtime shutdown: "
+                        + ",".join(
+                            f"{row.deployment_id}:{row.runtime_state.value}"
+                            for row in failed
+                        )
+                    )
+            except BaseException as exc:
+                errors.append(exc)
+
+            try:
+                self.resources.shutdown_cleanup()
+            except BaseException as exc:
+                errors.append(exc)
 
         self._closed = True
         try:
