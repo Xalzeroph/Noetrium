@@ -231,6 +231,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceLeasePort,
     ResourceOwnershipPort,
 )
+from noetrium_platform.infrastructure.resources.lease.runtime import LocalLeaseClock
 from noetrium_platform.infrastructure.resources.providers import (
     SQLiteResourceLeaseRegistry,
 )
@@ -244,7 +245,10 @@ def compose_sqlite_recovery_lease(
     """Project recovery ownership from the canonical resource lease authority."""
 
     path = Path(database)
-    resources = SQLiteResourceLeaseRegistry(path)
+    resources = SQLiteResourceLeaseRegistry(
+        path,
+        clock=LocalLeaseClock(),
+    )
     return RecoveryLeaseAdapter(
         resources,
         resources,
