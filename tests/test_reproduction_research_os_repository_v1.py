@@ -149,22 +149,22 @@ def test_adacm2_preserves_both_paper_interpretations_as_distinct_execution_lanes
     eq6 = bind_reproduction_execution(
         REPRODUCTION,
         binding_id="lvu-eq6",
-        study_factory="build_adacm2_lvu_study",
+        study_factory="build_adacm2_lvu_eq6_literal_study",
         benchmark_id="lvu",
-        values={"interpretation": "eq6_literal"},
+        values={},
     )
     eq8 = bind_reproduction_execution(
         REPRODUCTION,
         binding_id="lvu-eq8",
-        study_factory="build_adacm2_lvu_study",
+        study_factory="build_adacm2_lvu_eq8_consistent_study",
         benchmark_id="lvu",
-        values={"interpretation": "eq8_consistent"},
+        values={},
     )
 
     assert eq6.binding_digest != eq8.binding_digest
-    assert eq6.requirement_digests == eq8.requirement_digests
-    assert eq6.values["interpretation"] == "eq6_literal"
-    assert eq8.values["interpretation"] == "eq8_consistent"
+    assert eq6.requirement_digests == eq8.requirement_digests == ()
+    assert eq6.values == {}
+    assert eq8.values == {}
 
 
 
@@ -179,16 +179,16 @@ def test_bound_reproduction_lanes_compile_as_distinct_product_programs() -> None
     eq6 = bind_reproduction_execution(
         ADACM2,
         binding_id="lvu-eq6",
-        study_factory="build_adacm2_lvu_study",
+        study_factory="build_adacm2_lvu_eq6_literal_study",
         benchmark_id="lvu",
-        values={"interpretation": "eq6_literal"},
+        values={},
     )
     eq8 = bind_reproduction_execution(
         ADACM2,
         binding_id="lvu-eq8",
-        study_factory="build_adacm2_lvu_study",
+        study_factory="build_adacm2_lvu_eq8_consistent_study",
         benchmark_id="lvu",
-        values={"interpretation": "eq8_consistent"},
+        values={},
     )
     toolformer = bind_reproduction_execution(
         TOOLFORMER,
