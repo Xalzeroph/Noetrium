@@ -702,6 +702,21 @@ class ResearchGraphExecutionStorePort(Protocol):
 
 
 @runtime_checkable
+class ResearchGraphClaimRecoveryPort(Protocol):
+    """Exact recovery authority for a claimed node that never started."""
+
+    def abandon_claim(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        attempt_id: str,
+        owner_id: str,
+        now_ns: int,
+    ) -> ResearchGraphNodeExecutionRecord: ...
+
+
+@runtime_checkable
 class ResearchGraphControlStorePort(Protocol):
     """CAS-safe durable graph control authority.
 
@@ -878,6 +893,7 @@ __all__ = [
     "ResearchGraphActiveExecutionSnapshot",
     "ResearchGraphAttemptRecord",
     "ResearchGraphAttemptState",
+    "ResearchGraphClaimRecoveryPort",
     "ResearchGraphControlPhase",
     "ResearchGraphControlRecord",
     "ResearchGraphControlStorePort",
