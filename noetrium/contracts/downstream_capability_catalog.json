@@ -1,6 +1,6 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "82894bceaa9ca6da32de508b232a550605fea3643e54e18ed2e86adece14cda1",
+  "catalog_digest": "8ffcb03e39d3f3a1189dac7fea7d51f15b3bfb2498de9d200c26596194d31fdc",
   "direct_symbol_sources": {
     "ActionKind": "noetrium_platform.product.api",
     "ActionRequest": "noetrium_platform.product.api",
@@ -123,8 +123,6 @@
     "Study": "noetrium_platform.product.api",
     "StudyModel": "noetrium_platform.product.api",
     "StudyParticipant": "noetrium_platform.product.api",
-    "TensorContentRef": "noetrium_platform.product.api",
-    "TensorContentStorePort": "noetrium_platform.product.api",
     "TrialBudget": "noetrium_platform.product.api",
     "environment_action_capability_payload": "noetrium_platform.product.api",
     "environment_branch_action_spec": "noetrium_platform.product.api",
@@ -500,12 +498,6 @@
       "research_os"
     ],
     "StudyParticipant": [
-      "research_os"
-    ],
-    "TensorContentRef": [
-      "research_os"
-    ],
-    "TensorContentStorePort": [
       "research_os"
     ],
     "TrialBudget": [
@@ -1233,8 +1225,6 @@
             "StudyModel",
             "StudyParticipant",
             "TrialBudget",
-            "TensorContentRef",
-            "TensorContentStorePort",
             "environment_action_capability_payload",
             "environment_branch_action_spec",
             "environment_fork_action_payload",
@@ -1250,7 +1240,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "6a792b5b7b2435146173d22a89ead5670284afc9d8e694a3256a8d1992e46de1",
+      "interface_digest": "9ff723b65211ce923db6fb7c486578081b20c2795c03dc54990e659bb6ddfc49",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",

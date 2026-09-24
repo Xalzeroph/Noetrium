@@ -15407,11 +15407,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentComponentBindingPort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.contracts.ExperimentSpec"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.experiment.api.topology.ExperimentParticipantTopology",
       "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.contracts.ExperimentParticipantSpec"
     },
@@ -15449,36 +15444,6 @@
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.experiment.resource.runtime.binding.ExperimentResourceBinder",
       "target": "noetrium_platform.research.experimentation.lifecycle.experiment.resource.runtime.binding.ResourceAllocationLease"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components.ExperimentRuntimeComponents",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.ports.DecisionCycleRuntimePort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components.ExperimentRuntimeComponents",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.ports.RunRuntimePort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine.ExperimentRuntime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components.ExperimentRuntimeComponents"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine.ExperimentRuntime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine.ExperimentRuntime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports.RunIdentityProvider"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine.ExperimentRuntime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunSessionPort"
     },
     {
       "kind": "references",
@@ -15712,27 +15677,7 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports.RunIdentityProvider",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunCleanupFailure",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunCleanupReport"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunCycleExecutorPort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunCycleExecutionPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunLifetimePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunCleanupReport"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunSessionPort",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunCleanupReport"
     },
     {
@@ -15782,16 +15727,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.ports.RunRuntimePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.ports.RunRuntimePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunSessionPort"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source.RunControlResearchResultSource",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPort"
     },
@@ -15809,11 +15744,6 @@
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.evidence.ExperimentRunEvidenceFinalizer",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence.EvidenceBundleReceipt"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.providers.identity.RandomRunIdentityProvider",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
     },
     {
       "kind": "references",
@@ -15908,11 +15838,6 @@
     {
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.cycle.RunCycleExecutor",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentTrialCycleExecutorPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.cycle.RunCycleExecutor",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
     },
     {
@@ -15922,33 +15847,8 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime.DecisionCycleRuntime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentComponentBindingPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime.DecisionCycleRuntime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentTrialCycleExecutorPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime._CycleFrame",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentComponentBindingPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime._CycleFrame",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentTrialCycleExecutorPort"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime._CycleFrame",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunCleanupReport"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics.JsonlRunDiagnostics",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactStorePort"
     },
     {
       "kind": "references",
@@ -15959,16 +15859,6 @@
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session.RunSession",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunCleanupReport"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session.RunSession",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunCycleExecutorPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session.RunSession",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunLifetimePort"
     },
     {
       "kind": "references",
@@ -16012,43 +15902,13 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources.RunResourceAcquirer",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources.RunResourceAcquirer",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources.OpenRunResources"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime.RunRuntime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentComponentBindingPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime.RunRuntime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentTrialCycleExecutorPort"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime.RunRuntime",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
     },
     {
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime.RunRuntime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunSessionPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime._RunRuntimeFrame",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentComponentBindingPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime._RunRuntimeFrame",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentTrialCycleExecutorPort"
+      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session.RunSession"
     },
     {
       "kind": "references",
@@ -21168,7 +21028,7 @@
         "provider"
       ],
       "kind": "dataclass",
-      "line": 17,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
       "name": "MinecraftServerArtifactAssembly",
@@ -49144,7 +49004,7 @@
         "p99"
       ],
       "kind": "dataclass",
-      "line": 18,
+      "line": 19,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.telemetry.metric.providers.query",
       "name": "MetricSummary",
@@ -49160,7 +49020,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 54,
+      "line": 55,
       "methods": [
         "__init__",
         "_connect",
@@ -57831,7 +57691,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 25,
+      "line": 33,
       "methods": [
         "__init__",
         "ensure_serial_lane",
@@ -90937,46 +90797,6 @@
       "top_system": "experimentation"
     },
     {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 18,
-      "methods": [
-        "bind"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
-      "name": "ExperimentComponentBindingPort",
-      "nesting": [
-        "ExperimentComponentBindingPort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentComponentBindingPort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 22,
-      "methods": [
-        "execute"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
-      "name": "ExperimentTrialCycleExecutorPort",
-      "nesting": [
-        "ExperimentTrialCycleExecutorPort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports.ExperimentTrialCycleExecutorPort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -91275,70 +91095,6 @@
     },
     {
       "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 9,
-      "methods": [
-        "__init__",
-        "bind"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.component_binding",
-      "name": "ExperimentComponentBinder",
-      "nesting": [
-        "ExperimentComponentBinder"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.component_binding.ExperimentComponentBinder",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "cycle_runtime",
-        "run_runtime",
-        "trial_protocol_identity"
-      ],
-      "kind": "dataclass",
-      "line": 10,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components",
-      "name": "ExperimentRuntimeComponents",
-      "nesting": [
-        "ExperimentRuntimeComponents"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components.ExperimentRuntimeComponents",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 14,
-      "methods": [
-        "__init__",
-        "trial_protocol_identity",
-        "cycle_runtime",
-        "run_runtime",
-        "open_run",
-        "execute_cycle"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "name": "ExperimentRuntime",
-      "nesting": [
-        "ExperimentRuntime"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine.ExperimentRuntime",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
       ],
@@ -91453,46 +91209,6 @@
         "StudyMatrixUniversalProjection"
       ],
       "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix.StudyMatrixUniversalProjection",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 26,
-      "methods": [
-        "__init__",
-        "_surface_for",
-        "execute"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_cycle",
-      "name": "ExperimentTrialCycleExecutor",
-      "nesting": [
-        "ExperimentTrialCycleExecutor"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_cycle.ExperimentTrialCycleExecutor",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 12,
-      "methods": [
-        "__init__",
-        "bind",
-        "reuse_scope"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.workflow_surfaces",
-      "name": "ExperimentWorkflowSurfaceRegistry",
-      "nesting": [
-        "ExperimentWorkflowSurfaceRegistry"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.workflow_surfaces.ExperimentWorkflowSurfaceRegistry",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -92234,28 +91950,6 @@
       "top_system": "experimentation"
     },
     {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 8,
-      "methods": [
-        "event",
-        "metric",
-        "failure"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.diagnostics",
-      "name": "RunDiagnosticsPort",
-      "nesting": [
-        "RunDiagnosticsPort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.diagnostics.RunDiagnosticsPort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -92305,26 +91999,6 @@
         "RunIdentity"
       ],
       "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 8,
-      "methods": [
-        "allocate"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports",
-      "name": "RunIdentityProvider",
-      "nesting": [
-        "RunIdentityProvider"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports.RunIdentityProvider",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -92403,91 +92077,6 @@
         "RunRecoveryRequired"
       ],
       "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunRecoveryRequired",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 15,
-      "methods": [
-        "result",
-        "final_context",
-        "checkpoint_id"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "name": "RunCycleExecutionPort",
-      "nesting": [
-        "RunCycleExecutionPort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunCycleExecutionPort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 28,
-      "methods": [
-        "execute"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "name": "RunCycleExecutorPort",
-      "nesting": [
-        "RunCycleExecutorPort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunCycleExecutorPort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 42,
-      "methods": [
-        "close"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "name": "RunLifetimePort",
-      "nesting": [
-        "RunLifetimePort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunLifetimePort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 53,
-      "methods": [
-        "latest_checkpoint_id",
-        "requires_recovery",
-        "execute",
-        "close"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "name": "RunSessionPort",
-      "nesting": [
-        "RunSessionPort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunSessionPort",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -92714,46 +92303,6 @@
       "top_system": "experimentation"
     },
     {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 29,
-      "methods": [
-        "run"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.ports",
-      "name": "DecisionCycleRuntimePort",
-      "nesting": [
-        "DecisionCycleRuntimePort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.ports.DecisionCycleRuntimePort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 16,
-      "methods": [
-        "open"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.ports",
-      "name": "RunRuntimePort",
-      "nesting": [
-        "RunRuntimePort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.ports.RunRuntimePort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -92858,31 +92407,13 @@
       "top_system": "experimentation"
     },
     {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 8,
-      "methods": [
-        "allocate"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.providers.identity",
-      "name": "RandomRunIdentityProvider",
-      "nesting": [
-        "RandomRunIdentityProvider"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.providers.identity.RandomRunIdentityProvider",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
       "bases": [
         "RunArtifactStorePort"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 28,
+      "line": 27,
       "methods": [
         "__init__",
         "_resolve_ref",
@@ -92961,7 +92492,7 @@
         "result"
       ],
       "kind": "dataclass",
-      "line": 24,
+      "line": 21,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.cycle",
       "name": "RunCycleExecution",
@@ -92977,7 +92508,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 30,
+      "line": 27,
       "methods": [
         "__init__",
         "_validate_identity",
@@ -93000,7 +92531,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 19,
+      "line": 16,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.cycle",
       "name": "RunIdentityMismatch",
@@ -93016,7 +92547,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 452,
+      "line": 448,
       "methods": [
         "__init__",
         "_attempt_machine_id",
@@ -93054,7 +92585,7 @@
         "trial"
       ],
       "kind": "dataclass",
-      "line": 98,
+      "line": 94,
       "methods": [
         "cleanup_report"
       ],
@@ -93068,35 +92599,11 @@
       "top_system": "experimentation"
     },
     {
-      "bases": [
-        "RunDiagnosticsPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 43,
-      "methods": [
-        "__init__",
-        "_envelope",
-        "event",
-        "metric",
-        "failure"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics",
-      "name": "JsonlRunDiagnostics",
-      "nesting": [
-        "JsonlRunDiagnostics"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics.JsonlRunDiagnostics",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 19,
       "methods": [
         "__init__",
         "last_context",
@@ -93263,58 +92770,10 @@
     },
     {
       "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "bound",
-        "context",
-        "operation_results",
-        "participant_sessions"
-      ],
-      "kind": "dataclass",
-      "line": 19,
-      "methods": [
-        "by_role"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "name": "OpenRunResources",
-      "nesting": [
-        "OpenRunResources"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources.OpenRunResources",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 34,
-      "methods": [
-        "__init__",
-        "open_context",
-        "acquire",
-        "_project",
-        "rollback",
-        "_rollback_partial"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "name": "RunResourceAcquirer",
-      "nesting": [
-        "RunResourceAcquirer"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources.RunResourceAcquirer",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 678,
+      "line": 673,
       "methods": [
         "__init__",
         "open"
@@ -93353,7 +92812,7 @@
         "trial"
       ],
       "kind": "dataclass",
-      "line": 145,
+      "line": 140,
       "methods": [
         "cleanup_report"
       ],
@@ -93371,7 +92830,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 629,
+      "line": 624,
       "methods": [
         "__init__",
         "close"
@@ -102255,11 +101714,6 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_cycle.ExperimentTrialCycleExecutor",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.workflow_surfaces.ExperimentWorkflowSurfaceRegistry"
-    },
-    {
-      "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source.RunControlResearchResultSource",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlRequest"
     },
@@ -102282,11 +101736,6 @@
       "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.evidence.ExperimentRunEvidenceFinalizer",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.manifest_evidence.RunArtifactEvidenceBundlePublisher"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.providers.identity.RandomRunIdentityProvider",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
     },
     {
       "kind": "constructs",
@@ -102417,16 +101866,6 @@
       "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineSession",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunPhase"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources.RunResourceAcquirer",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunCleanupReport"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources.RunResourceAcquirer",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources.OpenRunResources"
     },
     {
       "kind": "constructs",
@@ -102635,13 +102074,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3444,
-    "classes": 3344,
-    "constructor_edges": 920,
-    "inheritance_edges": 150,
-    "module_import_edges": 5089,
+    "association_edges": 3416,
+    "classes": 3325,
+    "constructor_edges": 916,
+    "inheritance_edges": 149,
+    "module_import_edges": 5028,
     "parse_errors": 0,
-    "python_modules": 1924,
+    "python_modules": 1911,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -103389,11 +102828,6 @@
     },
     {
       "kind": "inherits",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics.JsonlRunDiagnostics",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.diagnostics.RunDiagnosticsPort"
-    },
-    {
-      "kind": "inherits",
       "source": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.InMemoryBenchmarkSource",
       "target": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.BenchmarkSourcePort"
     }
@@ -103982,10 +103416,6 @@
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
       "target": "noetrium_platform.capabilities.environment.minecraft.providers.server_artifact"
-    },
-    {
-      "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
-      "target": "noetrium_platform.evidence.artifact.content.providers.download"
     },
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
@@ -114173,6 +113603,10 @@
     },
     {
       "source": "noetrium_platform.foundation.governance.architecture.observability_dependency_invariants",
+      "target": "noetrium_platform.foundation.governance.architecture.source_index"
+    },
+    {
+      "source": "noetrium_platform.foundation.governance.architecture.observability_dependency_invariants",
       "target": "noetrium_platform.foundation.governance.architecture.source_scan"
     },
     {
@@ -115878,6 +115312,10 @@
     {
       "source": "noetrium_platform.foundation.kernel.kernel.result_projection",
       "target": "noetrium_platform.foundation.kernel.kernel.operation"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.kernel.retry",
+      "target": "noetrium_platform.foundation.kernel.concurrency.runtime.execution"
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel.snapshot",
@@ -120321,47 +119759,11 @@
     },
     {
       "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.capabilities.environment.api"
-    },
-    {
-      "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.capabilities.environment.embodied.api"
-    },
-    {
-      "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.capabilities.participant.capability.api"
-    },
-    {
-      "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.capabilities.participant.method.api"
-    },
-    {
-      "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.composition.environment_capabilities"
-    },
-    {
-      "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.evidence.artifact.content.api"
-    },
-    {
-      "source": "noetrium_platform.product.research_authoring",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.research.execution.machines.api"
-    },
-    {
-      "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.research.execution.workflow.api"
-    },
-    {
-      "source": "noetrium_platform.product.research_authoring",
-      "target": "noetrium_platform.research.experimentation.lifecycle.api"
+      "target": "noetrium_platform.research.experimentation.api"
     },
     {
       "source": "noetrium_platform.product.research_os",
@@ -120370,6 +119772,10 @@
     {
       "source": "noetrium_platform.research.execution.api",
       "target": "noetrium_platform.capabilities.api"
+    },
+    {
+      "source": "noetrium_platform.research.execution.api",
+      "target": "noetrium_platform.capabilities.environment.embodied.api"
     },
     {
       "source": "noetrium_platform.research.execution.api",
@@ -121457,6 +120863,10 @@
     },
     {
       "source": "noetrium_platform.research.execution.workflow.api",
+      "target": "noetrium_platform.research.execution.workflow.environment_capability_authoring"
+    },
+    {
+      "source": "noetrium_platform.research.execution.workflow.api",
       "target": "noetrium_platform.research.execution.workflow.errors"
     },
     {
@@ -121509,6 +120919,10 @@
     },
     {
       "source": "noetrium_platform.research.execution.workflow.api.effect_intents",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.research.execution.workflow.api.environment_capability_authoring",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
@@ -122372,18 +121786,6 @@
       "target": "noetrium_platform.research.experimentation.identity"
     },
     {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.contracts"
-    },
-    {
       "source": "noetrium_platform.research.experimentation.lifecycle.experiment.api.topology",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
@@ -122461,75 +121863,7 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.component_binding"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.components"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.engine"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.trial_cycle"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
       "target": "noetrium_platform.research.experimentation.lifecycle.experiment.trial_protocol_identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.workflow_surfaces"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.component_binding",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.component_binding",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.component_binding",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.ports"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_protocol_identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
@@ -122540,28 +121874,12 @@
       "target": "noetrium_platform.research.experimentation.lifecycle.study.api"
     },
     {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_cycle",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_cycle",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_cycle",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.workflow_surfaces"
-    },
-    {
       "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_protocol_identity",
       "target": "noetrium_platform.research.execution.api"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_protocol_identity",
       "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.workflow_surfaces",
-      "target": "noetrium_platform.research.execution.api"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api",
@@ -122577,10 +121895,6 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.diagnostics"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.execution"
     },
     {
@@ -122589,15 +121903,7 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.identity_ports"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.lifecycle"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.lifecycle_ports"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api",
@@ -122648,10 +121954,6 @@
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence"
     },
     {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.diagnostics",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.execution",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
@@ -122668,24 +121970,8 @@
       "target": "noetrium_platform.research.execution.api"
     },
     {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-    },
-    {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle",
       "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest",
@@ -122706,26 +121992,6 @@
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_ports",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.ports",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.ports",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.ports",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.ports",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.ports",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.spec",
@@ -122828,14 +122094,6 @@
       "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.manifest_evidence"
     },
     {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.providers",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.providers.identity",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-    },
-    {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.artifacts"
     },
@@ -122846,10 +122104,6 @@
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.decision_runtime"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.diagnostics"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
@@ -122874,10 +122128,6 @@
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
@@ -122937,10 +122187,6 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.cycle",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.cycle",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
     },
     {
@@ -122961,31 +122207,11 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.cleanup"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics",
-      "target": "noetrium_platform.foundation.kernel.kernel.errors"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.diagnostics"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session",
@@ -123010,10 +122236,6 @@
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session",
@@ -123048,30 +122270,6 @@
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
     },
     {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.cleanup"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
-    },
-    {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
@@ -123089,19 +122287,11 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
@@ -124412,7 +123602,6 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.minecraft.providers.server_artifact",
-        "noetrium_platform.evidence.artifact.content.providers.download",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
@@ -134188,6 +133377,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.governance.architecture.source_index",
         "noetrium_platform.foundation.governance.architecture.source_scan"
       ],
       "module": "noetrium_platform.foundation.governance.architecture.observability_dependency_invariants",
@@ -136037,7 +135227,9 @@
       "top_system": "platform"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.concurrency.runtime.execution"
+      ],
       "module": "noetrium_platform.foundation.kernel.kernel.retry",
       "path": "noetrium_platform/foundation/kernel/kernel/retry.py",
       "system_key": "platform",
@@ -140801,17 +139993,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.capabilities.environment.api",
-        "noetrium_platform.capabilities.environment.embodied.api",
-        "noetrium_platform.capabilities.participant.capability.api",
-        "noetrium_platform.capabilities.participant.method.api",
-        "noetrium_platform.composition.environment_capabilities",
-        "noetrium_platform.evidence.artifact.content.api",
         "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.execution.machines.api",
-        "noetrium_platform.research.execution.workflow.api",
-        "noetrium_platform.research.experimentation.lifecycle.api"
+        "noetrium_platform.research.experimentation.api"
       ],
       "module": "noetrium_platform.product.research_authoring",
       "path": "noetrium_platform/product/research_authoring.py",
@@ -140837,6 +140020,7 @@
     {
       "imports": [
         "noetrium_platform.capabilities.api",
+        "noetrium_platform.capabilities.environment.embodied.api",
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.research.execution.decision.cycle_identity",
         "noetrium_platform.research.execution.decision.cycle_result",
@@ -141859,6 +141043,7 @@
         "noetrium_platform.research.execution.workflow.authoring",
         "noetrium_platform.research.execution.workflow.dispatch",
         "noetrium_platform.research.execution.workflow.effect_intents",
+        "noetrium_platform.research.execution.workflow.environment_capability_authoring",
         "noetrium_platform.research.execution.workflow.errors",
         "noetrium_platform.research.execution.workflow.graph",
         "noetrium_platform.research.execution.workflow.method_machine",
@@ -141907,6 +141092,15 @@
       ],
       "module": "noetrium_platform.research.execution.workflow.api.effect_intents",
       "path": "noetrium_platform/research/execution/workflow/api/effect_intents.py",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel"
+      ],
+      "module": "noetrium_platform.research.execution.workflow.api.environment_capability_authoring",
+      "path": "noetrium_platform/research/execution/workflow/api/environment_capability_authoring.py",
       "system_key": "execution",
       "top_system": "execution"
     },
@@ -142726,17 +141920,6 @@
       "top_system": "experimentation"
     },
     {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.api.contracts"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/api/ports.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
       "imports": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.experiment.api.tasks",
       "path": "noetrium_platform/research/experimentation/lifecycle/experiment/api/tasks.py",
@@ -142844,51 +142027,10 @@
     },
     {
       "imports": [
-        "noetrium_platform.research.experimentation.lifecycle.experiment.component_binding",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.components",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.engine",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.trial_cycle",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.trial_protocol_identity",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.workflow_surfaces"
+        "noetrium_platform.research.experimentation.lifecycle.experiment.trial_protocol_identity"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
       "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/__init__.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.api"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.component_binding",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/component_binding.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.ports"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/components.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_protocol_identity",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/engine.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -142904,31 +142046,11 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.workflow_surfaces"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_cycle",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/trial_cycle.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
         "noetrium_platform.research.execution.api",
         "noetrium_platform.research.experimentation.lifecycle.experiment.api"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_protocol_identity",
       "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/trial_protocol_identity.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.research.execution.api"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.workflow_surfaces",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/workflow_surfaces.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -142944,12 +142066,9 @@
         "noetrium_platform.research.experimentation.lifecycle.run.artifacts",
         "noetrium_platform.research.experimentation.lifecycle.run.cleanup",
         "noetrium_platform.research.experimentation.lifecycle.run.control",
-        "noetrium_platform.research.experimentation.lifecycle.run.diagnostics",
         "noetrium_platform.research.experimentation.lifecycle.run.execution",
         "noetrium_platform.research.experimentation.lifecycle.run.identity",
-        "noetrium_platform.research.experimentation.lifecycle.run.identity_ports",
         "noetrium_platform.research.experimentation.lifecycle.run.lifecycle",
-        "noetrium_platform.research.experimentation.lifecycle.run.lifecycle_ports",
         "noetrium_platform.research.experimentation.lifecycle.run.manifest",
         "noetrium_platform.research.experimentation.lifecycle.run.manifest_evidence",
         "noetrium_platform.research.experimentation.lifecycle.run.manifest_ports",
@@ -143001,15 +142120,6 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.kernel.kernel"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.diagnostics",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/api/diagnostics.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.research.experimentation.lifecycle.study.api"
       ],
@@ -143030,30 +142140,10 @@
     },
     {
       "imports": [
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/api/identity_ports.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
         "noetrium_platform.foundation.kernel.kernel"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/api/lifecycle.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/api/lifecycle_ports.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -143083,19 +142173,6 @@
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_ports",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/api/manifest_ports.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.ports",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/api/ports.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -143182,28 +142259,9 @@
     },
     {
       "imports": [
-        "noetrium_platform.research.experimentation.lifecycle.run.identity"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.providers",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/providers/__init__.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.providers.identity",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/providers/identity.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
         "noetrium_platform.research.experimentation.lifecycle.run.artifacts",
         "noetrium_platform.research.experimentation.lifecycle.run.control",
         "noetrium_platform.research.experimentation.lifecycle.run.decision_runtime",
-        "noetrium_platform.research.experimentation.lifecycle.run.diagnostics",
         "noetrium_platform.research.experimentation.lifecycle.run.lifecycle_session",
         "noetrium_platform.research.experimentation.lifecycle.run.program",
         "noetrium_platform.research.experimentation.lifecycle.run.run_runtime"
@@ -143217,8 +142275,7 @@
       "imports": [
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.foundation.kernel.kernel.durability",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
-        "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics"
+        "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/artifacts.py",
@@ -143249,7 +142306,6 @@
         "noetrium_platform.research.execution.api",
         "noetrium_platform.research.experimentation.lifecycle.checkpoint.api",
         "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
         "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
         "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime"
       ],
@@ -143263,7 +142319,6 @@
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.research.execution.api",
         "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
         "noetrium_platform.research.experimentation.lifecycle.run.api.cleanup",
         "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
       ],
@@ -143276,23 +142331,10 @@
       "imports": [
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.foundation.kernel.kernel.errors",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.diagnostics"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/diagnostics.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.foundation.kernel.kernel.errors",
         "noetrium_platform.research.execution.api",
         "noetrium_platform.research.experimentation.lifecycle.experiment.api",
         "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
         "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
         "noetrium_platform.research.experimentation.lifecycle.run.runtime.program"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session",
@@ -143327,26 +142369,10 @@
       "imports": [
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.cleanup",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/resources.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
         "noetrium_platform.research.experimentation.lifecycle.checkpoint.api",
         "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-        "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
         "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
         "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
         "noetrium_platform.research.experimentation.lifecycle.run.runtime.cycle",
         "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
         "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_session",
@@ -143942,7 +142968,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "30b2dae8897b776ea48bf039e13925e39e155114",
+  "source_git_sha": "22442009b436aaa5c4d236ba048ca9d60e60d725",
   "system_import_edges": [
     {
       "count": 85,
@@ -143970,11 +142996,6 @@
       "target": "platform"
     },
     {
-      "count": 1,
-      "source": "environment",
-      "target": "artifact"
-    },
-    {
       "count": 207,
       "source": "environment",
       "target": "environment"
@@ -143985,32 +143006,37 @@
       "target": "platform"
     },
     {
-      "count": 235,
+      "count": 1,
+      "source": "execution",
+      "target": "environment"
+    },
+    {
+      "count": 236,
       "source": "execution",
       "target": "execution"
     },
     {
-      "count": 78,
+      "count": 79,
       "source": "execution",
       "target": "platform"
     },
     {
-      "count": 59,
+      "count": 51,
       "source": "experimentation",
       "target": "execution"
     },
     {
-      "count": 342,
+      "count": 303,
       "source": "experimentation",
       "target": "experimentation"
     },
     {
-      "count": 93,
+      "count": 84,
       "source": "experimentation",
       "target": "platform"
     },
     {
-      "count": 457,
+      "count": 458,
       "source": "governance",
       "target": "governance"
     },
@@ -144060,7 +143086,7 @@
       "target": "platform"
     },
     {
-      "count": 183,
+      "count": 184,
       "source": "platform",
       "target": "platform"
     },
@@ -144085,7 +143111,7 @@
       "target": "reliability"
     },
     {
-      "count": 16,
+      "count": 15,
       "source": "research_os",
       "target": "artifact"
     },
@@ -144095,12 +143121,12 @@
       "target": "data"
     },
     {
-      "count": 48,
+      "count": 46,
       "source": "research_os",
       "target": "environment"
     },
     {
-      "count": 70,
+      "count": 67,
       "source": "research_os",
       "target": "execution"
     },
@@ -144125,7 +143151,7 @@
       "target": "observability"
     },
     {
-      "count": 63,
+      "count": 61,
       "source": "research_os",
       "target": "participant"
     },
@@ -144145,7 +143171,7 @@
       "target": "reliability"
     },
     {
-      "count": 322,
+      "count": 321,
       "source": "research_os",
       "target": "research_os"
     },

@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "387193b82671230b4033bab31941e3230f65aad55fe12d7c3fd003dc6ed3a890",
+  "interface_digest": "221cbad0a5cb31d7b20bce88e9316beb179913874a5f6c05cb44d660de538ccf",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -1271,24 +1271,6 @@
             {
               "doc": null,
               "kind": "reexport",
-              "name": "TensorContentRef",
-              "origin_module": "..research_authoring",
-              "origin_name": "TensorContentRef",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
-              "name": "TensorContentStorePort",
-              "origin_module": "..research_authoring",
-              "origin_name": "TensorContentStorePort",
-              "schema_id": "noetrium.interface-schema",
-              "schema_version": "1"
-            },
-            {
-              "doc": null,
-              "kind": "reexport",
               "name": "environment_action_capability_payload",
               "origin_module": "..research_authoring",
               "origin_name": "environment_action_capability_payload",
@@ -1482,8 +1464,6 @@
             "StudyModel",
             "StudyParticipant",
             "TrialBudget",
-            "TensorContentRef",
-            "TensorContentStorePort",
             "environment_action_capability_payload",
             "environment_branch_action_spec",
             "environment_fork_action_payload",

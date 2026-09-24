@@ -21,7 +21,7 @@
 
 <!-- readme-locale:fr -->
 
-<!-- readme-source-sha256:5874a304fd3177c1b2e6f404e371b6e8d21cb121d60169fff96f0b3dc7b7c0b2 -->
+<!-- readme-source-sha256:a2851ab5c93ad3490793b66ebfcb8f5a9314700f5075a60b3820e6b756dea2ba -->
 
 <p align="center">
   <strong>Construisez des agents. Exécutez des expériences. Vérifiez les résultats.</strong><br>
@@ -96,7 +96,7 @@ Noetrium est volontairement plus large qu’une bibliothèque de agent workflows
 
 Noetrium exposes one high-level Research OS API. Registered lower systems remain internal composition authorities and are listed here only as architecture metadata.
 
-- 31 registered system surfaces; 1 public API modules; 132 public symbols.
+- 31 registered system surfaces; 1 public API modules; 130 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: downstream code uses only noetrium.api; lower system facades are internal registry material.

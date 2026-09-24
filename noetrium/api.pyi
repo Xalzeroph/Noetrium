@@ -124,8 +124,6 @@ from noetrium_platform.product.api import (
     Study as Study,
     StudyModel as StudyModel,
     StudyParticipant as StudyParticipant,
-    TensorContentRef as TensorContentRef,
-    TensorContentStorePort as TensorContentStorePort,
     TrialBudget as TrialBudget,
     environment_action_capability_payload as environment_action_capability_payload,
     environment_branch_action_spec as environment_branch_action_spec,

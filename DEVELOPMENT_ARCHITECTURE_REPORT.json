@@ -1,18 +1,11 @@
 {
-  "architecture_budget_violations": [
-    {
-      "detail": "top_level_systems complexity budget exceeded: observed=17 limit=16",
-      "dimension": "top_level_systems",
-      "limit": 16,
-      "observed": 17
-    }
-  ],
+  "architecture_budget_violations": [],
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5390,
-    "subsystems": 14,
-    "top_level_systems": 17
+    "import_edges": 5326,
+    "subsystems": 15,
+    "top_level_systems": 16
   },
   "architecture_complexity_budget": {
     "applicable_migration_ids": [],
@@ -30,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5390,
+      "import_edges": 5326,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -634,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5390,
+  "import_edges": 5326,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -879,62 +872,16 @@
       "seam_id": "run.checkpoint.publish"
     }
   ],
-  "package_cycles": [
-    [
-      "noetrium_platform.composition",
-      "noetrium_platform.product"
-    ]
-  ],
-  "report_sha256": "10e7a5da8cca75a6a6b61e8a8725758acfc3ad82b15f218d70e3657446077d00",
-  "source_authority_violations": [
-    {
-      "allowed_modules": [
-        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
-      ],
-      "authority": "filesystem.direct_bytes_write",
-      "detail": "Path.write_bytes is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.durability.durable_file",
-      "line": 43,
-      "module": "noetrium.nsh",
-      "path": "noetrium/nsh.py",
-      "primitive": "Path.write_bytes"
-    },
-    {
-      "allowed_modules": [
-        "noetrium_platform.foundation.kernel.concurrency.runtime.execution"
-      ],
-      "authority": "concurrency.blocking_sleep",
-      "detail": "time.sleep is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.concurrency.runtime.execution",
-      "line": 36,
-      "module": "noetrium_platform.foundation.kernel.kernel.retry",
-      "path": "noetrium_platform/foundation/kernel/kernel/retry.py",
-      "primitive": "time.sleep"
-    }
-  ],
-  "source_digest": "f1913dcafbbae7402f52673546a4859f9d10f2e25ef4ac9246a5cbb631d4b451",
+  "package_cycles": [],
+  "report_sha256": "65a90f30b88093a0ba737b5a5f7a509215c3cf00e34adaba74f348dfd77d5e79",
+  "source_authority_violations": [],
+  "source_digest": "58c39a284ad000210b8ea79ff762c534c7a0fe5c5faedc38ab9b9978cd13fa5d",
   "source_invariant_violations": [
     {
-      "detail": "raw exception text is surfaced directly (str(exc)); use error_api.describe_exception",
-      "invariant": "error_semantic_authority",
-      "line": 22,
-      "path": "noetrium_platform/foundation/kernel/kernel/durability/sqlite.py"
-    },
-    {
-      "detail": "platform modules must use Observability/Logging typed ports instead of the Python stdlib logging implementation",
-      "invariant": "logging_stdlib_bypass",
-      "line": 4,
-      "path": "noetrium_platform/composition/reliability_observability/__init__.py"
-    },
-    {
-      "detail": "raw SQLite durability/transaction policy 'BEGIN' bypasses the canonical Platform durability authority; use foundation.kernel.kernel.durability.sqlite",
-      "invariant": "sqlite_durability_authority",
-      "line": 128,
-      "path": "noetrium_platform/evidence/observability/telemetry/metric/providers/query.py"
-    },
-    {
-      "detail": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact -> noetrium_platform.evidence.artifact.content.providers.download; required facade=noetrium_platform.substrate.api",
-      "invariant": "skip_layer_dependency",
-      "line": 9,
-      "path": "noetrium_platform/capabilities/environment/minecraft/composition/server_artifact.py"
+      "detail": "direct concurrency implementation import noetrium_platform.foundation.kernel.concurrency.runtime.execution; depend on noetrium_platform.foundation.kernel.concurrency.api and obtain task groups from composition",
+      "invariant": "structured_concurrency_provider_firewall",
+      "line": 7,
+      "path": "noetrium_platform/foundation/kernel/kernel/retry.py"
     },
     {
       "detail": "noetrium_platform.infrastructure.lifecycle.toolchain.composition -> noetrium_platform.evidence.artifact.content.providers.download; required facade=noetrium_platform.foundation.api",
@@ -943,64 +890,10 @@
       "path": "noetrium_platform/infrastructure/lifecycle/toolchain/composition/__init__.py"
     },
     {
-      "detail": "noetrium_platform.product.operator.runtime.research_cli -> noetrium_platform.product.research_os; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "sibling_system_dependency",
-      "line": 13,
-      "path": "noetrium_platform/product/operator/runtime/research_cli.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 11,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.embodied.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 16,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.participant.capability.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 29,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.participant.method.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 40,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.artifact.content.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 52,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.execution.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "non_adjacent_layer_facade_dependency",
-      "line": 76,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.execution.machines.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 79,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.execution.workflow.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 115,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.experimentation.lifecycle.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "bypass_lower_layer_facade",
-      "line": 134,
-      "path": "noetrium_platform/product/research_authoring.py"
+      "detail": "noetrium_platform.research.execution.api -> noetrium_platform.capabilities.environment.embodied.api",
+      "invariant": "layer_facade_illegal_dependency",
+      "line": 41,
+      "path": "noetrium_platform/research/execution/api/__init__.py"
     }
   ],
   "source_root": ".",
@@ -1970,7 +1863,7 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 460,
+      "import_fan_in": 453,
       "import_fan_out": 27,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1981,7 +1874,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1921,
+      "risk_score": 1893,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -2022,8 +1915,8 @@
     },
     {
       "exception_handlers": 0,
-      "import_fan_in": 123,
-      "import_fan_out": 17,
+      "import_fan_in": 107,
+      "import_fan_out": 21,
       "io_sites": 0,
       "lock_sites": 0,
       "long_functions": 0,
@@ -2033,7 +1926,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 543,
+      "risk_score": 491,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
