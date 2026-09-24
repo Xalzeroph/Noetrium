@@ -16,7 +16,7 @@ def _fleet_module():
 def test_reproduction_fleet_is_complete_and_current_research_os_clean() -> None:
     payload = _fleet_module().build_plan()
 
-    assert payload["schema"] == "noetrium.reproduction-fleet-plan.v6"
+    assert payload["schema"] == "noetrium.reproduction-fleet-plan.v7"
     assert payload["inventory_reproduction_count"] == 100
     assert (
         payload["executable_reproduction_count"]
