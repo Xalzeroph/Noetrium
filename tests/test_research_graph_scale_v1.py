@@ -125,3 +125,98 @@ def test_research_graph_executes_121_node_multi_paper_dag_exactly_once() -> None
     assert executor.completed == {node.node_id for node in plan.nodes}
     assert admission.in_flight == 0
     assert admission.waiting == 0
+
+
+def test_research_graph_executes_128_node_deep_chain_in_dependency_order() -> None:
+    node_ids = tuple(f"deep-chain-{index:03d}" for index in range(128))
+    nodes = tuple(
+        _node(
+            node_id,
+            *(() if index == 0 else (node_ids[index - 1],)),
+        )
+        for index, node_id in enumerate(node_ids)
+    )
+    plan = ResearchGraphPlan(
+        "scale-deep-chain-128",
+        canonical_digest({"revision": "scale-deep-chain-128"}),
+        nodes,
+    )
+    executor = _DependencyCheckingExecutor()
+    pool = _pool()
+    scheduler = ResearchGraphScheduler(
+        plan,
+        executor,
+        execution_pool=pool,
+        task_group_id="scale-deep-chain-128",
+    )
+    try:
+        report = scheduler.execute()
+        admission = pool.orchestration_admission_snapshot()
+    finally:
+        scheduler.close()
+        pool.close()
+
+    assert report.failed_node_ids == ()
+    assert report.blocked_node_ids == ()
+    assert report.cancelled_node_ids == ()
+    assert report.succeeded_node_ids == tuple(sorted(node_ids))
+    assert executor.calls == Counter({node_id: 1 for node_id in node_ids})
+    assert executor.completed == set(node_ids)
+    assert admission.in_flight == 0
+    assert admission.waiting == 0
+
+
+def test_scale_failure_isolated_to_one_paper_descendant_closure() -> None:
+    plan = _scale_plan()
+    failing_node = "paper-2:experiment-3"
+
+    class _FailingExecutor(_DependencyCheckingExecutor):
+        def execute(self, context, node, *, deadline) -> None:
+            if node.node_id == failing_node:
+                context.checkpoint()
+                with self._lock:
+                    missing = tuple(
+                        dependency
+                        for dependency in node.depends_on_node_ids
+                        if dependency not in self.completed
+                    )
+                    if missing:
+                        raise AssertionError(
+                            f"failing node started before dependencies completed: {missing}"
+                        )
+                    self.calls[node.node_id] += 1
+                raise RuntimeError("injected scale failure")
+            super().execute(context, node, deadline=deadline)
+
+    executor = _FailingExecutor()
+    pool = _pool()
+    scheduler = ResearchGraphScheduler(
+        plan,
+        executor,
+        execution_pool=pool,
+        task_group_id="scale-failure-isolation",
+    )
+    try:
+        report = scheduler.execute()
+        admission = pool.orchestration_admission_snapshot()
+    finally:
+        scheduler.close()
+        pool.close()
+
+    by_id = {row.node_id: row for row in report.nodes}
+    assert report.failed_node_ids == (failing_node,)
+    assert by_id["paper-2:fan-in"].state.value == "blocked"
+    assert by_id["paper-2:deep-00"].state.value == "blocked"
+    assert by_id["paper-2:deep-19"].state.value == "blocked"
+    assert "paper-2:fan-in" not in executor.calls
+    assert "paper-2:deep-00" not in executor.calls
+
+    for paper_index in (0, 1, 3):
+        tail = f"paper-{paper_index}:deep-19"
+        assert by_id[tail].state.value == "succeeded"
+        assert executor.calls[tail] == 1
+
+    assert by_id["portfolio:final-fan-in"].state.value == "blocked"
+    assert "portfolio:final-fan-in" not in executor.calls
+    assert admission.in_flight == 0
+    assert admission.waiting == 0
