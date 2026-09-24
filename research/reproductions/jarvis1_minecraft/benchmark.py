@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkTaskSet
+from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.jarvis1_offline import (
     JARVIS1_ALL_SPLIT,
     JARVIS1_OFFLINE_BENCHMARK_ID,
