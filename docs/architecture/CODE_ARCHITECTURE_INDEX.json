@@ -1007,16 +1007,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerCliManagedContainerProvider",
-      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerManagedContainerPort",
-      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.capabilities.environment.providers.jsonl_process.JsonlProcessTransport",
       "target": "noetrium_platform.capabilities.environment.providers.jsonl_process.FailureReporter"
     },
@@ -4567,71 +4557,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerManagedContainerPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerReconciliation"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerReconcileStopPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "target": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
-      "target": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
-      "target": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseAuthority",
       "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseHandle"
     },
@@ -4743,11 +4668,6 @@
     {
       "kind": "references",
       "source": "noetrium_platform.composition.model_management.ManagementPlaneAuthorities",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.model_management.ManagementPlaneAuthorities",
       "target": "noetrium_platform.composition.platform_meta.PlatformMetaAuthorities"
     },
     {
@@ -4779,11 +4699,6 @@
       "kind": "references",
       "source": "noetrium_platform.composition.operator.project.project_research_os_loader.LoadedProjectResearchOS",
       "target": "noetrium_platform.product.research_os.ResearchPortfolio"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.operator.run_control_application.RunControlResearchApplication",
-      "target": "noetrium_platform.composition.operator.run_control_application.RunControlResearchBinding"
     },
     {
       "kind": "references",
@@ -4934,21 +4849,6 @@
       "kind": "references",
       "source": "noetrium_platform.composition.research_child_machine_batch.PooledChildResearchBatchMechanics",
       "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy"
     },
     {
       "kind": "references",
@@ -12777,6 +12677,16 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointAllocationPort",
+      "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts.EndpointProtocol"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointCandidatePortSourcePort",
+      "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts.EndpointProtocol"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointLeaseGuardFactoryPort",
       "target": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointLeaseGuardPort"
     },
@@ -12902,6 +12812,46 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.container.api.ports.DockerCommandRunnerPort",
+      "target": "noetrium_platform.infrastructure.resources.container.api.ports.DockerCommandResultPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.container.api.ports.DockerContainerLeaseGuardFactoryPort",
+      "target": "noetrium_platform.infrastructure.resources.container.api.contracts.ManagedDockerContainerLease"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.container.api.ports.DockerContainerLeaseGuardFactoryPort",
+      "target": "noetrium_platform.infrastructure.resources.container.api.ports.DockerContainerLeaseGuardPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.container.api.ports.DockerContainerLeaseGuardPort",
+      "target": "noetrium_platform.infrastructure.resources.container.api.contracts.ManagedDockerContainerLease"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.container.api.ports.DockerManagedContainerPort",
+      "target": "noetrium_platform.infrastructure.resources.container.api.contracts.DockerContainerObservation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatFactory",
+      "target": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseAuthority"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatFactory",
+      "target": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatGuard"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatGuard",
+      "target": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseAuthority"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.directory.api.contracts.DirectoryLayout",
       "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.ManagedDirectoryKind"
     },
@@ -13014,6 +12964,11 @@
       "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.lease.api.ports.ResourceLeasePort",
       "target": "noetrium_platform.infrastructure.resources.lease.api.contracts.ResourceIdentity"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.lease.api.ports.ResourceLeasePort",
+      "target": "noetrium_platform.infrastructure.resources.lease.api.contracts.ResourceKind"
     },
     {
       "kind": "references",
@@ -15902,141 +15857,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlActionFailure",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlCheckpointStorePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlCheckpointBundlePort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlEvidencePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlEvidencePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest.RunLaunchManifest"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlEvidencePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence.EvidenceBundleReceipt"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlLifecyclePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlTransitionOutcome"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlLifecyclePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlLifecyclePort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest.RunLaunchManifest"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlRequest"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPreparedOperation",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlAction"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPreparedOperation",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPhase"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlAction"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPhase"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPreparedOperation"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunOutcomeProjection"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence.EvidenceBundleReceipt"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReconciliationPort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPreparedOperation"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReconciliationPort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReconciliationPort",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest.RunLaunchManifest"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlRequest",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlAction"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlRequest",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlTarget"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlTransitionOutcome",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPhase"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunOutcomeProjection",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunEvidenceValidity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunOutcomeProjection",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunExecutionOutcome"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunOutcomeProjection",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunScientificValidity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunOutcomeProjection",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunTaskOutcome"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunCleanupFailure",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunCleanupReport"
     },
@@ -16087,16 +15907,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source.RunControlResearchResultSource",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source.RunControlResearchResultSource",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.evidence.ExperimentRunEvidenceFinalizer",
       "target": "noetrium_platform.research.experimentation.api.construction.ProjectRunDefinition"
     },
@@ -16122,81 +15932,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactVerificationPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlAction"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlCheckpointStorePort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlEvidencePort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlLifecyclePort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPhase"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPreparedOperation"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReconciliationPort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlRequest"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlTransitionOutcome"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest.RunLaunchManifest"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence.EvidenceBundleReceipt"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineSession"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.manifest_evidence.RunArtifactEvidenceBundlePublisher",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactStorePort"
     },
@@ -16209,26 +15944,6 @@
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.manifest_evidence.RunArtifactEvidenceBundlePublisher",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence.EvidenceBundleReceipt"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineBinding",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineSession",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity.RunIdentity"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineSession",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineBinding"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineSession",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunPhase"
     },
     {
       "kind": "references",
@@ -20360,7 +20075,7 @@
         "RESOURCE"
       ],
       "kind": "enum",
-      "line": 27,
+      "line": 26,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.api.contracts",
       "name": "MinecraftActionCategory",
@@ -20382,7 +20097,7 @@
         "REJECTED"
       ],
       "kind": "enum",
-      "line": 36,
+      "line": 35,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.api.contracts",
       "name": "MinecraftActionOutcomeStatus",
@@ -20406,7 +20121,7 @@
         "verified"
       ],
       "kind": "dataclass",
-      "line": 528,
+      "line": 547,
       "methods": [
         "from_event"
       ],
@@ -20433,7 +20148,7 @@
         "timeout_multiplier"
       ],
       "kind": "dataclass",
-      "line": 65,
+      "line": 64,
       "methods": [
         "__post_init__",
         "planner_contract"
@@ -20458,7 +20173,7 @@
         "version"
       ],
       "kind": "dataclass",
-      "line": 154,
+      "line": 153,
       "methods": [
         "__post_init__"
       ],
@@ -20478,16 +20193,19 @@
       ],
       "fields": [
         "branch",
-        "endpoint_allocation",
+        "endpoint_candidate_count",
+        "endpoint_host",
         "environment_template",
-        "rcon_endpoint_allocation",
+        "scope",
         "server_template",
         "session_id"
       ],
       "kind": "dataclass",
-      "line": 486,
+      "line": 485,
       "methods": [
-        "__post_init__"
+        "__post_init__",
+        "endpoint_allocation_id",
+        "rcon_endpoint_allocation_id"
       ],
       "module": "noetrium_platform.capabilities.environment.minecraft.api.contracts",
       "name": "MinecraftBranchRuntimeRequest",
@@ -20512,7 +20230,7 @@
         "timestamp_ms"
       ],
       "kind": "dataclass",
-      "line": 590,
+      "line": 609,
       "methods": [
         "from_mapping",
         "as_observation"
@@ -20540,7 +20258,7 @@
         "stdout_queue_capacity"
       ],
       "kind": "dataclass",
-      "line": 171,
+      "line": 170,
       "methods": [
         "__post_init__"
       ],
@@ -20564,7 +20282,7 @@
         "response"
       ],
       "kind": "dataclass",
-      "line": 372,
+      "line": 371,
       "methods": [
         "__post_init__"
       ],
@@ -20587,7 +20305,7 @@
         "port"
       ],
       "kind": "dataclass",
-      "line": 140,
+      "line": 139,
       "methods": [
         "__post_init__"
       ],
@@ -20617,7 +20335,7 @@
         "schema_version"
       ],
       "kind": "dataclass",
-      "line": 198,
+      "line": 197,
       "methods": [
         "__post_init__",
         "scientific_identity_digest",
@@ -20646,7 +20364,7 @@
         "timestamp_ms"
       ],
       "kind": "dataclass",
-      "line": 508,
+      "line": 527,
       "methods": [
         "__post_init__"
       ],
@@ -20672,7 +20390,7 @@
         "mutates_world"
       ],
       "kind": "dataclass",
-      "line": 45,
+      "line": 44,
       "methods": [
         "as_payload"
       ],
@@ -20696,7 +20414,7 @@
         "port"
       ],
       "kind": "dataclass",
-      "line": 357,
+      "line": 356,
       "methods": [
         "__post_init__"
       ],
@@ -20721,7 +20439,7 @@
         "properties_path"
       ],
       "kind": "dataclass",
-      "line": 343,
+      "line": 342,
       "methods": [
         "__post_init__"
       ],
@@ -20754,7 +20472,7 @@
         "xmx"
       ],
       "kind": "dataclass",
-      "line": 273,
+      "line": 272,
       "methods": [
         "__post_init__",
         "command"
@@ -20780,7 +20498,7 @@
         "runtime_version"
       ],
       "kind": "dataclass",
-      "line": 256,
+      "line": 255,
       "methods": [
         "__post_init__"
       ],
@@ -20807,7 +20525,7 @@
         "workdir"
       ],
       "kind": "dataclass",
-      "line": 462,
+      "line": 461,
       "methods": [
         "__post_init__"
       ],
@@ -20836,7 +20554,7 @@
         "snapshot_ref"
       ],
       "kind": "dataclass",
-      "line": 420,
+      "line": 419,
       "methods": [
         "__post_init__",
         "digest"
@@ -20863,7 +20581,7 @@
         "source_workdir"
       ],
       "kind": "dataclass",
-      "line": 387,
+      "line": 386,
       "methods": [
         "__post_init__",
         "digest"
@@ -21482,7 +21200,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 61,
+      "line": 63,
       "methods": [
         "create"
       ],
@@ -21502,7 +21220,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 52,
+      "line": 54,
       "methods": [
         "compose"
       ],
@@ -21522,7 +21240,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 253,
+      "line": 255,
       "methods": [
         "__init__",
         "allocation",
@@ -21549,7 +21267,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 35,
+      "line": 37,
       "methods": [
         "__init__"
       ],
@@ -21569,7 +21287,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 391,
+      "line": 393,
       "methods": [
         "__init__",
         "open"
@@ -21591,7 +21309,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 74,
+      "line": 76,
       "methods": [
         "replace_bound"
       ],
@@ -21609,7 +21327,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 189,
+      "line": 191,
       "methods": [
         "__init__",
         "_call",
@@ -21639,7 +21357,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 231,
+      "line": 233,
       "methods": [
         "__init__",
         "action_recovery_durability",
@@ -21663,7 +21381,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 85,
+      "line": 87,
       "methods": [
         "__init__",
         "_ready_at",
@@ -23425,99 +23143,6 @@
       ],
       "qualname": "noetrium_platform.capabilities.environment.minecraft.runtime.world.MinecraftWorldQuery",
       "system_key": "environment/minecraft",
-      "top_system": "environment"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 43,
-      "methods": [
-        "__init__",
-        "docker_executable",
-        "_missing",
-        "_decode_inspect",
-        "inspect",
-        "list_managed",
-        "wait_running",
-        "remove"
-      ],
-      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
-      "name": "DockerCliManagedContainerProvider",
-      "nesting": [
-        "DockerCliManagedContainerProvider"
-      ],
-      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerCliManagedContainerProvider",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "container_id",
-        "image",
-        "labels",
-        "name",
-        "running"
-      ],
-      "kind": "dataclass",
-      "line": 20,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
-      "name": "DockerContainerObservation",
-      "nesting": [
-        "DockerContainerObservation"
-      ],
-      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "bases": [
-        "RuntimeError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 15,
-      "methods": [],
-      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
-      "name": "DockerContainerRuntimeError",
-      "nesting": [
-        "DockerContainerRuntimeError"
-      ],
-      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerRuntimeError",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 32,
-      "methods": [
-        "docker_executable",
-        "inspect",
-        "list_managed",
-        "wait_running",
-        "remove"
-      ],
-      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
-      "name": "DockerManagedContainerPort",
-      "nesting": [
-        "DockerManagedContainerPort"
-      ],
-      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerManagedContainerPort",
-      "system_key": "environment",
       "top_system": "environment"
     },
     {
@@ -27253,7 +26878,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 183,
+      "line": 181,
       "methods": [
         "__init__",
         "_target_count",
@@ -27283,7 +26908,7 @@
         "status"
       ],
       "kind": "dataclass",
-      "line": 80,
+      "line": 78,
       "methods": [
         "placement_digest"
       ],
@@ -27301,7 +26926,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 116,
+      "line": 114,
       "methods": [
         "__init__",
         "assert_healthy",
@@ -27329,7 +26954,7 @@
         "request_digest"
       ],
       "kind": "dataclass",
-      "line": 94,
+      "line": 92,
       "methods": [
         "__post_init__"
       ],
@@ -27362,7 +26987,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 41,
+      "line": 39,
       "methods": [
         "__post_init__"
       ],
@@ -39051,206 +38676,6 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 123,
-      "methods": [
-        "__init__",
-        "_resource",
-        "_name",
-        "reserve",
-        "_validate_observation",
-        "docker_run_prefix",
-        "confirm_running",
-        "renew",
-        "renew_many",
-        "release",
-        "reconcile",
-        "run_reconciler"
-      ],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "name": "DockerContainerLeaseAuthority",
-      "nesting": [
-        "DockerContainerLeaseAuthority"
-      ],
-      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [
-        "RuntimeError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 119,
-      "methods": [],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "name": "DockerContainerLeaseConflict",
-      "nesting": [
-        "DockerContainerLeaseConflict"
-      ],
-      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseConflict",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [
-        "RuntimeError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 350,
-      "methods": [],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "name": "DockerContainerLeaseHeartbeatError",
-      "nesting": [
-        "DockerContainerLeaseHeartbeatError"
-      ],
-      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatError",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 447,
-      "methods": [
-        "__init__",
-        "policy",
-        "create"
-      ],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "name": "DockerContainerLeaseHeartbeatFactory",
-      "nesting": [
-        "DockerContainerLeaseHeartbeatFactory"
-      ],
-      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 354,
-      "methods": [
-        "__init__",
-        "handles",
-        "start",
-        "_renew_once",
-        "assert_healthy",
-        "close"
-      ],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "name": "DockerContainerLeaseHeartbeatGuard",
-      "nesting": [
-        "DockerContainerLeaseHeartbeatGuard"
-      ],
-      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "renewal_interval_seconds",
-        "ttl_seconds"
-      ],
-      "kind": "dataclass",
-      "line": 49,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "name": "DockerContainerLeasePolicy",
-      "nesting": [
-        "DockerContainerLeasePolicy"
-      ],
-      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "removed_container_ids"
-      ],
-      "kind": "dataclass",
-      "line": 115,
-      "methods": [],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "name": "DockerContainerReconciliation",
-      "nesting": [
-        "DockerContainerReconciliation"
-      ],
-      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerReconciliation",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 44,
-      "methods": [
-        "wait"
-      ],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "name": "DockerReconcileStopPort",
-      "nesting": [
-        "DockerReconcileStopPort"
-      ],
-      "qualname": "noetrium_platform.composition.docker_container_leases.DockerReconcileStopPort",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "allocation_id",
-        "container_name",
-        "holder_scope",
-        "image",
-        "lease",
-        "runtime_identity_digest"
-      ],
-      "kind": "dataclass",
-      "line": 71,
-      "methods": [
-        "__post_init__",
-        "labels",
-        "docker_run_options"
-      ],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "name": "ManagedDockerContainerLease",
-      "nesting": [
-        "ManagedDockerContainerLease"
-      ],
-      "qualname": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
       "line": 149,
       "methods": [
         "__init__",
@@ -39407,7 +38832,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 337,
+      "line": 340,
       "methods": [],
       "module": "noetrium_platform.composition.environment_instance_leases",
       "name": "EnvironmentInstanceLeaseHeartbeatError",
@@ -39423,7 +38848,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 436,
+      "line": 439,
       "methods": [
         "__init__",
         "policy",
@@ -39443,7 +38868,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 341,
+      "line": 344,
       "methods": [
         "__init__",
         "handles",
@@ -39878,7 +39303,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 100,
+      "line": 99,
       "methods": [
         "__init__",
         "open",
@@ -39913,7 +39338,7 @@
         "scopes"
       ],
       "kind": "dataclass",
-      "line": 86,
+      "line": 85,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -40216,49 +39641,6 @@
     },
     {
       "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 314,
-      "methods": [
-        "__init__",
-        "execute"
-      ],
-      "module": "noetrium_platform.composition.operator.run_control_application",
-      "name": "RunControlResearchApplication",
-      "nesting": [
-        "RunControlResearchApplication"
-      ],
-      "qualname": "noetrium_platform.composition.operator.run_control_application.RunControlResearchApplication",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "control",
-        "run_id",
-        "run_manifest_digest"
-      ],
-      "kind": "dataclass",
-      "line": 112,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.composition.operator.run_control_application",
-      "name": "RunControlResearchBinding",
-      "nesting": [
-        "RunControlResearchBinding"
-      ],
-      "qualname": "noetrium_platform.composition.operator.run_control_application.RunControlResearchBinding",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
       ],
@@ -40502,7 +39884,7 @@
         "systems"
       ],
       "kind": "dataclass",
-      "line": 72,
+      "line": 77,
       "methods": [],
       "module": "noetrium_platform.composition.platform_meta",
       "name": "PlatformMetaAuthorities",
@@ -41230,7 +40612,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 47,
+      "line": 49,
       "methods": [
         "__init__",
         "model_admission",
@@ -76932,7 +76314,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 182,
+      "line": 193,
       "methods": [
         "__post_init__"
       ],
@@ -77014,7 +76396,7 @@
         "observed_at_epoch_s"
       ],
       "kind": "dataclass",
-      "line": 145,
+      "line": 156,
       "methods": [
         "__post_init__",
         "digest"
@@ -77038,7 +76420,7 @@
         "ttl_seconds"
       ],
       "kind": "dataclass",
-      "line": 112,
+      "line": 123,
       "methods": [
         "__post_init__"
       ],
@@ -77062,7 +76444,7 @@
         "reason"
       ],
       "kind": "dataclass",
-      "line": 134,
+      "line": 145,
       "methods": [
         "__post_init__"
       ],
@@ -77108,7 +76490,7 @@
         "status"
       ],
       "kind": "dataclass",
-      "line": 240,
+      "line": 251,
       "methods": [
         "__post_init__"
       ],
@@ -77177,7 +76559,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 33,
+      "line": 40,
       "methods": [
         "reserve",
         "confirm_bound",
@@ -77205,9 +76587,10 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 72,
+      "line": 79,
       "methods": [
         "allocate",
+        "allocate_auto",
         "confirm_bound",
         "replace_bound",
         "renew",
@@ -77232,7 +76615,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 18,
+      "line": 24,
       "methods": [
         "candidate_ports"
       ],
@@ -77252,7 +76635,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 68,
+      "line": 75,
       "methods": [
         "create"
       ],
@@ -77272,7 +76655,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 62,
+      "line": 69,
       "methods": [
         "start",
         "assert_healthy",
@@ -77294,7 +76677,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 29,
+      "line": 36,
       "methods": [
         "probe"
       ],
@@ -77312,16 +76695,16 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 41,
+      "line": 52,
       "methods": [
         "candidate_ports"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
-      "name": "LocalTcpEndpointCandidateSource",
+      "name": "LocalEndpointCandidateSource",
       "nesting": [
-        "LocalTcpEndpointCandidateSource"
+        "LocalEndpointCandidateSource"
       ],
-      "qualname": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates.LocalTcpEndpointCandidateSource",
+      "qualname": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates.LocalEndpointCandidateSource",
       "system_key": "resource",
       "top_system": "resource"
     },
@@ -77350,9 +76733,10 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 40,
+      "line": 84,
       "methods": [
         "__init__",
+        "allocate_auto",
         "allocate",
         "_resolve_existing",
         "confirm_bound",
@@ -77379,7 +76763,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 28,
+      "line": 32,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "EndpointAllocationConflict",
@@ -77397,7 +76781,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 32,
+      "line": 36,
       "methods": [
         "__init__"
       ],
@@ -77417,11 +76801,12 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 163,
+      "line": 237,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
         "_existing_for_request_locked",
+        "allocate_auto",
         "allocate",
         "confirm_bound",
         "replace_bound",
@@ -78344,6 +77729,393 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "renewal_interval_seconds",
+        "ttl_seconds"
+      ],
+      "kind": "dataclass",
+      "line": 44,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
+      "name": "DockerContainerLeasePolicy",
+      "nesting": [
+        "DockerContainerLeasePolicy"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.contracts.DockerContainerLeasePolicy",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "container_id",
+        "image",
+        "labels",
+        "name",
+        "running"
+      ],
+      "kind": "dataclass",
+      "line": 27,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
+      "name": "DockerContainerObservation",
+      "nesting": [
+        "DockerContainerObservation"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.contracts.DockerContainerObservation",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "released_lease_ids",
+        "removed_container_ids"
+      ],
+      "kind": "dataclass",
+      "line": 119,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
+      "name": "DockerContainerReconciliation",
+      "nesting": [
+        "DockerContainerReconciliation"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.contracts.DockerContainerReconciliation",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "allocation_id",
+        "container_name",
+        "holder_scope",
+        "image",
+        "lease",
+        "runtime_identity_digest"
+      ],
+      "kind": "dataclass",
+      "line": 66,
+      "methods": [
+        "__post_init__",
+        "labels",
+        "docker_run_options"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
+      "name": "ManagedDockerContainerLease",
+      "nesting": [
+        "ManagedDockerContainerLease"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.contracts.ManagedDockerContainerLease",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [
+        "returncode",
+        "stderr",
+        "stdout"
+      ],
+      "kind": "protocol",
+      "line": 11,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.container.api.ports",
+      "name": "DockerCommandResultPort",
+      "nesting": [
+        "DockerCommandResultPort"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.ports.DockerCommandResultPort",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 17,
+      "methods": [
+        "run"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.ports",
+      "name": "DockerCommandRunnerPort",
+      "nesting": [
+        "DockerCommandRunnerPort"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.ports.DockerCommandRunnerPort",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 52,
+      "methods": [
+        "create"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.ports",
+      "name": "DockerContainerLeaseGuardFactoryPort",
+      "nesting": [
+        "DockerContainerLeaseGuardFactoryPort"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.ports.DockerContainerLeaseGuardFactoryPort",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 44,
+      "methods": [
+        "handles",
+        "start",
+        "assert_healthy",
+        "close"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.ports",
+      "name": "DockerContainerLeaseGuardPort",
+      "nesting": [
+        "DockerContainerLeaseGuardPort"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.ports.DockerContainerLeaseGuardPort",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 26,
+      "methods": [
+        "docker_executable",
+        "inspect",
+        "list_managed",
+        "wait_running",
+        "remove"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.ports",
+      "name": "DockerManagedContainerPort",
+      "nesting": [
+        "DockerManagedContainerPort"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.ports.DockerManagedContainerPort",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 40,
+      "methods": [
+        "wait"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.ports",
+      "name": "DockerReconcileStopPort",
+      "nesting": [
+        "DockerReconcileStopPort"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.api.ports.DockerReconcileStopPort",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "DockerManagedContainerPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 19,
+      "methods": [
+        "__init__",
+        "docker_executable",
+        "_missing",
+        "_decode_inspect",
+        "inspect",
+        "list_managed",
+        "wait_running",
+        "remove"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
+      "name": "DockerCliManagedContainerProvider",
+      "nesting": [
+        "DockerCliManagedContainerProvider"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.providers.docker_cli.DockerCliManagedContainerProvider",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 15,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
+      "name": "DockerContainerRuntimeError",
+      "nesting": [
+        "DockerContainerRuntimeError"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.providers.docker_cli.DockerContainerRuntimeError",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 49,
+      "methods": [
+        "__init__",
+        "_resource",
+        "_lease_id",
+        "_name",
+        "_runtime_digest_valid",
+        "_validate_observation",
+        "reserve",
+        "docker_run_prefix",
+        "confirm_running",
+        "renew",
+        "renew_many",
+        "release",
+        "reconcile",
+        "run_reconciler"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "name": "DockerContainerLeaseAuthority",
+      "nesting": [
+        "DockerContainerLeaseAuthority"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseAuthority",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 45,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "name": "DockerContainerLeaseConflict",
+      "nesting": [
+        "DockerContainerLeaseConflict"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseConflict",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 346,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "name": "DockerContainerLeaseHeartbeatError",
+      "nesting": [
+        "DockerContainerLeaseHeartbeatError"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatError",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "DockerContainerLeaseGuardFactoryPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 448,
+      "methods": [
+        "__init__",
+        "policy",
+        "create"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "name": "DockerContainerLeaseHeartbeatFactory",
+      "nesting": [
+        "DockerContainerLeaseHeartbeatFactory"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatFactory",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
+        "DockerContainerLeaseGuardPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 350,
+      "methods": [
+        "__init__",
+        "handles",
+        "start",
+        "_renew_once",
+        "assert_healthy",
+        "close"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "name": "DockerContainerLeaseHeartbeatGuard",
+      "nesting": [
+        "DockerContainerLeaseHeartbeatGuard"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatGuard",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "bytes",
         "directories",
         "files",
@@ -79043,7 +78815,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 21,
       "methods": [
         "__init__",
         "register_owner",
@@ -79116,7 +78888,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 36,
+      "line": 37,
       "methods": [
         "__init__",
         "_connection",
@@ -89999,7 +89771,7 @@
         "project_id"
       ],
       "kind": "protocol",
-      "line": 17,
+      "line": 16,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.api.construction",
       "name": "ProjectIdentityProjection",
@@ -90021,7 +89793,7 @@
         "study_ids"
       ],
       "kind": "protocol",
-      "line": 21,
+      "line": 20,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.api.construction",
       "name": "ProjectManifestProjection",
@@ -90047,11 +89819,10 @@
         "study"
       ],
       "kind": "dataclass",
-      "line": 42,
+      "line": 41,
       "methods": [
         "__post_init__",
-        "run_manifest_digest",
-        "control_target"
+        "run_manifest_digest"
       ],
       "module": "noetrium_platform.research.experimentation.api.construction",
       "name": "ProjectRunDefinition",
@@ -93088,544 +92859,6 @@
       "top_system": "experimentation"
     },
     {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "EVIDENCE",
-        "INSPECT",
-        "RECONCILE",
-        "RESUME",
-        "RUN",
-        "STOP"
-      ],
-      "kind": "enum",
-      "line": 42,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlAction",
-      "nesting": [
-        "RunControlAction"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlAction",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "RunControlError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 402,
-      "methods": [
-        "__init__"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlActionFailure",
-      "nesting": [
-        "RunControlActionFailure"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlActionFailure",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 417,
-      "methods": [
-        "manifest"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlCheckpointBundlePort",
-      "nesting": [
-        "RunControlCheckpointBundlePort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlCheckpointBundlePort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 422,
-      "methods": [
-        "load"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlCheckpointStorePort",
-      "nesting": [
-        "RunControlCheckpointStorePort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlCheckpointStorePort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "RunControlError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 390,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlConflict",
-      "nesting": [
-        "RunControlConflict"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlConflict",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "RuntimeError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 382,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlError",
-      "nesting": [
-        "RunControlError"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlError",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 463,
-      "methods": [
-        "evidence"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlEvidencePort",
-      "nesting": [
-        "RunControlEvidencePort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlEvidencePort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "RunControlError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 398,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlIntegrityError",
-      "nesting": [
-        "RunControlIntegrityError"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlIntegrityError",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 426,
-      "methods": [
-        "run",
-        "stop",
-        "resume"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlLifecyclePort",
-      "nesting": [
-        "RunControlLifecyclePort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlLifecyclePort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "RunControlError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 386,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlNotFound",
-      "nesting": [
-        "RunControlNotFound"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlNotFound",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "CLOSED",
-        "COMPLETED",
-        "CREATED",
-        "FAILED",
-        "RECOVERY_REQUIRED",
-        "RUNNING",
-        "STOPPED"
-      ],
-      "kind": "enum",
-      "line": 51,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlPhase",
-      "nesting": [
-        "RunControlPhase"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPhase",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 413,
-      "methods": [
-        "execute"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlPort",
-      "nesting": [
-        "RunControlPort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "action",
-        "base_checkpoint_manifest_digest",
-        "base_latest_checkpoint_id",
-        "base_phase",
-        "base_revision",
-        "operation_id",
-        "restore_checkpoint_id",
-        "restore_checkpoint_manifest_digest",
-        "restore_cycle_identity_digest"
-      ],
-      "kind": "dataclass",
-      "line": 127,
-      "methods": [
-        "__post_init__",
-        "digest"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlPreparedOperation",
-      "nesting": [
-        "RunControlPreparedOperation"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPreparedOperation",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "action",
-        "checkpoint_manifest_digest",
-        "evidence_bundle_receipt",
-        "latest_checkpoint_id",
-        "machine_cut",
-        "outcomes",
-        "pending_operation",
-        "phase",
-        "run_id",
-        "run_identity_digest",
-        "run_manifest_digest"
-      ],
-      "kind": "dataclass",
-      "line": 266,
-      "methods": [
-        "__post_init__",
-        "control_revision",
-        "projection_digest",
-        "receipt_digest"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlReceipt",
-      "nesting": [
-        "RunControlReceipt"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "line": 454,
-      "methods": [
-        "reconcile"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlReconciliationPort",
-      "nesting": [
-        "RunControlReconciliationPort"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReconciliationPort",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "action",
-        "restore_checkpoint_id",
-        "restore_cycle_identity",
-        "target"
-      ],
-      "kind": "dataclass",
-      "line": 79,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlRequest",
-      "nesting": [
-        "RunControlRequest"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlRequest",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "RunControlConflict"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 394,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlStaleRevision",
-      "nesting": [
-        "RunControlStaleRevision"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlStaleRevision",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "expected_revision",
-        "run_id",
-        "run_manifest_digest"
-      ],
-      "kind": "dataclass",
-      "line": 62,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlTarget",
-      "nesting": [
-        "RunControlTarget"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlTarget",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "phase"
-      ],
-      "kind": "dataclass",
-      "line": 372,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunControlTransitionOutcome",
-      "nesting": [
-        "RunControlTransitionOutcome"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlTransitionOutcome",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "FINALIZED_VALID",
-        "NOT_FINALIZED",
-        "NOT_OBSERVED"
-      ],
-      "kind": "enum",
-      "line": 217,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunEvidenceValidity",
-      "nesting": [
-        "RunEvidenceValidity"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunEvidenceValidity",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "CLOSED",
-        "FAILED",
-        "IN_PROGRESS",
-        "NOT_STARTED",
-        "RECOVERY_REQUIRED",
-        "STOPPED",
-        "SUCCEEDED"
-      ],
-      "kind": "enum",
-      "line": 200,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunExecutionOutcome",
-      "nesting": [
-        "RunExecutionOutcome"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunExecutionOutcome",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "evidence",
-        "execution",
-        "scientific",
-        "task"
-      ],
-      "kind": "dataclass",
-      "line": 230,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunOutcomeProjection",
-      "nesting": [
-        "RunOutcomeProjection"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunOutcomeProjection",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "INVALID",
-        "NOT_EVALUATED",
-        "VALID"
-      ],
-      "kind": "enum",
-      "line": 223,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunScientificValidity",
-      "nesting": [
-        "RunScientificValidity"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunScientificValidity",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "BLOCKED",
-        "FAILED",
-        "NOT_EVALUATED",
-        "SUCCEEDED"
-      ],
-      "kind": "enum",
-      "line": 210,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "name": "RunTaskOutcome",
-      "nesting": [
-        "RunTaskOutcome"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunTaskOutcome",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -94018,53 +93251,6 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 25,
-      "methods": [
-        "__init__",
-        "capabilities",
-        "describe",
-        "invoke"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifact_capability",
-      "name": "RunArtifactPublishCapabilityBinding",
-      "nesting": [
-        "RunArtifactPublishCapabilityBinding"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifact_capability.RunArtifactPublishCapabilityBinding",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [
-        "source_id",
-        "supported_dimensions",
-        "supported_kinds"
-      ],
-      "kind": "class",
-      "line": 34,
-      "methods": [
-        "__init__",
-        "_inspect",
-        "_dimensions",
-        "_record",
-        "snapshot"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source",
-      "name": "RunControlResearchResultSource",
-      "nesting": [
-        "RunControlResearchResultSource"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source.RunControlResearchResultSource",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
       "line": 26,
       "methods": [
         "__init__",
@@ -94120,44 +93306,6 @@
       "top_system": "experimentation"
     },
     {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 60,
-      "methods": [
-        "__init__",
-        "machine",
-        "_require_target",
-        "_require_revision",
-        "_pending",
-        "_phase",
-        "_receipt",
-        "_require_outcome",
-        "_operation_id",
-        "_inspect",
-        "_load_restore_checkpoint",
-        "_prepare",
-        "_resolve",
-        "_leave_uncertain",
-        "_effectful_run",
-        "_effectful_stop",
-        "_effectful_resume",
-        "_resolved_reconciliation_phase",
-        "_reconcile",
-        "_evidence_receipt",
-        "execute"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "name": "DurableRunControl",
-      "nesting": [
-        "DurableRunControl"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
       "bases": [
         "ValueError"
       ],
@@ -94192,110 +93340,6 @@
         "RunArtifactEvidenceBundlePublisher"
       ],
       "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.manifest_evidence.RunArtifactEvidenceBundlePublisher",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "binding_digest",
-        "experiment_spec_digest",
-        "identity",
-        "run_manifest_digest"
-      ],
-      "kind": "dataclass",
-      "line": 47,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
-      "name": "RunMachineBinding",
-      "nesting": [
-        "RunMachineBinding"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineBinding",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(slots=True)"
-      ],
-      "fields": [
-        "binding",
-        "session"
-      ],
-      "kind": "dataclass",
-      "line": 689,
-      "methods": [
-        "identity",
-        "open",
-        "_validate_identity",
-        "data",
-        "phase",
-        "closed",
-        "stopped",
-        "completed",
-        "failed",
-        "requires_recovery",
-        "completed_cycles",
-        "latest_checkpoint_id",
-        "cut",
-        "require_runnable",
-        "_event",
-        "bind_manifest",
-        "cycle_started",
-        "cycle_completed",
-        "cycle_failed",
-        "restored",
-        "pending_control_operation",
-        "prepare_control",
-        "resolve_control",
-        "latest_checkpoint_manifest_digest",
-        "control_revision",
-        "control_running",
-        "control_stopped",
-        "control_recovery_required",
-        "control_completed",
-        "control_failed",
-        "close"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
-      "name": "RunMachineSession",
-      "nesting": [
-        "RunMachineSession"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineSession",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "CLOSED",
-        "COMPLETED",
-        "CREATED",
-        "FAILED",
-        "RECOVERY_REQUIRED",
-        "RUNNING",
-        "STOPPED"
-      ],
-      "kind": "enum",
-      "line": 77,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
-      "name": "RunPhase",
-      "nesting": [
-        "RunPhase"
-      ],
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunPhase",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -99446,16 +98490,6 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerCliManagedContainerProvider",
-      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerCliManagedContainerProvider",
-      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerRuntimeError"
-    },
-    {
-      "kind": "constructs",
       "source": "noetrium_platform.capabilities.environment.providers.jsonl_process.JsonlProcessTransport",
       "target": "noetrium_platform.capabilities.environment.providers.jsonl_process.JsonlProcessMessage"
     },
@@ -100101,31 +99135,6 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseConflict"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerReconciliation"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
-      "target": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatError"
-    },
-    {
-      "kind": "constructs",
       "source": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseAuthority",
       "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseHandle"
     },
@@ -100223,11 +99232,6 @@
       "kind": "constructs",
       "source": "noetrium_platform.composition.research_child_machine_batch.PooledChildResearchBatchMechanics",
       "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
-      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory"
     },
     {
       "kind": "constructs",
@@ -102866,6 +101870,26 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.resources.container.providers.docker_cli.DockerCliManagedContainerProvider",
+      "target": "noetrium_platform.infrastructure.resources.container.providers.docker_cli.DockerContainerRuntimeError"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseConflict"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatFactory",
+      "target": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatGuard"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatGuard",
+      "target": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority.DockerContainerLeaseHeartbeatError"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.infrastructure.resources.resolution.resolver.HierarchicalResourceResolver",
       "target": "noetrium_platform.infrastructure.resources.resolution.contracts.ResolvedValue"
     },
@@ -103436,16 +102460,6 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source.RunControlResearchResultSource",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlRequest"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source.RunControlResearchResultSource",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlTarget"
-    },
-    {
-      "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.evidence.ExperimentRunEvidenceFinalizer",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence.EvidenceBundleManifest"
     },
@@ -103486,78 +102500,8 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlAction"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlActionFailure"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlConflict"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlIntegrityError"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlNotFound"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPhase"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlPreparedOperation"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlReceipt"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlStaleRevision"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunOutcomeProjection"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control.DurableRunControl",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunPhase"
-    },
-    {
-      "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.manifest_evidence.RunArtifactEvidenceBundlePublisher",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence.EvidenceBundleReceipt"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineSession",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunClosed"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineSession",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle.RunRecoveryRequired"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunMachineSession",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program.RunPhase"
     },
     {
       "kind": "constructs",
@@ -103746,13 +102690,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3489,
-    "classes": 3374,
-    "constructor_edges": 929,
-    "inheritance_edges": 150,
-    "module_import_edges": 5019,
+    "association_edges": 3432,
+    "classes": 3346,
+    "constructor_edges": 909,
+    "inheritance_edges": 145,
+    "module_import_edges": 4987,
     "parse_errors": 0,
-    "python_modules": 1909,
+    "python_modules": 1908,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -104462,31 +103406,6 @@
       "kind": "inherits",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactStorePort",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactVerificationPort"
-    },
-    {
-      "kind": "inherits",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlActionFailure",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlError"
-    },
-    {
-      "kind": "inherits",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlConflict",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlError"
-    },
-    {
-      "kind": "inherits",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlIntegrityError",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlError"
-    },
-    {
-      "kind": "inherits",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlNotFound",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlError"
-    },
-    {
-      "kind": "inherits",
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlStaleRevision",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control.RunControlConflict"
     },
     {
       "kind": "inherits",
@@ -105660,15 +104579,7 @@
     },
     {
       "source": "noetrium_platform.capabilities.environment.providers",
-      "target": "noetrium_platform.capabilities.environment.docker_containers"
-    },
-    {
-      "source": "noetrium_platform.capabilities.environment.providers",
       "target": "noetrium_platform.capabilities.environment.jsonl_process"
-    },
-    {
-      "source": "noetrium_platform.capabilities.environment.providers.docker_containers",
-      "target": "noetrium_platform.substrate.api"
     },
     {
       "source": "noetrium_platform.capabilities.environment.providers.jsonl_process",
@@ -108943,26 +107854,6 @@
       "target": "noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter"
     },
     {
-      "source": "noetrium_platform.composition.docker_container_leases",
-      "target": "noetrium_platform.capabilities.environment.providers.docker_containers"
-    },
-    {
-      "source": "noetrium_platform.composition.docker_container_leases",
-      "target": "noetrium_platform.foundation.governance.api"
-    },
-    {
-      "source": "noetrium_platform.composition.docker_container_leases",
-      "target": "noetrium_platform.foundation.kernel.concurrency.api"
-    },
-    {
-      "source": "noetrium_platform.composition.docker_container_leases",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.composition.docker_container_leases",
-      "target": "noetrium_platform.infrastructure.resources.lease.api"
-    },
-    {
       "source": "noetrium_platform.composition.environment_capabilities",
       "target": "noetrium_platform.composition.action"
     },
@@ -109380,10 +108271,6 @@
     },
     {
       "source": "noetrium_platform.composition.model_management",
-      "target": "noetrium_platform.capabilities.environment.providers"
-    },
-    {
-      "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.capabilities.model.api"
     },
     {
@@ -109421,10 +108308,6 @@
     {
       "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.capabilities.model.qualification.composition"
-    },
-    {
-      "source": "noetrium_platform.composition.model_management",
-      "target": "noetrium_platform.composition.docker_container_leases"
     },
     {
       "source": "noetrium_platform.composition.model_management",
@@ -109492,10 +108375,6 @@
     },
     {
       "source": "noetrium_platform.composition.model_management",
-      "target": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates"
-    },
-    {
-      "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.infrastructure.resources.compute.api"
     },
     {
@@ -109505,6 +108384,14 @@
     {
       "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.infrastructure.resources.compute.providers"
+    },
+    {
+      "source": "noetrium_platform.composition.model_management",
+      "target": "noetrium_platform.infrastructure.resources.container.providers"
+    },
+    {
+      "source": "noetrium_platform.composition.model_management",
+      "target": "noetrium_platform.infrastructure.resources.container.runtime"
     },
     {
       "source": "noetrium_platform.composition.model_management",
@@ -109995,32 +108882,12 @@
       "target": "noetrium_platform.evidence.observability.status.api"
     },
     {
-      "source": "noetrium_platform.composition.operator.run_control_application",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.run_control_application",
-      "target": "noetrium_platform.product.operator.api"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.run_control_application",
-      "target": "noetrium_platform.research.execution.decision.cycle_identity"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.run_control_application",
-      "target": "noetrium_platform.research.experimentation.api"
-    },
-    {
       "source": "noetrium_platform.composition.operator.wiring",
       "target": "noetrium_platform.composition.operator.project_experience"
     },
     {
       "source": "noetrium_platform.composition.operator.wiring",
       "target": "noetrium_platform.composition.operator.runtime"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.wiring",
-      "target": "noetrium_platform.composition.run_control_application"
     },
     {
       "source": "noetrium_platform.composition.operator.wiring.cli",
@@ -110596,10 +109463,6 @@
     },
     {
       "source": "noetrium_platform.composition.research_execution_pool",
-      "target": "noetrium_platform.composition.docker_container_leases"
-    },
-    {
-      "source": "noetrium_platform.composition.research_execution_pool",
       "target": "noetrium_platform.composition.environment_instance_leases"
     },
     {
@@ -110621,6 +109484,14 @@
     {
       "source": "noetrium_platform.composition.research_execution_pool",
       "target": "noetrium_platform.infrastructure.resources.compute.runtime"
+    },
+    {
+      "source": "noetrium_platform.composition.research_execution_pool",
+      "target": "noetrium_platform.infrastructure.resources.container.api"
+    },
+    {
+      "source": "noetrium_platform.composition.research_execution_pool",
+      "target": "noetrium_platform.infrastructure.resources.container.runtime"
     },
     {
       "source": "noetrium_platform.composition.research_execution_pool",
@@ -120972,6 +119843,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.api.ports",
+      "target": "noetrium_platform.foundation.governance.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.allocation.api.ports",
       "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts"
     },
     {
@@ -120980,7 +119855,15 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.providers",
+      "target": "noetrium_platform.infrastructure.resources.allocation.local_candidates"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.allocation.providers",
       "target": "noetrium_platform.infrastructure.resources.allocation.socket_probe"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
+      "target": "noetrium_platform.infrastructure.resources.allocation.api"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.providers.socket_probe",
@@ -120993,6 +119876,10 @@
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.runtime",
       "target": "noetrium_platform.infrastructure.resources.allocation.lease_heartbeat"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
+      "target": "noetrium_platform.foundation.governance.api"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
@@ -121017,6 +119904,10 @@
     {
       "source": "noetrium_platform.infrastructure.resources.api",
       "target": "noetrium_platform.infrastructure.resources.compute.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.api",
+      "target": "noetrium_platform.infrastructure.resources.container.api"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.api",
@@ -121165,6 +120056,58 @@
     {
       "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "target": "noetrium_platform.infrastructure.resources.providers.sqlite_resource"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.api",
+      "target": "noetrium_platform.infrastructure.resources.container.contracts"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.api",
+      "target": "noetrium_platform.infrastructure.resources.container.ports"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.api.contracts",
+      "target": "noetrium_platform.foundation.governance.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.api.contracts",
+      "target": "noetrium_platform.infrastructure.resources.lease.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.api.ports",
+      "target": "noetrium_platform.infrastructure.resources.container.api.contracts"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.providers",
+      "target": "noetrium_platform.infrastructure.resources.container.docker_cli"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
+      "target": "noetrium_platform.infrastructure.resources.container.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.runtime",
+      "target": "noetrium_platform.infrastructure.resources.container.lease_authority"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "target": "noetrium_platform.foundation.governance.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "target": "noetrium_platform.infrastructure.resources.container.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "target": "noetrium_platform.infrastructure.resources.lease.api"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.directory.api",
@@ -123652,10 +122595,6 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.control"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.execution"
     },
     {
@@ -123689,30 +122628,6 @@
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.cleanup",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.execution",
@@ -123760,35 +122675,11 @@
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.artifact_capability"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.artifacts"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.control"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.control_research_result_source"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.evidence"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifact_capability",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifact_capability",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifact_capability",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifacts",
@@ -123797,42 +122688,6 @@
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifacts",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.composition.evidence",
@@ -123859,14 +122714,6 @@
       "target": "noetrium_platform.research.experimentation.lifecycle.run.artifacts"
     },
     {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.control"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.program"
-    },
-    {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
@@ -123879,46 +122726,6 @@
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts"
     },
     {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.foundation.kernel.kernel.errors"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.control"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program"
-    },
-    {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.manifest_evidence",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
@@ -123929,22 +122736,6 @@
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.manifest_evidence",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
-      "target": "noetrium_platform.research.execution.api"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.identity"
-    },
-    {
-      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
-      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.study",
@@ -125655,20 +124446,10 @@
     },
     {
       "imports": [
-        "noetrium_platform.capabilities.environment.docker_containers",
         "noetrium_platform.capabilities.environment.jsonl_process"
       ],
       "module": "noetrium_platform.capabilities.environment.providers",
       "path": "noetrium_platform/capabilities/environment/providers/__init__.py",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "imports": [
-        "noetrium_platform.substrate.api"
-      ],
-      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
-      "path": "noetrium_platform/capabilities/environment/providers/docker_containers.py",
       "system_key": "environment",
       "top_system": "environment"
     },
@@ -129017,19 +127798,6 @@
     },
     {
       "imports": [
-        "noetrium_platform.capabilities.environment.providers.docker_containers",
-        "noetrium_platform.foundation.governance.api",
-        "noetrium_platform.foundation.kernel.concurrency.api",
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.infrastructure.resources.lease.api"
-      ],
-      "module": "noetrium_platform.composition.docker_container_leases",
-      "path": "noetrium_platform/composition/docker_container_leases.py",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [
         "noetrium_platform.composition.action",
         "noetrium_platform.composition.branch",
         "noetrium_platform.composition.query",
@@ -129310,7 +128078,6 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.catalog.api",
-        "noetrium_platform.capabilities.environment.providers",
         "noetrium_platform.capabilities.model.api",
         "noetrium_platform.capabilities.model.asset.providers",
         "noetrium_platform.capabilities.model.asset.runtime",
@@ -129321,7 +128088,6 @@
         "noetrium_platform.capabilities.model.deployment.composition",
         "noetrium_platform.capabilities.model.deployment.runtime",
         "noetrium_platform.capabilities.model.qualification.composition",
-        "noetrium_platform.composition.docker_container_leases",
         "noetrium_platform.composition.model_qualification",
         "noetrium_platform.composition.platform_meta",
         "noetrium_platform.composition.research_execution_pool",
@@ -129338,10 +128104,11 @@
         "noetrium_platform.infrastructure.lifecycle.service.runtime",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
-        "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
         "noetrium_platform.infrastructure.resources.compute.api",
         "noetrium_platform.infrastructure.resources.compute.composition",
         "noetrium_platform.infrastructure.resources.compute.providers",
+        "noetrium_platform.infrastructure.resources.container.providers",
+        "noetrium_platform.infrastructure.resources.container.runtime",
         "noetrium_platform.infrastructure.resources.directory.api",
         "noetrium_platform.infrastructure.resources.directory.runtime"
       ],
@@ -129825,21 +128592,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.product.operator.api",
-        "noetrium_platform.research.execution.decision.cycle_identity",
-        "noetrium_platform.research.experimentation.api"
-      ],
-      "module": "noetrium_platform.composition.operator.run_control_application",
-      "path": "noetrium_platform/composition/operator/run_control_application.py",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [
         "noetrium_platform.composition.operator.project_experience",
-        "noetrium_platform.composition.operator.runtime",
-        "noetrium_platform.composition.run_control_application"
+        "noetrium_platform.composition.operator.runtime"
       ],
       "module": "noetrium_platform.composition.operator.wiring",
       "path": "noetrium_platform/composition/operator/wiring/__init__.py",
@@ -130230,13 +128984,14 @@
         "noetrium_platform.capabilities.model.serving.api",
         "noetrium_platform.capabilities.model.serving.runtime",
         "noetrium_platform.composition.concurrency",
-        "noetrium_platform.composition.docker_container_leases",
         "noetrium_platform.composition.environment_instance_leases",
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.infrastructure.resources.allocation.api",
         "noetrium_platform.infrastructure.resources.allocation.runtime",
         "noetrium_platform.infrastructure.resources.compute.api",
         "noetrium_platform.infrastructure.resources.compute.runtime",
+        "noetrium_platform.infrastructure.resources.container.api",
+        "noetrium_platform.infrastructure.resources.container.runtime",
         "noetrium_platform.research.execution.policy.api"
       ],
       "module": "noetrium_platform.composition.research_execution_pool",
@@ -140951,6 +139706,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.governance.api",
         "noetrium_platform.infrastructure.resources.allocation.api.contracts",
         "noetrium_platform.infrastructure.resources.lease.api"
       ],
@@ -140961,6 +139717,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.infrastructure.resources.allocation.local_candidates",
         "noetrium_platform.infrastructure.resources.allocation.socket_probe"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.providers",
@@ -140969,7 +139726,9 @@
       "top_system": "resource"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.infrastructure.resources.allocation.api"
+      ],
       "module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
       "path": "noetrium_platform/infrastructure/resources/allocation/providers/local_candidates.py",
       "system_key": "resource",
@@ -140996,6 +139755,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.governance.api",
         "noetrium_platform.infrastructure.resources.allocation.api",
         "noetrium_platform.infrastructure.resources.lease.api"
       ],
@@ -141018,6 +139778,7 @@
       "imports": [
         "noetrium_platform.infrastructure.resources.allocation.api",
         "noetrium_platform.infrastructure.resources.compute.api",
+        "noetrium_platform.infrastructure.resources.container.api",
         "noetrium_platform.infrastructure.resources.directory.api",
         "noetrium_platform.infrastructure.resources.lease.api",
         "noetrium_platform.infrastructure.resources.resolution.api"
@@ -141189,6 +139950,82 @@
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "imports": [],
+      "module": "noetrium_platform.infrastructure.resources.container",
+      "path": "noetrium_platform/infrastructure/resources/container/__init__.py",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "imports": [
+        "noetrium_platform.infrastructure.resources.container.contracts",
+        "noetrium_platform.infrastructure.resources.container.ports"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api",
+      "path": "noetrium_platform/infrastructure/resources/container/api/__init__.py",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.governance.api",
+        "noetrium_platform.infrastructure.resources.lease.api"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
+      "path": "noetrium_platform/infrastructure/resources/container/api/contracts.py",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "imports": [
+        "noetrium_platform.infrastructure.resources.container.api.contracts"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.api.ports",
+      "path": "noetrium_platform/infrastructure/resources/container/api/ports.py",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "imports": [
+        "noetrium_platform.infrastructure.resources.container.docker_cli"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.providers",
+      "path": "noetrium_platform/infrastructure/resources/container/providers/__init__.py",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "imports": [
+        "noetrium_platform.infrastructure.resources.container.api"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
+      "path": "noetrium_platform/infrastructure/resources/container/providers/docker_cli.py",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "imports": [
+        "noetrium_platform.infrastructure.resources.container.lease_authority"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.runtime",
+      "path": "noetrium_platform/infrastructure/resources/container/runtime/__init__.py",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.governance.api",
+        "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.infrastructure.resources.container.api",
+        "noetrium_platform.infrastructure.resources.lease.api"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "path": "noetrium_platform/infrastructure/resources/container/runtime/lease_authority.py",
       "system_key": "resource",
       "top_system": "resource"
     },
@@ -143734,7 +142571,6 @@
       "imports": [
         "noetrium_platform.research.experimentation.lifecycle.run.artifacts",
         "noetrium_platform.research.experimentation.lifecycle.run.cleanup",
-        "noetrium_platform.research.experimentation.lifecycle.run.control",
         "noetrium_platform.research.experimentation.lifecycle.run.execution",
         "noetrium_platform.research.experimentation.lifecycle.run.identity",
         "noetrium_platform.research.experimentation.lifecycle.run.lifecycle",
@@ -143770,20 +142606,6 @@
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.cleanup",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/api/cleanup.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.manifest",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/api/control.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -143856,25 +142678,11 @@
     },
     {
       "imports": [
-        "noetrium_platform.research.experimentation.lifecycle.run.artifact_capability",
         "noetrium_platform.research.experimentation.lifecycle.run.artifacts",
-        "noetrium_platform.research.experimentation.lifecycle.run.control",
-        "noetrium_platform.research.experimentation.lifecycle.run.control_research_result_source",
         "noetrium_platform.research.experimentation.lifecycle.run.evidence"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.composition",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/composition/__init__.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.run.api"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifact_capability",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/composition/artifact_capability.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -143885,31 +142693,6 @@
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifacts",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/composition/artifacts.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.manifest",
-        "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-        "noetrium_platform.research.experimentation.lifecycle.run.runtime.program"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.composition.control",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/composition/control.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.control"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.composition.control_research_result_source",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/composition/control_research_result_source.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -143928,9 +142711,7 @@
     },
     {
       "imports": [
-        "noetrium_platform.research.experimentation.lifecycle.run.artifacts",
-        "noetrium_platform.research.experimentation.lifecycle.run.control",
-        "noetrium_platform.research.experimentation.lifecycle.run.program"
+        "noetrium_platform.research.experimentation.lifecycle.run.artifacts"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/__init__.py",
@@ -143951,41 +142732,11 @@
     {
       "imports": [
         "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.foundation.kernel.kernel.errors",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.control",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.manifest",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence",
-        "noetrium_platform.research.experimentation.lifecycle.run.runtime.program"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.control",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/control.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
         "noetrium_platform.research.experimentation.lifecycle.run.api.manifest_evidence"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.manifest_evidence",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/manifest_evidence.py",
-      "system_key": "experimentation",
-      "top_system": "experimentation"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.execution.api",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
-        "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/program.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -144583,7 +143334,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "a1308269acd987901a29d46fc9151d459cb1e083",
+  "source_git_sha": "0c838ae0511b6108f212cc550ba50e23253df29f",
   "system_import_edges": [
     {
       "count": 85,
@@ -144611,7 +143362,7 @@
       "target": "platform"
     },
     {
-      "count": 215,
+      "count": 214,
       "source": "environment",
       "target": "environment"
     },
@@ -144631,17 +143382,17 @@
       "target": "platform"
     },
     {
-      "count": 46,
+      "count": 41,
       "source": "experimentation",
       "target": "execution"
     },
     {
-      "count": 280,
+      "count": 253,
       "source": "experimentation",
       "target": "experimentation"
     },
     {
-      "count": 79,
+      "count": 73,
       "source": "experimentation",
       "target": "platform"
     },
@@ -144731,22 +143482,22 @@
       "target": "data"
     },
     {
-      "count": 46,
+      "count": 44,
       "source": "research_os",
       "target": "environment"
     },
     {
-      "count": 67,
+      "count": 66,
       "source": "research_os",
       "target": "execution"
     },
     {
-      "count": 20,
+      "count": 19,
       "source": "research_os",
       "target": "experimentation"
     },
     {
-      "count": 35,
+      "count": 34,
       "source": "research_os",
       "target": "governance"
     },
@@ -144766,7 +143517,7 @@
       "target": "participant"
     },
     {
-      "count": 121,
+      "count": 118,
       "source": "research_os",
       "target": "platform"
     },
@@ -144781,12 +143532,12 @@
       "target": "reliability"
     },
     {
-      "count": 324,
+      "count": 320,
       "source": "research_os",
       "target": "research_os"
     },
     {
-      "count": 29,
+      "count": 31,
       "source": "research_os",
       "target": "resource"
     },
@@ -144801,17 +143552,17 @@
       "target": "scope"
     },
     {
-      "count": 16,
+      "count": 20,
       "source": "resource",
       "target": "governance"
     },
     {
-      "count": 11,
+      "count": 13,
       "source": "resource",
       "target": "platform"
     },
     {
-      "count": 89,
+      "count": 101,
       "source": "resource",
       "target": "resource"
     },
