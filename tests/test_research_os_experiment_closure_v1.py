@@ -319,15 +319,15 @@ class _ClosureProvider:
 
 
 class _BoundAdapter:
-    def execute_bound(self, unit, bindings, plan_digest):
-        del bindings, plan_digest
+    def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
+        del bindings, plan_digest, execution_id
         return tuple(
             StudyMetricObservation(assignment, (("score", 1.0),))
             for assignment in unit.assignments
         )
 
-    def execute_bound_variant(self, assignment, binding, plan_digest):
-        del binding, plan_digest
+    def execute_bound_variant(self, assignment, binding, plan_digest, *, execution_id):
+        del binding, plan_digest, execution_id
         return StudyMetricObservation(assignment, (("score", 1.0),))
 
 
