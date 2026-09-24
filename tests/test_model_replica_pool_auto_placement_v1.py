@@ -4,6 +4,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from noetrium_platform.capabilities.model.deployment.api import (
+    ModelDeploymentGeneration,
     ModelDeploymentStatus,
     ModelRuntimeState,
 )
@@ -12,6 +13,7 @@ from noetrium_platform.capabilities.model.deployment.composition import (
     ModelReplicaPoolRequest,
 )
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocation,
     EndpointAllocationRequest,
@@ -52,9 +54,20 @@ class Runtime:
             f"ready:{deployment_id}",
         )
 
-    def remove_deployment(self, deployment_id):
-        self.removed.append(deployment_id)
-        self.catalog.rows.pop(deployment_id, None)
+    def generation(self, deployment_id):
+        spec = self.catalog.rows[deployment_id]
+        return ModelDeploymentGeneration(
+            deployment_id,
+            canonical_digest(spec),
+            canonical_digest({"fake-applied": deployment_id}),
+        )
+
+    def remove_deployment(self, generation):
+        current = self.generation(generation.deployment_id)
+        if current != generation:
+            raise RuntimeError("stale model deployment generation")
+        self.removed.append(generation.deployment_id)
+        self.catalog.rows.pop(generation.deployment_id, None)
         return True
 
 
@@ -119,8 +132,8 @@ class Scheduler:
             9999999999.0,
         )
 
-    def release(self, allocation_id):
-        self.released.append(allocation_id)
+    def release(self, allocation):
+        self.released.append(allocation.allocation_id)
 
 
 class Endpoints:
@@ -168,11 +181,13 @@ class Endpoints:
         self.rows[proof.allocation_id] = bound
         return bound
 
-    def release(self, allocation_id):
-        self.released.append(allocation_id)
-        current = self.rows[allocation_id]
+    def release(self, allocation):
+        self.released.append(allocation.allocation_id)
+        current = self.rows[allocation.allocation_id]
+        if current.lease_fencing_token != allocation.lease_fencing_token:
+            raise RuntimeError("stale endpoint allocation generation")
         released = replace(current, state=EndpointAllocationState.RELEASED)
-        self.rows[allocation_id] = released
+        self.rows[allocation.allocation_id] = released
         return released
 
 
@@ -321,11 +336,11 @@ def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_un
             super().__init__(catalog)
             self.failed = False
 
-        def remove_deployment(self, deployment_id):
+        def remove_deployment(self, generation):
             if not self.failed:
                 self.failed = True
                 raise RuntimeError("service stop not yet proven")
-            return super().remove_deployment(deployment_id)
+            return super().remove_deployment(generation)
 
     catalog = Catalog()
     runtime = FailOnceRuntime(catalog)
