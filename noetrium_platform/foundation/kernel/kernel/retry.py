@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from time import monotonic
+from time import monotonic, sleep
 from typing import TypeVar
 
-from noetrium_platform.foundation.kernel.concurrency.runtime.execution import blocking_sleep
-
-
 T = TypeVar("T")
+
+
+def blocking_wait(seconds: float) -> None:
+    """Perform one validated synchronous wait under the kernel wait primitive."""
+    delay = float(seconds)
+    if delay < 0:
+        raise ValueError("blocking wait delay must be non-negative")
+    sleep(delay)
 
 
 def retry_until_deadline(
@@ -35,7 +40,7 @@ def retry_until_deadline(
             remaining = deadline - monotonic()
             if not should_retry(exc) or remaining <= 0:
                 raise
-            blocking_sleep(min(interval_seconds, remaining))
+            blocking_wait(min(interval_seconds, remaining))
 
 
-__all__ = ["retry_until_deadline"]
+__all__ = ["blocking_wait", "retry_until_deadline"]
