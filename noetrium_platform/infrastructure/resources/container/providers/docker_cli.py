@@ -7,6 +7,7 @@ from noetrium_platform.infrastructure.resources.container.api import (
     DockerCommandRunnerPort,
     DockerContainerObservation,
     DockerManagedContainerPort,
+    LABEL_AUTHORITY,
     MANAGED_CONTAINER_LABEL,
     MANAGED_CONTAINER_LABEL_VALUE,
 )
@@ -23,14 +24,22 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
         self,
         runner: DockerCommandRunnerPort,
         *,
+        authority_id: str,
         docker_executable: str = "docker",
         command_timeout_seconds: float = 15.0,
     ) -> None:
+        if (
+            type(authority_id) is not str
+            or len(authority_id) != 64
+            or any(ch not in "0123456789abcdef" for ch in authority_id)
+        ):
+            raise ValueError("Docker authority_id must be lowercase sha256")
         if not docker_executable.strip():
             raise ValueError("docker executable is required")
         if command_timeout_seconds <= 0:
             raise ValueError("Docker command timeout must be positive")
         self._runner = runner
+        self._authority_id = authority_id
         self._docker = docker_executable
         self._timeout = float(command_timeout_seconds)
 
@@ -90,6 +99,8 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
                 "-aq",
                 "--filter",
                 f"label={MANAGED_CONTAINER_LABEL}={MANAGED_CONTAINER_LABEL_VALUE}",
+                "--filter",
+                f"label={LABEL_AUTHORITY}={self._authority_id}",
             ),
             timeout_seconds=self._timeout,
         )
