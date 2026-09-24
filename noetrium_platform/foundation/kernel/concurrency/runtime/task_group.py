@@ -223,16 +223,10 @@ class StructuredTaskGroup:
             self._mark_cancelled(record.task_id, exc)
             raise
         except ExecutionPermitRejected:
-            self._mark_cancelled(
-                record.task_id,
-                TaskCancelled(f"execution permit rejected: {self._group_id}/{record.task_id}"),
-            )
+            self._state.discard_unstarted(record)
             raise
         except SerialMailboxRejected:
-            self._mark_cancelled(
-                record.task_id,
-                TaskCancelled(f"execution permit rejected: {self._group_id}/{record.task_id}"),
-            )
+            self._state.discard_unstarted(record)
             raise
         except BaseException as exc:
             failure = self._normalize_submission_failure(record, exc)
@@ -333,12 +327,7 @@ class StructuredTaskGroup:
                     )
             except BaseException:
                 for record in records:
-                    self._mark_cancelled(
-                        record.task_id,
-                        TaskCancelled(
-                            "atomic task batch reservation aborted before execution"
-                        ),
-                    )
+                    self._state.discard_unstarted(record)
                 raise
 
             invocations: list[Callable[[], T]] = []
@@ -377,7 +366,7 @@ class StructuredTaskGroup:
                     "atomic task batch resolved inconsistent execution deadlines"
                 )
                 for record in records:
-                    self._mark_failed(record.task_id, failure)
+                    self._state.discard_unstarted(record)
                 raise failure
             batch_deadline = (
                 None
@@ -393,9 +382,13 @@ class StructuredTaskGroup:
                     deadline=batch_deadline,
                     cancellation=self._provider_submission_cancellation,
                 )
-            except (TaskCancelled, ExecutionPermitRejected) as exc:
+            except TaskCancelled as exc:
                 for record in records:
                     self._mark_cancelled(record.task_id, exc)
+                raise
+            except ExecutionPermitRejected:
+                for record in records:
+                    self._state.discard_unstarted(record)
                 raise
             except BaseException as exc:
                 for record in records:
@@ -500,10 +493,7 @@ class StructuredTaskGroup:
                 self._mark_cancelled(record.task_id, exc)
                 raise
             except ExecutionPermitRejected:
-                self._mark_cancelled(
-                    record.task_id,
-                    TaskCancelled(f"execution permit rejected: {self._group_id}/{record.task_id}"),
-                )
+                self._state.discard_unstarted(record)
                 raise
             except BaseException as exc:
                 failure = self._normalize_submission_failure(record, exc)
@@ -570,10 +560,7 @@ class StructuredTaskGroup:
                 self._mark_cancelled(record.task_id, exc)
                 raise
             except ExecutionPermitRejected:
-                self._mark_cancelled(
-                    record.task_id,
-                    TaskCancelled(f"execution permit rejected: {self._group_id}/{record.task_id}"),
-                )
+                self._state.discard_unstarted(record)
                 raise
             except BaseException as exc:
                 failure = self._normalize_submission_failure(record, exc)
