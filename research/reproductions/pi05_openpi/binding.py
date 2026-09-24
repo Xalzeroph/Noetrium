@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.environment.embodied.api import (
-    ActionKind,
-    ActionSpec,
-    EmbodiedActionCommand,
-    EmbodimentKind,
-    EmbodimentSpec,
-    SensorModality,
-    SensorSpec,
-)
+from noetrium import api
+
+ActionKind = api.ActionKind
+ActionSpec = api.ActionSpec
+EmbodiedActionCommand = api.EmbodiedActionCommand
+EmbodimentKind = api.EmbodimentKind
+EmbodimentSpec = api.EmbodimentSpec
+SensorModality = api.SensorModality
+SensorSpec = api.SensorSpec
 
 from collections.abc import Sequence
 import json
