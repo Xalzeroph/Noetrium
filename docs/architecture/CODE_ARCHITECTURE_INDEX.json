@@ -5008,11 +5008,6 @@
     {
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_execution.PreparedResearchOSNodeExecutor",
-      "target": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointStorePort"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.composition.research_os_execution.PreparedResearchOSNodeExecutor",
       "target": "noetrium_platform.composition.research_os_execution.PreparedResearchOSExecution"
     },
     {
@@ -5059,6 +5054,11 @@
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
       "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
+      "target": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointStorePort"
     },
     {
       "kind": "references",
@@ -39372,7 +39372,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 99,
+      "line": 100,
       "methods": [
         "__init__",
         "open",
@@ -39407,7 +39407,7 @@
         "scopes"
       ],
       "kind": "dataclass",
-      "line": 85,
+      "line": 86,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -40906,7 +40906,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 216,
+      "line": 212,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_checkpoint",
       "name": "ResearchOSCheckpointIndeterminate",
@@ -40934,7 +40934,7 @@
         "snapshot_generation"
       ],
       "kind": "dataclass",
-      "line": 101,
+      "line": 99,
       "methods": [
         "__post_init__",
         "scope_digest",
@@ -40958,7 +40958,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 194,
+      "line": 192,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_checkpoint",
       "name": "ResearchOSGraphCheckpointCorruptionError",
@@ -40976,11 +40976,9 @@
       "decorators": [
         "runtime_checkable"
       ],
-      "fields": [
-        "durability"
-      ],
+      "fields": [],
       "kind": "protocol",
-      "line": 199,
+      "line": 197,
       "methods": [
         "publish",
         "load",
@@ -41004,7 +41002,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 221,
+      "line": 217,
       "methods": [
         "checkpoint_node"
       ],
@@ -41033,7 +41031,7 @@
         "semantic_digest"
       ],
       "kind": "dataclass",
-      "line": 25,
+      "line": 23,
       "methods": [
         "__post_init__",
         "validate"
@@ -41203,7 +41201,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 617,
+      "line": 616,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -77988,7 +77986,7 @@
         "ttl_seconds"
       ],
       "kind": "dataclass",
-      "line": 44,
+      "line": 45,
       "methods": [
         "__post_init__"
       ],
@@ -78014,7 +78012,7 @@
         "running"
       ],
       "kind": "dataclass",
-      "line": 27,
+      "line": 28,
       "methods": [
         "__post_init__"
       ],
@@ -78037,7 +78035,7 @@
         "removed_container_ids"
       ],
       "kind": "dataclass",
-      "line": 119,
+      "line": 125,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
       "name": "DockerContainerReconciliation",
@@ -78055,6 +78053,7 @@
       ],
       "fields": [
         "allocation_id",
+        "authority_id",
         "container_name",
         "holder_scope",
         "image",
@@ -78062,7 +78061,7 @@
         "runtime_identity_digest"
       ],
       "kind": "dataclass",
-      "line": 66,
+      "line": 67,
       "methods": [
         "__post_init__",
         "labels",
@@ -78213,7 +78212,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 19,
+      "line": 20,
       "methods": [
         "__init__",
         "docker_executable",
@@ -78240,7 +78239,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 15,
+      "line": 16,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
       "name": "DockerContainerRuntimeError",
@@ -78256,7 +78255,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 51,
+      "line": 52,
       "methods": [
         "__init__",
         "_resource",
@@ -78290,7 +78289,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 47,
+      "line": 48,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseConflict",
@@ -78308,7 +78307,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 392,
+      "line": 405,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -78326,7 +78325,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 494,
+      "line": 507,
       "methods": [
         "__init__",
         "policy",
@@ -78348,7 +78347,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 396,
+      "line": 409,
       "methods": [
         "__init__",
         "handles",
@@ -102978,7 +102977,7 @@
     "classes": 3353,
     "constructor_edges": 914,
     "inheritance_edges": 146,
-    "module_import_edges": 5002,
+    "module_import_edges": 5003,
     "parse_errors": 0,
     "python_modules": 1910,
     "registry_authorities": 20,
@@ -108629,6 +108628,10 @@
     {
       "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.model_management",
+      "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.composition.model_management",
@@ -128445,6 +128448,7 @@
         "noetrium_platform.composition.research_execution_pool",
         "noetrium_platform.composition.resource_probes",
         "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.foundation.scope.api",
         "noetrium_platform.infrastructure.lifecycle.host.api",
         "noetrium_platform.infrastructure.lifecycle.host.composition",
@@ -143714,7 +143718,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "1f258db8a3eec78468adddce1624d9e1ceb6fda0",
+  "source_git_sha": "3f22c76c6ccf06ab3a8c6632decdaecae12ad557",
   "system_import_edges": [
     {
       "count": 85,
@@ -143897,7 +143901,7 @@
       "target": "participant"
     },
     {
-      "count": 123,
+      "count": 124,
       "source": "research_os",
       "target": "platform"
     },

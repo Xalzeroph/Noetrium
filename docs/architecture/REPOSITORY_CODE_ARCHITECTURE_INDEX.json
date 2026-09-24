@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3684,
-    "python_import_edges": 7139,
-    "symbols": 4955,
-    "tracked_files": 4320,
+    "python_files": 3685,
+    "python_import_edges": 7144,
+    "symbols": 4956,
+    "tracked_files": 4321,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4949,
+    "python": 4950,
     "typescript": 5
   },
   "parse_errors": [],
@@ -4062,6 +4062,12 @@
       "source_module": "noetrium_platform.composition.model_management",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.model_management",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -33599,6 +33605,12 @@
     {
       "source_module": "tests.test_research_os_execution_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_checkpoint_store",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_execution_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_os_execution",
       "target_role": "core_platform"
     },
@@ -33852,6 +33864,18 @@
       "source_module": "tests.test_research_os_experiment_closure_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.study.algorithms",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_graph_checkpoint_store_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_checkpoint",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_graph_checkpoint_store_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_checkpoint_store",
       "target_role": "core_platform"
     },
     {
@@ -34326,6 +34350,12 @@
       "source_module": "tests.test_research_os_runtime_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_runtime_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_checkpoint_store",
       "target_role": "core_platform"
     },
     {
@@ -42851,7 +42881,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2585,
+      "count": 2586,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42911,7 +42941,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2784,
+      "count": 2788,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42974,7 +43004,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 780,
-    "tests": 830,
+    "tests": 831,
     "tooling": 79
   },
   "role_symbol_counts": {
@@ -42986,11 +43016,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1001,
+    "tests": 1002,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "1f258db8a3eec78468adddce1624d9e1ceb6fda0",
+  "source_git_sha": "3f22c76c6ccf06ab3a8c6632decdaecae12ad557",
   "symbols": [
     {
       "bases": [],
@@ -64840,7 +64870,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 85,
+      "line": 86,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -64854,7 +64884,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 99,
+      "line": 100,
       "methods": [
         "__init__",
         "open",
@@ -66223,7 +66253,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 25,
+      "line": 23,
       "methods": [
         "__post_init__",
         "validate"
@@ -66252,7 +66282,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 101,
+      "line": 99,
       "methods": [
         "__post_init__",
         "scope_digest",
@@ -66274,7 +66304,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 194,
+      "line": 192,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_checkpoint",
       "name": "ResearchOSGraphCheckpointCorruptionError",
@@ -66289,12 +66319,10 @@
       "decorators": [
         "runtime_checkable"
       ],
-      "fields": [
-        "durability: str"
-      ],
+      "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 199,
+      "line": 197,
       "methods": [
         "publish",
         "load",
@@ -66314,7 +66342,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 216,
+      "line": 212,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_checkpoint",
       "name": "ResearchOSCheckpointIndeterminate",
@@ -66332,7 +66360,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 221,
+      "line": 217,
       "methods": [
         "checkpoint_node"
       ],
@@ -66485,7 +66513,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 617,
+      "line": 616,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -100023,7 +100051,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 27,
+      "line": 28,
       "methods": [
         "__post_init__"
       ],
@@ -100044,7 +100072,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 44,
+      "line": 45,
       "methods": [
         "__post_init__"
       ],
@@ -100064,12 +100092,13 @@
         "holder_scope: ScopeIdentity",
         "image: str",
         "runtime_identity_digest: str",
+        "authority_id: str",
         "container_name: str",
         "lease: ResourceLease"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 66,
+      "line": 67,
       "methods": [
         "__post_init__",
         "labels",
@@ -100092,7 +100121,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 119,
+      "line": 125,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
       "name": "DockerContainerReconciliation",
@@ -100225,7 +100254,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 15,
+      "line": 16,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.providers.docker_cli",
       "name": "DockerContainerRuntimeError",
@@ -100241,7 +100270,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 19,
+      "line": 20,
       "methods": [
         "__init__",
         "docker_executable",
@@ -100266,7 +100295,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 47,
+      "line": 48,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseConflict",
@@ -100280,7 +100309,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 51,
+      "line": 52,
       "methods": [
         "__init__",
         "_resource",
@@ -100312,7 +100341,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 392,
+      "line": 405,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -100328,7 +100357,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 396,
+      "line": 409,
       "methods": [
         "__init__",
         "handles",
@@ -100351,7 +100380,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 494,
+      "line": 507,
       "methods": [
         "__init__",
         "policy",
@@ -136574,7 +136603,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 26,
       "methods": [
         "__init__",
         "start",
@@ -141952,7 +141981,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 70,
+      "line": 73,
       "methods": [
         "publish",
         "lookup",
@@ -141971,7 +142000,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 108,
+      "line": 111,
       "methods": [
         "__init__",
         "admit",
@@ -141992,7 +142021,26 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 189,
+      "line": 192,
+      "methods": [
+        "__init__",
+        "execute"
+      ],
+      "module": "tests.test_research_os_execution_v1",
+      "name": "_ExecutionFailureRuntime",
+      "path": "tests/test_research_os_execution_v1.py",
+      "qualname": "tests.test_research_os_execution_v1._ExecutionFailureRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "_Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 226,
       "methods": [
         "reconcile_node"
       ],
@@ -142008,7 +142056,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 823,
+      "line": 922,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -142045,7 +142093,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 973,
+      "line": 1072,
       "methods": [
         "execute"
       ],
@@ -142421,7 +142469,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 59,
+      "line": 62,
       "methods": [
         "publish",
         "lookup",
