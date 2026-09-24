@@ -107,9 +107,9 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
         exact_call("msvcrt.locking"),
     ),
     SourceAuthorityRule(
-        "concurrency.blocking_sleep",
+        "kernel.blocking_wait",
         "time.sleep",
-        ("noetrium_platform.foundation.kernel.concurrency.runtime.execution",),
+        ("noetrium_platform.foundation.kernel.kernel.retry",),
         exact_call("time.sleep"),
     ),
     SourceAuthorityRule(
