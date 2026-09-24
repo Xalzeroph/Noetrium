@@ -25,7 +25,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
     ResourceOwnershipConflict,
 )
-from noetrium_platform.infrastructure.resources.providers.sqlite_connection import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
     acquire_resource_lease,
     decode_resource_lease,

@@ -11,8 +11,8 @@ from noetrium_platform.infrastructure.resources.providers import (
     SQLiteEndpointAllocationStore,
     SQLiteResourceLeaseRegistry,
 )
-from noetrium_platform.infrastructure.resources.providers import sqlite_connection
-from noetrium_platform.infrastructure.resources.providers.sqlite_connection import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability import sqlite as sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 from noetrium_platform.infrastructure.resources.providers import sqlite_endpoint, sqlite_lease
 
 
@@ -85,3 +85,10 @@ def test_hardened_sqlite_session_rejects_invalid_deadlines(
             tmp_path / "invalid.sqlite3", timeout_seconds=timeout_seconds
         ):
             raise AssertionError("invalid timeout must fail before opening a session")
+
+
+def test_resource_package_has_no_private_sqlite_connection_implementation() -> None:
+    from noetrium_platform.infrastructure import resources
+
+    package_root = Path(resources.__file__).resolve().parent
+    assert not (package_root / "providers" / "sqlite_connection.py").exists()

@@ -15,18 +15,26 @@ def durable_sqlite_connection(
     *,
     timeout_seconds: float,
 ) -> Iterator[sqlite3.Connection]:
-    """Open one fail-closed SQLite session with shared durability hardening.
+    """Open one fail-closed SQLite session with platform durability hardening.
 
     This primitive owns connection/session mechanics only. Callers retain
     transaction scope, schema authority, domain state machines, and writes.
     """
     timeout = float(timeout_seconds)
     if not math.isfinite(timeout) or timeout <= 0:
-        raise ValueError("SQLite connection timeout_seconds must be finite and positive")
+        raise ValueError(
+            "SQLite connection timeout_seconds must be finite and positive"
+        )
 
-    conn = sqlite3.connect(Path(path), timeout=timeout, isolation_level=None)
+    conn = sqlite3.connect(
+        Path(path),
+        timeout=timeout,
+        isolation_level=None,
+    )
     try:
-        conn.execute(f"PRAGMA busy_timeout={max(1, int(timeout * 1000))}")
+        conn.execute(
+            f"PRAGMA busy_timeout={max(1, int(timeout * 1000))}"
+        )
         retry_until_deadline(
             lambda: conn.execute("PRAGMA journal_mode=WAL"),
             should_retry=lambda exc: (

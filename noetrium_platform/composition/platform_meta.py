@@ -40,7 +40,7 @@ from noetrium_platform.infrastructure.resources.providers import (
     SQLiteEndpointAllocationStore,
     SQLiteResourceLeaseRegistry,
 )
-from noetrium_platform.infrastructure.resources.providers.sqlite_connection import (
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
 )
 from noetrium_platform.infrastructure.resources.allocation.runtime import AtomicEndpointAllocator, InMemoryEndpointAllocator

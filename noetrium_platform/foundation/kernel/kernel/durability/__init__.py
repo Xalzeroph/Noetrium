@@ -17,6 +17,7 @@ from .durable_file import (
 )
 from .file_lock import InterprocessFileLock, InterprocessLockBusy, InterprocessLockUnavailable
 from .stream_digest import sha256_file
+from .sqlite import durable_sqlite_connection
 from .contracts import (
     DurableObjectIdentity,
     DurableObjectStoreFactoryPort,
@@ -43,6 +44,7 @@ __all__ = [
     "InterprocessLockBusy",
     "InterprocessLockUnavailable",
     "sha256_file",
+    "durable_sqlite_connection",
     "DurableObjectIdentity",
     "DurableObjectStoreFactoryPort",
     "DurableObjectStorePort",

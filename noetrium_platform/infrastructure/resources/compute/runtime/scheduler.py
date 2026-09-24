@@ -19,7 +19,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceIdentity, ResourceKind, ResourceLease, ResourceLeasePort, ResourceOwner,
     ResourceOwnership, ResourceOwnershipPort,
 )
-from noetrium_platform.infrastructure.resources.providers.sqlite_connection import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 from noetrium_platform.infrastructure.resources.providers.sqlite_resource import ensure_resource_schema
 from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
     acquire_resource_lease, ensure_resource_owner, reconcile_expired_resource_leases,
