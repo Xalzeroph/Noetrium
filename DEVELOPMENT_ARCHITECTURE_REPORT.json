@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "167a9fd46fd664a95aef245b8eba2a7a8622679962a0bfdc6a6ae62442ea5975",
+  "report_sha256": "48d0513ebeeca9cc7d4f7846867d5a2d571fbd8034c5063a6e1d9c1b8c8d81fa",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -887,7 +887,7 @@
       "primitive": "time.sleep"
     }
   ],
-  "source_digest": "f876435fd34abee8afc3c1798e7c09a4e9fa5561af14b16372ef43b79a9f93c9",
+  "source_digest": "782f6ff01ed9eb447b99ac99c3e28a68319458ad94484c72c445667c6944e6cc",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1712,13 +1712,13 @@
       "branches": 71,
       "classes": 5,
       "exception_handlers": 7,
-      "functions": 86,
+      "functions": 90,
       "imports": 12,
       "max_function_lines": 95,
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
-      "physical_lines": 1526,
-      "score": 2290
+      "physical_lines": 1558,
+      "score": 2322
     },
     {
       "branches": 116,

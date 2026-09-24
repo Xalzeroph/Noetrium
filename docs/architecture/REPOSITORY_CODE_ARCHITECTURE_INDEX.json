@@ -43020,7 +43020,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "d154f45f407698a36f96fe1083c1ef3679cacebe",
+  "source_git_sha": "e3c34b8b0b05053edb7a9466b82df4aab777faae",
   "symbols": [
     {
       "bases": [],
@@ -46270,8 +46270,10 @@
         "__init__",
         "_put",
         "register_profile_revision",
+        "_profile_revision_local",
         "profile_revision",
         "register_profile_materialization",
+        "_profile_materialization_local",
         "profile_materialization",
         "profile_materializations",
         "transition_profile_revision",
@@ -46301,8 +46303,10 @@
         "mark_instance_dirty",
         "destroy_instance",
         "reusable_instances",
+        "_profile_references_local",
         "profile_references",
         "assess_profile_gc",
+        "_runtime_references_local",
         "runtime_references",
         "assess_runtime_gc",
         "resolved_digest"
@@ -46321,7 +46325,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 956,
+      "line": 988,
       "methods": [
         "__init__",
         "_connection",
@@ -64870,7 +64874,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 86,
+      "line": 87,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -64884,7 +64888,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 100,
+      "line": 101,
       "methods": [
         "__init__",
         "open",
@@ -100051,7 +100055,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 28,
+      "line": 29,
       "methods": [
         "__post_init__"
       ],
@@ -100072,7 +100076,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 45,
+      "line": 46,
       "methods": [
         "__post_init__"
       ],
@@ -100093,12 +100097,13 @@
         "image: str",
         "runtime_identity_digest: str",
         "authority_id: str",
+        "owner_generation_id: str",
         "container_name: str",
         "lease: ResourceLease"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 67,
+      "line": 68,
       "methods": [
         "__post_init__",
         "labels",
@@ -100121,7 +100126,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 125,
+      "line": 129,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
       "name": "DockerContainerReconciliation",
@@ -100295,7 +100300,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 48,
+      "line": 49,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseConflict",
@@ -100309,7 +100314,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 52,
+      "line": 53,
       "methods": [
         "__init__",
         "_resource",
@@ -100341,7 +100346,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 405,
+      "line": 420,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -100357,7 +100362,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 409,
+      "line": 424,
       "methods": [
         "__init__",
         "handles",
@@ -100380,7 +100385,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 513,
+      "line": 528,
       "methods": [
         "__init__",
         "policy",
@@ -136603,7 +136608,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 27,
       "methods": [
         "__init__",
         "start",
