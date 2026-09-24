@@ -209,6 +209,7 @@ def _machine_cut_payload(cut) -> dict[str, object]:
         "commit_id": cut.commit_id,
         "state_digest": cut.state_digest,
         "program_digest": cut.program_digest,
+        "program_lock_digest": cut.program_lock_digest,
         "cut_digest": cut.cut_digest,
     }
 
