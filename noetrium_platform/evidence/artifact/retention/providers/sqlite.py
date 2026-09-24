@@ -14,6 +14,7 @@ from noetrium_platform.evidence.artifact.retention.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import strict_finite_json_digest as canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
     rollback_sqlite_writer,
@@ -157,7 +158,7 @@ class SQLiteArtifactRetentionStore:
             reason_refs,
         )
         with closing(self._connect_writer()) as db:
-            db.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
             try:
                 row = self._select(db, artifact_id)
                 if row is None:
