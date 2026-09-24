@@ -13,6 +13,8 @@ from noetrium_platform.composition.research_os_experiment_runtime_binding import
 )
 from noetrium_platform.composition.research_os_experiment_trial_execution import (
     ResearchOSExperimentTrialProviderBinding,
+    ResearchOSExperimentTrialProviderRegistration,
+    ResearchOSExperimentTrialProviderRegistry,
     ResearchOSExperimentTrialStudyExecutionResolver,
 )
 from noetrium_platform.composition.research_os_experiment import (
@@ -993,3 +995,72 @@ def test_trial_provider_bridge_rejects_research_provider_identity_drift() -> Non
         ResearchOSExperimentTrialStudyExecutionResolver(
             providers
         ).resolve(closure)
+
+
+
+def test_trial_provider_registry_resolves_exact_research_provider_and_protocol() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    provider_identity = next(iter({
+        row.provider_id
+        for row in closure.research_plan.experiment_plan.bindings
+    }))
+    provider = _TrialProvider(
+        closure.research_plan.trial_protocol_identity
+    )
+    registry = ResearchOSExperimentTrialProviderRegistry(
+        (
+            ResearchOSExperimentTrialProviderRegistration(
+                provider_identity,
+                provider,
+                canonical_digest({"provider": "registry-provider.v1"}),
+            ),
+        )
+    )
+
+    resolved = registry.resolve(closure)
+    assert resolved.provider_identity == provider_identity
+    assert resolved.provider is provider
+    assert len(registry.identity_digest) == 64
+
+
+def test_trial_provider_registry_does_not_fallback_across_provider_identity() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    provider = _TrialProvider(
+        closure.research_plan.trial_protocol_identity
+    )
+    registry = ResearchOSExperimentTrialProviderRegistry(
+        (
+            ResearchOSExperimentTrialProviderRegistration(
+                "wrong.trial.provider",
+                provider,
+                canonical_digest({"provider": "registry-provider.v1"}),
+            ),
+        )
+    )
+
+    with pytest.raises(LookupError, match="no unique Trial provider"):
+        registry.resolve(closure)
