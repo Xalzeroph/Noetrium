@@ -18,6 +18,7 @@ from noetrium_platform.product.api import (
     ResearchGraphRevision,
     ResearchImpactState,
     ResearchImplementation,
+    ResearchMethodProgramImplementation,
     ResearchInputBinding,
     ResearchNode,
     ResearchNodeImpact,
