@@ -7,7 +7,10 @@ import sqlite3
 from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.kernel import require_sha256
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    durable_sqlite_connection,
+)
 _SQLITE_INT64_MAX = (1 << 63) - 1
 
 
@@ -59,7 +62,10 @@ class SQLiteResearchGraphExecutionStore:
     @contextmanager
     def _transaction(self):
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
             try:
                 yield conn
                 conn.commit()
