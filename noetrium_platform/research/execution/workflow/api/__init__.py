@@ -1,4 +1,12 @@
 from .authoring import AgentMethodSpec, AgentPhaseSpec, MethodWorkflow
+from .environment_capability_authoring import (
+    environment_action_capability_payload,
+    environment_branch_action_spec,
+    environment_fork_action_payload,
+    environment_query_capability_payload,
+    environment_replay_action_payload,
+    environment_reset_capability_payload,
+)
 from .trial import (
     ExecutionTrialProtocolKind,
     ExecutionTrialProtocolPort,
@@ -102,4 +110,4 @@ _RUNTIME_SERVICE_API_EXPORTS = (
 __all__ += _RUNTIME_SERVICE_API_EXPORTS
 
 # Canonical static ABI.
-__all__ = ['require_execution_trial_protocol', 'ExecutionTrialProtocolPort', 'ExecutionTrialProtocolKind', 'AgentMethodSpec', 'AgentPhaseSpec', 'MethodWorkflow', 'EffectIntentOperationPort', 'OperationDispatchPort', 'OperationExecutionPort', 'TrialCycleExecution', 'WorkflowGraph', 'WorkflowGraphError', 'WorkflowParticipantRequirementError', 'WorkflowStep', 'WorkflowSurfaceBindingContext', 'WorkflowSurfaceFactory', 'WorkflowSurfaceReuseScope', 'workflow_surface_id', 'workflow_surface_reuse_scope', 'AsyncMethodAgentLoopPort', 'AsyncOperationDispatchPort', 'MethodAgentLoopPort', 'MethodAgentRequest', 'MethodAgentResult', 'MethodAgentTargetHandler', 'MethodCapabilityTargetHandler', 'MethodAgentViewHandler', 'MethodCheckpoint', 'MethodCheckpointStorePort', 'MethodEvidenceStatus', 'MethodExecutionClass', 'MethodEvidencePort', 'MethodEvent', 'MethodGraph', 'MethodInterrupt', 'MethodMachinePort', 'MethodChildMachinePort', 'MethodNodeHandler', 'MethodNodeKind', 'MethodNodeRequest', 'MethodNodeResult', 'MethodNodeSpec', 'MethodObservationPort', 'MethodProgram', 'MethodProgramBuilder', 'MethodRunResult', 'MethodRunStatus', 'MethodRuntimeContext', 'MethodRuntimePort', 'MethodRuntimeRequirements', 'MethodSchemaPort', 'analyze_method_runtime_requirements', 'MethodRuntimeBindingPlan', 'MethodRuntimePortInventory', 'plan_method_runtime_binding', 'MethodEvidenceFactoryPort', 'MethodRuntimeBinderPort', 'require_method_evidence_factory', 'require_method_runtime_binder']
+__all__ = ['require_execution_trial_protocol', 'ExecutionTrialProtocolPort', 'ExecutionTrialProtocolKind', 'AgentMethodSpec', 'AgentPhaseSpec', 'MethodWorkflow', 'EffectIntentOperationPort', 'OperationDispatchPort', 'OperationExecutionPort', 'TrialCycleExecution', 'WorkflowGraph', 'WorkflowGraphError', 'WorkflowParticipantRequirementError', 'WorkflowStep', 'WorkflowSurfaceBindingContext', 'WorkflowSurfaceFactory', 'WorkflowSurfaceReuseScope', 'workflow_surface_id', 'workflow_surface_reuse_scope', 'AsyncMethodAgentLoopPort', 'AsyncOperationDispatchPort', 'MethodAgentLoopPort', 'MethodAgentRequest', 'MethodAgentResult', 'MethodAgentTargetHandler', 'MethodCapabilityTargetHandler', 'MethodAgentViewHandler', 'MethodCheckpoint', 'MethodCheckpointStorePort', 'MethodEvidenceStatus', 'MethodExecutionClass', 'MethodEvidencePort', 'MethodEvent', 'MethodGraph', 'MethodInterrupt', 'MethodMachinePort', 'MethodChildMachinePort', 'MethodNodeHandler', 'MethodNodeKind', 'MethodNodeRequest', 'MethodNodeResult', 'MethodNodeSpec', 'MethodObservationPort', 'MethodProgram', 'MethodProgramBuilder', 'MethodRunResult', 'MethodRunStatus', 'MethodRuntimeContext', 'MethodRuntimePort', 'MethodRuntimeRequirements', 'MethodSchemaPort', 'analyze_method_runtime_requirements', 'MethodRuntimeBindingPlan', 'MethodRuntimePortInventory', 'plan_method_runtime_binding', 'MethodEvidenceFactoryPort', 'MethodRuntimeBinderPort', 'require_method_evidence_factory', 'require_method_runtime_binder'], 'environment_action_capability_payload', 'environment_branch_action_spec', 'environment_fork_action_payload', 'environment_query_capability_payload', 'environment_replay_action_payload', 'environment_reset_capability_payload']
