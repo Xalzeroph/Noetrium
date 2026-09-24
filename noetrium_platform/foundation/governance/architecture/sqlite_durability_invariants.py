@@ -104,9 +104,16 @@ def audit_sqlite_durability_invariants(
     """Keep SQLite connection/session mechanics under one Platform authority."""
 
     root = Path(root).resolve()
-    package = root / "noetrium_platform"
+    production_roots = tuple(
+        root / name for name in ("noetrium_platform", "components", "orchestration")
+    )
     rows: list[SourceInvariantViolation] = []
-    for path in sorted(package.rglob("*.py")):
+    paths = sorted(
+        path
+        for production_root in production_roots
+        for path in production_root.rglob("*.py")
+    )
+    for path in paths:
         if is_transient_source_path(path):
             continue
         relative = path.relative_to(root).as_posix()
