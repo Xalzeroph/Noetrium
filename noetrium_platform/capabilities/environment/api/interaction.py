@@ -6,6 +6,7 @@ from typing import Protocol, runtime_checkable
 
 from .contracts import Observation
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     JsonInput,
@@ -129,8 +130,7 @@ class EnvironmentRawEventRecord:
 
     @property
     def raw_payload_sha256(self) -> str:
-        import hashlib
-        return hashlib.sha256(self.raw_payload).hexdigest()
+        return sha256_bytes(self.raw_payload)
 
     @property
     def record_digest(self) -> str:
