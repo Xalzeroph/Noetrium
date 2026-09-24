@@ -15,9 +15,9 @@ from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from research.reproductions import build_research
 from research.reproductions.contracts import ReproductionAssetKind, ReproductionLifecycle
 from research.reproductions.research_os import (
-    compile_reproduction_portfolio,
     compile_reproduction_research_program,
     discover_reproduction_definitions,
     resolve_execution_requirements,
@@ -164,10 +164,14 @@ def build_plan() -> dict:
         row.package for row in lanes if row.state == "compile_failed"
     )
     if not compile_failures:
-        portfolio = compile_reproduction_portfolio(
-            "repository-reproductions.current-research-os",
-            protocol_bound,
-        )
+        portfolio = build_research()
+        if tuple(program.program_id for program in portfolio.programs) != tuple(
+            sorted(row.package for row in protocol_bound)
+        ):
+            raise RuntimeError(
+                "top-level reproduction ResearchPortfolio drifted from protocol-bound "
+                "reproduction authority"
+            )
         revision = api.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
