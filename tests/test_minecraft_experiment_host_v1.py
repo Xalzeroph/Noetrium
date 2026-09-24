@@ -51,6 +51,7 @@ def _inputs(tmp_path):
         jar_path=str(tmp_path / "server.jar"),
         workdir=str(source_workdir),
         java_executable=str(tmp_path / "java"),
+        port=25565,
         rcon_endpoint=MinecraftRconEndpoint(port=25575),
     )
     server = RecordingSourceServer()
