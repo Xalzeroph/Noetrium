@@ -295,17 +295,28 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
     ) -> RunArtifactSnapshotReceipt:
         seal = self._seal_path(artifact_ref)
         if seal.exists():
-                recorded = self._decode_receipt(
-                    self._read_bytes(seal, error_type=RunArtifactFinalizationError, label="seal"),
+            recorded = self._decode_receipt(
+                self._read_bytes(
+                    seal,
                     error_type=RunArtifactFinalizationError,
+                    label="seal",
+                ),
+                error_type=RunArtifactFinalizationError,
+            )
+            if (
+                recorded.artifact_kind is not kind
+                or (recorded.record_count is not None) is not record_stream
+            ):
+                raise RunArtifactFinalizationError(
+                    "run artifact is already sealed with different semantics"
                 )
-                if recorded.artifact_kind is not kind or (recorded.record_count is not None) is not record_stream:
-                    raise RunArtifactFinalizationError("run artifact is already sealed with different semantics")
-                self._ensure_generation_index(recorded)
-                try:
-                    return self._verify_finalized_unlocked(recorded)
-                except RunArtifactVerificationError as exc:
-                    raise RunArtifactFinalizationError("sealed run artifact no longer matches its receipt") from exc
+            self._ensure_generation_index(recorded)
+            try:
+                return self._verify_finalized_unlocked(recorded)
+            except RunArtifactVerificationError as exc:
+                raise RunArtifactFinalizationError(
+                    "sealed run artifact no longer matches its receipt"
+                ) from exc
 
         receipt = self._snapshot_unlocked(
             artifact_ref,

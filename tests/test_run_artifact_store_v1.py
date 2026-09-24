@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import replace
 import hashlib
 import json
+import multiprocessing
+import queue
 import shutil
 from pathlib import Path
 
@@ -28,6 +30,41 @@ class _InlineSerialActor:
 
 def _store(path: Path, *, run_id: str = "run-1") -> DirectoryRunArtifactStore:
     return DirectoryRunArtifactStore(path, run_id=run_id, writer_actor=_InlineSerialActor())
+
+
+def _hold_run_artifact_writer_guard(
+    root: str,
+    ready,
+    release,
+) -> None:
+    from noetrium_platform.foundation.kernel.kernel.durability import (
+        InterprocessFileLock,
+    )
+
+    guard = Path(root) / ".run-artifact-finalized" / "writer.guard.lock"
+    with InterprocessFileLock(guard):
+        ready.set()
+        if not release.wait(15):
+            raise RuntimeError("run artifact writer guard test release timed out")
+
+
+def _publish_run_artifact_from_process(
+    root: str,
+    started,
+    results,
+) -> None:
+    store = _store(Path(root))
+    started.set()
+    try:
+        value = store.publish_text(
+            "raw/events.jsonl",
+            '{"worker":1}\n',
+            kind=RunArtifactKind.EVIDENCE,
+        )
+    except BaseException as exc:
+        results.put(("error", type(exc).__name__, str(exc)))
+        return
+    results.put(("ok", value))
 
 
 def test_directory_run_artifact_store_publishes_atomic_json(tmp_path: Path) -> None:
@@ -309,3 +346,47 @@ def test_verify_rejects_receipt_from_another_run(tmp_path: Path) -> None:
 
     with pytest.raises(RunArtifactVerificationError, match="different run"):
         store.verify_finalized(receipt)
+
+
+def test_run_artifact_writer_guard_serializes_distinct_processes(
+    tmp_path: Path,
+) -> None:
+    context = multiprocessing.get_context("spawn")
+    root = tmp_path / "run"
+    ready = context.Event()
+    release = context.Event()
+    started = context.Event()
+    results = context.Queue()
+
+    holder = context.Process(
+        target=_hold_run_artifact_writer_guard,
+        args=(str(root), ready, release),
+    )
+    writer = context.Process(
+        target=_publish_run_artifact_from_process,
+        args=(str(root), started, results),
+    )
+    holder.start()
+    assert ready.wait(15)
+    writer.start()
+    assert started.wait(15)
+
+    try:
+        results.get(timeout=0.5)
+    except queue.Empty:
+        pass
+    else:
+        raise AssertionError(
+            "run artifact mutation bypassed the cross-process writer guard"
+        )
+
+    release.set()
+    holder.join(15)
+    writer.join(15)
+    assert holder.exitcode == 0
+    assert writer.exitcode == 0
+    result = results.get(timeout=5)
+    assert result[0] == "ok"
+    assert (root / "raw" / "events.jsonl").read_text("utf-8") == (
+        '{"worker":1}\n'
+    )
