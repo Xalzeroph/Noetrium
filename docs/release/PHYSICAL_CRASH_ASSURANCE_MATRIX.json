@@ -1,0 +1,1265 @@
+{
+  "schema": "noetrium.physical-crash-assurance-matrix.v1",
+  "case_count": 40,
+  "purpose": "Make physical-resource crash/recovery claims executable and auditable instead of mechanism-inferred.",
+  "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+  "proof_levels": {
+    "L1": "deterministic unit/contract proof",
+    "L2": "local integration proof across real authorities/providers",
+    "L3": "real Linux + Docker + NVIDIA server fault-injection proof"
+  },
+  "strict_l3_gate": "python scripts/verify_physical_crash_assurance.py --require-l3",
+  "required_l3_qualification_cases": [
+    "host_reboot",
+    "docker_daemon_restart",
+    "sigkill_runtime",
+    "gpu_process_orphan",
+    "container_survives_owner",
+    "external_port_occupied",
+    "model_process_survives_durable_state_loss",
+    "startup_takeover",
+    "repeated_reconcile_crash"
+  ],
+  "cases": [
+    {
+      "id": "C01",
+      "key": "process_spawn_before_durable_journal",
+      "scenario": "Crash after physical process spawn but before durable process publication.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_local_service_process_v110.py::test_local_process_is_recovered_after_crash_between_spawn_and_process_journal"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_service_prepared_start_recovery_v146.py::test_crash_after_provider_start_is_reconciled_without_second_start"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "post_spawn_pre_journal_sigkill",
+        "fault": "SIGKILL the controller after child spawn and before durable launch publication.",
+        "assertions": [
+          "restart discovers the exact spawned generation",
+          "no second physical start occurs",
+          "cleanup cannot target a replacement generation"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C01.json"
+      }
+    },
+    {
+      "id": "C02",
+      "key": "durable_claim_before_worker_start",
+      "scenario": "Crash after durable node claim but before worker start is committed.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_research_graph_admission_claim_v1.py::test_claim_committed_before_start_failure_is_abandoned_and_retried_exactly"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_research_graph_durable_state_v1.py::test_claim_expiry_before_start_is_safe_to_requeue"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "post_claim_pre_start_sigkill",
+        "fault": "Kill the runtime after claim commit and before the workload enters RUNNING.",
+        "assertions": [
+          "claim becomes safely abandoned/expired-before-start",
+          "retry creates a new exact attempt identity",
+          "the old attempt cannot later commit terminal state"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C02.json"
+      }
+    },
+    {
+      "id": "C03",
+      "key": "runtime_sigkill_with_live_workload",
+      "scenario": "Runtime owner is SIGKILLed while a supervised workload/process tree is live.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_process_supervision_async_v2.py::test_parent_bound_guardian_reaps_tree_after_owner_sigkill"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_research_graph_durable_state_v1.py::test_running_expiry_requires_reconciliation_instead_of_blind_replay"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "sigkill_runtime",
+        "fault": "SIGKILL the Noetrium runtime while workload and descendants are active.",
+        "assertions": [
+          "no blind replay of a possibly-applied workload",
+          "surviving descendants are reaped or remain fenced",
+          "restart enters reconciliation before admitting conflicting work"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C03.json"
+      }
+    },
+    {
+      "id": "C04",
+      "key": "stale_delayed_heartbeat_generation",
+      "scenario": "A delayed heartbeat/renewal from an obsolete owner generation arrives after takeover.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_resource_endpoint_atomicity_v2.py::test_renew_is_fenced_and_atomic_with_allocation_expiry_projection"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_resource_shared_carrier_fencing_v1.py::test_reused_lease_id_rejects_delayed_release_from_old_generation"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "stale_heartbeat_after_takeover",
+        "fault": "Delay an old-generation renewal until a replacement generation has acquired authority.",
+        "assertions": [
+          "old renewal is rejected by exact fencing identity",
+          "replacement lease/generation remains unchanged",
+          "no capacity or endpoint state is resurrected"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C04.json"
+      }
+    },
+    {
+      "id": "C05",
+      "key": "stale_delayed_close_or_release",
+      "scenario": "A delayed close/release from an obsolete owner targets a reused logical identity.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_resource_shared_carrier_fencing_v1.py::test_reused_lease_id_rejects_delayed_release_from_old_generation"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_new_docker_owner_generation_cannot_close_old_generation_handle"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "stale_close_after_reuse",
+        "fault": "Hold an old close/release request until the resource identity is reused by a new generation.",
+        "assertions": [
+          "old close cannot release the new generation",
+          "physical replacement remains live",
+          "durable owner identity remains the replacement"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C05.json"
+      }
+    },
+    {
+      "id": "C06",
+      "key": "stale_stop_against_restarted_process",
+      "scenario": "A stale process stop command races a restarted same-config generation.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_runtime_asset_management_v190.py::test_stale_same_config_generation_cannot_stop_restarted_process"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_runtime_asset_management_v190.py::test_stale_model_generation_cannot_stop_or_remove_replacement_process"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "stale_stop_after_process_restart",
+        "fault": "Restart the exact model deployment then deliver an old stop operation.",
+        "assertions": [
+          "old stop is fenced by process generation",
+          "replacement PID/start identity remains alive",
+          "durable applied state still names the replacement"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C06.json"
+      }
+    },
+    {
+      "id": "C07",
+      "key": "pid_reuse",
+      "scenario": "The operating system reuses a PID after the original process exits.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_linux_process_signal_generation_v1.py::test_exact_linux_signal_rejects_pid_reuse_after_poll"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_local_service_process_v110.py::test_pid_start_identity_mismatch_is_treated_as_missing_not_adopted"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "pid_reuse",
+        "fault": "Force or simulate PID reuse between observation and signal/reconcile.",
+        "assertions": [
+          "PID alone is never accepted as process identity",
+          "signal/stop is rejected on start-generation mismatch",
+          "foreign replacement process is untouched"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C07.json"
+      }
+    },
+    {
+      "id": "C08",
+      "key": "host_reboot_boot_generation",
+      "scenario": "Host reboot invalidates every lease tied to the previous boot generation.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_resource_lease_clock_authority_v1.py::test_same_host_reboot_revokes_old_boot_generation_immediately"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_machine_kernel_v3_qualification.py::test_directory_machine_authority_reboot_fences_old_boot"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "host_reboot",
+        "fault": "Reboot the Linux host while durable resource and machine leases are live.",
+        "assertions": [
+          "old boot generation cannot renew or mutate",
+          "restart detects the new boot identity",
+          "reconciliation occurs before resource reuse"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C08.json"
+      }
+    },
+    {
+      "id": "C09",
+      "key": "docker_daemon_restart_during_reconcile",
+      "scenario": "Docker daemon restarts while Noetrium is reconciling managed containers.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_managed_docker_daemon_restart_during_reconcile_preserves_lease_authority"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_one_click_recovery_loop_v159.py::test_services_ready_health_failure_recovers_from_service_reconcile_in_same_command"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "docker_daemon_restart",
+        "fault": "Restart the Docker daemon during a container reconcile cycle.",
+        "assertions": [
+          "lease authority is not discarded on temporary daemon blindness",
+          "container identity is re-observed after daemon return",
+          "no duplicate container is created"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C09.json"
+      }
+    },
+    {
+      "id": "C10",
+      "key": "container_survives_owner",
+      "scenario": "Managed container outlives the controller/owner process.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_managed_docker_crash_expiry_removes_orphan_on_reconcile"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_managed_docker_restart_before_ttl_reaps_old_controller_generation"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "container_survives_owner",
+        "fault": "Kill the owner while its managed container remains running.",
+        "assertions": [
+          "restart identifies the exact orphan generation",
+          "orphan is removed before logical lease release/reuse",
+          "new owner never adopts a mismatched foreign container"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C10.json"
+      }
+    },
+    {
+      "id": "C11",
+      "key": "container_name_or_identity_reuse",
+      "scenario": "A container name is reused or externally renamed while an old handle still exists.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_managed_docker_release_refuses_reused_foreign_container_name"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_managed_docker_release_follows_exact_generation_after_external_rename"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "container_identity_reuse",
+        "fault": "Rename the owned container and create a foreign/replacement container at the old name.",
+        "assertions": [
+          "cleanup follows immutable container identity not name",
+          "foreign/replacement container is untouched",
+          "logical release waits for exact generation convergence"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C11.json"
+      }
+    },
+    {
+      "id": "C12",
+      "key": "ambiguous_container_remove_ack",
+      "scenario": "Container removal may have succeeded but Docker acknowledgement is lost or daemon becomes unobservable.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_docker_provider_accepts_only_proven_absence_after_ambiguous_remove_ack"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_docker_provider_keeps_ambiguous_remove_fail_closed_when_daemon_unobservable"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "ambiguous_docker_remove",
+        "fault": "Drop Docker API acknowledgement during remove, including a daemon-unobservable variant.",
+        "assertions": [
+          "logical lease is released only after proven physical absence",
+          "unknown daemon state remains fenced",
+          "retry is idempotent"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C12.json"
+      }
+    },
+    {
+      "id": "C13",
+      "key": "model_process_survives_durable_state_loss",
+      "scenario": "A model process remains live while its durable applied/desired state is missing, stale, or being rebuilt.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_runtime_asset_management_v190.py::test_model_remove_and_restart_require_physical_stop_convergence"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_runtime_asset_management_v190.py::test_model_replacement_keeps_old_applied_generation_when_physical_stop_is_unproven"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "model_process_survives_durable_state_loss",
+        "fault": "Remove or corrupt the runtime durable applied-state view while the exact model process survives.",
+        "assertions": [
+          "live process is not silently forgotten",
+          "replacement launch is blocked until exact physical convergence",
+          "reconcile cannot stop an unowned process"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C13.json"
+      }
+    },
+    {
+      "id": "C14",
+      "key": "desired_state_restart_rebuild",
+      "scenario": "Controller restarts with durable desired state but no in-memory runtime state.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_runtime_asset_management_v190.py::test_model_runtime_shutdown_preserves_desired_state_for_restart"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_runtime_asset_management_v190.py::test_cleared_applied_process_generation_cannot_be_resurrected"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "desired_state_rebuild",
+        "fault": "Restart the model controller from durable desired state after clearing all process-local state.",
+        "assertions": [
+          "desired state survives restart",
+          "applied state is rebuilt only from physical proof",
+          "cleared/tombstoned generations are not resurrected"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C14.json"
+      }
+    },
+    {
+      "id": "C15",
+      "key": "physical_stop_failure",
+      "scenario": "Physical stop fails or cannot prove that the target workload terminated.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_runtime_asset_management_v190.py::test_model_replacement_keeps_old_applied_generation_when_physical_stop_is_unproven"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_scientific_alfworld_text_runtime_v1.py::test_managed_docker_close_keeps_lower_fences_when_worker_stop_fails"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "physical_stop_failure",
+        "fault": "Make the target ignore graceful stop and fail the physical termination proof.",
+        "assertions": [
+          "lower resource fences remain held",
+          "replacement/reuse is blocked",
+          "retry targets the same exact generation"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C15.json"
+      }
+    },
+    {
+      "id": "C16",
+      "key": "release_commit_success_caller_error",
+      "scenario": "Durable release/tombstone commits successfully but the caller observes an error.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_runtime_asset_management_v190.py::test_applied_clear_tombstone_survives_delete_commit_caller_error"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_environment_instance_lease_recovery_v1.py::test_environment_instance_release_retries_uncertain_durable_release_without_promoting_clean"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "release_commit_ack_loss",
+        "fault": "Inject an error after the durable release commit but before success returns to the caller.",
+        "assertions": [
+          "retry detects committed terminal state",
+          "resource is not double-released or promoted clean incorrectly",
+          "replacement generation is not retargeted"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C16.json"
+      }
+    },
+    {
+      "id": "C17",
+      "key": "partial_teardown_dependency_failure",
+      "scenario": "A multi-stage shutdown fails after some higher physical dependencies have converged.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_managed_resource_reconciler_v1.py::test_managed_resource_shutdown_stops_at_first_unproven_dependency_stage"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_managed_research_runtime_v1.py::test_managed_runtime_does_not_release_resources_when_workloads_fail_to_quiesce"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "partial_teardown",
+        "fault": "Fail one teardown stage after an earlier stage has completed.",
+        "assertions": [
+          "later/lower resources remain fenced when dependency convergence is unproven",
+          "already-converged stages are safe to retry",
+          "restart resumes teardown without split ownership"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C17.json"
+      }
+    },
+    {
+      "id": "C18",
+      "key": "dual_runtime_state_root",
+      "scenario": "Two runtimes/operators attempt to own the same durable state root.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_management_cli_v191.py::test_management_cli_refuses_state_root_owned_by_live_runtime"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_recovery_execution_lock_v163.py::test_long_held_execution_lock_blocks_second_writer_even_if_document_ttl_is_short"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "dual_runtime_same_state_root",
+        "fault": "Start a second runtime/operator against the same state root while the first owner is live.",
+        "assertions": [
+          "exactly one mutation authority exists",
+          "second writer fails closed before side effects",
+          "TTL expiry cannot bypass a live kernel/process lock"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C18.json"
+      }
+    },
+    {
+      "id": "C19",
+      "key": "startup_takeover_abandoned_owner",
+      "scenario": "A new runtime generation starts after an abandoned owner without waiting for stale TTL.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_managed_resource_reconciler_v1.py::test_abandoned_owner_takeover_reclaims_prestart_resources_without_ttl_wait"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_research_graph_durable_state_v1.py::test_new_runtime_generation_immediately_fences_abandoned_attempts"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "startup_takeover",
+        "fault": "Crash the prior owner, then start a new locked runtime generation immediately.",
+        "assertions": [
+          "new generation fences abandoned attempts",
+          "pre-start resources reconcile before admission",
+          "current live generation is never stolen"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C19.json"
+      }
+    },
+    {
+      "id": "C20",
+      "key": "descendant_survives_root_and_stop_escalation",
+      "scenario": "Root exits or ignores TERM while descendants/process-group members remain alive.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_process_supervision_async_v2.py::test_interactive_guardian_survives_root_exit_until_descendant_kill"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_process_supervision_async_v2.py::test_process_command_cancellation_reaps_descendant_tree"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "descendant_survival",
+        "fault": "Run a process tree whose root exits and descendant ignores TERM.",
+        "assertions": [
+          "guardian remains until descendants converge",
+          "TERM escalates to KILL when required",
+          "no descendant survives final proven cleanup"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C20.json"
+      }
+    },
+    {
+      "id": "C21",
+      "key": "endpoint_listener_survives_lease_expiry",
+      "scenario": "Endpoint lease expires while an OS listener still owns the port.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_resource_endpoint_atomicity_v2.py::test_expiry_quarantines_endpoint_until_os_listener_converges"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_resource_endpoint_atomicity_v2.py::test_endpoint_orphan_probe_failure_retains_quarantined_generation"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "endpoint_listener_survives",
+        "fault": "Let endpoint lease expire while the old listener continues accepting connections.",
+        "assertions": [
+          "port remains quarantined",
+          "new allocation cannot reuse the port",
+          "logical capacity returns only after listener absence is proven"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C21.json"
+      }
+    },
+    {
+      "id": "C22",
+      "key": "externally_occupied_port",
+      "scenario": "A port candidate is already bound by an external non-Noetrium process.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_resource_endpoint_allocation_v1.py::test_existing_endpoint_system_skips_real_os_bound_port_and_uses_kernel_candidate"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_resource_endpoint_allocation_v1.py::test_endpoint_allocator_reports_probe_rejection_without_fallback"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "external_port_occupied",
+        "fault": "Bind the candidate port externally before Noetrium allocation.",
+        "assertions": [
+          "occupied port is never adopted",
+          "allocator selects another authoritative candidate or fails closed",
+          "external listener is untouched"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C22.json"
+      }
+    },
+    {
+      "id": "C23",
+      "key": "endpoint_generation_reuse",
+      "scenario": "An endpoint allocation/binding identity is reused after release while stale bind/rebind state exists.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_resource_endpoint_atomicity_v2.py::test_rebind_in_memory_rebind_rejects_stale_prior_same_binder_and_stale_fence"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_resource_endpoint_atomicity_v2.py::test_sqlite_rebind_persists_winning_generation_across_reopen"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "endpoint_identity_reuse",
+        "fault": "Release and reallocate an endpoint, then deliver the prior generation's bind/rebind operation.",
+        "assertions": [
+          "stale binding is rejected",
+          "winning replacement binding survives restart",
+          "history preserves exact fencing generation"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C23.json"
+      }
+    },
+    {
+      "id": "C24",
+      "key": "endpoint_heartbeat_failure",
+      "scenario": "Endpoint lease heartbeat loses durable renewal authority while the endpoint may remain live.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_resource_endpoint_heartbeat_v1.py::test_endpoint_lease_heartbeat_failure_is_fail_closed"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_resource_endpoint_atomicity_v2.py::test_endpoint_heartbeat_surfaces_background_renewal_failure"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "endpoint_heartbeat_failure",
+        "fault": "Inject durable renewal failure while a bound endpoint is active.",
+        "assertions": [
+          "failure is surfaced to owner",
+          "port is not returned to free capacity prematurely",
+          "recovery revalidates listener and exact generation"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C24.json"
+      }
+    },
+    {
+      "id": "C25",
+      "key": "gpu_process_orphan",
+      "scenario": "GPU lease expires or owner disappears while a process still uses the GPU.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_compute_physical_convergence_v1.py::test_expired_gpu_lease_does_not_release_capacity_while_process_survives"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_compute_physical_convergence_v1.py::test_quarantined_compute_generation_does_not_globally_block_spare_capacity"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "gpu_process_orphan",
+        "fault": "Kill the owner while a GPU-bound process survives beyond lease expiry.",
+        "assertions": [
+          "occupied GPU generation remains quarantined",
+          "unrelated spare capacity remains schedulable",
+          "replacement cannot reuse occupied capacity until physical absence"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C25.json"
+      }
+    },
+    {
+      "id": "C26",
+      "key": "gpu_visibility_incomplete",
+      "scenario": "GPU/process observation is unavailable or incomplete during expiry/reconcile.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_compute_physical_convergence_v1.py::test_expired_gpu_lease_fails_closed_when_process_visibility_is_incomplete"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_compute_host_runtime_pressure_v1.py::test_runtime_required_fails_closed_without_host_observer"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "gpu_visibility_loss",
+        "fault": "Make process/GPU observer unavailable during compute reconciliation.",
+        "assertions": [
+          "unknown visibility is not treated as free capacity",
+          "lease/capacity stays fenced",
+          "recovery can resume after observer restoration"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C26.json"
+      }
+    },
+    {
+      "id": "C27",
+      "key": "compute_expiry_and_replacement",
+      "scenario": "Compute lease expires, then replacement generation competes with stale recovery release.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_compute_physical_convergence_v1.py::test_cpu_only_expiry_quarantines_capacity_until_exclusive_recovery"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_compute_physical_convergence_v1.py::test_stale_recovery_release_cannot_delete_replacement_generation"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "compute_generation_replacement",
+        "fault": "Expire compute ownership, recover/reallocate it, then deliver stale old-generation release.",
+        "assertions": [
+          "capacity is quarantined until exclusive recovery",
+          "stale release cannot delete replacement",
+          "replacement owner keeps exact capacity identity"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C27.json"
+      }
+    },
+    {
+      "id": "C28",
+      "key": "model_oom_crash",
+      "scenario": "Model service is OOM-killed and must retain exact crash evidence and recovery identity.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_service_crash_capture_v54.py::test_oom_exit_freezes_logs_and_requires_exact_recovery"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_service_crash_forensics_v55.py::test_service_crash_becomes_queryable_failure_with_log_evidence"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "model_oom",
+        "fault": "Trigger real GPU/host OOM termination of a model-serving process.",
+        "assertions": [
+          "exit/OOM evidence is frozen before recovery",
+          "failure remains queryable and provenance-bound",
+          "restart uses exact model/deployment identity rather than fallback"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C28.json"
+      }
+    },
+    {
+      "id": "C29",
+      "key": "durable_lease_heartbeat_owner_loss",
+      "scenario": "Research-graph durable lease renewal fails at the CLAIMED/RUNNING boundary.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_research_graph_admission_claim_v1.py::test_durable_lease_heartbeat_failure_cancels_running_workload"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_research_graph_durable_state_v1.py::test_running_expiry_requires_reconciliation_instead_of_blind_replay"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "durable_heartbeat_owner_loss",
+        "fault": "Fail durable lease renewals while a graph node is claimed or running.",
+        "assertions": [
+          "workload is fenced before start or cancelled if already started",
+          "running work is not blindly replayed",
+          "restart requires authoritative reconciliation"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C29.json"
+      }
+    },
+    {
+      "id": "C30",
+      "key": "durable_release_io_ambiguity",
+      "scenario": "I/O failure makes durable release outcome uncertain.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_environment_instance_lease_recovery_v1.py::test_environment_instance_release_retries_uncertain_durable_release_without_promoting_clean"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_release_authority_transaction_v1.py::test_authority_receipt_is_commit_point_for_manifest_evidence_pair"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "durable_release_io_ambiguity",
+        "fault": "Inject fsync/storage acknowledgement loss around a durable release commit.",
+        "assertions": [
+          "uncertain result is never promoted to clean/free without proof",
+          "commit point is uniquely identifiable",
+          "retry converges idempotently"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C30.json"
+      }
+    },
+    {
+      "id": "C31",
+      "key": "scheduler_callback_failure",
+      "scenario": "A timer/heartbeat callback fails while the shared scheduler remains alive.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_platform_concurrency_runtime_v1.py::test_provider_timer_scheduler_marks_callback_failure_without_killing_scheduler"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_platform_concurrency_runtime_v1.py::test_failed_recurring_task_retires_timer_registration"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "callback_failure",
+        "fault": "Raise from one recurring control callback under concurrent healthy callbacks.",
+        "assertions": [
+          "failed callback becomes explicit terminal health state",
+          "shared scheduler continues serving unrelated controls",
+          "failed registration is retired without identity reuse"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C31.json"
+      }
+    },
+    {
+      "id": "C32",
+      "key": "short_lease_suspend_clock_drift",
+      "scenario": "Very short leases interact with suspend/resume and wall-clock movement.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_resource_lease_clock_authority_v1.py::test_suspend_aware_elapsed_time_expires_lease_without_wall_progress"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_resource_lease_clock_authority_v1.py::test_wall_clock_jumps_cannot_expire_or_extend_lease_authority"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "suspend_and_clock_drift",
+        "fault": "Suspend/resume the host and perturb wall clock while short leases are active.",
+        "assertions": [
+          "lease authority uses the correct elapsed/boot clock semantics",
+          "wall-clock jumps cannot steal or extend ownership",
+          "resume/reboot produces deterministic fencing"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C32.json"
+      }
+    },
+    {
+      "id": "C33",
+      "key": "minecraft_restore_precommit_crash",
+      "scenario": "Minecraft/world branch restore crashes before commit and must roll back the backup.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_minecraft_world_cut_v1.py::test_branch_checkpoint_reconstructs_precommit_crash_by_rolling_back_backup"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_minecraft_world_cut_v1.py::test_branch_checkpoint_recovers_crash_after_rename_before_phase_advance"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "minecraft_reopen_precommit",
+        "fault": "SIGKILL during world restore after rename/backup publication but before restore commit.",
+        "assertions": [
+          "restart reconstructs journal phase",
+          "backup is restored exactly once",
+          "world identity and endpoint binding remain consistent"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C33.json"
+      }
+    },
+    {
+      "id": "C34",
+      "key": "minecraft_restore_postcommit_crash",
+      "scenario": "Minecraft/world restore crashes after commit but before cleanup.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_minecraft_world_cut_v1.py::test_branch_checkpoint_reconstructs_postcommit_crash_without_rollback"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_minecraft_world_cut_v1.py::test_branch_checkpoint_recovery_stop_failure_never_mutates_filesystem"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "minecraft_reopen_postcommit",
+        "fault": "SIGKILL after restore commit and before backup/journal cleanup.",
+        "assertions": [
+          "restart preserves committed world rather than rolling back",
+          "cleanup is idempotent",
+          "failed server stop cannot mutate world files"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C34.json"
+      }
+    },
+    {
+      "id": "C35",
+      "key": "checkpoint_publication_commit_ambiguity",
+      "scenario": "Checkpoint publication crashes around intent/manifest commit boundaries.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_study_checkpoint_store_v133.py::test_checkpoint_publish_intent_survives_manifest_crash_and_resumes"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_study_checkpoint_store_v133.py::test_checkpoint_publish_retry_clears_intent_after_manifest_commit"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "checkpoint_publication_crash",
+        "fault": "Kill between checkpoint publication intent, blob publication, manifest commit, and intent clear.",
+        "assertions": [
+          "restart distinguishes uncommitted from committed publication",
+          "same checkpoint identity cannot bind different state",
+          "retry completes without duplicate/lost manifest"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C35.json"
+      }
+    },
+    {
+      "id": "C36",
+      "key": "checkpoint_gc_shared_cas_race",
+      "scenario": "Checkpoint GC races shared-CAS references and a retry with proof continuity.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_study_checkpoint_store_v133.py::test_checkpoint_gc_preserves_shared_cas_until_last_reference"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_study_checkpoint_store_v133.py::test_checkpoint_gc_retry_is_bound_to_original_proof"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "checkpoint_gc_race",
+        "fault": "Run checkpoint retirement concurrently with another manifest retaining the same blob, then crash/retry GC.",
+        "assertions": [
+          "shared blob survives until last authoritative reference closes",
+          "retirement retry requires the original proof",
+          "physical unlink occurs only after durable retirement intent"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C36.json"
+      }
+    },
+    {
+      "id": "C37",
+      "key": "workspace_retirement_crash_windows",
+      "scenario": "Workspace retirement crashes around quarantine rename, recursive purge, or terminal publication.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_durable_resource_directory_v1.py::test_workspace_gc_recovers_rename_committed_before_phase_publication"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_durable_resource_directory_v1.py::test_workspace_gc_recovers_purge_committed_before_terminal_publication"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "workspace_gc_crash",
+        "fault": "SIGKILL during workspace quarantine rename or recursive physical purge.",
+        "assertions": [
+          "restart reconstructs RETIRED/QUARANTINED/PURGED phase from durable truth",
+          "retry uses the same closure proof",
+          "live/quarantine split truth fails closed"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C37.json"
+      }
+    },
+    {
+      "id": "C38",
+      "key": "artifact_publication_and_gc_crash",
+      "scenario": "Artifact CAS publication or typed physical GC crashes while generation identity must remain exact.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_artifact_blob_cas_v1.py::test_blob_retry_discards_hard_kill_staging_residue"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_artifact_blob_cas_v1.py::test_blob_gc_retry_recovers_retiring_generation"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "artifact_gc_crash",
+        "fault": "Kill during immutable artifact publication and again during RETIRING physical unlink.",
+        "assertions": [
+          "staging residue is never mistaken for canonical content",
+          "RETIRING survives deletion failure",
+          "retry requires complete typed closure and same generation/proof"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C38.json"
+      }
+    },
+    {
+      "id": "C39",
+      "key": "atomic_bundle_rollback_failure",
+      "scenario": "A multi-component restore fails and rollback itself can fail, creating UNKNOWN state.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_state_workload_checkpoint_transaction_v1.py::test_restore_rolls_back_every_mutated_component_on_failure"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_state_workload_checkpoint_transaction_v1.py::test_rollback_failure_reports_unknown_state"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "atomic_bundle_rollback_failure",
+        "fault": "Fail after mutating a subset of a resource/checkpoint bundle, then fail one rollback step.",
+        "assertions": [
+          "all provably mutable components are rolled back in reverse safety order",
+          "rollback failure is reported as UNKNOWN rather than false success",
+          "no new work is admitted against unknown bundle state"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C39.json"
+      }
+    },
+    {
+      "id": "C40",
+      "key": "repeated_crash_during_reconcile",
+      "scenario": "Recovery/reconcile itself crashes repeatedly and must remain bounded, resumable, and non-retargeting.",
+      "invariant": "After any crash or ambiguous acknowledgement, recovery may only adopt the exact current generation or quarantine/destroy the orphan before reuse; stale owners must never mutate replacements, and logical release must never outrun unproven physical convergence.",
+      "L1": {
+        "kind": "deterministic",
+        "nodeid": "tests/test_one_click_recovery_loop_v159.py::test_recovery_loop_is_bounded_for_persistent_uncertain_failure"
+      },
+      "L2": {
+        "kind": "local_integration",
+        "nodeid": "tests/test_research_graph_reconcile_retry_control_v1.py::test_reconciled_retry_remains_node_paused_until_explicit_resume"
+      },
+      "L3": {
+        "kind": "server_integration",
+        "qualification_case": "repeated_reconcile_crash",
+        "fault": "Repeatedly SIGKILL/fail the runtime at successive reconcile steps across restarts.",
+        "assertions": [
+          "each restart resumes from durable reconciliation state",
+          "retry count/loop is bounded and does not spin forever",
+          "reconciled work remains paused until explicit safe resume"
+        ],
+        "environment": [
+          "linux",
+          "docker",
+          "nvidia"
+        ],
+        "status": "unverified_remote",
+        "receipt_path": "artifacts/server-crash-assurance/C40.json"
+      }
+    }
+  ]
+}
