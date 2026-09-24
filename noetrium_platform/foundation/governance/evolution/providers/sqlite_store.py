@@ -5,7 +5,10 @@ import hashlib
 from pathlib import Path
 import sqlite3
 
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import open_durable_sqlite_writer
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    immediate_sqlite_transaction,
+    open_durable_sqlite_writer,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     CanonicalDecodingError,
     CanonicalEncodingError,
@@ -335,9 +338,15 @@ class SQLiteEvolutionStore(EvolutionStateStorePort):
             raise ValueError("timeout_seconds must be positive")
         self._connection_factory = connection_factory or _default_connection
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            try:
-                conn.execute("CREATE TABLE IF NOT EXISTS evolution_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="evolution schema",
+            ):
+                conn.execute(
+                    "CREATE TABLE IF NOT EXISTS evolution_meta "
+                    "(key TEXT PRIMARY KEY, value TEXT NOT NULL)"
+                )
                 conn.execute(
                     "CREATE TABLE IF NOT EXISTS evolution_observations ("
                     "sequence INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -367,15 +376,14 @@ class SQLiteEvolutionStore(EvolutionStateStorePort):
                 ).fetchone()
                 if current is None:
                     conn.execute(
-                        "INSERT INTO evolution_meta(key,value) VALUES('schema_version',?)",
+                        "INSERT INTO evolution_meta(key,value) "
+                        "VALUES('schema_version',?)",
                         (self.SCHEMA_VERSION,),
                     )
                 elif current[0] != self.SCHEMA_VERSION:
-                    raise EvolutionStoreIntegrityError("unsupported evolution store schema")
-                conn.commit()
-            except BaseException:
-                conn.rollback()
-                raise
+                    raise EvolutionStoreIntegrityError(
+                        "unsupported evolution store schema"
+                    )
 
     def _connection(self):
         return self._connection_factory(
@@ -383,25 +391,33 @@ class SQLiteEvolutionStore(EvolutionStateStorePort):
             timeout_seconds=self.timeout_seconds,
         )
 
-    def _put(self, table: str, key_column: str, key: str, value: object) -> None:
+    def _put(
+        self,
+        table: str,
+        key_column: str,
+        key: str,
+        value: object,
+    ) -> None:
         raw, digest = _payload(value)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            row = conn.execute(
-                f"SELECT payload_digest FROM {table} WHERE {key_column}=?",
-                (key,),
-            ).fetchone()
-            if row is not None:
-                if row[0] != digest:
-                    conn.rollback()
-                    raise EvolutionStoreConflict(key)
-                conn.commit()
-                return
-            conn.execute(
-                f"INSERT INTO {table}({key_column},payload,payload_digest) VALUES(?,?,?)",
-                (key, raw, digest),
-            )
-            conn.commit()
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="evolution write",
+            ):
+                row = conn.execute(
+                    f"SELECT payload_digest FROM {table} WHERE {key_column}=?",
+                    (key,),
+                ).fetchone()
+                if row is not None:
+                    if row[0] != digest:
+                        raise EvolutionStoreConflict(key)
+                    return
+                conn.execute(
+                    f"INSERT INTO {table}({key_column},payload,payload_digest) "
+                    "VALUES(?,?,?)",
+                    (key, raw, digest),
+                )
 
     def append_observation(self, observation: TopologyObservation) -> None:
         self._put(
