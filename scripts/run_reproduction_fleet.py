@@ -58,6 +58,10 @@ class StudyExecutionAuthorityRequirement:
     trial_protocol_identity_digest: str
     aggregation_requirement_id: str
     project_manifest_requirement_digest: str
+    project_manifest_capability_requirement_ids: tuple[str, ...]
+    project_manifest_method_requirement_keys: tuple[tuple[str, str], ...]
+    project_manifest_configuration_ref_ids: tuple[str, ...]
+    project_manifest_keys_digest: str
     participant_requirements: tuple[tuple[str, str, str, str, str], ...]
     model_role_requirements: tuple[
         tuple[str, str, str | None, str, bool, int | None, str],
@@ -243,6 +247,18 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
                             ),
                             "project_manifest_requirement_digest": (
                                 project_manifest_requirement.requirement_digest
+                            ),
+                            "project_manifest_capability_requirement_ids": (
+                                project_manifest_requirement.capability_requirement_ids
+                            ),
+                            "project_manifest_method_requirement_keys": (
+                                project_manifest_requirement.method_requirement_keys
+                            ),
+                            "project_manifest_configuration_ref_ids": (
+                                project_manifest_requirement.configuration_ref_ids
+                            ),
+                            "project_manifest_keys_digest": (
+                                project_manifest_requirement.manifest_keys_digest
                             ),
                             "participant_requirements": participant_requirements,
                             "model_role_requirements": model_role_requirements,
