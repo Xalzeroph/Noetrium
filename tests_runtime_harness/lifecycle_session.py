@@ -11,7 +11,7 @@ from noetrium_platform.research.execution.api import DecisionCycleIdentity
 from noetrium_platform.research.execution.api import DecisionCycleResult
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec
 from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.lifecycle.run.runtime.program import RunMachineSession
+from tests_runtime_harness.run_program import RunMachineSession
 
 from noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle import RunCleanupFailure, RunCleanupReport
 
