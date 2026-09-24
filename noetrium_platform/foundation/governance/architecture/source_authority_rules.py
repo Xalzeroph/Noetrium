@@ -27,6 +27,12 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[_AuthorityRule, ...] = (
         exact_call("msvcrt.locking"),
     ),
     SourceAuthorityRule(
+        "concurrency.blocking_sleep",
+        "time.sleep",
+        ("noetrium_platform.foundation.kernel.concurrency.runtime.execution",),
+        exact_call("time.sleep"),
+    ),
+    SourceAuthorityRule(
         "artifact.http_transport",
         "urllib.request.urlopen",
         ("noetrium_platform.evidence.artifact.content.providers.download",),
