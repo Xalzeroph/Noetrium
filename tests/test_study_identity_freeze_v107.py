@@ -1,5 +1,9 @@
 from tests_support import FakeParticipantResolver
-from tests_support import context_action_spec, runtime_identity_for_test
+from tests_support import (
+    context_action_runtime_from_resolver,
+    context_action_spec,
+    runtime_identity_for_test,
+)
 import hashlib
 import unittest
 
@@ -12,7 +16,6 @@ from noetrium_platform.capabilities.participant.definition.runtime.catalog impor
 from noetrium_platform.capabilities.participant.binding.runtime import LocalParticipantResolver
 from noetrium_platform.capabilities.participant.session.runtime.runtime_catalog import ParticipantSessionRuntimeCatalog
 from noetrium_platform.capabilities.participant.session.runtime.runtime_endpoint import LocalParticipantRuntimeEndpoint
-from noetrium_platform.composition.context_action import compose_context_action_runtime
 
 
 class MSession:
@@ -65,12 +68,14 @@ class StudyIdentityFreezeV107Tests(unittest.TestCase):
             configurations.register(ParticipantConfigurationArtifact(hashlib.sha256(known_method_config.encode()).hexdigest(), b"method-config"))
         if known_environment_config:
             configurations.register(ParticipantConfigurationArtifact(hashlib.sha256(known_environment_config.encode()).hexdigest(), b"environment-config"))
-        return compose_context_action_runtime(LocalParticipantResolver(
-            implementations,
-            runtimes,
-            configurations,
-            LocalParticipantRuntimeEndpoint,
-        ))
+        return context_action_runtime_from_resolver(
+            LocalParticipantResolver(
+                implementations,
+                runtimes,
+                configurations,
+                LocalParticipantRuntimeEndpoint,
+            )
+        )
 
     def test_unknown_method_configuration_fails_during_participant_resolution(self):
         spec=context_action_spec("study","m","e",method_configuration_digest="method-B")
