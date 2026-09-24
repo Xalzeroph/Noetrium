@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import hashlib
 import json
 from pathlib import Path
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 
 
@@ -83,7 +83,7 @@ class TmuxTransportIdentity:
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")
-        return hashlib.sha256(raw).hexdigest()
+        return sha256_bytes(raw)
 
 
 __all__ = ["TmuxBinaryIdentityMismatch", "TmuxTransportIdentity"]
