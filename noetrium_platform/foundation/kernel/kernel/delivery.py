@@ -90,6 +90,44 @@ class DeliveryReceipt:
         }))
 
 
+def require_delivery_receipt_transition(
+    current: DeliveryReceipt,
+    candidate: DeliveryReceipt,
+) -> DeliveryReceipt:
+    """Validate monotone delivery knowledge without reopening terminal truth."""
+
+    if not isinstance(current, DeliveryReceipt) or not isinstance(
+        candidate, DeliveryReceipt
+    ):
+        raise TypeError("delivery transition requires typed receipts")
+    if (
+        candidate.envelope_id != current.envelope_id
+        or candidate.envelope_digest != current.envelope_digest
+    ):
+        raise MachineConflict("delivery receipt identity changed")
+    if candidate == current:
+        return current
+    if current.status == DeliveryStatus.DELIVERED:
+        raise MachineConflict(
+            "delivered receipt is terminal and cannot be reopened"
+        )
+    if candidate.attempt < current.attempt:
+        raise MachineConflict("delivery attempt cannot move backwards")
+    if candidate.attempt == current.attempt:
+        if (
+            current.status == DeliveryStatus.UNKNOWN
+            and candidate.status in {
+                DeliveryStatus.DELIVERED,
+                DeliveryStatus.FAILED,
+            }
+        ):
+            return candidate
+        raise MachineConflict(
+            "delivery receipt conflicts within the same attempt"
+        )
+    return candidate
+
+
 @runtime_checkable
 class MachineOutboxPort(Protocol):
     def enqueue(self, commit: MachineCommit) -> tuple[MachineEnvelope, ...]: ...
@@ -158,12 +196,9 @@ class InMemoryMachineOutbox(MachineOutboxPort):
             if envelope.envelope_digest != receipt.envelope_digest:
                 raise MachineConflict("delivery receipt envelope digest mismatch")
             current = self._receipts[receipt.envelope_id]
-            if receipt.attempt < current.attempt:
-                raise MachineConflict("delivery attempt cannot move backwards")
-            if receipt.attempt == current.attempt and receipt != current:
-                raise MachineConflict("delivery receipt conflict at same attempt")
-            self._receipts[receipt.envelope_id] = receipt
-            return receipt
+            accepted = require_delivery_receipt_transition(current, receipt)
+            self._receipts[receipt.envelope_id] = accepted
+            return accepted
 
     def reconcile(self, commits: tuple[MachineCommit, ...]) -> tuple[MachineEnvelope, ...]:
         if type(commits) is not tuple or any(not isinstance(item, MachineCommit) for item in commits):
@@ -210,4 +245,5 @@ __all__ = [
     "MachineEnvelope",
     "MachineInboxPort",
     "MachineOutboxPort",
+    "require_delivery_receipt_transition",
 ]
