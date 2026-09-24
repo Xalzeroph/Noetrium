@@ -7,6 +7,7 @@ execution themselves.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 
@@ -39,14 +40,292 @@ from noetrium_platform.composition.research_os_experiment_runtime_binding import
 )
 
 from .benchmark_authority import RepositoryBenchmarkAuthority
+from .authority_requirements import (
+    ReproductionFleetOwnerRequirementManifest,
+    ReproductionFleetPrerequisiteManifest,
+    compile_materialized_fleet_owner_requirements,
+    compile_repository_fleet_prerequisites,
+)
 from .fleet import (
     ReproductionBenchmarkResolverPort,
     ReproductionFleetExecutionAuthorities,
+    ReproductionFleetMaterialization,
+    materialize_repository_execution_fleet,
 )
 from .research_os import (
     ReproductionCapabilityRequirementResolverPort,
     ReproductionCapabilitySelectionRegistry,
 )
+
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetPrerequisiteAuthorities:
+    """Owner-materialized authority needed to make exact Studies exist."""
+
+    benchmark_resolutions: BenchmarkResolutionRegistry
+    reproduction_capabilities: ReproductionCapabilitySelectionRegistry | None = None
+
+    def __post_init__(self) -> None:
+        if type(self.benchmark_resolutions) is not BenchmarkResolutionRegistry:
+            raise TypeError(
+                "fleet prerequisite authorities require BenchmarkResolutionRegistry"
+            )
+        if (
+            self.reproduction_capabilities is not None
+            and type(self.reproduction_capabilities)
+            is not ReproductionCapabilitySelectionRegistry
+        ):
+            raise TypeError(
+                "fleet prerequisite capabilities must be "
+                "ReproductionCapabilitySelectionRegistry"
+            )
+
+    @property
+    def authority_digest(self) -> str:
+        return canonical_digest(
+            {
+                "schema": "noetrium.reproduction-fleet-prerequisite-authorities.v1",
+                "benchmark_registry_digest": self.benchmark_resolutions.identity_digest,
+                "reproduction_capability_registry_digest": (
+                    None
+                    if self.reproduction_capabilities is None
+                    else self.reproduction_capabilities.identity_digest
+                ),
+            }
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetOwnerAuthorities:
+    """Typed owner registries required after exact Study materialization."""
+
+    manifests: ResearchProjectManifestRegistry
+    research_capabilities: ResearchCapabilityBindingRegistry
+    participants: ResearchParticipantBindingRegistry
+    models: ResearchModelRoleBindingRegistry
+    trial_providers: ResearchOSExperimentTrialProviderRegistry
+    reconciliation: ResearchOSExperimentReconciliationRegistry
+    aggregation: ResearchOSExperimentAggregationRegistry | None = None
+
+    def __post_init__(self) -> None:
+        expected = (
+            ("manifests", self.manifests, ResearchProjectManifestRegistry),
+            (
+                "research_capabilities",
+                self.research_capabilities,
+                ResearchCapabilityBindingRegistry,
+            ),
+            ("participants", self.participants, ResearchParticipantBindingRegistry),
+            ("models", self.models, ResearchModelRoleBindingRegistry),
+            (
+                "trial_providers",
+                self.trial_providers,
+                ResearchOSExperimentTrialProviderRegistry,
+            ),
+            (
+                "reconciliation",
+                self.reconciliation,
+                ResearchOSExperimentReconciliationRegistry,
+            ),
+        )
+        for field_name, value, kind in expected:
+            if type(value) is not kind:
+                raise TypeError(
+                    f"fleet owner authorities {field_name} must be {kind.__name__}"
+                )
+        if (
+            self.aggregation is not None
+            and type(self.aggregation)
+            is not ResearchOSExperimentAggregationRegistry
+        ):
+            raise TypeError(
+                "fleet owner authorities aggregation must be "
+                "ResearchOSExperimentAggregationRegistry"
+            )
+
+    @property
+    def authority_digest(self) -> str:
+        aggregation = (
+            ResearchOSExperimentAggregationRegistry.canonical()
+            if self.aggregation is None
+            else self.aggregation
+        )
+        return canonical_digest(
+            {
+                "schema": "noetrium.reproduction-fleet-owner-authorities.v1",
+                "manifest_registry_digest": self.manifests.identity_digest,
+                "research_capability_registry_digest": (
+                    self.research_capabilities.identity_digest
+                ),
+                "participant_registry_digest": self.participants.identity_digest,
+                "model_registry_digest": self.models.identity_digest,
+                "trial_provider_registry_digest": self.trial_providers.identity_digest,
+                "aggregation_registry_digest": aggregation.identity_digest,
+                "reconciliation_registry_digest": self.reconciliation.identity_digest,
+            }
+        )
+
+
+@runtime_checkable
+class ReproductionFleetAuthorityMaterializerPort(Protocol):
+    """Owner-system materialization seam for zero-glue fleet launch.
+
+    Implementations may inspect only their own authoritative provider/resource
+    state. They receive content-addressed requirement manifests and must return
+    exact typed registries; provider selection heuristics do not belong here.
+    """
+
+    def materialize_prerequisites(
+        self,
+        requirements: ReproductionFleetPrerequisiteManifest,
+    ) -> ReproductionFleetPrerequisiteAuthorities: ...
+
+    def materialize_owners(
+        self,
+        requirements: ReproductionFleetOwnerRequirementManifest,
+        fleet: ReproductionFleetMaterialization,
+    ) -> ReproductionFleetOwnerAuthorities: ...
+
+
+@dataclass(frozen=True, slots=True)
+class MaterializedReproductionFleetExecutionAuthorities:
+    prerequisites: ReproductionFleetPrerequisiteManifest
+    prerequisite_authorities: ReproductionFleetPrerequisiteAuthorities
+    fleet: ReproductionFleetMaterialization
+    owner_requirements: ReproductionFleetOwnerRequirementManifest
+    owner_authorities: ReproductionFleetOwnerAuthorities
+    execution_authorities: ReproductionFleetExecutionAuthorities
+    materialization_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.prerequisites) is not ReproductionFleetPrerequisiteManifest:
+            raise TypeError("materialized fleet authorities require prerequisites")
+        if (
+            type(self.prerequisite_authorities)
+            is not ReproductionFleetPrerequisiteAuthorities
+        ):
+            raise TypeError(
+                "materialized fleet authorities require prerequisite authorities"
+            )
+        if type(self.fleet) is not ReproductionFleetMaterialization:
+            raise TypeError("materialized fleet authorities require fleet")
+        if (
+            type(self.owner_requirements)
+            is not ReproductionFleetOwnerRequirementManifest
+        ):
+            raise TypeError(
+                "materialized fleet authorities require owner requirements"
+            )
+        if type(self.owner_authorities) is not ReproductionFleetOwnerAuthorities:
+            raise TypeError(
+                "materialized fleet authorities require owner authorities"
+            )
+        if (
+            type(self.execution_authorities)
+            is not ReproductionFleetExecutionAuthorities
+        ):
+            raise TypeError(
+                "materialized fleet authorities require execution authorities"
+            )
+        if (
+            self.owner_requirements.materialization_digest
+            != self.fleet.materialization_digest
+        ):
+            raise ValueError(
+                "owner requirement manifest does not belong to materialized fleet"
+            )
+        object.__setattr__(
+            self,
+            "materialization_digest",
+            canonical_digest(
+                {
+                    "schema": "noetrium.materialized-fleet-execution-authorities.v1",
+                    "prerequisite_manifest_digest": self.prerequisites.manifest_digest,
+                    "prerequisite_authority_digest": (
+                        self.prerequisite_authorities.authority_digest
+                    ),
+                    "fleet_materialization_digest": self.fleet.materialization_digest,
+                    "owner_requirement_manifest_digest": (
+                        self.owner_requirements.manifest_digest
+                    ),
+                    "owner_authority_digest": self.owner_authorities.authority_digest,
+                    "execution_authority_manifest_digest": (
+                        self.execution_authorities.authority_manifest_digest
+                    ),
+                }
+            ),
+        )
+
+
+def materialize_repository_fleet_execution_authorities(
+    materializer: ReproductionFleetAuthorityMaterializerPort,
+) -> MaterializedReproductionFleetExecutionAuthorities:
+    """requirements -> owner materialization -> fleet -> owner registries -> authority."""
+
+    if not isinstance(materializer, ReproductionFleetAuthorityMaterializerPort):
+        raise TypeError(
+            "fleet authority materialization requires "
+            "ReproductionFleetAuthorityMaterializerPort"
+        )
+
+    prerequisites = compile_repository_fleet_prerequisites()
+    prerequisite_authorities = materializer.materialize_prerequisites(
+        prerequisites
+    )
+    if (
+        type(prerequisite_authorities)
+        is not ReproductionFleetPrerequisiteAuthorities
+    ):
+        raise TypeError(
+            "fleet prerequisite materializer returned invalid authority bundle"
+        )
+
+    benchmark_authority = RepositoryBenchmarkAuthority.discover(
+        prerequisite_authorities.benchmark_resolutions
+    )
+    fleet = materialize_repository_execution_fleet(
+        benchmark_authority,
+        capability_resolver=(
+            prerequisite_authorities.reproduction_capabilities
+        ),
+    )
+    owner_requirements = compile_materialized_fleet_owner_requirements(fleet)
+    owner_authorities = materializer.materialize_owners(
+        owner_requirements,
+        fleet,
+    )
+    if type(owner_authorities) is not ReproductionFleetOwnerAuthorities:
+        raise TypeError(
+            "fleet owner materializer returned invalid authority bundle"
+        )
+
+    execution_authorities = (
+        compose_repository_fleet_execution_authorities_from_registries(
+            manifests=owner_authorities.manifests,
+            research_capabilities=owner_authorities.research_capabilities,
+            participants=owner_authorities.participants,
+            models=owner_authorities.models,
+            trial_providers=owner_authorities.trial_providers,
+            experiment_reconciliation=owner_authorities.reconciliation,
+            experiment_aggregation=owner_authorities.aggregation,
+            reproduction_capabilities=(
+                prerequisite_authorities.reproduction_capabilities
+            ),
+            benchmark_resolutions=(
+                prerequisite_authorities.benchmark_resolutions
+            ),
+            benchmarks=benchmark_authority,
+        )
+    )
+    return MaterializedReproductionFleetExecutionAuthorities(
+        prerequisites,
+        prerequisite_authorities,
+        fleet,
+        owner_requirements,
+        owner_authorities,
+        execution_authorities,
+    )
 
 
 
@@ -349,7 +628,12 @@ def compose_repository_fleet_execution_authorities_from_registries(
 
 
 __all__ = [
+    "MaterializedReproductionFleetExecutionAuthorities",
     "ReproductionFleetAuthorityManifest",
+    "ReproductionFleetAuthorityMaterializerPort",
+    "ReproductionFleetOwnerAuthorities",
+    "ReproductionFleetPrerequisiteAuthorities",
     "compose_repository_fleet_execution_authorities",
     "compose_repository_fleet_execution_authorities_from_registries",
+    "materialize_repository_fleet_execution_authorities",
 ]
