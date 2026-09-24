@@ -171,7 +171,7 @@ class ResearchOSGraphCheckpoint:
         }
 
     @classmethod
-    def from_document(cls, document: Mapping[str, object]) -> "ResearchOSGraphCheckpoint":
+    def from_document(cls, document: JsonObject) -> "ResearchOSGraphCheckpoint":
         if document.get("schema") != "noetrium.research-graph-checkpoint.v3":
             raise ValueError("unsupported Research OS graph checkpoint schema")
         checkpoint = cls(
