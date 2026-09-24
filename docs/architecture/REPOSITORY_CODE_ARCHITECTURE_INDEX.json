@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3685,
     "python_import_edges": 7144,
-    "symbols": 4966,
+    "symbols": 4967,
     "tracked_files": 4321,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4960,
+    "python": 4961,
     "typescript": 5
   },
   "parse_errors": [],
@@ -43008,7 +43008,7 @@
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3354,
+    "core_platform": 3355,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -43020,7 +43020,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "606cc950db214625e9979c2875edbc3f33fa33e6",
+  "source_git_sha": "8b9a179242132363a8cffe990401c6a7a5eb5a81",
   "symbols": [
     {
       "bases": [],
@@ -53478,7 +53478,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 39,
+      "line": 40,
       "methods": [
         "__post_init__"
       ],
@@ -53503,7 +53503,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 78,
+      "line": 79,
       "methods": [
         "placement_digest"
       ],
@@ -53520,12 +53520,13 @@
       ],
       "fields": [
         "request_digest: str",
+        "placement_generation_id: str",
         "placements: tuple[ModelReplicaPlacement, ...]",
         "report_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 92,
+      "line": 93,
       "methods": [
         "__post_init__"
       ],
@@ -53541,7 +53542,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 114,
+      "line": 128,
       "methods": [
         "__init__",
         "assert_healthy",
@@ -53561,7 +53562,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 235,
+      "line": 249,
       "methods": [
         "__init__",
         "_target_count",
@@ -66048,6 +66049,8 @@
       "methods": [
         "__init__",
         "_require_workloads_open",
+        "owner_generation_id",
+        "can_recover_abandoned_owner_generations",
         "model_admission",
         "open_orchestration_group",
         "open_experiment_group",
@@ -66081,7 +66084,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 66,
+      "line": 67,
       "methods": [
         "__init__"
       ],
@@ -66099,7 +66102,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 79,
+      "line": 80,
       "methods": [
         "__init__"
       ],
@@ -66115,7 +66118,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 95,
+      "line": 96,
       "methods": [
         "__init__",
         "current",
@@ -66135,7 +66138,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 138,
+      "line": 139,
       "methods": [
         "__init__",
         "plan",
@@ -99175,7 +99178,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 85,
+      "line": 113,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -99204,7 +99207,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 245,
+      "line": 290,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
@@ -99234,7 +99237,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 21,
+      "line": 22,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.lease_heartbeat",
       "name": "EndpointLeaseHeartbeatError",
@@ -99250,7 +99253,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 26,
       "methods": [
         "__init__",
         "start",
@@ -99272,7 +99275,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 122,
+      "line": 135,
       "methods": [
         "__init__",
         "create"
@@ -99899,7 +99902,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 21,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.lease_heartbeat",
       "name": "ComputeLeaseHeartbeatError",
@@ -99913,7 +99916,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "start",
@@ -99933,7 +99936,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 111,
+      "line": 126,
       "methods": [
         "__init__",
         "policy",
@@ -99957,7 +99960,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 75,
+      "line": 102,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -99977,7 +99980,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 102,
+      "line": 129,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_GpuRuntimeIndex",
@@ -99991,7 +99994,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 307,
+      "line": 334,
       "methods": [
         "__init__",
         "_usage",
@@ -100018,7 +100021,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 560,
+      "line": 600,
       "methods": [
         "__init__",
         "_connection",
@@ -101087,6 +101090,7 @@
         "_ensure_schema",
         "_decode",
         "_owner_matches",
+        "_require_generation",
         "_reconcile_one",
         "reserve",
         "confirm_bound",
@@ -103862,6 +103866,7 @@
         "SUCCEEDED",
         "FAILED",
         "EXPIRED_BEFORE_START",
+        "ABANDONED_BEFORE_START",
         "RECONCILE_REQUIRED",
         "RECONCILED_SUCCEEDED",
         "RECONCILED_FAILED",
@@ -103889,7 +103894,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 67,
+      "line": 68,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphReconciliationDisposition",
@@ -103911,7 +103916,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 73,
+      "line": 74,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphNodeControlPhase",
@@ -103933,7 +103938,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 84,
+      "line": 85,
       "methods": [
         "__post_init__"
       ],
@@ -103957,7 +103962,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 101,
+      "line": 102,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphControlPhase",
@@ -103978,7 +103983,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 116,
+      "line": 117,
       "methods": [
         "__post_init__"
       ],
@@ -104009,7 +104014,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 132,
+      "line": 133,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -104041,7 +104046,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 246,
+      "line": 247,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -104065,7 +104070,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 288,
+      "line": 289,
       "methods": [
         "__post_init__"
       ],
@@ -104090,7 +104095,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 305,
+      "line": 306,
       "methods": [
         "__post_init__",
         "node",
@@ -104118,7 +104123,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 357,
+      "line": 358,
       "methods": [
         "__post_init__"
       ],
@@ -104143,7 +104148,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 379,
+      "line": 380,
       "methods": [
         "__post_init__"
       ],
@@ -104167,7 +104172,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 443,
+      "line": 444,
       "methods": [
         "__post_init__"
       ],
@@ -104189,7 +104194,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 463,
+      "line": 464,
       "methods": [
         "__post_init__"
       ],
@@ -104207,7 +104212,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 490,
+      "line": 491,
       "methods": [
         "__init__"
       ],
@@ -104225,7 +104230,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 511,
+      "line": 512,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -104241,7 +104246,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 515,
+      "line": 516,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -104259,7 +104264,27 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 520,
+      "line": 521,
+      "methods": [
+        "recover_abandoned_owner_generation"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphOwnerGenerationRecoveryPort",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphOwnerGenerationRecoveryPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 541,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -104298,7 +104323,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 684,
+      "line": 705,
       "methods": [
         "control_state",
         "request_drain",
@@ -104325,7 +104350,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 754,
+      "line": 775,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -104353,7 +104378,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 831,
+      "line": 852,
       "methods": [
         "active_cut",
         "active_execution_snapshot",
@@ -104433,6 +104458,7 @@
         "mark_failed",
         "mark_blocked",
         "mark_blocked_many",
+        "recover_abandoned_owner_generation",
         "recover_expired",
         "retry_failed_subgraph",
         "resolve_reconciliation",
@@ -113739,7 +113765,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 21,
       "methods": [
         "__init__",
         "receipt",
@@ -113760,7 +113786,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 68,
+      "line": 93,
       "methods": [
         "__init__",
         "bind"

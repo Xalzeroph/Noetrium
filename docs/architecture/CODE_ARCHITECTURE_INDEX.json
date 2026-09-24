@@ -12738,6 +12738,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointLeaseGuardFactoryPort",
+      "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts.EndpointAllocation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointLeaseGuardFactoryPort",
       "target": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointLeaseGuardPort"
     },
     {
@@ -12784,6 +12789,11 @@
       "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.compute.api.ports.ComputeInventoryPort",
       "target": "noetrium_platform.infrastructure.resources.compute.api.contracts.ComputeHost"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.compute.api.ports.ComputeLeaseGuardFactoryPort",
+      "target": "noetrium_platform.infrastructure.resources.compute.api.contracts.ComputeAllocation"
     },
     {
       "kind": "references",
@@ -13844,6 +13854,11 @@
       "kind": "references",
       "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphNodeExecutionRecord",
       "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphLiveNodeState"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphOwnerGenerationRecoveryPort",
+      "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphExecutionSnapshot"
     },
     {
       "kind": "references",
@@ -26938,7 +26953,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 235,
+      "line": 249,
       "methods": [
         "__init__",
         "_target_count",
@@ -26968,7 +26983,7 @@
         "status"
       ],
       "kind": "dataclass",
-      "line": 78,
+      "line": 79,
       "methods": [
         "placement_digest"
       ],
@@ -26986,7 +27001,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 114,
+      "line": 128,
       "methods": [
         "__init__",
         "assert_healthy",
@@ -27009,12 +27024,13 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "placement_generation_id",
         "placements",
         "report_digest",
         "request_digest"
       ],
       "kind": "dataclass",
-      "line": 92,
+      "line": 93,
       "methods": [
         "__post_init__"
       ],
@@ -27047,7 +27063,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 39,
+      "line": 40,
       "methods": [
         "__post_init__"
       ],
@@ -40697,6 +40713,8 @@
       "methods": [
         "__init__",
         "_require_workloads_open",
+        "owner_generation_id",
+        "can_recover_abandoned_owner_generations",
         "model_admission",
         "open_orchestration_group",
         "open_experiment_group",
@@ -40732,7 +40750,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 66,
+      "line": 67,
       "methods": [
         "__init__"
       ],
@@ -40752,7 +40770,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 79,
+      "line": 80,
       "methods": [
         "__init__"
       ],
@@ -40770,7 +40788,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 138,
+      "line": 139,
       "methods": [
         "__init__",
         "plan",
@@ -40799,7 +40817,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 95,
+      "line": 96,
       "methods": [
         "__init__",
         "current",
@@ -76996,7 +77014,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 85,
+      "line": 113,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -77065,7 +77083,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 245,
+      "line": 290,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
@@ -77097,7 +77115,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 21,
+      "line": 22,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.lease_heartbeat",
       "name": "EndpointLeaseHeartbeatError",
@@ -77115,7 +77133,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 122,
+      "line": 135,
       "methods": [
         "__init__",
         "create"
@@ -77136,7 +77154,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 25,
+      "line": 26,
       "methods": [
         "__init__",
         "start",
@@ -77826,7 +77844,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 21,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.lease_heartbeat",
       "name": "ComputeLeaseHeartbeatError",
@@ -77842,7 +77860,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 111,
+      "line": 126,
       "methods": [
         "__init__",
         "policy",
@@ -77862,7 +77880,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "start",
@@ -77884,7 +77902,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 307,
+      "line": 334,
       "methods": [
         "__init__",
         "_usage",
@@ -77915,7 +77933,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 560,
+      "line": 600,
       "methods": [
         "__init__",
         "_connection",
@@ -77955,7 +77973,7 @@
         "processes_complete"
       ],
       "kind": "dataclass",
-      "line": 102,
+      "line": 129,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_GpuRuntimeIndex",
@@ -77977,7 +77995,7 @@
         "memory_bytes"
       ],
       "kind": "dataclass",
-      "line": 75,
+      "line": 102,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -79128,6 +79146,7 @@
         "_ensure_schema",
         "_decode",
         "_owner_matches",
+        "_require_generation",
         "_reconcile_one",
         "reserve",
         "confirm_bound",
@@ -82126,7 +82145,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 443,
+      "line": 444,
       "methods": [
         "__post_init__"
       ],
@@ -82148,7 +82167,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 831,
+      "line": 852,
       "methods": [
         "active_cut",
         "active_execution_snapshot",
@@ -82174,7 +82193,7 @@
         "execution"
       ],
       "kind": "dataclass",
-      "line": 463,
+      "line": 464,
       "methods": [
         "__post_init__"
       ],
@@ -82207,7 +82226,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 246,
+      "line": 247,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -82227,6 +82246,7 @@
       ],
       "decorators": [],
       "fields": [
+        "ABANDONED_BEFORE_START",
         "CLAIMED",
         "EXPIRED_BEFORE_START",
         "FAILED",
@@ -82262,7 +82282,7 @@
         "RECOVERY_REQUIRED"
       ],
       "kind": "enum",
-      "line": 101,
+      "line": 102,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphControlPhase",
@@ -82285,7 +82305,7 @@
         "updated_at_ns"
       ],
       "kind": "dataclass",
-      "line": 116,
+      "line": 117,
       "methods": [
         "__post_init__"
       ],
@@ -82307,7 +82327,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 684,
+      "line": 705,
       "methods": [
         "control_state",
         "request_drain",
@@ -82341,7 +82361,7 @@
         "source_execution_id"
       ],
       "kind": "dataclass",
-      "line": 379,
+      "line": 380,
       "methods": [
         "__post_init__"
       ],
@@ -82361,7 +82381,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 511,
+      "line": 512,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -82379,7 +82399,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 515,
+      "line": 516,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -82404,7 +82424,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 305,
+      "line": 306,
       "methods": [
         "__post_init__",
         "node",
@@ -82428,7 +82448,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 520,
+      "line": 541,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -82472,7 +82492,7 @@
         "owner_id"
       ],
       "kind": "dataclass",
-      "line": 288,
+      "line": 289,
       "methods": [
         "__post_init__"
       ],
@@ -82528,7 +82548,7 @@
         "RECOVERY_REQUIRED"
       ],
       "kind": "enum",
-      "line": 73,
+      "line": 74,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphNodeControlPhase",
@@ -82552,7 +82572,7 @@
         "updated_at_ns"
       ],
       "kind": "dataclass",
-      "line": 84,
+      "line": 85,
       "methods": [
         "__post_init__"
       ],
@@ -82574,7 +82594,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 754,
+      "line": 775,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -82615,7 +82635,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 132,
+      "line": 133,
       "methods": [
         "__post_init__",
         "fencing_token"
@@ -82631,6 +82651,28 @@
     },
     {
       "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 521,
+      "methods": [
+        "recover_abandoned_owner_generation"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphOwnerGenerationRecoveryPort",
+      "nesting": [
+        "ResearchGraphOwnerGenerationRecoveryPort"
+      ],
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphOwnerGenerationRecoveryPort",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
         "StrEnum"
       ],
       "decorators": [],
@@ -82640,7 +82682,7 @@
         "SUCCEEDED"
       ],
       "kind": "enum",
-      "line": 67,
+      "line": 68,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphReconciliationDisposition",
@@ -82658,7 +82700,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 490,
+      "line": 491,
       "methods": [
         "__init__"
       ],
@@ -82686,7 +82728,7 @@
         "source_node_id"
       ],
       "kind": "dataclass",
-      "line": 357,
+      "line": 358,
       "methods": [
         "__post_init__"
       ],
@@ -82768,6 +82810,7 @@
         "mark_failed",
         "mark_blocked",
         "mark_blocked_many",
+        "recover_abandoned_owner_generation",
         "recover_expired",
         "retry_failed_subgraph",
         "resolve_reconciliation",
@@ -92891,7 +92934,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 68,
+      "line": 93,
       "methods": [
         "__init__",
         "bind"
@@ -92912,7 +92955,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 21,
       "methods": [
         "__init__",
         "receipt",
@@ -102981,8 +103024,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3442,
-    "classes": 3353,
+    "association_edges": 3445,
+    "classes": 3354,
     "constructor_edges": 913,
     "inheritance_edges": 146,
     "module_import_edges": 5003,
@@ -143726,7 +143769,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "606cc950db214625e9979c2875edbc3f33fa33e6",
+  "source_git_sha": "8b9a179242132363a8cffe990401c6a7a5eb5a81",
   "system_import_edges": [
     {
       "count": 85,

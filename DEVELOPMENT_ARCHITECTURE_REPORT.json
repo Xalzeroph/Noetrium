@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "c7444f2cc350d71676f8749f00ebd0d795a9af65a814f58af6301b5be19bba30",
+  "report_sha256": "30c90984a095a433b8a93663e1f16713d1ee0b5930610b970694bfc4d3c84db9",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -887,7 +887,7 @@
       "primitive": "time.sleep"
     }
   ],
-  "source_digest": "47eb16813f772b65623241864961c401361d9472aa83911630dca72569606f0b",
+  "source_digest": "a1f95a17fe043ca943ec32936b41321dacd380e455ba0cd60275186f2dbd04b5",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1613,6 +1613,18 @@
   ],
   "top_hotspots": [
     {
+      "branches": 198,
+      "classes": 1,
+      "exception_handlers": 0,
+      "functions": 68,
+      "imports": 9,
+      "max_function_lines": 117,
+      "module": "noetrium_platform.research.execution.graph.providers.sqlite",
+      "path": "noetrium_platform/research/execution/graph/providers/sqlite.py",
+      "physical_lines": 2477,
+      "score": 4222
+    },
+    {
       "branches": 207,
       "classes": 6,
       "exception_handlers": 2,
@@ -1623,18 +1635,6 @@
       "path": "noetrium_platform/composition/research_os_execution.py",
       "physical_lines": 2100,
       "score": 4092
-    },
-    {
-      "branches": 193,
-      "classes": 1,
-      "exception_handlers": 0,
-      "functions": 67,
-      "imports": 9,
-      "max_function_lines": 117,
-      "module": "noetrium_platform.research.execution.graph.providers.sqlite",
-      "path": "noetrium_platform/research/execution/graph/providers/sqlite.py",
-      "physical_lines": 2374,
-      "score": 4079
     },
     {
       "branches": 150,
@@ -1649,7 +1649,7 @@
       "score": 3718
     },
     {
-      "branches": 143,
+      "branches": 144,
       "classes": 4,
       "exception_handlers": 10,
       "functions": 27,
@@ -1657,8 +1657,8 @@
       "max_function_lines": 437,
       "module": "noetrium_platform.composition.research_graph",
       "path": "noetrium_platform/composition/research_graph.py",
-      "physical_lines": 1340,
-      "score": 3391
+      "physical_lines": 1359,
+      "score": 3418
     },
     {
       "branches": 133,
@@ -1806,6 +1806,18 @@
     },
     {
       "branches": 88,
+      "classes": 4,
+      "exception_handlers": 7,
+      "functions": 45,
+      "imports": 16,
+      "max_function_lines": 77,
+      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
+      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
+      "physical_lines": 1025,
+      "score": 1901
+    },
+    {
+      "branches": 88,
       "classes": 1,
       "exception_handlers": 14,
       "functions": 35,
@@ -1815,18 +1827,6 @@
       "path": "noetrium_platform/capabilities/model/catalog/revision/providers/sqlite_revision_authority.py",
       "physical_lines": 877,
       "score": 1802
-    },
-    {
-      "branches": 81,
-      "classes": 4,
-      "exception_handlers": 7,
-      "functions": 43,
-      "imports": 16,
-      "max_function_lines": 77,
-      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
-      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
-      "physical_lines": 963,
-      "score": 1783
     },
     {
       "branches": 80,
@@ -1875,16 +1875,16 @@
       "exception_handlers": 0,
       "import_fan_in": 1,
       "import_fan_out": 3,
-      "io_sites": 73,
+      "io_sites": 78,
       "lock_sites": 0,
-      "long_functions": 15,
+      "long_functions": 16,
       "module": "noetrium_platform.research.execution.graph.providers.sqlite",
       "path": "noetrium_platform/research/execution/graph/providers/sqlite.py",
       "reason_codes": [
         "IO_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 915,
+      "risk_score": 975,
       "self_mutation_sites": 2,
       "serialization_sites": 2
     },
@@ -1928,9 +1928,9 @@
       "exception_handlers": 7,
       "import_fan_in": 1,
       "import_fan_out": 8,
-      "io_sites": 22,
+      "io_sites": 21,
       "lock_sites": 4,
-      "long_functions": 3,
+      "long_functions": 4,
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
       "reason_codes": [
@@ -1940,7 +1940,7 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 471,
+      "risk_score": 483,
       "self_mutation_sites": 19,
       "serialization_sites": 2
     },
@@ -1994,8 +1994,8 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 409,
-      "self_mutation_sites": 19,
+      "risk_score": 414,
+      "self_mutation_sites": 20,
       "serialization_sites": 0
     },
     {
@@ -2029,6 +2029,24 @@
       ],
       "risk_score": 396,
       "self_mutation_sites": 0,
+      "serialization_sites": 0
+    },
+    {
+      "exception_handlers": 7,
+      "import_fan_in": 1,
+      "import_fan_out": 6,
+      "io_sites": 28,
+      "lock_sites": 0,
+      "long_functions": 4,
+      "module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
+      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_endpoint.py",
+      "reason_codes": [
+        "IO_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 392,
+      "self_mutation_sites": 2,
       "serialization_sites": 0
     },
     {
@@ -2083,24 +2101,6 @@
       ],
       "risk_score": 385,
       "self_mutation_sites": 64,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 9,
-      "import_fan_in": 1,
-      "import_fan_out": 6,
-      "io_sites": 27,
-      "lock_sites": 0,
-      "long_functions": 3,
-      "module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
-      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_endpoint.py",
-      "reason_codes": [
-        "IO_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 380,
-      "self_mutation_sites": 2,
       "serialization_sites": 0
     },
     {
