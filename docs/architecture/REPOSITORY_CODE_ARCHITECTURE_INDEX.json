@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3654,
-    "python_import_edges": 6960,
-    "symbols": 4843,
+    "python_import_edges": 6977,
+    "symbols": 4845,
     "tracked_files": 4283,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4837,
+    "python": 4839,
     "typescript": 5
   },
   "parse_errors": [],
@@ -348,6 +348,12 @@
       "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -1146,6 +1152,12 @@
       "source_module": "noetrium_platform.capabilities.model.catalog.revision.providers.sqlite_revision_authority",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.catalog.revision.providers.sqlite_revision_authority",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -2988,6 +3000,12 @@
       "source_module": "noetrium_platform.capabilities.participant.providers.sqlite_revision_authority",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.participant.providers.sqlite_revision_authority",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -7337,12 +7355,6 @@
     {
       "source_module": "noetrium_platform.evidence.artifact.catalog.providers.sqlite",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact._sqlite_connection",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.evidence.artifact.catalog.providers.sqlite",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact._sqlite_types",
       "target_role": "core_platform"
     },
@@ -7368,6 +7380,12 @@
       "source_module": "noetrium_platform.evidence.artifact.catalog.providers.sqlite",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.artifact.catalog.providers.sqlite",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -7511,12 +7529,6 @@
     {
       "source_module": "noetrium_platform.evidence.artifact.content.providers.sqlite_storage",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact._sqlite_connection",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.evidence.artifact.content.providers.sqlite_storage",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact._sqlite_types",
       "target_role": "core_platform"
     },
@@ -7530,6 +7542,12 @@
       "source_module": "noetrium_platform.evidence.artifact.content.providers.sqlite_storage",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.artifact.content.providers.sqlite_storage",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -7565,12 +7583,6 @@
     {
       "source_module": "noetrium_platform.evidence.artifact.lineage.relation.providers.sqlite",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact._sqlite_connection",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.evidence.artifact.lineage.relation.providers.sqlite",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact._sqlite_types",
       "target_role": "core_platform"
     },
@@ -7593,6 +7605,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.evidence.artifact.lineage.relation.providers.sqlite",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.evidence.artifact.reference.api.contracts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.governance.api",
@@ -7602,12 +7620,6 @@
       "source_module": "noetrium_platform.evidence.artifact.reference.api.ports",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.governance.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.evidence.artifact.reference.providers.sqlite",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact._sqlite_connection",
       "target_role": "core_platform"
     },
     {
@@ -7635,6 +7647,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.evidence.artifact.reference.providers.sqlite",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.evidence.artifact.retention.api.contracts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact.catalog.api",
@@ -7644,12 +7662,6 @@
       "source_module": "noetrium_platform.evidence.artifact.retention.api.ports",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact.catalog.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.evidence.artifact.retention.providers.sqlite",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact._sqlite_connection",
       "target_role": "core_platform"
     },
     {
@@ -7674,6 +7686,12 @@
       "source_module": "noetrium_platform.evidence.artifact.retention.providers.sqlite",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.artifact.retention.providers.sqlite",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -7703,12 +7721,6 @@
     {
       "source_module": "noetrium_platform.evidence.data.dataset.providers.sqlite",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.data._sqlite_transaction",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.evidence.data.dataset.providers.sqlite",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.data._sqlite_types",
       "target_role": "core_platform"
     },
@@ -7722,6 +7734,12 @@
       "source_module": "noetrium_platform.evidence.data.dataset.providers.sqlite",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.data.dataset.providers.sqlite",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -7763,12 +7781,6 @@
     {
       "source_module": "noetrium_platform.evidence.data.fact.providers.sqlite",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.data._sqlite_transaction",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.evidence.data.fact.providers.sqlite",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.data._sqlite_types",
       "target_role": "core_platform"
     },
@@ -7776,6 +7788,12 @@
       "source_module": "noetrium_platform.evidence.data.fact.providers.sqlite",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.data.fact.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.data.fact.providers.sqlite",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -7955,12 +7973,6 @@
     {
       "source_module": "noetrium_platform.evidence.data.state.runtime.sqlite_backend",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.data._sqlite_transaction",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.evidence.data.state.runtime.sqlite_backend",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.data._sqlite_types",
       "target_role": "core_platform"
     },
@@ -7968,6 +7980,12 @@
       "source_module": "noetrium_platform.evidence.data.state.runtime.sqlite_backend",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.data.state.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.data.state.runtime.sqlite_backend",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -8613,9 +8631,21 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.evidence.observability.telemetry.metric.providers.query",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.evidence.observability.telemetry.metric.providers.sqlite_backend",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.observability.telemetry.metric.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.observability.telemetry.metric.providers.sqlite_backend",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -9411,6 +9441,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.foundation.governance.evolution.runtime.controller",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.governance.system_registry.api",
@@ -9851,6 +9887,12 @@
     {
       "source_module": "noetrium_platform.foundation.portfolio.runtime.catalog",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.foundation.portfolio.runtime.catalog",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.portfolio.api",
       "target_role": "core_platform"
     },
@@ -9858,6 +9900,12 @@
       "source_module": "noetrium_platform.foundation.portfolio.runtime.revision_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.foundation.portfolio.runtime.revision_store",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -9876,6 +9924,12 @@
       "source_module": "noetrium_platform.foundation.scope.path.runtime.resolver",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.logical_path",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.foundation.scope.providers.sqlite",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -11691,6 +11745,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.infrastructure.reliability.effect.runtime.sqlite_backend",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.infrastructure.reliability.failure.api.classification",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -12011,6 +12071,12 @@
     {
       "source_module": "noetrium_platform.infrastructure.reliability.forensics.providers.incident_db",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.reliability.forensics.providers.incident_db",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.reliability.diagnostics.api",
       "target_role": "core_platform"
     },
@@ -12126,6 +12192,12 @@
       "source_module": "noetrium_platform.infrastructure.reliability.forensics.providers.index_backend",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.reliability.forensics.providers.index_write_session",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.reliability.forensics.providers.index_db",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -12707,6 +12779,12 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.compute.runtime.inventory",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.compute.runtime.inventory",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.compute.api",
       "target_role": "core_platform"
     },
@@ -13265,6 +13343,12 @@
     {
       "source_module": "noetrium_platform.research.execution.graph.providers.sqlite",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.execution.graph.providers.sqlite",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.research.execution.graph.api",
       "target_role": "core_platform"
     },
@@ -13511,6 +13595,12 @@
     {
       "source_module": "noetrium_platform.research.execution.operation.command.providers.sqlite",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.execution.operation.command.providers.sqlite",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.retry",
       "target_role": "core_platform"
     },
@@ -13536,6 +13626,12 @@
       "source_module": "noetrium_platform.research.execution.operation.providers.default",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.execution.operation.api.boundary",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.execution.operation.providers.sqlite",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -15594,6 +15690,12 @@
       "source_module": "noetrium_platform.research.experimentation.record",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.experimentation.runtime.catalog",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
       "target_role": "core_platform"
     },
     {
@@ -39095,12 +39197,6 @@
     {
       "source_module": "tests.test_sqlite_atomic_state_v101",
       "source_role": "tests",
-      "target_module": "noetrium_platform.evidence.artifact._sqlite_connection",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_sqlite_atomic_state_v101",
-      "source_role": "tests",
       "target_module": "noetrium_platform.evidence.artifact.catalog.api",
       "target_role": "core_platform"
     },
@@ -39108,12 +39204,6 @@
       "source_module": "tests.test_sqlite_atomic_state_v101",
       "source_role": "tests",
       "target_module": "noetrium_platform.evidence.artifact.catalog.providers",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_sqlite_atomic_state_v101",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.evidence.data._sqlite_transaction",
       "target_role": "core_platform"
     },
     {
@@ -39155,7 +39245,19 @@
     {
       "source_module": "tests.test_sqlite_atomic_state_v101",
       "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_sqlite_atomic_state_v101",
+      "source_role": "tests",
       "target_module": "noetrium_platform.foundation.scope.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_sqlite_durability_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.governance.architecture.sqlite_durability_invariants",
       "target_role": "core_platform"
     },
     {
@@ -41777,7 +41879,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2600,
+      "count": 2617,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -41893,30 +41995,30 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1929,
+    "core_platform": 1928,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 766,
-    "tests": 802,
+    "tests": 803,
     "tooling": 78
   },
   "role_symbol_counts": {
-    "core_platform": 3336,
+    "core_platform": 3337,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 406,
+    "research_reproductions": 407,
     "sdk": 5,
     "tests": 968,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "d798ef17a19965d78b2e7f33802186ffda629d3a",
+  "source_git_sha": "90d86a156f79806abf8de44ec89049d755bad72c",
   "symbols": [
     {
       "bases": [],
@@ -51307,7 +51409,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 346,
+      "line": 348,
       "methods": [
         "__init__",
         "_connect",
@@ -62473,7 +62575,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 464,
+      "line": 466,
       "methods": [
         "__init__",
         "_connect",
@@ -67580,7 +67682,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 28,
+      "line": 32,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -68697,7 +68799,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 19,
+      "line": 23,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -68816,7 +68918,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 24,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -68983,12 +69085,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 22,
+      "line": 26,
       "methods": [
         "__init__",
         "_connect_writer",
         "_connect_reader",
-        "_ensure_schema",
         "_parent_documents",
         "_document",
         "_record_digest",
@@ -69250,7 +69351,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 30,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -70253,7 +70354,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 14,
+      "line": 18,
       "methods": [],
       "module": "noetrium_platform.evidence.data.state.runtime.sqlite_backend",
       "name": "EncodedAggregate",
@@ -70269,7 +70370,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 23,
+      "line": 27,
       "methods": [
         "__init__",
         "read",
@@ -70291,7 +70392,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 159,
+      "line": 163,
       "methods": [
         "__init__",
         "connect_writer",
@@ -72223,7 +72324,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 14,
+      "line": 18,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.telemetry.metric.providers.query",
       "name": "MetricSummary",
@@ -72237,7 +72338,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 50,
+      "line": 54,
       "methods": [
         "__init__",
         "_connect",
@@ -72257,7 +72358,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 26,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -77208,7 +77309,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
+      "line": 30,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
       "name": "EvolutionStoreConflict",
@@ -77224,7 +77325,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 33,
+      "line": 34,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
       "name": "EvolutionStoreIntegrityError",
@@ -77240,7 +77341,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 315,
+      "line": 319,
       "methods": [
         "__init__",
         "_connection",
@@ -81580,6 +81681,25 @@
       "name": "InterprocessFileLock",
       "path": "noetrium_platform/foundation/kernel/kernel/durability/file_lock.py",
       "qualname": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "AUTHORITATIVE",
+        "PROJECTION"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 13,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "name": "SQLiteDurabilityProfile",
+      "path": "noetrium_platform/foundation/kernel/kernel/durability/sqlite.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durability.sqlite.SQLiteDurabilityProfile",
       "role": "core_platform"
     },
     {
@@ -93974,7 +94094,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 27,
       "methods": [
         "__init__",
         "read",
@@ -93997,7 +94117,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 83,
+      "line": 85,
       "methods": [
         "__init__",
         "connect",
@@ -94905,7 +95025,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 11,
+      "line": 16,
       "methods": [
         "__init__",
         "connect",
@@ -95022,7 +95142,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 72,
+      "line": 78,
       "methods": [
         "__init__",
         "connect",
@@ -101245,7 +101365,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 34,
+      "line": 35,
       "methods": [
         "__init__",
         "_connection",
@@ -105259,7 +105379,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 17,
+      "line": 18,
       "methods": [
         "__init__",
         "durability",
@@ -105305,7 +105425,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 26,
       "methods": [
         "__init__",
         "durability",
@@ -121165,6 +121285,31 @@
       "role": "research_reproductions"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "qualname: str",
+        "args: tuple[JsonValue, ...]",
+        "kwargs: JsonObject",
+        "unresolved_parameters: tuple[str, ...]",
+        "binding_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 75,
+      "methods": [
+        "__post_init__",
+        "exact"
+      ],
+      "module": "research.reproductions.contracts",
+      "name": "ReproductionMethodProgramFactoryBinding",
+      "path": "research/reproductions/contracts.py",
+      "qualname": "research.reproductions.contracts.ReproductionMethodProgramFactoryBinding",
+      "role": "research_reproductions"
+    },
+    {
       "bases": [
         "StrEnum"
       ],
@@ -121175,7 +121320,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 75,
+      "line": 150,
       "methods": [],
       "module": "research.reproductions.contracts",
       "name": "ReproductionDeltaKind",
@@ -121194,7 +121339,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 80,
+      "line": 155,
       "methods": [],
       "module": "research.reproductions.contracts",
       "name": "ReproductionEvidenceKind",
@@ -121214,7 +121359,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 85,
+      "line": 160,
       "methods": [],
       "module": "research.reproductions.contracts",
       "name": "ReproductionMatchCriterionStatus",
@@ -121237,7 +121382,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 101,
+      "line": 176,
       "methods": [
         "__post_init__"
       ],
@@ -121264,7 +121409,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 135,
+      "line": 210,
       "methods": [
         "__post_init__"
       ],
@@ -121286,7 +121431,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 181,
+      "line": 256,
       "methods": [
         "__post_init__"
       ],
@@ -121310,7 +121455,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 200,
+      "line": 275,
       "methods": [
         "__post_init__"
       ],
@@ -121333,7 +121478,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 231,
+      "line": 306,
       "methods": [
         "__post_init__"
       ],
@@ -121355,7 +121500,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 258,
+      "line": 333,
       "methods": [
         "__post_init__"
       ],
@@ -121379,7 +121524,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 275,
+      "line": 350,
       "methods": [
         "__post_init__"
       ],
@@ -121406,7 +121551,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 309,
+      "line": 384,
       "methods": [
         "__post_init__"
       ],
@@ -121436,7 +121581,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 424,
+      "line": 499,
       "methods": [
         "__post_init__"
       ],
@@ -121458,6 +121603,7 @@
         "catalog: ReproductionCatalog",
         "assets: tuple[ReproductionAssetRef, ...]",
         "primary_executable: str | None",
+        "method_program_factory: ReproductionMethodProgramFactoryBinding | None",
         "reported_results: tuple[ReportedResult, ...]",
         "reference_baselines: tuple[ReferenceBaseline, ...]",
         "deltas: tuple[ReproductionDelta, ...]",
@@ -121468,7 +121614,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 542,
+      "line": 617,
       "methods": [
         "__post_init__"
       ],
@@ -124551,7 +124697,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
+      "line": 31,
       "methods": [],
       "module": "research.reproductions.research_os",
       "name": "ReproductionResearchOSCompileError",
@@ -124575,7 +124721,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 34,
+      "line": 36,
       "methods": [
         "__post_init__"
       ],
@@ -124595,13 +124741,17 @@
         "asset: ReproductionAssetRef",
         "module: str",
         "qualname: str",
-        "program_digest: str"
+        "program_digest: str | None",
+        "binding_kind: str",
+        "factory: ReproductionMethodProgramFactoryBinding | None"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 59,
+      "line": 61,
       "methods": [
-        "__post_init__"
+        "__post_init__",
+        "exact",
+        "binding_digest"
       ],
       "module": "research.reproductions.research_os",
       "name": "ReproductionMethodProgramBinding",
@@ -143869,7 +144019,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 22,
+      "line": 21,
       "methods": [
         "rollback"
       ],
@@ -143887,7 +144037,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
+      "line": 28,
       "methods": [
         "test_data_rollback_failure_is_attached_to_primary_failure",
         "test_artifact_rollback_failure_is_attached_to_primary_failure"
@@ -143906,7 +144056,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 43,
+      "line": 42,
       "methods": [
         "_path",
         "test_state_contracts_reject_ambiguous_identity_and_versions",
@@ -143933,7 +144083,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 165,
+      "line": 164,
       "methods": [
         "_sha",
         "_artifact",
