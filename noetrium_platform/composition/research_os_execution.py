@@ -446,7 +446,6 @@ class PreparedResearchOSNodeExecutor:
         *,
         experiment_closures: ResearchOSExperimentClosurePort | None = None,
         artifact_lineage: ArtifactLineageRelationPort | None = None,
-        checkpoints: ResearchOSGraphCheckpointStorePort | None = None,
     ) -> None:
         if type(prepared) is not PreparedResearchOSExecution:
             raise TypeError("research node executor requires prepared execution")
@@ -633,6 +632,7 @@ class StrictResearchOSControl(
         *,
         experiment_closures: ResearchOSExperimentClosurePort | None = None,
         artifact_lineage: ArtifactLineageRelationPort | None = None,
+        checkpoints: ResearchOSGraphCheckpointStorePort | None = None,
     ) -> None:
         if not isinstance(execution_store, ResearchGraphExecutionStorePort):
             raise TypeError("Research OS control requires graph execution store")
