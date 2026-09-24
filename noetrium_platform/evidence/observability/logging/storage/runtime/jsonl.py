@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+from noetrium_platform.foundation.kernel.kernel.durability import durable_append_bytes
 
 """Durable append-only structured log storage.
 
@@ -18,7 +18,7 @@ from typing import BinaryIO, ClassVar
 from uuid import uuid4
 
 from noetrium_platform.evidence.observability.logging.record.api import LogLevel, LogRecord
-from noetrium_platform.foundation.kernel.kernel.durability.durable_file import durable_replace_file, durable_unlink, fsync_directory
+from noetrium_platform.foundation.kernel.kernel.durability.durable_file import durable_replace_file, durable_unlink
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import InterprocessFileLock
 from noetrium_platform.foundation.kernel.kernel.logical_path import logical_absolute_path
 from noetrium_platform.evidence.observability.logging.storage.api import LogStorageWriteActorPort
@@ -158,13 +158,7 @@ class JsonlLogStore:
         self._prune_rotated_segments()
 
     def _append_record(self, encoded: bytes) -> None:
-        existed = self.path.exists()
-        with self.path.open("ab") as handle:
-            handle.write(encoded)
-            handle.flush()
-            flush_file_descriptor(handle.fileno())
-        if not existed:
-            fsync_directory(self.path.parent)
+        durable_append_bytes(self.path, encoded)
 
     @staticmethod
     def _open_snapshot_handle(path: Path) -> BinaryIO:
