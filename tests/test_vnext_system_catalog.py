@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from importlib.resources import files
 
-from noetrium_platform.foundation.governance.system_registry.api import SystemLayer, system_catalog
+from noetrium_platform.foundation.governance.system_registry.api import SystemLayer, layer_hierarchy, system_catalog
 from noetrium_platform.foundation.governance.architecture.system_topology_invariants import audit_system_topology_completeness
 import noetrium_platform.foundation.governance.architecture.system_topology_invariants as topology_invariants
 
@@ -64,11 +64,18 @@ def test_documentation_catalog_mirrors_packaged_catalog():
     assert packaged == documented
 
 def test_catalog_top_level_layers_are_self_consistent_and_open():
-    roots = tuple(row for row in system_catalog() if row.identity.is_system)
+    roots = tuple(row for row in system_catalog() if row.parent_key is None)
     assert roots
     assert len({row.identity.system_id for row in roots}) == len(roots)
     assert all(row.layer.value == row.identity.system_id for row in roots)
     assert SystemLayer("future-registered-root").value == "future-registered-root"
+
+
+def test_operator_is_a_research_os_child_not_an_independent_product_system():
+    by_key = {row.identity.key: row for row in system_catalog()}
+    assert by_key["operator"].parent_key == "research_os"
+    product = next(row for row in layer_hierarchy().layers if row.layer_id == "product")
+    assert product.members == ("research_os",)
 
 def test_shared_kernel_consumers_declare_platform_dependency_at_parent_system():
     by_key = {row.identity.key: row for row in system_catalog()}
