@@ -135,11 +135,17 @@ Host Python is not part of the deployment contract. Qualification and image orch
 
 With no `--profiles`, build selects exactly one active default revision for every registered category.
 
-Explicit historical recovery is possible:
+Explicit recovery is separated by lifecycle:
 
 ```bash
+# Resume an execution already pinned to a draining revision.
+./deploy/build-environments.sh build --profiles minecraft-r2 --allow-draining
+
+# Historical recovery of a fully retired revision.
 ./deploy/build-environments.sh build --profiles minecraft-r1 --allow-retired
 ```
+
+Passing an old profile id through `--profiles` without the matching recovery-intent flag fails closed. This prevents draining or retired revisions from silently receiving new work.
 
 The bootstrap preserves the checkout read-only and gives write access only to its dedicated build/runtime root.
 
