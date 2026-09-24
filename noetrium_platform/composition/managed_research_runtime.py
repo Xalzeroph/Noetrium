@@ -6,7 +6,10 @@ from pathlib import Path
 from threading import Event
 from typing import Mapping
 
-from noetrium_platform.capabilities.model.deployment.api import ModelRuntimeState
+from noetrium_platform.capabilities.model.deployment.api import (
+    ModelDeploymentSelector,
+    ModelRuntimeState,
+)
 from noetrium_platform.capabilities.model.deployment.composition import LocalModelReplicaPoolRuntime
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
@@ -77,6 +80,7 @@ class ManagedResearchRuntime:
     _closing: bool = False
     _controllers_quiesced: bool = False
     _workloads_quiesced: bool = False
+    _auto_models_removed: bool = False
     _models_stopped: bool = False
     _resources_cleaned: bool = False
     _observability_closed: bool = False
@@ -196,8 +200,25 @@ class ManagedResearchRuntime:
                 raise self._close_stage_error("workload quiescence", exc)
             self._workloads_quiesced = True
 
-        # Model processes sit above endpoint/compute/container resources.
-        # Releasing those resources before every service is physically gone
+        # Automatically placed replicas own ephemeral resource claims for this
+        # runtime lifetime.  Their desired specs must not survive past the
+        # lease/heartbeat owner generation: a later process must place them
+        # again and obtain fresh endpoint/compute fencing.
+        if not self._auto_models_removed:
+            try:
+                self.management.models.fleet.remove_selected(
+                    ModelDeploymentSelector(tags=("auto-managed",))
+                )
+            except BaseException as exc:
+                raise self._close_stage_error(
+                    "auto-managed model retirement",
+                    exc,
+                )
+            self._auto_models_removed = True
+
+        # Remaining explicit durable model deployments may keep desired state,
+        # but their physical processes still sit above resource cleanup.
+        # Releasing lower resources before every service is physically gone
         # would permit split ownership after restart.
         if not self._models_stopped:
             try:
@@ -317,6 +338,14 @@ def build_local_managed_research_runtime(
                 model_storage_pools=model_storage_pools,
                 task_group=group,
             )
+            # Auto-placed model replicas belong to the previous runtime owner
+            # generation.  Stop/remove them before endpoint/GPU reconciliation
+            # so expired lower leases can never be released underneath a
+            # surviving model process.
+            management.models.fleet.remove_selected(
+                ModelDeploymentSelector(tags=("auto-managed",))
+            )
+
             # Startup reconciliation is synchronous and fail-closed. No new
             # workload is admitted until physical and logical ephemeral
             # resources agree after a process/daemon/host restart.
