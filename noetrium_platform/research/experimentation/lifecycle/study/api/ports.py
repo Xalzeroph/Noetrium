@@ -41,6 +41,8 @@ class BoundStudyExecutionPort(Protocol):
         unit: StudyExecutionUnit,
         bindings: tuple[VariantBinding, ...],
         plan_digest: str,
+        *,
+        execution_id: str,
     ) -> tuple[StudyMetricObservation, ...]: ...
 
     def execute_bound_variant(
@@ -48,6 +50,8 @@ class BoundStudyExecutionPort(Protocol):
         assignment: StudyAssignment,
         binding: VariantBinding,
         plan_digest: str,
+        *,
+        execution_id: str,
     ) -> StudyMetricObservation: ...
 
 
