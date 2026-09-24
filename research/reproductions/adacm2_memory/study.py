@@ -174,25 +174,36 @@ def build_adacm2_lvu_study(
     ).build()
 
 
+def build_adacm2_lvu_eq6_literal_study(
+    benchmark: BenchmarkTaskSet,
+) -> ResearchStudyDefinition:
+    return build_adacm2_lvu_study(
+        benchmark,
+        interpretation=AdaCM2PartitionInterpretation.EQ6_LITERAL,
+    )
+
+
+def build_adacm2_lvu_eq8_consistent_study(
+    benchmark: BenchmarkTaskSet,
+) -> ResearchStudyDefinition:
+    return build_adacm2_lvu_study(
+        benchmark,
+        interpretation=AdaCM2PartitionInterpretation.EQ8_CONSISTENT,
+    )
+
+
 def build_adacm2_lvu_ambiguity_studies(
     benchmark: BenchmarkTaskSet,
 ) -> tuple[ResearchStudyDefinition, ResearchStudyDefinition]:
     return (
-        build_adacm2_lvu_study(
-            benchmark,
-            interpretation=AdaCM2PartitionInterpretation.EQ6_LITERAL,
-        ),
-        build_adacm2_lvu_study(
-            benchmark,
-            interpretation=(
-                AdaCM2PartitionInterpretation.EQ8_CONSISTENT
-            ),
-        ),
+        build_adacm2_lvu_eq6_literal_study(benchmark),
+        build_adacm2_lvu_eq8_consistent_study(benchmark),
     )
 
 
 __all__ = [
     "adacm2_lvu_trial_protocol",
     "build_adacm2_lvu_ambiguity_studies",
-    "build_adacm2_lvu_study",
+    "build_adacm2_lvu_eq6_literal_study",
+    "build_adacm2_lvu_eq8_consistent_study",
 ]
