@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flash_vstream_memory",
-  "package_digest": "9ca8757a200b9156322c8e536866aca27a418a9b3bf820296feec28ff6d65306",
+  "package_digest": "b11c018752da44b63d308fa16ef69631aebf6426ccfebe7150c6d25ca2b7f3d8",
   "definition_digest": "ae792891cd86db373c5b133c1f788309e4fc0b53eb61e56184fee7d403fcf865",
   "source_registry_digest": "7d6fdeedd563fb8fff5cec18bda0051a643425a48a5a9943c6d5cddb34c9f8a9",
   "lifecycle": "protocol_bound",
@@ -123,7 +123,7 @@
       "kind": "study",
       "path": "research/reproductions/flash_vstream_memory/study.py",
       "declaration_digest": "7e49631c462841adedd1d11c3ffff5f218bb68a4eb38cfb7241ab9c6b228a21f",
-      "content_sha256": "15715b03985184e1e045eeab77909892878d46ccc4bb189b1d97df70d186f57e"
+      "content_sha256": "e8b9314d5258e8a84b64156a8be3228812c28e439552d6576514ccf19e9a0949"
     },
     {
       "kind": "support",
