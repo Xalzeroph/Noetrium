@@ -42,6 +42,34 @@ class EndpointAllocationUnavailable(RuntimeError):
         super().__init__(f"no endpoint candidate is allocatable for {request.allocation_id}: {detail}")
 
 
+def _same_allocation_generation(
+    current: EndpointAllocation,
+    expected: EndpointAllocation,
+) -> bool:
+    return (
+        current.allocation_id == expected.allocation_id
+        and current.endpoint == expected.endpoint
+        and current.lease_id == expected.lease_id
+        and current.holder_scope == expected.holder_scope
+        and current.purpose == expected.purpose
+        and current.request_digest == expected.request_digest
+        and current.lease_holder_generation == expected.lease_holder_generation
+        and current.lease_fencing_token == expected.lease_fencing_token
+    )
+
+
+def _require_allocation_generation(
+    current: EndpointAllocation,
+    expected: EndpointAllocation,
+) -> None:
+    if type(expected) is not EndpointAllocation:
+        raise TypeError("endpoint lease operation requires EndpointAllocation")
+    if not _same_allocation_generation(current, expected):
+        raise EndpointAllocationConflict(
+            f"stale endpoint allocation generation: {expected.allocation_id}"
+        )
+
+
 def _automatic_request(
     candidates: EndpointCandidatePortSourcePort | None,
     *,
@@ -206,24 +234,41 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
             proof, expected_previous_binding_proof_digest=expected_previous_binding_proof_digest
         )
 
-    def renew(self, allocation_id: str, *, ttl_seconds: float | None = None) -> EndpointAllocation:
+    def renew(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        ttl_seconds: float | None = None,
+    ) -> EndpointAllocation:
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint renewal requires EndpointAllocation")
         ttl = self._lease_ttl_seconds if ttl_seconds is None else float(ttl_seconds)
         if not math.isfinite(ttl) or ttl <= 0:
             raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
-        return self._reservations.renew(allocation_id, ttl_seconds=ttl)
+        return self._reservations.renew(allocation, ttl_seconds=ttl)
 
-    def renew_many(self, allocation_ids: tuple[str, ...], *, ttl_seconds: float | None = None) -> tuple[EndpointAllocation, ...]:
-        if not allocation_ids:
+    def renew_many(
+        self,
+        allocations: tuple[EndpointAllocation, ...],
+        *,
+        ttl_seconds: float | None = None,
+    ) -> tuple[EndpointAllocation, ...]:
+        if not allocations:
             return ()
+        if any(type(row) is not EndpointAllocation for row in allocations):
+            raise TypeError("endpoint renewal requires typed allocation generations")
+        allocation_ids = tuple(row.allocation_id for row in allocations)
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("endpoint allocation ids must be unique")
         ttl = self._lease_ttl_seconds if ttl_seconds is None else float(ttl_seconds)
         if not math.isfinite(ttl) or ttl <= 0:
             raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
-        return self._reservations.renew_many(allocation_ids, ttl_seconds=ttl)
+        return self._reservations.renew_many(allocations, ttl_seconds=ttl)
 
-    def release(self, allocation_id: str) -> EndpointAllocation:
-        return self._reservations.release(allocation_id)
+    def release(self, allocation: EndpointAllocation) -> EndpointAllocation:
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint release requires EndpointAllocation")
+        return self._reservations.release(allocation)
 
     def get(self, allocation_id: str) -> EndpointAllocation:
         current = self._reservations.get(allocation_id)
@@ -472,17 +517,27 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             self._allocations[proof.allocation_id] = updated
             return updated
 
-    def renew(self, allocation_id: str, *, ttl_seconds: float | None = None) -> EndpointAllocation:
+    def renew(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        ttl_seconds: float | None = None,
+    ) -> EndpointAllocation:
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint renewal requires EndpointAllocation")
         with self._lock:
-            current = self._reconcile_allocation_locked(allocation_id)
+            current = self._reconcile_allocation_locked(allocation.allocation_id)
+            _require_allocation_generation(current, allocation)
             if not current.state.is_live:
-                raise EndpointAllocationConflict(f"endpoint allocation is not active: {allocation_id}")
+                raise EndpointAllocationConflict(
+                    f"endpoint allocation is not active: {allocation.allocation_id}"
+                )
             ttl = self._lease_ttl_seconds if ttl_seconds is None else float(ttl_seconds)
             if not math.isfinite(ttl) or ttl <= 0:
                 raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
             granted = self._leases.renew(
                 current.lease_id,
-                fencing_token=current.lease_fencing_token,
+                fencing_token=allocation.lease_fencing_token,
                 ttl_seconds=ttl,
             )
             updated = replace(
@@ -491,25 +546,39 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
                 lease_fencing_token=granted.fencing_token,
                 lease_expires_at_epoch_s=granted.expires_at_epoch_s,
             )
-            self._allocations[allocation_id] = updated
+            self._allocations[allocation.allocation_id] = updated
             return updated
 
-    def renew_many(self, allocation_ids: tuple[str, ...], *, ttl_seconds: float | None = None) -> tuple[EndpointAllocation, ...]:
-        if not allocation_ids:
+    def renew_many(
+        self,
+        allocations: tuple[EndpointAllocation, ...],
+        *,
+        ttl_seconds: float | None = None,
+    ) -> tuple[EndpointAllocation, ...]:
+        if not allocations:
             return ()
+        if any(type(row) is not EndpointAllocation for row in allocations):
+            raise TypeError("endpoint renewal requires typed allocation generations")
+        allocation_ids = tuple(row.allocation_id for row in allocations)
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("endpoint allocation ids must be unique")
         with self._lock:
-            return tuple(self.renew(allocation_id, ttl_seconds=ttl_seconds) for allocation_id in allocation_ids)
+            return tuple(
+                self.renew(allocation, ttl_seconds=ttl_seconds)
+                for allocation in allocations
+            )
 
-    def release(self, allocation_id: str) -> EndpointAllocation:
+    def release(self, allocation: EndpointAllocation) -> EndpointAllocation:
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint release requires EndpointAllocation")
         with self._lock:
-            current = self._reconcile_allocation_locked(allocation_id)
+            current = self._reconcile_allocation_locked(allocation.allocation_id)
+            _require_allocation_generation(current, allocation)
             if current.state is EndpointAllocationState.RELEASED:
                 return current
             self._leases.release(current.lease_id)
             released = replace(current, state=EndpointAllocationState.RELEASED)
-            self._allocations[allocation_id] = released
+            self._allocations[allocation.allocation_id] = released
             return released
 
     def get(self, allocation_id: str) -> EndpointAllocation:
