@@ -355,6 +355,13 @@ class ChildResearchMachineExecution:
             raise ValueError("child execution must have an authoritative MachineCut")
         if self.execution.cut.program_digest != self.link.child_program_digest:
             raise ValueError("child execution/link program identity mismatch")
+        if (
+            self.execution.cut.program_lock_digest
+            != self.link.child_program_lock_digest
+        ):
+            raise ValueError(
+                "child execution/link ProgramLock identity mismatch"
+            )
 
     @property
     def status(self) -> MachineStatus:
@@ -412,6 +419,7 @@ class ChildResearchMachineExecutor:
             parent_machine_id=parent_machine_id,
             child_machine_id=child_machine_id,
             child_program_digest=cut.program_digest,
+            child_program_lock_digest=cut.program_lock_digest,
             child_snapshot_ref=snapshot_ref,
             child_transition_start=transition_start,
             child_transition_end=cut.revision,
