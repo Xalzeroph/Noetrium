@@ -151,6 +151,18 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
         argv.append(observed.container_id)
         result = self._runner.run(tuple(argv), timeout_seconds=self._timeout)
         if result.returncode != 0 and not self._missing(result.stderr):
+            # Docker can commit removal and then lose the command response when
+            # the daemon/socket restarts. Re-observe the immutable container ID
+            # before deciding. Absence is success; an unavailable daemon or a
+            # still-present container remains fail-closed.
+            try:
+                remaining = self.inspect(observed.container_id)
+            except BaseException as exc:
+                raise DockerContainerRuntimeError(
+                    "Docker container removal outcome is unobservable"
+                ) from exc
+            if remaining is None:
+                return
             raise DockerContainerRuntimeError(
                 f"Docker container removal failed with exit code {result.returncode}"
             )
