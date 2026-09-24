@@ -5,8 +5,8 @@ import sqlite3
 from threading import RLock
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
     durable_sqlite_connection,
+    immediate_sqlite_transaction,
 )
 from noetrium_platform.foundation.api import PLATFORM_SCOPE, ScopeIdentity, ScopeRegistryPort
 from noetrium_platform.foundation.portfolio.api import (
@@ -155,14 +155,12 @@ class SQLitePortfolioCatalog:
 
     def _insert(self, statement: str, values: tuple[object, ...]) -> None:
         with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="portfolio catalog",
+            ):
                 conn.execute(statement, values)
-                conn.commit()
-            except BaseException:
-                if conn.in_transaction:
-                    conn.rollback()
-                raise
 
     def register_workspace(self, spec: WorkspaceSpec) -> None:
         self._scopes.register(spec.scope, PLATFORM_SCOPE)
