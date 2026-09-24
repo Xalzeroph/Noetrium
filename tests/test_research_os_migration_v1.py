@@ -21,6 +21,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphLiveNodeState,
     ResearchGraphNodeControlPhase,
     ResearchGraphExecutionConflict,
+    ResearchGraphExecutionNotFound,
     ResearchGraphNodeExecutionRecord,
 )
 from noetrium_platform.research.execution.graph.providers import (
