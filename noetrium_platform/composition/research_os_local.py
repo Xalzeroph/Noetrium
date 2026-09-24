@@ -7,6 +7,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from uuid import uuid4
+
+from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
@@ -67,7 +70,11 @@ class LocalResearchOSComposition:
     _values: ResearchOSValueRouter
     _experiment_closures: ResearchOSExperimentClosurePort | None
     _artifact_lineage: SQLiteArtifactLineageStore
+    _artifact_group: TaskGroupPort | None
     _owns_execution_pool: bool
+    _artifact_group_closed: bool = False
+    _execution_pool_closed: bool = False
+    _closed: bool = False
 
     def prepare(
         self,
@@ -86,8 +93,33 @@ class LocalResearchOSComposition:
         )
 
     def close(self) -> None:
-        if self._owns_execution_pool:
-            self.execution_pool.close()
+        if self._closed:
+            return
+        errors: list[BaseException] = []
+        if self._artifact_group is not None and not self._artifact_group_closed:
+            try:
+                self.execution_pool.close_experiment_group(
+                    self._artifact_group,
+                    cancel_pending=True,
+                )
+            except BaseException as exc:
+                errors.append(exc)
+            else:
+                self._artifact_group_closed = True
+        if (
+            self._owns_execution_pool
+            and not self._execution_pool_closed
+            and (self._artifact_group is None or self._artifact_group_closed)
+        ):
+            try:
+                self.execution_pool.close()
+            except BaseException as exc:
+                errors.append(exc)
+            else:
+                self._execution_pool_closed = True
+        if errors:
+            raise ExceptionGroup("local Research OS close failed", errors)
+        self._closed = True
 
 
 def compose_local_research_os(
@@ -148,39 +180,63 @@ def compose_local_research_os(
     if not isinstance(pool, ResearchExecutionPool):
         raise TypeError("local Research OS execution_pool must be ResearchExecutionPool")
 
-    if experiment_runtime_components is None:
-        runtime = CanonicalResearchOSNodeRuntime(root / "machine-state")
-    else:
-        artifact_group = pool.open_experiment_group(
-            "research-os-experiment-artifact-authority",
-            resource_id="research-os-experiment-artifacts",
-        )
-        artifact_factory = DirectoryResearchOSExperimentArtifactStoreFactory(
-            root / "run-artifacts",
-            task_group=artifact_group,
-        )
-        experiment_bindings = experiment_runtime_components.bind(
-            artifact_factory
-        )
-        runtime = CanonicalResearchOSNodeRuntime(
-            root / "machine-state",
-            execution_pool=pool,
-            experiment_bindings=experiment_bindings,
-        )
+    artifact_group: TaskGroupPort | None = None
+    try:
+        if experiment_runtime_components is None:
+            runtime = CanonicalResearchOSNodeRuntime(root / "machine-state")
+        else:
+            artifact_group = pool.open_experiment_group(
+                f"research-os-experiment-artifacts:{uuid4().hex}",
+                resource_id="research-os-experiment-artifacts",
+            )
+            artifact_factory = DirectoryResearchOSExperimentArtifactStoreFactory(
+                root / "run-artifacts",
+                task_group=artifact_group,
+            )
+            experiment_bindings = experiment_runtime_components.bind(
+                artifact_factory
+            )
+            runtime = CanonicalResearchOSNodeRuntime(
+                root / "machine-state",
+                execution_pool=pool,
+                experiment_bindings=experiment_bindings,
+            )
 
-    control = StrictResearchOSControl(
-        graph,
-        pool,
-        runtime,
-        values,
-        experiment_closures=experiment_closures,
-        artifact_lineage=lineage,
-    )
-    research_os = bind_portfolio_research_os(
-        revisions,
-        blobs,
-        control=control,
-    )
+        control = StrictResearchOSControl(
+            graph,
+            pool,
+            runtime,
+            values,
+            experiment_closures=experiment_closures,
+            artifact_lineage=lineage,
+        )
+        research_os = bind_portfolio_research_os(
+            revisions,
+            blobs,
+            control=control,
+        )
+    except BaseException as primary:
+        cleanup_errors: list[BaseException] = []
+        if artifact_group is not None:
+            try:
+                pool.close_experiment_group(
+                    artifact_group,
+                    cancel_pending=True,
+                )
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+        if owns_execution_pool:
+            try:
+                pool.close()
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+        if cleanup_errors:
+            raise ExceptionGroup(
+                "local Research OS composition failed with cleanup errors",
+                [primary, *cleanup_errors],
+            )
+        raise
+
     return LocalResearchOSComposition(
         root,
         research_os,
@@ -191,6 +247,7 @@ def compose_local_research_os(
         values,
         experiment_closures,
         lineage,
+        artifact_group,
         owns_execution_pool,
     )
 
