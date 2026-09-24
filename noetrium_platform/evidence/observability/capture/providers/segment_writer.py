@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 from dataclasses import dataclass
 import os
 from pathlib import Path
@@ -82,7 +84,7 @@ class RawSegmentWriter:
             owned_fd = True
         try:
             self._write_all(fd, encoded)
-            os.fsync(fd)
+            flush_file_descriptor(fd)
             if created:
                 fsync_directory(self.target.parent)
         except BaseException:
