@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3668,
-    "python_import_edges": 7105,
-    "symbols": 4855,
-    "tracked_files": 4298,
+    "python_files": 3669,
+    "python_import_edges": 7110,
+    "symbols": 4856,
+    "tracked_files": 4299,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4849,
+    "python": 4850,
     "typescript": 5
   },
   "parse_errors": [],
@@ -32643,6 +32643,36 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "tests.test_reproduction_execution_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_reproduction_execution_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_execution_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_execution_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_execution_authoring_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions",
+      "target_role": "research_reproductions"
+    },
+    {
       "source_module": "tests.test_reproduction_execution_resolution_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.participant.capability.api.contracts",
@@ -42707,12 +42737,12 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2776,
+      "count": 2779,
       "source_role": "tests",
       "target_role": "core_platform"
     },
     {
-      "count": 28,
+      "count": 29,
       "source_role": "tests",
       "target_role": "public_facade"
     },
@@ -42727,7 +42757,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 330,
+      "count": 331,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42770,7 +42800,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 774,
-    "tests": 810,
+    "tests": 811,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -42780,13 +42810,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 413,
+    "research_reproductions": 414,
     "sdk": 5,
     "tests": 971,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "6203c940d55e07d52e6ede8506357d22ef7a6f3c",
+  "source_git_sha": "1e7a5394059ac64024b586d2ecdd1ecb5106f841",
   "symbols": [
     {
       "bases": [],
@@ -125590,6 +125620,29 @@
       ],
       "fields": [
         "package: str",
+        "study_factory: str",
+        "benchmark: BenchmarkTaskSet"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 161,
+      "methods": [
+        "__post_init__",
+        "request_digest"
+      ],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionExecutionRequest",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionExecutionRequest",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "package: str",
         "binding_id: str",
         "study_factory: str",
         "benchmark_id: str",
@@ -125601,7 +125654,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 173,
+      "line": 202,
       "methods": [
         "__post_init__"
       ],
@@ -125627,7 +125680,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 269,
+      "line": 298,
       "methods": [
         "__post_init__"
       ],
@@ -125654,7 +125707,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 294,
+      "line": 323,
       "methods": [
         "__post_init__",
         "benchmark_split_parameter",
@@ -125683,7 +125736,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 349,
+      "line": 378,
       "methods": [
         "__post_init__",
         "exact",
