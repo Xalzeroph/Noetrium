@@ -13,7 +13,7 @@ from noetrium_platform.composition.execution_lineage import (
 
 def _agent_checkpoint() -> AgentLoopCheckpoint:
     return AgentLoopCheckpoint(
-        schema_version="agent-cognition-checkpoint.v3",
+        schema_version="agent-cognition-checkpoint.v4",
         session_id="agent:parent",
         goal_digest="a" * 64,
         step=0,
