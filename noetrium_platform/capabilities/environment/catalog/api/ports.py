@@ -12,7 +12,9 @@ from .contracts import (
     EnvironmentInstanceAcquisition,
     EnvironmentOverlay,
     EnvironmentProfileGcAssessment,
+    EnvironmentProfileLifecycle,
     EnvironmentProfileReferenceSummary,
+    EnvironmentProfileRevision,
     EnvironmentSpec,
     EnvironmentTemplate,
     ResolvedEnvironmentSpec,
@@ -20,13 +22,38 @@ from .contracts import (
 
 
 class ExecutionEnvironmentCatalogPort(Protocol):
+    def register_profile_revision(
+        self,
+        profile: EnvironmentProfileRevision,
+    ) -> None: ...
+    def profile_revision(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> EnvironmentProfileRevision: ...
+    def transition_profile_revision(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        lifecycle: EnvironmentProfileLifecycle,
+    ) -> EnvironmentProfileRevision: ...
     def register_template(self, template: EnvironmentTemplate) -> None: ...
     def register_spec(self, spec: EnvironmentSpec) -> None: ...
     def register_overlay(self, overlay: EnvironmentOverlay) -> None: ...
     def assign(self, assignment: EnvironmentAssignment) -> None: ...
     def resolve(self, name: str, scope: ScopeIdentity) -> ResolvedEnvironmentSpec: ...
-    def register_instance(self, instance: EnvironmentInstance) -> None: ...
-    def bind(self, binding: EnvironmentBinding) -> None: ...
+    def register_instance(
+        self,
+        instance: EnvironmentInstance,
+        *,
+        recovery: bool = False,
+    ) -> None: ...
+    def bind(
+        self,
+        binding: EnvironmentBinding,
+        *,
+        recovery: bool = False,
+    ) -> None: ...
     def acquire_reusable_instance(
         self,
         profile_id: str,
@@ -36,6 +63,7 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         binding_id: str,
         role: str,
         scope: ScopeIdentity,
+        recovery: bool = False,
     ) -> EnvironmentInstanceAcquisition: ...
     def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
     def binding(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
