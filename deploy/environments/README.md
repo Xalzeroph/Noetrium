@@ -92,6 +92,22 @@ Compose runtime state therefore uses an instance-scoped root. `PLATFORM_ENVIRONM
 
 A reusable warm instance can return to a pool only after its overlay is destroyed or a provider produces an explicit cleanliness proof. A dirty or uncertain instance must be destroyed, never opportunistically reused.
 
+The rule is executable in the Environment catalog. Instance lifecycle is:
+
+```text
+CLEAN --bind/checkout--> IN_USE --release without proof--> DIRTY
+  ^                         |
+  |                         +--release with exact proof--> CLEAN
+  |
+  +---------------- generation-fenced cleanliness proof
+DIRTY --exact reset/overlay-destroy proof--> CLEAN
+CLEAN/DIRTY/IN_USE(unbound abort) --destroy--> DESTROYED
+```
+
+Each checkout increments `EnvironmentInstance.generation`. `EnvironmentCleanlinessProof` binds the instance id, immutable profile revision, exact generation, proof kind and proof digest. A proof from generation N cannot certify generation N+1. `reusable_instances()` returns only CLEAN instances.
+
+The same authority exposes `profile_references()` and `assess_profile_gc()`. Local GC eligibility requires zero live bindings and every catalog instance for that profile revision to be DESTROYED. Final GC additionally fails closed when Execution reports resumable executions or Evidence reports retained dependencies. Environment never claims those external truths itself; it consumes their proof inputs when assessing physical deletion safety.
+
 ## Profile-local doctors
 
 The base entrypoint does not contain a switch statement for known environment types.
