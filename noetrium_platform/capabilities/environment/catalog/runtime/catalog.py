@@ -24,6 +24,8 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentProfileLifecycle,
     EnvironmentProfileReferenceSummary,
     EnvironmentProfileRevision,
+    EnvironmentRuntimeGcAssessment,
+    EnvironmentRuntimeReferenceSummary,
     EnvironmentSpec,
     EnvironmentTemplate,
     ExecutionEnvironmentKind,
@@ -749,6 +751,84 @@ class ExecutionEnvironmentCatalog:
             ),
         )
 
+    def runtime_references(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+    ) -> EnvironmentRuntimeReferenceSummary:
+        matching = tuple(
+            sorted(
+                (
+                    row
+                    for row in self._instances.values()
+                    if row.profile_id == profile_id
+                    and row.profile_revision == profile_revision
+                    and row.runtime_identity_digest == runtime_identity_digest
+                ),
+                key=lambda row: row.instance_id,
+            )
+        )
+        matching_ids = {row.instance_id for row in matching}
+        bound_ids = tuple(
+            sorted(
+                {
+                    row.instance_id
+                    for row in self._binding_rows.values()
+                    if row.instance_id in matching_ids
+                }
+            )
+        )
+        reusable_ids = tuple(
+            row.instance_id
+            for row in matching
+            if row.state is EnvironmentInstanceState.CLEAN
+        )
+        blocking_ids = tuple(
+            row.instance_id
+            for row in matching
+            if row.state is not EnvironmentInstanceState.DESTROYED
+        )
+        return EnvironmentRuntimeReferenceSummary(
+            profile_id,
+            profile_revision,
+            runtime_identity_digest,
+            tuple(row.instance_id for row in matching),
+            bound_ids,
+            reusable_ids,
+            blocking_ids,
+        )
+
+    def assess_runtime_gc(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+        *,
+        resumable_execution_ids: tuple[str, ...] | None = None,
+        retained_evidence_ids: tuple[str, ...] | None = None,
+    ) -> EnvironmentRuntimeGcAssessment:
+        return EnvironmentRuntimeGcAssessment(
+            profile_id,
+            profile_revision,
+            runtime_identity_digest,
+            self.runtime_references(
+                profile_id,
+                profile_revision,
+                runtime_identity_digest,
+            ),
+            (
+                None
+                if resumable_execution_ids is None
+                else tuple(sorted(set(resumable_execution_ids)))
+            ),
+            (
+                None
+                if retained_evidence_ids is None
+                else tuple(sorted(set(retained_evidence_ids)))
+            ),
+        )
+
     @staticmethod
     def resolved_digest(value: ResolvedEnvironmentSpec) -> str:
         return canonical_digest(value)
@@ -1212,6 +1292,37 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         return super().assess_profile_gc(
             profile_id,
             profile_revision,
+            resumable_execution_ids=resumable_execution_ids,
+            retained_evidence_ids=retained_evidence_ids,
+        )
+
+    def runtime_references(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+    ) -> EnvironmentRuntimeReferenceSummary:
+        self._load()
+        return super().runtime_references(
+            profile_id,
+            profile_revision,
+            runtime_identity_digest,
+        )
+
+    def assess_runtime_gc(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+        *,
+        resumable_execution_ids: tuple[str, ...] | None = None,
+        retained_evidence_ids: tuple[str, ...] | None = None,
+    ) -> EnvironmentRuntimeGcAssessment:
+        self._load()
+        return super().assess_runtime_gc(
+            profile_id,
+            profile_revision,
+            runtime_identity_digest,
             resumable_execution_ids=resumable_execution_ids,
             retained_evidence_ids=retained_evidence_ids,
         )
