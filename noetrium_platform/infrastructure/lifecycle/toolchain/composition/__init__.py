@@ -8,6 +8,9 @@ from noetrium_platform.foundation.api import (
     ArtifactHttpOpener,
     MaterializedTreeInspectionPort,
 )
+from noetrium_platform.evidence.artifact.content.providers.download import (
+    open_artifact_http,
+)
 from noetrium_platform.infrastructure.lifecycle.toolchain.api import JavaRuntimeProvisioningPort
 from noetrium_platform.infrastructure.lifecycle.toolchain.providers import (
     AdoptiumMetadataResolver,
@@ -37,7 +40,7 @@ def compose_eclipse_adoptium_java_runtime(
     Those bindings belong at an outer composition root.
     """
 
-    metadata = AdoptiumMetadataResolver(opener=metadata_opener)
+    metadata = AdoptiumMetadataResolver(opener=metadata_opener or open_artifact_http)
     verifier = (
         JavaRuntimeVerifier()
         if command_runner is None
