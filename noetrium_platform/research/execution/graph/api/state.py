@@ -58,6 +58,7 @@ class ResearchGraphAttemptState(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     EXPIRED_BEFORE_START = "expired_before_start"
+    ABANDONED_BEFORE_START = "abandoned_before_start"
     RECONCILE_REQUIRED = "reconcile_required"
     RECONCILED_SUCCEEDED = "reconciled_succeeded"
     RECONCILED_FAILED = "reconciled_failed"
@@ -514,6 +515,26 @@ class ResearchGraphExecutionConflict(RuntimeError):
 
 class ResearchGraphExecutionNotFound(KeyError):
     pass
+
+
+@runtime_checkable
+class ResearchGraphOwnerGenerationRecoveryPort(Protocol):
+    """Optional crash-recovery seam for an exclusive local runtime generation.
+
+    Once the outer runtime has proved that the previous process generation is
+    dead, active attempts owned by older scheduler generations can be fenced
+    immediately instead of waiting for their TTL. CLAIMED work is safe to
+    requeue; RUNNING work becomes reconciliation debt and is never replayed
+    blindly.
+    """
+
+    def recover_abandoned_owner_generation(
+        self,
+        execution_id: str,
+        *,
+        current_owner_generation_id: str,
+        now_ns: int,
+    ) -> ResearchGraphExecutionSnapshot: ...
 
 
 @runtime_checkable

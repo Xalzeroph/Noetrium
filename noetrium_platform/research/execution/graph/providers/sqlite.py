@@ -1978,6 +1978,109 @@ class SQLiteResearchGraphExecutionStore:
             if changed:
                 self._bump_generation(conn, execution_id)
             return self._nodes_tx(conn, execution_id, node_ids)
+    def recover_abandoned_owner_generation(
+        self,
+        execution_id: str,
+        *,
+        current_owner_generation_id: str,
+        now_ns: int,
+    ) -> ResearchGraphExecutionSnapshot:
+        """Fence attempts owned by a dead outer runtime generation immediately."""
+
+        now_ns = self._require_now(now_ns)
+        if (
+            type(current_owner_generation_id) is not str
+            or not current_owner_generation_id.strip()
+            or current_owner_generation_id != current_owner_generation_id.strip()
+        ):
+            raise ValueError(
+                "research graph current_owner_generation_id must be canonical text"
+            )
+        current_prefix = (
+            "research-graph-scheduler:"
+            + current_owner_generation_id
+            + ":"
+        )
+        with self._transaction() as conn:
+            self._execution_tx(conn, execution_id)
+            rows = conn.execute(
+                "SELECT node_id,state,attempt_id,lease_owner_id "
+                "FROM research_graph_nodes "
+                "WHERE execution_id=? AND state IN (?,?) "
+                "ORDER BY node_id",
+                (
+                    execution_id,
+                    ResearchGraphLiveNodeState.CLAIMED.value,
+                    ResearchGraphLiveNodeState.RUNNING.value,
+                ),
+            ).fetchall()
+            changed = False
+            for row in rows:
+                node_id = str(row[0])
+                state = ResearchGraphLiveNodeState(str(row[1]))
+                attempt_id = str(row[2])
+                owner_id = str(row[3])
+                if owner_id.startswith(current_prefix):
+                    continue
+                if state is ResearchGraphLiveNodeState.CLAIMED:
+                    conn.execute(
+                        "UPDATE research_graph_nodes SET state=?,attempt_id=NULL,"
+                        "lease_owner_id=NULL,lease_expires_at_ns=NULL "
+                        "WHERE execution_id=? AND node_id=?",
+                        (
+                            ResearchGraphLiveNodeState.READY.value,
+                            execution_id,
+                            node_id,
+                        ),
+                    )
+                    conn.execute(
+                        "UPDATE research_graph_attempts SET state=?,finished_at_ns=? "
+                        "WHERE attempt_id=?",
+                        (
+                            ResearchGraphAttemptState.ABANDONED_BEFORE_START.value,
+                            now_ns,
+                            attempt_id,
+                        ),
+                    )
+                else:
+                    conn.execute(
+                        "UPDATE research_graph_nodes SET state=?,"
+                        "lease_owner_id=NULL,lease_expires_at_ns=NULL "
+                        "WHERE execution_id=? AND node_id=?",
+                        (
+                            ResearchGraphLiveNodeState.RECONCILE_REQUIRED.value,
+                            execution_id,
+                            node_id,
+                        ),
+                    )
+                    conn.execute(
+                        "UPDATE research_graph_attempts SET state=? "
+                        "WHERE attempt_id=?",
+                        (
+                            ResearchGraphAttemptState.RECONCILE_REQUIRED.value,
+                            attempt_id,
+                        ),
+                    )
+                    node_control = self._node_control_tx(
+                        conn,
+                        execution_id,
+                        node_id,
+                    )
+                    if node_control.phase is not (
+                        ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+                    ):
+                        self._write_node_control_phase_tx(
+                            conn,
+                            execution_id,
+                            node_id,
+                            expected_generation=node_control.generation,
+                            phase=ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+                            now_ns=now_ns,
+                        )
+                self._bump_generation(conn, execution_id)
+                changed = True
+            return self._snapshot_tx(conn, execution_id)
+
     def recover_expired(
         self,
         execution_id: str,

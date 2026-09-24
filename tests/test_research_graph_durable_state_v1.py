@@ -384,3 +384,72 @@ def test_cancel_node_subgraph_rejects_active_target_without_partial_mutation(
     assert store.node_control_state(
         "execution-node-cancel-active", "a"
     ).phase is ResearchGraphNodeControlPhase.ACTIVE
+
+
+def test_new_runtime_generation_immediately_fences_abandoned_attempts(tmp_path) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph-generation.sqlite3")
+    store.ensure_execution("generation-recovery", _plan())
+    store.mark_ready_many("generation-recovery", ("a", "b"), now_ns=1)
+
+    claimed = store.claim(
+        "generation-recovery",
+        "a",
+        owner_id="research-graph-scheduler:old-generation:claim",
+        now_ns=2,
+        lease_expires_at_ns=10_000,
+    )
+    running = store.claim(
+        "generation-recovery",
+        "b",
+        owner_id="research-graph-scheduler:old-generation:run",
+        now_ns=2,
+        lease_expires_at_ns=10_000,
+    )
+    store.mark_running(
+        "generation-recovery",
+        "b",
+        attempt_id=running.attempt_id or "",
+        owner_id="research-graph-scheduler:old-generation:run",
+        now_ns=3,
+    )
+
+    recovered = store.recover_abandoned_owner_generation(
+        "generation-recovery",
+        current_owner_generation_id="new-generation",
+        now_ns=4,
+    )
+
+    assert recovered.node("a").state is ResearchGraphLiveNodeState.READY
+    assert recovered.node("b").state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+    assert store.attempts("generation-recovery", "a")[0].state is (
+        ResearchGraphAttemptState.ABANDONED_BEFORE_START
+    )
+    assert store.attempts("generation-recovery", "b")[0].state is (
+        ResearchGraphAttemptState.RECONCILE_REQUIRED
+    )
+    assert store.node_control_state(
+        "generation-recovery", "b"
+    ).phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+    assert claimed.attempt_id != running.attempt_id
+
+
+def test_current_runtime_generation_is_not_stolen_by_recovery(tmp_path) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph-generation-live.sqlite3")
+    store.ensure_execution("generation-live", _plan())
+    store.mark_ready("generation-live", "a", now_ns=1)
+    claim = store.claim(
+        "generation-live",
+        "a",
+        owner_id="research-graph-scheduler:current-generation:worker",
+        now_ns=2,
+        lease_expires_at_ns=10_000,
+    )
+
+    recovered = store.recover_abandoned_owner_generation(
+        "generation-live",
+        current_owner_generation_id="current-generation",
+        now_ns=3,
+    )
+
+    assert recovered.node("a").state is ResearchGraphLiveNodeState.CLAIMED
+    assert recovered.node("a").attempt_id == claim.attempt_id

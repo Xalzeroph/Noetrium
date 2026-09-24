@@ -101,6 +101,7 @@ class ResearchExecutionPool:
         except BaseException:
             self._orchestration.close()
             raise
+        self._owner_generation_id = uuid4().hex
         self._compute_lease_group: TaskGroupPort | None = None
         self._endpoint_lease_group: TaskGroupPort | None = None
         self._environment_lease_group: TaskGroupPort | None = None
@@ -117,6 +118,12 @@ class ResearchExecutionPool:
             raise RuntimeError("research execution pool is closing")
         if self._workloads_quiescing or self._workloads_quiesced:
             raise RuntimeError("research execution pool workloads are quiescing")
+
+    @property
+    def owner_generation_id(self) -> str:
+        """Process-generation fence shared by all schedulers in this pool."""
+
+        return self._owner_generation_id
 
     @property
     def model_admission(self) -> ModelAdmissionRegistryPort:

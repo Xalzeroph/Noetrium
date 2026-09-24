@@ -32,6 +32,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphNodeControlRecord,
     ResearchGraphNodeControlStorePort,
     ResearchGraphNodeExecutionRecord,
+    ResearchGraphOwnerGenerationRecoveryPort,
     ResearchGraphNode,
     ResearchGraphNodeExecutorPort,
     ResearchGraphNodeResult,
@@ -243,9 +244,13 @@ class ResearchGraphScheduler:
         self._execution_store = execution_store
         self._execution_id = execution_id
         self._lease_ns = max(1, int(float(lease_seconds) * 1_000_000_000))
+        self._automatic_owner_generation = scheduler_owner_id is None
         self._scheduler_owner_id = (
             scheduler_owner_id
-            or f"research-graph-scheduler:{uuid4().hex}"
+            or (
+                "research-graph-scheduler:"
+                f"{execution_pool.owner_generation_id}:{uuid4().hex}"
+            )
         )
         self._selected_node_ids = selected
         self._closed = False
@@ -427,6 +432,19 @@ class ResearchGraphScheduler:
         ResearchGraphNodeControlStorePort,
     ]:
         store.ensure_execution(execution_id, self._plan)
+        if (
+            self._automatic_owner_generation
+            and isinstance(store, ResearchGraphOwnerGenerationRecoveryPort)
+        ):
+            # The managed local runtime holds the outer interprocess lock.
+            # Therefore a different pool generation cannot still own live
+            # in-process workers. Reclaim it immediately rather than waiting
+            # for the lease TTL; RUNNING remains reconciliation-required.
+            store.recover_abandoned_owner_generation(
+                execution_id,
+                current_owner_generation_id=self._pool.owner_generation_id,
+                now_ns=now_ns,
+            )
         snapshot = store.recover_expired(execution_id, now_ns=now_ns)
         if not isinstance(store, ResearchGraphControlStorePort):
             raise TypeError(
