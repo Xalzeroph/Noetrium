@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "embodied_videoagent_iccv2025",
-  "package_digest": "ccd4855d2d2efc34ccf50639ea1017bd9e2349ebaea9860f8aae8c3ca96123ce",
+  "package_digest": "9a047718a03ce66b75b90a01fdebb3fed38fc5f123a76c232dc3a210e8446fd5",
   "definition_digest": "acac825e01b68f68aa50634cb0146cc694556b4af078498edfdb26d9976c9604",
   "source_registry_digest": "02d0e0637b0b444d9c44e4be5e0d96c4e51df06bfe95c4adec1184fc215fecb6",
   "lifecycle": "protocol_bound",
@@ -86,13 +86,13 @@
       "kind": "method_program",
       "path": "research/reproductions/embodied_videoagent_iccv2025/program.py",
       "declaration_digest": "8a2090f198b1e58e39bd83bf1b1d358058e6fdb1eab3d868174d7dc3e2179392",
-      "content_sha256": "93f4a75d6f61c7e18ff20d94051aaf4a26ffb3dc97f5525b8926f6539b0fac16"
+      "content_sha256": "6c79461e320af4e8368cc35a8e0388df793280c90bc27d6f2bba9af803ac2b16"
     },
     {
       "kind": "study",
       "path": "research/reproductions/embodied_videoagent_iccv2025/study.py",
       "declaration_digest": "605bf49d8f58d632164f80e937b9e9b9c549da90058bbd26ec716263af4e75ae",
-      "content_sha256": "b19fe38279d9312bc66755f1cd9bd63fa9d4a481026f0ffad9d2018837d85f05"
+      "content_sha256": "01329bf88e789fcac560b4a8cd20018e8637544654944f6f9ee159777c47003a"
     }
   ],
   "primary_executable": "research/reproductions/embodied_videoagent_iccv2025/program.py",

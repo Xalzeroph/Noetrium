@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "exact_vwa",
-  "package_digest": "3679e422c52cf335d9cf35e787c220beab6c694b812ca0404b8aa5e5b36b9e50",
+  "package_digest": "1559d7bfd9866f3096af0e3d76485fe112259642115fc2079a2c7b39de2ac48b",
   "definition_digest": "d368ab60e481a14d2fbcffbe82133ebf04ae33f249a0dbdf4023b2a6fc508174",
   "source_registry_digest": "b93999f0360494ac406ad8ced88c7229b3dcf0d13127db266739961ddbd1bfdd",
   "lifecycle": "protocol_bound",
@@ -83,13 +83,13 @@
       "kind": "method_program",
       "path": "research/reproductions/exact_vwa/program.py",
       "declaration_digest": "10f230739802ccc7d61e0de03b11087f64f13287a3c1a155ce8b1249ea20fe48",
-      "content_sha256": "d0aeb6beb809cc505955fb2ad0fe45bd3f32f838502891a1548efde9b05d71f8"
+      "content_sha256": "1aaf6cb371ac904caaa921b5ea0b4e9af4ec734514ecc89057de814dca825d9c"
     },
     {
       "kind": "study",
       "path": "research/reproductions/exact_vwa/study.py",
       "declaration_digest": "edafb18475de48eef7e51e7daf752b404e9306bd69bb05d2107cefe5d3d7bbdd",
-      "content_sha256": "9f0fab2e3cfdb45a95eff82955728b14208cc3bfad98c2388e92072804db0b12"
+      "content_sha256": "c253550f6ff4f0af91ebee1154fb074e2ff4049680aabf7133e513653a712264"
     },
     {
       "kind": "support",

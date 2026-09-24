@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flow_modularized_agentic_workflow",
-  "package_digest": "b75cb72ffe6a6736e3702bb85744f4f10803a551730173e2874929d5ab33d675",
+  "package_digest": "d7b384de49f85dac1187e549a225fa7d5e9f791e2f663dcc8a962b8d7c2f2a8c",
   "definition_digest": "c0df097174fd40ce218adc9f396a11ad78c05b08fd6b8b3219e047b249be0bee",
   "source_registry_digest": "871ee9bf57337e607fa5a5ed65434e3cc122df43f3db5d6cca12cb61261175b4",
   "lifecycle": "protocol_bound",
@@ -101,13 +101,13 @@
       "kind": "fidelity",
       "path": "research/reproductions/flow_modularized_agentic_workflow/fidelity.py",
       "declaration_digest": "7a4844512bb7b8e5cc60fa1a13ceebf4bd03d28b8924119efabe8ea9ac93d110",
-      "content_sha256": "e388f25b952b5eedac0cfcc0ac803bc9d5e7419c65ea69569cdcf1dcab78c5ba"
+      "content_sha256": "492d8b6d151a1da50691c8b26273a8640eae11498f5874f652b5aa0598bf093a"
     },
     {
       "kind": "method_program",
       "path": "research/reproductions/flow_modularized_agentic_workflow/program.py",
       "declaration_digest": "b23853deec72c22470ffc8faa73752f14810502848becd42856eae3632e7b79c",
-      "content_sha256": "4af7f5d314fcf763ad888121aed5eea8b4323de44f99f4400ffe74dc1604a682"
+      "content_sha256": "4de77301bbfa3741f8fc6cb04441642a190366dab1ca15f750ac4c380c3dd535"
     },
     {
       "kind": "research_program",
@@ -119,13 +119,13 @@
       "kind": "study",
       "path": "research/reproductions/flow_modularized_agentic_workflow/study.py",
       "declaration_digest": "9c20d9d1979920e7438767f0a88f7b5ebb36de9c6e4f90aef1f8205d8c19a663",
-      "content_sha256": "c0ad421c08aefcd32244faacf3d31c53b40ffe3629f966429a32972c50138028"
+      "content_sha256": "4d15e29de57623a87511468ce83844f75768eabd21100d9f24c0870c70b9e4ba"
     },
     {
       "kind": "support",
       "path": "research/reproductions/flow_modularized_agentic_workflow/aov.py",
       "declaration_digest": "495df6a8f4b8ae1fd3dcce506c39e6d0cb618bd197a9bf0604239b371ea2b270",
-      "content_sha256": "83192ab25673afb8cacba54637a884b5cb99d5938370e0fe95c221028b629687"
+      "content_sha256": "f8d49cf9c20967cc58da34c9f04a1e2c99cf58879be9cb8b824ce653021163dd"
     }
   ],
   "primary_executable": "research/reproductions/flow_modularized_agentic_workflow/program.py",
