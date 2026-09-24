@@ -10,6 +10,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskGroupPort,
 )
 from noetrium_platform.infrastructure.resources.compute.api import (
+    ComputeAllocation,
     ComputeLeaseGuardPort,
     ComputeLeasePolicy,
     ComputeSchedulerPort,
@@ -28,21 +29,29 @@ class ComputeLeaseHeartbeatGuard:
         self,
         *,
         scheduler: ComputeSchedulerPort,
-        allocation_ids: tuple[str, ...],
+        allocation_rows: tuple[ComputeAllocation, ...],
         task_group: TaskGroupPort,
         heartbeat_scheduler: HeartbeatSchedulerPort,
         lane_id: str,
         lane_capacity: int | None = None,
         policy: ComputeLeasePolicy = DEFAULT_COMPUTE_LEASE_POLICY,
     ) -> None:
-        if not allocation_ids or len(set(allocation_ids)) != len(allocation_ids):
+        if (
+            not allocation_rows
+            or any(type(row) is not ComputeAllocation for row in allocation_rows)
+        ):
+            raise ValueError(
+                "compute lease heartbeat requires typed allocation generations"
+            )
+        allocation_ids = tuple(row.allocation_id for row in allocation_rows)
+        if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("compute lease heartbeat requires unique allocation ids")
         if not lane_id.strip():
             raise ValueError("compute lease heartbeat lane_id required")
         if lane_capacity is not None and lane_capacity <= 0:
             raise ValueError("compute lease heartbeat lane capacity must be positive")
         self._scheduler = scheduler
-        self._allocation_ids = allocation_ids
+        self._allocation_rows = allocation_rows
         self._task_group = task_group
         self._heartbeat_scheduler = heartbeat_scheduler
         self._lane_id = lane_id
@@ -64,7 +73,9 @@ class ComputeLeaseHeartbeatGuard:
             self._scheduled = self._heartbeat_scheduler.register(
                 self._task_group.group_id,
                 HeartbeatSpec(
-                    heartbeat_id="compute-lease:" + ",".join(self._allocation_ids),
+                    heartbeat_id="compute-lease:" + ",".join(
+                        row.allocation_id for row in self._allocation_rows
+                    ),
                     lane_id=self._lane_id,
                     interval_seconds=self._policy.renewal_interval_seconds,
                     initial_delay_seconds=self._policy.renewal_interval_seconds,
@@ -75,10 +86,14 @@ class ComputeLeaseHeartbeatGuard:
 
     def _renew_once(self, context: TaskContextPort) -> None:
         context.checkpoint()
-        self._scheduler.renew_many(
-            self._allocation_ids,
+        with self._lock:
+            expected = self._allocation_rows
+        renewed = self._scheduler.renew_many(
+            expected,
             ttl_seconds=self._policy.ttl_seconds,
         )
+        with self._lock:
+            self._allocation_rows = renewed
         context.checkpoint()
 
     def assert_healthy(self) -> None:
@@ -132,10 +147,13 @@ class ComputeLeaseHeartbeatFactory:
     def policy(self) -> ComputeLeasePolicy:
         return self._policy
 
-    def create(self, allocation_ids: tuple[str, ...]) -> ComputeLeaseGuardPort:
+    def create(
+        self,
+        allocations: tuple[ComputeAllocation, ...],
+    ) -> ComputeLeaseGuardPort:
         return ComputeLeaseHeartbeatGuard(
             scheduler=self._scheduler,
-            allocation_ids=allocation_ids,
+            allocation_rows=allocations,
             task_group=self._task_group,
             heartbeat_scheduler=self._heartbeat_scheduler,
             lane_id=self._lane_id,
