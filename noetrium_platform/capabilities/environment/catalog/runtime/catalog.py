@@ -101,7 +101,7 @@ class ExecutionEnvironmentCatalog:
             )
         self._profile_revisions[key] = profile
 
-    def profile_revision(
+    def _profile_revision_local(
         self,
         profile_id: str,
         profile_revision: str,
@@ -113,6 +113,13 @@ class ExecutionEnvironmentCatalog:
                 ("profile-revision", profile_id, profile_revision)
             ) from exc
 
+    def profile_revision(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> EnvironmentProfileRevision:
+        return self._profile_revision_local(profile_id, profile_revision)
+
     def register_profile_materialization(
         self,
         materialization: EnvironmentProfileMaterialization,
@@ -122,7 +129,7 @@ class ExecutionEnvironmentCatalog:
                 "environment materialization registration requires "
                 "EnvironmentProfileMaterialization"
             )
-        self.profile_revision(
+        self._profile_revision_local(
             materialization.profile_id,
             materialization.profile_revision,
         )
@@ -132,7 +139,7 @@ class ExecutionEnvironmentCatalog:
             materialization,
         )
 
-    def profile_materialization(
+    def _profile_materialization_local(
         self,
         materialization_digest: str,
     ) -> EnvironmentProfileMaterialization:
@@ -143,12 +150,18 @@ class ExecutionEnvironmentCatalog:
                 ("profile-materialization", materialization_digest)
             ) from exc
 
+    def profile_materialization(
+        self,
+        materialization_digest: str,
+    ) -> EnvironmentProfileMaterialization:
+        return self._profile_materialization_local(materialization_digest)
+
     def profile_materializations(
         self,
         profile_id: str,
         profile_revision: str,
     ) -> tuple[EnvironmentProfileMaterialization, ...]:
-        self.profile_revision(profile_id, profile_revision)
+        self._profile_revision_local(profile_id, profile_revision)
         return tuple(
             sorted(
                 (
@@ -171,7 +184,7 @@ class ExecutionEnvironmentCatalog:
             raise TypeError(
                 "environment profile transition requires EnvironmentProfileLifecycle"
             )
-        current = self.profile_revision(profile_id, profile_revision)
+        current = self._profile_revision_local(profile_id, profile_revision)
         if current.lifecycle is lifecycle:
             return current
         allowed = {
@@ -207,7 +220,7 @@ class ExecutionEnvironmentCatalog:
         profile_id: str,
         profile_revision: str,
     ) -> EnvironmentProfileRevision:
-        profile = self.profile_revision(profile_id, profile_revision)
+        profile = self._profile_revision_local(profile_id, profile_revision)
         if profile.lifecycle is not EnvironmentProfileLifecycle.ACTIVE:
             raise EnvironmentCatalogConflict(
                 "environment profile revision does not admit new work: "
@@ -226,7 +239,7 @@ class ExecutionEnvironmentCatalog:
         role: str,
         scope: ScopeIdentity,
     ) -> tuple[EnvironmentBinding, EnvironmentInstance]:
-        profile = self.profile_revision(profile_id, profile_revision)
+        profile = self._profile_revision_local(profile_id, profile_revision)
         if profile.lifecycle is EnvironmentProfileLifecycle.RETIRED:
             raise EnvironmentCatalogConflict(
                 "retired environment profile revisions cannot enter live execution"
@@ -258,7 +271,7 @@ class ExecutionEnvironmentCatalog:
         self,
         instance: EnvironmentInstance,
     ) -> EnvironmentProfileMaterialization:
-        materialization = self.profile_materialization(
+        materialization = self._profile_materialization_local(
             instance.materialization_digest
         )
         expected = (
