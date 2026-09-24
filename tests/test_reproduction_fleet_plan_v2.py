@@ -9,39 +9,43 @@ def _lane(plan: dict, package: str) -> dict:
     return rows[0]
 
 
-def test_fleet_plan_uses_program_requirements_instead_of_runtime_file_guessing() -> None:
+def test_fleet_plan_is_derived_only_from_current_research_os_compilers() -> None:
     plan = build_plan()
-    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v2"
-    assert plan["protocol_bound_count"] == 91
-    assert all("runtime_binding_missing" not in row["blockers"] for row in plan["lanes"])
+    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v3"
+    assert plan["protocol_bound_count"] >= 91
+    assert plan["compile_failure_count"] == 0
+    assert plan["research_os_compiled_count"] == plan["protocol_bound_count"]
+    assert plan["graph_node_count"] == plan["protocol_bound_count"]
+    assert len(plan["portfolio_digest"]) == 64
+    assert len(plan["graph_digest"]) == 64
+    assert len(plan["plan_digest"]) == 64
+    for row in plan["lanes"]:
+        assert row["state"] == "research_os_compiled"
+        assert row["study_factory_count"] >= 1
+        assert len(row["research_program_digest"]) == 64
+        assert len(row["research_graph_semantic_digest"]) == 64
+        assert row["research_graph_node_id"] == row["package"] + "::reproduction"
 
-    cot = _lane(plan, "chain_of_thought_gsm8k")
-    assert cot["state"] == "runnable"
-    assert cot["runtime_mode"] == "direct_main"
+
+def test_fleet_plan_exposes_exact_vs_parameterized_study_bindings() -> None:
+    plan = build_plan()
+    react = _lane(plan, "react_alfworld")
+    assert react["exact_study_factory_count"] >= 1
+    assert react["unresolved_study_parameters"] == ()
 
     adapt = _lane(plan, "adaptagent_acl2025")
-    assert adapt["runtime_mode"] == "declarative"
-    assert adapt["runtime_ports"] == ("agent_loop",)
-    assert "runtime_port_unbound:agent_loop" in adapt["blockers"]
-    assert adapt["program_digest"]
-    assert adapt["runtime_requirements_digest"]
+    assert "split_id" in adapt["unresolved_study_parameters"]
 
-    chatdev = _lane(plan, "chatdev_v1")
-    assert "child_machines" in chatdev["runtime_ports"]
-    assert "runtime_port_unbound:child_machines" in chatdev["blockers"]
-
-    worldmm = _lane(plan, "worldmm_memory")
-    assert worldmm["runtime_ports"] == ("capabilities", "child_machines")
-    assert "worldmm.answer.generate" in worldmm["capability_ids"]
-    assert "worldmm.reasoning.generate" in worldmm["capability_ids"]
+    frontier = _lane(plan, "astranav_memory_cvpr2026")
+    assert "benchmark_split_id" in frontier["unresolved_study_parameters"]
+    assert frontier["study_factory_count"] >= 1
 
 
-def test_fleet_plan_resolves_zero_argument_public_method_factory_only() -> None:
+def test_fleet_plan_keeps_parameterized_method_factories_explicit() -> None:
     plan = build_plan()
-    metagpt = _lane(plan, "metagpt_software_company")
-    assert metagpt["program_export"] == "build_metagpt_software_company_method_program()"
-    assert metagpt["program_digest"]
-
     toolformer = _lane(plan, "toolformer")
-    assert toolformer["program_export"] is None
-    assert "program_factory_requires_binding" in toolformer["blockers"]
+    assert toolformer["method_program_digest"] is None
+    assert any(
+        blocker.startswith("method_factory_requires_binding:")
+        for blocker in toolformer["blockers"]
+    )
