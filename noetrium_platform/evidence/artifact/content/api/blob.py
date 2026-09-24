@@ -1,10 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import ContextManager, Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import require_sha256
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierReferenceClosure,
+    canonical_digest,
+    durable_carrier_gc_eligible,
+    require_sha256,
+    validate_durable_carrier_closures,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,6 +31,66 @@ class ArtifactBlobLifecycleState(StrEnum):
     ACTIVE = "active"
     RETIRING = "retiring"
     PURGED = "purged"
+
+
+@dataclass(frozen=True, slots=True)
+class ArtifactBlobGcAssessment:
+    """Typed proof binding physical blob GC to one exact CAS generation."""
+
+    content_sha256: str
+    size_bytes: int
+    generation: int
+    closures: tuple[DurableCarrierReferenceClosure, ...] = ()
+    proof_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        require_sha256(
+            self.content_sha256,
+            "artifact blob GC content_sha256",
+        )
+        if (
+            isinstance(self.size_bytes, bool)
+            or not isinstance(self.size_bytes, int)
+            or self.size_bytes < 0
+        ):
+            raise ValueError(
+                "artifact blob GC size_bytes must be a non-negative integer"
+            )
+        if (
+            isinstance(self.generation, bool)
+            or not isinstance(self.generation, int)
+            or self.generation <= 0
+        ):
+            raise ValueError(
+                "artifact blob GC generation must be a positive integer"
+            )
+        validate_durable_carrier_closures(self.closures)
+        object.__setattr__(
+            self,
+            "proof_digest",
+            canonical_digest(
+                {
+                    "schema": "artifact.blob-gc-assessment.v1",
+                    "content_sha256": self.content_sha256,
+                    "size_bytes": self.size_bytes,
+                    "generation": self.generation,
+                    "closures": [
+                        {
+                            "authority": closure.authority.value,
+                            "proof_digest": closure.proof_digest,
+                            "retained_reference_ids": list(
+                                closure.retained_reference_ids
+                            ),
+                        }
+                        for closure in self.closures
+                    ],
+                }
+            ),
+        )
+
+    @property
+    def eligible(self) -> bool:
+        return durable_carrier_gc_eligible(self.closures)
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,10 +143,16 @@ class ArtifactBlobFencePort(Protocol):
 
     def read(self) -> bytes: ...
 
+    def assess_gc(
+        self,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> ArtifactBlobGcAssessment: ...
+
     def purge(
         self,
         *,
-        gc_proof_digest: str,
+        gc: ArtifactBlobGcAssessment,
     ) -> ArtifactBlobGeneration: ...
 
 
@@ -105,12 +177,18 @@ class ArtifactBlobLifecyclePort(Protocol):
         ref: ArtifactBlobRef,
     ) -> ArtifactBlobGeneration: ...
 
+    def assess_gc(
+        self,
+        ref: ArtifactBlobRef,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> ArtifactBlobGcAssessment: ...
+
     def purge(
         self,
         ref: ArtifactBlobRef,
         *,
-        expected_generation: int,
-        gc_proof_digest: str,
+        gc: ArtifactBlobGcAssessment,
     ) -> ArtifactBlobGeneration: ...
 
 
@@ -142,6 +220,7 @@ class ArtifactBlobStorePort(Protocol):
 
 __all__ = [
     "ArtifactBlobFencePort",
+    "ArtifactBlobGcAssessment",
     "ArtifactBlobGeneration",
     "ArtifactBlobLifecyclePort",
     "ArtifactBlobLifecycleState",
