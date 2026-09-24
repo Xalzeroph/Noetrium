@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 from time import time
+from uuid import uuid4
 
 from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentCatalogPort,
@@ -91,10 +92,22 @@ class ModelReplicaPlacement:
 @dataclass(frozen=True, slots=True)
 class ModelReplicaPoolReport:
     request_digest: str
+    placement_generation_id: str
     placements: tuple[ModelReplicaPlacement, ...]
     report_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
+        if (
+            type(self.placement_generation_id) is not str
+            or len(self.placement_generation_id) != 32
+            or any(
+                character not in "0123456789abcdef"
+                for character in self.placement_generation_id
+            )
+        ):
+            raise ValueError(
+                "model replica pool placement_generation_id must be uuid4 hex"
+            )
         if not self.placements:
             raise ValueError("model replica pool report requires placements")
         if len({row.deployment_id for row in self.placements}) != len(self.placements):
@@ -105,6 +118,7 @@ class ModelReplicaPoolReport:
             canonical_digest(
                 {
                     "request_digest": self.request_digest,
+                    "placement_generation_id": self.placement_generation_id,
                     "placements": tuple(row.placement_digest for row in self.placements),
                 }
             ),
@@ -194,7 +208,7 @@ class ModelReplicaPoolLease:
                 if allocation_id in self._released_endpoint_ids:
                     continue
                 try:
-                    self._endpoint_allocations.release(allocation_id)
+                    self._endpoint_allocations.release(row.endpoint)
                 except BaseException as exc:
                     errors.append(exc)
                 else:
@@ -206,7 +220,7 @@ class ModelReplicaPoolLease:
                 if allocation_id in self._released_compute_ids:
                     continue
                 try:
-                    self._compute_scheduler.release(allocation_id)
+                    self._compute_scheduler.release(row.compute)
                 except BaseException as exc:
                     errors.append(exc)
                 else:
@@ -268,10 +282,14 @@ class LocalModelReplicaPoolRuntime:
         request: ModelReplicaPoolRequest,
         *,
         replica_index: int,
+        placement_generation_id: str,
         endpoint: EndpointAllocation,
         compute: ComputeAllocation,
     ) -> ModelDeploymentSpec:
-        deployment_id = f"{request.pool_id}-replica-{replica_index:03d}"
+        deployment_id = (
+            f"{request.pool_id}-generation-{placement_generation_id[:16]}"
+            f"-replica-{replica_index:03d}"
+        )
         common = dict(
             deployment_id=deployment_id,
             scope=request.scope,
@@ -294,6 +312,7 @@ class LocalModelReplicaPoolRuntime:
             *request.tags,
             "auto-managed",
             f"replica-pool:{request.pool_id}",
+            f"placement-generation:{placement_generation_id}",
         }))
         from dataclasses import replace
         return replace(spec, desired_state=ModelDesiredState.RUNNING, tags=tags)
@@ -302,6 +321,7 @@ class LocalModelReplicaPoolRuntime:
         if not isinstance(request, ModelReplicaPoolRequest):
             raise TypeError("model replica pool requires ModelReplicaPoolRequest")
         request_digest = canonical_digest(request)
+        placement_generation_id = uuid4().hex
         target_count = self._target_count(request)
         compute_rows: list[ComputeAllocation] = []
         endpoint_rows: list[EndpointAllocation] = []
@@ -310,7 +330,10 @@ class LocalModelReplicaPoolRuntime:
         endpoint_guard = None
         try:
             for index in range(target_count):
-                allocation_id = f"model-pool:{request.pool_id}:{request_digest[:16]}:{index}:compute"
+                allocation_id = (
+                    f"model-pool:{request.pool_id}:{placement_generation_id}:"
+                    f"{index}:compute"
+                )
                 try:
                     compute = self._compute_scheduler.allocate(
                         allocation_id,
@@ -326,7 +349,7 @@ class LocalModelReplicaPoolRuntime:
                 compute_rows.append(compute)
                 endpoint = self._endpoint_allocations.allocate_auto(
                     allocation_id=(
-                        f"model-pool:{request.pool_id}:{request_digest[:16]}:"
+                        f"model-pool:{request.pool_id}:{placement_generation_id}:"
                         f"{index}:endpoint"
                     ),
                     holder_scope=request.scope,
@@ -340,6 +363,7 @@ class LocalModelReplicaPoolRuntime:
                 spec = self._deployment(
                     request,
                     replica_index=index,
+                    placement_generation_id=placement_generation_id,
                     endpoint=endpoint,
                     compute=compute,
                 )
@@ -349,10 +373,10 @@ class LocalModelReplicaPoolRuntime:
                 raise RuntimeError("automatic model replica pool produced no deployment")
 
             compute_guard = self._compute_lease_guards.create(
-                tuple(row.allocation_id for row in compute_rows)
+                tuple(compute_rows)
             )
             endpoint_guard = self._endpoint_lease_guards.create(
-                tuple(row.allocation_id for row in endpoint_rows)
+                tuple(endpoint_rows)
             )
             compute_guard.start()
             endpoint_guard.start()
@@ -391,7 +415,11 @@ class LocalModelReplicaPoolRuntime:
                     ModelReplicaPlacement(index, spec.deployment_id, compute, bound, spec, status)
                 )
 
-            report = ModelReplicaPoolReport(request_digest, tuple(placements))
+            report = ModelReplicaPoolReport(
+                request_digest,
+                placement_generation_id,
+                tuple(placements),
+            )
             lease = ModelReplicaPoolLease(
                 report,
                 deployment_runtime=self._deployment_runtime,
@@ -432,13 +460,13 @@ class LocalModelReplicaPoolRuntime:
             if deployments_removed and endpoint_guard_closed:
                 for endpoint in reversed(endpoint_rows):
                     try:
-                        self._endpoint_allocations.release(endpoint.allocation_id)
+                        self._endpoint_allocations.release(endpoint)
                     except BaseException as exc:
                         cleanup_errors.append(exc)
             if deployments_removed and compute_guard_closed:
                 for compute in reversed(compute_rows):
                     try:
-                        self._compute_scheduler.release(compute.allocation_id)
+                        self._compute_scheduler.release(compute)
                     except BaseException as exc:
                         cleanup_errors.append(exc)
 
