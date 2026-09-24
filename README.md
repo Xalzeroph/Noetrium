@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:fe58dc78f1f88f005dd5ef21f96e7098d741120348c4bdde5ca91bbc82146271 -->
+<!-- readme-source-sha256:5874a304fd3177c1b2e6f404e371b6e8d21cb121d60169fff96f0b3dc7b7c0b2 -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -232,8 +232,6 @@ Noetrium is <strong>authority-shaped</strong>, not directory-shaped. A package i
 
 ### Programmable Machine family
 
-Noetrium deliberately keeps the family small.
-
 | Domain | Canonical program model |
 | --- | --- |
 | Method | <code>MethodProgram</code> + Universal Method Machine |
@@ -250,21 +248,17 @@ A new paper-variable concern should first be represented as a Program, module, r
 
 ### Canonical execution path
 
-Accepted method/runtime semantics converge on one execution truth path:
-
 <strong>Program -> interpreter / host -> command or proposal -> MachineExecutor -> Machine Journal -> evidence / artifact / effect references.</strong>
 
-UMM remains the method interpreter; it is not a second durability authority. A model call, environment action, tool call, optimization step or experiment decision does not become scientific truth because a Python function returned. It becomes authoritative only when the owning transition/effect/evidence boundary accepts it.
+UMM remains the method interpreter; it is not a second durability authority. A model call, environment action, tool call, optimization step or experiment decision becomes authoritative only when the owning transition/effect/evidence boundary accepts it.
 
 ### One owner per mechanism
 
-The same rule applies below the scientific layer. Shared primitives such as SQLite durability, content addressing, CAS/fencing, concurrency pools, leases, timers/heartbeats and checkpoints are centralized. Domain systems consume the primitive; they do not grow private copies because their call site is different.
+Shared primitives such as SQLite durability, content addressing, CAS/fencing, concurrency pools, leases, timers/heartbeats and checkpoints are centralized. Domain systems consume the primitive; they do not grow private copies because their call site is different.
 
-This distinction keeps semantic scheduling separate from physical scheduling. Runtime may define paper-variable logical order, barriers or quorum semantics. Resource and execution infrastructure own physical admission, worker capacity, leases and placement.
+Semantic scheduling and physical scheduling remain separate: Runtime may define paper-variable logical order, barriers or quorum semantics; resource and execution infrastructure own physical admission, worker capacity, leases and placement.
 
 ### One execution lifecycle
-
-A research execution follows one stable lifecycle:
 
 1. <strong>Define</strong> — express study, program, provider, resource and evidence intent.
 2. <strong>Compose</strong> — bind capabilities and scopes explicitly.
@@ -421,21 +415,21 @@ The repository uses a hierarchical test taxonomy so every test belongs to an exp
 
 ## Design principles
 
-1. <strong>One truth, one authority.</strong> Every durable fact, transition, effect certainty and immutable binding has one acceptance owner.
-2. <strong>One mechanism, one canonical implementation.</strong> Shared durability, concurrency, leasing, CAS, checkpointing and content primitives are reused instead of copied.
-3. <strong>Composition is wiring, not ownership.</strong> A composition root may assemble systems but must not retain a shadow state machine.
-4. <strong>Programs own scientific semantics.</strong> Paper-variable behavior belongs in Programs, modules, rules, policies, sub-IR or operation handlers before a new runtime is considered.
-5. <strong>Machine Journal is execution truth.</strong> Checkpoints, snapshots, progress stores and projections are bound to accepted cuts.
-6. <strong>Effects are evidence-bearing.</strong> <code>UNKNOWN</code> remains unknown until reconciliation proves otherwise.
-7. <strong>Physical scheduling is infrastructure.</strong> Resource placement and worker concurrency must not silently become scientific semantics.
-8. <strong>Observation is not authority.</strong> Logs, telemetry, diagnostics, forensics and UIs are read-side surfaces unless explicitly accepting their own domain truth.
-9. <strong>Fail closed.</strong> Missing identity, ambiguous binding, stale revision, unproven effect or unsafe recovery state is rejected rather than downgraded.
-10. <strong>No compatibility shadow path.</strong> The platform converges on the canonical contract rather than carrying fallback runners, aliases or silent legacy behavior.
-11. <strong>Exact revision matters.</strong> Reproducibility and release claims bind source, program, model, environment, provider and evidence identities.
-12. <strong>Downstream owns novelty.</strong> New papers should mostly change research Programs and bindings, not platform internals.
-13. <strong>Architecture is executable.</strong> Registry topology, boundary rules, complexity budgets and single-authority invariants are enforced by gates.
-14. <strong>Performance preserves semantics.</strong> Parallelism, batching and resource saturation may improve throughput without weakening authority or evidence guarantees.
-15. <strong>Delete before adding.</strong> End-state convergence prefers merge, inline, reuse and removal over new systems, new authorities or new runners.
+1. <strong>One truth, one authority.</strong>
+2. <strong>One mechanism, one canonical implementation.</strong>
+3. <strong>Composition is wiring, not ownership.</strong>
+4. <strong>Programs own paper-variable scientific semantics.</strong>
+5. <strong>Machine Journal is scientific execution truth.</strong>
+6. <strong>Effects are evidence-bearing; UNKNOWN remains unknown.</strong>
+7. <strong>Physical scheduling is infrastructure, not paper semantics.</strong>
+8. <strong>Observation is not authority.</strong>
+9. <strong>Fail closed on ambiguity, stale identity and unsafe recovery.</strong>
+10. <strong>No compatibility shadow path or silent downgrade.</strong>
+11. <strong>Exact source/program/provider revision is part of reproducibility.</strong>
+12. <strong>Downstream owns scientific novelty.</strong>
+13. <strong>Architecture invariants are executable gates.</strong>
+14. <strong>Performance optimization must preserve semantics.</strong>
+15. <strong>Delete before adding during end-state convergence.</strong>
 
 <!-- readme-section:extending -->
 
@@ -533,7 +527,7 @@ Third-party components remain governed by their own licenses; see THIRD_PARTY_NO
 
 Noetrium 0.44.0 is the current package baseline. The architecture is in <strong>end-state convergence</strong>: the top-level Research OS, programmable Machine model, canonical Machine execution path, domain authority boundaries and shared kernel mechanisms are established; active work is focused on eliminating duplicate implementations, compressing unnecessary contracts/subsystems, synchronizing generated projections with exact <code>main</code>, stress-testing failure/concurrency paths and closing release gates.
 
-This distinction is important. The project is no longer treating every new paper requirement as a reason to add another runner, storage path or system. The convergence rule is the opposite: <strong>merge, delete, centralize, inline, reuse, profile, benchmark, stress and gate</strong>.
+The project is no longer treating every new paper requirement as a reason to add another runner, storage path or system. The convergence rule is: <strong>merge, delete, centralize, inline, reuse, profile, benchmark, stress and gate</strong>.
 
 Noetrium is not a hosted agent product and it does not own downstream scientific claims. Downstream projects bind their own methods, benchmarks, model choices, experiment matrices and interpretations. The platform supplies the reusable Research OS, execution/evidence substrate and authority discipline around those projects.
 
