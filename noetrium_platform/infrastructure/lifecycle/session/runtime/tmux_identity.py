@@ -5,17 +5,11 @@ import hashlib
 import json
 from pathlib import Path
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
+
 
 class TmuxBinaryIdentityMismatch(RuntimeError):
     pass
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,7 +34,7 @@ class TmuxTransportIdentity:
         path = Path(executable)
         if expected_binary_sha256 is not None and len(expected_binary_sha256) != 64:
             raise ValueError("tmux binary identity must be SHA-256")
-        actual = sha256_file(path) if path.is_file() else None
+        actual = sha256_file(path)[0] if path.is_file() else None
         frozen = actual if expected_binary_sha256 is None else expected_binary_sha256
         if actual is not None and frozen is not None and actual != frozen:
             raise TmuxBinaryIdentityMismatch("tmux binary bytes differ from frozen expected identity")
@@ -92,4 +86,4 @@ class TmuxTransportIdentity:
         return hashlib.sha256(raw).hexdigest()
 
 
-__all__ = ["TmuxBinaryIdentityMismatch", "TmuxTransportIdentity", "sha256_file"]
+__all__ = ["TmuxBinaryIdentityMismatch", "TmuxTransportIdentity"]
