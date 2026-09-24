@@ -1,8 +1,8 @@
 """nsh command line and SDK facade for canonical program compilation.
 
-nsh is a compiler/verifier surface. Research Run lifecycle belongs to the
-journal-backed RunProgram/RunControl authority and is intentionally not exposed
-through a second generic run command ABI.
+nsh is a compiler/verifier surface. Research execution lifecycle belongs to the
+canonical Research OS control authority and is intentionally not exposed through
+a second generic run command ABI.
 """
 from __future__ import annotations
 
