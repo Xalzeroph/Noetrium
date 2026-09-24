@@ -5,6 +5,71 @@ ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 BOOTSTRAP_IMAGE="${NOETRIUM_BOOTSTRAP_IMAGE:-noetrium/environment-builder:local}"
 DOCKER_CLI_IMAGE="${NOETRIUM_DOCKER_CLI_IMAGE:-docker:27-cli}"
 WORK_ROOT="${NOETRIUM_BUILD_WORK_ROOT:-$ROOT/.noetrium/environment-images}"
+BOOTSTRAP_MANAGED_LABEL="io.noetrium.bootstrap-managed"
+BOOTSTRAP_MANAGED_VALUE="control-v1"
+BOOT_ID="$(cat /proc/sys/kernel/random/boot_id 2>/dev/null || printf 'unknown')"
+OWNER_START="$(awk '{print $22}' "/proc/$/stat" 2>/dev/null || printf 'unknown')"
+BOOTSTRAP_CONTAINER_NAME="noetrium-bootstrap-$(printf '%s' "$BOOT_ID" | tr -cd '[:alnum:]' | cut -c1-12)-$"
+BOOTSTRAP_ACTIVE=0
+
+bootstrap_owner_alive() {
+  pid="$1"
+  boot="$2"
+  start="$3"
+  [ "$boot" = "$BOOT_ID" ] || return 1
+  [ "$pid" -gt 0 ] 2>/dev/null || return 1
+  [ -r "/proc/$pid/stat" ] || return 1
+  current_start="$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null || true)"
+  [ -n "$current_start" ] && [ "$current_start" = "$start" ]
+}
+
+reconcile_bootstrap_containers() {
+  ids="$(docker ps -aq --filter "label=$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE" 2>/dev/null || true)"
+  [ -n "$ids" ] || return 0
+  for id in $ids; do
+    metadata="$(docker inspect --format '{{index .Config.Labels "io.noetrium.bootstrap-owner-pid"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-boot"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-start"}}|{{.State.Running}}' "$id" 2>/dev/null || true)"
+    [ -n "$metadata" ] || continue
+    old_ifs="$IFS"
+    IFS='|'
+    set -- $metadata
+    IFS="$old_ifs"
+    owner_pid="${1:-}"
+    owner_boot="${2:-}"
+    owner_start="${3:-}"
+    running="${4:-false}"
+    if [ "$running" = "true" ] && bootstrap_owner_alive "$owner_pid" "$owner_boot" "$owner_start"; then
+      continue
+    fi
+    docker rm -f "$id" >/dev/null 2>&1 || true
+  done
+}
+
+bootstrap_cleanup() {
+  status=$?
+  trap - EXIT HUP INT TERM
+  if [ "$BOOTSTRAP_ACTIVE" = "1" ]; then
+    docker rm -f "$BOOTSTRAP_CONTAINER_NAME" >/dev/null 2>&1 || true
+    BOOTSTRAP_ACTIVE=0
+  fi
+  exit "$status"
+}
+
+run_bootstrap_container() {
+  BOOTSTRAP_ACTIVE=1
+  trap bootstrap_cleanup EXIT HUP INT TERM
+  # shellcheck disable=SC2086
+  docker run --rm --init --restart no \
+    --name "$BOOTSTRAP_CONTAINER_NAME" \
+    --label "$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE" \
+    --label "io.noetrium.bootstrap-owner-pid=$" \
+    --label "io.noetrium.bootstrap-owner-boot=$BOOT_ID" \
+    --label "io.noetrium.bootstrap-owner-start=$OWNER_START" \
+    "$@"
+  status=$?
+  BOOTSTRAP_ACTIVE=0
+  trap - EXIT HUP INT TERM
+  return "$status"
+}
 
 command -v docker >/dev/null 2>&1 || {
   echo "Noetrium environment bootstrap requires Docker on the host." >&2
@@ -15,6 +80,11 @@ docker info >/dev/null 2>&1 || {
   echo "Noetrium environment bootstrap cannot reach the active Docker daemon." >&2
   exit 1
 }
+
+# Reap only Noetrium bootstrap containers whose exact host owner generation is
+# gone. Live concurrent launchers are preserved. This closes the SIGKILL/SSH
+# disconnect orphan case that Docker --rm alone cannot prove away.
+reconcile_bootstrap_containers
 
 # Resolve the daemon endpoint from DOCKER_HOST first and otherwise from the
 # active Docker context. This keeps the host contract at Docker itself rather
@@ -119,30 +189,34 @@ if [ "${1:-}" = "control" ]; then
       exit 1
     }
     # shellcheck disable=SC2086
-    exec docker run --rm --entrypoint python3 $COMMON_ARGS \
+    run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
       --env-file "$CONTROL_ENV_FILE" \
       -v "$WORK_ROOT:$WORK_ROOT" \
       -e NOETRIUM_CONTROL_STATE_ROOT="$WORK_ROOT/control" \
       "$BOOTSTRAP_IMAGE" "$@"
+    exit $?
   fi
   # shellcheck disable=SC2086
-  exec docker run --rm --entrypoint python3 $COMMON_ARGS \
+  run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
     -v "$WORK_ROOT:$WORK_ROOT" \
     -e NOETRIUM_CONTROL_STATE_ROOT="$WORK_ROOT/control" \
     "$BOOTSTRAP_IMAGE" "$@"
+  exit $?
 fi
 
 if [ "${1:-}" = "build" ]; then
   # shellcheck disable=SC2086
-  exec docker run --rm $COMMON_ARGS \
+  run_bootstrap_container $COMMON_ARGS \
     -v "$WORK_ROOT:$WORK_ROOT" \
     "$BOOTSTRAP_IMAGE" \
     "$@" \
     --work-root "$WORK_ROOT" \
     --output "$WORK_ROOT/environment-image-build.json"
+  exit $?
 fi
 
 # shellcheck disable=SC2086
-exec docker run --rm $COMMON_ARGS \
+run_bootstrap_container $COMMON_ARGS \
   "$BOOTSTRAP_IMAGE" \
   "$@"
+exit $?
