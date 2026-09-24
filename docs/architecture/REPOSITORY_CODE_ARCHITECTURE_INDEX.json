@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3637,
-    "python_import_edges": 6906,
-    "symbols": 4833,
-    "tracked_files": 4266,
+    "python_files": 3641,
+    "python_import_edges": 6924,
+    "symbols": 4838,
+    "tracked_files": 4270,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4827,
+    "python": 4832,
     "typescript": 5
   },
   "parse_errors": [],
@@ -19839,6 +19839,18 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "research.reproductions.research_os",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "research.reproductions.research_os",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "research.reproductions.rewind_memory.benchmark",
       "source_role": "research_reproductions",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
@@ -31767,6 +31779,66 @@
       "target_role": "tooling"
     },
     {
+      "source_module": "tests.test_reproduction_research_os_inventory_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_inventory_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_inventory_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_lowering",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_inventory_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_inventory_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_method_binding_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_method_binding_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_method_binding_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_method_binding_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_lowering",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_method_binding_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.chain_of_thought_gsm8k.program",
+      "target_role": "research_reproductions"
+    },
+    {
       "source_module": "tests.test_research_campaign_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
@@ -32232,6 +32304,42 @@
       "source_module": "tests.test_research_graph_scheduler_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_state_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_state_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_state_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_state_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_state_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_state_batch_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
       "target_role": "core_platform"
     },
     {
@@ -41498,12 +41606,12 @@
       "target_role": "public_facade"
     },
     {
-      "count": 614,
+      "count": 615,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
     {
-      "count": 4,
+      "count": 5,
       "source_role": "research_reproductions",
       "target_role": "public_facade"
     },
@@ -41513,12 +41621,12 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2732,
+      "count": 2743,
       "source_role": "tests",
       "target_role": "core_platform"
     },
     {
-      "count": 20,
+      "count": 22,
       "source_role": "tests",
       "target_role": "public_facade"
     },
@@ -41533,7 +41641,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 303,
+      "count": 306,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -41575,8 +41683,8 @@
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
-    "research_reproductions": 760,
-    "tests": 792,
+    "research_reproductions": 761,
+    "tests": 795,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -41586,13 +41694,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 403,
+    "research_reproductions": 405,
     "sdk": 5,
-    "tests": 965,
+    "tests": 968,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "ceac6692be422176dcb199cb9320863b235b9a25",
+  "source_git_sha": "6e892f96e8aa550503b8dd50e263a969fad6d110",
   "symbols": [
     {
       "bases": [],
@@ -124119,6 +124227,46 @@
       "role": "research_reproductions"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 25,
+      "methods": [],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionResearchOSCompileError",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionResearchOSCompileError",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "package: str",
+        "asset: ReproductionAssetRef",
+        "module: str",
+        "qualname: str",
+        "program_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 30,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionMethodProgramBinding",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionMethodProgramBinding",
+      "role": "research_reproductions"
+    },
+    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -138103,6 +138251,60 @@
       "role": "tests"
     },
     {
+      "bases": [
+        "SQLiteResearchGraphExecutionStore"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 41,
+      "methods": [
+        "__init__",
+        "_transaction"
+      ],
+      "module": "tests.test_research_graph_state_batch_v1",
+      "name": "_CountingStore",
+      "path": "tests/test_research_graph_state_batch_v1.py",
+      "qualname": "tests.test_research_graph_state_batch_v1._CountingStore",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "SQLiteResearchGraphExecutionStore"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 111,
+      "methods": [
+        "mark_ready",
+        "mark_blocked"
+      ],
+      "module": "tests.test_research_graph_state_batch_v1",
+      "name": "_BatchOnlyStore",
+      "path": "tests/test_research_graph_state_batch_v1.py",
+      "qualname": "tests.test_research_graph_state_batch_v1._BatchOnlyStore",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 119,
+      "methods": [
+        "execute"
+      ],
+      "module": "tests.test_research_graph_state_batch_v1",
+      "name": "_FailRootExecutor",
+      "path": "tests/test_research_graph_state_batch_v1.py",
+      "qualname": "tests.test_research_graph_state_batch_v1._FailRootExecutor",
+      "role": "tests"
+    },
+    {
       "bases": [],
       "decorators": [
         "dataclass"
@@ -138175,18 +138377,22 @@
         "ensure_execution",
         "snapshot",
         "node_state",
+        "node_states",
         "recover_expired",
         "mark_ready",
+        "mark_ready_many",
         "claim",
         "mark_running",
         "renew_leases",
         "mark_succeeded",
         "mark_failed",
-        "schedule_retry",
+        "retry_failed_subgraph",
         "mark_blocked",
+        "mark_blocked_many",
         "resolve_reconciliation",
         "mark_reused",
         "reuse_record",
+        "attempt_state",
         "attempts"
       ],
       "module": "tests.test_research_os_execution_v1",
@@ -138203,7 +138409,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 954,
+      "line": 967,
       "methods": [
         "execute"
       ],
