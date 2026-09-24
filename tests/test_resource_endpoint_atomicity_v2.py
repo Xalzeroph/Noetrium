@@ -637,3 +637,29 @@ def test_binding_metadata_rejects_noncanonical_persisted_rebind_proof_digest() -
     with pytest.raises(ValueError, match="binding proof"):
         type(bound)(**{**{field: getattr(bound, field) for field in bound.__dataclass_fields__},
                        "binding_proof_digest": "not-a-digest"})
+
+
+
+def test_released_endpoint_identity_remains_terminal_across_restart(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "endpoint-terminal.sqlite"
+    request = _request("terminal-endpoint", port=25601)
+    first = AtomicEndpointAllocator(
+        reservations=SQLiteEndpointAllocationStore(database),
+        probe=_AvailableProbe(),
+    )
+    allocation = first.allocate(request)
+    released = first.release(allocation)
+    assert released.state is EndpointAllocationState.RELEASED
+
+    restarted = AtomicEndpointAllocator(
+        reservations=SQLiteEndpointAllocationStore(database),
+        probe=_AvailableProbe(),
+    )
+    with pytest.raises(
+        EndpointAllocationConflict,
+        match="already released",
+    ):
+        restarted.allocate(request)
+    assert restarted.get(allocation.allocation_id) == released
