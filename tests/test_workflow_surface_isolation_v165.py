@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentWorkflowSurfaceRegistry
+from tests_support import ExperimentWorkflowSurfaceRegistryForTest
 
 
 def test_unknown_workflow_surface_fails_without_constructing_scientific_operations():
-    registry = ExperimentWorkflowSurfaceRegistry(())
+    registry = ExperimentWorkflowSurfaceRegistryForTest(())
     with pytest.raises(LookupError):
         registry.bind("future.unknown.surface", object())
 
