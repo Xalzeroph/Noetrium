@@ -6,6 +6,10 @@ execution themselves.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthority,
     ResearchCapabilityBindingRegistry,
@@ -45,6 +49,95 @@ from .research_os import (
 )
 
 
+
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetAuthorityManifest:
+    """Immutable identity of the complete owner-authority cut used by one fleet."""
+
+    manifest_registry_digest: str
+    research_capability_registry_digest: str
+    participant_registry_digest: str
+    model_registry_digest: str
+    trial_provider_registry_digest: str
+    reconciliation_registry_digest: str
+    benchmark_registry_digest: str
+    reproduction_capability_registry_digest: str | None = None
+    manifest_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "manifest_registry_digest",
+            "research_capability_registry_digest",
+            "participant_registry_digest",
+            "model_registry_digest",
+            "trial_provider_registry_digest",
+            "reconciliation_registry_digest",
+            "benchmark_registry_digest",
+        ):
+            require_sha256(
+                getattr(self, field_name),
+                f"fleet authority manifest {field_name}",
+            )
+        if self.reproduction_capability_registry_digest is not None:
+            require_sha256(
+                self.reproduction_capability_registry_digest,
+                "fleet authority manifest reproduction_capability_registry_digest",
+            )
+        object.__setattr__(
+            self,
+            "manifest_digest",
+            canonical_digest(
+                {
+                    "schema": "noetrium.reproduction-fleet-authority-manifest.v1",
+                    "manifest_registry_digest": self.manifest_registry_digest,
+                    "research_capability_registry_digest": (
+                        self.research_capability_registry_digest
+                    ),
+                    "participant_registry_digest": self.participant_registry_digest,
+                    "model_registry_digest": self.model_registry_digest,
+                    "trial_provider_registry_digest": self.trial_provider_registry_digest,
+                    "reconciliation_registry_digest": self.reconciliation_registry_digest,
+                    "benchmark_registry_digest": self.benchmark_registry_digest,
+                    "reproduction_capability_registry_digest": (
+                        self.reproduction_capability_registry_digest
+                    ),
+                }
+            ),
+        )
+
+
+def _registry_authority_manifest(
+    *,
+    manifests: ResearchProjectManifestRegistry,
+    research_capabilities: ResearchCapabilityBindingRegistry,
+    participants: ResearchParticipantBindingRegistry,
+    models: ResearchModelRoleBindingRegistry,
+    trial_providers: ResearchOSExperimentTrialProviderRegistry,
+    experiment_reconciliation: ResearchOSExperimentReconciliationRegistry,
+    benchmark_resolutions: BenchmarkResolutionRegistry | None,
+    reproduction_capabilities: ReproductionCapabilitySelectionRegistry | None,
+) -> ReproductionFleetAuthorityManifest:
+    benchmark_registry = (
+        BenchmarkResolutionRegistry()
+        if benchmark_resolutions is None
+        else benchmark_resolutions
+    )
+    return ReproductionFleetAuthorityManifest(
+        manifest_registry_digest=manifests.identity_digest,
+        research_capability_registry_digest=research_capabilities.identity_digest,
+        participant_registry_digest=participants.identity_digest,
+        model_registry_digest=models.identity_digest,
+        trial_provider_registry_digest=trial_providers.identity_digest,
+        reconciliation_registry_digest=experiment_reconciliation.identity_digest,
+        benchmark_registry_digest=benchmark_registry.identity_digest,
+        reproduction_capability_registry_digest=(
+            None
+            if reproduction_capabilities is None
+            else reproduction_capabilities.identity_digest
+        ),
+    )
+
+
 def compose_repository_fleet_execution_authorities(
     *,
     manifests: ResearchProjectManifestResolverPort,
@@ -60,6 +153,7 @@ def compose_repository_fleet_execution_authorities(
     ) = None,
     benchmark_resolutions: BenchmarkResolutionRegistry | None = None,
     benchmarks: ReproductionBenchmarkResolverPort | None = None,
+    authority_manifest_digest: str,
 ) -> ReproductionFleetExecutionAuthorities:
     """Build the one canonical authority bundle consumed by the fleet launcher.
 
@@ -68,6 +162,10 @@ def compose_repository_fleet_execution_authorities(
     benchmark authority; they never fall back to synthetic or guessed cuts.
     """
 
+    require_sha256(
+        authority_manifest_digest,
+        "fleet authority_manifest_digest",
+    )
     if (
         benchmark_resolutions is not None
         and type(benchmark_resolutions) is not BenchmarkResolutionRegistry
@@ -116,6 +214,7 @@ def compose_repository_fleet_execution_authorities(
         research_bindings=research_bindings,
         experiment_runtime_components=experiment_runtime_components,
         capability_resolver=reproduction_capabilities,
+        authority_manifest_digest=authority_manifest_digest,
     )
 
 
@@ -177,6 +276,17 @@ def compose_repository_fleet_execution_authorities_from_registries(
             "ReproductionCapabilitySelectionRegistry"
         )
 
+    authority_manifest = _registry_authority_manifest(
+        manifests=manifests,
+        research_capabilities=research_capabilities,
+        participants=participants,
+        models=models,
+        trial_providers=trial_providers,
+        experiment_reconciliation=experiment_reconciliation,
+        benchmark_resolutions=benchmark_resolutions,
+        reproduction_capabilities=reproduction_capabilities,
+    )
+
     return compose_repository_fleet_execution_authorities(
         manifests=manifests,
         research_capabilities=research_capabilities,
@@ -188,10 +298,12 @@ def compose_repository_fleet_execution_authorities_from_registries(
         reproduction_capabilities=reproduction_capabilities,
         benchmark_resolutions=benchmark_resolutions,
         benchmarks=benchmarks,
+        authority_manifest_digest=authority_manifest.manifest_digest,
     )
 
 
 __all__ = [
+    "ReproductionFleetAuthorityManifest",
     "compose_repository_fleet_execution_authorities",
     "compose_repository_fleet_execution_authorities_from_registries",
 ]
