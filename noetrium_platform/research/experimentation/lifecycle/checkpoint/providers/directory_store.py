@@ -239,13 +239,13 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
 
     def load(self, checkpoint_id: str) -> RunCheckpointBundle:
         path = self._manifest_path(checkpoint_id)
+        try:
+            pending = self._intents.load(checkpoint_id)
+        except CheckpointPublicationIntentCorruptionError as exc:
+            raise RunCheckpointIntegrityError(
+                "pending checkpoint publication intent is corrupt"
+            ) from exc
         if not path.exists():
-            try:
-                pending = self._intents.load(checkpoint_id)
-            except CheckpointPublicationIntentCorruptionError as exc:
-                raise RunCheckpointIntegrityError(
-                    "pending checkpoint publication intent is corrupt"
-                ) from exc
             if pending is not None:
                 raise RunCheckpointRecoveryRequired(
                     checkpoint_id,
@@ -254,9 +254,29 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                     blob_sha256s=pending.blob_sha256s,
                 )
             raise FileNotFoundError(f"study checkpoint not found: {checkpoint_id}")
-        manifest = self.codec.decode(path.read_bytes())
+
+        encoded = path.read_bytes()
+        manifest = self.codec.decode(encoded)
         if manifest.checkpoint_id != checkpoint_id:
             raise RunCheckpointIntegrityError("checkpoint lookup identity mismatch")
+        if pending is not None:
+            committed_intent = CheckpointPublicationIntent(
+                namespace=self._intents.namespace,
+                checkpoint_id=manifest.checkpoint_id,
+                manifest_sha256=self._intents.manifest_digest(encoded),
+                blob_sha256s=tuple(
+                    sorted(
+                        {
+                            ref.checkpoint.payload_sha256
+                            for ref in manifest.participant_snapshots
+                        }
+                    )
+                ),
+            )
+            if pending != committed_intent:
+                raise RunCheckpointIntegrityError(
+                    "committed checkpoint conflicts with pending publication intent"
+                )
         participants: list[RunParticipantPayload] = []
         for ref in manifest.participant_snapshots:
             checkpoint_ref = ref.checkpoint
