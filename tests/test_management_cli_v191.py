@@ -7,6 +7,7 @@ import unittest
 
 from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult
 from noetrium_platform.composition.operator.maintenance.management_cli import _require_command_success, main
+from noetrium_platform.foundation.kernel.kernel.durability.file_lock import InterprocessFileLock
 
 
 class ManagementCliTests(unittest.TestCase):
@@ -14,6 +15,33 @@ class ManagementCliTests(unittest.TestCase):
         result = EnvironmentCommandResult(("python", "-m", "pip", "check"), 1, "", "missing dependency")
         with self.assertRaisesRegex(RuntimeError, "missing dependency"):
             _require_command_success(result)
+
+    def test_management_cli_refuses_state_root_owned_by_live_runtime(self):
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            keys = (
+                "releases", "runtime", "state", "logs", "model_artifacts",
+                "python_environments", "cache", "temp", "locks", "workspaces",
+            )
+            config = root / "management.json"
+            config.write_text(
+                json.dumps({"directories": {key: str(root / key) for key in keys}}),
+                encoding="utf-8",
+            )
+            authority = InterprocessFileLock(
+                root / "locks" / "managed-research-runtime.lock",
+                blocking=False,
+            )
+            with authority:
+                self.assertEqual(
+                    main(["--config", str(config), "model", "list"]),
+                    2,
+                )
+
+            self.assertEqual(
+                main(["--config", str(config), "model", "list"]),
+                0,
+            )
 
     def test_directory_and_model_registry_commands(self):
         with TemporaryDirectory() as td:
