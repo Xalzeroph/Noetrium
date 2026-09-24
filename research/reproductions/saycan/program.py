@@ -8,11 +8,11 @@ from typing import Protocol, runtime_checkable
 from noetrium.api import (
     environment_action_capability_payload,
 )
-from noetrium_platform.capabilities.participant.method.api import (
+from noetrium.api import (
     MethodIdentity,
     MethodProgramIdentity,
 )
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
     EffectClass,
     ExecutionContext,
     JsonObject,
@@ -21,7 +21,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
-from noetrium_platform.research.execution.workflow.api import (
+from noetrium.api import (
     MethodAgentRequest,
     MethodAgentResult,
     MethodExecutionClass,
