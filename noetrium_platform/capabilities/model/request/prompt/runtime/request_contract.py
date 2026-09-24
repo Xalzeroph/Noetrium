@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import hashlib
 import math
 from collections.abc import Mapping
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.kernel.kernel import JsonInput, canonical_bytes
 from noetrium_platform.foundation.kernel.kernel.identity import ImmutableModelIdentity
 from .runtime_contracts import PromptResolution
@@ -50,7 +50,7 @@ def build_prompt_request_contract(
         prompt_digest=bundle.digest,
         role=bundle.role,
         model_resume_key=model.resume_key(),
-        body_sha256=hashlib.sha256(encoded).hexdigest(),
+        body_sha256=sha256_bytes(encoded),
         temperature=bundle.temperature,
         top_p=bundle.top_p,
         max_output_tokens=bundle.max_output_tokens,
