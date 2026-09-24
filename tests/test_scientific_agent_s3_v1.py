@@ -98,9 +98,9 @@ def test_agent_s3_projection_does_not_mutate_host_history() -> None:
 
 from research.reproductions.agent_s3.definition import REPRODUCTION
 from research.reproductions.research_os import (
-    ReproductionExecutionRequirementKind,
     compile_reproduction_research_program,
     is_research_os_executable,
+    resolve_benchmark_split_consumers,
     resolve_execution_requirements,
 )
 
@@ -113,7 +113,6 @@ def test_agent_s3_method_program_keeps_method_policy_downstream() -> None:
     assert program.configuration["default_reflection_enabled"] is True
     assert program.configuration["runtime_tool_creation"] is True
     assert program.configuration["code_agent_budget"] == 20
-    assert program.configuration["paper_default_step_limit"] == 0.0
     assert program.required_capabilities == ("environment.act",)
     assert program.graph.node("reflection").agent_id == "agent-s3.reflection"
     assert program.graph.node("worker").agent_id == "agent-s3.worker"
@@ -124,8 +123,10 @@ def test_agent_s3_enters_current_research_os_with_only_benchmark_split_open() ->
     assert is_research_os_executable(REPRODUCTION)
     requirements = resolve_execution_requirements(REPRODUCTION)
 
-    assert tuple(row.parameter for row in requirements) == ("split_id",)
-    assert requirements[0].kind is ReproductionExecutionRequirementKind.BENCHMARK_SPLIT
+    assert requirements == ()
+    assert resolve_benchmark_split_consumers(REPRODUCTION) == (
+        "study:build_agent_s3_osworld_study",
+    )
 
     research_program = compile_reproduction_research_program(REPRODUCTION)
     assert research_program.program_id == "agent_s3"
