@@ -45,6 +45,7 @@ class _FailOnceRuntime:
     def execute(
         self,
         context,
+        task_context,
         node,
         lowering,
         inputs,
@@ -53,6 +54,7 @@ class _FailOnceRuntime:
         deadline,
     ):
         del node, lowering, inputs, execution_cut_id, deadline
+        task_context.checkpoint()
         context.checkpoint()
         self.execute_calls += 1
         if self.execute_calls == 1:
