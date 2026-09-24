@@ -32,6 +32,12 @@ class ResourceLeasePort(Protocol):
     def active_for(
         self, resource: ResourceIdentity, *, now: float | None = None
     ) -> tuple[ResourceLease, ...]: ...
+    def active_leases(
+        self,
+        *,
+        resource_kind: ResourceKind | None = None,
+        now: float | None = None,
+    ) -> tuple[ResourceLease, ...]: ...
     def history_for(
         self, resource: ResourceIdentity, *, now: float | None = None
     ) -> tuple[ResourceLease, ...]: ...
