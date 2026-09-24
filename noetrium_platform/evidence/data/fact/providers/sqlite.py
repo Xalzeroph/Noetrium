@@ -20,6 +20,7 @@ from noetrium_platform.evidence.data._canonical import (
     strict_json_loads,
 )
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
     rollback_sqlite_writer,
@@ -121,7 +122,7 @@ class SQLiteDurableFactStore:
         record_sha256 = self._digest(fact)
         payload_json, artifact_refs_json, state_refs_json = self._encoded(fact)
         with closing(self._connect_writer()) as db:
-            db.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
             try:
                 row = db.execute(
                     "SELECT sequence,fact_id,fact_type,schema_version,criticality,payload_json,"
