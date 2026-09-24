@@ -495,6 +495,12 @@ from noetrium_platform.research.execution.api import (
     RuntimeModule,
     RuntimeModuleBuilder,
     RuntimeProgramBuilder,
+    environment_action_capability_payload,
+    environment_branch_action_spec,
+    environment_fork_action_payload,
+    environment_query_capability_payload,
+    environment_replay_action_payload,
+    environment_reset_capability_payload,
     materialize_capability_selection_view,
     program_execution_capability_payload,
 )
