@@ -63,7 +63,7 @@ def test_gats_stress_b20_study_keeps_provenance_outside_execution_design() -> No
 
 def test_gats_stress_method_program_is_current_umm_execution_surface() -> None:
     program = GATS_STRESS_B20_METHOD_PROGRAM
-    assert program.identity.method.method_id == "gats-stress-b20"
+    assert program.program_identity.implementation.method_id == "gats-stress-b20"
     assert program.configuration["stress_search_budget"] == 20
     assert program.configuration["stress_max_steps"] == 35
     assert program.configuration["stress_c_puct"] == 1.0
@@ -71,7 +71,7 @@ def test_gats_stress_method_program_is_current_umm_execution_surface() -> None:
         "direct_action_apply_plus_state_value_ucb"
     )
     assert program.configuration["uses_layered_world_model"] is False
-    assert tuple(node.node_id for node in program.nodes) == (
+    assert tuple(node.node_id for node in program.graph.nodes) == (
         "select",
         "expand",
         "backprop",
