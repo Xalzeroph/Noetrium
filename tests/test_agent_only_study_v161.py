@@ -14,7 +14,7 @@ from noetrium_platform.capabilities.participant.capability.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import EffectClass, canonical_digest
 from noetrium_platform.composition.workflows.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantSpec, ExperimentSpec
 
 
