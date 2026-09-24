@@ -226,6 +226,29 @@ class AppliedModelDeploymentStore:
             durable_unlink(path)
             return True
 
+    def purge_cleared_after_retirement(self, deployment_id: str) -> int:
+        """Delete process-clear tombstones only after deployment identity retirement.
+
+        The caller must already have durably retired the desired deployment
+        identity. This store additionally refuses cleanup while any active
+        applied pointer remains, so a process-generation tombstone can never be
+        removed while it is still needed to fence resurrection.
+        """
+
+        self._validate_id(deployment_id)
+        with InterprocessFileLock(self._lock_path(deployment_id)):
+            if self._active_unlocked(deployment_id) is not None:
+                raise RuntimeError(
+                    "cannot purge applied model clear tombstones while an active "
+                    f"generation remains: {deployment_id}"
+                )
+            prefix = f"{self._key(deployment_id)}."
+            removed = 0
+            for marker in tuple(sorted(self._cleared_root.glob(f"{prefix}*.json"))):
+                durable_unlink(marker)
+                removed += 1
+            return removed
+
     def reconcile_cleared(self) -> tuple[str, ...]:
         """Physically remove stale active pointers already terminally cleared."""
 
