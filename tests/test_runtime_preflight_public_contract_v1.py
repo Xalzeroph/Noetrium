@@ -106,13 +106,13 @@ def test_compute_candidate_port_tracks_live_usage_without_mutating_allocation_au
     assert tuple(row.host_id for row in candidates.candidates(requirement, scope=scope)) == ("server-2",)
     assert scheduler.allocations(scope=scope) == ()
 
-    scheduler.allocate("allocation-1", scope, requirement)
+    allocation = scheduler.allocate("allocation-1", scope, requirement)
     allocated = scheduler.allocations(scope=scope)
     assert len(allocated) == 1
     assert candidates.candidates(requirement, scope=scope) == ()
     assert scheduler.allocations(scope=scope) == allocated
 
-    scheduler.release("allocation-1")
+    scheduler.release(allocation)
     assert scheduler.allocations(scope=scope) == ()
     assert tuple(row.host_id for row in candidates.candidates(requirement, scope=scope)) == ("server-2",)
     assert scheduler.allocations(scope=scope) == ()
