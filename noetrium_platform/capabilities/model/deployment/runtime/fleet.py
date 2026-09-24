@@ -5,6 +5,7 @@ from typing import Callable
 from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentCatalogPort,
     ModelDeploymentRuntimePort,
+    ModelDeploymentSelector,
     ModelDeploymentSpec,
     ModelDeploymentStatus,
     ModelDesiredState,
@@ -62,6 +63,37 @@ class ModelFleetRuntime:
             self._run_fleet_action(spec, self._runtime.shutdown)
             for spec in self._catalog.deployments()
         )
+
+    def remove_selected(
+        self,
+        selector: ModelDeploymentSelector,
+    ) -> tuple[str, ...]:
+        """Physically stop and remove one selected deployment ownership class.
+
+        This is intentionally fail-closed rather than status-projecting: callers
+        use it as a resource-lifecycle fence, so any deployment that cannot be
+        proven removed must prevent lower resource layers from being released.
+        Repeated calls converge because already-removed deployments no longer
+        appear in the catalog selection.
+        """
+
+        if type(selector) is not ModelDeploymentSelector:
+            raise TypeError("model fleet removal requires ModelDeploymentSelector")
+        removed: list[str] = []
+        errors: list[BaseException] = []
+        for spec in reversed(self._catalog.select(selector)):
+            try:
+                self._runtime.remove_deployment(spec.deployment_id)
+            except BaseException as exc:
+                errors.append(exc)
+            else:
+                removed.append(spec.deployment_id)
+        if errors:
+            raise ExceptionGroup(
+                "selected model deployment removal failed",
+                errors,
+            )
+        return tuple(sorted(removed))
 
     @staticmethod
     def _management_failure_status(spec: ModelDeploymentSpec, exc: Exception) -> ModelDeploymentStatus:
