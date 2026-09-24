@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 from dataclasses import asdict
 import json
 from pathlib import Path
 import sqlite3
 
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentModelRoleSpec,
     ExperimentParticipantSpec,
@@ -126,17 +126,11 @@ class SQLiteExperimentationCatalog:
             if row is None or int(row[0]) != self.SCHEMA_VERSION:
                 raise RuntimeError("unsupported SQLiteExperimentationCatalog schema")
 
-    @contextmanager
     def _connection(self):
-        conn = sqlite3.connect(self.path, timeout=self.timeout_seconds, isolation_level=None)
-        try:
-            conn.execute(f"PRAGMA busy_timeout={max(1, int(self.timeout_seconds * 1000))}")
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA synchronous=FULL")
-            conn.execute("PRAGMA foreign_keys=ON")
-            yield conn
-        finally:
-            conn.close()
+        return durable_sqlite_connection(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     @staticmethod
     def _payload(value: object) -> str:
