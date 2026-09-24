@@ -18,6 +18,7 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentInstanceState,
     EnvironmentProfileLifecycle,
     EnvironmentProfileRevision,
+    EnvironmentProfileUseIntent,
     EnvironmentSpec,
     ExecutionEnvironmentKind,
 )
@@ -386,7 +387,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 binding_id="recovery",
                 role="runner",
                 scope=scope,
-                recovery=True,
+                intent=EnvironmentProfileUseIntent.RESUME_PINNED,
             )
             self.assertEqual(recovered.instance.generation, 1)
             meta.environments.unbind("runner", scope)
@@ -421,6 +422,17 @@ class DurableResourceAuthoritiesTests(TestCase):
                     scope=scope,
                 )
 
+            with self.assertRaises(RuntimeError):
+                meta.environments.acquire_reusable_instance(
+                    profile.profile_id,
+                    profile.profile_revision,
+                    runtime_digest,
+                    binding_id="resume-after-retire",
+                    role="runner",
+                    scope=scope,
+                    intent=EnvironmentProfileUseIntent.RESUME_PINNED,
+                )
+
             historical = meta.environments.acquire_reusable_instance(
                 profile.profile_id,
                 profile.profile_revision,
@@ -428,7 +440,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 binding_id="historical-recovery",
                 role="runner",
                 scope=scope,
-                recovery=True,
+                intent=EnvironmentProfileUseIntent.HISTORICAL_RECOVERY,
             )
             self.assertEqual(historical.instance.generation, 2)
             with self.assertRaises(RuntimeError):
