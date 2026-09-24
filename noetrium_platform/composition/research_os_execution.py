@@ -29,6 +29,7 @@ from noetrium_platform.product.research_os import (
 )
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphActiveCutStorePort,
+    ResearchGraphAttemptState,
     ResearchGraphControlPhase,
     ResearchGraphControlStorePort,
     ResearchGraphExecutionConflict,
@@ -694,19 +695,43 @@ class StrictResearchOSControl(
             node = source.node(graph_node_id)
             lowered = lowering.node(graph_node_id)
             record = snapshot.node(graph_node_id)
-            if (
-                record.state is not ResearchGraphLiveNodeState.SUCCEEDED
-                or record.attempt_id is None
-            ):
+            if record.state is not ResearchGraphLiveNodeState.SUCCEEDED:
                 raise ResearchGraphExecutionConflict(
-                    "reuse candidate lost definitive succeeded attempt identity: "
+                    "reuse candidate is not durably succeeded: "
+                    f"{graph_node_id}"
+                )
+            matching_attempts = tuple(
+                attempt
+                for attempt in self._store.attempts(
+                    plan.source_cut.cut_id,
+                    graph_node_id,
+                )
+                if attempt.attempt_number == record.attempt_number
+            )
+            if len(matching_attempts) != 1:
+                raise ResearchGraphExecutionConflict(
+                    "reuse candidate lost exact terminal attempt history: "
+                    f"{graph_node_id}"
+                )
+            terminal_attempt = matching_attempts[0]
+            if terminal_attempt.state not in {
+                ResearchGraphAttemptState.SUCCEEDED,
+                ResearchGraphAttemptState.RECONCILED_SUCCEEDED,
+            }:
+                raise ResearchGraphExecutionConflict(
+                    "reuse candidate latest attempt is not proven successful: "
+                    f"{graph_node_id}={terminal_attempt.state.value}"
+                )
+            if terminal_attempt.finished_at_ns is None:
+                raise ResearchGraphExecutionConflict(
+                    "reuse candidate successful attempt lacks terminal timestamp: "
                     f"{graph_node_id}"
                 )
             lower_proof = self._runtime.reconcile_node(
                 node,
                 lowered,
                 execution_cut_id=plan.source_cut.cut_id,
-                attempt_id=record.attempt_id,
+                attempt_id=terminal_attempt.attempt_id,
             )
             if type(lower_proof) is not ResearchOSNodeReconciliationProof:
                 raise TypeError(
@@ -716,7 +741,7 @@ class StrictResearchOSControl(
                 node,
                 lowered,
                 execution_cut_id=plan.source_cut.cut_id,
-                attempt_id=record.attempt_id,
+                attempt_id=terminal_attempt.attempt_id,
             )
             if (
                 lower_proof.disposition
@@ -1545,6 +1570,7 @@ class StrictResearchOSControl(
             state="cancelled",
         )
 
+    @staticmethod
     def _retry_descendants(
         compilation: CompiledResearchOSGraph,
         root_node_id: str,
