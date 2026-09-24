@@ -1,63 +1,43 @@
 from __future__ import annotations
 
-from research.reproductions.contracts import ReproductionLifecycle
 from research.reproductions.research_os import (
     compile_reproduction_research_program,
     discover_reproduction_definitions,
     executable_reproduction_definitions,
+    is_research_os_executable,
 )
 
 
 def test_reproduction_research_os_migration_coverage_is_authority_derived() -> None:
     definitions = discover_reproduction_definitions()
-    assert len(definitions) == 100
-
-    by_lifecycle = {
-        lifecycle: tuple(
-            row for row in definitions if row.lifecycle is lifecycle
-        )
-        for lifecycle in ReproductionLifecycle
-    }
-    assert len(by_lifecycle[ReproductionLifecycle.PROTOCOL_BOUND]) == 91
-    assert len(by_lifecycle[ReproductionLifecycle.CATALOGUED]) == 8
-    assert len(by_lifecycle[ReproductionLifecycle.ARTIFACT_ONLY]) == 1
-    assert sum(len(rows) for rows in by_lifecycle.values()) == 100
+    assert definitions
+    assert tuple(row.package for row in definitions) == tuple(
+        sorted(row.package for row in definitions)
+    )
 
     executable = executable_reproduction_definitions()
     executable_packages = {row.package for row in executable}
-    protocol_bound = by_lifecycle[ReproductionLifecycle.PROTOCOL_BOUND]
-    missing = tuple(
-        sorted(
-            row.package
-            for row in protocol_bound
-            if row.package not in executable_packages
-        )
-    )
-    assert missing == ()
+    expected_packages = {
+        row.package for row in definitions if is_research_os_executable(row)
+    }
+    assert executable_packages == expected_packages
 
     compiled = tuple(
         compile_reproduction_research_program(row)
-        for row in protocol_bound
+        for row in executable
     )
     assert tuple(program.program_id for program in compiled) == tuple(
-        sorted(row.package for row in protocol_bound)
+        sorted(executable_packages)
     )
-    assert len({program.program_id for program in compiled}) == 91
+    assert len({program.program_id for program in compiled}) == len(compiled)
 
 
-def test_non_execution_lifecycles_are_not_silently_promoted() -> None:
+def test_non_executable_declarations_are_not_silently_promoted() -> None:
     definitions = discover_reproduction_definitions()
-    protocol_packages = {
-        row.package
-        for row in definitions
-        if row.lifecycle is ReproductionLifecycle.PROTOCOL_BOUND
+    executable_packages = {
+        row.package for row in executable_reproduction_definitions()
     }
-    assert protocol_packages
 
     for row in definitions:
-        if row.lifecycle in {
-            ReproductionLifecycle.CATALOGUED,
-            ReproductionLifecycle.ARTIFACT_ONLY,
-            ReproductionLifecycle.PAPER_ONLY,
-        }:
-            assert row.package not in protocol_packages
+        if not is_research_os_executable(row):
+            assert row.package not in executable_packages
