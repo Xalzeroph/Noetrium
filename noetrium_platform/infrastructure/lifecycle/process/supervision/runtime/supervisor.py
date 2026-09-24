@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import os
+from pathlib import Path
+import signal
 import subprocess
+import sys
 from threading import Lock
 from typing import Callable
 from uuid import uuid4
@@ -15,6 +19,82 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 )
 
 from ..api import ProcessExitReceipt, ProcessSupervisorPort, ProcessTerminationPolicy, SupervisedProcessPort
+from .windows_job import WindowsProcessJob, suspended_creation_flag
+
+
+class _PosixGroupOwnedProcess:
+    """Popen facade whose PID is the exact owned process-group guardian."""
+
+    def __init__(self, delegate: subprocess.Popen[str]) -> None:
+        self._delegate = delegate
+        self.pid = int(delegate.pid)
+        self.stdin = delegate.stdin
+        self.stdout = delegate.stdout
+        self.stderr = delegate.stderr
+
+    def poll(self) -> int | None:
+        return self._delegate.poll()
+
+    def wait(self, timeout: float | None = None) -> int:
+        return int(self._delegate.wait(timeout=timeout))
+
+    def _signal_group(self, sig: signal.Signals) -> None:
+        if self._delegate.poll() is not None:
+            return
+        try:
+            if os.getpgid(self.pid) != self.pid:
+                raise RuntimeError(
+                    "interactive process-group identity drifted; refusing signal"
+                )
+            os.killpg(self.pid, sig)
+        except ProcessLookupError:
+            if self._delegate.poll() is None:
+                raise
+
+    def terminate(self) -> None:
+        self._signal_group(signal.SIGTERM)
+
+    def kill(self) -> None:
+        self._signal_group(signal.SIGKILL)
+
+
+class _WindowsJobOwnedProcess:
+    """Popen facade retaining a kill-on-owner-close Windows Job Object."""
+
+    def __init__(
+        self,
+        delegate: subprocess.Popen[str],
+        job: WindowsProcessJob,
+    ) -> None:
+        self._delegate = delegate
+        self._job = job
+        self.pid = int(delegate.pid)
+        self.stdin = delegate.stdin
+        self.stdout = delegate.stdout
+        self.stderr = delegate.stderr
+        self._job_closed = False
+
+    def _retire_job_if_exited(self, code: int | None) -> int | None:
+        if code is not None and not self._job_closed:
+            self._job.close()
+            self._job_closed = True
+        return code
+
+    def poll(self) -> int | None:
+        return self._retire_job_if_exited(self._delegate.poll())
+
+    def wait(self, timeout: float | None = None) -> int:
+        code = int(self._delegate.wait(timeout=timeout))
+        self._retire_job_if_exited(code)
+        return code
+
+    def terminate(self) -> None:
+        if self.poll() is None:
+            self._job.terminate(143)
+
+    def kill(self) -> None:
+        if self.poll() is None:
+            self._job.terminate(137)
 
 
 class AsyncProcessSupervisor(ProcessSupervisorPort):
@@ -84,6 +164,7 @@ class AsyncProcessSupervisor(ProcessSupervisorPort):
             raise TypeError("interactive process start_new_session must be bool")
         if type(creationflags) is not int or creationflags < 0:
             raise ValueError("interactive process creationflags must be a non-negative integer")
+        command = list(argv)
         options: dict[str, object] = {
             "cwd": cwd,
             "env": dict(environment),
@@ -94,9 +175,44 @@ class AsyncProcessSupervisor(ProcessSupervisorPort):
             "bufsize": 1,
             "start_new_session": start_new_session,
         }
+
+        if os.name == "posix" and start_new_session:
+            # A fresh Python guardian avoids the well-known multithreaded
+            # preexec_fn deadlock class. It remains the session leader, watches
+            # owner liveness, and forwards termination to the complete process
+            # group. Linux additionally uses PR_SET_PDEATHSIG inside the fresh
+            # interpreter for immediate owner-death convergence.
+            guardian = Path(__file__).with_name("parent_bound_child.py")
+            command = [
+                sys.executable,
+                str(guardian),
+                "--parent-pid",
+                str(os.getpid()),
+                "--",
+                *command,
+            ]
+            return _PosixGroupOwnedProcess(
+                subprocess.Popen(command, **options)
+            )
+
+        if os.name == "nt":
+            flags = int(creationflags) | suspended_creation_flag()
+            options["creationflags"] = flags
+            process = subprocess.Popen(command, **options)
+            try:
+                job = WindowsProcessJob.attach_suspended(int(process.pid))
+            except BaseException:
+                try:
+                    process.kill()
+                    process.wait(timeout=2.0)
+                except BaseException:
+                    pass
+                raise
+            return _WindowsJobOwnedProcess(process, job)
+
         if creationflags:
             options["creationflags"] = creationflags
-        return subprocess.Popen(list(argv), **options)
+        return subprocess.Popen(command, **options)
 
 
     async def _await_exit(self, context, supervision_id: str, process: SupervisedProcessPort, escalated: bool):
