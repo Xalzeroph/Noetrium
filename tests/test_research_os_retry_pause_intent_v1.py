@@ -53,9 +53,8 @@ class _FailOnceRuntime:
         execution_cut_id,
         deadline,
     ):
-        del node, lowering, inputs, execution_cut_id, deadline
+        del context, node, lowering, inputs, execution_cut_id, deadline
         task_context.checkpoint()
-        context.checkpoint()
         self.execute_calls += 1
         if self.execute_calls == 1:
             raise RuntimeError("synthetic first-attempt failure")
