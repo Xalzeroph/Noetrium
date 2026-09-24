@@ -105,7 +105,14 @@ class ResearchExecutionPool:
         self._endpoint_lease_group: TaskGroupPort | None = None
         self._environment_lease_group: TaskGroupPort | None = None
         self._container_lease_group: TaskGroupPort | None = None
+        self._workloads_quiesced = False
         self._closed = False
+
+    def _require_workloads_open(self) -> None:
+        if self._closed:
+            raise RuntimeError("research execution pool is closed")
+        if self._workloads_quiesced:
+            raise RuntimeError("research execution pool workloads are quiesced")
 
     @property
     def model_admission(self) -> ModelAdmissionRegistryPort:
@@ -147,6 +154,7 @@ class ResearchExecutionPool:
         deadline: Deadline | None = None,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
     ) -> TaskGroupPort:
+        self._require_workloads_open()
         if self._closed:
             raise RuntimeError("research execution pool is closed")
         return self._experiments.open_task_group(
@@ -166,6 +174,7 @@ class ResearchExecutionPool:
         policy: ComputeLeasePolicy = DEFAULT_COMPUTE_LEASE_POLICY,
         lane_capacity: int | None = 1,
     ) -> ComputeLeaseGuardFactoryPort:
+        self._require_workloads_open()
         """Share one structured heartbeat authority across all compute leases."""
 
         if self._closed:
@@ -194,6 +203,7 @@ class ResearchExecutionPool:
         policy: EndpointLeasePolicy = DEFAULT_ENDPOINT_LEASE_POLICY,
         lane_capacity: int | None = 1,
     ) -> EndpointLeaseGuardFactoryPort:
+        self._require_workloads_open()
         """Share one structured heartbeat authority across endpoint leases."""
 
         if self._closed:
@@ -222,6 +232,7 @@ class ResearchExecutionPool:
         policy: EnvironmentInstanceLeasePolicy = DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
         lane_capacity: int | None = 1,
     ) -> EnvironmentInstanceLeaseHeartbeatFactory:
+        self._require_workloads_open()
         """Share one structured heartbeat authority across environment checkouts."""
 
         if self._closed:
@@ -250,6 +261,7 @@ class ResearchExecutionPool:
         policy: DockerContainerLeasePolicy = DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
         lane_capacity: int | None = 1,
     ) -> DockerContainerLeaseHeartbeatFactory:
+        self._require_workloads_open()
         """Share one structured heartbeat authority across managed Docker containers."""
 
         if self._closed:
@@ -281,6 +293,7 @@ class ResearchExecutionPool:
         deadline: Deadline | None = None,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
     ) -> TaskGroupPort:
+        self._require_workloads_open()
         if self._closed:
             raise RuntimeError("research execution pool is closed")
         return self._model_io.open_task_group(
@@ -330,6 +343,39 @@ class ResearchExecutionPool:
             cancel_pending=cancel_pending,
             deadline=deadline,
         )
+
+    def quiesce_workloads(
+        self,
+        *,
+        deadline: Deadline | None = None,
+    ) -> None:
+        """Seal and physically join experiment/model-I/O work, keeping orchestration alive.
+
+        Experiments are closed first because they may synchronously wait on
+        model-I/O. Resource lease heartbeats live in the experiment domain, so
+        a successful return proves no workload can still renew or consume
+        endpoint/compute/environment/container leases.
+        """
+
+        if self._closed or self._workloads_quiesced:
+            return
+        errors: list[BaseException] = []
+        try:
+            self._experiments.close(deadline=deadline)
+        except BaseException as exc:
+            errors.append(exc)
+        # Even when experiment convergence reports an error, model-I/O still
+        # receives a bounded close attempt so shutdown does not strand workers.
+        try:
+            self._model_io.close(deadline=deadline)
+        except BaseException as exc:
+            errors.append(exc)
+        if errors:
+            raise ExceptionGroup(
+                "research execution workload quiesce failed",
+                errors,
+            )
+        self._workloads_quiesced = True
 
     def orchestration_admission_snapshot(self):
         return self._orchestration.admission_snapshot()
