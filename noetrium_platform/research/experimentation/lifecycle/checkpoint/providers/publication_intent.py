@@ -112,10 +112,12 @@ class DirectoryCheckpointPublicationIntentStore:
         safe = hashlib.sha256(checkpoint_id.encode("utf-8")).hexdigest()
         return self.root / f"{safe}.json"
 
-    def load(self, checkpoint_id: str) -> CheckpointPublicationIntent | None:
-        path = self._path(checkpoint_id)
-        if not path.exists():
-            return None
+    def _decode_path(
+        self,
+        path: Path,
+        *,
+        expected_checkpoint_id: str | None = None,
+    ) -> CheckpointPublicationIntent:
         try:
             raw = path.read_bytes()
             document = strict_json_loads(raw)
@@ -136,8 +138,16 @@ class DirectoryCheckpointPublicationIntentStore:
             )
             if intent.namespace != self.namespace:
                 raise ValueError("publication intent namespace drifted")
-            if intent.checkpoint_id != checkpoint_id:
+            if (
+                expected_checkpoint_id is not None
+                and intent.checkpoint_id != expected_checkpoint_id
+            ):
                 raise ValueError("publication intent checkpoint identity drifted")
+            expected_name = hashlib.sha256(
+                intent.checkpoint_id.encode("utf-8")
+            ).hexdigest() + ".json"
+            if path.name != expected_name:
+                raise ValueError("publication intent filename identity drifted")
             if canonical_bytes(intent.document()) != raw:
                 raise ValueError("publication intent is not canonical JSON")
             return intent
@@ -147,11 +157,31 @@ class DirectoryCheckpointPublicationIntentStore:
             TypeError,
             ValueError,
         ) as exc:
-            if isinstance(exc, CheckpointPublicationIntentCorruptionError):
-                raise
             raise CheckpointPublicationIntentCorruptionError(
-                f"checkpoint publication intent is corrupt: {checkpoint_id}"
+                "checkpoint publication intent is corrupt: "
+                f"{expected_checkpoint_id or path.name}"
             ) from exc
+
+    def load(self, checkpoint_id: str) -> CheckpointPublicationIntent | None:
+        path = self._path(checkpoint_id)
+        if not path.exists():
+            return None
+        return self._decode_path(
+            path,
+            expected_checkpoint_id=checkpoint_id,
+        )
+
+    def all(self) -> tuple[CheckpointPublicationIntent, ...]:
+        values = tuple(
+            self._decode_path(path)
+            for path in sorted(self.root.glob("*.json"))
+        )
+        ids = tuple(value.checkpoint_id for value in values)
+        if len(ids) != len(set(ids)):
+            raise CheckpointPublicationIntentCorruptionError(
+                "checkpoint publication intent directory contains duplicate identities"
+            )
+        return values
 
     def publish(
         self,
