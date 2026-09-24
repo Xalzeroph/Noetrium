@@ -156,7 +156,7 @@
       "reproductions": [
         {
           "package": "saycan",
-          "package_digest": "9d44029f733b57350501201d14b10c12aa466ae8d35a1ff60de642b1606a8a2c",
+          "package_digest": "f24d3c3ca8641bebf5e296cc4f47f713c24ffad7e52e94aecb26d51b40852aad",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "saycan-101"
@@ -198,7 +198,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/saycan/study.py",
-              "content_sha256": "e78894d8bb701717ab401e19ae904654f4a93788e103859dab618018e8101437"
+              "content_sha256": "0a7c57ca61476a1f8cb8461bf97e97d76bad2c2c1173900e9218a15861eb3c67"
             },
             {
               "kind": "support",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "745a0e9dbd1297d55dfb0c639269811a28205aed2cad8d76151ebbbbf2c9e732"
+  "projection_digest": "ea846a3e6cb750e9db16783bfe2c03acac9149a1220429e0837a2e52f3dcf921"
 }
