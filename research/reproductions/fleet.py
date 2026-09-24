@@ -10,6 +10,9 @@ from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 from noetrium import api
+from noetrium_platform.composition.research_binding_authority import (
+    ResearchBindingAuthorityPort,
+)
 from noetrium_platform.composition.research_os_local import (
     compose_local_research_os,
 )
@@ -120,16 +123,6 @@ class ReproductionBenchmarkResolverPort(Protocol):
         definition: ReproductionDefinition,
         study_factory: ReproductionStudyFactoryBinding,
     ) -> tuple[ReproductionBenchmarkSelection, ...]: ...
-
-
-@runtime_checkable
-class ReproductionResearchBindingResolverPort(Protocol):
-    """Close one materialized Study against exact provider/project authority."""
-
-    def resolve(
-        self,
-        definition: ResearchStudyDefinition,
-    ) -> tuple[ResearchRequirementResolution, ResearchBindingContribution]: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -411,7 +404,7 @@ def execute_materialized_reproduction_fleet(
     fleet: ReproductionFleetMaterialization,
     *,
     state_root: Path,
-    research_bindings: ReproductionResearchBindingResolverPort,
+    research_bindings: ResearchBindingAuthorityPort,
     experiment_bindings: ResearchOSExperimentRuntimeBindingPort,
     execution_id: str | None = None,
 ):
@@ -428,7 +421,7 @@ def execute_materialized_reproduction_fleet(
         raise TypeError("fleet execution state_root must be pathlib.Path")
     if not isinstance(
         research_bindings,
-        ReproductionResearchBindingResolverPort,
+        ResearchBindingAuthorityPort,
     ):
         raise TypeError("fleet execution requires research binding resolver")
     if not isinstance(
@@ -476,7 +469,7 @@ class ReproductionFleetExecutionAuthorities:
     """Complete authority bundle required for one exact fleet execution."""
 
     benchmark_resolver: ReproductionBenchmarkResolverPort
-    research_bindings: ReproductionResearchBindingResolverPort
+    research_bindings: ResearchBindingAuthorityPort
     experiment_bindings: ResearchOSExperimentRuntimeBindingPort
     capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None
 
@@ -490,7 +483,7 @@ class ReproductionFleetExecutionAuthorities:
             )
         if not isinstance(
             self.research_bindings,
-            ReproductionResearchBindingResolverPort,
+            ResearchBindingAuthorityPort,
         ):
             raise TypeError(
                 "fleet execution authorities require research binding resolver"
@@ -585,13 +578,13 @@ class ReproductionFleetExperimentClosureProvider:
     def __init__(
         self,
         fleet: ReproductionFleetMaterialization,
-        research_bindings: ReproductionResearchBindingResolverPort,
+        research_bindings: ResearchBindingAuthorityPort,
     ) -> None:
         if type(fleet) is not ReproductionFleetMaterialization:
             raise TypeError("closure provider requires materialized fleet")
         if not isinstance(
             research_bindings,
-            ReproductionResearchBindingResolverPort,
+            ResearchBindingAuthorityPort,
         ):
             raise TypeError("closure provider requires research binding resolver")
         self._research_bindings = research_bindings
@@ -647,7 +640,7 @@ __all__ = [
     "ReproductionFleetExperimentClosureProvider",
     "ReproductionFleetLane",
     "ReproductionFleetMaterialization",
-    "ReproductionResearchBindingResolverPort",
+    "ResearchBindingAuthorityPort",
     "execute_materialized_reproduction_fleet",
     "materialize_repository_execution_fleet",
     "resolve_repository_execution_requests",
