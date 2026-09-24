@@ -10,6 +10,7 @@ from threading import Barrier, Event
 import pytest
 
 from noetrium_platform.infrastructure.resources.allocation.api import (
+    EndpointAllocation,
     EndpointAllocationRequest,
     EndpointLeasePolicy,
     EndpointAllocationState,
@@ -321,9 +322,16 @@ def test_endpoint_heartbeat_surfaces_background_renewal_failure() -> None:
     renewed = Event()
 
     class _FailingAllocations:
-        def renew_many(self, allocation_ids: tuple[str, ...], *, ttl_seconds: float | None = None):
+        def renew_many(
+            self,
+            allocations: tuple[EndpointAllocation, ...],
+            *,
+            ttl_seconds: float | None = None,
+        ):
             renewed.set()
-            raise RuntimeError(f"renew failed: {allocation_ids[0]}:{ttl_seconds}")
+            raise RuntimeError(
+                f"renew failed: {allocations[0].allocation_id}:{ttl_seconds}"
+            )
 
     runtime = build_concurrency_runtime(
         budget=ConcurrencyBudget(
@@ -342,13 +350,25 @@ def test_endpoint_heartbeat_surfaces_background_renewal_failure() -> None:
         lane_id="atomic-heartbeat-failure-writer",
         lane_capacity=8,
         policy=EndpointLeasePolicy(ttl_seconds=0.2, renewal_interval_seconds=0.01),
-    ).create(("allocation-a",))
+    ).create((
+        EndpointAllocation(
+            allocation_id="allocation-a",
+            endpoint=NetworkEndpoint("127.0.0.1", 25565),
+            lease_id="lease-a",
+            holder_scope=ScopeIdentity(ScopeKind.BRANCH, "branch-a"),
+            purpose="heartbeat failure",
+            request_digest="d" * 64,
+            lease_expires_at_epoch_s=100.0,
+        ),
+    ))
     guard.start()
     assert renewed.wait(timeout=1.0)
     with pytest.raises(EndpointLeaseHeartbeatError, match="renew failed"):
         guard.assert_healthy()
-    with pytest.raises(EndpointLeaseHeartbeatError, match="renew failed"):
-        guard.close()
+    guard.close()
+    heartbeat = runtime.topology_snapshot().heartbeats[0]
+    assert heartbeat.active is False
+    assert heartbeat.failure_type is not None
     with pytest.raises(ExceptionGroup):
         runtime.close()
 
