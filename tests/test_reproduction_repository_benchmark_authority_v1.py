@@ -4,6 +4,8 @@ import pytest
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkResolutionRegistration,
+    BenchmarkResolutionRegistry,
     BenchmarkSourceKind,
     BenchmarkSourceResolution,
     BenchmarkSourceSpec,
@@ -108,6 +110,49 @@ def test_repository_authority_fails_closed_on_ambiguous_paper_split() -> None:
     study = resolve_study_factory_bindings(STORM)
     assert len(study) == 1
 
+    with pytest.raises(
+        ReproductionResearchOSCompileError,
+        match="requires paper-owned split selection",
+    ):
+        authority.resolve(STORM, study[0])
+
+
+def test_repository_authority_merges_duplicate_proofs_for_same_exact_cut() -> None:
+    discovered = RepositoryBenchmarkAuthority.discover()
+    binding = next(
+        row for row in discovered.bindings if row.benchmark_id == "vima-bench"
+    )
+    registry = BenchmarkResolutionRegistry(
+        (
+            BenchmarkResolutionRegistration(
+                binding.resolution,
+                canonical_digest({"proof": "materialized-vima"}),
+            ),
+        )
+    )
+    authority = RepositoryBenchmarkAuthority.discover(registry)
+    study = resolve_study_factory_bindings(VIMA)
+
+    selections = authority.resolve(VIMA, study[0])
+    assert len(selections) == 1
+    assert selections[0].benchmark.cut_digest == binding.resolution.cut_digest
+    assert "vima-bench" in authority.benchmark_ids
+
+
+def test_materialized_cut_closes_asset_authority_but_not_paper_split_authority() -> None:
+    resolution = _freshwiki_resolution()
+    registry = BenchmarkResolutionRegistry(
+        (
+            BenchmarkResolutionRegistration(
+                resolution,
+                canonical_digest({"proof": "freshwiki-materialized"}),
+            ),
+        )
+    )
+    authority = RepositoryBenchmarkAuthority.discover(registry)
+    study = resolve_study_factory_bindings(STORM)
+
+    assert "freshwiki" in authority.benchmark_ids
     with pytest.raises(
         ReproductionResearchOSCompileError,
         match="requires paper-owned split selection",
