@@ -4,24 +4,20 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.capabilities.environment.embodied.api import (
+from noetrium.api import (
     ActionKind,
     ActionSpec,
     EmbodimentKind,
     EmbodimentSpec,
-    EpisodeSpec,
-    SensorModality,
-    SensorSpec,
-)
-from noetrium_platform.capabilities.environment.embodied.providers import (
     EmbodiedSimulatorBackendPort,
-    SimulatorObservation,
-    SimulatorStep,
-)
-from noetrium_platform.evidence.artifact.content.api import TensorContentRef
-from noetrium_platform.foundation.kernel.kernel import (
+    EpisodeSpec,
     ExecutionContext,
     JsonObject,
+    SensorModality,
+    SensorSpec,
+    SimulatorObservation,
+    SimulatorStep,
+    TensorContentRef,
     canonical_digest,
     require_sha256,
     thaw_json,
