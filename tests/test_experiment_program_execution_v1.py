@@ -75,6 +75,7 @@ def _execute(plan: StudyExecutionPlan, adapter, *, task_group=None):
         compile_experiment_program(plan),
         adapter,
         BasicStudyMetricAggregator(),
+        execution_binding_digest="e" * 64,
         task_group=task_group,
     ).execute()
 
