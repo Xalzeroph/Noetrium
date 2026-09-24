@@ -661,6 +661,8 @@ def build_environment_images(
             wheel_sha256,
             "--expected-distribution-evidence-sha256",
             distribution_evidence_sha256,
+            "--expected-python-runtime-identity-digest",
+            python_runtime_identity_digest,
             "--output",
             str(base_verification),
         )
