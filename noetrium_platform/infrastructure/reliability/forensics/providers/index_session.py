@@ -29,8 +29,7 @@ class ForensicIndexReadSession:
 
     def __init__(self, db: ForensicIndexDB) -> None:
         self.db = db
-        conn = db.connect()
-        conn.execute("PRAGMA query_only=ON")
+        conn = db.connect_reader()
         self._conn: sqlite3.Connection | None = conn
 
     def _connection(self) -> sqlite3.Connection:
