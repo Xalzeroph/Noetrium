@@ -3,7 +3,6 @@ from __future__ import annotations
 from noetrium_platform.research.execution.api import DecisionCycleIdentity, DecisionCycleIdentityProvider
 from noetrium_platform.research.execution.api import DecisionCycleResult
 from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports import RunIdentityProvider
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec, ExperimentTrialProtocolIdentityMismatch
 
 from .components import ExperimentRuntimeComponents
@@ -17,7 +16,7 @@ class ExperimentRuntime:
         self,
         components: ExperimentRuntimeComponents,
         *,
-        run_identity_provider: RunIdentityProvider,
+        run_identity_provider: object,
         cycle_identity_provider: DecisionCycleIdentityProvider,
     ) -> None:
         self._components = components
