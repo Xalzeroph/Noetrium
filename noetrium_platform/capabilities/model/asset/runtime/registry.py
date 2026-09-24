@@ -83,6 +83,15 @@ class ModelAssetRegistry:
         return value["asset_digest"], value["delete_managed_files"]
 
 
+    def ensure_not_retired(self, model_id: str) -> None:
+        self._validate_id(model_id)
+        with self._lock(model_id):
+            if self._retired_path(model_id).exists():
+                raise RuntimeError(
+                    "model asset identity is retired and cannot be reused: "
+                    f"{model_id}"
+                )
+
     def put(self, value: ManagedModelAsset) -> ManagedModelAsset:
         self._validate_id(value.model_id)
         with self._lock(value.model_id):
