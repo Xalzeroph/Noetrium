@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "gats",
-  "package_digest": "d8e4dbdf78146e67e03e280ab61f215baf44b42eae6837c190572634e0635674",
+  "package_digest": "f42cd9994048b724ef885e84a5511b491baa963ae77542e4207d91b5ad573f6a",
   "definition_digest": "046dbc182828093e9da7d52fd9d01ea6e1b02dd6f08da1d27006a590f2a44338",
   "source_registry_digest": "bd01696f94f58340e853c4ec16a61206335c13e3ef45730b14418c4646b37a67",
   "lifecycle": "protocol_bound",
@@ -159,7 +159,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_gats_stress_v1.py",
-      "content_sha256": "35a14a142b5bb113bc05e222955896da034125fe5425d5d0fdb4fd30dd4614a0"
+      "content_sha256": "662b82311834c437e6f10fa906873bdeb89d4e689739bef750446b1ea093e2cd"
     }
   ]
 }
