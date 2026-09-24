@@ -699,6 +699,11 @@ class ResearchGraphNodeControlStorePort(Protocol):
         node_id: str,
     ) -> ResearchGraphNodeControlRecord: ...
 
+    def node_control_snapshot(
+        self,
+        execution_id: str,
+    ) -> tuple[ResearchGraphNodeControlRecord, ...]: ...
+
     def request_node_drain(
         self,
         execution_id: str,
