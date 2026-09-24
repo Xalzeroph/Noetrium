@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
     InterprocessFileLock,
     InterprocessLockBusy,
 )
 
-
-def sha256_bytes(raw: bytes) -> str:
-    return hashlib.sha256(raw).hexdigest()
 
 
 class PromptPublicationError(RuntimeError):
