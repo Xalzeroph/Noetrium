@@ -16,6 +16,9 @@ from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingRequirementMissing,
     ResearchProjectManifestRequirement,
 )
+from noetrium_platform.composition.research_execution_pool import (
+    ResearchExecutionPool,
+)
 from noetrium_platform.composition.research_os_local import (
     compose_local_research_os,
 )
@@ -1049,6 +1052,7 @@ def preflight_materialized_reproduction_fleet(
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
     authority_manifest_digest: str,
     execution_id: str | None = None,
+    execution_pool: ResearchExecutionPool | None = None,
 ) -> ReproductionFleetPreflightResult:
     """Resolve the exact fleet and run canonical whole-graph admission only."""
 
@@ -1078,6 +1082,7 @@ def preflight_materialized_reproduction_fleet(
         state_root,
         experiment_closures=closures,
         experiment_runtime_components=experiment_runtime_components,
+        execution_pool=execution_pool,
     )
     try:
         prepared = composition.prepare(target, fleet.portfolio)
@@ -1102,6 +1107,7 @@ def execute_materialized_reproduction_fleet(
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
     authority_manifest_digest: str,
     execution_id: str | None = None,
+    execution_pool: ResearchExecutionPool | None = None,
 ):
     """Commit and RUN one fully materialized fleet through canonical Research OS.
 
@@ -1135,6 +1141,7 @@ def execute_materialized_reproduction_fleet(
         state_root,
         experiment_closures=closures,
         experiment_runtime_components=experiment_runtime_components,
+        execution_pool=execution_pool,
     )
     try:
         revision = composition.research_os.commit(
@@ -1244,6 +1251,7 @@ def preflight_repository_execution_fleet(
     *,
     state_root: Path,
     execution_id: str | None = None,
+    execution_pool: ResearchExecutionPool | None = None,
 ) -> ReproductionFleetPreflightResult:
     """Materialize all executable reproductions and prove canonical admission."""
 
@@ -1262,6 +1270,7 @@ def preflight_repository_execution_fleet(
         experiment_runtime_components=authorities.experiment_runtime_components,
         authority_manifest_digest=authorities.authority_manifest_digest,
         execution_id=execution_id,
+        execution_pool=execution_pool,
     )
 
 
@@ -1270,6 +1279,7 @@ def run_repository_execution_fleet(
     *,
     state_root: Path,
     execution_id: str | None = None,
+    execution_pool: ResearchExecutionPool | None = None,
 ) -> ReproductionFleetExecutionResult:
     """discover -> resolve -> materialize -> compile -> commit -> RUN.
 
@@ -1293,6 +1303,7 @@ def run_repository_execution_fleet(
         experiment_runtime_components=authorities.experiment_runtime_components,
         authority_manifest_digest=authorities.authority_manifest_digest,
         execution_id=execution_id,
+        execution_pool=execution_pool,
     )
     return ReproductionFleetExecutionResult(
         fleet,
