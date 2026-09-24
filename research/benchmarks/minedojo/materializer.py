@@ -5,6 +5,9 @@ import importlib
 from typing import Any
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    BenchmarkResolutionRegistration,
+)
 
 from .authority import (
     MINEDOJO_AUDITED_COMMIT,
@@ -263,6 +266,31 @@ def bind_official_minedojo_registry(
     )
 
 
+def register_official_minedojo_registry(
+    registry: object,
+    *,
+    installed_source_commit: str,
+) -> BenchmarkResolutionRegistration:
+    """Freeze the audited official MineDojo registry into Benchmark authority."""
+
+    resolution = bind_official_minedojo_registry(
+        registry,
+        installed_source_commit=installed_source_commit,
+    )
+    proof_digest = canonical_digest(
+        {
+            "schema": "minedojo.official-registry.benchmark-authority-proof.v1",
+            "audited_commit": MINEDOJO_AUDITED_COMMIT,
+            "source_manifest_digest": minedojo_task_source_manifest_digest(),
+            "resolution_digest": resolution.resolution_digest,
+        }
+    )
+    return BenchmarkResolutionRegistration(
+        resolution,
+        proof_digest,
+    )
+
+
 def load_official_minedojo_records(
     *,
     installed_source_commit: str,
@@ -278,4 +306,5 @@ __all__ = [
     "bind_official_minedojo_registry",
     "load_official_minedojo_records",
     "materialize_official_minedojo_records",
+    "register_official_minedojo_registry",
 ]
