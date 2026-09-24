@@ -174,6 +174,8 @@ class TransitionProposal:
     accepted_status: MachineStatus | None = None
     before_state_digest: str | None = None
     input_digest: str | None = None
+    program_digest: str | None = None
+    program_lock_digest: str | None = None
     machine_kind: str | None = None
     machine_version: str | None = None
     input_refs: tuple[str, ...] = ()
@@ -216,6 +218,8 @@ class TransitionProposal:
         for name, value in ((
             ("before_state_digest", self.before_state_digest),
             ("input_digest", self.input_digest),
+            ("program_digest", self.program_digest),
+            ("program_lock_digest", self.program_lock_digest),
         )):
             if value is not None:
                 require_sha256(value, f"transition proposal {name}")
@@ -294,7 +298,6 @@ class MachineCommit:
     previous_commit_id: str | None = None
     before_state_digest: str | None = None
     input_digest: str | None = None
-    program_digest: str | None = None
     machine_kind: str | None = None
     machine_version: str | None = None
     input_refs: tuple[str, ...] = ()
@@ -346,7 +349,6 @@ class MachineCommit:
         for name, value in ((
             ("before_state_digest", self.before_state_digest),
             ("input_digest", self.input_digest),
-            ("program_digest", self.program_digest),
         )):
             if value is not None:
                 require_sha256(value, f"machine commit {name}")
@@ -391,6 +393,7 @@ class MachineCommit:
                 "before_state_digest": self.before_state_digest,
                 "input_digest": self.input_digest,
                 "program_digest": self.program_digest,
+                "program_lock_digest": self.program_lock_digest,
                 "machine_kind": self.machine_kind,
                 "machine_version": self.machine_version,
                 "input_refs": self.input_refs,
@@ -530,6 +533,7 @@ __all__ = [
     "MachineSnapshot",
     "MachineStatus",
     "MachineCommit",
+    "MachineCut",
     "MachineIntegrityError",
     "TransitionProposal",
 ]
