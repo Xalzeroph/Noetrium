@@ -4,8 +4,10 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.logical_path import logical_absolute_path
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
-from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    durable_sqlite_connection,
+)
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind, ScopeLink
 from noetrium_platform.foundation.scope.runtime import ScopeNotRegistered, ScopeRegistryConflict
 
@@ -30,13 +32,6 @@ class SQLiteScopeRegistry:
                 "INSERT OR IGNORE INTO scopes(scope_key,kind,scope_id,parent_key) VALUES(?,?,?,NULL)",
                 (PLATFORM_SCOPE.key, PLATFORM_SCOPE.kind.value, PLATFORM_SCOPE.scope_id),
             )
-
-    @staticmethod
-    def _is_lock_contention(exc: BaseException) -> bool:
-        if not isinstance(exc, sqlite3.OperationalError):
-            return False
-        message = str(exc).lower()
-        return "locked" in message or "busy" in message
 
     def _connection(self):
         return durable_sqlite_connection(
@@ -107,9 +102,8 @@ class SQLiteScopeRegistry:
     def register(self, scope: ScopeIdentity, parent: ScopeIdentity | None) -> None:
         self._validate_parent(scope, parent)
         with self._connection() as conn:
-            retry_until_deadline(
-                lambda: conn.execute("BEGIN IMMEDIATE"),
-                should_retry=self._is_lock_contention,
+            begin_immediate_sqlite_transaction(
+                conn,
                 timeout_seconds=self.timeout_seconds,
             )
             try:
