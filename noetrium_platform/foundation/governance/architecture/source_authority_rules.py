@@ -4,7 +4,7 @@ from .source_authority_contracts import SourceAuthorityRule
 from .source_authority_matchers import exact_call, suffix_call
 
 
-DEFAULT_SOURCE_AUTHORITY_RULES: tuple[_AuthorityRule, ...] = (
+DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
     SourceAuthorityRule(
         "storage.sqlite_connection",
         "sqlite3.connect",
