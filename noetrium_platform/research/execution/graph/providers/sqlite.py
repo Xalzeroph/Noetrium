@@ -7,6 +7,7 @@ import sqlite3
 from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.kernel import require_sha256
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 _SQLITE_INT64_MAX = (1 << 63) - 1
 
 
@@ -49,23 +50,11 @@ class SQLiteResearchGraphExecutionStore:
         with self._connection() as conn:
             self._ensure_schema(conn)
 
-    @contextmanager
     def _connection(self):
-        conn = sqlite3.connect(
+        return durable_sqlite_connection(
             self.path,
-            timeout=self.timeout_seconds,
-            isolation_level=None,
+            timeout_seconds=self.timeout_seconds,
         )
-        try:
-            conn.execute(
-                f"PRAGMA busy_timeout={max(1, int(self.timeout_seconds * 1000))}"
-            )
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA synchronous=FULL")
-            conn.execute("PRAGMA foreign_keys=ON")
-            yield conn
-        finally:
-            conn.close()
 
     @contextmanager
     def _transaction(self):
