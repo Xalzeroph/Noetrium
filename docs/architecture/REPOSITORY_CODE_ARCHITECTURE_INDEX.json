@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3630,
-    "python_import_edges": 6870,
+    "python_files": 3631,
+    "python_import_edges": 6874,
     "symbols": 4826,
-    "tracked_files": 4259,
+    "tracked_files": 4260,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -29229,6 +29229,30 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_no_compat_persisted_schema_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.governance.analysis.algorithm.providers.filesystem",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_no_compat_persisted_schema_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.governance.analysis.concurrency.providers.filesystem",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_no_compat_persisted_schema_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.governance.analysis.performance.providers.filesystem",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_no_compat_persisted_schema_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.governance.release.runtime.regression_state",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_no_degradation_v21",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.governance.architecture.gating.quality",
@@ -41297,7 +41321,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2696,
+      "count": 2700,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41360,7 +41384,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 785,
+    "tests": 786,
     "tooling": 77
   },
   "role_symbol_counts": {
@@ -41376,7 +41400,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "56f80797756050a00611b875e891ff5e9cbe4927",
+  "source_git_sha": "0326744b38343dde8dd465306026a8fdff0dedc6",
   "symbols": [
     {
       "bases": [],
