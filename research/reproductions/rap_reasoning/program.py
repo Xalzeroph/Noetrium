@@ -3,9 +3,9 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 import math
 
-from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodProgramIdentity
-from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_digest
-from noetrium_platform.research.execution.workflow.api import (
+from noetrium.api import MethodIdentity, MethodProgramIdentity
+from noetrium.api import JsonObject, JsonValue, canonical_digest
+from noetrium.api import (
     MethodExecutionClass,
     MethodNodeRequest,
     MethodNodeResult,
