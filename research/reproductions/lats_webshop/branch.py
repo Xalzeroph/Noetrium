@@ -4,18 +4,16 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-from noetrium_platform.capabilities.environment.api import EnvironmentSession
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext
-from noetrium_platform.composition.environment_fork import (
+from noetrium.api import (
     EnvironmentForkReceipt,
+    EnvironmentSession,
     EnvironmentSessionOpener,
-    fork_environment_session,
-)
-from noetrium_platform.composition.execution_lineage import (
+    ExecutionContext,
     ExecutionForkReceipt,
     ExecutionSourceCut,
     ExecutionStateAnchor,
     bind_execution_fork,
+    fork_environment_session,
 )
 
 
