@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTrialProtocolIdentity
-from noetrium_platform.research.experimentation.lifecycle.api import (
+from noetrium.api import ExperimentTrialProtocolIdentity
+from noetrium.api import (
     BenchmarkTaskSet,
     MeasurementDefinition,
     ReplayLevel,
