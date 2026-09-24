@@ -6,7 +6,6 @@ import asyncio
 import hashlib
 from pathlib import Path
 from threading import Lock
-import time
 
 from noetrium_platform.substrate.api import (
     ExactServiceRuntimePort,
@@ -129,13 +128,14 @@ class MinecraftTcpReadinessProbe:
 
 
 class MinecraftServerReadinessProbe:
-    """Require the game endpoint and the configured RCON control plane."""
+    """Require the game endpoint and RCON through Platform-owned execution."""
 
     def __init__(
         self,
         *,
         tcp: MinecraftTcpReadinessProbe,
         rcon: MinecraftRconConsole,
+        task_group: TaskGroupPort,
         rcon_command: str = "list",
         poll_interval_s: float = 0.25,
     ) -> None:
@@ -145,20 +145,31 @@ class MinecraftServerReadinessProbe:
         self.rcon = rcon
         self.rcon_command = rcon_command
         self.poll_interval_s = poll_interval_s
+        self._task_group = task_group
+        self._sequence = 0
+        self._sequence_lock = Lock()
 
-    def wait_ready(self, process, contract: ServiceLaunchContract, backend: ServiceProcessLivenessPort) -> str:
-        tcp_evidence = self.tcp.wait_ready(process, contract, backend)
-        deadline = time.monotonic() + contract.readiness_timeout_s
+    def _wait_rcon(
+        self,
+        context,
+        process,
+        contract: ServiceLaunchContract,
+        backend: ServiceProcessLivenessPort,
+        tcp_evidence: str,
+    ) -> str:
         last_error = "not-probed"
-        while time.monotonic() < deadline:
+        while True:
+            context.checkpoint()
             if not backend.alive(process):
                 raise MinecraftServerServiceError(
                     "Minecraft server process exited before RCON readiness"
                 )
+            remaining = context.remaining_seconds
+            timeout_s = 1.0 if remaining is None else min(1.0, max(0.001, remaining))
             try:
                 rcon_evidence = self.rcon.execute(
                     self.rcon_command,
-                    timeout_s=min(1.0, max(0.1, deadline - time.monotonic())),
+                    timeout_s=timeout_s,
                 )
                 return "minecraft-server-ready:" + canonical_digest(
                     {
@@ -168,10 +179,63 @@ class MinecraftServerReadinessProbe:
                 )
             except Exception as exc:
                 last_error = f"{type(exc).__name__}:{exc}"
-            time.sleep(self.poll_interval_s)
-        raise MinecraftServerServiceError(
-            f"Minecraft RCON readiness timed out: {last_error}"
+
+            remaining = context.remaining_seconds
+            delay = (
+                self.poll_interval_s
+                if remaining is None
+                else min(self.poll_interval_s, remaining)
+            )
+            if delay <= 0:
+                context.checkpoint()
+            if context.wait(delay):
+                context.checkpoint()
+            if context.remaining_seconds is not None and context.remaining_seconds <= 0:
+                context.checkpoint()
+                raise MinecraftServerServiceError(
+                    f"Minecraft RCON readiness timed out: {last_error}"
+                )
+
+    def wait_ready(
+        self,
+        process,
+        contract: ServiceLaunchContract,
+        backend: ServiceProcessLivenessPort,
+    ) -> str:
+        tcp_evidence = self.tcp.wait_ready(process, contract, backend)
+        with self._sequence_lock:
+            self._sequence += 1
+            sequence = self._sequence
+        deadline = Deadline.after(contract.readiness_timeout_s)
+        readiness_identity = canonical_digest(
+            {
+                "service_id": contract.service_id,
+                "contract_digest": contract.digest(),
+                "process_pid": process.pid,
+                "process_start_identity": process.start_identity,
+                "rcon_command": self.rcon_command,
+            }
         )
+        handle = self._task_group.submit(
+            ExecutionSpec(
+                task_id=f"minecraft-rcon-readiness:{readiness_identity}:{sequence}",
+                lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                failure_scope=TaskFailureScope.CALLER,
+            ),
+            self._wait_rcon,
+            process,
+            contract,
+            backend,
+            tcp_evidence,
+            deadline=deadline,
+        )
+        try:
+            return handle.result(timeout=max(0.001, deadline.remaining_seconds))
+        except TimeoutError as exc:
+            handle.cancel()
+            raise MinecraftServerServiceError(
+                f"Minecraft RCON readiness timed out: {self.rcon_command}"
+            ) from exc
 
 
 def build_server_service_contract(
@@ -302,6 +366,7 @@ def compose_minecraft_server_service_runtime(
                 spec.rcon_endpoint,
                 secret_provider=rcon_password_provider,
             ),
+            task_group=task_group,
         )
 
     return runtime_factory.open(
