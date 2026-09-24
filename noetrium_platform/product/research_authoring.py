@@ -8,25 +8,8 @@ Downstream projects import these names through :mod:`noetrium.api`.
 """
 from __future__ import annotations
 
-from noetrium_platform.capabilities.environment.software.api import (
-    SoftwareActionKind,
-    SoftwareActionTimeoutError,
-    SoftwareWorldPort,
-)
-
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
-from noetrium_platform.capabilities.environment.embodied.api import (
-    EmbodiedSimulatorBackendPort,
-    SimulatorObservation,
-    SimulatorStep,
-)
-
 from noetrium_platform.evidence.data.projection.api import SemanticProjectionSnapshot
-from noetrium_platform.evidence.data.query.api import (
-    SemanticSimilarityQuery,
-    SemanticSimilarityQueryPort,
-)
-
 from noetrium_platform.foundation.kernel.kernel import (
     ChildMachineLink,
     EffectCertainty,
@@ -47,10 +30,6 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
-from noetrium_platform.research.experimentation.workbench.api import (
-    candidate_program_capability_payload,
-)
-
 from noetrium_platform.research.experimentation.api import (
     ActionKind,
     ActionRequest,
@@ -58,6 +37,7 @@ from noetrium_platform.research.experimentation.api import (
     ActionSpec,
     AgentMethodSpec,
     AgentPhaseSpec,
+    ArtifactBlobRef,
     BenchmarkAssignmentMode,
     BenchmarkTaskSet,
     CapabilityDescriptor,
@@ -77,18 +57,22 @@ from noetrium_platform.research.experimentation.api import (
     EmbodiedCaptureReceipt,
     EmbodiedEvent,
     EmbodiedEventKind,
+    EmbodiedSimulatorBackendPort,
     EmbodimentKind,
     EmbodimentSpec,
+    EnvironmentConcern,
     EnvironmentForkReceipt,
+    EnvironmentProgramBuilder,
     EnvironmentReplayError,
     EnvironmentReplayReceipt,
-    EnvironmentSessionOpener,
-    EnvironmentConcern,
-    EnvironmentProgramBuilder,
     EnvironmentSession,
+    EnvironmentSessionOpener,
     EpisodeSpec,
     EvaluationConcern,
     EvaluationProgramBuilder,
+    ExecutionForkReceipt,
+    ExecutionSourceCut,
+    ExecutionStateAnchor,
     ExperimentConcern,
     ExperimentProgramBuilder,
     ExperimentTrialProtocolIdentity,
@@ -137,8 +121,16 @@ from noetrium_platform.research.experimentation.api import (
     RuntimeModule,
     RuntimeModuleBuilder,
     RuntimeProgramBuilder,
+    SemanticProjectionSnapshot,
+    SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort,
     SensorModality,
     SensorSpec,
+    SimulatorObservation,
+    SimulatorStep,
+    SoftwareActionKind,
+    SoftwareActionTimeoutError,
+    SoftwareWorldPort,
     Study,
     StudyConcurrencyPolicy,
     StudyModel,
@@ -146,20 +138,18 @@ from noetrium_platform.research.experimentation.api import (
     TensorContentRef,
     TensorContentStorePort,
     TrialBudget,
-    ExecutionForkReceipt,
-    ExecutionSourceCut,
-    ExecutionStateAnchor,
     bind_execution_fork,
-    fork_environment_session,
-    replay_environment_prefix,
+    candidate_program_capability_payload,
     environment_action_capability_payload,
     environment_branch_action_spec,
     environment_fork_action_payload,
     environment_query_capability_payload,
     environment_replay_action_payload,
     environment_reset_capability_payload,
+    fork_environment_session,
     materialize_capability_selection_view,
     program_execution_capability_payload,
+    replay_environment_prefix,
 )
 
 __all__ = [
