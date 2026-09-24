@@ -116,10 +116,11 @@ class EndpointShutdownAuthority:
     def active(self):
         return tuple(Allocation(value) for value in sorted(self.live))
 
-    def release(self, allocation_id):
+    def release(self, allocation):
+        allocation_id = allocation.allocation_id
         self.events.append(f"endpoint-release:{allocation_id}")
         self.live.remove(allocation_id)
-        return Allocation(allocation_id)
+        return allocation
 
 
 class ComputeShutdownAuthority:
