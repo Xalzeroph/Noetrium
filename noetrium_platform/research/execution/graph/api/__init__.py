@@ -10,6 +10,7 @@ from .contracts import (
 from .state import (
     ResearchGraphActiveCutRef,
     ResearchGraphActiveCutStorePort,
+    ResearchGraphActiveExecutionSnapshot,
     ResearchGraphAttemptRecord,
     ResearchGraphAttemptState,
     ResearchGraphControlPhase,
@@ -34,6 +35,7 @@ from .state import (
 __all__ = [
     "ResearchGraphActiveCutRef",
     "ResearchGraphActiveCutStorePort",
+    "ResearchGraphActiveExecutionSnapshot",
     "ResearchGraphAttemptRecord",
     "ResearchGraphAttemptState",
     "ResearchGraphControlPhase",
