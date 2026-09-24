@@ -1,12 +1,11 @@
 from pathlib import Path
 
-from noetrium_platform.composition.experiment_runtime import build_experiment_runtime_components
 from noetrium_platform.foundation.kernel.kernel import DirectoryMachineJournal, DirectoryMachineSnapshotStore
-from tests_support import EmptyWorkflowSurfaceFactory, NoOpTrialProtocol
+from tests_support import EmptyWorkflowSurfaceFactory, NoOpTrialProtocol, build_experiment_runtime_components_for_test
 
 
 def test_state_root_wires_durable_experiment_authorities(tmp_path: Path) -> None:
-    components = build_experiment_runtime_components(
+    components = build_experiment_runtime_components_for_test(
         participant_adapters=(),
         trial_protocol=NoOpTrialProtocol(),
         workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),),
