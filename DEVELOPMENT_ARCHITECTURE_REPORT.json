@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5292,
+    "import_edges": 5296,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5292,
+      "import_edges": 5296,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5292,
+  "import_edges": 5296,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,10 +873,23 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "efe8646bc1aa5c36bbdefe92b27af6736859966f001d1d50331c3e7a9a3488d4",
+  "report_sha256": "d5f6224a65e9617bc282168ad548ac157f7d016152cd79a55863c0c6067be678",
   "source_authority_violations": [],
-  "source_digest": "c60df03aa117339951251e413e67ea31a3bf12f5d7dce336db14724eef74a36d",
-  "source_invariant_violations": [],
+  "source_digest": "e36e1e90b4143c0213fe4d59e70081de0ca3966a364b1dc0c46d55e383ffe274",
+  "source_invariant_violations": [
+    {
+      "detail": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority -> noetrium_platform.foundation.governance.api; required facade=noetrium_platform.substrate.api",
+      "invariant": "non_adjacent_layer_facade_dependency",
+      "line": 15,
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py"
+    },
+    {
+      "detail": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority -> noetrium_platform.infrastructure.resources.lease.api; required facade=noetrium_platform.substrate.api",
+      "invariant": "skip_layer_dependency",
+      "line": 16,
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py"
+    }
+  ],
   "source_root": ".",
   "subsystem_graph": [
     {
@@ -1709,6 +1722,18 @@
       "score": 2327
     },
     {
+      "branches": 71,
+      "classes": 5,
+      "exception_handlers": 7,
+      "functions": 86,
+      "imports": 12,
+      "max_function_lines": 95,
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
+      "physical_lines": 1523,
+      "score": 2287
+    },
+    {
       "branches": 116,
       "classes": 17,
       "exception_handlers": 0,
@@ -1719,18 +1744,6 @@
       "path": "noetrium_platform/composition/research_binding_authority.py",
       "physical_lines": 1171,
       "score": 2278
-    },
-    {
-      "branches": 71,
-      "classes": 5,
-      "exception_handlers": 7,
-      "functions": 82,
-      "imports": 12,
-      "max_function_lines": 95,
-      "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
-      "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
-      "physical_lines": 1504,
-      "score": 2268
     },
     {
       "branches": 121,
@@ -2111,7 +2124,7 @@
     },
     {
       "exception_handlers": 0,
-      "import_fan_in": 75,
+      "import_fan_in": 76,
       "import_fan_out": 7,
       "io_sites": 0,
       "lock_sites": 0,
@@ -2121,7 +2134,7 @@
       "reason_codes": [
         "HIGH_FAN_IN"
       ],
-      "risk_score": 321,
+      "risk_score": 325,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },

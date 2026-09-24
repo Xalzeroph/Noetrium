@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3670,
-    "python_import_edges": 7091,
-    "symbols": 4925,
-    "tracked_files": 4306,
+    "python_files": 3671,
+    "python_import_edges": 7094,
+    "symbols": 4929,
+    "tracked_files": 4307,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4919,
+    "python": 4923,
     "typescript": 5
   },
   "parse_errors": [],
@@ -414,6 +414,24 @@
       "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.substrate.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.environment.catalog.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.governance.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.api",
       "target_role": "core_platform"
     },
     {
@@ -42563,7 +42581,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2584,
+      "count": 2587,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42679,7 +42697,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1906,
+    "core_platform": 1907,
     "examples": 6,
     "other": 6,
     "public_facade": 40,
@@ -42690,7 +42708,7 @@
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3355,
+    "core_platform": 3359,
     "examples": 3,
     "other": 20,
     "public_facade": 4,
@@ -42702,7 +42720,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "4798222322ac5c65b2671a0ee5bc74bbbee1b8e1",
+  "source_git_sha": "3ef1b158240dfc842dd1be51835aa8e1b47ac49e",
   "symbols": [
     {
       "bases": [],
@@ -45870,6 +45888,8 @@
         "assign",
         "resolve",
         "register_instance",
+        "instances",
+        "bindings",
         "register_recovery_instance",
         "bind",
         "acquire_reusable_instance",
@@ -45966,6 +45986,8 @@
         "_spec_chain",
         "resolve",
         "register_instance",
+        "instances",
+        "bindings",
         "register_recovery_instance",
         "_rebuild_bindings",
         "_instance",
@@ -45999,7 +46021,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 945,
+      "line": 956,
       "methods": [
         "__init__",
         "_connection",
@@ -46030,6 +46052,8 @@
         "assign",
         "resolve",
         "register_instance",
+        "instances",
+        "bindings",
         "register_recovery_instance",
         "bind",
         "acquire_reusable_instance",
@@ -46049,6 +46073,94 @@
       "name": "SQLiteExecutionEnvironmentCatalog",
       "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
       "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.catalog.SQLiteExecutionEnvironmentCatalog",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "ttl_seconds: float",
+        "renewal_interval_seconds: float"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 29,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
+      "name": "EnvironmentInstanceLeasePolicy",
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeasePolicy",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "acquisition: EnvironmentInstanceAcquisition",
+        "lease: ResourceLease"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 53,
+      "methods": [
+        "__post_init__",
+        "instance",
+        "binding"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
+      "name": "EnvironmentInstanceLeaseHandle",
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeaseHandle",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "dirtied_instance_ids: tuple[str, ...]",
+        "released_orphan_lease_ids: tuple[str, ...]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 75,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
+      "name": "EnvironmentInstanceReconciliation",
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceReconciliation",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 88,
+      "methods": [
+        "__init__",
+        "_binding_rows",
+        "_instance",
+        "_acquire_lease",
+        "acquire_reusable_instance",
+        "recover_reusable_instance",
+        "renew",
+        "renew_many",
+        "release",
+        "reconcile"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
+      "name": "EnvironmentInstanceLeaseAuthority",
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeaseAuthority",
       "role": "core_platform"
     },
     {
@@ -64909,6 +65021,7 @@
         "portfolio: PortfolioCatalogPort",
         "experimentation: ExperimentationCatalogPort",
         "environments: ExecutionEnvironmentCatalogPort",
+        "environment_instance_leases: EnvironmentInstanceLeaseAuthority",
         "artifacts: ArtifactRegistryPort",
         "datasets: DatasetRegistryPort",
         "facts: DurableFactStorePort",
@@ -64921,7 +65034,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 69,
+      "line": 70,
       "methods": [],
       "module": "noetrium_platform.composition.platform_meta",
       "name": "PlatformMetaAuthorities",
