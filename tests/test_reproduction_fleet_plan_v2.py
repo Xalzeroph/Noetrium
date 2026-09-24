@@ -11,56 +11,81 @@ def _lane(plan: dict, package: str) -> dict:
 
 def test_fleet_plan_is_derived_only_from_current_research_os_compilers() -> None:
     plan = build_plan()
-    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v3"
+    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v4"
     assert plan["protocol_bound_count"] >= 91
     assert plan["compile_failure_count"] == 0
     assert plan["research_os_compiled_count"] == plan["protocol_bound_count"]
+    assert (
+        plan["execution_ready_count"] + plan["closure_binding_required_count"]
+        == plan["protocol_bound_count"]
+    )
     assert plan["graph_node_count"] == plan["protocol_bound_count"]
     assert len(plan["portfolio_digest"]) == 64
     assert len(plan["graph_digest"]) == 64
     assert len(plan["plan_digest"]) == 64
     for row in plan["lanes"]:
-        assert row["state"] == "research_os_compiled"
+        assert row["state"] in {"execution_ready", "closure_binding_required"}
         assert row["study_factory_count"] >= 1
         assert len(row["research_program_digest"]) == 64
         assert len(row["research_graph_semantic_digest"]) == 64
         assert row["research_graph_node_id"] == row["package"] + "::reproduction"
+        assert row["blockers"] == ()
 
 
-def test_fleet_plan_exposes_exact_vs_parameterized_study_bindings() -> None:
+def test_fleet_plan_exposes_typed_closure_requirements() -> None:
     plan = build_plan()
+
     react = _lane(plan, "react_alfworld")
-    assert react["exact_study_factory_count"] >= 1
-    assert react["unresolved_study_parameters"] == ()
+    assert react["state"] == "execution_ready"
+    assert react["execution_requirement_parameters"] == ()
+    assert react["execution_requirement_kinds"] == ()
 
     adapt = _lane(plan, "adaptagent_acl2025")
-    assert "split_id" in adapt["unresolved_study_parameters"]
+    assert adapt["state"] == "closure_binding_required"
+    assert adapt["execution_requirement_parameters"] == ("split_id",)
+    assert adapt["execution_requirement_kinds"] == ("benchmark_split",)
 
     frontier = _lane(plan, "astranav_memory_cvpr2026")
-    assert "benchmark_split_id" in frontier["unresolved_study_parameters"]
+    assert frontier["execution_requirement_parameters"] == (
+        "benchmark_split_id",
+    )
+    assert frontier["execution_requirement_kinds"] == ("benchmark_split",)
     assert frontier["study_factory_count"] >= 1
+
+    storm = _lane(plan, "storm_wiki")
+    assert storm["execution_requirement_parameters"] == (
+        "search_capability_id",
+        "split_id",
+    )
+    assert storm["execution_requirement_kinds"] == (
+        "capability_id",
+        "benchmark_split",
+    )
 
 
 def test_fleet_plan_materializes_exact_method_factories_through_product_abi() -> None:
     plan = build_plan()
     toolformer = _lane(plan, "toolformer")
     assert len(toolformer["method_program_digest"]) == 64
-    assert not any(
-        blocker.startswith("method_factory_requires_binding:")
-        for blocker in toolformer["blockers"]
-    )
+    assert toolformer["blockers"] == ()
 
 
-
-def test_all_protocol_bound_reproductions_have_exact_execution_bindings() -> None:
+def test_every_remaining_execution_input_is_typed_and_digest_bound() -> None:
     plan = build_plan()
-    unresolved = tuple(
-        (
-            row["package"],
-            tuple(row["unresolved_study_parameters"]),
-            tuple(row["blockers"]),
+    for row in plan["lanes"]:
+        parameters = tuple(row["execution_requirement_parameters"])
+        kinds = tuple(row["execution_requirement_kinds"])
+        digests = tuple(row["execution_requirement_digests"])
+        assert len(parameters) == len(kinds) == len(digests)
+        assert len(parameters) == len(set(parameters))
+        assert all(kind in {
+            "benchmark_split",
+            "capability_id",
+            "capability_closure",
+            "paper_option",
+        } for kind in kinds)
+        assert all(
+            len(digest) == 64
+            and all(ch in "0123456789abcdef" for ch in digest)
+            for digest in digests
         )
-        for row in plan["lanes"]
-        if row["unresolved_study_parameters"] or row["blockers"]
-    )
-    assert unresolved == ()
