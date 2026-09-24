@@ -168,6 +168,12 @@ class _Runtime:
             program_digest=canonical_digest(
                 {"lowering_digest": lowering.lowering_digest}
             ),
+            program_lock_digest=canonical_digest(
+                {
+                    "lowering_digest": lowering.lowering_digest,
+                    "runtime": "test",
+                }
+            ),
         )
         return ResearchOSNodeCheckpointProof(
             execution_cut_id,
