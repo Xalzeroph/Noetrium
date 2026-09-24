@@ -6,8 +6,8 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
     durable_sqlite_connection,
+    immediate_sqlite_transaction,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentModelRoleSpec,
@@ -141,14 +141,12 @@ class SQLiteExperimentationCatalog:
 
     def _insert(self, statement: str, values: tuple[object, ...]) -> None:
         with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="experimentation catalog",
+            ):
                 conn.execute(statement, values)
-                conn.commit()
-            except BaseException:
-                if conn.in_transaction:
-                    conn.rollback()
-                raise
 
     def register_study(self, spec: StudySpec) -> None:
         parent = ScopeIdentity(ScopeKind.PROJECT, spec.project_id)
