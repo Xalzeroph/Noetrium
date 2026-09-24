@@ -125,7 +125,10 @@ class ReproductionBenchmarkSelection:
 
 @runtime_checkable
 class ReproductionBenchmarkResolverPort(Protocol):
-    """Resolve exact benchmark cuts/splits from Benchmark + Artifact authority."""
+    """Resolve exact benchmark cuts/splits from an identity-bearing authority."""
+
+    @property
+    def authority_digest(self) -> str: ...
 
     def resolve(
         self,
@@ -241,6 +244,10 @@ def resolve_repository_execution_requests(
 
     if not isinstance(benchmark_resolver, ReproductionBenchmarkResolverPort):
         raise TypeError("fleet requires ReproductionBenchmarkResolverPort")
+    _require_sha256(
+        benchmark_resolver.authority_digest,
+        "fleet benchmark authority_digest",
+    )
 
     requests: list[ReproductionExecutionRequest] = []
     for definition in executable_reproduction_definitions():
@@ -1158,6 +1165,10 @@ class ReproductionFleetExecutionAuthorities:
             raise TypeError(
                 "fleet execution authorities require benchmark resolver"
             )
+        _require_sha256(
+            self.benchmark_resolver.authority_digest,
+            "fleet execution benchmark authority_digest",
+        )
         if not isinstance(
             self.research_bindings,
             ResearchBindingAuthorityPort,
