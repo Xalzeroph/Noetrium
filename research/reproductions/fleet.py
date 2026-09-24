@@ -18,8 +18,10 @@ from noetrium_platform.composition.research_os_local import (
 )
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentClosure,
-    ResearchOSExperimentRuntimeBindingPort,
     compile_research_os_experiment_closure,
+)
+from noetrium_platform.composition.research_os_experiment_runtime_binding import (
+    ResearchOSExperimentRuntimeComponents,
 )
 from noetrium_platform.composition.research_os_graph import CompiledResearchOSGraphNode
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
@@ -405,7 +407,7 @@ def execute_materialized_reproduction_fleet(
     *,
     state_root: Path,
     research_bindings: ResearchBindingAuthorityPort,
-    experiment_bindings: ResearchOSExperimentRuntimeBindingPort,
+    experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
     execution_id: str | None = None,
 ):
     """Commit and RUN one fully materialized fleet through canonical Research OS.
@@ -424,11 +426,8 @@ def execute_materialized_reproduction_fleet(
         ResearchBindingAuthorityPort,
     ):
         raise TypeError("fleet execution requires research binding resolver")
-    if not isinstance(
-        experiment_bindings,
-        ResearchOSExperimentRuntimeBindingPort,
-    ):
-        raise TypeError("fleet execution requires experiment runtime binding resolver")
+    if type(experiment_runtime_components) is not ResearchOSExperimentRuntimeComponents:
+        raise TypeError("fleet execution requires typed Experiment runtime components")
     if execution_id is None:
         execution_id = (
             "repository-reproductions."
@@ -448,7 +447,7 @@ def execute_materialized_reproduction_fleet(
     composition = compose_local_research_os(
         state_root,
         experiment_closures=closures,
-        experiment_bindings=experiment_bindings,
+        experiment_runtime_components=experiment_runtime_components,
     )
     try:
         revision = composition.research_os.commit(
@@ -470,7 +469,7 @@ class ReproductionFleetExecutionAuthorities:
 
     benchmark_resolver: ReproductionBenchmarkResolverPort
     research_bindings: ResearchBindingAuthorityPort
-    experiment_bindings: ResearchOSExperimentRuntimeBindingPort
+    experiment_runtime_components: ResearchOSExperimentRuntimeComponents
     capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None
 
     def __post_init__(self) -> None:
@@ -488,12 +487,12 @@ class ReproductionFleetExecutionAuthorities:
             raise TypeError(
                 "fleet execution authorities require research binding resolver"
             )
-        if not isinstance(
-            self.experiment_bindings,
-            ResearchOSExperimentRuntimeBindingPort,
+        if (
+            type(self.experiment_runtime_components)
+            is not ResearchOSExperimentRuntimeComponents
         ):
             raise TypeError(
-                "fleet execution authorities require experiment runtime binding resolver"
+                "fleet execution authorities require typed Experiment runtime components"
             )
         if self.capability_resolver is not None and not isinstance(
             self.capability_resolver,
@@ -566,7 +565,7 @@ def run_repository_execution_fleet(
         fleet,
         state_root=state_root,
         research_bindings=authorities.research_bindings,
-        experiment_bindings=authorities.experiment_bindings,
+        experiment_runtime_components=authorities.experiment_runtime_components,
         execution_id=execution_id,
     )
     return ReproductionFleetExecutionResult(fleet, receipt)
