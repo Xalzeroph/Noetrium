@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5295,
+    "import_edges": 5292,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5295,
+      "import_edges": 5292,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5295,
+  "import_edges": 5292,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "bace0d87124db087c82c1fd4e5ab5e4fdb87ff2b73e4c333c4f0135f5b2168cd",
+  "report_sha256": "efe8646bc1aa5c36bbdefe92b27af6736859966f001d1d50331c3e7a9a3488d4",
   "source_authority_violations": [],
-  "source_digest": "69a7e8df2d1b1b6389c7c75a70ec1428285307346cebcaaefa35c3850eb794da",
+  "source_digest": "c60df03aa117339951251e413e67ea31a3bf12f5d7dce336db14724eef74a36d",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -2092,22 +2092,6 @@
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 0,
-      "import_fan_in": 77,
-      "import_fan_out": 7,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.foundation.governance.api",
-      "path": "noetrium_platform/foundation/governance/api/__init__.py",
-      "reason_codes": [
-        "HIGH_FAN_IN"
-      ],
-      "risk_score": 329,
-      "self_mutation_sites": 0,
-      "serialization_sites": 0
-    },
-    {
       "exception_handlers": 13,
       "import_fan_in": 3,
       "import_fan_out": 7,
@@ -2123,6 +2107,22 @@
       ],
       "risk_score": 326,
       "self_mutation_sites": 29,
+      "serialization_sites": 0
+    },
+    {
+      "exception_handlers": 0,
+      "import_fan_in": 75,
+      "import_fan_out": 7,
+      "io_sites": 0,
+      "lock_sites": 0,
+      "long_functions": 0,
+      "module": "noetrium_platform.foundation.governance.api",
+      "path": "noetrium_platform/foundation/governance/api/__init__.py",
+      "reason_codes": [
+        "HIGH_FAN_IN"
+      ],
+      "risk_score": 321,
+      "self_mutation_sites": 0,
       "serialization_sites": 0
     },
     {

@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3670,
-    "python_import_edges": 7092,
+    "python_import_edges": 7091,
     "symbols": 4925,
     "tracked_files": 4306,
     "typescript_javascript_files": 11
@@ -4092,6 +4092,12 @@
       "source_module": "noetrium_platform.composition.model_management",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.model_management",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
       "target_role": "core_platform"
     },
     {
@@ -12899,31 +12905,13 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.allocation.api.ports",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.governance.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.infrastructure.resources.allocation.api.ports",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.lease.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.resources.allocation.api.contracts",
       "target_role": "core_platform"
     },
     {
       "source_module": "noetrium_platform.infrastructure.resources.allocation.providers.socket_probe",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.allocation.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.governance.api",
       "target_role": "core_platform"
     },
     {
@@ -34223,6 +34211,12 @@
     {
       "source_module": "tests.test_resource_endpoint_allocation_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_resource_endpoint_allocation_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.allocation.runtime",
       "target_role": "core_platform"
     },
@@ -42569,7 +42563,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2586,
+      "count": 2584,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42629,7 +42623,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2767,
+      "count": 2768,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42708,7 +42702,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "2ab1d11377eacc2b8a7560a8465a65a017e4b6e8",
+  "source_git_sha": "4798222322ac5c65b2671a0ee5bc74bbbee1b8e1",
   "symbols": [
     {
       "bases": [],
@@ -53147,7 +53141,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 39,
+      "line": 41,
       "methods": [
         "__post_init__"
       ],
@@ -53172,7 +53166,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 78,
+      "line": 80,
       "methods": [
         "placement_digest"
       ],
@@ -53194,7 +53188,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 92,
+      "line": 94,
       "methods": [
         "__post_init__"
       ],
@@ -53210,7 +53204,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 114,
+      "line": 116,
       "methods": [
         "__init__",
         "assert_healthy",
@@ -53230,7 +53224,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 181,
+      "line": 183,
       "methods": [
         "__init__",
         "_target_count",
@@ -64380,7 +64374,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 79,
+      "line": 80,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -64394,7 +64388,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 92,
+      "line": 93,
       "methods": [
         "__init__",
         "open",
@@ -64922,13 +64916,12 @@
         "resource_ownership: ResourceOwnershipPort",
         "resource_leases: ResourceLeasePort",
         "endpoint_allocations: EndpointAllocationPort",
-        "endpoint_candidates: EndpointCandidatePortSourcePort",
         "compute_inventory: ComputeInventoryPort",
         "compute_scheduler: ComputeSchedulerPort"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 75,
+      "line": 69,
       "methods": [],
       "module": "noetrium_platform.composition.platform_meta",
       "name": "PlatformMetaAuthorities",
@@ -98357,7 +98350,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 24,
+      "line": 18,
       "methods": [
         "candidate_ports"
       ],
@@ -98375,7 +98368,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 36,
+      "line": 29,
       "methods": [
         "probe"
       ],
@@ -98393,7 +98386,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 40,
+      "line": 33,
       "methods": [
         "reserve",
         "confirm_bound",
@@ -98419,7 +98412,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 69,
+      "line": 62,
       "methods": [
         "start",
         "assert_healthy",
@@ -98439,7 +98432,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 75,
+      "line": 68,
       "methods": [
         "create"
       ],
@@ -98457,10 +98450,9 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 79,
+      "line": 72,
       "methods": [
         "allocate",
-        "allocate_auto",
         "confirm_bound",
         "replace_bound",
         "renew",
@@ -98481,14 +98473,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 54,
+      "line": 41,
       "methods": [
         "candidate_ports"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
-      "name": "LocalEndpointCandidateSource",
+      "name": "LocalTcpEndpointCandidateSource",
       "path": "noetrium_platform/infrastructure/resources/allocation/providers/local_candidates.py",
-      "qualname": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates.LocalEndpointCandidateSource",
+      "qualname": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates.LocalTcpEndpointCandidateSource",
       "role": "core_platform"
     },
     {
@@ -98515,7 +98507,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 32,
+      "line": 28,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "EndpointAllocationConflict",
@@ -98531,7 +98523,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 36,
+      "line": 32,
       "methods": [
         "__init__"
       ],
@@ -98549,10 +98541,9 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 109,
+      "line": 40,
       "methods": [
         "__init__",
-        "allocate_auto",
         "allocate",
         "_resolve_existing",
         "confirm_bound",
@@ -98577,12 +98568,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 272,
+      "line": 163,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
         "_existing_for_request_locked",
-        "allocate_auto",
         "allocate",
         "confirm_bound",
         "replace_bound",
@@ -137824,7 +137814,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 30,
+      "line": 29,
       "methods": [
         "__init__",
         "put_deployment"
@@ -137841,7 +137831,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 39,
+      "line": 38,
       "methods": [
         "__init__",
         "status",
@@ -137859,7 +137849,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 61,
+      "line": 60,
       "methods": [
         "__init__",
         "reconcile"
@@ -137876,7 +137866,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 79,
+      "line": 78,
       "methods": [
         "__init__",
         "candidates",
@@ -137895,10 +137885,9 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 126,
+      "line": 125,
       "methods": [
         "__init__",
-        "allocate_auto",
         "allocate",
         "confirm_bound",
         "release"
@@ -137915,7 +137904,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 179,
+      "line": 166,
       "methods": [
         "__init__",
         "start",
@@ -137934,7 +137923,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 195,
+      "line": 182,
       "methods": [
         "__init__",
         "create"
@@ -137951,7 +137940,24 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 207,
+      "line": 194,
+      "methods": [
+        "__init__",
+        "candidate_ports"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "CandidatePorts",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.CandidatePorts",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 205,
       "methods": [
         "__init__",
         "create"
@@ -137970,7 +137976,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 273,
+      "line": 272,
       "methods": [
         "allocate"
       ],
@@ -141570,7 +141576,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
+      "line": 31,
       "methods": [
         "__init__",
         "probe"
@@ -141587,24 +141593,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 43,
-      "methods": [
-        "__init__",
-        "candidate_ports"
-      ],
-      "module": "tests.test_resource_endpoint_allocation_v1",
-      "name": "ScriptedCandidates",
-      "path": "tests/test_resource_endpoint_allocation_v1.py",
-      "qualname": "tests.test_resource_endpoint_allocation_v1.ScriptedCandidates",
-      "role": "tests"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 215,
+      "line": 167,
       "methods": [
         "probe"
       ],
@@ -141622,7 +141611,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 237,
+      "line": 189,
       "methods": [
         "get"
       ],
@@ -141640,7 +141629,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 263,
+      "line": 215,
       "methods": [
         "get"
       ],

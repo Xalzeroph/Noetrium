@@ -12612,16 +12612,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointAllocationPort",
-      "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts.EndpointProtocol"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointCandidatePortSourcePort",
-      "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts.EndpointProtocol"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointLeaseGuardFactoryPort",
       "target": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointLeaseGuardPort"
     },
@@ -12634,11 +12624,6 @@
       "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.allocation.api.ports.EndpointProbePort",
       "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts.NetworkEndpoint"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates.LocalEndpointCandidateSource",
-      "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts.EndpointProtocol"
     },
     {
       "kind": "references",
@@ -27004,7 +26989,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 181,
+      "line": 183,
       "methods": [
         "__init__",
         "_target_count",
@@ -27034,7 +27019,7 @@
         "status"
       ],
       "kind": "dataclass",
-      "line": 78,
+      "line": 80,
       "methods": [
         "placement_digest"
       ],
@@ -27052,7 +27037,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 114,
+      "line": 116,
       "methods": [
         "__init__",
         "assert_healthy",
@@ -27080,7 +27065,7 @@
         "request_digest"
       ],
       "kind": "dataclass",
-      "line": 92,
+      "line": 94,
       "methods": [
         "__post_init__"
       ],
@@ -27113,7 +27098,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 39,
+      "line": 41,
       "methods": [
         "__post_init__"
       ],
@@ -39271,7 +39256,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 92,
+      "line": 93,
       "methods": [
         "__init__",
         "open",
@@ -39305,7 +39290,7 @@
         "scopes"
       ],
       "kind": "dataclass",
-      "line": 79,
+      "line": 80,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -39881,7 +39866,6 @@
         "compute_scheduler",
         "datasets",
         "endpoint_allocations",
-        "endpoint_candidates",
         "environments",
         "evolution",
         "experimentation",
@@ -39894,7 +39878,7 @@
         "systems"
       ],
       "kind": "dataclass",
-      "line": 75,
+      "line": 69,
       "methods": [],
       "module": "noetrium_platform.composition.platform_meta",
       "name": "PlatformMetaAuthorities",
@@ -76567,7 +76551,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 40,
+      "line": 33,
       "methods": [
         "reserve",
         "confirm_bound",
@@ -76595,10 +76579,9 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 79,
+      "line": 72,
       "methods": [
         "allocate",
-        "allocate_auto",
         "confirm_bound",
         "replace_bound",
         "renew",
@@ -76623,7 +76606,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 24,
+      "line": 18,
       "methods": [
         "candidate_ports"
       ],
@@ -76643,7 +76626,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 75,
+      "line": 68,
       "methods": [
         "create"
       ],
@@ -76663,7 +76646,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 69,
+      "line": 62,
       "methods": [
         "start",
         "assert_healthy",
@@ -76685,7 +76668,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 36,
+      "line": 29,
       "methods": [
         "probe"
       ],
@@ -76703,16 +76686,16 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 54,
+      "line": 41,
       "methods": [
         "candidate_ports"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
-      "name": "LocalEndpointCandidateSource",
+      "name": "LocalTcpEndpointCandidateSource",
       "nesting": [
-        "LocalEndpointCandidateSource"
+        "LocalTcpEndpointCandidateSource"
       ],
-      "qualname": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates.LocalEndpointCandidateSource",
+      "qualname": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates.LocalTcpEndpointCandidateSource",
       "system_key": "resource",
       "top_system": "resource"
     },
@@ -76741,10 +76724,9 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 109,
+      "line": 40,
       "methods": [
         "__init__",
-        "allocate_auto",
         "allocate",
         "_resolve_existing",
         "confirm_bound",
@@ -76771,7 +76753,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 32,
+      "line": 28,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "EndpointAllocationConflict",
@@ -76789,7 +76771,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 36,
+      "line": 32,
       "methods": [
         "__init__"
       ],
@@ -76809,12 +76791,11 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 272,
+      "line": 163,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
         "_existing_for_request_locked",
-        "allocate_auto",
         "allocate",
         "confirm_bound",
         "replace_bound",
@@ -103073,11 +103054,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3459,
+    "association_edges": 3456,
     "classes": 3354,
     "constructor_edges": 916,
     "inheritance_edges": 150,
-    "module_import_edges": 5006,
+    "module_import_edges": 5003,
     "parse_errors": 0,
     "python_modules": 1906,
     "registry_authorities": 20,
@@ -108764,6 +108745,10 @@
     {
       "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage"
+    },
+    {
+      "source": "noetrium_platform.composition.model_management",
+      "target": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates"
     },
     {
       "source": "noetrium_platform.composition.model_management",
@@ -120231,10 +120216,6 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.api.ports",
-      "target": "noetrium_platform.foundation.governance.api"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.resources.allocation.api.ports",
       "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts"
     },
     {
@@ -120243,15 +120224,7 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.providers",
-      "target": "noetrium_platform.infrastructure.resources.allocation.local_candidates"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.resources.allocation.providers",
       "target": "noetrium_platform.infrastructure.resources.allocation.socket_probe"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
-      "target": "noetrium_platform.infrastructure.resources.allocation.api.contracts"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.providers.socket_probe",
@@ -120264,10 +120237,6 @@
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.runtime",
       "target": "noetrium_platform.infrastructure.resources.allocation.lease_heartbeat"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
-      "target": "noetrium_platform.foundation.governance.api"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
@@ -128576,6 +128545,7 @@
         "noetrium_platform.infrastructure.lifecycle.service.runtime",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
+        "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
         "noetrium_platform.infrastructure.resources.compute.api",
         "noetrium_platform.infrastructure.resources.compute.composition",
         "noetrium_platform.infrastructure.resources.compute.providers",
@@ -140185,7 +140155,6 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.governance.api",
         "noetrium_platform.infrastructure.resources.allocation.api.contracts",
         "noetrium_platform.infrastructure.resources.lease.api"
       ],
@@ -140196,7 +140165,6 @@
     },
     {
       "imports": [
-        "noetrium_platform.infrastructure.resources.allocation.local_candidates",
         "noetrium_platform.infrastructure.resources.allocation.socket_probe"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.providers",
@@ -140205,9 +140173,7 @@
       "top_system": "resource"
     },
     {
-      "imports": [
-        "noetrium_platform.infrastructure.resources.allocation.api.contracts"
-      ],
+      "imports": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
       "path": "noetrium_platform/infrastructure/resources/allocation/providers/local_candidates.py",
       "system_key": "resource",
@@ -140234,7 +140200,6 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.governance.api",
         "noetrium_platform.infrastructure.resources.allocation.api",
         "noetrium_platform.infrastructure.resources.lease.api"
       ],
@@ -143822,7 +143787,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "2ab1d11377eacc2b8a7560a8465a65a017e4b6e8",
+  "source_git_sha": "4798222322ac5c65b2671a0ee5bc74bbbee1b8e1",
   "system_import_edges": [
     {
       "count": 85,
@@ -144025,7 +143990,7 @@
       "target": "research_os"
     },
     {
-      "count": 26,
+      "count": 27,
       "source": "research_os",
       "target": "resource"
     },
@@ -144040,7 +144005,7 @@
       "target": "scope"
     },
     {
-      "count": 18,
+      "count": 16,
       "source": "resource",
       "target": "governance"
     },
@@ -144050,7 +144015,7 @@
       "target": "platform"
     },
     {
-      "count": 91,
+      "count": 89,
       "source": "resource",
       "target": "resource"
     },
