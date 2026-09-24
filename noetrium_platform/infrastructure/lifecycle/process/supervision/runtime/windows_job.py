@@ -161,17 +161,21 @@ class WindowsProcessJob:
     def close(self) -> None:
         if self._closed:
             return
-        self._closed = True
         handle = self._job_handle
-        self._job_handle = 0
         if handle:
             kernel = self._kernel32()
             if not kernel.CloseHandle(wintypes.HANDLE(handle)):
                 error = ctypes.get_last_error()
                 if error not in {0, 6}:
+                    # Closing the final Job Object handle is the physical
+                    # kill-on-close effect.  Preserve the live handle and keep
+                    # this owner retryable until Windows proves that effect
+                    # converged.
                     raise WindowsProcessJobError(
                         f"CloseHandle(job) failed: winerror={error}"
                     )
+        self._job_handle = 0
+        self._closed = True
 
     def __enter__(self) -> "WindowsProcessJob":
         return self
