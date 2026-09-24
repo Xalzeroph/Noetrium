@@ -8,6 +8,7 @@ from scripts.build_environment_images import (
     _default_active_profile_ids,
     _image_runtime_identity_digest,
     _parse_profile_build_input_overrides,
+    _prepare_qualification_instance,
     _profile_build_input_digest,
     _profile_map,
     _profile_revision,
@@ -346,6 +347,33 @@ def test_environment_bootstrap_supports_linked_git_worktrees_without_host_git() 
     prefix = text.split("docker build", 1)[0].lower()
     assert "python3" not in prefix
     assert "python -m" not in prefix
+
+
+def test_qualification_precreates_runtime_and_profile_bind_sources(tmp_path: Path) -> None:
+    compose = tmp_path / "compose.yaml"
+    compose.write_text(
+        """
+services:
+  platform-runtime:
+    volumes:
+      - type: bind
+        source: ${PLATFORM_ENVIRONMENT_INSTANCE_ROOT:?required}/minecraft
+        target: /var/lib/minecraft
+      - type: bind
+        source: ${PLATFORM_ENVIRONMENT_INSTANCE_ROOT}/browser/profile
+        target: /home/platform/profile
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    instance = tmp_path / "instance"
+
+    _prepare_qualification_instance(instance, compose_path=compose)
+
+    for relative in ("platform-state", "minecraft", "browser/profile"):
+        target = instance / relative
+        assert target.is_dir()
+        assert target.stat().st_mode & 0o777 == 0o777
 
 
 def test_deployment_runtime_images_are_source_configurable_without_remote_frontend() -> None:
