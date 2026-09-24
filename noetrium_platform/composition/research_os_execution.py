@@ -1572,6 +1572,34 @@ class StrictResearchOSControl(
                 )
         return self._drive(request, prepared, active.generation)
 
+    def _release_cancelled_cut_values(
+        self,
+        compilation: CompiledResearchOSGraph,
+        *,
+        execution_cut_id: str,
+    ) -> tuple[str, ...]:
+        """Release execution-owned value pins after durable whole-cut cancellation.
+
+        CANCELLED is the irreversible graph-control boundary.  This step only
+        releases lower-authority retention reasons; it never deletes immutable
+        content, catalog records or lineage.
+        """
+
+        proofs: list[str] = []
+        for node in compilation.nodes:
+            for output in node.node.outputs:
+                subject = ResearchOSValueSubject(
+                    execution_cut_id,
+                    node.graph_node_id,
+                    output.name,
+                    output.kind,
+                    node.semantic_digest,
+                )
+                proof = self._values.release_execution(subject)
+                if proof is not None:
+                    proofs.append(proof)
+        return tuple(proofs)
+
     def _cancel(
         self,
         request: ResearchControlRequest,
@@ -1605,9 +1633,16 @@ class StrictResearchOSControl(
             now_ns=time.time_ns(),
         )
         snapshot = self._store.snapshot(cut.cut_id)
+        release_proofs = self._release_cancelled_cut_values(
+            compilation,
+            execution_cut_id=cut.cut_id,
+        )
         return self._durable_control_receipt(
             request, compilation, cut, active, snapshot, control,
             state="cancelled",
+            extra={
+                "value_release_proof_digests": release_proofs,
+            },
         )
 
     @staticmethod
