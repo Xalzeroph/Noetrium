@@ -34,6 +34,9 @@ FORBIDDEN_IMAGE_MARKERS = (
 WHEEL_LABEL = "org.opencontainers.image.noetrium.wheel.sha256"
 DISTRIBUTION_LABEL = "org.opencontainers.image.noetrium.distribution-evidence.sha256"
 REVISION_LABEL = "org.opencontainers.image.revision"
+PROFILE_ID_LABEL = "org.opencontainers.image.noetrium.environment.profile-id"
+PROFILE_CATEGORY_LABEL = "org.opencontainers.image.noetrium.environment.category-id"
+PROFILE_REVISION_LABEL = "org.opencontainers.image.noetrium.environment.profile-revision"
 PYTHON_RUNTIME_CANONICAL_IMAGE = "python:3.12-slim-bookworm"
 JAVA_RUNTIME_CANONICAL_IMAGE = "eclipse-temurin:21-jre-jammy"
 
@@ -326,6 +329,32 @@ def _image_identity(tag: str) -> dict:
     }
 
 
+def _verified_profile_image_identity(
+    tag: str,
+    *,
+    profile_id: str,
+    category_id: str,
+    profile_revision: str,
+) -> dict:
+    identity = _image_identity(tag)
+    labels = identity["labels"]
+    expected = {
+        PROFILE_ID_LABEL: profile_id,
+        PROFILE_CATEGORY_LABEL: category_id,
+        PROFILE_REVISION_LABEL: profile_revision,
+    }
+    mismatches = {
+        key: (expected_value, labels.get(key))
+        for key, expected_value in expected.items()
+        if labels.get(key) != expected_value
+    }
+    if mismatches:
+        raise RuntimeError(
+            f"environment profile image identity mismatch for {tag}: {mismatches!r}"
+        )
+    return identity
+
+
 def build_environment_images(
     *,
     profiles: tuple[str, ...],
@@ -521,6 +550,7 @@ def build_environment_images(
         )
         env["NOETRIUM_ENVIRONMENT_INSTANCE_ID"] = qualification_instance.name
         env["NOETRIUM_ENVIRONMENT_PROFILE_ID"] = profile_id
+        env["NOETRIUM_ENVIRONMENT_CATEGORY_ID"] = row["category_id"]
         env["NOETRIUM_ENVIRONMENT_PROFILE_REVISION"] = revision
         reused_profile = _image_exists(tag) and not rebuild
         if not reused_profile:
@@ -554,7 +584,12 @@ def build_environment_images(
             env=env,
         )
         shutil.rmtree(qualification_instance)
-        profile_identity = _image_identity(tag)
+        profile_identity = _verified_profile_image_identity(
+            tag,
+            profile_id=profile_id,
+            category_id=row["category_id"],
+            profile_revision=revision,
+        )
         profile_identity["reused"] = reused_profile
         profile_identity["profile_revision"] = revision
         profile_identity["lifecycle"] = row["lifecycle"]
