@@ -77,7 +77,7 @@ reconcile_bootstrap_children() {
 cleanup_owned_bootstrap_children() {
   ids="$(docker ps -aq \
     --filter "label=$BOOTSTRAP_CHILD_LABEL=$BOOTSTRAP_CHILD_VALUE" \
-    --filter "label=$OWNER_PID_LABEL=$" \
+    --filter "label=$OWNER_PID_LABEL=$$" \
     --filter "label=$OWNER_BOOT_LABEL=$BOOT_ID" \
     --filter "label=$OWNER_START_LABEL=$OWNER_START" 2>/dev/null || true)"
   [ -n "$ids" ] || return 0
@@ -214,7 +214,7 @@ fi
 # dedicated build/runtime root is writable. Git's safe-directory exception is
 # scoped to this exact read-only checkout; it is needed because the disposable
 # container's uid can differ from the checkout owner on CI or rootless hosts.
-COMMON_ARGS="$DAEMON_ARGS $GIT_METADATA_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e PYTHONDONTWRITEBYTECODE=1 -e NOETRIUM_BOOTSTRAP_OWNER_PID=$ -e NOETRIUM_BOOTSTRAP_OWNER_BOOT=$BOOT_ID -e NOETRIUM_BOOTSTRAP_OWNER_START=$OWNER_START -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$ROOT"
+COMMON_ARGS="$DAEMON_ARGS $GIT_METADATA_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e PYTHONDONTWRITEBYTECODE=1 -e NOETRIUM_BOOTSTRAP_OWNER_PID=$$ -e NOETRIUM_BOOTSTRAP_OWNER_BOOT=$BOOT_ID -e NOETRIUM_BOOTSTRAP_OWNER_START=$OWNER_START -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$ROOT"
 
 if [ "${1:-}" = "control" ]; then
   shift
