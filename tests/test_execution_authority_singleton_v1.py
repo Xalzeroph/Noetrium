@@ -7,6 +7,10 @@ from pathlib import Path
 _CANONICAL_DEFINITIONS = {
     "UniversalMethodMachine": "noetrium_platform/research/execution/workflow/runtime/method_machine.py",
     "ResearchGraphScheduler": "noetrium_platform/composition/research_graph.py",
+    "ResearchOSExperimentRuntimeBindingAuthority": (
+        "noetrium_platform/composition/"
+        "research_os_experiment_runtime_binding.py"
+    ),
 }
 _FORBIDDEN_CLASS_NAMES = {
     "UniversalExperimentKernel",
