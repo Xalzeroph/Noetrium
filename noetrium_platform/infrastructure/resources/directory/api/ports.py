@@ -15,6 +15,8 @@ from .contracts import (
     DirectoryUsage,
     ManagedDirectoryKind,
     WorkspaceAllocation,
+    WorkspaceGcAssessment,
+    WorkspaceReferenceClosure,
 )
 
 
@@ -36,7 +38,22 @@ class WorkspaceManagementPort(Protocol):
         note: str | None = None,
     ) -> WorkspaceAllocation: ...
     def list_workspaces(self, *, scope: ScopeIdentity | None = None, category: str | None = None) -> tuple[WorkspaceAllocation, ...]: ...
-    def remove_workspace(self, workspace_id: str, *, scope: ScopeIdentity, category: str = "default") -> bool: ...
+    def assess_workspace_gc(
+        self,
+        workspace_id: str,
+        *,
+        scope: ScopeIdentity,
+        category: str = "default",
+        closures: tuple[WorkspaceReferenceClosure, ...] = (),
+    ) -> WorkspaceGcAssessment: ...
+    def remove_workspace(
+        self,
+        workspace_id: str,
+        *,
+        scope: ScopeIdentity,
+        category: str = "default",
+        gc: WorkspaceGcAssessment,
+    ) -> bool: ...
 
 
 class DirectoryInspectionPort(Protocol):

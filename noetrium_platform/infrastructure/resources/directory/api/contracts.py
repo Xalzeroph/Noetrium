@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
-from noetrium_platform.foundation.governance.api import ScopeIdentity
-
-
+from noetrium_platform.foundation.governance.api import ScopeIdentity, scope_to_data
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
 
 class WorkspaceMetadataFailureCode(StrEnum):
@@ -25,6 +24,131 @@ class WorkspaceMetadataError(RuntimeError):
     @property
     def failure_correlation_refs(self) -> tuple[str, ...]:
         return (f"resource-workspace-metadata:{self.code.value}",)
+
+
+class WorkspaceClosureAuthority(StrEnum):
+    EXECUTION = "execution"
+    EVIDENCE = "evidence"
+    RECOVERY = "recovery"
+
+
+@dataclass(frozen=True, slots=True)
+class WorkspaceReferenceClosure:
+    """Proof-backed external reference closure from one canonical authority."""
+
+    authority: WorkspaceClosureAuthority
+    proof_digest: str
+    retained_reference_ids: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if type(self.authority) is not WorkspaceClosureAuthority:
+            raise TypeError("workspace reference closure authority must be typed")
+        if (
+            type(self.proof_digest) is not str
+            or len(self.proof_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in self.proof_digest)
+        ):
+            raise ValueError(
+                "workspace reference closure proof_digest must be lowercase sha256"
+            )
+        if type(self.retained_reference_ids) is not tuple or any(
+            type(value) is not str
+            or not value.strip()
+            or value != value.strip()
+            for value in self.retained_reference_ids
+        ):
+            raise TypeError(
+                "workspace retained reference ids must be canonical text tuple"
+            )
+        if self.retained_reference_ids != tuple(
+            sorted(set(self.retained_reference_ids))
+        ):
+            raise ValueError(
+                "workspace retained reference ids must be unique sorted order"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class WorkspaceGcAssessment:
+    """Exact fail-closed GC cut for one durable recovery workspace."""
+
+    workspace_id: str
+    scope: ScopeIdentity
+    category: str
+    closures: tuple[WorkspaceReferenceClosure, ...] = ()
+    workspace_identity_digest: str = field(init=False)
+    proof_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        for label, value in (
+            ("workspace_id", self.workspace_id),
+            ("category", self.category),
+            ("scope_id", self.scope.scope_id),
+        ):
+            if (
+                type(value) is not str
+                or not value
+                or value in {".", ".."}
+                or "/" in value
+                or "\\" in value
+            ):
+                raise ValueError(f"invalid workspace GC {label}")
+        if type(self.closures) is not tuple or any(
+            type(value) is not WorkspaceReferenceClosure
+            for value in self.closures
+        ):
+            raise TypeError(
+                "workspace GC closures must be WorkspaceReferenceClosure tuple"
+            )
+        authorities = tuple(value.authority for value in self.closures)
+        if authorities != tuple(
+            sorted(set(authorities), key=lambda value: value.value)
+        ):
+            raise ValueError(
+                "workspace GC closures must have unique canonical authority order"
+            )
+
+        identity_digest = canonical_digest(
+            {
+                "schema": "resource.workspace-identity.v1",
+                "scope": scope_to_data(self.scope),
+                "category": self.category,
+                "workspace_id": self.workspace_id,
+            }
+        )
+        object.__setattr__(self, "workspace_identity_digest", identity_digest)
+        object.__setattr__(
+            self,
+            "proof_digest",
+            canonical_digest(
+                {
+                    "schema": "resource.workspace-gc-assessment.v1",
+                    "workspace_identity_digest": identity_digest,
+                    "closures": [
+                        {
+                            "authority": value.authority.value,
+                            "proof_digest": value.proof_digest,
+                            "retained_reference_ids": list(
+                                value.retained_reference_ids
+                            ),
+                        }
+                        for value in self.closures
+                    ],
+                }
+            ),
+        )
+
+    @property
+    def closure_complete(self) -> bool:
+        return tuple(value.authority for value in self.closures) == tuple(
+            sorted(WorkspaceClosureAuthority, key=lambda value: value.value)
+        )
+
+    @property
+    def eligible(self) -> bool:
+        return self.closure_complete and all(
+            not value.retained_reference_ids for value in self.closures
+        )
 
 
 class ManagedDirectoryKind(StrEnum):
@@ -121,6 +245,9 @@ __all__ = [
     "DirectoryUsage",
     "ManagedDirectoryKind",
     "WorkspaceAllocation",
+    "WorkspaceClosureAuthority",
+    "WorkspaceGcAssessment",
     "WorkspaceMetadataError",
     "WorkspaceMetadataFailureCode",
+    "WorkspaceReferenceClosure",
 ]
