@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes
 
 import hashlib
 from pathlib import Path
-import os
 import socket
-import tempfile
 from typing import Mapping
 
 from noetrium_platform.foundation.kernel.kernel import JsonValue
@@ -19,14 +17,6 @@ class MinecraftServerPreparationError(RuntimeError):
     def __init__(self, code: str, message: str) -> None:
         super().__init__(f"Minecraft server preparation failed [{code}]: {message}")
         self.code = code
-
-
-def sha256_file(path: str | Path) -> str:
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
 
 
 def render_server_properties(spec: MinecraftServerSpec, *, rcon_password: str | None = None) -> str:
@@ -74,20 +64,6 @@ def render_server_properties(spec: MinecraftServerSpec, *, rcon_password: str | 
     return "\n".join(lines) + "\n"
 
 
-def _atomic_write(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=str(path.parent), text=True)
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
-            handle.write(content)
-            handle.flush()
-            flush_file_descriptor(handle.fileno())
-        Path(temporary).replace(path)
-    except BaseException:
-        Path(temporary).unlink(missing_ok=True)
-        raise
-
-
 def prepare_server_files(
     spec: MinecraftServerSpec,
     *,
@@ -111,11 +87,11 @@ def prepare_server_files(
                 "EULA_ACCEPTANCE_REQUIRED",
                 "pass the explicit operator/experiment policy accept_eula=True",
             )
-        _atomic_write(eula_path, "eula=true\n")
+        atomic_replace_bytes(eula_path, b"eula=true\n")
         eula_accepted = True
 
     properties_path = workdir / "server.properties"
-    _atomic_write(properties_path, properties)
+    atomic_replace_bytes(properties_path, properties.encode("utf-8"))
     return MinecraftServerPreparedFiles(
         eula_path=str(eula_path),
         properties_path=str(properties_path),
@@ -140,5 +116,4 @@ __all__ = [
     "ensure_port_available",
     "prepare_server_files",
     "render_server_properties",
-    "sha256_file",
 ]
