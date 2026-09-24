@@ -10,8 +10,8 @@ from .decision_runtime import identity_context
 from noetrium_platform.research.execution.api import DecisionCycleIdentity
 from noetrium_platform.research.execution.api import DecisionCycleResult
 from ..api.identity import RunIdentity
-from noetrium_platform.research.experimentation.lifecycle.experiment.api import (
-    ExperimentSpec,
+from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.experiment.api.ports import (
     ExperimentTrialCycleExecutorPort,
 )
 
