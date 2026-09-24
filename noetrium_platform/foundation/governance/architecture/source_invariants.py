@@ -18,6 +18,7 @@ from .runtime_invariants import audit_runtime_invariants
 from .recovery_invariants import audit_recovery_invariants
 from .release_invariants import audit_release_invariants
 from .server_session_invariants import audit_server_session_invariants
+from .sqlite_durability_invariants import audit_sqlite_durability_invariants
 from .service_invariants import audit_service_invariants
 from .source_scan import SourceInvariantViolation
 from .study_invariants import audit_study_invariants
@@ -50,6 +51,7 @@ def audit_source_invariants(root: Path) -> tuple[SourceInvariantViolation, ...]:
         + audit_process_invariants(root)
         + audit_runtime_invariants(root)
         + audit_server_session_invariants(root)
+        + audit_sqlite_durability_invariants(root)
         + audit_service_invariants(root)
         + audit_status_invariants(root)
         + audit_telemetry_invariants(root)
