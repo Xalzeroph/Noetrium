@@ -217,7 +217,7 @@ def test_finalize_failure_after_seal_commit_blocks_writes_and_recovers(tmp_path:
     assert reopened.verify_finalized(receipt) == receipt
 
 
-def test_reopen_repairs_missing_or_corrupt_generation_index_from_seal(tmp_path: Path) -> None:
+def test_reopen_repairs_missing_generation_index_from_seal(tmp_path: Path) -> None:
     root = tmp_path / "run"
     store = _store(root)
     store.append_json("raw/events.jsonl", {"n": 1}, kind=RunArtifactKind.EVIDENCE)
@@ -227,15 +227,50 @@ def test_reopen_repairs_missing_or_corrupt_generation_index_from_seal(tmp_path: 
     ledger.unlink()
     assert store.verify_finalized(receipt) == receipt
     reopened = _store(root)
-    assert reopened.finalize("raw/events.jsonl", kind=RunArtifactKind.EVIDENCE, record_stream=True) == receipt
+    assert reopened.finalize(
+        "raw/events.jsonl",
+        kind=RunArtifactKind.EVIDENCE,
+        record_stream=True,
+    ) == receipt
     assert ledger.is_file()
+    assert reopened.verify_finalized(receipt) == receipt
 
-    ledger.write_bytes(b"{}")
-    with pytest.raises(RunArtifactVerificationError, match="generation ledger does not match"):
-        reopened.verify_finalized(receipt)
-    repaired = _store(root)
-    assert repaired.finalize("raw/events.jsonl", kind=RunArtifactKind.EVIDENCE, record_stream=True) == receipt
-    assert repaired.verify_finalized(receipt) == receipt
+
+def test_reopen_fails_closed_on_conflicting_generation_index(tmp_path: Path) -> None:
+    root = tmp_path / "run"
+    store = _store(root)
+    store.append_json("raw/events.jsonl", {"n": 1}, kind=RunArtifactKind.EVIDENCE)
+    receipt = store.finalize(
+        "raw/events.jsonl",
+        kind=RunArtifactKind.EVIDENCE,
+        record_stream=True,
+    )
+    ledger = (
+        root
+        / ".run-artifact-finalized"
+        / "generations"
+        / f"{receipt.generation}.json"
+    )
+    conflicting = b"{}"
+    ledger.write_bytes(conflicting)
+
+    with pytest.raises(
+        RunArtifactVerificationError,
+        match="generation ledger does not match",
+    ):
+        store.verify_finalized(receipt)
+
+    reopened = _store(root)
+    with pytest.raises(
+        RunArtifactFinalizationError,
+        match="generation ledger conflicts",
+    ):
+        reopened.finalize(
+            "raw/events.jsonl",
+            kind=RunArtifactKind.EVIDENCE,
+            record_stream=True,
+        )
+    assert ledger.read_bytes() == conflicting
 
 
 def test_snapshot_receipt_requires_canonical_lowercase_sha256(tmp_path: Path) -> None:
