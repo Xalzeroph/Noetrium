@@ -200,3 +200,40 @@ def test_immutable_value_reuse_rejects_cross_kind_rebinding(tmp_path) -> None:
     )
     with pytest.raises(ValueError, match="reuse kind drifted"):
         authority.reuse(published, target)
+
+
+
+def test_terminal_execution_release_unpins_without_deleting_history(tmp_path) -> None:
+    retention_store = SQLiteArtifactRetentionStore(
+        tmp_path / "retention.sqlite3"
+    )
+    authority = ResearchOSImmutableValueAuthority(
+        DirectoryArtifactBlobStore(tmp_path / "blobs"),
+        SQLiteArtifactRegistry(tmp_path / "artifacts.sqlite3"),
+        retention_store,
+    )
+    subject = _subject("terminal-release")
+    value = {"result": "retained-history"}
+    published = authority.publish(subject, value)
+
+    before = retention_store.get(published.authority_ref)
+    assert before.pinned is True
+    assert before.reason_refs == (subject.subject_digest,)
+
+    first_proof = authority.release_execution(subject)
+    after = retention_store.get(published.authority_ref)
+    assert len(first_proof) == 64
+    assert after.pinned is False
+    assert after.reason_refs == ()
+    assert after.generation == before.generation + 1
+
+    looked_up = authority.lookup(subject)
+    assert looked_up == published
+    assert authority.resolve(looked_up) == value
+
+    second_proof = authority.release_execution(subject)
+    repeated = retention_store.get(published.authority_ref)
+    assert len(second_proof) == 64
+    assert repeated == after
+    assert repeated.pinned is False
+    assert repeated.reason_refs == ()
