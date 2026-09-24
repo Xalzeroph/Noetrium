@@ -99,6 +99,27 @@ def test_same_instance_detects_external_same_size_journal_tamper(
         journal.latest("scale-machine")
 
 
+def test_observed_journal_deletion_or_truncation_fails_closed(
+    tmp_path: Path,
+) -> None:
+    journal = DirectoryMachineJournal(tmp_path)
+    first = _commit(1, previous_commit_id=None)
+    journal.append(first)
+    path = next((tmp_path / "machines").glob("*.journal"))
+    original = path.read_bytes()
+
+    path.write_bytes(b"")
+    with pytest.raises(MachineIntegrityError, match="truncated"):
+        journal.latest("scale-machine")
+
+    path.write_bytes(original)
+    restored = DirectoryMachineJournal(tmp_path)
+    assert restored.latest("scale-machine") == first
+    path.unlink()
+    with pytest.raises(MachineIntegrityError, match="disappeared"):
+        restored.latest("scale-machine")
+
+
 def test_two_journal_instances_revalidate_foreign_append_and_remain_idempotent(
     tmp_path: Path,
 ) -> None:
