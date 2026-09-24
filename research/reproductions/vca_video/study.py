@@ -60,7 +60,7 @@ def vca_egoschema_trial_protocol(
 def build_vca_egoschema_public_study(
     benchmark: BenchmarkTaskSet,
     *,
-    sampling_frame_number: int,
+    sampling_frame_number: int = VCA_REFERENCE_FIDELITY.egoschema_memory_frames,
     max_rounds: int = 32,
 ) -> ResearchStudyDefinition:
     if type(max_rounds) is not int or not 1 <= max_rounds <= VCA_EXECUTION_SAFETY_ROUNDS:
