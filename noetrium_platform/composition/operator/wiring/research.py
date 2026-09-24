@@ -5,7 +5,7 @@ from noetrium_platform.product.operator.runtime.research_cli import run_research
 
 from .cli import main as diagnose_main
 from .project_experience import build_project_facade
-from noetrium_platform.composition.operator.project import load_project_application
+from noetrium_platform.composition.operator.project import load_project_research_os
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -14,7 +14,7 @@ def main(argv: list[str] | None = None) -> int:
         diagnose_main=diagnose_main,
         manage_main=manage_main,
         project_experience=build_project_facade(),
-        project_application_loader=load_project_application,
+        project_research_os_loader=load_project_research_os,
     )
 
 
