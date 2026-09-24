@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .atomic_publication import write_atomic_file
-from .publication_common import fsync_dir
+from noetrium_platform.foundation.kernel.kernel.durability.durable_file import (
+    atomic_replace_bytes,
+)
 
 
 class ActivePromptPointer:
@@ -19,5 +20,4 @@ class ActivePromptPointer:
         return value or None
 
     def write(self,generation_id:str)->None:
-        write_atomic_file(self.path,(generation_id+"\n").encode())
-        fsync_dir(self.path.parent)
+        atomic_replace_bytes(self.path,(generation_id+"\n").encode())
