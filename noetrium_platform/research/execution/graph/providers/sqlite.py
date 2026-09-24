@@ -589,6 +589,15 @@ class SQLiteResearchGraphExecutionStore:
         with self._connection() as conn:
             return self._snapshot_tx(conn, execution_id)
 
+    def node_state(
+        self,
+        execution_id: str,
+        node_id: str,
+    ) -> ResearchGraphNodeExecutionRecord:
+        with self._connection() as conn:
+            self._execution_tx(conn, execution_id)
+            return self._node_tx(conn, execution_id, node_id)
+
     def control_state(
         self,
         execution_id: str,
