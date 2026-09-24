@@ -15,7 +15,7 @@ from research.reproductions.contracts import (
 
 REPRODUCTION = ReproductionDefinition(
     package='live_swe_agent',
-    lifecycle=ReproductionLifecycle('catalogued'),
+    lifecycle=ReproductionLifecycle('protocol_bound'),
     identity=ReproductionIdentity(
         method_id='live-swe-agent',
         title='Live-SWE-agent: Can Software Engineering Agents Self-Evolve on the Fly?',
@@ -36,6 +36,14 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
             path='research/reproductions/live_swe_agent/fidelity.py',
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind('method_program'),
+            path='research/reproductions/live_swe_agent/program.py',
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind('study'),
+            path='research/reproductions/live_swe_agent/study.py',
         ),
     ),
     reported_results=(
