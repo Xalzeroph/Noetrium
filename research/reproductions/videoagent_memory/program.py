@@ -4,35 +4,29 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.capabilities.participant.method.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
-from noetrium_platform.foundation.kernel.kernel import (
-    ExecutionContext,
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
-from noetrium_platform.research.execution.machines.api import (
+from noetrium.api import (
+    ArtifactBlobRef,
     ChildFailurePolicy,
     ChildResearchMachineExecution,
     ChildResearchMachineRequest,
-)
-from noetrium_platform.research.execution.workflow.api import (
+    ExecutionContext,
+    JsonObject,
+    JsonValue,
     MethodAgentRequest,
     MethodAgentResult,
     MethodEvent,
     MethodExecutionClass,
+    MethodIdentity,
     MethodNodeRequest,
     MethodNodeResult,
     MethodProgram,
     MethodProgramBuilder,
+    MethodProgramIdentity,
     MethodRuntimePort,
+    canonical_digest,
+    freeze_json,
+    require_sha256,
+    thaw_json,
 )
 
 from .fidelity import VIDEOAGENT_REFERENCE_FIDELITY
