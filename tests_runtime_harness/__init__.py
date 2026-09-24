@@ -7,11 +7,15 @@ or imported by noetrium_platform.
 
 from .decision_runtime import DecisionCycleRuntimeForTest, identity_context
 from .cycle import RunCycleExecutionForTest, RunCycleExecutorForTest, RunIdentityMismatch
+from .lifecycle_session import RunSessionForTest
+from .run_runtime import RunRuntimeForTest
 
 __all__ = [
     "DecisionCycleRuntimeForTest",
     "RunCycleExecutionForTest",
     "RunCycleExecutorForTest",
     "RunIdentityMismatch",
+    "RunRuntimeForTest",
+    "RunSessionForTest",
     "identity_context",
 ]
