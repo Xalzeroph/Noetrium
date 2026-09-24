@@ -49,6 +49,19 @@ def _sqlite_connect_calls(path: Path) -> tuple[int, ...]:
     return tuple(rows)
 
 
+def _sqlite_direct_rollback_calls(path: Path) -> tuple[int, ...]:
+    """Find direct rollback mechanics outside the canonical durability authority."""
+    tree = source_tree(path)
+    rows: list[int] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        target = node.func
+        if isinstance(target, ast.Attribute) and target.attr == "rollback":
+            rows.append(node.lineno)
+    return tuple(rows)
+
+
 def _sqlite_session_policy_calls(path: Path) -> tuple[tuple[int, str], ...]:
     """Find raw SQLite durability/transaction policy outside the canonical primitive."""
     tree = source_tree(path)
@@ -110,6 +123,20 @@ def audit_sqlite_durability_invariants(
                         "direct sqlite3.connect() bypasses the canonical Platform "
                         "durability authority; use "
                         "foundation.kernel.kernel.durability.sqlite"
+                    ),
+                )
+            )
+        for line in _sqlite_direct_rollback_calls(path):
+            rows.append(
+                violation(
+                    root,
+                    path,
+                    "sqlite_durability_authority",
+                    line,
+                    (
+                        "direct SQLite rollback bypasses the canonical Platform "
+                        "durability authority; use abort_sqlite_writer() or "
+                        "rollback_sqlite_writer()"
                     ),
                 )
             )
