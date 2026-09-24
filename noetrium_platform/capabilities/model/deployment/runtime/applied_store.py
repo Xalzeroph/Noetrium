@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 
 from noetrium_platform.substrate.api import DirectoryLayoutPort, ManagedDirectoryKind
-from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
+from noetrium_platform.foundation.kernel.kernel.durability.durable_file import (
+    atomic_replace_bytes,
+    durable_unlink,
+)
 
 from .applied import AppliedModelDeployment
 from .codec import decode_applied, encode_applied
@@ -33,7 +36,7 @@ class AppliedModelDeploymentStore:
         path = self._root / f"{deployment_id}.json"
         if not path.exists():
             return False
-        path.unlink()
+        durable_unlink(path)
         return True
 
     @staticmethod
