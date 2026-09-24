@@ -42,12 +42,17 @@ class _CountingStore(SQLiteResearchGraphExecutionStore):
     def __init__(self, path) -> None:
         super().__init__(path)
         self.transaction_count = 0
+        self.single_node_read_count = 0
 
     @contextmanager
     def _transaction(self):
         self.transaction_count += 1
         with super()._transaction() as conn:
             yield conn
+
+    def _node_tx(self, conn, execution_id, node_id):
+        self.single_node_read_count += 1
+        return super()._node_tx(conn, execution_id, node_id)
 
 
 def test_ready_and_blocked_batches_use_one_transaction_and_generation_each(
@@ -66,6 +71,7 @@ def test_ready_and_blocked_batches_use_one_transaction_and_generation_each(
     )
     after_ready = store.snapshot("execution")
     assert store.transaction_count == 1
+    assert store.single_node_read_count == 0
     assert after_ready.generation == initial.generation + 1
     assert len(ready) == 64
     assert {
@@ -80,6 +86,7 @@ def test_ready_and_blocked_batches_use_one_transaction_and_generation_each(
     blocked = store.mark_blocked_many("execution", blockers)
     after_blocked = store.snapshot("execution")
     assert store.transaction_count == 1
+    assert store.single_node_read_count == 0
     assert after_blocked.generation == after_ready.generation + 1
     assert len(blocked) == 64
     assert {
