@@ -15,6 +15,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineFamilyDescriptor,
     MachineConflict,
     MachineIdentity,
+    MachineIntegrityError,
     MachineKind,
     MachineProgramRef,
     ProgramLock,
@@ -44,7 +45,13 @@ class IncrementInterpreter:
         )
 
 
-def make_runtime(journal, snapshot_store=None, outbox=None):
+def make_runtime(
+    journal,
+    snapshot_store=None,
+    outbox=None,
+    *,
+    dependency_tag: str = "none",
+):
     identity = MachineIdentity(
         machine_id="run-1",
         kind=MachineKind.RUN,
@@ -58,7 +65,7 @@ def make_runtime(journal, snapshot_store=None, outbox=None):
         program_version="1",
         program_lock=ProgramLock(
             code_digest=canonical_digest({"code": "increment"}),
-            dependency_digest=canonical_digest({"deps": "none"}),
+            dependency_digest=canonical_digest({"deps": dependency_tag}),
             schema_digest=canonical_digest({"schema": "run.schema.v1"}),
             interpreter_digest=canonical_digest({"interpreter": "run"}),
             data_digest=canonical_digest({"data": "test"}),
@@ -140,6 +147,28 @@ def test_runtime_recovers_authoritative_head_after_restart() -> None:
     assert snapshot.revision == first.revision
     assert snapshot.state["count"] == 1
     assert restarted.inspect().last_commit_id == first.commit_id
+
+
+def test_runtime_rejects_program_lock_drift_after_restart_and_replay() -> None:
+    journal = InMemoryMachineJournal()
+    first_runtime = make_runtime(journal, dependency_tag="provider-a")
+    first_runtime.open({"count": 0})
+    first_runtime.step(command(0, "command-1"), IncrementInterpreter())
+
+    drifted = make_runtime(journal, dependency_tag="provider-b")
+    assert (
+        drifted.program.program_digest
+        == first_runtime.program.program_digest
+    )
+    assert (
+        drifted.program.program_lock.lock_digest
+        != first_runtime.program.program_lock.lock_digest
+    )
+
+    with pytest.raises(MachineIntegrityError, match="ProgramLock"):
+        drifted.open({"count": 0})
+    with pytest.raises(MachineIntegrityError, match="ProgramLock"):
+        drifted.replay()
 
 
 def test_runtime_reconciles_outbox_and_inbox_deduplicates() -> None:
