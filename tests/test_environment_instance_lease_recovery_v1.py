@@ -265,3 +265,37 @@ def test_environment_instance_lease_conflict_compensates_to_dirty() -> None:
 
     assert catalog.bindings() == ()
     assert catalog.instances()[0].state is EnvironmentInstanceState.DIRTY
+
+
+def test_environment_shutdown_cleanup_marks_live_generation_dirty() -> None:
+    scopes = InMemoryScopeRegistry()
+    scope = _scope()
+    scopes.register(scope, PLATFORM_SCOPE)
+    catalog = ExecutionEnvironmentCatalog(scopes)
+    materialization, instance = _prepare_catalog(catalog, scope)
+    resources = InMemoryResourceLeaseRegistry()
+    authority = EnvironmentInstanceLeaseAuthority(
+        catalog=catalog,
+        ownership=resources,
+        leases=resources,
+        reconcile_on_start=False,
+    )
+    handle = authority.acquire_reusable_instance(
+        PROFILE_ID,
+        PROFILE_REVISION,
+        RUNTIME_DIGEST,
+        materialization.materialization_digest,
+        binding_id="binding-shutdown",
+        role="runner",
+        scope=scope,
+    )
+
+    report = authority.shutdown_cleanup()
+
+    assert report.dirtied_instance_ids == (instance.instance_id,)
+    assert report.released_orphan_lease_ids == (handle.lease.lease_id,)
+    assert catalog.bindings() == ()
+    assert catalog.instances()[0].state is EnvironmentInstanceState.DIRTY
+    assert resources.active_for(
+        ResourceIdentity(ResourceKind.EXECUTION_ENVIRONMENT, instance.instance_id)
+    ) == ()
