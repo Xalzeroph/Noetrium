@@ -5,7 +5,6 @@ from .readiness import MinecraftReadinessProbe, minecraft_preflight
 from .raw_control import MinecraftRawControlProvider
 from .server_files import (
     MinecraftServerPreparationError,
-    ensure_port_available,
     prepare_server_files,
     render_server_properties,
 )
@@ -36,7 +35,6 @@ __all__ = [
     "MinecraftRawControlProvider",
     "minecraft_preflight",
     "MinecraftServerPreparationError",
-    "ensure_port_available",
     "prepare_server_files",
     "render_server_properties",
     "MinecraftServerArtifactError",
