@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SHA = "a" * 40
 WHEEL_SHA = "b" * 64
 DIST_SHA = "c" * 64
+RUNTIME_SHA = "d" * 64
 
 
 def _receipt(argv: list[str]) -> container.CommandReceipt:
@@ -34,6 +35,7 @@ def _inspect(*, revision: str = SHA, wheel: str = WHEEL_SHA,
                 "org.opencontainers.image.revision": revision,
                 container._WHEEL_LABEL: wheel,
                 container._DISTRIBUTION_LABEL: distribution,
+                container._PYTHON_RUNTIME_LABEL: RUNTIME_SHA,
             },
             "User": user,
         },
@@ -71,6 +73,8 @@ def test_container_definition_uses_only_prebuilt_distribution_wheel():
     assert "PLATFORM_DISTRIBUTION_EVIDENCE_SHA256" in dockerfile
     assert container._WHEEL_LABEL in dockerfile
     assert container._DISTRIBUTION_LABEL in dockerfile
+    assert container._PYTHON_RUNTIME_LABEL in dockerfile
+    assert "PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST" in dockerfile
     assert "sha256sum -c -" in dockerfile
     assert 'mkdir -p "$(dirname "$PLATFORM_EMBEDDED_WHEEL")"' in dockerfile
     assert "USER platform" in dockerfile
@@ -102,6 +106,7 @@ def test_container_verifier_rejects_source_revision_drift(monkeypatch):
             "noetrium:test", expected_source_sha=SHA,
             expected_wheel_sha256=WHEEL_SHA,
             expected_distribution_evidence_sha256=DIST_SHA,
+            expected_python_runtime_identity_digest=RUNTIME_SHA,
         )
 
 def test_container_verifier_rejects_forged_wheel_label(monkeypatch):
@@ -111,6 +116,7 @@ def test_container_verifier_rejects_forged_wheel_label(monkeypatch):
             "noetrium:test", expected_source_sha=SHA,
             expected_wheel_sha256=WHEEL_SHA,
             expected_distribution_evidence_sha256=DIST_SHA,
+            expected_python_runtime_identity_digest=RUNTIME_SHA,
         )
 
 
@@ -123,6 +129,21 @@ def test_container_verifier_rejects_distribution_receipt_drift(monkeypatch):
             "noetrium:test", expected_source_sha=SHA,
             expected_wheel_sha256=WHEEL_SHA,
             expected_distribution_evidence_sha256=DIST_SHA,
+            expected_python_runtime_identity_digest=RUNTIME_SHA,
+        )
+
+
+def test_container_verifier_rejects_python_runtime_identity_drift(monkeypatch):
+    document = _inspect()
+    document[0]["Config"]["Labels"][container._PYTHON_RUNTIME_LABEL] = "e" * 64
+    monkeypatch.setattr(container, "_run", _fake_outputs(document, _smoke()))
+    with pytest.raises(RuntimeError, match="Python runtime identity"):
+        container.verify_container_image(
+            "noetrium:test",
+            expected_source_sha=SHA,
+            expected_wheel_sha256=WHEEL_SHA,
+            expected_distribution_evidence_sha256=DIST_SHA,
+            expected_python_runtime_identity_digest=RUNTIME_SHA,
         )
 
 
@@ -133,6 +154,7 @@ def test_container_verifier_rejects_declared_root_runtime_user(monkeypatch):
             "noetrium:test", expected_source_sha=SHA,
             expected_wheel_sha256=WHEEL_SHA,
             expected_distribution_evidence_sha256=DIST_SHA,
+            expected_python_runtime_identity_digest=RUNTIME_SHA,
         )
 
 def test_container_verifier_rejects_effective_root_even_when_config_user_is_platform(monkeypatch):
@@ -142,6 +164,7 @@ def test_container_verifier_rejects_effective_root_even_when_config_user_is_plat
             "noetrium:test", expected_source_sha=SHA,
             expected_wheel_sha256=WHEEL_SHA,
             expected_distribution_evidence_sha256=DIST_SHA,
+            expected_python_runtime_identity_digest=RUNTIME_SHA,
         )
 
 
@@ -152,6 +175,7 @@ def test_container_verifier_rejects_unverified_installed_record(monkeypatch):
             "noetrium:test", expected_source_sha=SHA,
             expected_wheel_sha256=WHEEL_SHA,
             expected_distribution_evidence_sha256=DIST_SHA,
+            expected_python_runtime_identity_digest=RUNTIME_SHA,
         )
 
 
@@ -161,14 +185,16 @@ def test_container_verifier_returns_distribution_bound_receipt(monkeypatch):
         "noetrium:test", expected_source_sha=SHA,
         expected_wheel_sha256=WHEEL_SHA,
         expected_distribution_evidence_sha256=DIST_SHA,
+        expected_python_runtime_identity_digest=RUNTIME_SHA,
     )
-    assert result.schema == "noetrium.container-verification.v3"
+    assert result.schema == "noetrium.container-verification.v4"
     assert result.qualification_scope == "research-os-smoke-only"
     assert result.npe_verified is False
     assert result.research_os_smoke_actions == ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")
     assert result.source_sha == SHA
     assert result.wheel_sha256 == WHEEL_SHA
     assert result.distribution_evidence_sha256 == DIST_SHA
+    assert result.python_runtime_identity_digest == RUNTIME_SHA
     assert result.effective_uid == result.effective_gid == 10001
     assert result.record_verified_files == 2557
     assert all("--network=none" in receipt.argv for receipt in result.commands[1:])
@@ -256,7 +282,9 @@ def test_ci_builds_container_from_formal_distribution_context():
     assert '"$RUNNER_TEMP/platform-container-context"' in workflow
     assert 'docker build \\' in workflow
     assert '--build-arg PLATFORM_WHEEL_SHA256="${ROLE06_WHEEL_SHA256}"' in workflow
+    assert '--build-arg PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST="${ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST}"' in workflow
     assert '--expected-wheel-sha256 "${ROLE06_WHEEL_SHA256}"' in workflow
+    assert '--expected-python-runtime-identity-digest "${ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST}"' in workflow
     assert '--expected-distribution-evidence-sha256' in workflow
     assert "--file deploy/Dockerfile ." not in workflow
 
