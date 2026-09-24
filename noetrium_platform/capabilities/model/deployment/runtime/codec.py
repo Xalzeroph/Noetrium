@@ -6,13 +6,18 @@ from pathlib import Path
 from noetrium_platform.capabilities.model._persisted import (
     exact_fields,
     number,
+    optional_integer,
     optional_text,
+    integer,
     text,
     text_pairs,
     text_tuple,
 )
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentSpec, ModelDesiredState
-from noetrium_platform.substrate.api import ServiceLaunchContract
+from noetrium_platform.substrate.api import (
+    ServiceLaunchContract,
+    ServiceProcessIdentity,
+)
 from noetrium_platform.substrate.api import scope_from_data, scope_to_data
 
 from .applied import AppliedModelDeployment
@@ -23,7 +28,10 @@ _DEPLOYMENT_FIELDS = frozenset({
     "python_environment_id", "gpu_devices", "environment", "readiness_url", "readiness_timeout_s",
     "stop_timeout_s", "heartbeat_interval_s", "desired_state", "tags",
 })
-_APPLIED_FIELDS = frozenset({"spec", "contract", "environment"})
+_APPLIED_FIELDS = frozenset({"spec", "contract", "environment", "process"})
+_PROCESS_FIELDS = frozenset({
+    "pid", "start_identity", "process_group_id", "control_pid",
+})
 _CONTRACT_FIELDS = frozenset({
     "service_id", "generation", "executable", "argv", "cwd", "environment_digest",
     "artifact_digest", "runtime_identity_digest", "readiness_timeout_s", "stop_timeout_s",
@@ -103,6 +111,12 @@ def encode_applied(value: AppliedModelDeployment) -> bytes:
             "heartbeat_interval_s": contract.heartbeat_interval_s,
         },
         "environment": [list(row) for row in value.environment],
+        "process": {
+            "pid": value.process.pid,
+            "start_identity": value.process.start_identity,
+            "process_group_id": value.process.process_group_id,
+            "control_pid": value.process.control_pid,
+        },
     }
     return json.dumps(
         payload,
@@ -142,7 +156,30 @@ def decode_applied(data: dict[str, object]) -> AppliedModelDeployment:
         ),
     )
     environment = text_pairs(document["environment"], field="applied.environment")
-    return AppliedModelDeployment(spec, contract, environment)
+    process_data = exact_fields(
+        document["process"],
+        field="applied model process identity",
+        fields=_PROCESS_FIELDS,
+    )
+    process = ServiceProcessIdentity(
+        pid=integer(process_data["pid"], field="process.pid", minimum=1),
+        start_identity=text(
+            process_data["start_identity"],
+            field="process.start_identity",
+            allow_empty=False,
+        ),
+        process_group_id=optional_integer(
+            process_data["process_group_id"],
+            field="process.process_group_id",
+            minimum=1,
+        ),
+        control_pid=optional_integer(
+            process_data["control_pid"],
+            field="process.control_pid",
+            minimum=1,
+        ),
+    )
+    return AppliedModelDeployment(spec, contract, environment, process)
 
 
 __all__ = ["decode_applied", "decode_deployment", "deployment_to_data", "encode_applied", "encode_deployment"]
