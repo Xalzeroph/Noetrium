@@ -90,3 +90,70 @@ def test_generic_transport_has_provider_neutral_error_identity() -> None:
     assert raised.value.cause_code == "BRIDGE_INVALID_JSON"
     assert str(raised.value).startswith("JSONL process decode failed")
     transport.close()
+
+
+class _LiveProcess(_ExitedProcess):
+    def __init__(self) -> None:
+        super().__init__("")
+        self.alive = True
+        self.pid = 912
+
+    def poll(self):
+        return None if self.alive else 0
+
+
+class _Result:
+    def __init__(self, *, error=None, value=None) -> None:
+        self.error = error
+        self.value = value
+
+    def result(self, timeout=None):
+        del timeout
+        if self.error is not None:
+            raise self.error
+        return self.value
+
+
+class _FlakyTerminationSupervisor:
+    def __init__(self, process: _LiveProcess) -> None:
+        self.process = process
+        self.terminate_calls = 0
+
+    def await_exit(self, *args, **kwargs):
+        del args, kwargs
+        return _Result(error=TimeoutError("process still live"))
+
+    def terminate(self, *args, **kwargs):
+        del args, kwargs
+        self.terminate_calls += 1
+        if self.terminate_calls <= 2:
+            return _Result(error=TimeoutError("termination did not converge"))
+        self.process.alive = False
+        return _Result(value=None)
+
+
+def test_close_retains_exact_process_identity_until_physical_exit_is_proven() -> None:
+    process = _LiveProcess()
+    supervisor = _FlakyTerminationSupervisor(process)
+    task_group = make_task_group("environment-jsonl-close-retry")
+    transport = JsonlProcessTransport(
+        spec=JsonlProcessSpec(("worker",), "."),
+        operating_system=LocalOperatingSystemRoute(),
+        task_group=task_group,
+        process_supervisor=supervisor,
+        transport_identity="close-retry",
+        process_factory=lambda _command, **_options: process,
+    )
+    transport.start()
+
+    with pytest.raises(TimeoutError, match="termination did not converge"):
+        transport.close()
+
+    assert transport.started is True
+    assert transport.process_id == 912
+
+    transport.close()
+
+    assert transport.started is False
+    assert transport.process_id is None
+    assert supervisor.terminate_calls == 3
