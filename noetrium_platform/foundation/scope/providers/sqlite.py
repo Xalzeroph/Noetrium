@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.logical_path import logical_absolute_path
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind, ScopeLink
 from noetrium_platform.foundation.scope.runtime import ScopeNotRegistered, ScopeRegistryConflict
@@ -38,23 +38,11 @@ class SQLiteScopeRegistry:
         message = str(exc).lower()
         return "locked" in message or "busy" in message
 
-    @contextmanager
     def _connection(self):
-        conn = sqlite3.connect(self.path, timeout=self.timeout_seconds, isolation_level=None)
-        try:
-            conn.execute(f"PRAGMA busy_timeout={max(1, int(self.timeout_seconds * 1000))}")
-            current_mode = str(conn.execute("PRAGMA journal_mode").fetchone()[0]).lower()
-            if current_mode != "wal":
-                retry_until_deadline(
-                    lambda: conn.execute("PRAGMA journal_mode=WAL"),
-                    should_retry=self._is_lock_contention,
-                    timeout_seconds=self.timeout_seconds,
-                )
-            conn.execute("PRAGMA synchronous=FULL")
-            conn.execute("PRAGMA foreign_keys=ON")
-            yield conn
-        finally:
-            conn.close()
+        return durable_sqlite_connection(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     def _ensure_schema(self, conn: sqlite3.Connection) -> None:
         conn.execute("CREATE TABLE IF NOT EXISTS scope_meta(key TEXT PRIMARY KEY, value TEXT NOT NULL)")
