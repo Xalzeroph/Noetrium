@@ -18,6 +18,7 @@ from research.reproductions.research_os import (
     executable_reproduction_definitions,
     is_research_os_executable,
     materialize_reproduction_method_program,
+    resolve_benchmark_split_consumers,
     resolve_execution_requirements,
     resolve_method_program_binding,
 )
@@ -235,7 +236,7 @@ def test_every_reproduction_projection_records_current_product_research_os_ident
                 "reproduction.json",
             ).read_text(encoding="utf-8")
         )
-        assert payload["schema"] == "noetrium.reproduction.projection.v8"
+        assert payload["schema"] == "noetrium.reproduction.projection.v9"
         projected = payload["research_os"]
         assert projected["surface"] == "noetrium.api"
 
@@ -245,18 +246,31 @@ def test_every_reproduction_projection_records_current_product_research_os_ident
                 "execution_state": "not_executable",
                 "program_id": None,
                 "program_digest": None,
+                "benchmark_split_axis": {
+                    "required": False,
+                    "consumers": [],
+                },
                 "execution_requirements": [],
             }
             continue
 
         program = compile_reproduction_research_program(definition)
         requirements = resolve_execution_requirements(definition)
+        split_consumers = resolve_benchmark_split_consumers(definition)
         assert projected["program_id"] == program.program_id
         assert projected["program_digest"] == program.program_digest
+        assert projected["benchmark_split_axis"] == {
+            "required": bool(split_consumers),
+            "consumers": list(split_consumers),
+        }
         assert projected["execution_state"] == (
-            "execution_ready"
-            if not requirements
-            else "closure_binding_required"
+            "closure_binding_required"
+            if requirements
+            else (
+                "benchmark_binding_required"
+                if split_consumers
+                else "execution_ready"
+            )
         )
         assert tuple(
             (
