@@ -1,6 +1,14 @@
 """artifact.content api boundary."""
 
-from .blob import ArtifactBlobRef, ArtifactBlobResolverPort, ArtifactBlobStoreError, ArtifactBlobStorePort
+from .blob import (
+    ArtifactBlobGeneration,
+    ArtifactBlobLifecyclePort,
+    ArtifactBlobLifecycleState,
+    ArtifactBlobRef,
+    ArtifactBlobResolverPort,
+    ArtifactBlobStoreError,
+    ArtifactBlobStorePort,
+)
 from .tensor import TensorContentRef, TensorContentStorePort
 from .multimodal import MultimodalPart
 from .acquisition import (
@@ -36,6 +44,9 @@ from .materialization import (
 
 __all__ = [
     "MultimodalPart",
+    "ArtifactBlobGeneration",
+    "ArtifactBlobLifecyclePort",
+    "ArtifactBlobLifecycleState",
     "ArtifactBlobRef",
     "ArtifactBlobResolverPort",
     "ArtifactBlobStoreError",
