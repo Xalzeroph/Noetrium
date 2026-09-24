@@ -31,13 +31,18 @@ def semantic_identity(value: object) -> tuple[str | None, str | None]:
 
 
 def system_roots(catalog: dict[str, dict[str, object]]) -> dict[str, str]:
-    roots: dict[str, str] = {}
+    """Return explicit topology roots; identity path spelling is not topology."""
+    roots = {
+        str(key): str(row["package_prefix"])
+        for key, row in catalog.items()
+        if row.get("parent") is None
+    }
     for key, row in catalog.items():
-        system = key.split("/", 1)[0]
-        prefix = str(row["package_prefix"])
-        current = roots.get(system)
-        if current is None or len(prefix) < len(current):
-            roots[system] = prefix
+        parent = row.get("parent")
+        if parent is not None and str(parent) not in catalog:
+            raise RuntimeError(
+                f"catalog topology parent {parent!r} for {key!r} is not registered"
+            )
     return roots
 
 
