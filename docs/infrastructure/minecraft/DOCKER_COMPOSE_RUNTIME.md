@@ -6,7 +6,7 @@ The base platform image remains provider-neutral and lightweight. The base image
 
 `deploy/Dockerfile` defines the evidence-bound generic Python platform image. It is built only from a prepared formal container context; `deploy/compose.yaml` consumes the resulting image and does not rebuild Platform source.
 
-`deploy/environments/minecraft/Dockerfile` consumes `PLATFORM_BASE_IMAGE` and adds Java 21, Node 22, and the lockfile-pinned Mineflayer bridge runtime. Java is a registry-declared image build input and is resolved to a concrete image digest. Node version and the expected Linux x64 archive SHA-256 are registry-declared parameter inputs; the Dockerfile verifies the downloaded archive directly against that fixed digest before extraction. It copies no Noetrium source tree, benchmark manifest, paper method, checkpoint, or downstream project code.
+`deploy/environments/minecraft/Dockerfile` consumes `PLATFORM_BASE_IMAGE` and adds Java 21, Node 22, and the lockfile-pinned Mineflayer bridge runtime. Java and Node are both registry-declared image build inputs and are resolved to concrete image digests before the Minecraft image is built. The Dockerfile composes their runtime files through multi-stage image inputs instead of downloading a Node archive itself. It copies no Noetrium source tree, benchmark manifest, paper method, checkpoint, or downstream project code.
 
 `deploy/environments/catalog.json` is the environment-profile authority. There is no legacy Minecraft compose alias; callers use the canonical environment profile path directly.
 
@@ -24,4 +24,4 @@ The environment profile does not publish a Minecraft TCP port and does not ship 
 
 ## Reproducibility
 
-Production automation distinguishes recipe, build and runtime identities. `profile_id + profile_revision` identifies the immutable profile recipe; `build_input_digest` includes the exact base image, Java runtime image digest, Node version and pinned Node archive hash; `runtime_identity_digest` identifies the final image content. The environment image carries OCI labels for profile id, category id, profile revision and build-input digest, and the builder verifies all of them before accepting reuse. Downstream deployments separately pin the Minecraft server artifact, world/task identities and other scientific inputs.
+Production automation distinguishes recipe, build and runtime identities. `profile_id + profile_revision` identifies the immutable profile recipe; `build_input_digest` includes the exact base image plus the exact Java and Node runtime image digests; `runtime_identity_digest` identifies the final image content. The environment image carries OCI labels for profile id, category id, profile revision and build-input digest, and the builder verifies all of them before accepting reuse. Downstream deployments separately pin the Minecraft server artifact, world/task identities and other scientific inputs.
