@@ -2,6 +2,7 @@ from .materializer import (
     bind_official_minedojo_registry,
     load_official_minedojo_records,
     materialize_official_minedojo_records,
+    register_official_minedojo_registry,
 )
 from .source_manifest import (
     MINEDOJO_TASK_DESCRIPTION_TREE_GIT_SHA,
@@ -31,6 +32,7 @@ __all__ = [
     "bind_official_minedojo_registry",
     "load_official_minedojo_records",
     "materialize_official_minedojo_records",
+    "register_official_minedojo_registry",
     "minedojo_task_source_manifest_digest",
     "MINEDOJO_ALL_SPLIT",
     "MINEDOJO_BENCHMARK_ID",
