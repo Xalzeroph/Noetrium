@@ -23,7 +23,10 @@ from noetrium_platform.composition.research_os_experiment import (
 from noetrium_platform.composition.research_os_experiment_runtime_binding import (
     ResearchOSExperimentRuntimeComponents,
 )
-from noetrium_platform.composition.research_os_graph import CompiledResearchOSGraphNode
+from noetrium_platform.composition.research_os_graph import (
+    CompiledResearchOSGraphNode,
+    compile_research_portfolio_graph,
+)
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.api import (
     ResearchBindingContribution,
@@ -429,6 +432,277 @@ def _fleet_revision_message(fleet: ReproductionFleetMaterialization) -> str:
 
 
 @dataclass(frozen=True, slots=True)
+class ReproductionFleetAuthorityLaneAudit:
+    """Read-only authority closure result for one materialized fleet lane."""
+
+    package: str
+    program_id: str
+    graph_node_id: str
+    closure_digest: str | None
+    research_binding_closed: bool
+    study_execution_closed: bool
+    aggregation_closed: bool
+    reconciliation_closed: bool
+    blockers: tuple[str, ...]
+    audit_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        for field_name, value in (
+            ("package", self.package),
+            ("program_id", self.program_id),
+            ("graph_node_id", self.graph_node_id),
+        ):
+            if (
+                type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"fleet authority lane {field_name} must be canonical text"
+                )
+        if self.closure_digest is not None:
+            _require_sha256(
+                self.closure_digest,
+                "fleet authority lane closure_digest",
+            )
+        for field_name in (
+            "research_binding_closed",
+            "study_execution_closed",
+            "aggregation_closed",
+            "reconciliation_closed",
+        ):
+            if type(getattr(self, field_name)) is not bool:
+                raise TypeError(
+                    f"fleet authority lane {field_name} must be boolean"
+                )
+        if type(self.blockers) is not tuple or any(
+            type(row) is not str or not row
+            for row in self.blockers
+        ):
+            raise TypeError(
+                "fleet authority lane blockers must be immutable text tuple"
+            )
+        object.__setattr__(
+            self,
+            "audit_digest",
+            canonical_digest(
+                {
+                    "package": self.package,
+                    "program_id": self.program_id,
+                    "graph_node_id": self.graph_node_id,
+                    "closure_digest": self.closure_digest,
+                    "research_binding_closed": self.research_binding_closed,
+                    "study_execution_closed": self.study_execution_closed,
+                    "aggregation_closed": self.aggregation_closed,
+                    "reconciliation_closed": self.reconciliation_closed,
+                    "blockers": self.blockers,
+                }
+            ),
+        )
+
+    @property
+    def execution_authority_closed(self) -> bool:
+        return (
+            self.research_binding_closed
+            and self.study_execution_closed
+            and self.aggregation_closed
+            and self.reconciliation_closed
+            and not self.blockers
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetAuthorityAudit:
+    """Aggregate read-only execution-authority coverage before admission."""
+
+    materialization: ReproductionFleetMaterialization
+    revision_digest: str
+    lanes: tuple[ReproductionFleetAuthorityLaneAudit, ...]
+    audit_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.materialization) is not ReproductionFleetMaterialization:
+            raise TypeError(
+                "fleet authority audit requires ReproductionFleetMaterialization"
+            )
+        _require_sha256(
+            self.revision_digest,
+            "fleet authority audit revision_digest",
+        )
+        if type(self.lanes) is not tuple or not self.lanes:
+            raise ValueError("fleet authority audit requires lanes")
+        if any(
+            type(row) is not ReproductionFleetAuthorityLaneAudit
+            for row in self.lanes
+        ):
+            raise TypeError("fleet authority audit lanes must be typed")
+        if tuple(row.program_id for row in self.lanes) != tuple(
+            sorted(row.program_id for row in self.lanes)
+        ):
+            raise ValueError(
+                "fleet authority audit lanes must be canonical program order"
+            )
+        object.__setattr__(
+            self,
+            "audit_digest",
+            canonical_digest(
+                {
+                    "materialization_digest": (
+                        self.materialization.materialization_digest
+                    ),
+                    "revision_digest": self.revision_digest,
+                    "lane_audits": tuple(
+                        row.audit_digest for row in self.lanes
+                    ),
+                }
+            ),
+        )
+
+    @property
+    def closed_lane_count(self) -> int:
+        return sum(row.execution_authority_closed for row in self.lanes)
+
+    @property
+    def blocker_count(self) -> int:
+        return sum(len(row.blockers) for row in self.lanes)
+
+
+def audit_materialized_reproduction_fleet_authorities(
+    fleet: ReproductionFleetMaterialization,
+    *,
+    research_bindings: ResearchBindingAuthorityPort,
+    experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
+) -> ReproductionFleetAuthorityAudit:
+    """Resolve every lane authority without stores, cuts, tasks, or execution."""
+
+    if type(fleet) is not ReproductionFleetMaterialization:
+        raise TypeError(
+            "fleet authority audit requires ReproductionFleetMaterialization"
+        )
+    if not isinstance(research_bindings, ResearchBindingAuthorityPort):
+        raise TypeError("fleet authority audit requires research binding authority")
+    if (
+        type(experiment_runtime_components)
+        is not ResearchOSExperimentRuntimeComponents
+    ):
+        raise TypeError(
+            "fleet authority audit requires typed Experiment runtime components"
+        )
+
+    revision = api.ResearchGraphRevision(
+        fleet.portfolio.portfolio_id,
+        fleet.portfolio.portfolio_digest,
+        (),
+        "repository reproduction fleet authority audit",
+    )
+    graph = compile_research_portfolio_graph(revision, fleet.portfolio)
+    closures = ReproductionFleetExperimentClosureProvider(
+        fleet,
+        research_bindings,
+    )
+    lane_by_program = {
+        lane.program.program_id: lane for lane in fleet.lanes
+    }
+    rows: list[ReproductionFleetAuthorityLaneAudit] = []
+
+    for program_id in sorted(lane_by_program):
+        lane = lane_by_program[program_id]
+        node = graph.node(program_id + "::reproduction")
+        blockers: list[str] = []
+        closure = None
+        research_closed = False
+        study_closed = False
+        aggregation_closed = False
+        reconciliation_closed = False
+
+        try:
+            closure = closures.resolve(
+                graph_id=graph.plan.graph_id,
+                graph_digest=graph.plan.graph_digest,
+                research_revision_digest=revision.revision_digest,
+                node=node,
+            )
+            research_closed = True
+        except BaseException as exc:
+            blockers.append(
+                "research_binding:"
+                + type(exc).__name__
+                + ":"
+                + str(exc)
+            )
+
+        if closure is not None:
+            for stage, resolver in (
+                (
+                    "study_execution",
+                    experiment_runtime_components.study_execution,
+                ),
+                (
+                    "aggregation",
+                    experiment_runtime_components.aggregation,
+                ),
+                (
+                    "reconciliation",
+                    experiment_runtime_components.reconciliation,
+                ),
+            ):
+                try:
+                    resolver.resolve(closure)
+                    if stage == "study_execution":
+                        study_closed = True
+                    elif stage == "aggregation":
+                        aggregation_closed = True
+                    else:
+                        reconciliation_closed = True
+                except BaseException as exc:
+                    blockers.append(
+                        stage + ":" + type(exc).__name__ + ":" + str(exc)
+                    )
+
+        rows.append(
+            ReproductionFleetAuthorityLaneAudit(
+                package=lane.definition.package,
+                program_id=program_id,
+                graph_node_id=node.graph_node_id,
+                closure_digest=(
+                    None if closure is None else closure.closure_digest
+                ),
+                research_binding_closed=research_closed,
+                study_execution_closed=study_closed,
+                aggregation_closed=aggregation_closed,
+                reconciliation_closed=reconciliation_closed,
+                blockers=tuple(sorted(set(blockers))),
+            )
+        )
+
+    return ReproductionFleetAuthorityAudit(
+        fleet,
+        revision.revision_digest,
+        tuple(rows),
+    )
+
+
+def audit_repository_execution_authorities(
+    authorities: "ReproductionFleetExecutionAuthorities",
+) -> ReproductionFleetAuthorityAudit:
+    """Materialize the repository and aggregate all lane-level authority gaps."""
+
+    if type(authorities) is not ReproductionFleetExecutionAuthorities:
+        raise TypeError(
+            "fleet authority audit requires ReproductionFleetExecutionAuthorities"
+        )
+    fleet = materialize_repository_execution_fleet(
+        authorities.benchmark_resolver,
+        capability_resolver=authorities.capability_resolver,
+    )
+    return audit_materialized_reproduction_fleet_authorities(
+        fleet,
+        research_bindings=authorities.research_bindings,
+        experiment_runtime_components=authorities.experiment_runtime_components,
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class ReproductionFleetPreflightResult:
     """Exact whole-graph admission proof without creating an execution cut."""
 
@@ -766,6 +1040,10 @@ class ReproductionFleetExperimentClosureProvider:
 __all__ = [
     "ReproductionBenchmarkResolverPort",
     "ReproductionBenchmarkSelection",
+    "audit_repository_execution_authorities",
+    "audit_materialized_reproduction_fleet_authorities",
+    "ReproductionFleetAuthorityLaneAudit",
+    "ReproductionFleetAuthorityAudit",
     "ReproductionFleetExecutionAuthorities",
     "ReproductionFleetExecutionResult",
     "ReproductionFleetExperimentClosureProvider",
