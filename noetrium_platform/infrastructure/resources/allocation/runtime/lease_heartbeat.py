@@ -60,12 +60,15 @@ class EndpointLeaseHeartbeatGuard(EndpointLeaseGuardPort):
         self._policy = policy
         self._state_lock = Lock()
         self._scheduled: ScheduledTaskHandlePort | None = None
+        self._closing = False
         self._closed = False
 
     def start(self) -> None:
         with self._state_lock:
             if self._closed:
                 raise EndpointLeaseHeartbeatError("endpoint lease heartbeat is closed")
+            if self._closing:
+                raise EndpointLeaseHeartbeatError("endpoint lease heartbeat is closing")
             if self._scheduled is not None:
                 return
             heartbeat_id = "endpoint-lease:" + ",".join(self._allocation_ids)
@@ -106,11 +109,14 @@ class EndpointLeaseHeartbeatGuard(EndpointLeaseGuardPort):
         with self._state_lock:
             if self._closed:
                 return
-            self._closed = True
+            self._closing = True
             scheduled = self._scheduled
         if scheduled is not None:
             scheduled.cancel()
         self.assert_healthy()
+        with self._state_lock:
+            self._closed = True
+            self._closing = False
 
 
 class EndpointLeaseHeartbeatFactory(EndpointLeaseGuardFactoryPort):
