@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3654,
-    "python_import_edges": 6997,
+    "python_import_edges": 7000,
     "symbols": 4847,
     "tracked_files": 4283,
     "typescript_javascript_files": 11
@@ -540,6 +540,12 @@
       "source_module": "noetrium_platform.capabilities.environment.minecraft.composition.experiment_host",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.substrate.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.content.providers.download",
       "target_role": "core_platform"
     },
     {
@@ -4224,6 +4230,12 @@
       "source_module": "noetrium_platform.composition.model_management",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.directory.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.model_qualification.qualification_index_worker",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.content.providers.download",
       "target_role": "core_platform"
     },
     {
@@ -11460,6 +11472,12 @@
       "source_module": "noetrium_platform.infrastructure.lifecycle.toolchain.api.contracts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.lifecycle.toolchain.composition",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.content.providers.download",
       "target_role": "core_platform"
     },
     {
@@ -41999,7 +42017,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2617,
+      "count": 2620,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42138,7 +42156,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "fae6120789422f06b1c268face8bbfc4f26d5698",
+  "source_git_sha": "8662bf812de48b2334160426fc5a4d003b6095f7",
   "symbols": [
     {
       "bases": [],
@@ -47289,7 +47307,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 14,
+      "line": 17,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
       "name": "MinecraftServerArtifactAssembly",
@@ -63567,7 +63585,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 53,
+      "line": 52,
       "methods": [
         "__init__",
         "for_key"
@@ -63586,7 +63604,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 141,
+      "line": 140,
       "methods": [
         "__init__",
         "handle_starttag"
@@ -68573,7 +68591,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 75,
+      "line": 76,
       "methods": [
         "__init__",
         "acquire",
@@ -92747,7 +92765,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 21,
+      "line": 24,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.toolchain.composition",
       "name": "JavaRuntimeToolchainAssembly",
@@ -92827,7 +92845,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 208,
+      "line": 202,
       "methods": [
         "__init__",
         "resolve"

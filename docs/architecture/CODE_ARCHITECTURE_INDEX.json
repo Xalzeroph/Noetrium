@@ -21059,7 +21059,7 @@
         "provider"
       ],
       "kind": "dataclass",
-      "line": 14,
+      "line": 17,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
       "name": "MinecraftServerArtifactAssembly",
@@ -38842,7 +38842,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 53,
+      "line": 52,
       "methods": [
         "__init__",
         "for_key"
@@ -38863,7 +38863,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 141,
+      "line": 140,
       "methods": [
         "__init__",
         "handle_starttag"
@@ -44358,7 +44358,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 75,
+      "line": 76,
       "methods": [
         "__init__",
         "acquire",
@@ -70870,7 +70870,7 @@
         "provisioner"
       ],
       "kind": "dataclass",
-      "line": 21,
+      "line": 24,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.toolchain.composition",
       "name": "JavaRuntimeToolchainAssembly",
@@ -70911,7 +70911,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 208,
+      "line": 202,
       "methods": [
         "__init__",
         "resolve"
@@ -102357,7 +102357,7 @@
     "classes": 3336,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5072,
+    "module_import_edges": 5075,
     "parse_errors": 0,
     "python_modules": 1928,
     "registry_authorities": 20,
@@ -103687,6 +103687,10 @@
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
       "target": "noetrium_platform.capabilities.environment.minecraft.providers.server_artifact"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
+      "target": "noetrium_platform.evidence.artifact.content.providers.download"
     },
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
@@ -108139,6 +108143,10 @@
     {
       "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.infrastructure.resources.directory.runtime"
+    },
+    {
+      "source": "noetrium_platform.composition.model_qualification.qualification_index_worker",
+      "target": "noetrium_platform.evidence.artifact.content.providers.download"
     },
     {
       "source": "noetrium_platform.composition.model_qualification.qualification_index_worker",
@@ -118134,6 +118142,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.toolchain.composition",
+      "target": "noetrium_platform.evidence.artifact.content.providers.download"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.toolchain.composition",
       "target": "noetrium_platform.foundation.api"
     },
     {
@@ -124055,6 +124067,7 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.minecraft.providers.server_artifact",
+        "noetrium_platform.evidence.artifact.content.providers.download",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact",
@@ -128175,6 +128188,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.evidence.artifact.content.providers.download",
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.foundation.kernel.concurrency.composition",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
@@ -138390,6 +138404,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.evidence.artifact.content.providers.download",
         "noetrium_platform.foundation.api",
         "noetrium_platform.infrastructure.lifecycle.toolchain.api",
         "noetrium_platform.infrastructure.lifecycle.toolchain.providers"
@@ -143592,7 +143607,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "fae6120789422f06b1c268face8bbfc4f26d5698",
+  "source_git_sha": "8662bf812de48b2334160426fc5a4d003b6095f7",
   "system_import_edges": [
     {
       "count": 85,
@@ -143618,6 +143633,11 @@
       "count": 9,
       "source": "data",
       "target": "platform"
+    },
+    {
+      "count": 1,
+      "source": "environment",
+      "target": "artifact"
     },
     {
       "count": 207,
@@ -143730,7 +143750,7 @@
       "target": "reliability"
     },
     {
-      "count": 10,
+      "count": 11,
       "source": "research_os",
       "target": "artifact"
     },
@@ -143823,6 +143843,11 @@
       "count": 89,
       "source": "resource",
       "target": "resource"
+    },
+    {
+      "count": 1,
+      "source": "runtime",
+      "target": "artifact"
     },
     {
       "count": 69,
