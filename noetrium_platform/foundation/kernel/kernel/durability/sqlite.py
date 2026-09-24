@@ -9,23 +9,22 @@ from typing import Iterator
 from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
 
 
-@contextmanager
-def durable_sqlite_connection(
-    path: str | Path,
-    *,
-    timeout_seconds: float,
-) -> Iterator[sqlite3.Connection]:
-    """Open one fail-closed SQLite session with platform durability hardening.
-
-    This primitive owns connection/session mechanics only. Callers retain
-    transaction scope, schema authority, domain state machines, and writes.
-    """
+def _validated_timeout(timeout_seconds: float) -> float:
     timeout = float(timeout_seconds)
     if not math.isfinite(timeout) or timeout <= 0:
         raise ValueError(
             "SQLite connection timeout_seconds must be finite and positive"
         )
+    return timeout
 
+
+def open_durable_sqlite_writer(
+    path: str | Path,
+    *,
+    timeout_seconds: float,
+) -> sqlite3.Connection:
+    """Open one authoritative SQLite writer with platform durability hardening."""
+    timeout = _validated_timeout(timeout_seconds)
     conn = sqlite3.connect(
         Path(path),
         timeout=timeout,
@@ -45,9 +44,78 @@ def durable_sqlite_connection(
         )
         conn.execute("PRAGMA synchronous=FULL")
         conn.execute("PRAGMA foreign_keys=ON")
+        return conn
+    except BaseException:
+        conn.close()
+        raise
+
+
+def open_durable_sqlite_reader(
+    path: str | Path,
+    *,
+    timeout_seconds: float,
+) -> sqlite3.Connection:
+    """Open one read-only SQLite session over an existing durable database."""
+    timeout = _validated_timeout(timeout_seconds)
+    resolved = Path(path).resolve().as_posix()
+    conn = sqlite3.connect(
+        f"file:{resolved}?mode=ro",
+        uri=True,
+        timeout=timeout,
+        isolation_level=None,
+    )
+    try:
+        conn.execute(
+            f"PRAGMA busy_timeout={max(1, int(timeout * 1000))}"
+        )
+        conn.execute("PRAGMA query_only=ON")
+        conn.execute("PRAGMA foreign_keys=ON")
+        return conn
+    except BaseException:
+        conn.close()
+        raise
+
+
+@contextmanager
+def durable_sqlite_connection(
+    path: str | Path,
+    *,
+    timeout_seconds: float,
+) -> Iterator[sqlite3.Connection]:
+    """Yield one durable writer and guarantee connection close."""
+    conn = open_durable_sqlite_writer(
+        path,
+        timeout_seconds=timeout_seconds,
+    )
+    try:
         yield conn
     finally:
         conn.close()
 
 
-__all__ = ["durable_sqlite_connection"]
+def rollback_sqlite_writer(
+    db: sqlite3.Connection,
+    primary: BaseException,
+    *,
+    label: str,
+) -> None:
+    """Rollback without replacing the primary failure."""
+    if type(label) is not str or not label.strip():
+        raise ValueError("SQLite rollback label must be non-empty text")
+    if not db.in_transaction:
+        return
+    try:
+        db.rollback()
+    except BaseException as rollback_exc:
+        primary.add_note(
+            f"{label.strip()} sqlite rollback failed: "
+            f"{type(rollback_exc).__name__}"
+        )
+
+
+__all__ = [
+    "durable_sqlite_connection",
+    "open_durable_sqlite_reader",
+    "open_durable_sqlite_writer",
+    "rollback_sqlite_writer",
+]
