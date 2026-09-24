@@ -21095,7 +21095,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 203,
+      "line": 267,
       "methods": [
         "__init__",
         "validate"
@@ -21114,9 +21114,10 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 131,
+      "line": 130,
       "methods": [
         "__init__",
+        "_wait_rcon",
         "wait_ready"
       ],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
@@ -21141,7 +21142,7 @@
         "spec"
       ],
       "kind": "dataclass",
-      "line": 316,
+      "line": 381,
       "methods": [
         "_event",
         "_failure",
@@ -21166,7 +21167,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 41,
+      "line": 40,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
       "name": "MinecraftServerServiceError",
@@ -21182,7 +21183,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 434,
+      "line": 499,
       "methods": [
         "__init__",
         "create"
@@ -21212,7 +21213,7 @@
         "task_group"
       ],
       "kind": "dataclass",
-      "line": 405,
+      "line": 470,
       "methods": [
         "__post_init__"
       ],
@@ -21230,7 +21231,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 45,
+      "line": 44,
       "methods": [
         "__init__",
         "_wait_ready_async",
@@ -21943,7 +21944,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 36,
+      "line": 35,
       "methods": [
         "__init__",
         "_identity",
@@ -21968,7 +21969,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 23,
+      "line": 22,
       "methods": [
         "__init__"
       ],
@@ -39029,30 +39030,6 @@
     },
     {
       "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "application",
-        "manifest",
-        "project_root"
-      ],
-      "kind": "dataclass",
-      "line": 21,
-      "methods": [
-        "default_target"
-      ],
-      "module": "noetrium_platform.composition.operator.project.project_application_loader",
-      "name": "LoadedProjectApplication",
-      "nesting": [
-        "LoadedProjectApplication"
-      ],
-      "qualname": "noetrium_platform.composition.operator.project.project_application_loader.LoadedProjectApplication",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
@@ -39100,6 +39077,7 @@
         "dataclass(slots=True)"
       ],
       "fields": [
+        "active_revision",
         "execution_pool",
         "manifest",
         "portfolio",
@@ -102402,12 +102380,12 @@
   ],
   "counts": {
     "association_edges": 3426,
-    "classes": 3337,
+    "classes": 3336,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5091,
+    "module_import_edges": 5089,
     "parse_errors": 0,
-    "python_modules": 1929,
+    "python_modules": 1928,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -108486,23 +108464,11 @@
     },
     {
       "source": "noetrium_platform.composition.operator.project",
-      "target": "noetrium_platform.composition.operator.project_application_loader"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.project",
       "target": "noetrium_platform.composition.operator.project_experience"
     },
     {
-      "source": "noetrium_platform.composition.operator.project.project_application_loader",
-      "target": "noetrium_platform.composition.operator.project.project_layout"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.project.project_application_loader",
-      "target": "noetrium_platform.foundation.portfolio.project.api"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.project.project_application_loader",
-      "target": "noetrium_platform.product.operator.api"
+      "source": "noetrium_platform.composition.operator.project",
+      "target": "noetrium_platform.composition.operator.project_research_os_loader"
     },
     {
       "source": "noetrium_platform.composition.operator.project.project_doctor",
@@ -119985,6 +119951,10 @@
       "target": "noetrium_platform.product.operator.api.project_experience"
     },
     {
+      "source": "noetrium_platform.product.operator.runtime.research_cli",
+      "target": "noetrium_platform.product.research_os"
+    },
+    {
       "source": "noetrium_platform.product.reference",
       "target": "noetrium_platform.product.research_os"
     },
@@ -128587,22 +128557,11 @@
     },
     {
       "imports": [
-        "noetrium_platform.composition.operator.project_application_loader",
-        "noetrium_platform.composition.operator.project_experience"
+        "noetrium_platform.composition.operator.project_experience",
+        "noetrium_platform.composition.operator.project_research_os_loader"
       ],
       "module": "noetrium_platform.composition.operator.project",
       "path": "noetrium_platform/composition/operator/project/__init__.py",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [
-        "noetrium_platform.composition.operator.project.project_layout",
-        "noetrium_platform.foundation.portfolio.project.api",
-        "noetrium_platform.product.operator.api"
-      ],
-      "module": "noetrium_platform.composition.operator.project.project_application_loader",
-      "path": "noetrium_platform/composition/operator/project/project_application_loader.py",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -140512,7 +140471,8 @@
         "noetrium_platform.foundation.kernel.kernel.errors",
         "noetrium_platform.product.operator.api",
         "noetrium_platform.product.operator.api.json_rendering",
-        "noetrium_platform.product.operator.api.project_experience"
+        "noetrium_platform.product.operator.api.project_experience",
+        "noetrium_platform.product.research_os"
       ],
       "module": "noetrium_platform.product.operator.runtime.research_cli",
       "path": "noetrium_platform/product/operator/runtime/research_cli.py",
@@ -143743,7 +143703,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "6e868310915ce30068aaf110fcf3b4f2fee43fb8",
+  "source_git_sha": "8fe6c849a13078df522982e2ec9ba3e166abef30",
   "system_import_edges": [
     {
       "count": 85,
@@ -143936,7 +143896,7 @@
       "target": "platform"
     },
     {
-      "count": 9,
+      "count": 8,
       "source": "research_os",
       "target": "portfolio"
     },
@@ -143946,7 +143906,7 @@
       "target": "reliability"
     },
     {
-      "count": 319,
+      "count": 318,
       "source": "research_os",
       "target": "research_os"
     },

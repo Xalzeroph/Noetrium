@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3656,
+    "python_files": 3655,
     "python_import_edges": 7021,
     "symbols": 4848,
-    "tracked_files": 4285,
+    "tracked_files": 4284,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -4530,18 +4530,6 @@
       "source_module": "noetrium_platform.composition.operator.maintenance_wiring.cli",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.operator.maintenance.management_cli",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_application_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.portfolio.project.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_application_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.product.operator.api",
       "target_role": "core_platform"
     },
     {
@@ -13200,6 +13188,12 @@
       "source_module": "noetrium_platform.product.operator.runtime.research_cli",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.product.operator.api.project_experience",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.operator.runtime.research_cli",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.product.research_os",
       "target_role": "core_platform"
     },
     {
@@ -30143,6 +30137,12 @@
     {
       "source_module": "tests.test_operator_public_facade_v206",
       "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_operator_public_facade_v206",
+      "source_role": "tests",
       "target_module": "noetrium_platform.composition.operator.wiring.research",
       "target_role": "core_platform"
     },
@@ -42143,7 +42143,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2635,
+      "count": 2634,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42208,7 +42208,7 @@
       "target_role": "core_platform"
     },
     {
-      "count": 25,
+      "count": 26,
       "source_role": "tests",
       "target_role": "public_facade"
     },
@@ -42259,7 +42259,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1929,
+    "core_platform": 1928,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
@@ -42270,7 +42270,7 @@
     "tooling": 78
   },
   "role_symbol_counts": {
-    "core_platform": 3338,
+    "core_platform": 3337,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -42278,11 +42278,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 408,
     "sdk": 5,
-    "tests": 969,
+    "tests": 970,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "6e868310915ce30068aaf110fcf3b4f2fee43fb8",
+  "source_git_sha": "8fe6c849a13078df522982e2ec9ba3e166abef30",
   "symbols": [
     {
       "bases": [],
@@ -47449,7 +47449,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 41,
+      "line": 40,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
       "name": "MinecraftServerServiceError",
@@ -47463,7 +47463,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 45,
+      "line": 44,
       "methods": [
         "__init__",
         "_wait_ready_async",
@@ -47481,9 +47481,10 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 131,
+      "line": 130,
       "methods": [
         "__init__",
+        "_wait_rcon",
         "wait_ready"
       ],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
@@ -47498,7 +47499,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 203,
+      "line": 267,
       "methods": [
         "__init__",
         "validate"
@@ -47523,7 +47524,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 316,
+      "line": 381,
       "methods": [
         "_event",
         "_failure",
@@ -47555,7 +47556,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 405,
+      "line": 470,
       "methods": [
         "__post_init__"
       ],
@@ -47571,7 +47572,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 434,
+      "line": 499,
       "methods": [
         "__init__",
         "create"
@@ -48212,7 +48213,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 23,
+      "line": 22,
       "methods": [
         "__init__"
       ],
@@ -48230,7 +48231,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 36,
+      "line": 35,
       "methods": [
         "__init__",
         "_identity",
@@ -63859,28 +63860,6 @@
     },
     {
       "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "project_root: Path",
-        "manifest: ProjectManifest",
-        "application: ResearchApplicationPort"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 21,
-      "methods": [
-        "default_target"
-      ],
-      "module": "noetrium_platform.composition.operator.project.project_application_loader",
-      "name": "LoadedProjectApplication",
-      "path": "noetrium_platform/composition/operator/project/project_application_loader.py",
-      "qualname": "noetrium_platform.composition.operator.project.project_application_loader.LoadedProjectApplication",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
@@ -63928,6 +63907,7 @@
         "manifest: ProjectManifest",
         "portfolio: ResearchPortfolio",
         "revision: ResearchGraphRevision",
+        "active_revision: ResearchGraphRevision | None",
         "research_os: ResearchOS",
         "execution_pool: ResearchExecutionPool"
       ],
@@ -135751,7 +135731,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 153,
+      "line": 154,
       "methods": [
         "__init__",
         "close",
@@ -135769,7 +135749,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 176,
+      "line": 177,
       "methods": [
         "alive"
       ],
@@ -135785,7 +135765,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 211,
+      "line": 212,
       "methods": [
         "close",
         "wait_closed"
@@ -135802,7 +135782,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 221,
+      "line": 222,
       "methods": [
         "alive"
       ],
@@ -136985,14 +136965,33 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 92,
+      "line": 89,
       "methods": [
-        "execute"
+        "__init__",
+        "run",
+        "reconcile"
       ],
       "module": "tests.test_operator_public_facade_v206",
-      "name": "_FailingApplication",
+      "name": "_ProjectResearchOS",
       "path": "tests/test_operator_public_facade_v206.py",
-      "qualname": "tests.test_operator_public_facade_v206._FailingApplication",
+      "qualname": "tests.test_operator_public_facade_v206._ProjectResearchOS",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 115,
+      "methods": [
+        "__init__",
+        "close"
+      ],
+      "module": "tests.test_operator_public_facade_v206",
+      "name": "_LoadedResearchOS",
+      "path": "tests/test_operator_public_facade_v206.py",
+      "qualname": "tests.test_operator_public_facade_v206._LoadedResearchOS",
       "role": "tests"
     },
     {
@@ -137005,7 +137004,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 144,
+      "line": 211,
       "methods": [],
       "module": "tests.test_operator_public_facade_v206",
       "name": "_IntCode",
@@ -137023,7 +137022,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 148,
+      "line": 215,
       "methods": [],
       "module": "tests.test_operator_public_facade_v206",
       "name": "_TextCode",
@@ -137041,7 +137040,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 153,
+      "line": 220,
       "methods": [],
       "module": "tests.test_operator_public_facade_v206",
       "name": "_StructuredValue",
