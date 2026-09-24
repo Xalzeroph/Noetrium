@@ -50,7 +50,13 @@ category: minecraft
   minecraft-r3  active    revision=C...  <- default for new executions
 ```
 
-Existing executions are pinned to two different identity layers recorded by `EnvironmentInstance`: the logical deployable recipe cut (`profile_id + profile_revision`) and the concrete runtime content identity (`runtime_identity_digest`). Reuse requires all three to match, so the same recipe revision cannot silently cross into a different image/runtime cut on another host.
+Environment deployment uses three distinct identities:
+
+- `profile_revision`: the logical recipe identity derived from the profile definition and recipe bytes;
+- `build_input_digest`: the cache/build identity derived from the recipe plus the exact base runtime identity and any profile-specific upstream runtime inputs such as Java and Node version;
+- `runtime_identity_digest`: the final content identity of the built image.
+
+Existing executions record the logical profile cut and concrete `runtime_identity_digest`. Warm-instance reuse requires the same profile revision and runtime identity, while image-cache reuse is namespaced by `build_input_digest`. A recipe can therefore stay logically unchanged without allowing a changed base image, Java image, or Node version to masquerade as the same cached build.
 
 ## Lifecycle
 
@@ -164,9 +170,9 @@ release source
   -> build receipt
 ```
 
-Build receipts include source SHA, wheel SHA-256, distribution-evidence SHA-256, profile id, category, profile lifecycle, profile revision digest, Docker image metadata, and a normalized `runtime_identity_digest` derived from the content-addressed image identity.
+Build receipts include source SHA, wheel SHA-256, distribution-evidence SHA-256, exact upstream runtime-source identities, profile id, category, profile lifecycle, profile revision digest, `build_input_digest`, Docker image metadata, and the final normalized `runtime_identity_digest`.
 
-An exact cached base is re-verified before reuse. Profile images are tagged by both source and profile revision, so changing the profile definition cannot silently reuse an older image.
+The base cache key includes the exact Python runtime source identity, and the base image carries that digest as an OCI label verified by the formal container verifier. Profile cache keys use the complete `build_input_digest`; profile images carry the same digest as an OCI label. For Minecraft this build-input identity includes the exact Java runtime image identity and Node version in addition to the base image.
 
 Registry mirrors are deployment configuration. Canonical runtime identities remain separately recorded from the actual source registry image.
 
