@@ -1,6 +1,40 @@
 {
-  "schema": "noetrium.environment-container-profiles.v1",
+  "schema": "noetrium.environment-profile-registry.v2",
   "boundary": "Upstream profiles provide reusable execution prerequisites only. Benchmarks, tasks, paper methods, datasets, checkpoints and scientific protocols are downstream-owned.",
+  "lifecycle": {
+    "states": [
+      "active",
+      "draining",
+      "retired"
+    ],
+    "semantics": {
+      "active": "Eligible for new execution bindings.",
+      "draining": "No new bindings; existing pinned executions may resume or finish.",
+      "retired": "Historical revision only; build/use requires explicit recovery intent."
+    }
+  },
+  "sharing_policy": {
+    "principle": "share immutable content, isolate all mutable execution state",
+    "shared_read_only": [
+      "base-image-layers",
+      "environment-image-layers",
+      "content-addressed-assets",
+      "dependency-caches"
+    ],
+    "private_per_execution": [
+      "workspace",
+      "tmp",
+      "runtime-state",
+      "secrets",
+      "process-namespace",
+      "network-namespace",
+      "ports",
+      "browser-profile",
+      "world-state"
+    ],
+    "reuse_rule": "A warm instance may return to a pool only after an explicit cleanliness proof; otherwise destroy it.",
+    "gc_rule": "A profile revision or cached object is GC-eligible only with zero active/resumable references and no retained evidence dependency."
+  },
   "base": {
     "profile_id": "base",
     "image_env": "PLATFORM_IMAGE",
@@ -12,6 +46,8 @@
     {
       "profile_id": "minecraft",
       "category_id": "minecraft",
+      "lifecycle": "active",
+      "default_for_category": true,
       "extends": "base",
       "image_env": "PLATFORM_MINECRAFT_IMAGE",
       "dockerfile": "deploy/environments/minecraft/Dockerfile",
@@ -28,11 +64,31 @@
         "task_manifests",
         "paper_methods",
         "checkpoints"
-      ]
+      ],
+      "isolation": {
+        "shared_read_only": [
+          "image-layers",
+          "minecraft-server-artifacts",
+          "dependency-cache"
+        ],
+        "private_writable": [
+          "workspace",
+          "tmp",
+          "runtime-state",
+          "world-state",
+          "secrets",
+          "process-namespace",
+          "network-namespace",
+          "ports"
+        ],
+        "cleanliness": "destroy-overlay-or-verified-reset"
+      }
     },
     {
       "profile_id": "embodied",
       "category_id": "embodied",
+      "lifecycle": "active",
+      "default_for_category": true,
       "extends": "base",
       "image_env": "PLATFORM_EMBODIED_IMAGE",
       "dockerfile": "deploy/environments/embodied/Dockerfile",
@@ -49,11 +105,31 @@
         "robot_task_packages",
         "paper_methods",
         "checkpoints"
-      ]
+      ],
+      "isolation": {
+        "shared_read_only": [
+          "image-layers",
+          "simulator-binaries",
+          "content-addressed-assets"
+        ],
+        "private_writable": [
+          "workspace",
+          "tmp",
+          "runtime-state",
+          "world-state",
+          "secrets",
+          "process-namespace",
+          "network-namespace",
+          "ports"
+        ],
+        "cleanliness": "destroy-overlay-or-verified-reset"
+      }
     },
     {
       "profile_id": "gui",
       "category_id": "gui",
+      "lifecycle": "active",
+      "default_for_category": true,
       "extends": "base",
       "image_env": "PLATFORM_GUI_IMAGE",
       "dockerfile": "deploy/environments/gui/Dockerfile",
@@ -70,11 +146,31 @@
         "task_manifests",
         "paper_methods",
         "checkpoints"
-      ]
+      ],
+      "isolation": {
+        "shared_read_only": [
+          "image-layers",
+          "vm-base-images",
+          "content-addressed-assets"
+        ],
+        "private_writable": [
+          "workspace",
+          "tmp",
+          "runtime-state",
+          "browser-profile",
+          "secrets",
+          "process-namespace",
+          "network-namespace",
+          "ports"
+        ],
+        "cleanliness": "destroy-overlay-or-verified-reset"
+      }
     },
     {
       "profile_id": "web",
       "category_id": "web",
+      "lifecycle": "active",
+      "default_for_category": true,
       "extends": "base",
       "image_env": "PLATFORM_WEB_IMAGE",
       "dockerfile": "deploy/environments/web/Dockerfile",
@@ -89,11 +185,31 @@
         "task_manifests",
         "paper_methods",
         "checkpoints"
-      ]
+      ],
+      "isolation": {
+        "shared_read_only": [
+          "image-layers",
+          "browser-binaries",
+          "content-addressed-assets"
+        ],
+        "private_writable": [
+          "workspace",
+          "tmp",
+          "runtime-state",
+          "browser-profile",
+          "secrets",
+          "process-namespace",
+          "network-namespace",
+          "ports"
+        ],
+        "cleanliness": "destroy-overlay-or-verified-reset"
+      }
     },
     {
       "profile_id": "software",
       "category_id": "software",
+      "lifecycle": "active",
+      "default_for_category": true,
       "extends": "base",
       "image_env": "PLATFORM_SOFTWARE_IMAGE",
       "dockerfile": "deploy/environments/software/Dockerfile",
@@ -112,11 +228,31 @@
         "task_patches",
         "paper_methods",
         "checkpoints"
-      ]
+      ],
+      "isolation": {
+        "shared_read_only": [
+          "image-layers",
+          "compiler-toolchain",
+          "package-cache",
+          "repository-object-cache"
+        ],
+        "private_writable": [
+          "workspace",
+          "tmp",
+          "runtime-state",
+          "secrets",
+          "process-namespace",
+          "network-namespace",
+          "ports"
+        ],
+        "cleanliness": "destroy-overlay-or-verified-reset"
+      }
     },
     {
       "profile_id": "text_world",
       "category_id": "text_world",
+      "lifecycle": "active",
+      "default_for_category": true,
       "extends": "base",
       "build_mode": "base-only",
       "provides": [
@@ -127,7 +263,24 @@
         "task_corpora",
         "paper_methods",
         "checkpoints"
-      ]
+      ],
+      "isolation": {
+        "shared_read_only": [
+          "base-image-layers",
+          "content-addressed-assets",
+          "dependency-cache"
+        ],
+        "private_writable": [
+          "workspace",
+          "tmp",
+          "runtime-state",
+          "secrets",
+          "process-namespace",
+          "network-namespace",
+          "ports"
+        ],
+        "cleanliness": "destroy-overlay-or-verified-reset"
+      }
     }
   ]
 }
