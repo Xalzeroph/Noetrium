@@ -379,22 +379,10 @@ def plan_research_os_execution_migration(
 
 
 
-def _cut_store(
-    execution_store: ResearchGraphExecutionStorePort,
-    active_cut_store: ResearchGraphActiveCutStorePort | None,
-) -> ResearchGraphActiveCutStorePort:
-    selected: object = execution_store if active_cut_store is None else active_cut_store
-    if not isinstance(selected, ResearchGraphActiveCutStorePort):
-        raise TypeError("research execution migration requires active-cut CAS authority")
-    return selected
-
-
 def activate_research_os_execution_cut(
     execution_id: str,
     compilation: CompiledResearchOSGraph,
     execution_store: ResearchGraphExecutionStorePort,
-    *,
-    active_cut_store: ResearchGraphActiveCutStorePort | None = None,
 ) -> ResearchOSExecutionActivation:
     """Create/reopen one immutable physical cut and bind the logical execution ref."""
 
@@ -403,9 +391,13 @@ def activate_research_os_execution_cut(
         raise TypeError("research execution activation requires compiled Research OS graph")
     if not isinstance(execution_store, ResearchGraphExecutionStorePort):
         raise TypeError("research execution activation requires graph execution store")
-    cuts = _cut_store(execution_store, active_cut_store)
+    if not isinstance(execution_store, ResearchGraphActiveCutStorePort):
+        raise TypeError(
+            "research execution activation requires unified active-cut Graph authority"
+        )
     cut = ResearchOSExecutionCut.from_compilation(execution_id, compilation)
-    active = cuts.active_cut(execution_id)
+    observed = execution_store.active_execution_snapshot(execution_id)
+    active = None if observed is None else observed.active_cut
     if active is not None and active.cut_id != cut.cut_id:
         raise ResearchGraphExecutionConflict(
             "logical Research OS execution is already bound to a different active cut; "
@@ -413,7 +405,7 @@ def activate_research_os_execution_cut(
         )
     snapshot = execution_store.ensure_execution(cut.cut_id, compilation.plan)
     if active is None:
-        active = cuts.move_active_cut(execution_id, cut.cut_id)
+        active = execution_store.move_active_cut(execution_id, cut.cut_id)
     return ResearchOSExecutionActivation(cut, active, snapshot)
 
 
@@ -424,7 +416,6 @@ def materialize_research_os_execution_migration(
     *,
     reuse_proofs: tuple[ResearchOSReuseProof, ...] = (),
     reuse_materializer: ResearchOSReuseMaterializerPort | None = None,
-    active_cut_store: ResearchGraphActiveCutStorePort | None = None,
     now_ns: int,
 ) -> ResearchOSExecutionMigrationMaterialization:
     """Materialize R2 beside R1, prove safe reuse, then CAS-switch the active cut.
@@ -482,20 +473,9 @@ def materialize_research_os_execution_migration(
                 f"research migration reuse proof identity drifted: {node_id}"
             )
 
-    cuts = _cut_store(execution_store, active_cut_store)
-    active = cuts.active_cut(plan.execution_id)
-    if active is None or active.cut_id != plan.source_cut.cut_id:
-        raise ResearchGraphExecutionConflict(
-            "research migration source cut is no longer the active execution cut"
-        )
-    source_snapshot = execution_store.snapshot(plan.source_cut.cut_id)
-    if (
-        source_snapshot.graph_digest != plan.source_cut.graph_digest
-        or source_snapshot.research_revision_digest
-        != plan.source_cut.research_revision_digest
-    ):
-        raise ResearchGraphExecutionConflict(
-            "research migration durable source cut identity drifted"
+    if not isinstance(execution_store, ResearchGraphActiveCutStorePort):
+        raise TypeError(
+            "research migration requires unified active-cut Graph authority"
         )
     if not isinstance(execution_store, ResearchGraphControlStorePort):
         raise TypeError(
@@ -505,7 +485,25 @@ def materialize_research_os_execution_migration(
         raise TypeError(
             "research migration requires durable per-node control authority"
         )
-    source_control = execution_store.control_state(plan.source_cut.cut_id)
+    observed = execution_store.active_execution_snapshot(plan.execution_id)
+    if (
+        observed is None
+        or observed.active_cut.cut_id != plan.source_cut.cut_id
+    ):
+        raise ResearchGraphExecutionConflict(
+            "research migration source cut is no longer the active execution cut"
+        )
+    active = observed.active_cut
+    source_snapshot = observed.execution
+    source_control = observed.control
+    if (
+        source_snapshot.graph_digest != plan.source_cut.graph_digest
+        or source_snapshot.research_revision_digest
+        != plan.source_cut.research_revision_digest
+    ):
+        raise ResearchGraphExecutionConflict(
+            "research migration durable source cut identity drifted"
+        )
     if source_control.phase is not ResearchGraphControlPhase.PAUSED:
         raise ResearchGraphExecutionConflict(
             "research migration materialization requires a paused source cut; "
@@ -800,7 +798,7 @@ def materialize_research_os_execution_migration(
             ),
         }
     )
-    active = cuts.move_active_cut(
+    active = execution_store.move_active_cut(
         plan.execution_id,
         plan.target_cut.cut_id,
         expected_cut_id=plan.source_cut.cut_id,
