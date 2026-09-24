@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from contextlib import closing, contextmanager
 import sqlite3
+
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    SQLiteDurabilityProfile,
+    open_durable_sqlite_writer,
+)
 from pathlib import Path
 
 from noetrium_platform.infrastructure.reliability.forensics.providers.incident_codec import decode_strings
@@ -17,10 +22,11 @@ class IncidentSQLiteStore:
         self._init()
 
     def connect(self):
-        db=sqlite3.connect(self.path,timeout=30)
-        db.execute("PRAGMA journal_mode=WAL")
-        db.execute("PRAGMA busy_timeout=30000")
-        return db
+        return open_durable_sqlite_writer(
+            self.path,
+            timeout_seconds=30.0,
+            profile=SQLiteDurabilityProfile.PROJECTION,
+        )
 
     def _init(self)->None:
         with closing(self.connect()) as db, db:
