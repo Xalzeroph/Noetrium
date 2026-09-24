@@ -1,7 +1,15 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
+
+from scripts.build_environment_images import (
+    _default_active_profile_ids,
+    _profile_map,
+    _profile_revision,
+    validate_catalog,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,6 +45,25 @@ def test_environment_profile_registry_is_dynamic_and_lifecycle_driven() -> None:
     assert "EXPECTED_PROFILES" not in builder
     assert "_default_active_profile_ids" in builder
     assert "--allow-retired" in builder
+
+
+def test_environment_registry_accepts_parallel_retired_revision_without_code_change() -> None:
+    data = deepcopy(_catalog())
+    current = next(
+        row for row in data["profiles"] if row["category_id"] == "minecraft"
+    )
+    retired = deepcopy(current)
+    retired["profile_id"] = "minecraft-r0"
+    retired["lifecycle"] = "retired"
+    retired["default_for_category"] = False
+    data["profiles"].append(retired)
+
+    profiles = _profile_map(data)
+    result = validate_catalog(data, profiles)
+
+    assert result["retired_profile_count"] == 1
+    assert "minecraft-r0" not in _default_active_profile_ids(profiles)
+    assert _profile_revision(retired) != _profile_revision(current)
 
 
 def test_environment_registry_declares_share_vs_isolate_policy() -> None:
