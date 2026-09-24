@@ -105,7 +105,18 @@ class EndpointAllocationRequest:
         return tuple(NetworkEndpoint(self.host, port, self.protocol) for port in self.candidate_ports)
 
     def digest(self) -> str:
-        return canonical_digest(self)
+        # Candidate ports are transient discovery hints, not durable identity.
+        return canonical_digest(
+            {
+                "allocation_id": self.allocation_id,
+                "holder_scope": self.holder_scope,
+                "purpose": self.purpose,
+                "host": self.host,
+                "protocol": self.protocol,
+                "owner_scope": self.owner_scope,
+                "ownership": self.ownership,
+            }
+        )
 
 
 @dataclass(frozen=True, slots=True)

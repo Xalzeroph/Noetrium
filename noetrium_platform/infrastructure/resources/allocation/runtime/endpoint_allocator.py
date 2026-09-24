@@ -12,8 +12,10 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocationRequest,
     EndpointAllocationState,
     EndpointBindingProof,
+    EndpointCandidatePortSourcePort,
     EndpointAllocationPort,
     EndpointProbePort,
+    EndpointProtocol,
     EndpointReservationStatus,
 )
 from noetrium_platform.infrastructure.resources.lease.api import (
@@ -21,8 +23,10 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceLease,
     ResourceLeasePort,
     ResourceOwner,
+    ResourceOwnership,
     ResourceOwnershipPort,
 )
+from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
 
 
 class EndpointAllocationConflict(RuntimeError):
@@ -35,6 +39,46 @@ class EndpointAllocationUnavailable(RuntimeError):
         self.attempts = attempts
         detail = "; ".join(attempts) if attempts else "no candidates"
         super().__init__(f"no endpoint candidate is allocatable for {request.allocation_id}: {detail}")
+
+
+def _automatic_request(
+    candidates: EndpointCandidatePortSourcePort | None,
+    *,
+    allocation_id: str,
+    holder_scope: ScopeIdentity,
+    purpose: str,
+    host: str,
+    candidate_count: int,
+    preferred_ports: tuple[int, ...],
+    protocol: EndpointProtocol,
+    owner_scope: ScopeIdentity,
+    ownership: ResourceOwnership,
+) -> EndpointAllocationRequest:
+    if candidates is None:
+        raise RuntimeError(
+            "automatic endpoint allocation requires a Resource candidate source"
+        )
+    if type(candidate_count) is not int or candidate_count <= 0:
+        raise ValueError("endpoint candidate_count must be positive")
+    if len(set(preferred_ports)) != len(preferred_ports):
+        raise ValueError("preferred endpoint ports must be unique")
+    if any(not 1 <= port <= 65535 for port in preferred_ports):
+        raise ValueError("preferred endpoint ports must be between 1 and 65535")
+    discovered = candidates.candidate_ports(
+        host=host,
+        count=candidate_count,
+        protocol=protocol,
+    )
+    return EndpointAllocationRequest(
+        allocation_id=allocation_id,
+        holder_scope=holder_scope,
+        purpose=purpose,
+        host=host,
+        candidate_ports=tuple(dict.fromkeys((*preferred_ports, *discovered))),
+        protocol=protocol,
+        owner_scope=owner_scope,
+        ownership=ownership,
+    )
 
 
 class AtomicEndpointAllocator(EndpointAllocationPort):
@@ -51,13 +95,43 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         *,
         reservations: AtomicEndpointReservationPort,
         probe: EndpointProbePort,
+        candidates: EndpointCandidatePortSourcePort | None = None,
         lease_ttl_seconds: float = DEFAULT_ENDPOINT_LEASE_POLICY.ttl_seconds,
     ) -> None:
         if not math.isfinite(float(lease_ttl_seconds)) or lease_ttl_seconds <= 0:
             raise ValueError("endpoint lease_ttl_seconds must be finite and > 0")
         self._reservations = reservations
         self._probe = probe
+        self._candidates = candidates
         self._lease_ttl_seconds = float(lease_ttl_seconds)
+
+    def allocate_auto(
+        self,
+        *,
+        allocation_id: str,
+        holder_scope: ScopeIdentity,
+        purpose: str,
+        host: str = "127.0.0.1",
+        candidate_count: int = 32,
+        preferred_ports: tuple[int, ...] = (),
+        protocol: EndpointProtocol = EndpointProtocol.TCP,
+        owner_scope: ScopeIdentity = PLATFORM_SCOPE,
+        ownership: ResourceOwnership = ResourceOwnership.EXTERNAL,
+    ) -> EndpointAllocation:
+        return self.allocate(
+            _automatic_request(
+                self._candidates,
+                allocation_id=allocation_id,
+                holder_scope=holder_scope,
+                purpose=purpose,
+                host=host,
+                candidate_count=candidate_count,
+                preferred_ports=preferred_ports,
+                protocol=protocol,
+                owner_scope=owner_scope,
+                ownership=ownership,
+            )
+        )
 
     def allocate(self, request: EndpointAllocationRequest) -> EndpointAllocation:
         request_digest = request.digest()
@@ -175,6 +249,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         ownership: ResourceOwnershipPort,
         leases: ResourceLeasePort,
         probe: EndpointProbePort,
+        candidates: EndpointCandidatePortSourcePort | None = None,
         lease_ttl_seconds: float = DEFAULT_ENDPOINT_LEASE_POLICY.ttl_seconds,
     ) -> None:
         if not math.isfinite(float(lease_ttl_seconds)) or lease_ttl_seconds <= 0:
@@ -182,6 +257,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         self._ownership = ownership
         self._leases = leases
         self._probe = probe
+        self._candidates = candidates
         self._lease_ttl_seconds = float(lease_ttl_seconds)
         self._allocations: dict[str, EndpointAllocation] = {}
         self._lock = RLock()
@@ -226,6 +302,34 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             return existing
         raise EndpointAllocationConflict(
             f"endpoint allocation was already released: {request.allocation_id}"
+        )
+
+    def allocate_auto(
+        self,
+        *,
+        allocation_id: str,
+        holder_scope: ScopeIdentity,
+        purpose: str,
+        host: str = "127.0.0.1",
+        candidate_count: int = 32,
+        preferred_ports: tuple[int, ...] = (),
+        protocol: EndpointProtocol = EndpointProtocol.TCP,
+        owner_scope: ScopeIdentity = PLATFORM_SCOPE,
+        ownership: ResourceOwnership = ResourceOwnership.EXTERNAL,
+    ) -> EndpointAllocation:
+        return self.allocate(
+            _automatic_request(
+                self._candidates,
+                allocation_id=allocation_id,
+                holder_scope=holder_scope,
+                purpose=purpose,
+                host=host,
+                candidate_count=candidate_count,
+                preferred_ports=preferred_ports,
+                protocol=protocol,
+                owner_scope=owner_scope,
+                ownership=ownership,
+            )
         )
 
     def allocate(self, request: EndpointAllocationRequest) -> EndpointAllocation:
