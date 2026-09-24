@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3663,
-    "python_import_edges": 7074,
+    "python_import_edges": 7080,
     "symbols": 4851,
     "tracked_files": 4292,
     "typescript_javascript_files": 11
@@ -708,6 +708,12 @@
       "source_module": "noetrium_platform.capabilities.environment.minecraft.providers.world_cut_integrity",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.minecraft.providers.world_cut_integrity",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -7677,6 +7683,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.evidence.artifact.content.providers.tar_archive",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.evidence.artifact.content.providers.tensor_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact.content.api",
@@ -11463,6 +11475,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.infrastructure.lifecycle.session.api.controller",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.infrastructure.lifecycle.session.providers.ssh",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.lifecycle.server.api",
@@ -11571,6 +11589,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_identity",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_parser",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.lifecycle.session.api",
@@ -11645,6 +11669,12 @@
     {
       "source_module": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.adoptium",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.adoptium",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "target_role": "core_platform"
     },
@@ -11682,6 +11712,12 @@
       "source_module": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.java_receipt",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.lifecycle.toolchain.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.java_verifier",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -42461,7 +42497,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2644,
+      "count": 2650,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42600,7 +42636,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "0f5aa86762b20888041df942f6a0d2cdfcce7ea1",
+  "source_git_sha": "21507512cd1ac57f0ec965e7903735926b66b2ee",
   "symbols": [
     {
       "bases": [],
@@ -69113,7 +69149,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 189,
+      "line": 181,
       "methods": [
         "inspect",
         "materialize"
@@ -92485,7 +92521,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 15,
+      "line": 16,
       "methods": [
         "digest"
       ],
@@ -92508,7 +92544,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 30,
+      "line": 23,
       "methods": [
         "__post_init__",
         "digest",
@@ -92947,7 +92983,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 9,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_identity",
       "name": "TmuxBinaryIdentityMismatch",
@@ -92970,7 +93006,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 22,
+      "line": 16,
       "methods": [
         "resolve",
         "from_remote_attestation",
@@ -93231,7 +93267,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 35,
+      "line": 36,
       "methods": [
         "__init__",
         "_reuse",
@@ -93352,7 +93388,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 39,
+      "line": 29,
       "methods": [
         "__init__",
         "verify"

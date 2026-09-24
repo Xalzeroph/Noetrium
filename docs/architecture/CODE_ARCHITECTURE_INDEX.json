@@ -44464,7 +44464,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 189,
+      "line": 181,
       "methods": [
         "inspect",
         "materialize"
@@ -70094,7 +70094,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 15,
+      "line": 16,
       "methods": [
         "digest"
       ],
@@ -70119,7 +70119,7 @@
         "launcher_binary_sha256"
       ],
       "kind": "dataclass",
-      "line": 30,
+      "line": 23,
       "methods": [
         "__post_init__",
         "digest",
@@ -70602,7 +70602,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 9,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_identity",
       "name": "TmuxBinaryIdentityMismatch",
@@ -70627,7 +70627,7 @@
         "socket_directory"
       ],
       "kind": "dataclass",
-      "line": 22,
+      "line": 16,
       "methods": [
         "resolve",
         "from_remote_attestation",
@@ -70914,7 +70914,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 35,
+      "line": 36,
       "methods": [
         "__init__",
         "_reuse",
@@ -71027,7 +71027,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 39,
+      "line": 29,
       "methods": [
         "__init__",
         "verify"
@@ -102383,7 +102383,7 @@
     "classes": 3336,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5094,
+    "module_import_edges": 5100,
     "parse_errors": 0,
     "python_modules": 1927,
     "registry_authorities": 20,
@@ -103993,6 +103993,10 @@
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.providers.world_cut_integrity",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.minecraft.providers.world_cut_integrity",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.providers.world_cut_integrity",
@@ -111363,6 +111367,10 @@
       "target": "noetrium_platform.evidence.artifact.content.providers._tar_plan"
     },
     {
+      "source": "noetrium_platform.evidence.artifact.content.providers.tar_archive",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.evidence.artifact.content.providers.tensor_store",
       "target": "noetrium_platform.evidence.artifact.content.api"
     },
@@ -118016,6 +118024,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.session.api.controller",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.session.api.controller",
       "target": "noetrium_platform.infrastructure.lifecycle.session.api.contracts"
     },
     {
@@ -118159,6 +118171,10 @@
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
+      "source": "noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_identity",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_parser",
       "target": "noetrium_platform.infrastructure.lifecycle.session.api"
     },
@@ -118272,6 +118288,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.adoptium",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.adoptium",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
     },
     {
@@ -118309,6 +118329,10 @@
     {
       "source": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.java_receipt",
       "target": "noetrium_platform.infrastructure.lifecycle.toolchain.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.java_verifier",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.java_verifier",
@@ -124367,6 +124391,7 @@
     {
       "imports": [
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.errors",
         "noetrium_platform.substrate.api"
       ],
@@ -130654,7 +130679,8 @@
         "noetrium_platform.evidence.artifact.content.api.materialization",
         "noetrium_platform.evidence.artifact.content.providers._publication",
         "noetrium_platform.evidence.artifact.content.providers._tar_extract",
-        "noetrium_platform.evidence.artifact.content.providers._tar_plan"
+        "noetrium_platform.evidence.artifact.content.providers._tar_plan",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.evidence.artifact.content.providers.tar_archive",
       "path": "noetrium_platform/evidence/artifact/content/providers/tar_archive.py",
@@ -138266,6 +138292,7 @@
     {
       "imports": [
         "noetrium_platform.foundation.api",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.infrastructure.lifecycle.session.api.contracts"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.session.api.controller",
@@ -138418,7 +138445,9 @@
       "top_system": "runtime"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_identity",
       "path": "noetrium_platform/infrastructure/lifecycle/session/runtime/tmux_identity.py",
       "system_key": "runtime",
@@ -138541,6 +138570,7 @@
     {
       "imports": [
         "noetrium_platform.foundation.api",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
         "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.infrastructure.lifecycle.toolchain.api",
@@ -138575,6 +138605,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.infrastructure.lifecycle.toolchain.api"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.toolchain.providers.java_verifier",
@@ -143721,7 +143752,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "0f5aa86762b20888041df942f6a0d2cdfcce7ea1",
+  "source_git_sha": "21507512cd1ac57f0ec965e7903735926b66b2ee",
   "system_import_edges": [
     {
       "count": 85,
@@ -143734,7 +143765,7 @@
       "target": "governance"
     },
     {
-      "count": 21,
+      "count": 22,
       "source": "artifact",
       "target": "platform"
     },
@@ -143759,7 +143790,7 @@
       "target": "environment"
     },
     {
-      "count": 66,
+      "count": 67,
       "source": "environment",
       "target": "platform"
     },
@@ -143964,7 +143995,7 @@
       "target": "artifact"
     },
     {
-      "count": 70,
+      "count": 74,
       "source": "runtime",
       "target": "platform"
     },
