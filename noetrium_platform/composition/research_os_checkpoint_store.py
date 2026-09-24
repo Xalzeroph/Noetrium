@@ -195,10 +195,7 @@ class DirectoryResearchOSGraphCheckpointStore(ResearchOSGraphCheckpointStorePort
                 if current is not None:
                     if checkpoint.snapshot_generation < current.snapshot_generation:
                         raise ValueError("graph checkpoint snapshot generation moved backwards")
-                    if (
-                        checkpoint.snapshot_generation == current.snapshot_generation
-                        and checkpoint.control_generation < current.control_generation
-                    ):
+                    if checkpoint.control_generation < current.control_generation:
                         raise ValueError("graph checkpoint control generation moved backwards")
                     if (
                         checkpoint.snapshot_generation == current.snapshot_generation
