@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "d3d_vlp_cvpr2026",
-  "package_digest": "50509f1ebfeb5e830694d4ca89d5572d94bfcf471c8ec5aaf69a6fafe40ac11d",
+  "package_digest": "8fa445418d725c9b858b12bd49b4c66bfe8275693108fe7fcfc5608f9a885af7",
   "definition_digest": "826cbc66bb82023852c07b6f2b9035bfbeb20d4d0f0d674660824ada0e451f4b",
   "source_registry_digest": "2cdeb4231d82b4960adc04b241fa45eae325f9b560c0d815e9fa4a73b8b941ac",
   "lifecycle": "protocol_bound",
@@ -108,7 +108,7 @@
       "kind": "study",
       "path": "research/reproductions/d3d_vlp_cvpr2026/study.py",
       "declaration_digest": "7bd973d5bdd22e503bf96d30e622e379f148247ebbab146c58f41317c0d646ec",
-      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
     }
   ],
   "primary_executable": "research/reproductions/d3d_vlp_cvpr2026/program.py",
