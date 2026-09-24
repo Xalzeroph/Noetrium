@@ -69,6 +69,7 @@ def test_fleet_plan_separates_materialization_from_true_execution_readiness() ->
                     "study_definition_digest",
                     "binding_requirement_digest",
                     "trial_protocol_identity_digest",
+                    "project_manifest_requirement_digest",
                     "authority_requirement_digest",
                 ):
                     digest = requirement[key]
