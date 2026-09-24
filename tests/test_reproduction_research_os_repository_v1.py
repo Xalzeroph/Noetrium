@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from noetrium import api
+from scripts.run_reproduction_fleet import build_plan
 
 from research.reproductions.research_os import (
     compile_repository_reproduction_portfolio,
@@ -64,3 +65,17 @@ def test_catalog_only_reproductions_are_not_silently_promoted_to_executable() ->
     assert not executable_packages.intersection(
         row.package for row in non_executable
     )
+
+
+def test_all_protocol_bound_reproductions_have_exact_execution_bindings() -> None:
+    plan = build_plan()
+    unresolved = tuple(
+        (
+            row["package"],
+            tuple(row["unresolved_study_parameters"]),
+            tuple(row["blockers"]),
+        )
+        for row in plan["lanes"]
+        if row["unresolved_study_parameters"] or row["blockers"]
+    )
+    assert unresolved == ()
