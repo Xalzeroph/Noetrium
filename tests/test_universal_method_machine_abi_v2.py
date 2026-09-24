@@ -35,6 +35,7 @@ from noetrium_platform.research.execution.workflow.providers import (
     JsonMethodCheckpointStore,
     MethodCheckpointCorruptionError,
 )
+import noetrium_platform.research.execution.workflow.providers.method_checkpoint as method_checkpoint_provider
 
 
 def identity() -> MethodProgramIdentity:
@@ -346,3 +347,17 @@ def test_public_facade_preserves_method_wall_clock_budget():
     ).run(program, runtime=MethodRuntimeContext(context()))
     assert result.status.value == "limit_reached"
     assert result.failure_code == "METHOD_TIMEOUT"
+
+
+def test_durable_checkpoint_fails_closed_without_process_lock_authority(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(method_checkpoint_provider, "fcntl", None)
+    monkeypatch.setattr(method_checkpoint_provider, "msvcrt", None)
+    store = JsonMethodCheckpointStore(tmp_path / "unsupported-lock")
+    with pytest.raises(
+        RuntimeError,
+        match="requires POSIX flock or Windows locking",
+    ):
+        store.load("run")
