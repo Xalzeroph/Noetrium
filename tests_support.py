@@ -272,6 +272,16 @@ class EmptyWorkflowSurfaceFactory:
         return object()
 
 
+from dataclasses import dataclass as _dataclass
+
+
+@_dataclass(frozen=True, slots=True)
+class ExperimentRuntimeComponentsForTest:
+    trial_protocol_identity: object
+    cycle_runtime: object
+    run_runtime: object
+
+
 def build_experiment_runtime_components_for_test(
     *,
     participant_adapters,
@@ -308,7 +318,6 @@ def build_experiment_runtime_components_for_test(
     )
     from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
         ExperimentComponentBinder,
-        ExperimentRuntimeComponents,
         ExperimentTrialCycleExecutor,
         trial_protocol_identity,
     )
@@ -395,7 +404,7 @@ def build_experiment_runtime_components_for_test(
         if checkpoint_store is not None
         else None
     )
-    return ExperimentRuntimeComponents(
+    return ExperimentRuntimeComponentsForTest(
         trial_protocol_identity(trial_protocol),
         DecisionCycleRuntime(
             binder,
@@ -464,7 +473,9 @@ def build_experiment_runtime_for_test(
         state_root=state_root,
     )
     return ExperimentRuntime(
-        components,
+        components.trial_protocol_identity,
+        components.cycle_runtime,
+        components.run_runtime,
         run_identity_provider=(
             run_identity_provider
             or _RandomRunIdentityProviderForTest()
