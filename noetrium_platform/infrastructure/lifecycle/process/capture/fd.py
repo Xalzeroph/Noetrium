@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 import os
 from pathlib import Path
 
@@ -31,12 +33,12 @@ class CaptureFD:
     def sync(self)->None:
         if self.fd is None:
             raise RuntimeError("capture fd is not open")
-        os.fsync(self.fd)
+        flush_file_descriptor(self.fd)
 
     def close(self,*,sync:bool)->None:
         if self.fd is None:
             return
         if sync:
-            os.fsync(self.fd)
+            flush_file_descriptor(self.fd)
         os.close(self.fd)
         self.fd=None
