@@ -11,6 +11,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 )
 from noetrium_platform.infrastructure.resources.allocation.api import (
     DEFAULT_ENDPOINT_LEASE_POLICY,
+    EndpointAllocation,
     EndpointAllocationPort,
     EndpointLeaseGuardFactoryPort,
     EndpointLeaseGuardPort,
@@ -35,15 +36,21 @@ class EndpointLeaseHeartbeatGuard(EndpointLeaseGuardPort):
         self,
         *,
         allocations: EndpointAllocationPort,
-        allocation_ids: tuple[str, ...],
+        allocation_rows: tuple[EndpointAllocation, ...],
         task_group: TaskGroupPort,
         heartbeat_scheduler: HeartbeatSchedulerPort,
         lane_id: str,
         lane_capacity: int | None = None,
         policy: EndpointLeasePolicy = DEFAULT_ENDPOINT_LEASE_POLICY,
     ) -> None:
-        if not allocation_ids:
-            raise ValueError("endpoint lease heartbeat requires allocation ids")
+        if (
+            not allocation_rows
+            or any(type(row) is not EndpointAllocation for row in allocation_rows)
+        ):
+            raise ValueError(
+                "endpoint lease heartbeat requires typed allocation generations"
+            )
+        allocation_ids = tuple(row.allocation_id for row in allocation_rows)
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("endpoint lease heartbeat allocation ids must be unique")
         lane_id = str(lane_id).strip()
@@ -52,7 +59,7 @@ class EndpointLeaseHeartbeatGuard(EndpointLeaseGuardPort):
         if lane_capacity is not None and lane_capacity <= 0:
             raise ValueError("endpoint lease heartbeat lane capacity must be positive")
         self._allocations = allocations
-        self._allocation_ids = allocation_ids
+        self._allocation_rows = allocation_rows
         self._task_group = task_group
         self._heartbeat_scheduler = heartbeat_scheduler
         self._lane_id = lane_id
@@ -71,7 +78,9 @@ class EndpointLeaseHeartbeatGuard(EndpointLeaseGuardPort):
                 raise EndpointLeaseHeartbeatError("endpoint lease heartbeat is closing")
             if self._scheduled is not None:
                 return
-            heartbeat_id = "endpoint-lease:" + ",".join(self._allocation_ids)
+            heartbeat_id = "endpoint-lease:" + ",".join(
+                row.allocation_id for row in self._allocation_rows
+            )
             self._scheduled = self._heartbeat_scheduler.register(
                 self._task_group.group_id,
                 HeartbeatSpec(
@@ -86,10 +95,14 @@ class EndpointLeaseHeartbeatGuard(EndpointLeaseGuardPort):
 
     def _renew_once(self, context: TaskContextPort) -> None:
         context.checkpoint()
-        self._allocations.renew_many(
-            self._allocation_ids,
+        with self._state_lock:
+            expected = self._allocation_rows
+        renewed = self._allocations.renew_many(
+            expected,
             ttl_seconds=self._policy.ttl_seconds,
         )
+        with self._state_lock:
+            self._allocation_rows = renewed
         context.checkpoint()
 
     def assert_healthy(self) -> None:
@@ -137,10 +150,13 @@ class EndpointLeaseHeartbeatFactory(EndpointLeaseGuardFactoryPort):
         self._lane_capacity = lane_capacity
         self._policy = policy
 
-    def create(self, allocation_ids: tuple[str, ...]) -> EndpointLeaseHeartbeatGuard:
+    def create(
+        self,
+        allocations: tuple[EndpointAllocation, ...],
+    ) -> EndpointLeaseHeartbeatGuard:
         return EndpointLeaseHeartbeatGuard(
             allocations=self._allocations,
-            allocation_ids=allocation_ids,
+            allocation_rows=allocations,
             task_group=self._task_group,
             heartbeat_scheduler=self._heartbeat_scheduler,
             lane_id=self._lane_id,
