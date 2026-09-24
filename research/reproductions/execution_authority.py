@@ -22,6 +22,9 @@ from noetrium_platform.composition.research_os_experiment_trial_execution import
     ResearchOSExperimentTrialProviderResolverPort,
     ResearchOSExperimentTrialStudyExecutionResolver,
 )
+from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    BenchmarkResolutionRegistry,
+)
 from noetrium_platform.composition.research_os_experiment_runtime_binding import (
     ResearchOSExperimentAggregationRegistry,
     ResearchOSExperimentAggregationResolverPort,
@@ -55,6 +58,7 @@ def compose_repository_fleet_execution_authorities(
     reproduction_capabilities: (
         ReproductionCapabilityRequirementResolverPort | None
     ) = None,
+    benchmark_resolutions: BenchmarkResolutionRegistry | None = None,
     benchmarks: ReproductionBenchmarkResolverPort | None = None,
 ) -> ReproductionFleetExecutionAuthorities:
     """Build the one canonical authority bundle consumed by the fleet launcher.
@@ -64,8 +68,15 @@ def compose_repository_fleet_execution_authorities(
     benchmark authority; they never fall back to synthetic or guessed cuts.
     """
 
+    if (
+        benchmark_resolutions is not None
+        and type(benchmark_resolutions) is not BenchmarkResolutionRegistry
+    ):
+        raise TypeError(
+            "fleet benchmark_resolutions must be BenchmarkResolutionRegistry"
+        )
     benchmark_authority = (
-        RepositoryBenchmarkAuthority.discover()
+        RepositoryBenchmarkAuthority.discover(benchmark_resolutions)
         if benchmarks is None
         else benchmarks
     )
@@ -121,6 +132,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
     reproduction_capabilities: (
         ReproductionCapabilitySelectionRegistry | None
     ) = None,
+    benchmark_resolutions: BenchmarkResolutionRegistry | None = None,
     benchmarks: ReproductionBenchmarkResolverPort | None = None,
 ) -> ReproductionFleetExecutionAuthorities:
     """Compose the fleet from immutable proof-backed authority registries.
@@ -174,6 +186,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
         experiment_trial_providers=trial_providers,
         experiment_aggregation=experiment_aggregation,
         reproduction_capabilities=reproduction_capabilities,
+        benchmark_resolutions=benchmark_resolutions,
         benchmarks=benchmarks,
     )
 
