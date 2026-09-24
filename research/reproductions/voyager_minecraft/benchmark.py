@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkTaskSet
+from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.voyager_minecraft import (
     VOYAGER_MINECRAFT_BENCHMARK_ID,
     VOYAGER_MINECRAFT_LIFELONG_SPLIT,
