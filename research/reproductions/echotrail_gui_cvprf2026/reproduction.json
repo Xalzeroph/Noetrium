@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "echotrail_gui_cvprf2026",
-  "package_digest": "5238fb401976fb48b649069f0f868485496195f1d4585f3fb48be84f3d2c68bf",
+  "package_digest": "a3f94fe3c08093c07de981525c73e6e44b0acd7e0df992273898604c592f4182",
   "definition_digest": "a416b11ff97033d65e18fcf6dca7379a84003038f816bf609c572e989cf77086",
   "source_registry_digest": "f56a51b136c7de6c02f262d8367ce2fb13744bd3104f62e22dd9a2e05e14c6ce",
   "lifecycle": "protocol_bound",
@@ -121,9 +121,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "echotrail_gui_cvprf2026",
     "program_digest": "b373d0c368cb70c8a99bc05100cbede037d54fa9fb0125f902347d67fa2d878f",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

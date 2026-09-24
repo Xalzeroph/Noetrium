@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "minedojo",
-  "package_digest": "2cd399c9b8092afa6cb2688e5d2e264d2d5922cf3da37fdaafa5c27b476ecdda",
+  "package_digest": "f4c4b9fef92c8de18771347fcd1cdba509fa14f5628af3c13019988cb01df6ed",
   "definition_digest": "859f1c1220814ec7377557548db8c0a5703d0ebd323a8be89adff59072207a5e",
   "source_registry_digest": "4e2bb1c63f4746aac56e56ee71551b01971ab4476cff7f802b1806783b01b3b1",
   "lifecycle": "protocol_bound",
@@ -242,6 +242,10 @@
     "execution_state": "execution_ready",
     "program_id": "minedojo",
     "program_digest": "0b6ea403d57b97c00b92175804b721f2e5757f13589f46c5051ff8637d1ac6b8",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

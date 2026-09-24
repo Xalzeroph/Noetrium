@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "crossha_cvpr2026",
-  "package_digest": "2de6825ea13750287b7d84dd8d93cc2c9af1b7f43ace185656e773b9439d5305",
+  "package_digest": "7f468afbaf8b718363d21018598fa69adfb0b5bab9ac0068536bc0da51eb2299",
   "definition_digest": "0dbd527b8a5223d3511d230e426f1b7d740cab26e48f781a7be0b08873e32655",
   "source_registry_digest": "5a145e097816c7349d69d888b911b46ce88155c5829bc4dcc9d1017335ead762",
   "lifecycle": "protocol_bound",
@@ -177,9 +177,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "crossha_cvpr2026",
     "program_digest": "73392aeaad928544764d91737e70c7054d073be64e8bd77394279090ed5a13ef",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoagent_memory",
-  "package_digest": "03dbcb092bf6a0085bf0a75cd0636cf0abf82403ad5161eb39b326aef89a6bbb",
+  "package_digest": "2277ab839fd4ad6fe41ff5cc09f8573ad771f0ed00204f52ab5de30d297ef096",
   "definition_digest": "b6a07d721d7dd58c2212cbab3afce909293e26aeebaaafddd8228fe68fdf8381",
   "source_registry_digest": "2c4ad0c7f51054bfd49d84df431ced1c43641a42cd98243c8343899ebc7ce56e",
   "lifecycle": "protocol_bound",
@@ -221,6 +221,10 @@
     "execution_state": "execution_ready",
     "program_id": "videoagent_memory",
     "program_digest": "3290f872b44e13a9fed33eb9647b13309d9ae63f6e12a3d31db9d56b8c48994e",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

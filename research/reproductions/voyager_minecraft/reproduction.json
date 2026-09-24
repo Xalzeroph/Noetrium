@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "voyager_minecraft",
-  "package_digest": "83cf4a48192c158351fbfb45544d3cf6e48eef1a2fcf3855f83853a00bc1b6a9",
+  "package_digest": "cfa2ff956d43abffc2d21ea441f7bfa669e65f3e6b7bbaa1c267297ebb454ad3",
   "definition_digest": "7f10f0fdefdeb4cac0a428085c8ff847a63cf7407bdfdfb3398b428001692c44",
   "source_registry_digest": "f1ab1828eec1ae53b63ea726f5a6a82721010fa6108cb609089c7bb1b4d5420b",
   "lifecycle": "protocol_bound",
@@ -256,6 +256,10 @@
     "execution_state": "execution_ready",
     "program_id": "voyager_minecraft",
     "program_digest": "ccc9eb46c8c12a127ca080e7d0305b18ea4bc94620793aca1971f15df97a229f",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

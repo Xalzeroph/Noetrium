@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lvagent_iccv2025",
-  "package_digest": "026d409d5f0acd83a2d537bab62e06d377f859dae6bc07f65dc2726525c7a6cb",
+  "package_digest": "86a4baa471ed6e0e766425dd1d3d4ef854ea1f44e5728a0cbbcaf038293c984c",
   "definition_digest": "f0c06386df47c869aebdcd2643c691d7669f53c9264f920dba9c07ff78096029",
   "source_registry_digest": "c265547efa25c65b88369b73d855b68becbf18f48656a3f63ac40fc95d7456a2",
   "lifecycle": "protocol_bound",
@@ -166,9 +166,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "lvagent_iccv2025",
     "program_digest": "7b90a8ba499f088f28143ab38b235084fefa966443f7f1ae3264a98fdc4b2e4a",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_lvagent_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

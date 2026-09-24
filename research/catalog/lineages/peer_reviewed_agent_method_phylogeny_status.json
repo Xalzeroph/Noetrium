@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "chain_of_thought_gsm8k",
-          "package_digest": "845b5ed230d57077f80e3e592451c9480ceb18983be3ba94ed13ab4d00004d52",
+          "package_digest": "c929316f2909f13c269b07b4f81c4731b2b835f237f222ec332272d2a5a1a41f",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "gsm8k"
@@ -68,7 +68,7 @@
       "reproductions": [
         {
           "package": "minedojo",
-          "package_digest": "2cd399c9b8092afa6cb2688e5d2e264d2d5922cf3da37fdaafa5c27b476ecdda",
+          "package_digest": "f4c4b9fef92c8de18771347fcd1cdba509fa14f5628af3c13019988cb01df6ed",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minedojo"
@@ -156,7 +156,7 @@
       "reproductions": [
         {
           "package": "saycan",
-          "package_digest": "09175c0403dc5a613231f30c7dfbf589ca2395dd1c7bd70983302ccb45713db6",
+          "package_digest": "d5f57fa89b13663aff2aae001c02be50dd59454ed699119864667d05c79ddb55",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "saycan-101"
@@ -238,7 +238,7 @@
       "reproductions": [
         {
           "package": "camel_role_playing",
-          "package_digest": "dc184501b628d7f1ef3c166a74491f91fe0d67f36496567ae08c80757be97318",
+          "package_digest": "5615aa34c3b4588cb87741e43e76c7eb9f675db8dc065d5b10b7a5ae0177aeb9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "camel-ai-society"
@@ -299,7 +299,7 @@
       "reproductions": [
         {
           "package": "code_as_policies",
-          "package_digest": "34cc41b2427f3cf2a9d2492e25d25614079261ab4ce755d42587a50c5846d9dd",
+          "package_digest": "89a046e43ebc3b6281cc8f319f815bada84538c079c2df9fb133f463de92d935",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "robocodegen-37"
@@ -394,7 +394,7 @@
       "reproductions": [
         {
           "package": "deps_minecraft",
-          "package_digest": "9d4236c9388de29fe21864a142f7f9c658d03dfb35786a5f96c40df992757d9e",
+          "package_digest": "a28a3ea00df8a6ae1d263442c1d4378874497091fbd5048335d050e87a239eee",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "deps-minecraft-70"
@@ -473,7 +473,7 @@
       "reproductions": [
         {
           "package": "generative_agents_memory",
-          "package_digest": "67b11057e09d0973ea96820f51f63819d5352f5004b60688cadabad4e9978eea",
+          "package_digest": "8e7f2ff7500ed73b432b310043009767a2d76848c55a0968b8e69f13a33ee0fc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "generative-agents-smallville"
@@ -533,7 +533,7 @@
       "reproductions": [
         {
           "package": "hugginggpt",
-          "package_digest": "f1fe6abfd714c4d6b9303934cd29d6a127ebe13c88bf6e3b343f2aa671035370",
+          "package_digest": "af1225bd7cf0a8d62e00fae402a3737d70c0534d4fe750aec16cc036c72497a5",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hugginggpt-paper-tasks"
@@ -595,7 +595,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "ef50bead8aa98c25139c2b9e0cc1f081594a090f2018aaa3a8b3c8d396c39c04",
+          "package_digest": "c87fe93ea0265f4976a2103ba92020f4c346c921feabd371013c44d3073f8ecf",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -655,7 +655,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "db7255a1bf1e81f9c1738273a9730ca9cfde17954f2791afe5291c6c8c39d828",
+          "package_digest": "ee232f17e9e9a08ed34e83187015720a084fe3f01f3c17583ea49c500c15e555",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -727,7 +727,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "dce3ebc820befabb7ca0a5ba0a8fd8fafb4b1f6934ea9452498d34ba572abeec",
+          "package_digest": "e0c976ad00af76d707564e58ff33a81dccedca183be01d4173ffb5423dccfce5",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -797,7 +797,7 @@
       "reproductions": [
         {
           "package": "self_consistency_gsm8k",
-          "package_digest": "8f1abfc64e6cd17321d6fb194ac1a12cf8c4188610835ec091d20865add65938",
+          "package_digest": "7d6b9563f0ebcd6c0d3e578166c6b85977adf94e47c879ef7f7d074bf8891416",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "gsm8k"
@@ -856,7 +856,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "3b68ba59e638f7b009477e94cfcb4a80d37fa7643b4d8d9dbc570bb3ca2b6114",
+          "package_digest": "3c2defd264e2e8bdf02c335277a7cd133d8529eef59d0977feb44270e50f6587",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -920,7 +920,7 @@
       "reproductions": [
         {
           "package": "steve1_minecraft",
-          "package_digest": "140d9532e3aa73a263963e9a055cd44b91e1676d52a31b93b5fdc009a2ddaa91",
+          "package_digest": "9a021a7e45fd771b66367d4710e0a2c2d78414d08afa871b8305f34e198ef1a3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "steve1-paper-prompts"
@@ -996,7 +996,7 @@
       "reproductions": [
         {
           "package": "toolformer",
-          "package_digest": "946cf7cee8c9390fa829a5becd47eb96c46599726d7d6d3b30c0780a1e44274a",
+          "package_digest": "d189150115000212a212395cb074e92133c97b6f60656011837be9ed2eec018c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolformer-eval"
@@ -1058,7 +1058,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "512ac3d75aae3cd4de411761b20fe0c80c7c6a7f4474d642d58c704416c557cc",
+          "package_digest": "0cbffc9226da2831c2eca915d2f824199655d62f23749ee5c6905ec0ba9ae863",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -1118,7 +1118,7 @@
       "reproductions": [
         {
           "package": "vima_embodied",
-          "package_digest": "a9e8e2b2ba7ba85d56af0dd910e1e608615b4e53de850b276dddd70f44c6dbcd",
+          "package_digest": "69deeb56696785a5215dbc08c919fc9c21e3e8baa3fcbd1fdfc9f2ac48a9af28",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "vima-bench"
@@ -1215,7 +1215,7 @@
       "reproductions": [
         {
           "package": "autogen_agentchat",
-          "package_digest": "fd421bea7376ec6015323cd1c5b8627a1fe529050d13ddac0ff24bb3c5d35431",
+          "package_digest": "d47af0324bc49c099abdc217d3e6fa8cebed319aedbbd1f40c13be88c2ecf905",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "multiagentbench"
@@ -1270,7 +1270,7 @@
       "reproductions": [
         {
           "package": "chatdev_v1",
-          "package_digest": "92bedec0b2da856622043e0a8d88ab60b3c035c6c2959ef1e33ad8fa486a92d7",
+          "package_digest": "35a00837d2d7fb30973e6914ffa41a0c2632057fd2e962a58b38649a09be2a4d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "srdd"
@@ -1370,7 +1370,7 @@
       "reproductions": [
         {
           "package": "cogagent",
-          "package_digest": "32e40c08b73a8fa58fa3b1ef35114680faa7b31f8a1c825da2ba542ee4c21a50",
+          "package_digest": "ff2f1de5c0aed7155baf11293f2a73a6f0c5411769fc4e4ee09e799bf9202924",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mind2web"
@@ -1427,7 +1427,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "52ffe8b46629ad7a777799e2a63a41fe1a6424cbbbb52956a811595eaa8af890",
+          "package_digest": "4f7c9d06a7591dc4e3f385e3b610f6b6c1b0e4c270951d7fd30d281f6ce65a80",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -1503,7 +1503,7 @@
       "reproductions": [
         {
           "package": "ma_lmm_memory",
-          "package_digest": "f347f88a8d2ac08afb5558411562c746cf4f24307ad48e6a6d23351ec27297ee",
+          "package_digest": "a1bb94d25e6f6a8f8a36ef468d5ed31304e239c51edf939b160a41589d43b91b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -1581,7 +1581,7 @@
       "reproductions": [
         {
           "package": "metagpt_software_company",
-          "package_digest": "35e40956618d5b81f9c11cb0e8cefd23f7ae4d7d858de99be0f86cf504aa1e3c",
+          "package_digest": "d1f2b989fbe1e5073ace83cb8397751871b57ab0797c7578715ba5d373a1802c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -1645,7 +1645,7 @@
       "reproductions": [
         {
           "package": "moviechat_memory",
-          "package_digest": "cb088c98a2686c275450f09789920ea400da58e222262af5b99c718d84899aa4",
+          "package_digest": "7be19d29e81f3e15977d60cb0911b811493a3775be713e0fd3b036d33ba38fd9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -1723,7 +1723,7 @@
       "reproductions": [
         {
           "package": "seeclick",
-          "package_digest": "fd5a52978a92c6bede73a3cf2983897c1305da3f7cc323d51452e0e2312b2528",
+          "package_digest": "72b74620cfeeaa94265dc857ec2a9894d60628ef7e1675bfdef4966f0def32d9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "screenspot"
@@ -1785,7 +1785,7 @@
       "reproductions": [
         {
           "package": "storm_wiki",
-          "package_digest": "0406670da13240b939617b9315c20a40da2deeae0be4016386d05d9cbd22b978",
+          "package_digest": "974df1a3eb4f41cdbc8d9e9ab52b4d066b9adc6b1e86ed699b36376a5cfd7fb7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "freshwiki"
@@ -1858,7 +1858,7 @@
       "reproductions": [
         {
           "package": "swe_agent_swebench",
-          "package_digest": "971832b0d82259d631741ee8acd4b0d79907808ef258dc774d85b772c575200e",
+          "package_digest": "e9a81df7e178d3dc5e0b67d904e3886fd959a4090c8ce5181370d0b40637f922",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -1927,7 +1927,7 @@
       "reproductions": [
         {
           "package": "toolllm_toolbench",
-          "package_digest": "48d950713ff5ac423813110b8626c701146cc0db25cbe213fb2d02cb656f0a00",
+          "package_digest": "e3035cf35ff4d3f60522c1a82db17e0c5f9395b14afddc1e7ffb06ec924cf6c9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolbench"
@@ -2006,7 +2006,7 @@
       "reproductions": [
         {
           "package": "videoagent_memory",
-          "package_digest": "03dbcb092bf6a0085bf0a75cd0636cf0abf82403ad5161eb39b326aef89a6bbb",
+          "package_digest": "2277ab839fd4ad6fe41ff5cc09f8573ad771f0ed00204f52ab5de30d297ef096",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egoschema"
@@ -2100,7 +2100,7 @@
       "reproductions": [
         {
           "package": "voyager_minecraft",
-          "package_digest": "83cf4a48192c158351fbfb45544d3cf6e48eef1a2fcf3855f83853a00bc1b6a9",
+          "package_digest": "cfa2ff956d43abffc2d21ea441f7bfa669e65f3e6b7bbaa1c267297ebb454ad3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "voyager-minecraft"
@@ -2215,7 +2215,7 @@
       "reproductions": [
         {
           "package": "webvoyager",
-          "package_digest": "0d606f4853874fcfa2d40db08c11b2098854faa20a9edb67234bd1e91b69a3ba",
+          "package_digest": "eb38cd62eb08e086578ce5f6f039ceea666abcbeb51eb17dbadee3729507fee9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webvoyager"
@@ -2282,7 +2282,7 @@
       "reproductions": [
         {
           "package": "adacm2_memory",
-          "package_digest": "4d614f341301874715be6688d0b0118a54c1d4a55cf2e060ffbc33da1a729745",
+          "package_digest": "8550bce86a74ea13c3d3328ca5fb5f7e0a93808b6c14d5a56a5031e95116dafd",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -2349,7 +2349,7 @@
       "reproductions": [
         {
           "package": "adas_meta_agent_search",
-          "package_digest": "ffbb797c2bb83601405ce3e33652aa92c5c70bd9cb19ba36b180f418b0e0e4aa",
+          "package_digest": "b553966098496af616a30fbb594a7835d7a41ea5bb467fde0424bfe19c152678",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mgsm"
@@ -2408,7 +2408,7 @@
       "reproductions": [
         {
           "package": "aflow",
-          "package_digest": "a461bdb460d85695d22d3a20fbc8c14a3d56a817762fa550947e8f3bb1b163d8",
+          "package_digest": "fbe1018532762326f1bd3a1c36608545e671432e9af2639b6cff8194a0fc30e1",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -2489,7 +2489,7 @@
       "reproductions": [
         {
           "package": "agentless_swebench",
-          "package_digest": "5abfed18581c557c52ac347138f78d345a636242de7565b43bf2c0a9b37a2198",
+          "package_digest": "153c98239436c82034465723b1b1df9ed86d5915fc6fe4c1cbbb81e898adced6",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -2552,7 +2552,7 @@
       "reproductions": [
         {
           "package": "agentsquare",
-          "package_digest": "53f8858cd08d9bbc332919967642d7d4726748203652f994f8ebc21e21458f5f",
+          "package_digest": "ac0aa0a6657a6443567986995456e4e8ab3950559329538b32a5ed516a4c33e3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "agentboard-pddl",
@@ -2630,7 +2630,7 @@
       "reproductions": [
         {
           "package": "flow_modularized_agentic_workflow",
-          "package_digest": "211fd65d8ac9448044e2b95414df1276c8cc5aec83c7bd58f1ae7857a07266da",
+          "package_digest": "4abebf2c0e8050197da144a0c46dcee0eb10768fe1a09a08216214f19f39c905",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "flow-practical-tasks"
@@ -2705,7 +2705,7 @@
       "reproductions": [
         {
           "package": "jarvis1_minecraft",
-          "package_digest": "e42318227a8cd995ff2905bb357f7f2a467bf81f727dd7eb115ee9cf38f02aa0",
+          "package_digest": "055e29e1fd920e80a74fc092a2b88d8cb995cf80173a9be8e07987e34bedf37b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "jarvis1-offline-185"
@@ -2791,7 +2791,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "1d7b2f3078fea885831c073c3a7b3a3f97b48b764f915905e735a878aed94b75",
+          "package_digest": "ad2ac3f821ab73537f06c2104c39257699921be3078086579720f32726aea8b0",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -2862,7 +2862,7 @@
       "reproductions": [
         {
           "package": "rewind_memory",
-          "package_digest": "7daaab21f3ae81fbd6465765000351907c87cb0bc602d0e829865e408379d66d",
+          "package_digest": "89ff4558fca8bca81954897b2ff97e5c9cd894c5fe3c6d26f825a9dd85bb4ca5",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -2929,7 +2929,7 @@
       "reproductions": [
         {
           "package": "astranav_memory_cvpr2026",
-          "package_digest": "54550ff437078cad0659a6d6723d80ebc3228645fb2f2176f53131fc5916dc93",
+          "package_digest": "ac95a5f71c8bd0f4f86b0121bff0508b3ef6a15f11de8338f56932086ce71eb4",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "goat-bench",
@@ -2992,7 +2992,7 @@
       "reproductions": [
         {
           "package": "ces_gui_cvpr2026",
-          "package_digest": "c711cd2fbc1269bc8fceb4af62223e9c409f45c63116b52e5d262c13d17b7c1a",
+          "package_digest": "6cbdc74a7593c68f0af5989b7d7dccc9f5fd9e7d8d976500683702a24880d2bc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "aitz",
@@ -3056,7 +3056,7 @@
       "reproductions": [
         {
           "package": "crossha_cvpr2026",
-          "package_digest": "2de6825ea13750287b7d84dd8d93cc2c9af1b7f43ace185656e773b9439d5305",
+          "package_digest": "7f468afbaf8b718363d21018598fa69adfb0b5bab9ac0068536bc0da51eb2299",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minecraft-openha"
@@ -3118,7 +3118,7 @@
       "reproductions": [
         {
           "package": "d3d_vlp_cvpr2026",
-          "package_digest": "29c73bf6f05132af44935de699913d2d386eb2f029795b0c32c9c655ce1c190c",
+          "package_digest": "50509f1ebfeb5e830694d4ca89d5572d94bfcf471c8ec5aaf69a6fafe40ac11d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hm3d-ovon",
@@ -3184,7 +3184,7 @@
       "reproductions": [
         {
           "package": "dejavu_cvpr2026",
-          "package_digest": "f462ec13da998babaf14ba71ef0270d65917339310b129f56f57ce57f858b73f",
+          "package_digest": "2995af956a94c382824ef6a5332d10646c6a2851a9b477f01dc015709e89a523",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "libero"
@@ -3240,7 +3240,7 @@
       "reproductions": [
         {
           "package": "foreact_cvpr2026",
-          "package_digest": "51fe495d1019a55c95f126699f9d4dc0e289c7403c91a1db25bc9584ab280763",
+          "package_digest": "086f988eefc962ae2de4e3bc740cfe4d775590abcf2d2127d41112e0c8ceb697",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "foreact-real11"
@@ -3302,7 +3302,7 @@
       "reproductions": [
         {
           "package": "hats_cvpr2026",
-          "package_digest": "21d80a40d26fcd9295cf19a04330a79917e5a28f67b96122b0c4fd905e7c666e",
+          "package_digest": "5817647edbedba51d78da67c663bdae5ce64014dcfcc1b8da46e8bc31d41f95a",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "androidworld",
@@ -3365,7 +3365,7 @@
       "reproductions": [
         {
           "package": "ishift_cvpr2026",
-          "package_digest": "6f2dbd307abc564ce7b245c87930fc89b25bc1a85b753868199f79ffb3f3933a",
+          "package_digest": "1821548848937910f9e78c0b5c1018adeb9e7eb244979c982577b1dc1bc00598",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "aitw",
@@ -3430,7 +3430,7 @@
       "reproductions": [
         {
           "package": "lmee_cvpr2026",
-          "package_digest": "91c0bc66813c7e5532b00c3be22e64f00bd5dbb907465904f342718449e86427",
+          "package_digest": "304b839eecec7f9ce41f57b943e7d5172c36dee6ba61fa227fb81be98218a1ad",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lmee-bench"
@@ -3492,7 +3492,7 @@
       "reproductions": [
         {
           "package": "motus_cvpr2026",
-          "package_digest": "32308bb33bb726b4223298f0122c51be4f37cc4d096d9ba4beadb4b219419e07",
+          "package_digest": "cccc0e2df5045156c3d72045d8ddecd3f79fb1e8698dd5efc764e0d45689c10d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "motus-realworld",
@@ -3555,7 +3555,7 @@
       "reproductions": [
         {
           "package": "optimusvla_cvpr2026",
-          "package_digest": "503a0d679f94b3c23e17a3dc3b95149a717bb892c266a68116289a94b8595ae5",
+          "package_digest": "addcbdffb1b87a9c133321a71617f4574d36f0375d5c6f461fbf3614531555b5",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "calvin",
@@ -3619,7 +3619,7 @@
       "reproductions": [
         {
           "package": "roboagent_cvpr2026",
-          "package_digest": "5619906dbe86f8232a07da4ecab6c43d4cbf6ee1bface50bc7c7e1d70247c539",
+          "package_digest": "2d12ab1aa5d86b499abc57e9db19f4bb17cf333dddfecfa93b56130abbc0d674",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -3682,7 +3682,7 @@
       "reproductions": [
         {
           "package": "ui_agile_cvprf2026",
-          "package_digest": "67b86b8d63f6af57562184a0df3e86449fdda6a6761dc52d0cfd3717ae056ad6",
+          "package_digest": "02af3370b424185afa7d2afe48c4d20f5c5b1299a8354045c5ee09630928343b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "androidcontrol",
@@ -3746,7 +3746,7 @@
       "reproductions": [
         {
           "package": "vilomem_cvpr2026",
-          "package_digest": "e05f3acc15e9c973a488f12f33b16ef891431a92f222627c4626fb51f24856cc",
+          "package_digest": "fc6b865a6a2f33b33a9315d9de1ad2d75fee15a310714f5cbcfd924367a75341",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hallusionbench",
@@ -3813,7 +3813,7 @@
       "reproductions": [
         {
           "package": "worldmm_memory",
-          "package_digest": "dcf37f74792a1ae59818e3ad8a75113a90bbae00f92cba13cdc2263be78069bc",
+          "package_digest": "8584e54874718f3d7a1940c2a1cdc03bef3c66951f7aac800d25e2fbb0eb7d31",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egolifeqa"
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "93186a92c48db44070b097a88ff436817a2efa79283ef9404327e7a7580177d3"
+  "projection_digest": "2d3dc3623597204aabf9c28becadd4180c95ff85f7c8f98aa5e6b8d5f99a5118"
 }

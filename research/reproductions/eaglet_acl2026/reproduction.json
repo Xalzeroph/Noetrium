@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "eaglet_acl2026",
-  "package_digest": "263347e7bb8300a84744663f1c75f55ee076cac1157e7dfb4505b055c4ad7e5f",
+  "package_digest": "ce6bca8fbefe5be521530c9f3dc021960ac1a68b2d050513da43d9f0a4b030e9",
   "definition_digest": "f63bbc43510fe9211823c526a76fad6cfd47b777cbd11b8a2e53af1a56b56086",
   "source_registry_digest": "95a8891d6c68ac7e536b45a44f88468adc4588fb5fe74c25b93d0ab18721b5b9",
   "lifecycle": "protocol_bound",
@@ -171,9 +171,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "eaglet_acl2026",
     "program_digest": "a8cd3879be7693e70196ca689f656e06a6302eb444684a58e9715d48763ce591",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

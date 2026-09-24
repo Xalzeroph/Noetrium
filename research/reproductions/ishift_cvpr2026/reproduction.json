@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ishift_cvpr2026",
-  "package_digest": "6f2dbd307abc564ce7b245c87930fc89b25bc1a85b753868199f79ffb3f3933a",
+  "package_digest": "1821548848937910f9e78c0b5c1018adeb9e7eb244979c982577b1dc1bc00598",
   "definition_digest": "71014d59993c0d6760c4e4084123323967e87540a3a576fb5641ec3efb47b4dd",
   "source_registry_digest": "cba20db8cc89fd106370867aad306e63553e71b3d7f65bf597a47c087dc83dda",
   "lifecycle": "protocol_bound",
@@ -203,9 +203,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "ishift_cvpr2026",
     "program_digest": "b3bd8993b02155dc5cb3b4095953e054d93ee2453717b1c5958fcd4df54dde8c",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

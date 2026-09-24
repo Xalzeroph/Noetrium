@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "saycan",
-  "package_digest": "09175c0403dc5a613231f30c7dfbf589ca2395dd1c7bd70983302ccb45713db6",
+  "package_digest": "d5f57fa89b13663aff2aae001c02be50dd59454ed699119864667d05c79ddb55",
   "definition_digest": "71dd04b1dc76f1794093ba5e23730308c091ad738dcc6d559210d69307e401a7",
   "source_registry_digest": "358acfb9456c29c701634acb64fbce6b2a866522c9060ca11b081e7effdeec4f",
   "lifecycle": "protocol_bound",
@@ -185,6 +185,10 @@
     "execution_state": "execution_ready",
     "program_id": "saycan",
     "program_digest": "1e3111be8e6840cdfa680310569b1fed3097001fc129a01204f7220d7f37d9af",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

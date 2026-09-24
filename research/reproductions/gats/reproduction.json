@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "gats",
-  "package_digest": "439920017f2139e3a44f885af6de0a5f268196aa4ebf5cf85a90603cda0cee35",
+  "package_digest": "22919b1f5deea205ca53ae6256b8d23df571174e9e6815753d3c322949c2438f",
   "definition_digest": "50329df88dd157ef0aa6ded83f175e2ce332658fd62d6579b68c4615a199beea",
   "source_registry_digest": "bd01696f94f58340e853c4ec16a61206335c13e3ef45730b14418c4646b37a67",
   "lifecycle": "protocol_bound",
@@ -167,6 +167,10 @@
     "execution_state": "execution_ready",
     "program_id": "gats",
     "program_digest": "43d1362a434dd035086812c7454c237a455bf812d8b048e94c16e578cf67c79a",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

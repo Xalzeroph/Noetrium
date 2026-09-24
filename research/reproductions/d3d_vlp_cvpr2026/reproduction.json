@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "d3d_vlp_cvpr2026",
-  "package_digest": "29c73bf6f05132af44935de699913d2d386eb2f029795b0c32c9c655ce1c190c",
+  "package_digest": "50509f1ebfeb5e830694d4ca89d5572d94bfcf471c8ec5aaf69a6fafe40ac11d",
   "definition_digest": "826cbc66bb82023852c07b6f2b9035bfbeb20d4d0f0d674660824ada0e451f4b",
   "source_registry_digest": "2cdeb4231d82b4960adc04b241fa45eae325f9b560c0d815e9fa4a73b8b941ac",
   "lifecycle": "protocol_bound",
@@ -175,9 +175,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "d3d_vlp_cvpr2026",
     "program_digest": "ebebaa864234a467d88e8b6a923993174d1b664b4dbd359ccc62d12fb6cec244",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

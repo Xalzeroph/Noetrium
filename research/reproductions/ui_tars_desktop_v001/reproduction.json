@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ui_tars_desktop_v001",
-  "package_digest": "649ec9a5ceed5484caf3a1765ca0683b111cb7a0551615a7f776467383323a47",
+  "package_digest": "95457feca568874c13eff09a84c26c4d6da712632976f4fbe4c70425cc3e18ca",
   "definition_digest": "b727da12acd74c46bfc6227a712a2b0ec9e1315c89e10ebf370bbbf9aa7aee77",
   "source_registry_digest": "c7505a81ddcc5278a50aea896538f01d33110fb19d48872fa2f45a553c1a3768",
   "lifecycle": "protocol_bound",
@@ -111,9 +111,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "ui_tars_desktop_v001",
     "program_digest": "b83b11a9b627ca228fb2bafbca98b517c09e0641e9653ac5418596caedd6d576",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_ui_tars_osworld_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

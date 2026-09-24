@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "qlass_alfworld",
-  "package_digest": "1d7b2f3078fea885831c073c3a7b3a3f97b48b764f915905e735a878aed94b75",
+  "package_digest": "ad2ac3f821ab73537f06c2104c39257699921be3078086579720f32726aea8b0",
   "definition_digest": "6c1ca24aa65adba5bd222ebed3ed260aa2f051c62dadbec51751e6cf4c03efb3",
   "source_registry_digest": "819fd0e885a29c9300eee6b6c1b86d1cea8854f8e10d988bf56fb3022f71ed29",
   "lifecycle": "protocol_bound",
@@ -191,6 +191,10 @@
     "execution_state": "execution_ready",
     "program_id": "qlass_alfworld",
     "program_digest": "10db5e9ccca62b8abbfd42fef1b164fc5bd8d341efd5113c51047d76eadc4b19",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

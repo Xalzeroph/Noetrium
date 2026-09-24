@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "autogen_agentchat",
-  "package_digest": "fd421bea7376ec6015323cd1c5b8627a1fe529050d13ddac0ff24bb3c5d35431",
+  "package_digest": "d47af0324bc49c099abdc217d3e6fa8cebed319aedbbd1f40c13be88c2ecf905",
   "definition_digest": "cc6c1df578b908f00a037c121b1029b6407f3bb0a9c891a68c8049924a54d746",
   "source_registry_digest": "8668e81cb1f973ed2b3d05971c15f5e4455cd2ee8b8e2932f40c208aa8875912",
   "lifecycle": "protocol_bound",
@@ -106,9 +106,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "autogen_agentchat",
     "program_digest": "fe33b44dadaf7921e345d9e2bb865a07988172a6f89895e870617024b9310496",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_autogen_multiagentbench_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

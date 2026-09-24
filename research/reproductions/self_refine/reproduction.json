@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "self_refine",
-  "package_digest": "3b68ba59e638f7b009477e94cfcb4a80d37fa7643b4d8d9dbc570bb3ca2b6114",
+  "package_digest": "3c2defd264e2e8bdf02c335277a7cd133d8529eef59d0977feb44270e50f6587",
   "definition_digest": "5cdb8b1fa8cb872403f5928015538ba5657683b929b42ab9a77603227707cfb8",
   "source_registry_digest": "b3badf805b90ccd708fe9510374f12a0ea4bc3c0df3f1230667c5035820c2ba2",
   "lifecycle": "protocol_bound",
@@ -133,9 +133,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "self_refine",
     "program_digest": "37e7e8c481e9f9f44247dafb87021e827058eb29cb32e535178a4bac3752c74b",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_self_refine_commongen_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

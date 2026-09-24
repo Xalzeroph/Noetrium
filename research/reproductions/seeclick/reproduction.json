@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "seeclick",
-  "package_digest": "fd5a52978a92c6bede73a3cf2983897c1305da3f7cc323d51452e0e2312b2528",
+  "package_digest": "72b74620cfeeaa94265dc857ec2a9894d60628ef7e1675bfdef4966f0def32d9",
   "definition_digest": "a7dc27f765e0cd9d6f6ef4fb784124a06d339ec5aaf3c43a239cdda32ae071a1",
   "source_registry_digest": "703701aa516e21be3cdc470ed08bd842843e88a39dbdeba1a063fc280cf96439",
   "lifecycle": "protocol_bound",
@@ -201,9 +201,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "seeclick",
     "program_digest": "68c422d8021a89689b1fd22f8eccc17f0e5751f12dde10320ed3323358c62224",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_seeclick_screenspot_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

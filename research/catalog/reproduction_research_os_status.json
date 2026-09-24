@@ -1,10 +1,11 @@
 {
-  "schema": "noetrium.reproduction-research-os-status.v1",
+  "schema": "noetrium.reproduction-research-os-status.v2",
   "authority": "generated_from_typed_reproduction_definitions",
   "package_count": 100,
   "state_counts": {
+    "benchmark_binding_required": 47,
     "closure_binding_required": 6,
-    "execution_ready": 89,
+    "execution_ready": 42,
     "not_executable": 5
   },
   "requirement_kind_counts": {
@@ -22,6 +23,10 @@
       "benchmark_ids": [
         "lvu"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": [
         {
           "parameter": "interpretation",
@@ -36,13 +41,19 @@
     {
       "package": "adaptagent_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "adaptagent_acl2025",
       "program_digest": "b4dfa2bf54eff2f92871b7570e5a7a91e54471ecb789675ca02888776c603683",
       "benchmark_ids": [
         "mind2web",
         "visualwebarena"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_adaptagent_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -54,6 +65,10 @@
       "benchmark_ids": [
         "mgsm"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -65,12 +80,16 @@
       "benchmark_ids": [
         "humaneval"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "agemem_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "agemem_acl2026",
       "program_digest": "6479b01f49d26b110a37f56f952d2704696deb917d7ead60400a742406448228",
       "benchmark_ids": [
@@ -80,6 +99,12 @@
         "hotpotqa",
         "scienceworld"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -92,28 +117,44 @@
         "webshop",
         "webvoyager"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "agent_s3",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "agent_s3",
       "program_digest": "31e8ce9c22615fc3c3bfb4c1ef135c41eaf598541ed84627da31778f985d889e",
       "benchmark_ids": [
         "osworld"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_agent_s3_osworld_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "agentless_swebench",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "agentless_swebench",
       "program_digest": "4fb32133f5798f0a3dc2cd41cd77acf9d62253f20ebc9d9681e2caf99cd79fe2",
       "benchmark_ids": [
         "swe-bench"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_agentless_swebench_lite_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -130,6 +171,10 @@
         "travelplanner",
         "webshop"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -139,6 +184,10 @@
       "program_id": null,
       "program_digest": null,
       "benchmark_ids": [],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -148,29 +197,45 @@
       "program_id": null,
       "program_digest": null,
       "benchmark_ids": [],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "astranav_memory_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "astranav_memory_cvpr2026",
       "program_digest": "34ee8fc9f34dbaa24d64c717a6e7b18bd298a292839ea19b4a11c39b2f5f220d",
       "benchmark_ids": [
         "goat-bench",
         "hm3d-ovon"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "autogen_agentchat",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "autogen_agentchat",
       "program_digest": "fe33b44dadaf7921e345d9e2bb865a07988172a6f89895e870617024b9310496",
       "benchmark_ids": [
         "multiagentbench"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_autogen_multiagentbench_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -182,24 +247,34 @@
       "benchmark_ids": [
         "camel-ai-society"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "cer_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "cer_acl2025",
       "program_digest": "8ebfc988f65a4c7c013fcd5a228dd2b8cf9ec6f85399f4b80513350e061d5c6b",
       "benchmark_ids": [
         "visualwebarena",
         "webarena"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_contextual_experience_replay_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "ces_gui_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "ces_gui_cvpr2026",
       "program_digest": "76b2a4d0e09da826327a2e1051c6cc56195e7212cee2a85c50d434a90648faab",
       "benchmark_ids": [
@@ -207,6 +282,12 @@
         "amex",
         "gui-odyssey"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -218,6 +299,10 @@
       "benchmark_ids": [
         "gsm8k"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -229,6 +314,10 @@
       "benchmark_ids": [
         "srdd"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -240,34 +329,50 @@
       "benchmark_ids": [
         "robocodegen-37"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "cogagent",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "cogagent",
       "program_digest": "f5f69ab33d1dc2a5aa88c7e6a54b77117b5fb4bb2d8f01d4cd94387a57563f38",
       "benchmark_ids": [
         "mind2web"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_cogagent_mind2web_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "crossha_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "crossha_cvpr2026",
       "program_digest": "73392aeaad928544764d91737e70c7054d073be64e8bd77394279090ed5a13ef",
       "benchmark_ids": [
         "minecraft-openha"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "d3d_vlp_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "d3d_vlp_cvpr2026",
       "program_digest": "ebebaa864234a467d88e8b6a923993174d1b664b4dbd359ccc62d12fb6cec244",
       "benchmark_ids": [
@@ -277,28 +382,46 @@
         "reverie-ce",
         "sg3d"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "dars_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "dars_acl2025",
       "program_digest": "ee4bf7a68f005ecced139dd388e203a140f049d95245b04537b31d7d9d6cf1c6",
       "benchmark_ids": [
         "swe-bench"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_dars_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "dejavu_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "dejavu_cvpr2026",
       "program_digest": "87ce0781da7dd54d1ffd42386834bbefd15fd70b4db8d55a5da8b57f17d5cb02",
       "benchmark_ids": [
         "libero"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -310,6 +433,10 @@
       "benchmark_ids": [
         "deps-minecraft-70"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -321,12 +448,16 @@
       "benchmark_ids": [
         "egoschema"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "eaglet_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "eaglet_acl2026",
       "program_digest": "a8cd3879be7693e70196ca689f656e06a6302eb444684a58e9715d48763ce591",
       "benchmark_ids": [
@@ -334,35 +465,53 @@
         "scienceworld",
         "webshop"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "echotrail_gui_cvprf2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "echotrail_gui_cvprf2026",
       "program_digest": "b373d0c368cb70c8a99bc05100cbede037d54fa9fb0125f902347d67fa2d878f",
       "benchmark_ids": [
         "androidlab",
         "androidworld"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "ego2web_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "ego2web_cvpr2026",
       "program_digest": "68adbfbe735bccb0a94b2e212184afa063e2991bc8a2a6caca0a5cc5a0adc803",
       "benchmark_ids": [
         "ego2web"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "embodied_videoagent_iccv2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "embodied_videoagent_iccv2025",
       "program_digest": "17b9d21abcf2ca9e1c61c2b0cb22fdbeff003d2d9b439ba8aa062d8e43cf1462",
       "benchmark_ids": [
@@ -370,6 +519,12 @@
         "envqa",
         "open-eqa"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_embodied_videoagent_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -382,6 +537,10 @@
         "osworld",
         "visualwebarena"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -393,6 +552,10 @@
       "benchmark_ids": [
         "egoschema"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -404,17 +567,27 @@
       "benchmark_ids": [
         "flow-practical-tasks"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "foreact_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "foreact_cvpr2026",
       "program_digest": "0bcd82980326e78a34c4df7bbabff3496533bed75e5ad585f53d24bfd22e7dd1",
       "benchmark_ids": [
         "foreact-real11"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -426,6 +599,10 @@
       "benchmark_ids": [
         "gats-synthetic"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -437,6 +614,10 @@
       "benchmark_ids": [
         "generative-agents-smallville"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -446,18 +627,28 @@
       "program_id": null,
       "program_digest": null,
       "benchmark_ids": [],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "hats_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "hats_cvpr2026",
       "program_digest": "00233cd8ea8275a6c5ea97d170928af607121c462ac9a8ebf069f7e1b055d1f5",
       "benchmark_ids": [
         "androidworld",
         "webarena"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -469,6 +660,12 @@
       "benchmark_ids": [
         "hugginggpt-paper-tasks"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_hugginggpt_study"
+        ]
+      },
       "execution_requirements": [
         {
           "parameter": "expert_capability_ids",
@@ -484,18 +681,24 @@
     {
       "package": "implement_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "implement_acl2026",
       "program_digest": "8bf8f01fe419f8660bea9aec3f078b4b53ebef23579627e6d5443f332a9d037f",
       "benchmark_ids": [
         "alfworld"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "ishift_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "ishift_cvpr2026",
       "program_digest": "b3bd8993b02155dc5cb3b4095953e054d93ee2453717b1c5958fcd4df54dde8c",
       "benchmark_ids": [
@@ -504,6 +707,12 @@
         "gui-odyssey",
         "guiact"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -515,6 +724,10 @@
       "benchmark_ids": [
         "jarvis1-offline-185"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -526,6 +739,10 @@
       "benchmark_ids": [
         "webshop"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -537,39 +754,61 @@
       "benchmark_ids": [
         "math500"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "live_swe_agent",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "live_swe_agent",
       "program_digest": "540ea04fbb0a6961a2828350577834a460cc99b35ba0438025e59e701cc4b7d1",
       "benchmark_ids": [
         "swe-bench"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_live_swe_agent_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "lmee_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "lmee_cvpr2026",
       "program_digest": "56af943331571951c7be5af30341e9288dcb65e65a89a37aede1dfcdaedf7dc7",
       "benchmark_ids": [
         "lmee-bench"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "lvagent_iccv2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "lvagent_iccv2025",
       "program_digest": "7b90a8ba499f088f28143ab38b235084fefa966443f7f1ae3264a98fdc4b2e4a",
       "benchmark_ids": [
         "egoschema"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_lvagent_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -581,6 +820,10 @@
       "benchmark_ids": [
         "lvu"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -592,40 +835,62 @@
       "benchmark_ids": [
         "mle-bench"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "mem_gallery_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "mem_gallery_acl2026",
       "program_digest": "814bfd588c81175fea63bd1759b1c1ee49ae71779a800055ee941d99261aa168",
       "benchmark_ids": [
         "mem-gallery"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "memevolve",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "memevolve",
       "program_digest": "6274d764a4a63301f5a9c0cc5b861fac56b62c315079a8adcebda68eb075070a",
       "benchmark_ids": [
         "evomembench",
         "memoryarena"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_memevolve_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "memgpt_classic",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "memgpt_classic",
       "program_digest": "b870ad5f6585fb7e22d49de60104f490a5fadd73695f26c6249de2e7a5503e9c",
       "benchmark_ids": [
         "memoryarena"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_memgpt_memoryarena_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -637,6 +902,10 @@
       "benchmark_ids": [
         "humaneval"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -648,12 +917,16 @@
       "benchmark_ids": [
         "minedojo"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "mm_mem_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "mm_mem_acl2026",
       "program_digest": "86305140193d6349bf323bd96de5cc308a94178334c2d8416f59a0b3dd6fd344",
       "benchmark_ids": [
@@ -662,29 +935,47 @@
         "video-mme",
         "vstream-qa"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "mmbench_gui_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "mmbench_gui_cvpr2026",
       "program_digest": "116617a0797dd937b5363e7ff0e7986c0b6055bcfbbbcca248a013acfb8d9410",
       "benchmark_ids": [
         "mmbench-gui"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "motus_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "motus_cvpr2026",
       "program_digest": "b947f3a6b8d82d2297866b2e091ce4fa6f75b57a5932dde394d4223b09da5009",
       "benchmark_ids": [
         "motus-realworld",
         "robotwin2"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -696,6 +987,10 @@
       "benchmark_ids": [
         "moviechat-1k"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -707,18 +1002,28 @@
       "benchmark_ids": [
         "gsm8k"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "openwebvoyager_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "openwebvoyager_acl2025",
       "program_digest": "997ac2ce5f24c16756ac2354a94841cfe71200561d392d4fd5e88edb1dbce364",
       "benchmark_ids": [
         "mind2web",
         "webvoyager"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_openwebvoyager_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -730,6 +1035,10 @@
       "benchmark_ids": [
         "minecraft-long-horizon-67"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -741,12 +1050,16 @@
       "benchmark_ids": [
         "minecraft-long-horizon-67"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "optimusvla_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "optimusvla_cvpr2026",
       "program_digest": "c3b1e54ed980c6918de8b69a87206434c48b95da37fa8c5d8ac31a6dbec71fa9",
       "benchmark_ids": [
@@ -754,23 +1067,35 @@
         "libero",
         "robotwin2-hard"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "orbit_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "orbit_acl2026",
       "program_digest": "53092527c1c4e408c8697c35305c9a78491340ef96db46d5268801666eda01ec",
       "benchmark_ids": [
         "embodiedbench"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "os_symphony_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "os_symphony_acl2026",
       "program_digest": "b8ea69c60fb28178df1a92c5c254e25ea1b111b50d3eba95c9504de96cc91d92",
       "benchmark_ids": [
@@ -778,6 +1103,12 @@
         "osworld-verified",
         "windowsagentarena"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -787,6 +1118,10 @@
       "program_id": null,
       "program_digest": null,
       "benchmark_ids": [],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -798,6 +1133,10 @@
       "benchmark_ids": [
         "ego4d-goalstep"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -810,17 +1149,27 @@
         "alfworld",
         "webshop"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "r2d2_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "r2d2_acl2025",
       "program_digest": "0b9dbaeb49f6ce024abbd30555b6f2ac3267a195c53146fc18e0803e9f025dfa",
       "benchmark_ids": [
         "webarena"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_r2d2_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -832,6 +1181,10 @@
       "benchmark_ids": [
         "blocksworld"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -844,17 +1197,27 @@
         "alfworld",
         "webshop"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "refact_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "refact_cvpr2026",
       "program_digest": "3e00ae4a8065304a137c7861a466511570d3a7678f8173440eac4db4f01da1ef",
       "benchmark_ids": [
         "groundedvqa"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -866,6 +1229,10 @@
       "benchmark_ids": [
         "alfworld"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -877,18 +1244,28 @@
       "benchmark_ids": [
         "moviechat-1k"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "roboagent_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "roboagent_cvpr2026",
       "program_digest": "61781f097f34409ff72babf1833023b50dc56ff4e05098b14b06d414e55f44b6",
       "benchmark_ids": [
         "alfworld",
         "embodiedbench"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -900,17 +1277,27 @@
       "benchmark_ids": [
         "saycan-101"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "seeclick",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "seeclick",
       "program_digest": "68c422d8021a89689b1fd22f8eccc17f0e5751f12dde10320ed3323358c62224",
       "benchmark_ids": [
         "screenspot"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_seeclick_screenspot_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -922,28 +1309,44 @@
       "benchmark_ids": [
         "gsm8k"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "self_refine",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "self_refine",
       "program_digest": "37e7e8c481e9f9f44247dafb87021e827058eb29cb32e535178a4bac3752c74b",
       "benchmark_ids": [
         "commongen"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_self_refine_commongen_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "star_toggle_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "star_toggle_cvpr2026",
       "program_digest": "88274af24f47c5292e7a9b1a580d00203d6c8b736524359f03dbd685e18315fa",
       "benchmark_ids": [
         "state-control-benchmark"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -955,6 +1358,10 @@
       "benchmark_ids": [
         "steve1-paper-prompts"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -966,6 +1373,12 @@
       "benchmark_ids": [
         "freshwiki"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_storm_freshwiki_study"
+        ]
+      },
       "execution_requirements": [
         {
           "parameter": "search_capability_id",
@@ -980,12 +1393,18 @@
     {
       "package": "swe_agent_swebench",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "swe_agent_swebench",
       "program_digest": "f3fd4fe910399a52fee901c523cc911f6ef69cc7e11048ef9468ec5d531a1c4f",
       "benchmark_ids": [
         "swe-bench"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_swe_agent_swebench_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -997,6 +1416,12 @@
       "benchmark_ids": [
         "toolformer-eval"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_toolformer_study"
+        ]
+      },
       "execution_requirements": [
         {
           "parameter": "tool_capability_ids",
@@ -1017,6 +1442,12 @@
       "benchmark_ids": [
         "toolbench"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_toolllm_toolbench_study"
+        ]
+      },
       "execution_requirements": [
         {
           "parameter": "capability_ids",
@@ -1038,6 +1469,10 @@
       "benchmark_ids": [
         "game24"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -1050,12 +1485,16 @@
         "visualwebarena",
         "webarena"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "ui_agile_cvprf2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "ui_agile_cvprf2026",
       "program_digest": "209ad95381ad60ad840c93130bb53abdd5285f78aad8e27fbe3f6bf2b143c298",
       "benchmark_ids": [
@@ -1063,17 +1502,29 @@
         "screenspot-pro",
         "screenspot-v2"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "ui_tars_desktop_v001",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "ui_tars_desktop_v001",
       "program_digest": "b83b11a9b627ca228fb2bafbca98b517c09e0641e9653ac5418596caedd6d576",
       "benchmark_ids": [
         "osworld"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ui_tars_osworld_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -1085,6 +1536,10 @@
       "benchmark_ids": [
         "egoschema"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": [
         {
           "parameter": "sampling_frame_number",
@@ -1105,17 +1560,27 @@
       "benchmark_ids": [
         "egoschema"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "videoarm_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "videoarm_cvpr2026",
       "program_digest": "fff22652932e88ecda3809c00fa8045269414f409d065275ada914f9be0b0b2e",
       "benchmark_ids": [
         "egoschema"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_videoarm_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -1127,12 +1592,16 @@
       "benchmark_ids": [
         "egoschema"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "vilomem_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "vilomem_cvpr2026",
       "program_digest": "b2f93f4aaa88eb273bc39a35188617681ea3d06c78300043a3c62b837189f4db",
       "benchmark_ids": [
@@ -1143,6 +1612,12 @@
         "mmstar",
         "realworldqa"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -1154,6 +1629,10 @@
       "benchmark_ids": [
         "vima-bench"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -1165,28 +1644,44 @@
       "benchmark_ids": [
         "voyager-minecraft"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
       "package": "watch_learn_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "watch_learn_cvpr2026",
       "program_digest": "f82edfa5184a31613143de7b69f86477dd3dc1be376940c506a8e164dc5e5fd6",
       "benchmark_ids": [
         "osworld"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_watch_and_learn_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
       "package": "webagent_r1_emnlp2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "execution_ready",
+      "execution_state": "benchmark_binding_required",
       "program_id": "webagent_r1_emnlp2025",
       "program_digest": "4be7ab399e0ce55f83c30ee2bb6832eff771e54c880efb3632cc617819a0cd96",
       "benchmark_ids": [
         "webarena"
       ],
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_webagent_r1_study"
+        ]
+      },
       "execution_requirements": []
     },
     {
@@ -1198,6 +1693,10 @@
       "benchmark_ids": [
         "webvoyager"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     },
     {
@@ -1209,8 +1708,12 @@
       "benchmark_ids": [
         "egolifeqa"
       ],
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
       "execution_requirements": []
     }
   ],
-  "status_digest": "78295d240f62859ddc091f625d0f8c2ef0ac8f616b700827e2b8352ea2054c24"
+  "status_digest": "b37c32ad50a24e44fa761028116a71a367425cb68d9330fd02e166fc9c3e0141"
 }

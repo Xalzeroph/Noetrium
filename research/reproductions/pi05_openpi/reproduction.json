@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "pi05_openpi",
-  "package_digest": "7da3c5a89870fef90c6c0e9dbe5ebd9950a818fc71415d41ad8a1e65118efb74",
+  "package_digest": "33fe649a86380b288446b3c49cbdaf49a7625177218e5f82c1d292e218474f93",
   "definition_digest": "9f9f320bdbeba68191303fb24c8ba4aeddd0b27a1885cd71a9dc4cc9ef6d6446",
   "source_registry_digest": "6fd9550e5e62e26d5d5b30a198b91082ca51daf1f7f6619ca09c0115dcdf8f04",
   "lifecycle": "catalogued",
@@ -92,6 +92,10 @@
     "execution_state": "not_executable",
     "program_id": null,
     "program_digest": null,
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

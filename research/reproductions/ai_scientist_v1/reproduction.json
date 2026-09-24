@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ai_scientist_v1",
-  "package_digest": "00dcab48e661e066404fed71be4d84a25af1b2b671aa5060619b673f0bd8c33d",
+  "package_digest": "a0f5b35da17d53faa01ef36104aaf7e692952d075ca7cf5fb341ff9b7752d8c1",
   "definition_digest": "0c762429d6ca904b3b81d45b57a31ab315e8f292f81328508ef417f08af5d3c0",
   "source_registry_digest": "4f04e304fdf0f7aedcfdf19d7636fa73700ef8e2d8c9b33dee86c3db415f697e",
   "lifecycle": "catalogued",
@@ -89,6 +89,10 @@
     "execution_state": "not_executable",
     "program_id": null,
     "program_digest": null,
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

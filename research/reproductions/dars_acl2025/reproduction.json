@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "dars_acl2025",
-  "package_digest": "8699b4f1a6a865a90d06c0e765982c8e167bf4117da8d0561bc5016f32b631ef",
+  "package_digest": "29054eae2210297dcc64e2a343e707442e99782492c058fc5e79a5d2b58d3e33",
   "definition_digest": "d0a94f94937cec33b1fe901761dbdc26659072b93f0bbe830b8485bf7c4051c9",
   "source_registry_digest": "68e407725311866f47fa6f35bd6f15d8e5c52f9ee16764044386796ad5cd5ef3",
   "lifecycle": "protocol_bound",
@@ -141,9 +141,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "dars_acl2025",
     "program_digest": "ee4bf7a68f005ecced139dd388e203a140f049d95245b04537b31d7d9d6cf1c6",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_dars_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

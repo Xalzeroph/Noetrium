@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vima_embodied",
-  "package_digest": "a9e8e2b2ba7ba85d56af0dd910e1e608615b4e53de850b276dddd70f44c6dbcd",
+  "package_digest": "69deeb56696785a5215dbc08c919fc9c21e3e8baa3fcbd1fdfc9f2ac48a9af28",
   "definition_digest": "ab6c0f217b76235521106482bd1e85e19f3ca8b77921e08fde38740ba431ed4d",
   "source_registry_digest": "bf35b8c87b325e6a50b501d4e2671f6c130a246df6340370de02382c8a31c33b",
   "lifecycle": "protocol_bound",
@@ -222,6 +222,10 @@
     "execution_state": "execution_ready",
     "program_id": "vima_embodied",
     "program_digest": "ba0a1e7c09d29e8c46795c35b7d975cc662724766867fe103680f517cb291393",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

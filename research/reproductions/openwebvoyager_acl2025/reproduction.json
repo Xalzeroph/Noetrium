@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "openwebvoyager_acl2025",
-  "package_digest": "92fecad0e6071079e6d8311086e101db4c4d232f7b7139e120d3baf238c0b142",
+  "package_digest": "1ae4a801c6863cb77ec781bb4c9db8701d011a2a3443511fc7984f1d78986391",
   "definition_digest": "6f19edd6d128abbbd1dfc05ecfda969e79fcb9ab91e0ae1f8db6a4ccb0371a8c",
   "source_registry_digest": "2786a755ecfaf94cc7a57d6cbb3293d435778d7369320d104cb57d3f0c44c4f4",
   "lifecycle": "protocol_bound",
@@ -147,9 +147,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "openwebvoyager_acl2025",
     "program_digest": "997ac2ce5f24c16756ac2354a94841cfe71200561d392d4fd5e88edb1dbce364",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_openwebvoyager_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

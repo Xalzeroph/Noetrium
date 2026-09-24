@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rap_reasoning",
-  "package_digest": "ef50bead8aa98c25139c2b9e0cc1f081594a090f2018aaa3a8b3c8d396c39c04",
+  "package_digest": "c87fe93ea0265f4976a2103ba92020f4c346c921feabd371013c44d3073f8ecf",
   "definition_digest": "3de23b790a18d3bd15b16ce34f0a87cb7e95fa74b9b4c06fde9cfa49bba55e61",
   "source_registry_digest": "ced15295ec849f883db78704fb7a1e4351e59bd9ff1229c652b243f23abfdff2",
   "lifecycle": "protocol_bound",
@@ -143,6 +143,10 @@
     "execution_state": "execution_ready",
     "program_id": "rap_reasoning",
     "program_digest": "792acb6fdd56a3d9b2cc13f30036f3815644aa5cbf3605de31250e54713e4871",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

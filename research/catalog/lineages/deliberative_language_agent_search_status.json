@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "db7255a1bf1e81f9c1738273a9730ca9cfde17954f2791afe5291c6c8c39d828",
+          "package_digest": "ee232f17e9e9a08ed34e83187015720a084fe3f01f3c17583ea49c500c15e555",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -81,7 +81,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "3b68ba59e638f7b009477e94cfcb4a80d37fa7643b4d8d9dbc570bb3ca2b6114",
+          "package_digest": "3c2defd264e2e8bdf02c335277a7cd133d8529eef59d0977feb44270e50f6587",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -145,7 +145,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "dce3ebc820befabb7ca0a5ba0a8fd8fafb4b1f6934ea9452498d34ba572abeec",
+          "package_digest": "e0c976ad00af76d707564e58ff33a81dccedca183be01d4173ffb5423dccfce5",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -215,7 +215,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "512ac3d75aae3cd4de411761b20fe0c80c7c6a7f4474d642d58c704416c557cc",
+          "package_digest": "0cbffc9226da2831c2eca915d2f824199655d62f23749ee5c6905ec0ba9ae863",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -275,7 +275,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "ef50bead8aa98c25139c2b9e0cc1f081594a090f2018aaa3a8b3c8d396c39c04",
+          "package_digest": "c87fe93ea0265f4976a2103ba92020f4c346c921feabd371013c44d3073f8ecf",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -335,7 +335,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "52ffe8b46629ad7a777799e2a63a41fe1a6424cbbbb52956a811595eaa8af890",
+          "package_digest": "4f7c9d06a7591dc4e3f385e3b610f6b6c1b0e4c270951d7fd30d281f6ce65a80",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -411,7 +411,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "1d7b2f3078fea885831c073c3a7b3a3f97b48b764f915905e735a878aed94b75",
+          "package_digest": "ad2ac3f821ab73537f06c2104c39257699921be3078086579720f32726aea8b0",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "f79cfa0c52896be33f91e23bb392d8b3958462bc6f7744283343f6e4f3b290e9"
+  "projection_digest": "214ca2753e1b42cbe2c7937de0da8580d5041d361c3f061d49e6564ec9dd8765"
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "roboagent_cvpr2026",
-  "package_digest": "5619906dbe86f8232a07da4ecab6c43d4cbf6ee1bface50bc7c7e1d70247c539",
+  "package_digest": "2d12ab1aa5d86b499abc57e9db19f4bb17cf333dddfecfa93b56130abbc0d674",
   "definition_digest": "87f0fedec0b991e30a5b4f1a0d986a0569d09b3167ebedb041d9022c7420a0a7",
   "source_registry_digest": "0b3ad74ac3a4724a41459fdf4cb59a21de449af23739fab7aa2f6afc1fa298c0",
   "lifecycle": "protocol_bound",
@@ -142,9 +142,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "roboagent_cvpr2026",
     "program_digest": "61781f097f34409ff72babf1833023b50dc56ff4e05098b14b06d414e55f44b6",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

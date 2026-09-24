@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memevolve",
-  "package_digest": "52e0729c3528f7fe1f58f4b034623f1f1db0675aef381ce1f3beb18a64f5a695",
+  "package_digest": "c78469f616fcecd0d08f322f4bf94260398811d253699edb6e98678f575fce63",
   "definition_digest": "1336421e8f467dea1b177f6c4ccda7e283bae802349d03cb8ba35f3d874e75b9",
   "source_registry_digest": "a92e273188a3b65a11542aa445022569964e21f942fb4412164a0c5f6a9ec7d7",
   "lifecycle": "protocol_bound",
@@ -96,9 +96,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "memevolve",
     "program_digest": "6274d764a4a63301f5a9c0cc5b861fac56b62c315079a8adcebda68eb075070a",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_memevolve_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "aflow",
-  "package_digest": "a461bdb460d85695d22d3a20fbc8c14a3d56a817762fa550947e8f3bb1b163d8",
+  "package_digest": "fbe1018532762326f1bd3a1c36608545e671432e9af2639b6cff8194a0fc30e1",
   "definition_digest": "32fd6b066d9ecf013bf733c377c0ee289207ed5817e65f3170c676e502c4f006",
   "source_registry_digest": "21252fdb46d581a1b68a681b0c99494769cc12a9e32a963ecd017bb06a0133b7",
   "lifecycle": "protocol_bound",
@@ -221,6 +221,10 @@
     "execution_state": "execution_ready",
     "program_id": "aflow",
     "program_digest": "c875e41d17d6a143ed5f2bfc21ad1747a5d448cb463949bc8a62a4d14a75ad55",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

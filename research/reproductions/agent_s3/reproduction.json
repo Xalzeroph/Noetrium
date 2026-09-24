@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agent_s3",
-  "package_digest": "28136d1603e63321d06c93bc96436be6af2c9926646cca248c45815ada3d9515",
+  "package_digest": "f9aa666df22077376634f46c52b098de278443ed91ec772890927160fddfd85f",
   "definition_digest": "571e956debc7d55aba3299a6eef84c393f939187368bbb799bd269b9ce0ee48d",
   "source_registry_digest": "c13f9d1d0cdabb811ceddbaa18dcef0668ca95280ab0012b6a463d39844c7a34",
   "lifecycle": "protocol_bound",
@@ -107,9 +107,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "agent_s3",
     "program_digest": "31e8ce9c22615fc3c3bfb4c1ef135c41eaf598541ed84627da31778f985d889e",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_agent_s3_osworld_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "metagpt_software_company",
-  "package_digest": "35e40956618d5b81f9c11cb0e8cefd23f7ae4d7d858de99be0f86cf504aa1e3c",
+  "package_digest": "d1f2b989fbe1e5073ace83cb8397751871b57ab0797c7578715ba5d373a1802c",
   "definition_digest": "d0f862bc522c6e4fd2d5a5647b6cdb65cdd1f64cf91919c6ead7a801c443e990",
   "source_registry_digest": "1ce38ee388bf0eb998ce4109eafce04c083c168dbd6b10ee369a739c76c06ae8",
   "lifecycle": "protocol_bound",
@@ -145,6 +145,10 @@
     "execution_state": "execution_ready",
     "program_id": "metagpt_software_company",
     "program_digest": "41dccf6e16e8757360f2977fe28b4dedd63750366cd23f8aeb15b899c4b0cde3",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

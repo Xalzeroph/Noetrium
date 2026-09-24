@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "gorilla_apibench",
-  "package_digest": "6345915d12b0a15ac6f9ec52eadd7560f1efc3130bea3a20f9a3862daf6b916a",
+  "package_digest": "e641a17f461c841f1439554619c210b91da89fbb840293854356a5eb1b8ce8aa",
   "definition_digest": "7bb75baf3129e1c697f3983b449731de7aef93baa2e4c90ddce0510cfa1879ca",
   "source_registry_digest": "12af179a73f250303055fd7d92e165bdfd93683099413c34b186517a898113e4",
   "lifecycle": "catalogued",
@@ -94,6 +94,10 @@
     "execution_state": "not_executable",
     "program_id": null,
     "program_digest": null,
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

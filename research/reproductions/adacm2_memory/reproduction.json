@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adacm2_memory",
-  "package_digest": "4d614f341301874715be6688d0b0118a54c1d4a55cf2e060ffbc33da1a729745",
+  "package_digest": "8550bce86a74ea13c3d3328ca5fb5f7e0a93808b6c14d5a56a5031e95116dafd",
   "definition_digest": "6a69a2d164b86b3534e4982d84e8ef08626548335af759a36096b8135e4d3ccb",
   "source_registry_digest": "d46d92fc46eb723b8905ef27d3104b049b7b560c6b2946d3ad5e25a04645996a",
   "lifecycle": "protocol_bound",
@@ -172,6 +172,10 @@
     "execution_state": "closure_binding_required",
     "program_id": "adacm2_memory",
     "program_digest": "98b658cfd1cf36d0932d3f3cb1df1f2bd1a86587e86b4c0adceda306f292c791",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": [
       {
         "parameter": "interpretation",

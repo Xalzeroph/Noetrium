@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentsquare",
-  "package_digest": "53f8858cd08d9bbc332919967642d7d4726748203652f994f8ebc21e21458f5f",
+  "package_digest": "ac0aa0a6657a6443567986995456e4e8ab3950559329538b32a5ed516a4c33e3",
   "definition_digest": "46c6a3eb2e9766ebece78a50993e51e4aa6ab2f4436694766edab5f793e3bbb4",
   "source_registry_digest": "7b145319e1ac2f8a0a7f4f82a53ec059ffbca8e90126ab15ca7742977508805d",
   "lifecycle": "protocol_bound",
@@ -233,6 +233,10 @@
     "execution_state": "execution_ready",
     "program_id": "agentsquare",
     "program_digest": "f25dccd045b864277dc435461e82c9d0bf8118844769169bd9ca8436598074b7",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

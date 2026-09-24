@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentless_swebench",
-  "package_digest": "5abfed18581c557c52ac347138f78d345a636242de7565b43bf2c0a9b37a2198",
+  "package_digest": "153c98239436c82034465723b1b1df9ed86d5915fc6fe4c1cbbb81e898adced6",
   "definition_digest": "a524a3b376569393b5288022c9b83d133898b4316cb95a6c86c17792d2fbbcb8",
   "source_registry_digest": "6c3f3a35e76b0138dfbc16be29a802509c86aa537b696a15da6f10d9b8a8dedf",
   "lifecycle": "protocol_bound",
@@ -150,9 +150,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_binding_required",
     "program_id": "agentless_swebench",
     "program_digest": "4fb32133f5798f0a3dc2cd41cd77acf9d62253f20ebc9d9681e2caf99cd79fe2",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_agentless_swebench_lite_study"
+      ]
+    },
     "execution_requirements": []
   }
 }

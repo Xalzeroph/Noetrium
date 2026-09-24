@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "storm_wiki",
-  "package_digest": "0406670da13240b939617b9315c20a40da2deeae0be4016386d05d9cbd22b978",
+  "package_digest": "974df1a3eb4f41cdbc8d9e9ab52b4d066b9adc6b1e86ed699b36376a5cfd7fb7",
   "definition_digest": "6984850bbaaa1139acee2db5aee2b4bfbeb80ccd94ddd7f49c298c04d45bc06d",
   "source_registry_digest": "a81615aa99cc6d96340bca8447ebe87504c9bdb0bcc0f961f51286299458a9b0",
   "lifecycle": "protocol_bound",
@@ -169,6 +169,12 @@
     "execution_state": "closure_binding_required",
     "program_id": "storm_wiki",
     "program_digest": "a9dd0a6e2f0faf7239fe98136ca3ba37db96d1529e3c4e41528a0d4044814f25",
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_storm_freshwiki_study"
+      ]
+    },
     "execution_requirements": [
       {
         "parameter": "search_capability_id",

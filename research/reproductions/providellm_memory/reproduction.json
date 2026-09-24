@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "providellm_memory",
-  "package_digest": "9c1af08df36e135980247b910b937f48f726de4a5fd6b45711691ee53ea76632",
+  "package_digest": "8bee380384be522159159dc46e5b37ac97eb79fb8d178019ae3773aca0ea0a88",
   "definition_digest": "a996e7348737dcf563b34e86f150b0cae75235c6c3da5dbf2dd98f14987854f0",
   "source_registry_digest": "9e2a5d1186f95a8f45699ceebf02fe6c91c0af32ce912a7e1d4f40d4192a3979",
   "lifecycle": "protocol_bound",
@@ -243,6 +243,10 @@
     "execution_state": "execution_ready",
     "program_id": "providellm_memory",
     "program_digest": "2a3e2265f561db1e9db0af56629cd5c812389b7422b827b8c6dbb8632a263124",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }

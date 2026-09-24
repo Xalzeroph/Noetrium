@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v8",
+  "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "drvideo",
-  "package_digest": "4484284f53a54a0b824569334d4a840d7ee7b2e9604889f815eccf65cb120979",
+  "package_digest": "070ef433b9e34fdbef13de8b9996731c43e7e0dd1b845e1083a0a3536ed5996d",
   "definition_digest": "44d9e76f1ec1e05d74601acc31536b1076bf4a32724990913f969d334996d904",
   "source_registry_digest": "7fefca6637ec616d0b9bca8e3d69771815436472b8f69bb31f15efe37cd0d68c",
   "lifecycle": "protocol_bound",
@@ -251,6 +251,10 @@
     "execution_state": "execution_ready",
     "program_id": "drvideo",
     "program_digest": "481e2208f0bd729a7ef4c338aa6ae49124fbd9d5205359bbdd82ea4c0a150499",
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
     "execution_requirements": []
   }
 }
