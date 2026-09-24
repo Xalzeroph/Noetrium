@@ -8,6 +8,13 @@ from .authority import (
     MachineLeaseLost,
 )
 from .semantic_policy import OperationSemanticPolicyViolation
+from .durable_closure import (
+    DurableCarrierClosureAuthority,
+    DurableCarrierReferenceClosure,
+    durable_carrier_closure_complete,
+    durable_carrier_gc_eligible,
+    validate_durable_carrier_closures,
+)
 from .context import ExecutionContext
 from .contracts import CapabilityDescriptor, ChildMachineLink, MachineAttempt, RunBinding
 from .delivery import (
@@ -102,6 +109,8 @@ from .nir import NIREnvelope
 
 __all__ = [
     "ExecutionContext", "ComponentIdentity", "ImmutableModelIdentity",
+    "DurableCarrierClosureAuthority", "DurableCarrierReferenceClosure",
+    "durable_carrier_closure_complete", "durable_carrier_gc_eligible", "validate_durable_carrier_closures",
     "DirectoryMachineAuthority", "InMemoryMachineAuthority", "MachineAuthorityError",
     "MachineAuthorityPort", "MachineLease", "MachineLeaseBusy", "MachineLeaseLost",
     "CapabilityDescriptor", "ChildMachineLink", "MachineAttempt", "RunBinding",
