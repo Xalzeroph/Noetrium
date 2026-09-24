@@ -267,7 +267,7 @@ def _durable_execution_contract() -> ReadinessCriterion:
         "mark_ready",
         "claim",
         "mark_running",
-        "renew_lease",
+        "renew_leases",
         "mark_succeeded",
         "mark_failed",
         "retry_failed_subgraph",
