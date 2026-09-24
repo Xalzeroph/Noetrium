@@ -3898,11 +3898,13 @@
       "reproduction_packages": [
         {
           "package": "multiagent_debate",
-          "lifecycle": "catalogued"
+          "lifecycle": "protocol_bound"
         }
       ],
       "priority": 1,
-      "benchmark_ids": [],
+      "benchmark_ids": [
+        "gsm8k"
+      ],
       "platform_pressure": [
         "execution/workflow",
         "experimentation/study",
