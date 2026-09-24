@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import importlib
+import inspect
 from pathlib import Path, PurePosixPath
 
 from noetrium import api
@@ -23,6 +24,7 @@ from .contracts import (
     ReproductionAssetRef,
     ReproductionDefinition,
     ReproductionLifecycle,
+    ReproductionMethodProgramFactoryBinding,
 )
 
 
@@ -61,7 +63,9 @@ class ReproductionMethodProgramBinding:
     asset: ReproductionAssetRef
     module: str
     qualname: str
-    program_digest: str
+    program_digest: str | None
+    binding_kind: str = "symbol"
+    factory: ReproductionMethodProgramFactoryBinding | None = None
 
     def __post_init__(self) -> None:
         if not self.package:
@@ -70,8 +74,36 @@ class ReproductionMethodProgramBinding:
             raise ValueError("reproduction MethodProgram binding asset kind drifted")
         if not self.module or not self.qualname:
             raise ValueError("reproduction MethodProgram import coordinates are required")
-        if len(self.program_digest) != 64:
-            raise ValueError("reproduction MethodProgram digest must be SHA-256 text")
+        if self.binding_kind not in {"symbol", "factory"}:
+            raise ValueError("reproduction MethodProgram binding kind is invalid")
+        if self.binding_kind == "symbol":
+            if self.factory is not None:
+                raise ValueError("symbol MethodProgram binding cannot carry factory metadata")
+            if type(self.program_digest) is not str or len(self.program_digest) != 64:
+                raise ValueError("symbol MethodProgram digest must be SHA-256 text")
+        else:
+            if type(self.factory) is not ReproductionMethodProgramFactoryBinding:
+                raise TypeError("factory MethodProgram binding requires typed factory")
+            if self.qualname != self.factory.qualname:
+                raise ValueError("factory MethodProgram qualname drifted")
+            if self.factory.exact:
+                if type(self.program_digest) is not str or len(self.program_digest) != 64:
+                    raise ValueError("exact factory MethodProgram requires SHA-256 digest")
+            elif self.program_digest is not None:
+                raise ValueError(
+                    "parameterized MethodProgram factory cannot claim a program digest"
+                )
+
+    @property
+    def exact(self) -> bool:
+        return self.program_digest is not None
+
+    @property
+    def binding_digest(self) -> str:
+        if self.factory is not None:
+            return self.factory.binding_digest
+        assert self.program_digest is not None
+        return self.program_digest
 
 
 def _asset(
@@ -107,7 +139,7 @@ def _module_from_asset(
 def resolve_method_program_binding(
     definition: ReproductionDefinition,
 ) -> ReproductionMethodProgramBinding:
-    """Resolve the one declared MethodProgram asset without guessing a fallback."""
+    """Resolve one declared MethodProgram symbol/factory without fallback."""
 
     if type(definition) is not ReproductionDefinition:
         raise TypeError("reproduction Research OS compilation requires definition")
@@ -122,23 +154,84 @@ def resolve_method_program_binding(
         ) from exc
 
     exported = getattr(module, "__all__", ())
-    if type(exported) is not list and type(exported) is not tuple:
+    if type(exported) not in {list, tuple}:
         raise ReproductionResearchOSCompileError(
             f"{definition.package} MethodProgram module __all__ must be explicit"
         )
+    if any(type(name) is not str or not name for name in exported):
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} MethodProgram module has invalid __all__"
+        )
+
+    factory = definition.method_program_factory
+    if factory is not None:
+        if factory.qualname not in exported:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} declared MethodProgram factory is not exported: "
+                f"{factory.qualname}"
+            )
+        value = getattr(module, factory.qualname, None)
+        if not callable(value):
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} declared MethodProgram factory is not callable: "
+                f"{factory.qualname}"
+            )
+        try:
+            parameters = inspect.signature(value).parameters
+        except (TypeError, ValueError) as exc:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} MethodProgram factory signature is unavailable"
+            ) from exc
+        unknown = tuple(
+            name for name in factory.unresolved_parameters if name not in parameters
+        )
+        if unknown:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} factory declares unknown unresolved parameters: "
+                f"{unknown}"
+            )
+        if not factory.exact:
+            return ReproductionMethodProgramBinding(
+                definition.package,
+                asset,
+                module_name,
+                factory.qualname,
+                None,
+                "factory",
+                factory,
+            )
+        try:
+            implementation = api.ResearchMethodProgramImplementation.from_factory(
+                "method",
+                module=module_name,
+                qualname=factory.qualname,
+                args=factory.args,
+                kwargs=factory.kwargs,
+            )
+        except (TypeError, ValueError) as exc:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} exact MethodProgram factory failed to materialize"
+            ) from exc
+        return ReproductionMethodProgramBinding(
+            definition.package,
+            asset,
+            module_name,
+            factory.qualname,
+            implementation.program_digest,
+            "factory",
+            factory,
+        )
+
     candidates: list[tuple[str, MethodProgram]] = []
     for name in exported:
-        if type(name) is not str or not name:
-            raise ReproductionResearchOSCompileError(
-                f"{definition.package} MethodProgram module has invalid __all__"
-            )
         value = getattr(module, name, None)
         if type(value) is MethodProgram:
             candidates.append((name, value))
     if len(candidates) != 1:
         raise ReproductionResearchOSCompileError(
-            f"{definition.package} must export exactly one MethodProgram from "
-            f"{asset.path}; found={tuple(name for name, _ in candidates)}"
+            f"{definition.package} must export exactly one MethodProgram symbol or "
+            "declare method_program_factory; "
+            f"symbols={tuple(name for name, _ in candidates)}"
         )
     qualname, program = candidates[0]
     return ReproductionMethodProgramBinding(
@@ -279,21 +372,49 @@ def compile_reproduction_research_program(
     executable_definition_ids: list[str] = []
     if method_assets:
         method = resolve_method_program_binding(definition)
-        builder.method_program(
-            "method",
-            module=method.module,
-            qualname=method.qualname,
-            config={
-                "reproduction_package": definition.package,
-                "reproduction_method_id": definition.identity.method_id,
-                "reproduction_definition_digest": definition.definition_digest,
-                "asset_path": method.asset.path,
-                "program_digest": method.program_digest,
-                "research_program_dependencies": machine_dependency_documents,
-            },
-        )
+        method_config = {
+            "reproduction_package": definition.package,
+            "reproduction_method_id": definition.identity.method_id,
+            "reproduction_definition_digest": definition.definition_digest,
+            "asset_path": method.asset.path,
+            "binding_kind": method.binding_kind,
+            "binding_digest": method.binding_digest,
+            "program_digest": method.program_digest,
+            "unresolved_parameters": (
+                ()
+                if method.factory is None
+                else method.factory.unresolved_parameters
+            ),
+            "research_program_dependencies": machine_dependency_documents,
+        }
+        if method.binding_kind == "symbol":
+            builder.method_program(
+                "method",
+                module=method.module,
+                qualname=method.qualname,
+                config=method_config,
+            )
+        elif method.exact:
+            assert method.factory is not None
+            builder.method_program_factory(
+                "method",
+                module=method.module,
+                qualname=method.qualname,
+                args=method.factory.args,
+                kwargs=method.factory.kwargs,
+                config=method_config,
+            )
+        else:
+            builder.definition(
+                "method",
+                kind=api.ResearchDefinitionKind.METHOD,
+                config={
+                    **method_config,
+                    "authority": "parameterized-method-program-factory",
+                },
+            )
         executable_definition_ids.append("method")
-        primary_executable_digest = method.program_digest
+        primary_executable_digest = method.binding_digest
     else:
         for index, binding in enumerate(machine_dependencies):
             definition_id = f"machine.{index:02d}"
