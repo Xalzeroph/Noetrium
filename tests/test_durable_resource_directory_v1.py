@@ -5,16 +5,19 @@ from pathlib import Path
 
 import pytest
 
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierClosureAuthority,
+    DurableCarrierReferenceClosure,
+)
+
 from noetrium_platform.foundation.kernel.kernel.durability.checksummed_document import (
     encode_checksummed_document,
 )
 from noetrium_platform.infrastructure.resources.directory.api import (
     DirectoryLayout,
     ManagedDirectoryKind,
-    WorkspaceClosureAuthority,
     WorkspaceMetadataError,
     WorkspaceMetadataFailureCode,
-    WorkspaceReferenceClosure,
 )
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind, scope_to_data
@@ -32,18 +35,18 @@ def _closed_workspace_gc(
         scope=scope,
         category=category,
         closures=(
-            WorkspaceReferenceClosure(
-                WorkspaceClosureAuthority.EVIDENCE,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EVIDENCE,
                 "1" * 64,
                 (),
             ),
-            WorkspaceReferenceClosure(
-                WorkspaceClosureAuthority.EXECUTION,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
                 "2" * 64,
                 (),
             ),
-            WorkspaceReferenceClosure(
-                WorkspaceClosureAuthority.RECOVERY,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.RECOVERY,
                 "3" * 64,
                 (),
             ),
@@ -305,8 +308,8 @@ def test_workspace_gc_fails_closed_without_all_reference_authorities(
         scope=scope,
         category="study",
         closures=(
-            WorkspaceReferenceClosure(
-                WorkspaceClosureAuthority.EXECUTION,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
                 "4" * 64,
                 (),
             ),
@@ -330,14 +333,14 @@ def test_workspace_gc_fails_closed_without_all_reference_authorities(
 @pytest.mark.parametrize(
     ("authority", "reference_id"),
     (
-        (WorkspaceClosureAuthority.EXECUTION, "run-resumable"),
-        (WorkspaceClosureAuthority.EVIDENCE, "evidence-retained"),
-        (WorkspaceClosureAuthority.RECOVERY, "checkpoint-retained"),
+        (DurableCarrierClosureAuthority.EXECUTION, "run-resumable"),
+        (DurableCarrierClosureAuthority.EVIDENCE, "evidence-retained"),
+        (DurableCarrierClosureAuthority.RECOVERY, "checkpoint-retained"),
     ),
 )
 def test_workspace_gc_blocks_any_retained_recovery_reference(
     tmp_path: Path,
-    authority: WorkspaceClosureAuthority,
+    authority: DurableCarrierClosureAuthority,
     reference_id: str,
 ) -> None:
     authorities = build_local_directory_authorities(_layout(tmp_path))
@@ -349,16 +352,16 @@ def test_workspace_gc_blocks_any_retained_recovery_reference(
         category="study",
     )
     closures = tuple(
-        WorkspaceReferenceClosure(
+        DurableCarrierReferenceClosure(
             current,
             str(index) * 64,
             (reference_id,) if current is authority else (),
         )
         for index, current in enumerate(
             (
-                WorkspaceClosureAuthority.EVIDENCE,
-                WorkspaceClosureAuthority.EXECUTION,
-                WorkspaceClosureAuthority.RECOVERY,
+                DurableCarrierClosureAuthority.EVIDENCE,
+                DurableCarrierClosureAuthority.EXECUTION,
+                DurableCarrierClosureAuthority.RECOVERY,
             ),
             start=5,
         )
@@ -419,18 +422,18 @@ def test_workspace_remove_retry_rejects_changed_gc_proof(
         scope=scope,
         category="study",
         closures=(
-            WorkspaceReferenceClosure(
-                WorkspaceClosureAuthority.EVIDENCE,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EVIDENCE,
                 "a" * 64,
                 (),
             ),
-            WorkspaceReferenceClosure(
-                WorkspaceClosureAuthority.EXECUTION,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
                 "b" * 64,
                 (),
             ),
-            WorkspaceReferenceClosure(
-                WorkspaceClosureAuthority.RECOVERY,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.RECOVERY,
                 "c" * 64,
                 (),
             ),
