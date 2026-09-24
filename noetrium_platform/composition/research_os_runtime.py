@@ -522,6 +522,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 runtime_binding.adapter,
                 runtime_binding.aggregation,
                 execution_binding_digest=runtime_binding.runtime_binding_digest,
+                execution_id=execution_cut_id,
                 task_group=group,
             ).execute(
                 journal=self._machine_journal,
