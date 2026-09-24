@@ -32,48 +32,6 @@ class WorkspaceMetadataError(RuntimeError):
         return (f"resource-workspace-metadata:{self.code.value}",)
 
 
-class WorkspaceClosureAuthority(StrEnum):
-    EXECUTION = "execution"
-    EVIDENCE = "evidence"
-    RECOVERY = "recovery"
-
-
-@dataclass(frozen=True, slots=True)
-class WorkspaceReferenceClosure:
-    """Proof-backed external reference closure from one canonical authority."""
-
-    authority: WorkspaceClosureAuthority
-    proof_digest: str
-    retained_reference_ids: tuple[str, ...] = ()
-
-    def __post_init__(self) -> None:
-        if type(self.authority) is not WorkspaceClosureAuthority:
-            raise TypeError("workspace reference closure authority must be typed")
-        if (
-            type(self.proof_digest) is not str
-            or len(self.proof_digest) != 64
-            or any(ch not in "0123456789abcdef" for ch in self.proof_digest)
-        ):
-            raise ValueError(
-                "workspace reference closure proof_digest must be lowercase sha256"
-            )
-        if type(self.retained_reference_ids) is not tuple or any(
-            type(value) is not str
-            or not value.strip()
-            or value != value.strip()
-            for value in self.retained_reference_ids
-        ):
-            raise TypeError(
-                "workspace retained reference ids must be canonical text tuple"
-            )
-        if self.retained_reference_ids != tuple(
-            sorted(set(self.retained_reference_ids))
-        ):
-            raise ValueError(
-                "workspace retained reference ids must be unique sorted order"
-            )
-
-
 @dataclass(frozen=True, slots=True)
 class WorkspaceGcAssessment:
     """Exact fail-closed GC cut for one durable recovery workspace."""
@@ -234,9 +192,7 @@ __all__ = [
     "DirectoryUsage",
     "ManagedDirectoryKind",
     "WorkspaceAllocation",
-    "WorkspaceClosureAuthority",
     "WorkspaceGcAssessment",
     "WorkspaceMetadataError",
     "WorkspaceMetadataFailureCode",
-    "WorkspaceReferenceClosure",
 ]
