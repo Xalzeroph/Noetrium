@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3686,
-    "python_import_edges": 6946,
-    "symbols": 5034,
-    "tracked_files": 4322,
+    "python_files": 3688,
+    "python_import_edges": 6950,
+    "symbols": 5037,
+    "tracked_files": 4324,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5028,
+    "python": 5031,
     "typescript": 5
   },
   "parse_errors": [],
@@ -14991,6 +14991,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.gc",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.policy",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -15065,12 +15071,6 @@
     {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.checksummed_document",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.research.execution.api",
       "target_role": "core_platform"
     },
@@ -15087,6 +15087,18 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.retirement",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.checksummed_document",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.retirement",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_codec",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -15095,13 +15107,13 @@
     {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -40925,6 +40937,12 @@
     {
       "source_module": "tests.test_typed_workload_checkpoint_manifest_codec_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_typed_workload_checkpoint_manifest_codec_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
       "target_role": "core_platform"
     },
@@ -40932,6 +40950,12 @@
       "source_module": "tests.test_typed_workload_checkpoint_manifest_codec_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_typed_workload_checkpoint_manifest_codec_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent",
       "target_role": "core_platform"
     },
     {
@@ -41693,7 +41717,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2608,
+      "count": 2610,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -41753,7 +41777,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2809,
+      "count": 2811,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41809,7 +41833,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1910,
+    "core_platform": 1912,
     "examples": 6,
     "other": 7,
     "public_facade": 40,
@@ -41820,7 +41844,7 @@
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3379,
+    "core_platform": 3382,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -41832,7 +41856,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "7874fe44cfee79b4a9a22867f49090aaed173097",
+  "source_git_sha": "e0865f11275ba9b55a5f951b951f3ac6ec4fb0ee",
   "symbols": [
     {
       "bases": [],
@@ -111282,7 +111306,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 23,
+      "line": 20,
       "methods": [
         "__post_init__",
         "role"
@@ -111304,7 +111328,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 52,
+      "line": 49,
       "methods": [
         "__post_init__"
       ],
@@ -111331,7 +111355,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 66,
+      "line": 63,
       "methods": [
         "__post_init__",
         "digest"
@@ -111353,7 +111377,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 94,
+      "line": 91,
       "methods": [
         "__post_init__"
       ],
@@ -111365,59 +111389,13 @@
     },
     {
       "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "COMMITTED",
-        "PENDING"
-      ],
-      "kind": "enum",
-      "language": "python",
-      "line": 113,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts",
-      "name": "RunCheckpointPersistenceState",
-      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/api/contracts.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts.RunCheckpointPersistenceState",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "checkpoint_id: str",
-        "persistence_state: RunCheckpointPersistenceState",
-        "state_digest: str",
-        "blob_sha256s: tuple[str, ...]",
-        "closures: tuple[DurableCarrierReferenceClosure, ...]",
-        "proof_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 119,
-      "methods": [
-        "__post_init__",
-        "closure_complete",
-        "eligible"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts",
-      "name": "RunCheckpointGcAssessment",
-      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/api/contracts.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts.RunCheckpointGcAssessment",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
         "RuntimeError"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 188,
+      "line": 110,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts",
       "name": "RunCheckpointConflict",
@@ -111433,7 +111411,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 192,
+      "line": 114,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts",
       "name": "RunCheckpointIntegrityError",
@@ -111449,7 +111427,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 196,
+      "line": 118,
       "methods": [
         "__init__",
         "failure_correlation_refs"
@@ -111472,7 +111450,7 @@
       ],
       "kind": "protocol",
       "language": "python",
-      "line": 225,
+      "line": 147,
       "methods": [
         "publish",
         "load",
@@ -111483,6 +111461,72 @@
       "name": "RunCheckpointStore",
       "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/api/contracts.py",
       "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts.RunCheckpointStore",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "RUN",
+        "WORKLOAD"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 15,
+      "methods": [],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.gc",
+      "name": "CheckpointNamespace",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/api/gc.py",
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.gc.CheckpointNamespace",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "COMMITTED",
+        "PENDING"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 20,
+      "methods": [],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.gc",
+      "name": "CheckpointPersistenceState",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/api/gc.py",
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.gc.CheckpointPersistenceState",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "namespace: CheckpointNamespace",
+        "checkpoint_id: str",
+        "persistence_state: CheckpointPersistenceState",
+        "state_digest: str",
+        "blob_sha256s: tuple[str, ...]",
+        "closures: tuple[DurableCarrierReferenceClosure, ...]",
+        "proof_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 26,
+      "methods": [
+        "__post_init__",
+        "closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.gc",
+      "name": "CheckpointGcAssessment",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/api/gc.py",
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.gc.CheckpointGcAssessment",
       "role": "core_platform"
     },
     {
@@ -111623,7 +111667,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 64,
+      "line": 68,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.workload",
       "name": "WorkloadRestoreStateCertainty",
@@ -111639,7 +111683,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 70,
+      "line": 74,
       "methods": [
         "__init__"
       ],
@@ -111662,7 +111706,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 97,
+      "line": 101,
       "methods": [
         "__post_init__",
         "digest"
@@ -111687,7 +111731,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 122,
+      "line": 126,
       "methods": [
         "__post_init__"
       ],
@@ -111708,7 +111752,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 141,
+      "line": 145,
       "methods": [
         "__post_init__"
       ],
@@ -111741,7 +111785,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 181,
+      "line": 185,
       "methods": [
         "__post_init__",
         "digest"
@@ -111763,7 +111807,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 240,
+      "line": 244,
       "methods": [
         "__post_init__"
       ],
@@ -111785,10 +111829,12 @@
       ],
       "kind": "protocol",
       "language": "python",
-      "line": 249,
+      "line": 253,
       "methods": [
         "publish",
-        "load"
+        "load",
+        "assess_gc",
+        "purge"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.workload",
       "name": "WorkloadCheckpointStore",
@@ -111810,7 +111856,7 @@
       ],
       "kind": "protocol",
       "language": "python",
-      "line": 262,
+      "line": 280,
       "methods": [
         "capture",
         "restore"
@@ -111841,7 +111887,7 @@
       ],
       "kind": "protocol",
       "language": "python",
-      "line": 273,
+      "line": 291,
       "methods": [
         "checkpoint_components"
       ],
@@ -111913,7 +111959,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 58,
+      "line": 43,
       "methods": [
         "__init__",
         "_sha",
@@ -111929,9 +111975,6 @@
         "_clear_intent",
         "_gc_state_digest",
         "_current_gc_state_unlocked",
-        "_retirement_document",
-        "_write_retirement",
-        "_read_retirement",
         "_manifest_filename",
         "_blob_referenced_elsewhere",
         "_write_blob_under_lock",
@@ -112029,6 +112072,54 @@
     },
     {
       "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "namespace: CheckpointNamespace",
+        "checkpoint_id: str",
+        "persistence_state: CheckpointPersistenceState",
+        "state_digest: str",
+        "blob_sha256s: tuple[str, ...]",
+        "gc_proof_digest: str",
+        "purged: bool"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 38,
+      "methods": [
+        "from_gc",
+        "__post_init__",
+        "binds",
+        "document"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.retirement",
+      "name": "CheckpointRetirementRecord",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/providers/retirement.py",
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.retirement.CheckpointRetirementRecord",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 127,
+      "methods": [
+        "__init__",
+        "_path",
+        "load",
+        "publish"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.retirement",
+      "name": "CheckpointRetirementStore",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/providers/retirement.py",
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.retirement.CheckpointRetirementStore",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
@@ -112052,7 +112143,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
+      "line": 40,
       "methods": [
         "__init__",
         "_sha",
@@ -112061,8 +112152,13 @@
         "_publication_intent",
         "_publish_intent",
         "_clear_intent",
+        "_gc_state_digest",
+        "_current_gc_state_unlocked",
+        "_require_gc",
         "publish",
-        "load"
+        "load",
+        "assess_gc",
+        "purge"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store",
       "name": "DirectoryWorkloadCheckpointStore",

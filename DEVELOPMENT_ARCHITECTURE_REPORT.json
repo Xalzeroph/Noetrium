@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5313,
+    "import_edges": 5321,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5313,
+      "import_edges": 5321,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5313,
+  "import_edges": 5321,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "2d6285a1658d3997d9f28448387c08f58141996392339a8c0afcf19f8f558827",
+  "report_sha256": "479ad09be3914b566add96b503e311a9dca34253f00b22f00ffa3746019f8e66",
   "source_authority_violations": [],
-  "source_digest": "cbe6bc9ae64a57e7c3282daff4fab29f4279eeee20ef542b8d6158711c2c79ce",
+  "source_digest": "92fc89b35cde924a27ebeb1459300a7d9448c1a5d5a50b8c6f0d9ad8d75f85dd",
   "source_invariant_violations": [
     {
       "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.software.api; required facade=noetrium_platform.research.experimentation.api",
@@ -1881,7 +1881,7 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 459,
+      "import_fan_in": 461,
       "import_fan_out": 29,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1892,7 +1892,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1923,
+      "risk_score": 1931,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -2148,25 +2148,6 @@
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 14,
-      "import_fan_in": 2,
-      "import_fan_out": 8,
-      "io_sites": 7,
-      "lock_sites": 0,
-      "long_functions": 5,
-      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
-      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/providers/directory_store.py",
-      "reason_codes": [
-        "IO_CONCENTRATION",
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 367,
-      "self_mutation_sites": 11,
-      "serialization_sites": 3
-    },
-    {
       "exception_handlers": 11,
       "import_fan_in": 3,
       "import_fan_out": 7,
@@ -2199,6 +2180,25 @@
       "risk_score": 341,
       "self_mutation_sites": 0,
       "serialization_sites": 0
+    },
+    {
+      "exception_handlers": 12,
+      "import_fan_in": 2,
+      "import_fan_out": 8,
+      "io_sites": 6,
+      "lock_sites": 0,
+      "long_functions": 4,
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/providers/directory_store.py",
+      "reason_codes": [
+        "IO_CONCENTRATION",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 339,
+      "self_mutation_sites": 11,
+      "serialization_sites": 7
     },
     {
       "exception_handlers": 13,
