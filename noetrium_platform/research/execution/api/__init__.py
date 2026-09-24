@@ -475,6 +475,12 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodNodeRequest,
     MethodNodeResult,
     MethodNodeSpec,
+    environment_action_capability_payload,
+    environment_branch_action_spec,
+    environment_fork_action_payload,
+    environment_query_capability_payload,
+    environment_replay_action_payload,
+    environment_reset_capability_payload,
 )
 
 _EXECUTION_PRODUCT_AUTHORING_EXPORTS = (
@@ -518,6 +524,12 @@ _EXECUTION_PRODUCT_AUTHORING_EXPORTS = (
     "ResearchRunProgramBuilder",
     "RuntimeModule",
     "RuntimeModuleBuilder",
+    "environment_action_capability_payload",
+    "environment_branch_action_spec",
+    "environment_fork_action_payload",
+    "environment_query_capability_payload",
+    "environment_replay_action_payload",
+    "environment_reset_capability_payload",
     "materialize_capability_selection_view",
 )
 __all__ = tuple(__all__) + _EXECUTION_PRODUCT_AUTHORING_EXPORTS
