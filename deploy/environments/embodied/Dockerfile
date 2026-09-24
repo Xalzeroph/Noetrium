@@ -5,6 +5,9 @@ FROM ${PLATFORM_BASE_IMAGE}
 ENV NOETRIUM_ENVIRONMENT_PROFILE=embodied
 
 USER root
+RUN mkdir -p /usr/local/lib/noetrium/environment-doctor.d
+COPY deploy/environments/embodied/doctor.sh /usr/local/lib/noetrium/environment-doctor.d/embodied
+RUN chmod 0755 /usr/local/lib/noetrium/environment-doctor.d/embodied
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libegl1 libgl1 libglfw3 libosmesa6 libglib2.0-0 \
