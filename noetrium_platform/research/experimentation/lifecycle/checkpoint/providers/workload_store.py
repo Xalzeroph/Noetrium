@@ -9,6 +9,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.durable_file import a
 from ..api import (
     RunCheckpointConflict,
     RunCheckpointIntegrityError,
+    RunCheckpointRecoveryRequired,
     WorkloadCheckpointBundle,
     WorkloadCheckpointManifest,
     WorkloadCheckpointPayload,
@@ -141,6 +142,19 @@ class DirectoryWorkloadCheckpointStore(WorkloadCheckpointStore):
     def load(self, checkpoint_id: str) -> WorkloadCheckpointBundle:
         path = self._manifest_path(checkpoint_id)
         if not path.exists():
+            try:
+                pending = self._intents.load(checkpoint_id)
+            except CheckpointPublicationIntentCorruptionError as exc:
+                raise RunCheckpointIntegrityError(
+                    "pending workload checkpoint publication intent is corrupt"
+                ) from exc
+            if pending is not None:
+                raise RunCheckpointRecoveryRequired(
+                    checkpoint_id,
+                    namespace=pending.namespace,
+                    manifest_sha256=pending.manifest_sha256,
+                    blob_sha256s=pending.blob_sha256s,
+                )
             raise FileNotFoundError(f"workload checkpoint not found: {checkpoint_id}")
         manifest = self._codec.decode(path.read_bytes())
         if manifest.checkpoint_id != checkpoint_id:
