@@ -462,28 +462,28 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.capabilities.environment.embodied.providers.simulator.EmbodiedSimulatorBackendPort",
-      "target": "noetrium_platform.capabilities.environment.embodied.providers.simulator.SimulatorObservation"
+      "source": "noetrium_platform.capabilities.environment.embodied.api.simulator.EmbodiedSimulatorBackendPort",
+      "target": "noetrium_platform.capabilities.environment.embodied.api.contracts.EmbodiedActionCommand"
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.capabilities.environment.embodied.providers.simulator.EmbodiedSimulatorBackendPort",
-      "target": "noetrium_platform.capabilities.environment.embodied.providers.simulator.SimulatorStep"
+      "source": "noetrium_platform.capabilities.environment.embodied.api.simulator.EmbodiedSimulatorBackendPort",
+      "target": "noetrium_platform.capabilities.environment.embodied.api.contracts.EpisodeSpec"
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.capabilities.environment.embodied.providers.simulator.EmbodiedSimulatorEnvironment",
-      "target": "noetrium_platform.capabilities.environment.embodied.providers.simulator.EmbodiedSimulatorBackendPort"
+      "source": "noetrium_platform.capabilities.environment.embodied.api.simulator.EmbodiedSimulatorBackendPort",
+      "target": "noetrium_platform.capabilities.environment.embodied.api.simulator.SimulatorObservation"
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.capabilities.environment.embodied.providers.simulator.EmbodiedSimulatorEnvironment",
-      "target": "noetrium_platform.capabilities.environment.embodied.providers.simulator.SimulatorObservation"
+      "source": "noetrium_platform.capabilities.environment.embodied.api.simulator.EmbodiedSimulatorBackendPort",
+      "target": "noetrium_platform.capabilities.environment.embodied.api.simulator.SimulatorStep"
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.capabilities.environment.embodied.providers.simulator.SimulatorStep",
-      "target": "noetrium_platform.capabilities.environment.embodied.providers.simulator.SimulatorObservation"
+      "source": "noetrium_platform.capabilities.environment.embodied.api.simulator.SimulatorStep",
+      "target": "noetrium_platform.capabilities.environment.embodied.api.simulator.SimulatorObservation"
     },
     {
       "kind": "references",
@@ -1329,6 +1329,11 @@
       "kind": "references",
       "source": "noetrium_platform.capabilities.model.asset.api.ports.ModelAssetManagementPort",
       "target": "noetrium_platform.capabilities.model.asset.api.contracts.ManagedModelAsset"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.asset.api.ports.ModelAssetManagementPort",
+      "target": "noetrium_platform.capabilities.model.asset.api.contracts.ModelAssetGcAssessment"
     },
     {
       "kind": "references",
@@ -5747,6 +5752,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.composition.research_os_values.ResearchOSValueExecutionReleasePort",
+      "target": "noetrium_platform.composition.research_os_values.ResearchOSValueSubject"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.composition.research_os_values.ResearchOSValueReference",
       "target": "noetrium_platform.composition.research_os_values.ResearchOSValueSubject"
     },
@@ -9259,6 +9269,11 @@
       "kind": "references",
       "source": "noetrium_platform.foundation.kernel.kernel.durability.document_integrity.DocumentIntegrityError",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.checksummed_document.ChecksummedDocumentFailureCode"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.durable_closure.DurableCarrierReferenceClosure",
+      "target": "noetrium_platform.foundation.kernel.kernel.durable_closure.DurableCarrierClosureAuthority"
     },
     {
       "kind": "references",
@@ -12957,18 +12972,8 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceGcAssessment",
-      "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceReferenceClosure"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceMetadataError",
       "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceMetadataFailureCode"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceReferenceClosure",
-      "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceClosureAuthority"
     },
     {
       "kind": "references",
@@ -13044,11 +13049,6 @@
       "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.directory.api.ports.WorkspaceManagementPort",
       "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceGcAssessment"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.infrastructure.resources.directory.api.ports.WorkspaceManagementPort",
-      "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceReferenceClosure"
     },
     {
       "kind": "references",
@@ -19919,6 +19919,84 @@
       "top_system": "environment"
     },
     {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 73,
+      "methods": [
+        "identity_digest",
+        "reset",
+        "step",
+        "close"
+      ],
+      "module": "noetrium_platform.capabilities.environment.embodied.api.simulator",
+      "name": "EmbodiedSimulatorBackendPort",
+      "nesting": [
+        "EmbodiedSimulatorBackendPort"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.embodied.api.simulator.EmbodiedSimulatorBackendPort",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "metadata",
+        "normalized_payload",
+        "raw_payload",
+        "reward",
+        "status",
+        "success",
+        "terminated",
+        "truncated"
+      ],
+      "kind": "dataclass",
+      "line": 18,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.environment.embodied.api.simulator",
+      "name": "SimulatorObservation",
+      "nesting": [
+        "SimulatorObservation"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.embodied.api.simulator.SimulatorObservation",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "action_receipt",
+        "action_status",
+        "observation"
+      ],
+      "kind": "dataclass",
+      "line": 57,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.environment.embodied.api.simulator",
+      "name": "SimulatorStep",
+      "nesting": [
+        "SimulatorStep"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.embodied.api.simulator.SimulatorStep",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
@@ -19976,37 +20054,12 @@
     },
     {
       "bases": [
-        "Protocol"
-      ],
-      "decorators": [
-        "runtime_checkable"
-      ],
-      "fields": [],
-      "kind": "protocol",
-      "line": 77,
-      "methods": [
-        "identity_digest",
-        "reset",
-        "step",
-        "close"
-      ],
-      "module": "noetrium_platform.capabilities.environment.embodied.providers.simulator",
-      "name": "EmbodiedSimulatorBackendPort",
-      "nesting": [
-        "EmbodiedSimulatorBackendPort"
-      ],
-      "qualname": "noetrium_platform.capabilities.environment.embodied.providers.simulator.EmbodiedSimulatorBackendPort",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "bases": [
         "EmbodiedEnvironmentPort"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 96,
+      "line": 28,
       "methods": [
         "__init__",
         "spec",
@@ -20025,59 +20078,6 @@
         "EmbodiedSimulatorEnvironment"
       ],
       "qualname": "noetrium_platform.capabilities.environment.embodied.providers.simulator.EmbodiedSimulatorEnvironment",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "metadata",
-        "normalized_payload",
-        "raw_payload",
-        "reward",
-        "status",
-        "success",
-        "terminated",
-        "truncated"
-      ],
-      "kind": "dataclass",
-      "line": 30,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.capabilities.environment.embodied.providers.simulator",
-      "name": "SimulatorObservation",
-      "nesting": [
-        "SimulatorObservation"
-      ],
-      "qualname": "noetrium_platform.capabilities.environment.embodied.providers.simulator.SimulatorObservation",
-      "system_key": "environment",
-      "top_system": "environment"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "action_receipt",
-        "action_status",
-        "observation"
-      ],
-      "kind": "dataclass",
-      "line": 63,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.capabilities.environment.embodied.providers.simulator",
-      "name": "SimulatorStep",
-      "nesting": [
-        "SimulatorStep"
-      ],
-      "qualname": "noetrium_platform.capabilities.environment.embodied.providers.simulator.SimulatorStep",
       "system_key": "environment",
       "top_system": "environment"
     },
@@ -25323,7 +25323,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 52,
+      "line": 105,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.asset.api.contracts",
       "name": "ManagedModelAsset",
@@ -25348,7 +25348,7 @@
         "storage_pool"
       ],
       "kind": "dataclass",
-      "line": 35,
+      "line": 88,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.asset.api.contracts",
       "name": "ModelAcquisitionReceipt",
@@ -25356,6 +25356,33 @@
         "ModelAcquisitionReceipt"
       ],
       "qualname": "noetrium_platform.capabilities.model.asset.api.contracts.ModelAcquisitionReceipt",
+      "system_key": "model",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "asset_digest",
+        "closures",
+        "model_id",
+        "proof_digest"
+      ],
+      "kind": "dataclass",
+      "line": 18,
+      "methods": [
+        "__post_init__",
+        "closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.capabilities.model.asset.api.contracts",
+      "name": "ModelAssetGcAssessment",
+      "nesting": [
+        "ModelAssetGcAssessment"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.asset.api.contracts.ModelAssetGcAssessment",
       "system_key": "model",
       "top_system": "model"
     },
@@ -25372,7 +25399,7 @@
         "SYMLINK"
       ],
       "kind": "enum",
-      "line": 10,
+      "line": 63,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.asset.api.contracts",
       "name": "ModelAssetMode",
@@ -25394,7 +25421,7 @@
         "source"
       ],
       "kind": "dataclass",
-      "line": 45,
+      "line": 98,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.asset.api.contracts",
       "name": "ModelAssetOrigin",
@@ -25418,7 +25445,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 86,
+      "line": 139,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.asset.api.contracts",
       "name": "ModelAssetStats",
@@ -25440,7 +25467,7 @@
         "model_id"
       ],
       "kind": "dataclass",
-      "line": 95,
+      "line": 148,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.asset.api.contracts",
       "name": "ModelAssetUsage",
@@ -25467,7 +25494,7 @@
         "torch_dtype"
       ],
       "kind": "dataclass",
-      "line": 74,
+      "line": 127,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.asset.api.contracts",
       "name": "ModelConfigSummary",
@@ -25494,7 +25521,7 @@
         "storage_pool"
       ],
       "kind": "dataclass",
-      "line": 19,
+      "line": 72,
       "methods": [
         "__post_init__"
       ],
@@ -25520,7 +25547,7 @@
         "used_bytes"
       ],
       "kind": "dataclass",
-      "line": 65,
+      "line": 118,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.asset.api.contracts",
       "name": "ModelStoragePoolStatus",
@@ -25538,7 +25565,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 32,
+      "line": 34,
       "methods": [
         "model"
       ],
@@ -25559,7 +25586,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 40,
+      "line": 42,
       "methods": [
         "fetch_model",
         "register_model",
@@ -25569,6 +25596,7 @@
         "model_stats",
         "model_config",
         "model_usage",
+        "assess_model_gc",
         "unregister_model"
       ],
       "module": "noetrium_platform.capabilities.model.asset.api.ports",
@@ -25587,7 +25615,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 25,
+      "line": 27,
       "methods": [
         "references",
         "active_references"
@@ -25608,7 +25636,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 13,
+      "line": 15,
       "methods": [
         "pools",
         "target",
@@ -25631,7 +25659,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 36,
+      "line": 38,
       "methods": [
         "usage"
       ],
@@ -25653,7 +25681,7 @@
         "backend_id"
       ],
       "kind": "protocol",
-      "line": 20,
+      "line": 22,
       "methods": [
         "acquire"
       ],
@@ -25692,7 +25720,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 27,
+      "line": 31,
       "methods": [
         "__init__",
         "fetch_model",
@@ -25705,6 +25733,9 @@
         "model_config",
         "model_usage",
         "_normalize_tags",
+        "_asset_digest",
+        "assess_model_gc",
+        "_require_physical_gc",
         "unregister_model"
       ],
       "module": "noetrium_platform.capabilities.model.asset.runtime.manager",
@@ -25736,6 +25767,7 @@
         "_read",
         "all",
         "begin_retirement",
+        "authorize_gc",
         "retirement",
         "finish_retirement",
         "_validate_id"
@@ -41407,6 +41439,7 @@
         "_pause",
         "_interrupt",
         "_resume",
+        "_release_cancelled_cut_values",
         "_cancel",
         "_retry_descendants",
         "_retry",
@@ -42842,7 +42875,7 @@
         "supported_kinds"
       ],
       "kind": "class",
-      "line": 38,
+      "line": 39,
       "methods": [
         "__init__",
         "_artifact_id",
@@ -42856,6 +42889,7 @@
         "publish",
         "lookup",
         "resolve",
+        "release_execution",
         "reuse",
         "reuse_proof"
       ],
@@ -42875,7 +42909,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 135,
+      "line": 145,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_values",
       "name": "ResearchOSValueAuthorityMissing",
@@ -42914,6 +42948,28 @@
       "top_system": "research_os"
     },
     {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 125,
+      "methods": [
+        "release_execution"
+      ],
+      "module": "noetrium_platform.composition.research_os_values",
+      "name": "ResearchOSValueExecutionReleasePort",
+      "nesting": [
+        "ResearchOSValueExecutionReleasePort"
+      ],
+      "qualname": "noetrium_platform.composition.research_os_values.ResearchOSValueExecutionReleasePort",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -42948,7 +43004,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 125,
+      "line": 135,
       "methods": [
         "reuse"
       ],
@@ -42966,7 +43022,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 139,
+      "line": 149,
       "methods": [
         "__init__",
         "require_kinds",
@@ -42974,6 +43030,7 @@
         "publish",
         "lookup",
         "resolve",
+        "release_execution",
         "reuse",
         "reuse_proof",
         "_validate_reference"
@@ -60767,6 +60824,52 @@
         "SQLiteDurabilityProfile"
       ],
       "qualname": "noetrium_platform.foundation.kernel.kernel.durability.sqlite.SQLiteDurabilityProfile",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "EVIDENCE",
+        "EXECUTION",
+        "RECOVERY"
+      ],
+      "kind": "enum",
+      "line": 10,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.durable_closure",
+      "name": "DurableCarrierClosureAuthority",
+      "nesting": [
+        "DurableCarrierClosureAuthority"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durable_closure.DurableCarrierClosureAuthority",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "authority",
+        "proof_digest",
+        "retained_reference_ids"
+      ],
+      "kind": "dataclass",
+      "line": 19,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.durable_closure",
+      "name": "DurableCarrierReferenceClosure",
+      "nesting": [
+        "DurableCarrierReferenceClosure"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durable_closure.DurableCarrierReferenceClosure",
       "system_key": "platform",
       "top_system": "platform"
     },
@@ -78708,7 +78811,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 231,
+      "line": 178,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryCleanupCandidate",
@@ -78731,7 +78834,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 198,
+      "line": 145,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryContentStats",
@@ -78754,7 +78857,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 223,
+      "line": 170,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryEntryStats",
@@ -78783,7 +78886,7 @@
         "workspaces"
       ],
       "kind": "dataclass",
-      "line": 168,
+      "line": 115,
       "methods": [
         "path_for",
         "entries"
@@ -78810,7 +78913,7 @@
         "used_bytes"
       ],
       "kind": "dataclass",
-      "line": 214,
+      "line": 161,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryOverview",
@@ -78833,7 +78936,7 @@
         "used_bytes"
       ],
       "kind": "dataclass",
-      "line": 206,
+      "line": 153,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryUsage",
@@ -78862,7 +78965,7 @@
         "WORKSPACES"
       ],
       "kind": "enum",
-      "line": 154,
+      "line": 101,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "ManagedDirectoryKind",
@@ -78887,7 +78990,7 @@
         "workspace_id"
       ],
       "kind": "dataclass",
-      "line": 188,
+      "line": 135,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "WorkspaceAllocation",
@@ -78895,28 +78998,6 @@
         "WorkspaceAllocation"
       ],
       "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceAllocation",
-      "system_key": "resource",
-      "top_system": "resource"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "EVIDENCE",
-        "EXECUTION",
-        "RECOVERY"
-      ],
-      "kind": "enum",
-      "line": 29,
-      "methods": [],
-      "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
-      "name": "WorkspaceClosureAuthority",
-      "nesting": [
-        "WorkspaceClosureAuthority"
-      ],
-      "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceClosureAuthority",
       "system_key": "resource",
       "top_system": "resource"
     },
@@ -78934,7 +79015,7 @@
         "workspace_identity_digest"
       ],
       "kind": "dataclass",
-      "line": 72,
+      "line": 36,
       "methods": [
         "__post_init__",
         "closure_complete",
@@ -78956,7 +79037,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 17,
+      "line": 23,
       "methods": [
         "__init__",
         "failure_correlation_refs"
@@ -78981,7 +79062,7 @@
         "PAYLOAD_SHAPE"
       ],
       "kind": "enum",
-      "line": 11,
+      "line": 17,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "WorkspaceMetadataFailureCode",
@@ -78989,30 +79070,6 @@
         "WorkspaceMetadataFailureCode"
       ],
       "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceMetadataFailureCode",
-      "system_key": "resource",
-      "top_system": "resource"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "authority",
-        "proof_digest",
-        "retained_reference_ids"
-      ],
-      "kind": "dataclass",
-      "line": 36,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
-      "name": "WorkspaceReferenceClosure",
-      "nesting": [
-        "WorkspaceReferenceClosure"
-      ],
-      "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceReferenceClosure",
       "system_key": "resource",
       "top_system": "resource"
     },
@@ -79197,7 +79254,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 53,
+      "line": 52,
       "methods": [
         "__init__",
         "_root",
@@ -79243,7 +79300,7 @@
         "RETIRED"
       ],
       "kind": "enum",
-      "line": 47,
+      "line": 46,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "name": "_WorkspaceRetirementPhase",
@@ -91540,6 +91597,27 @@
     },
     {
       "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 114,
+      "methods": [
+        "__init__",
+        "failure_correlation_refs"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts",
+      "name": "RunCheckpointRecoveryRequired",
+      "nesting": [
+        "RunCheckpointRecoveryRequired"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts.RunCheckpointRecoveryRequired",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [
         "Protocol"
       ],
       "decorators": [
@@ -91549,7 +91627,7 @@
         "durability"
       ],
       "kind": "protocol",
-      "line": 115,
+      "line": 143,
       "methods": [
         "publish",
         "load"
@@ -92077,7 +92155,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 33,
+      "line": 34,
       "methods": [
         "__init__",
         "_sha",
@@ -92216,7 +92294,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 27,
+      "line": 28,
       "methods": [
         "__init__",
         "_sha",
@@ -103319,6 +103397,11 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store.DirectoryRunCheckpointStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts.RunCheckpointRecoveryRequired"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store.DirectoryRunCheckpointStore",
       "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts.RunParticipantPayload"
     },
     {
@@ -103639,12 +103722,12 @@
   ],
   "counts": {
     "association_edges": 3459,
-    "classes": 3370,
-    "constructor_edges": 935,
+    "classes": 3373,
+    "constructor_edges": 936,
     "inheritance_edges": 149,
-    "module_import_edges": 5020,
+    "module_import_edges": 5031,
     "parse_errors": 0,
-    "python_modules": 1907,
+    "python_modules": 1909,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -104722,6 +104805,10 @@
       "target": "noetrium_platform.capabilities.environment.embodied.ports"
     },
     {
+      "source": "noetrium_platform.capabilities.environment.embodied.api",
+      "target": "noetrium_platform.capabilities.environment.embodied.simulator"
+    },
+    {
       "source": "noetrium_platform.capabilities.environment.embodied.api.contracts",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
@@ -104739,6 +104826,14 @@
     },
     {
       "source": "noetrium_platform.capabilities.environment.embodied.api.ports",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.embodied.api.simulator",
+      "target": "noetrium_platform.capabilities.environment.embodied.api.contracts"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.embodied.api.simulator",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
@@ -105759,11 +105854,19 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.asset.api.contracts",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.asset.api.contracts",
       "target": "noetrium_platform.substrate.api"
     },
     {
       "source": "noetrium_platform.capabilities.model.asset.api.ports",
       "target": "noetrium_platform.capabilities.model.asset.api.contracts"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.asset.api.ports",
+      "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.capabilities.model.asset.api.ports",
@@ -105811,11 +105914,19 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.asset.runtime.manager",
+      "target": "noetrium_platform.capabilities.model.asset.runtime.codec"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.asset.runtime.manager",
       "target": "noetrium_platform.capabilities.model.asset.runtime.registry"
     },
     {
       "source": "noetrium_platform.capabilities.model.asset.runtime.manager",
       "target": "noetrium_platform.capabilities.model.deployment.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.asset.runtime.manager",
+      "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.capabilities.model.asset.runtime.manager",
@@ -116583,6 +116694,10 @@
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel",
+      "target": "noetrium_platform.foundation.kernel.durable_closure"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.kernel",
       "target": "noetrium_platform.foundation.kernel.durable_delivery"
     },
     {
@@ -121231,6 +121346,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.directory.api.ports",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.directory.api.ports",
       "target": "noetrium_platform.infrastructure.resources.directory.api.contracts"
     },
     {
@@ -121603,7 +121722,15 @@
     },
     {
       "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.capabilities.environment.embodied.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
       "target": "noetrium_platform.capabilities.environment.software.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.evidence.artifact.content.api"
     },
     {
       "source": "noetrium_platform.product.research_authoring",
@@ -124839,7 +124966,8 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.embodied.contracts",
-        "noetrium_platform.capabilities.environment.embodied.ports"
+        "noetrium_platform.capabilities.environment.embodied.ports",
+        "noetrium_platform.capabilities.environment.embodied.simulator"
       ],
       "module": "noetrium_platform.capabilities.environment.embodied.api",
       "path": "noetrium_platform/capabilities/environment/embodied/api/__init__.py",
@@ -124864,6 +124992,16 @@
       ],
       "module": "noetrium_platform.capabilities.environment.embodied.api.ports",
       "path": "noetrium_platform/capabilities/environment/embodied/api/ports.py",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "imports": [
+        "noetrium_platform.capabilities.environment.embodied.api.contracts",
+        "noetrium_platform.foundation.kernel.kernel"
+      ],
+      "module": "noetrium_platform.capabilities.environment.embodied.api.simulator",
+      "path": "noetrium_platform/capabilities/environment/embodied/api/simulator.py",
       "system_key": "environment",
       "top_system": "environment"
     },
@@ -125826,6 +125964,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.model.asset.api.contracts",
@@ -125836,6 +125975,7 @@
     {
       "imports": [
         "noetrium_platform.capabilities.model.asset.api.contracts",
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.model.asset.api.ports",
@@ -125887,8 +126027,10 @@
     {
       "imports": [
         "noetrium_platform.capabilities.model.asset.api",
+        "noetrium_platform.capabilities.model.asset.runtime.codec",
         "noetrium_platform.capabilities.model.asset.runtime.registry",
         "noetrium_platform.capabilities.model.deployment.api",
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.model.asset.runtime.manager",
@@ -136366,6 +136508,7 @@
         "noetrium_platform.foundation.kernel.contracts",
         "noetrium_platform.foundation.kernel.delivery",
         "noetrium_platform.foundation.kernel.directory_supervision",
+        "noetrium_platform.foundation.kernel.durable_closure",
         "noetrium_platform.foundation.kernel.durable_delivery",
         "noetrium_platform.foundation.kernel.execution",
         "noetrium_platform.foundation.kernel.executor",
@@ -136563,6 +136706,13 @@
       "imports": [],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.stream_digest",
       "path": "noetrium_platform/foundation/kernel/kernel/durability/stream_digest.py",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "imports": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.durable_closure",
+      "path": "noetrium_platform/foundation/kernel/kernel/durable_closure.py",
       "system_key": "platform",
       "top_system": "platform"
     },
@@ -141231,6 +141381,7 @@
     {
       "imports": [
         "noetrium_platform.foundation.governance.api",
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.infrastructure.resources.directory.api.contracts"
       ],
       "module": "noetrium_platform.infrastructure.resources.directory.api.ports",
@@ -141706,7 +141857,9 @@
     },
     {
       "imports": [
+        "noetrium_platform.capabilities.environment.embodied.api",
         "noetrium_platform.capabilities.environment.software.api",
+        "noetrium_platform.evidence.artifact.content.api",
         "noetrium_platform.evidence.data.projection.api",
         "noetrium_platform.evidence.data.query.api",
         "noetrium_platform.foundation.kernel.kernel",
@@ -144459,7 +144612,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "ede304d013aef270e68c3f639ae926966c924cc1",
+  "source_git_sha": "4aeb4c4ff53d15624560d531f76f8f8508708627",
   "system_import_edges": [
     {
       "count": 85,
@@ -144487,12 +144640,12 @@
       "target": "platform"
     },
     {
-      "count": 214,
+      "count": 216,
       "source": "environment",
       "target": "environment"
     },
     {
-      "count": 74,
+      "count": 75,
       "source": "environment",
       "target": "platform"
     },
@@ -144537,12 +144690,12 @@
       "target": "scope"
     },
     {
-      "count": 439,
+      "count": 440,
       "source": "model",
       "target": "model"
     },
     {
-      "count": 106,
+      "count": 109,
       "source": "model",
       "target": "platform"
     },
@@ -144572,7 +144725,7 @@
       "target": "platform"
     },
     {
-      "count": 184,
+      "count": 185,
       "source": "platform",
       "target": "platform"
     },
@@ -144597,7 +144750,7 @@
       "target": "reliability"
     },
     {
-      "count": 15,
+      "count": 16,
       "source": "research_os",
       "target": "artifact"
     },
@@ -144607,7 +144760,7 @@
       "target": "data"
     },
     {
-      "count": 45,
+      "count": 46,
       "source": "research_os",
       "target": "environment"
     },
@@ -144682,7 +144835,7 @@
       "target": "governance"
     },
     {
-      "count": 17,
+      "count": 18,
       "source": "resource",
       "target": "platform"
     },

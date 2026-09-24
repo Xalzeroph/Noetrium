@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5297,
+    "import_edges": 5308,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5297,
+      "import_edges": 5308,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5297,
+  "import_edges": 5308,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "747904d4fcd328e271a01de7579f94d02d42a6847958db5289ef290b4ee8335a",
+  "report_sha256": "c8d1a861e2ab15d282e0120bc934b022252d664d6f0caf87dd5026b3c88b01d0",
   "source_authority_violations": [],
-  "source_digest": "9163e1c61dde9638017e47decab1b05d7502e13299d870e53a53417a8333d09a",
+  "source_digest": "29a1f775913ab2d27279ec093ce968de253870caf61279a37642a3a3bd48799d",
   "source_invariant_violations": [
     {
       "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.software.api; required facade=noetrium_platform.research.experimentation.api",
@@ -884,21 +884,33 @@
       "path": "noetrium_platform/product/research_authoring.py"
     },
     {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.data.projection.api; required facade=noetrium_platform.research.experimentation.api",
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.artifact.content.api; required facade=noetrium_platform.research.experimentation.api",
       "invariant": "skip_layer_dependency",
       "line": 17,
       "path": "noetrium_platform/product/research_authoring.py"
     },
     {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.data.query.api; required facade=noetrium_platform.research.experimentation.api",
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.embodied.api; required facade=noetrium_platform.research.experimentation.api",
       "invariant": "skip_layer_dependency",
       "line": 18,
       "path": "noetrium_platform/product/research_authoring.py"
     },
     {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.data.projection.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 24,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.data.query.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 25,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
       "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.experimentation.workbench.api; required facade=noetrium_platform.research.experimentation.api",
       "invariant": "bypass_lower_layer_facade",
-      "line": 43,
+      "line": 50,
       "path": "noetrium_platform/product/research_authoring.py"
     }
   ],
@@ -1638,16 +1650,16 @@
       "score": 4490
     },
     {
-      "branches": 207,
+      "branches": 210,
       "classes": 6,
       "exception_handlers": 2,
-      "functions": 37,
+      "functions": 38,
       "imports": 20,
       "max_function_lines": 178,
       "module": "noetrium_platform.composition.research_os_execution",
       "path": "noetrium_platform/composition/research_os_execution.py",
-      "physical_lines": 2100,
-      "score": 4092
+      "physical_lines": 2135,
+      "score": 4151
     },
     {
       "branches": 157,
@@ -1869,8 +1881,8 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 453,
-      "import_fan_out": 27,
+      "import_fan_in": 458,
+      "import_fan_out": 28,
       "io_sites": 0,
       "lock_sites": 0,
       "long_functions": 0,
@@ -1880,7 +1892,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1893,
+      "risk_score": 1916,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },

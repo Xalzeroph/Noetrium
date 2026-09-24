@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "d1dcb8e692f67a66ba1afb2dd354d2908882d53046f10236279629b22115f7d8",
+  "interface_digest": "f0c3f6208e86e33d44ebf17350b12a3d4d381685936f6eb575d663a230f36b13",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -170,6 +170,42 @@
           "module": "noetrium_platform.product.api",
           "source": "noetrium_platform/product/api/__init__.py",
           "symbol_schemas": [
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ArtifactBlobRef",
+              "origin_module": "..research_authoring",
+              "origin_name": "ArtifactBlobRef",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EmbodiedSimulatorBackendPort",
+              "origin_module": "..research_authoring",
+              "origin_name": "EmbodiedSimulatorBackendPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SimulatorObservation",
+              "origin_module": "..research_authoring",
+              "origin_name": "SimulatorObservation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SimulatorStep",
+              "origin_module": "..research_authoring",
+              "origin_name": "SimulatorStep",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
             {
               "doc": null,
               "kind": "reexport",
@@ -1549,6 +1585,10 @@
             }
           ],
           "symbols": [
+            "ArtifactBlobRef",
+            "EmbodiedSimulatorBackendPort",
+            "SimulatorObservation",
+            "SimulatorStep",
             "ResearchBranch",
             "ResearchControlAction",
             "ResearchControlReceipt",

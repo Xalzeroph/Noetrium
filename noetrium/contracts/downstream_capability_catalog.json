@@ -1,6 +1,6 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "8bd397fa15973cbb0c82d1b7c99a1842adbfad175d069e4fb35c1cc020ff230c",
+  "catalog_digest": "fbf930ebc8ac1cd31df69dcd429ffbec1d829fc4c1be0d275af04fd818191a4c",
   "direct_symbol_sources": {
     "ActionKind": "noetrium_platform.product.api",
     "ActionRequest": "noetrium_platform.product.api",
@@ -8,6 +8,7 @@
     "ActionSpec": "noetrium_platform.product.api",
     "AgentMethodSpec": "noetrium_platform.product.api",
     "AgentPhaseSpec": "noetrium_platform.product.api",
+    "ArtifactBlobRef": "noetrium_platform.product.api",
     "BenchmarkAssignmentMode": "noetrium_platform.product.api",
     "BenchmarkTaskSet": "noetrium_platform.product.api",
     "CapabilityDescriptor": "noetrium_platform.product.api",
@@ -31,6 +32,7 @@
     "EmbodiedCaptureReceipt": "noetrium_platform.product.api",
     "EmbodiedEvent": "noetrium_platform.product.api",
     "EmbodiedEventKind": "noetrium_platform.product.api",
+    "EmbodiedSimulatorBackendPort": "noetrium_platform.product.api",
     "EmbodimentKind": "noetrium_platform.product.api",
     "EmbodimentSpec": "noetrium_platform.product.api",
     "EnvironmentConcern": "noetrium_platform.product.api",
@@ -133,6 +135,8 @@
     "SemanticSimilarityQueryPort": "noetrium_platform.product.api",
     "SensorModality": "noetrium_platform.product.api",
     "SensorSpec": "noetrium_platform.product.api",
+    "SimulatorObservation": "noetrium_platform.product.api",
+    "SimulatorStep": "noetrium_platform.product.api",
     "SoftwareActionKind": "noetrium_platform.product.api",
     "SoftwareActionTimeoutError": "noetrium_platform.product.api",
     "SoftwareWorldPort": "noetrium_platform.product.api",
@@ -176,6 +180,9 @@
       "research_os"
     ],
     "AgentPhaseSpec": [
+      "research_os"
+    ],
+    "ArtifactBlobRef": [
       "research_os"
     ],
     "BenchmarkAssignmentMode": [
@@ -245,6 +252,9 @@
       "research_os"
     ],
     "EmbodiedEventKind": [
+      "research_os"
+    ],
+    "EmbodiedSimulatorBackendPort": [
       "research_os"
     ],
     "EmbodimentKind": [
@@ -551,6 +561,12 @@
       "research_os"
     ],
     "SensorSpec": [
+      "research_os"
+    ],
+    "SimulatorObservation": [
+      "research_os"
+    ],
+    "SimulatorStep": [
       "research_os"
     ],
     "SoftwareActionKind": [
@@ -1194,6 +1210,10 @@
           "module": "noetrium_platform.product.api",
           "source": "noetrium_platform/product/api/__init__.py",
           "symbols": [
+            "ArtifactBlobRef",
+            "EmbodiedSimulatorBackendPort",
+            "SimulatorObservation",
+            "SimulatorStep",
             "ResearchBranch",
             "ResearchControlAction",
             "ResearchControlReceipt",
@@ -1354,7 +1374,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "def044e4421178b10e742a8a6c6ac09048119c50c319cde52af04330d91df6b8",
+      "interface_digest": "73f1953fc2063df06a6e2147770850da003c86b4c5637f05b5bf1590ae1ee990",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",
