@@ -45,7 +45,7 @@ def render_server_properties(spec: MinecraftServerSpec, *, rcon_password: str | 
         "max-tick-time": -1,
         "enable-status": False,
         "server-ip": spec.host if spec.host not in {"127.0.0.1", "localhost"} else "",
-        "server-port": spec.port,
+        "server-port": spec.bound_port,
         "spawn-protection": 0,
         "view-distance": 6,
     }
@@ -54,7 +54,7 @@ def render_server_properties(spec: MinecraftServerSpec, *, rcon_password: str | 
             **values,
             "enable-rcon": True,
             "rcon.password": rcon_password,
-            "rcon.port": spec.rcon_endpoint.port,
+            "rcon.port": spec.rcon_endpoint.bound_port,
         }
     lines = []
     for key in sorted(values):
