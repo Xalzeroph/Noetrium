@@ -14,8 +14,9 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "deploy" / "environments" / "catalog.json"
-PROFILE_REGISTRY_SCHEMA = "noetrium.environment-profile-registry.v2"
+PROFILE_REGISTRY_SCHEMA = "noetrium.environment-profile-registry.v3"
 PROFILE_TOKEN_RE = re.compile(r"^[a-z][a-z0-9_.-]*$")
+BUILD_INPUT_ENV_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
 PROFILE_LIFECYCLE_STATES = frozenset({"active", "draining", "retired"})
 REQUIRED_PRIVATE_WRITABLE = frozenset({
     "workspace",
@@ -42,7 +43,6 @@ PROFILE_REVISION_LABEL = "org.opencontainers.image.noetrium.environment.profile-
 PROFILE_BUILD_INPUT_LABEL = "org.opencontainers.image.noetrium.environment.build-input.sha256"
 PYTHON_RUNTIME_IDENTITY_LABEL = "org.opencontainers.image.noetrium.python-runtime.sha256"
 PYTHON_RUNTIME_CANONICAL_IMAGE = "python:3.12-slim-bookworm"
-JAVA_RUNTIME_CANONICAL_IMAGE = "eclipse-temurin:21-jre-jammy"
 
 
 def _run(
@@ -109,6 +109,130 @@ def _profile_map(data: dict) -> dict[str, dict]:
         if profile_id in result:
             raise RuntimeError(f"duplicate environment profile id: {profile_id}")
         result[profile_id] = row
+    return result
+
+
+def _profile_build_input_rows(
+    row: dict,
+) -> tuple[tuple[dict, ...], tuple[dict, ...]]:
+    raw = row.get("build_inputs", {})
+    if not isinstance(raw, dict):
+        raise RuntimeError("profile build_inputs must be an object")
+    images = raw.get("images", [])
+    parameters = raw.get("parameters", [])
+    if not isinstance(images, list) or not isinstance(parameters, list):
+        raise RuntimeError(
+            "profile build_inputs images/parameters must be lists"
+        )
+
+    seen_names: set[str] = set()
+    seen_environment_variables: set[str] = set()
+
+    def validate_common(spec: object, *, kind: str) -> dict:
+        if not isinstance(spec, dict):
+            raise RuntimeError(f"profile build input {kind} must be an object")
+        name = spec.get("name")
+        environment_variable = spec.get("environment_variable")
+        if (
+            not isinstance(name, str)
+            or PROFILE_TOKEN_RE.fullmatch(name) is None
+        ):
+            raise RuntimeError(
+                f"profile build input {kind} name must be a deployment token"
+            )
+        if (
+            not isinstance(environment_variable, str)
+            or BUILD_INPUT_ENV_RE.fullmatch(environment_variable) is None
+        ):
+            raise RuntimeError(
+                f"profile build input {kind} environment_variable "
+                "must be an uppercase environment token"
+            )
+        if name in seen_names:
+            raise RuntimeError(f"duplicate profile build input name: {name}")
+        if environment_variable in seen_environment_variables:
+            raise RuntimeError(
+                "duplicate profile build input environment variable: "
+                + environment_variable
+            )
+        seen_names.add(name)
+        seen_environment_variables.add(environment_variable)
+        return spec
+
+    normalized_images: list[dict] = []
+    for raw_spec in images:
+        spec = validate_common(raw_spec, kind="image")
+        if set(spec) != {
+            "name",
+            "environment_variable",
+            "canonical_image",
+        }:
+            raise RuntimeError(
+                "profile image build input fields must be exactly "
+                "name/environment_variable/canonical_image"
+            )
+        canonical_image = spec["canonical_image"]
+        if (
+            not isinstance(canonical_image, str)
+            or not canonical_image.strip()
+            or canonical_image != canonical_image.strip()
+        ):
+            raise RuntimeError(
+                "profile image build input canonical_image "
+                "must be canonical non-empty text"
+            )
+        normalized_images.append(dict(spec))
+
+    normalized_parameters: list[dict] = []
+    for raw_spec in parameters:
+        spec = validate_common(raw_spec, kind="parameter")
+        if set(spec) != {
+            "name",
+            "environment_variable",
+            "default",
+        }:
+            raise RuntimeError(
+                "profile parameter build input fields must be exactly "
+                "name/environment_variable/default"
+            )
+        default = spec["default"]
+        if (
+            not isinstance(default, str)
+            or not default.strip()
+            or default != default.strip()
+        ):
+            raise RuntimeError(
+                "profile parameter build input default "
+                "must be canonical non-empty text"
+            )
+        normalized_parameters.append(dict(spec))
+
+    return (
+        tuple(sorted(normalized_images, key=lambda row: row["name"])),
+        tuple(sorted(normalized_parameters, key=lambda row: row["name"])),
+    )
+
+
+def _parse_profile_build_input_overrides(
+    values: tuple[str, ...],
+) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for raw in values:
+        environment_variable, separator, value = raw.partition("=")
+        if (
+            separator != "="
+            or BUILD_INPUT_ENV_RE.fullmatch(environment_variable) is None
+            or not value
+        ):
+            raise ValueError(
+                "profile build input override must use ENVIRONMENT_VARIABLE=value"
+            )
+        if environment_variable in result:
+            raise ValueError(
+                "duplicate profile build input override: "
+                + environment_variable
+            )
+        result[environment_variable] = value
     return result
 
 
@@ -243,7 +367,21 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
                     "destruction or verified reset"
                 )
 
+        try:
+            build_input_images, build_input_parameters = (
+                _profile_build_input_rows(row)
+            )
+        except RuntimeError as exc:
+            errors.append(f"{profile_id}: {exc}")
+            build_input_images = ()
+            build_input_parameters = ()
+
         if row.get("build_mode") == "base-only":
+            if build_input_images or build_input_parameters:
+                errors.append(
+                    f"{profile_id}: base-only profile cannot declare "
+                    "profile build inputs"
+                )
             continue
 
         dockerfile_text = ""
@@ -304,6 +442,13 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
                 if build_arg not in compose_text:
                     errors.append(
                         f"{profile_id}: compose overlay lacks identity build arg {build_arg}"
+                    )
+            for spec in (*build_input_images, *build_input_parameters):
+                environment_variable = spec["environment_variable"]
+                if environment_variable not in compose_text:
+                    errors.append(
+                        f"{profile_id}: compose overlay does not consume "
+                        f"declared build input {environment_variable}"
                     )
 
     for category_id, defaults in sorted(active_defaults.items()):
@@ -427,28 +572,86 @@ def _ensure_image_identity(image: str) -> dict:
     return _image_identity(image)
 
 
+def _resolve_profile_build_inputs(
+    row: dict,
+    *,
+    overrides: dict[str, str],
+    image_identity_cache: dict[str, dict],
+) -> tuple[dict[str, str], dict[str, object]]:
+    image_specs, parameter_specs = _profile_build_input_rows(row)
+    environment: dict[str, str] = {}
+    images: dict[str, dict[str, object]] = {}
+    parameters: dict[str, dict[str, str]] = {}
+
+    for spec in image_specs:
+        environment_variable = spec["environment_variable"]
+        canonical_image = spec["canonical_image"]
+        source_image = overrides.get(
+            environment_variable,
+            os.environ.get(environment_variable, canonical_image),
+        )
+        if source_image not in image_identity_cache:
+            image_identity_cache[source_image] = _ensure_image_identity(
+                source_image
+            )
+        source_identity = image_identity_cache[source_image]
+        environment[environment_variable] = source_image
+        images[spec["name"]] = {
+            "environment_variable": environment_variable,
+            "canonical_image": canonical_image,
+            "source_image": source_image,
+            "source_identity": source_identity,
+            "runtime_identity_digest": _image_runtime_identity_digest(
+                source_identity
+            ),
+        }
+
+    for spec in parameter_specs:
+        environment_variable = spec["environment_variable"]
+        value = overrides.get(
+            environment_variable,
+            os.environ.get(environment_variable, spec["default"]),
+        )
+        if not value:
+            raise RuntimeError(
+                f"profile build input {environment_variable} resolved empty"
+            )
+        environment[environment_variable] = value
+        parameters[spec["name"]] = {
+            "environment_variable": environment_variable,
+            "value": value,
+        }
+
+    return environment, {
+        "images": images,
+        "parameters": parameters,
+    }
+
+
 def _profile_build_input_digest(
     row: dict,
     *,
     profile_revision: str,
     base_runtime_identity_digest: str,
-    java_runtime_identity_digest: str | None,
-    node_version: str,
+    resolved_build_inputs: dict[str, object],
 ) -> str:
+    images = resolved_build_inputs["images"]
+    parameters = resolved_build_inputs["parameters"]
     material: dict[str, object] = {
-        "schema": "noetrium.environment-profile-build-input.v1",
+        "schema": "noetrium.environment-profile-build-input.v2",
         "profile_id": row["profile_id"],
         "category_id": row["category_id"],
         "profile_revision": profile_revision,
         "base_runtime_identity_digest": base_runtime_identity_digest,
+        "images": {
+            name: value["runtime_identity_digest"]
+            for name, value in sorted(images.items())
+        },
+        "parameters": {
+            name: value["value"]
+            for name, value in sorted(parameters.items())
+        },
     }
-    if row["category_id"] == "minecraft":
-        if java_runtime_identity_digest is None:
-            raise RuntimeError(
-                "minecraft profile build input requires Java runtime identity"
-            )
-        material["java_runtime_identity_digest"] = java_runtime_identity_digest
-        material["node_version"] = node_version
     return hashlib.sha256(
         json.dumps(
             material,
@@ -494,9 +697,7 @@ def build_environment_images(
     output: Path,
     python_runtime_image: str,
     python_runtime_canonical_image: str,
-    java_runtime_image: str,
-    java_runtime_canonical_image: str,
-    node_version: str,
+    profile_build_input_overrides: dict[str, str],
     rebuild: bool = False,
     allow_draining: bool = False,
     allow_retired: bool = False,
@@ -536,20 +737,7 @@ def build_environment_images(
     python_runtime_identity_digest = _image_runtime_identity_digest(
         python_source_identity
     )
-    needs_java = any(
-        by_id[profile_id]["category_id"] == "minecraft"
-        for profile_id in profiles
-    )
-    java_source_identity = (
-        _ensure_image_identity(java_runtime_image)
-        if needs_java
-        else None
-    )
-    java_runtime_identity_digest = (
-        None
-        if java_source_identity is None
-        else _image_runtime_identity_digest(java_source_identity)
-    )
+    profile_input_image_cache: dict[str, dict] = {}
 
     base_tag = (
         f"noetrium:{source_sha}-{python_runtime_identity_digest}"
@@ -673,8 +861,17 @@ def build_environment_images(
         base_identity
     )
     images: dict[str, dict] = {"base": base_identity}
+    profile_build_inputs: dict[str, dict[str, object]] = {}
     for profile_id in profiles:
         row = by_id[profile_id]
+        input_environment, resolved_build_inputs = (
+            _resolve_profile_build_inputs(
+                row,
+                overrides=profile_build_input_overrides,
+                image_identity_cache=profile_input_image_cache,
+            )
+        )
+        profile_build_inputs[profile_id] = resolved_build_inputs
         if row.get("build_mode") == "base-only":
             _run(
                 (
@@ -693,8 +890,7 @@ def build_environment_images(
                 base_runtime_identity_digest=base_identity[
                     "runtime_identity_digest"
                 ],
-                java_runtime_identity_digest=java_runtime_identity_digest,
-                node_version=node_version,
+                resolved_build_inputs=resolved_build_inputs,
             )
             profile_identity = dict(base_identity)
             profile_identity["profile_id"] = profile_id
@@ -719,15 +915,13 @@ def build_environment_images(
             base_runtime_identity_digest=base_identity[
                 "runtime_identity_digest"
             ],
-            java_runtime_identity_digest=java_runtime_identity_digest,
-            node_version=node_version,
+            resolved_build_inputs=resolved_build_inputs,
         )
         tag = f"noetrium-env-{profile_id}:{build_input_digest}"
         env = os.environ.copy()
         env["PLATFORM_IMAGE"] = base_tag
         env[image_env] = tag
-        env["JAVA_RUNTIME_IMAGE"] = java_runtime_image
-        env["NODE_VERSION"] = node_version
+        env.update(input_environment)
         env["PLATFORM_HOST_DATA_ROOT"] = str(runtime_root)
         qualification_instance = (
             instances_root
@@ -796,27 +990,19 @@ def build_environment_images(
         images[profile_id] = profile_identity
 
     receipt = {
-        "schema": "noetrium.environment-image-build.v3",
+        "schema": "noetrium.environment-image-build.v4",
         "source_sha": source_sha,
         "branch": branch,
         "catalog_sha256": _sha256(CATALOG_PATH),
         "wheel_sha256": wheel_sha256,
         "distribution_evidence_sha256": distribution_evidence_sha256,
-        "runtime_image_sources": {
-            "python": {
-                "canonical_image": python_runtime_canonical_image,
-                "source_image": python_runtime_image,
-                "source_identity": python_source_identity,
-                "runtime_identity_digest": python_runtime_identity_digest,
-            },
-            "java": {
-                "canonical_image": java_runtime_canonical_image,
-                "source_image": java_runtime_image,
-                "source_identity": java_source_identity,
-                "runtime_identity_digest": java_runtime_identity_digest,
-            },
+        "base_runtime_source": {
+            "canonical_image": python_runtime_canonical_image,
+            "source_image": python_runtime_image,
+            "source_identity": python_source_identity,
+            "runtime_identity_digest": python_runtime_identity_digest,
         },
-        "node_version": node_version,
+        "profile_build_inputs": profile_build_inputs,
         "profiles": [
             {
                 "profile_id": profile_id,
@@ -897,21 +1083,14 @@ def main(argv: list[str] | None = None) -> int:
         help="Actual Python runtime source image; may use a deployment registry mirror.",
     )
     build.add_argument(
-        "--java-runtime-canonical-image",
-        default=os.environ.get(
-            "JAVA_RUNTIME_CANONICAL_IMAGE", JAVA_RUNTIME_CANONICAL_IMAGE
+        "--build-input",
+        action="append",
+        default=[],
+        metavar="ENVIRONMENT_VARIABLE=value",
+        help=(
+            "Override one registry-declared profile build input. "
+            "May be repeated; undeclared overrides fail closed."
         ),
-    )
-    build.add_argument(
-        "--java-runtime-image",
-        default=os.environ.get(
-            "JAVA_RUNTIME_IMAGE", JAVA_RUNTIME_CANONICAL_IMAGE
-        ),
-        help="Actual Java runtime source image; may use a deployment registry mirror.",
-    )
-    build.add_argument(
-        "--node-version",
-        default=os.environ.get("NODE_VERSION", "22.22.2"),
     )
     build.add_argument(
         "--rebuild",
@@ -986,9 +1165,11 @@ def main(argv: list[str] | None = None) -> int:
             output=args.output,
             python_runtime_image=args.python_runtime_image,
             python_runtime_canonical_image=args.python_runtime_canonical_image,
-            java_runtime_image=args.java_runtime_image,
-            java_runtime_canonical_image=args.java_runtime_canonical_image,
-            node_version=args.node_version,
+            profile_build_input_overrides=(
+                _parse_profile_build_input_overrides(
+                    tuple(args.build_input)
+                )
+            ),
             rebuild=args.rebuild,
             allow_draining=args.allow_draining,
             allow_retired=args.allow_retired,
