@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+from noetrium_platform.foundation.kernel.kernel.durability import durable_append_bytes
 
 import hashlib
 import os
 from pathlib import Path
 from contextlib import AbstractContextManager
 
-from noetrium_platform.foundation.kernel.kernel.durability import fsync_directory
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import InterprocessFileLock, InterprocessLockBusy
 from noetrium_platform.foundation.kernel.concurrency.api import SerialActorPort
 from .operation_journal_codec import (
@@ -146,13 +145,7 @@ class JsonlServerOperationJournal(ServerOperationJournalPort):
                     event,
                     previous_checksum=previous_checksum,
                 )
-                created = not self.path.exists()
-                with self.path.open("ab") as stream:
-                    stream.write(encoded)
-                    stream.flush()
-                    flush_file_descriptor(stream.fileno())
-                if created:
-                    fsync_directory(self.path.parent)
+                durable_append_bytes(self.path, encoded)
 
         self._writer_actor.call(f"append:{event_type}", append_owned)
 
