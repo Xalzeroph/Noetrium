@@ -1255,3 +1255,144 @@ def test_model_stop_refuses_unowned_process_replacement() -> None:
 
         assert factory.runtime.live
         assert factory.runtime.process == replacement
+
+
+
+def test_applied_clear_tombstone_survives_delete_commit_caller_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.capabilities.model.deployment.runtime.applied_store as applied_store_module
+
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model-clear-crash"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        models.deployment_catalog.put_deployment(
+            ModelDeploymentSpec(
+                deployment_id="clear-crash",
+                service_id="model:clear-crash",
+                model_id="m",
+                engine="custom",
+                scope=PLATFORM_SCOPE,
+                executable="{python}",
+                argv=("{python}", "-m", "server"),
+                cwd=root,
+                python_environment_id="serve",
+                desired_state=ModelDesiredState.RUNNING,
+            )
+        )
+        models.deployment_runtime.start(
+            models.deployment_runtime.generation("clear-crash")
+        )
+        generation = models.deployment_runtime.generation("clear-crash")
+        store = models.deployment_runtime._applied_store
+        applied = store.read("clear-crash")
+        assert applied is not None
+        active_path = store._path("clear-crash")
+        active_bytes = active_path.read_bytes()
+        marker_path = store._cleared_path(
+            "clear-crash",
+            applied.runtime_digest,
+        )
+
+        real_durable_unlink = applied_store_module.durable_unlink
+        injected = False
+
+        def delete_then_report_uncertain(path):
+            nonlocal injected
+            if path == active_path and not injected:
+                injected = True
+                path.unlink()
+                raise OSError(
+                    "simulated applied delete committed before durability acknowledgement"
+                )
+            return real_durable_unlink(path)
+
+        monkeypatch.setattr(
+            applied_store_module,
+            "durable_unlink",
+            delete_then_report_uncertain,
+        )
+        with pytest.raises(OSError, match="durability acknowledgement"):
+            models.deployment_runtime.shutdown(generation)
+
+        assert not factory.runtime.live
+        assert marker_path.exists()
+        assert store.read("clear-crash") is None
+
+        # Model a reboot where the un-fsynced directory deletion rolls back and
+        # the pre-clear active pathname becomes visible again.
+        active_path.write_bytes(active_bytes)
+        reopened = AppliedModelDeploymentStore(directories.layout)
+        assert reopened.read("clear-crash") is None
+
+        monkeypatch.setattr(
+            applied_store_module,
+            "durable_unlink",
+            real_durable_unlink,
+        )
+        assert reopened.reconcile_cleared() == ("clear-crash",)
+        assert not active_path.exists()
+        assert marker_path.exists()
+
+
+def test_cleared_applied_process_generation_cannot_be_resurrected() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model-no-resurrection"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        models.deployment_catalog.put_deployment(
+            ModelDeploymentSpec(
+                deployment_id="no-resurrection",
+                service_id="model:no-resurrection",
+                model_id="m",
+                engine="custom",
+                scope=PLATFORM_SCOPE,
+                executable="{python}",
+                argv=("{python}", "-m", "server"),
+                cwd=root,
+                python_environment_id="serve",
+                desired_state=ModelDesiredState.RUNNING,
+            )
+        )
+        models.deployment_runtime.start(
+            models.deployment_runtime.generation("no-resurrection")
+        )
+        store = models.deployment_runtime._applied_store
+        old_applied = store.read("no-resurrection")
+        assert old_applied is not None
+        owned = models.deployment_runtime.generation("no-resurrection")
+        assert (
+            models.deployment_runtime.shutdown(owned).runtime_state
+            is ModelRuntimeState.STOPPED
+        )
+
+        with pytest.raises(
+            RuntimeError,
+            match="cannot be resurrected",
+        ):
+            store.put(old_applied)
+
+        assert store.read("no-resurrection") is None
+
+        # A same-config restart gets a distinct OS process identity and is a new
+        # applied runtime generation, so it remains admissible.
+        restarted = models.fleet.reconcile()[0]
+        assert restarted.runtime_state is ModelRuntimeState.RUNNING
+        assert models.deployment_runtime.generation("no-resurrection") != owned
