@@ -76,6 +76,7 @@ class _ValueAuthority:
         {api.ResearchValueKind.DATA}
     )
     rows: dict[str, JsonValue] = field(default_factory=dict)
+    released: list[str] = field(default_factory=list)
 
     def publish(self, subject, value):
         frozen = freeze_json(value)
@@ -104,6 +105,15 @@ class _ValueAuthority:
             {
                 "authority_id": self.authority_id,
                 "reference_digest": reference.reference_digest,
+            }
+        )
+
+    def release_execution(self, subject):
+        self.released.append(subject.subject_digest)
+        return canonical_digest(
+            {
+                "authority_id": self.authority_id,
+                "released_subject_digest": subject.subject_digest,
             }
         )
 
@@ -527,7 +537,8 @@ def test_quiescent_graph_control_pause_checkpoint_resume_drain_cancel(
     tmp_path: Path,
 ) -> None:
     runtime = _Runtime()
-    values = ResearchOSValueRouter((_ValueAuthority(),))
+    authority = _ValueAuthority()
+    values = ResearchOSValueRouter((authority,))
     graph, pool, research_os = _bound(tmp_path, runtime, values)
     try:
         portfolio = _portfolio()
@@ -554,6 +565,8 @@ def test_quiescent_graph_control_pause_checkpoint_resume_drain_cancel(
         cancelled = research_os.cancel(target)
         assert cancelled.state == "cancelled"
         assert cancelled.payload["control_phase"] == ResearchGraphControlPhase.CANCELLED.value
+        assert len(cancelled.payload["value_release_proof_digests"]) == 2
+        assert len(authority.released) == 2
 
         inspected = research_os.inspect(target)
         assert inspected.state == "cancelled"
