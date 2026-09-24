@@ -835,7 +835,14 @@ class _TrialProviderResolver:
     def resolve(self, closure):
         del closure
         self.provider.owner = self
+        provider_identity = next(
+            iter({
+                row.provider_id
+                for row in closure.research_plan.experiment_plan.bindings
+            })
+        )
         return ResearchOSExperimentTrialProviderBinding(
+            provider_identity,
             self.provider,
             canonical_digest({"provider": "test.trial-provider.v1"}),
         )
@@ -948,6 +955,41 @@ def test_trial_provider_bridge_rejects_protocol_drift_before_execution() -> None
     )
 
     with pytest.raises(ValueError, match="protocol identity"):
+        ResearchOSExperimentTrialStudyExecutionResolver(
+            providers
+        ).resolve(closure)
+
+
+
+class _DriftedTrialProviderResolver(_TrialProviderResolver):
+    def resolve(self, closure):
+        self.provider.owner = self
+        return ResearchOSExperimentTrialProviderBinding(
+            "wrong.trial.provider",
+            self.provider,
+            canonical_digest({"provider": "test.trial-provider.v1"}),
+        )
+
+
+def test_trial_provider_bridge_rejects_research_provider_identity_drift() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    providers = _DriftedTrialProviderResolver(
+        closure.research_plan.trial_protocol_identity
+    )
+
+    with pytest.raises(ValueError, match="Research binding authority"):
         ResearchOSExperimentTrialStudyExecutionResolver(
             providers
         ).resolve(closure)
