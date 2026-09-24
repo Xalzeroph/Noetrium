@@ -84,7 +84,7 @@ def test_project_create_uses_one_canonical_manifest_and_is_idempotent(
     assert before == after
 
 
-def test_unified_scaffold_contains_only_scientific_authoring_files(
+def test_unified_scaffold_separates_user_core_from_platform_shell(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _bind_fixed_platform(monkeypatch)
@@ -93,8 +93,11 @@ def test_unified_scaffold_contains_only_scientific_authoring_files(
         ProjectCreateRequest("demo.project-alpha", "0.1.0", root)
     )
     generated = set(receipt.generated_files)
+    assert "src/demo_project_alpha/core.py" in generated
     assert "src/demo_project_alpha/research.py" in generated
     assert "tests/test_generated_project.py" in generated
+    assert "research.blueprint.json" not in generated
+    assert "src/demo_project_alpha/slots.py" not in generated
     for retired in (
         "project.py",
         "method.py",
@@ -170,6 +173,7 @@ def test_project_doctor_validates_one_compile_surface_and_public_boundary(
     assert checks["project_manifest"] is ProjectDoctorDisposition.PASS
     assert checks["manifest_identity"] is ProjectDoctorDisposition.PASS
     assert checks["public_import_boundary"] is ProjectDoctorDisposition.PASS
+    assert checks["generated_shell"] is ProjectDoctorDisposition.PASS
     assert checks["standard_bindings"] is ProjectDoctorDisposition.PASS
     assert not any("provider" in check_id for check_id in checks)
 
@@ -260,6 +264,12 @@ def test_project_cli_has_no_template_selector_and_emits_single_project_shape(
             "--version", "0.1.0", "--program-id", "program",
         ])
 
+    with pytest.raises(SystemExit):
+        parser.parse_args([
+            "project", "create", "x", str(tmp_path / "blueprint-x"),
+            "--blueprint", str(tmp_path / "research.json"),
+        ])
+
     root = tmp_path / "demo-project"
     assert main([
         "project", "create", "demo-project", str(root),
@@ -321,3 +331,49 @@ def test_operator_project_test_types_are_internal_not_downstream_api() -> None:
     assert not hasattr(api, "ProjectTestStageReceipt")
     receipt = ProjectTestStageReceipt(ProjectTestStage.BUILD_INSTALL, ("python",), 0)
     assert receipt.passed
+
+
+
+def test_project_sync_regenerates_shell_without_touching_user_core(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _bind_fixed_platform(monkeypatch)
+    root = tmp_path / "sync-project"
+    project_scaffold.create_project(
+        ProjectCreateRequest("sync-project", "0.1.0", root)
+    )
+    core = root / "src" / "sync_project" / "core.py"
+    research = root / "src" / "sync_project" / "research.py"
+    generated_test = root / "tests" / "test_generated_project.py"
+
+    user_core = core.read_text(encoding="utf-8").replace(
+        'program.node("root", kind=api.ResearchNodeKind.CUSTOM)',
+        'program.node("novel-core", kind=api.ResearchNodeKind.CUSTOM)',
+    )
+    core.write_text(user_core, encoding="utf-8")
+    research.write_text("drifted\n", encoding="utf-8")
+    generated_test.write_text("drifted\n", encoding="utf-8")
+
+    before = core.read_bytes()
+    receipt = project_scaffold.sync_project(root)
+
+    assert core.read_bytes() == before
+    assert set(receipt.regenerated_files) == {
+        "src/sync_project/research.py",
+        "tests/test_generated_project.py",
+    }
+    assert "AUTO-GENERATED Research OS shell" in research.read_text(encoding="utf-8")
+    assert "GeneratedProjectTests" in generated_test.read_text(encoding="utf-8")
+
+
+def test_public_api_has_no_schema_bound_project_blueprint() -> None:
+    from noetrium import api
+
+    for retired in (
+        "ResearchProjectBlueprint",
+        "ResearchDefinitionRef",
+        "RESEARCH_PROJECT_BLUEPRINT_SCHEMA",
+        "decode_research_project_blueprint",
+        "encode_research_project_blueprint",
+    ):
+        assert not hasattr(api, retired)
