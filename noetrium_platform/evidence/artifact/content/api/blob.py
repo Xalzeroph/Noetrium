@@ -75,6 +75,8 @@ class ArtifactBlobFencePort(Protocol):
     ref: ArtifactBlobRef
     generation: ArtifactBlobGeneration
 
+    def read(self) -> bytes: ...
+
     def purge(
         self,
         *,
