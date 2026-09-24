@@ -4,8 +4,10 @@ import json
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import canonical_bytes
+from noetrium_platform.foundation.kernel.kernel.durability.durable_file import (
+    atomic_replace_bytes,
+)
 
-from .atomic_publication import write_atomic_file
 from .promotion_contracts import PromptPromotionRecord
 from .publication_common import PromptPublicationError
 
@@ -28,7 +30,7 @@ class PromotionRecordStore:
         if path.exists():
             raise PromptPublicationError("generation was already promoted")
         raw=canonical_bytes(record, indent=2)
-        write_atomic_file(path,raw)
+        atomic_replace_bytes(path,raw)
 
     def load(self,generation_id:str)->PromptPromotionRecord:
         path=self.path(generation_id)
