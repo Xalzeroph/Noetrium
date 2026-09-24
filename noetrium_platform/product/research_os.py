@@ -719,7 +719,7 @@ class ResearchPortfolioDependency:
         )
 
 
-RESEARCH_PORTFOLIO_SCHEMA = "noetrium.research-portfolio.v2"
+RESEARCH_PORTFOLIO_SCHEMA = "noetrium.research-portfolio.v3"
 
 
 def _research_binding_document(binding: ResearchInputBinding) -> dict[str, object]:
