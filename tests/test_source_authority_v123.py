@@ -41,6 +41,21 @@ class SourceAuthorityV123Tests(unittest.TestCase):
             self.assertEqual(len(findings), 1)
             self.assertEqual(findings[0].authority, "lifecycle.process_spawn")
 
+    def test_type_annotation_reference_does_not_claim_spawn_authority(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "runtime_manager"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "from __future__ import annotations\n"
+                "import subprocess\n\n"
+                "def keep(child: subprocess.Popen[bytes]) -> subprocess.Popen[bytes]:\n"
+                "    return child\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_source_authorities(root), ())
+
     def test_raw_file_replace_outside_durable_filesystem_authority_is_rejected(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
