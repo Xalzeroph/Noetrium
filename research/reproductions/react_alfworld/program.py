@@ -4,9 +4,9 @@ from collections.abc import Mapping
 from typing import Protocol, runtime_checkable
 
 from noetrium.api import environment_action_capability_payload
-from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodProgramIdentity
-from noetrium_platform.foundation.kernel.kernel import EffectClass, ExecutionContext, JsonObject, JsonValue, canonical_digest
-from noetrium_platform.research.execution.workflow.api import (
+from noetrium.api import MethodIdentity, MethodProgramIdentity
+from noetrium.api import EffectClass, ExecutionContext, JsonObject, JsonValue, canonical_digest
+from noetrium.api import (
     MethodAgentRequest,
     MethodAgentResult,
     MethodExecutionClass,
