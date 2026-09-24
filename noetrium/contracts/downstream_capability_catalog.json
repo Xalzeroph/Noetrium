@@ -1,6 +1,6 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "804e40be5959b25f89f54a98a433dfa829dafdda2d7c52d8171c0ca068e8b736",
+  "catalog_digest": "8bd397fa15973cbb0c82d1b7c99a1842adbfad175d069e4fb35c1cc020ff230c",
   "direct_symbol_sources": {
     "ActionKind": "noetrium_platform.product.api",
     "ActionRequest": "noetrium_platform.product.api",
@@ -8,6 +8,7 @@
     "ActionSpec": "noetrium_platform.product.api",
     "AgentMethodSpec": "noetrium_platform.product.api",
     "AgentPhaseSpec": "noetrium_platform.product.api",
+    "BenchmarkAssignmentMode": "noetrium_platform.product.api",
     "BenchmarkTaskSet": "noetrium_platform.product.api",
     "CapabilityDescriptor": "noetrium_platform.product.api",
     "CapabilityPort": "noetrium_platform.product.api",
@@ -132,13 +133,18 @@
     "SemanticSimilarityQueryPort": "noetrium_platform.product.api",
     "SensorModality": "noetrium_platform.product.api",
     "SensorSpec": "noetrium_platform.product.api",
+    "SoftwareActionKind": "noetrium_platform.product.api",
+    "SoftwareActionTimeoutError": "noetrium_platform.product.api",
+    "SoftwareWorldPort": "noetrium_platform.product.api",
     "Study": "noetrium_platform.product.api",
+    "StudyConcurrencyPolicy": "noetrium_platform.product.api",
     "StudyModel": "noetrium_platform.product.api",
     "StudyParticipant": "noetrium_platform.product.api",
     "TensorContentRef": "noetrium_platform.product.api",
     "TensorContentStorePort": "noetrium_platform.product.api",
     "TrialBudget": "noetrium_platform.product.api",
     "bind_execution_fork": "noetrium_platform.product.api",
+    "candidate_program_capability_payload": "noetrium_platform.product.api",
     "environment_action_capability_payload": "noetrium_platform.product.api",
     "environment_branch_action_spec": "noetrium_platform.product.api",
     "environment_fork_action_payload": "noetrium_platform.product.api",
@@ -170,6 +176,9 @@
       "research_os"
     ],
     "AgentPhaseSpec": [
+      "research_os"
+    ],
+    "BenchmarkAssignmentMode": [
       "research_os"
     ],
     "BenchmarkTaskSet": [
@@ -544,7 +553,19 @@
     "SensorSpec": [
       "research_os"
     ],
+    "SoftwareActionKind": [
+      "research_os"
+    ],
+    "SoftwareActionTimeoutError": [
+      "research_os"
+    ],
+    "SoftwareWorldPort": [
+      "research_os"
+    ],
     "Study": [
+      "research_os"
+    ],
+    "StudyConcurrencyPolicy": [
       "research_os"
     ],
     "StudyModel": [
@@ -563,6 +584,9 @@
       "research_os"
     ],
     "bind_execution_fork": [
+      "research_os"
+    ],
+    "candidate_program_capability_payload": [
       "research_os"
     ],
     "environment_action_capability_payload": [
@@ -1205,6 +1229,7 @@
             "ActionSpec",
             "AgentMethodSpec",
             "AgentPhaseSpec",
+            "BenchmarkAssignmentMode",
             "BenchmarkTaskSet",
             "CapabilityDescriptor",
             "CapabilityPort",
@@ -1295,17 +1320,22 @@
             "SemanticSimilarityQueryPort",
             "SensorModality",
             "SensorSpec",
+            "SoftwareWorldPort",
+            "SoftwareActionTimeoutError",
+            "SoftwareActionKind",
             "RunConcern",
             "RuntimeConcern",
             "RuntimeModule",
             "RuntimeModuleBuilder",
             "RuntimeProgramBuilder",
             "Study",
+            "StudyConcurrencyPolicy",
             "StudyModel",
             "StudyParticipant",
             "TensorContentRef",
             "TensorContentStorePort",
             "TrialBudget",
+            "candidate_program_capability_payload",
             "bind_execution_fork",
             "fork_environment_session",
             "replay_environment_prefix",
@@ -1324,7 +1354,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "6ed29c8279856e052da4413927fdf01464dd57ce5e6fc4ce0918ff3d8d8bc682",
+      "interface_digest": "def044e4421178b10e742a8a6c6ac09048119c50c319cde52af04330d91df6b8",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",

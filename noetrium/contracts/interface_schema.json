@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "ac4c109357333891e54a833006763d09864a03b93cd5ebe90b988af0bb1a3296",
+  "interface_digest": "d1dcb8e692f67a66ba1afb2dd354d2908882d53046f10236279629b22115f7d8",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -482,6 +482,15 @@
               "name": "AgentPhaseSpec",
               "origin_module": "..research_authoring",
               "origin_name": "AgentPhaseSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "BenchmarkAssignmentMode",
+              "origin_module": "..research_authoring",
+              "origin_name": "BenchmarkAssignmentMode",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -1298,6 +1307,33 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "SoftwareWorldPort",
+              "origin_module": "..research_authoring",
+              "origin_name": "SoftwareWorldPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SoftwareActionTimeoutError",
+              "origin_module": "..research_authoring",
+              "origin_name": "SoftwareActionTimeoutError",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SoftwareActionKind",
+              "origin_module": "..research_authoring",
+              "origin_name": "SoftwareActionKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "RunConcern",
               "origin_module": "..research_authoring",
               "origin_name": "RunConcern",
@@ -1352,6 +1388,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "StudyConcurrencyPolicy",
+              "origin_module": "..research_authoring",
+              "origin_name": "StudyConcurrencyPolicy",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "StudyModel",
               "origin_module": "..research_authoring",
               "origin_name": "StudyModel",
@@ -1391,6 +1436,15 @@
               "name": "TrialBudget",
               "origin_module": "..research_authoring",
               "origin_name": "TrialBudget",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "candidate_program_capability_payload",
+              "origin_module": "..research_authoring",
+              "origin_name": "candidate_program_capability_payload",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -1530,6 +1584,7 @@
             "ActionSpec",
             "AgentMethodSpec",
             "AgentPhaseSpec",
+            "BenchmarkAssignmentMode",
             "BenchmarkTaskSet",
             "CapabilityDescriptor",
             "CapabilityPort",
@@ -1620,17 +1675,22 @@
             "SemanticSimilarityQueryPort",
             "SensorModality",
             "SensorSpec",
+            "SoftwareWorldPort",
+            "SoftwareActionTimeoutError",
+            "SoftwareActionKind",
             "RunConcern",
             "RuntimeConcern",
             "RuntimeModule",
             "RuntimeModuleBuilder",
             "RuntimeProgramBuilder",
             "Study",
+            "StudyConcurrencyPolicy",
             "StudyModel",
             "StudyParticipant",
             "TensorContentRef",
             "TensorContentStorePort",
             "TrialBudget",
+            "candidate_program_capability_payload",
             "bind_execution_fork",
             "fork_environment_session",
             "replay_environment_prefix",

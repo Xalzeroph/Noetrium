@@ -11023,6 +11023,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.infrastructure.lifecycle.service.api.ports.ExactServiceRuntimePort",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.api.contracts.ServiceProcessIdentity"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.lifecycle.service.api.ports.ExactServiceRuntimePort",
       "target": "noetrium_platform.infrastructure.lifecycle.service.api.ports.ServiceReadyObservation"
     },
     {
@@ -11664,6 +11669,11 @@
       "kind": "references",
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_ports.ServiceStateStorePort",
       "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_contracts.ServiceSupervisorState"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage.FileServiceStateStore",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
     },
     {
       "kind": "references",
@@ -21715,7 +21725,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 268,
+      "line": 269,
       "methods": [
         "__init__",
         "validate"
@@ -21734,7 +21744,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 131,
+      "line": 132,
       "methods": [
         "__init__",
         "_wait_rcon",
@@ -21755,6 +21765,7 @@
         "dataclass(slots=True)"
       ],
       "fields": [
+        "_process",
         "contract",
         "diagnostic_sink_failures",
         "diagnostics",
@@ -21762,7 +21773,7 @@
         "spec"
       ],
       "kind": "dataclass",
-      "line": 382,
+      "line": 383,
       "methods": [
         "_event",
         "_failure",
@@ -21787,7 +21798,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 41,
+      "line": 42,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
       "name": "MinecraftServerServiceError",
@@ -21803,7 +21814,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 500,
+      "line": 543,
       "methods": [
         "__init__",
         "create"
@@ -21833,7 +21844,7 @@
         "task_group"
       ],
       "kind": "dataclass",
-      "line": 471,
+      "line": 514,
       "methods": [
         "__post_init__"
       ],
@@ -21851,7 +21862,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 45,
+      "line": 46,
       "methods": [
         "__init__",
         "_wait_ready_async",
@@ -23459,7 +23470,7 @@
         "TEST"
       ],
       "kind": "enum",
-      "line": 9,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.software.api.contracts",
       "name": "SoftwareActionKind",
@@ -23467,6 +23478,24 @@
         "SoftwareActionKind"
       ],
       "qualname": "noetrium_platform.capabilities.environment.software.api.contracts.SoftwareActionKind",
+      "system_key": "environment/software",
+      "top_system": "environment"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 9,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.software.api.contracts",
+      "name": "SoftwareActionTimeoutError",
+      "nesting": [
+        "SoftwareActionTimeoutError"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.software.api.contracts.SoftwareActionTimeoutError",
       "system_key": "environment/software",
       "top_system": "environment"
     },
@@ -23484,7 +23513,7 @@
         "workspace_root"
       ],
       "kind": "dataclass",
-      "line": 19,
+      "line": 23,
       "methods": [
         "__post_init__",
         "spec_digest"
@@ -23531,7 +23560,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 73,
+      "line": 75,
       "methods": [
         "__init__",
         "identity",
@@ -23556,7 +23585,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 158,
+      "line": 160,
       "methods": [
         "__init__",
         "spec",
@@ -26528,7 +26557,7 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
-        "applied_contract_digest",
+        "applied_runtime_digest",
         "deployment_id",
         "desired_spec_digest"
       ],
@@ -27185,11 +27214,14 @@
       "fields": [
         "contract",
         "environment",
+        "process",
         "spec"
       ],
       "kind": "dataclass",
-      "line": 10,
-      "methods": [],
+      "line": 14,
+      "methods": [
+        "runtime_digest"
+      ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.applied",
       "name": "AppliedModelDeployment",
       "nesting": [
@@ -27204,12 +27236,22 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 15,
+      "line": 19,
       "methods": [
         "__init__",
+        "_key",
+        "_path",
+        "_lock_path",
+        "_cleared_path",
+        "_validate_runtime_digest",
+        "_decode",
+        "_cleared_snapshot_unlocked",
+        "_active_unlocked",
         "put",
         "read",
         "clear",
+        "purge_cleared_after_retirement",
+        "reconcile_cleared",
         "_validate_id"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
@@ -69672,7 +69714,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 88,
+      "line": 92,
       "methods": [
         "alive"
       ],
@@ -69692,7 +69734,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 94,
+      "line": 98,
       "methods": [
         "wait_ready"
       ],
@@ -69760,7 +69802,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 105,
+      "line": 109,
       "methods": [
         "open"
       ],
@@ -70851,7 +70893,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 14,
+      "line": 15,
       "methods": [
         "__init__",
         "reconcile_exact",
@@ -70991,7 +71033,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 12,
+      "line": 16,
       "methods": [
         "__init__",
         "stop_exact"
@@ -71420,12 +71462,13 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 8,
+      "line": 9,
       "methods": [
         "exists",
         "write",
         "read",
-        "reference"
+        "reference",
+        "mutation"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_ports",
       "name": "ServiceStateStorePort",
@@ -71441,13 +71484,14 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 11,
+      "line": 14,
       "methods": [
         "__init__",
         "exists",
         "write",
         "read",
-        "reference"
+        "reference",
+        "mutation"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
       "name": "FileServiceStateStore",
@@ -99047,6 +99091,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_service.MinecraftServerServiceController",
+      "target": "noetrium_platform.capabilities.environment.minecraft.composition.server_service.MinecraftServerServiceError"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_service.MinecraftServerServiceFactory",
       "target": "noetrium_platform.capabilities.environment.minecraft.composition.server_service.MinecraftServerServiceController"
     },
@@ -99354,6 +99403,11 @@
       "kind": "constructs",
       "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
       "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolReport"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.deployment.runtime.applied_store.AppliedModelDeploymentStore",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
     },
     {
       "kind": "constructs",
@@ -102203,6 +102257,11 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage.FileServiceStateStore",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage.FileServiceStateStore",
       "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_codec.ServiceSupervisorStateCodec"
     },
     {
@@ -103577,11 +103636,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3457,
-    "classes": 3369,
-    "constructor_edges": 932,
+    "association_edges": 3459,
+    "classes": 3370,
+    "constructor_edges": 935,
     "inheritance_edges": 149,
-    "module_import_edges": 5016,
+    "module_import_edges": 5021,
     "parse_errors": 0,
     "python_modules": 1907,
     "registry_authorities": 20,
@@ -106010,6 +106069,10 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.deployment.runtime.applied",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.runtime.applied",
       "target": "noetrium_platform.substrate.api"
     },
     {
@@ -106023,6 +106086,10 @@
     {
       "source": "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
     },
     {
       "source": "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
@@ -119270,6 +119337,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
       "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_codec"
     },
     {
@@ -121534,6 +121605,10 @@
     },
     {
       "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.capabilities.environment.software.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
       "target": "noetrium_platform.evidence.data.projection.api"
     },
     {
@@ -121547,6 +121622,10 @@
     {
       "source": "noetrium_platform.product.research_authoring",
       "target": "noetrium_platform.research.experimentation.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.research.experimentation.workbench.api"
     },
     {
       "source": "noetrium_platform.product.research_os",
@@ -126125,6 +126204,7 @@
     {
       "imports": [
         "noetrium_platform.capabilities.model.deployment.api",
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.applied",
@@ -126137,6 +126217,7 @@
         "noetrium_platform.capabilities.model.deployment.runtime.applied",
         "noetrium_platform.capabilities.model.deployment.runtime.codec",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
@@ -139120,6 +139201,7 @@
     {
       "imports": [
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_codec",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_contracts"
       ],
@@ -141627,10 +141709,12 @@
     },
     {
       "imports": [
+        "noetrium_platform.capabilities.environment.software.api",
         "noetrium_platform.evidence.data.projection.api",
         "noetrium_platform.evidence.data.query.api",
         "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.research.experimentation.api"
+        "noetrium_platform.research.experimentation.api",
+        "noetrium_platform.research.experimentation.workbench.api"
       ],
       "module": "noetrium_platform.product.research_authoring",
       "path": "noetrium_platform/product/research_authoring.py",
@@ -144378,7 +144462,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "553e2f22be3906edc27c08b545702051eac6b90c",
+  "source_git_sha": "c585c4e3e219b2c1c41d9570a2565913b5d9e6d0",
   "system_import_edges": [
     {
       "count": 85,
@@ -144461,7 +144545,7 @@
       "target": "model"
     },
     {
-      "count": 104,
+      "count": 106,
       "source": "model",
       "target": "platform"
     },
@@ -144526,7 +144610,7 @@
       "target": "data"
     },
     {
-      "count": 44,
+      "count": 45,
       "source": "research_os",
       "target": "environment"
     },
@@ -144536,7 +144620,7 @@
       "target": "execution"
     },
     {
-      "count": 19,
+      "count": 20,
       "source": "research_os",
       "target": "experimentation"
     },
@@ -144611,7 +144695,7 @@
       "target": "resource"
     },
     {
-      "count": 77,
+      "count": 78,
       "source": "runtime",
       "target": "platform"
     },

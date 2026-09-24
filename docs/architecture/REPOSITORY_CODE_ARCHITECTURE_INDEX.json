@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3685,
-    "python_import_edges": 7138,
-    "symbols": 5017,
-    "tracked_files": 4321,
+    "python_files": 3684,
+    "python_import_edges": 7088,
+    "symbols": 5024,
+    "tracked_files": 4320,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5011,
+    "python": 5018,
     "typescript": 5
   },
   "parse_errors": [],
@@ -1337,6 +1337,12 @@
     {
       "source_module": "noetrium_platform.capabilities.model.deployment.runtime.applied",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.deployment.runtime.applied",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.substrate.api",
       "target_role": "core_platform"
     },
@@ -1344,6 +1350,12 @@
       "source_module": "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
       "target_role": "core_platform"
     },
     {
@@ -11649,6 +11661,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_transition",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.lifecycle.service.api",
@@ -13649,6 +13667,12 @@
     {
       "source_module": "noetrium_platform.product.research_authoring",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.environment.software.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.data.projection.api",
       "target_role": "core_platform"
     },
@@ -13668,6 +13692,12 @@
       "source_module": "noetrium_platform.product.research_authoring",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.experimentation.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.product.research_authoring",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.workbench.api",
       "target_role": "core_platform"
     },
     {
@@ -16757,20 +16787,8 @@
     {
       "source_module": "research.reproductions.adacm2_memory.memory",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.evidence.artifact.content.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.adacm2_memory.memory",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.adacm2_memory.memory",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.machines.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.adacm2_memory.source",
@@ -16821,12 +16839,6 @@
       "target_role": "public_facade"
     },
     {
-      "source_module": "research.reproductions.adaptagent_acl2025.study",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "research.reproductions.adas_meta_agent_search.definition",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.contracts",
@@ -16835,26 +16847,8 @@
     {
       "source_module": "research.reproductions.adas_meta_agent_search.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.adas_meta_agent_search.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.adas_meta_agent_search.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.adas_meta_agent_search.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.experimentation.workbench.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.adas_meta_agent_search.source",
@@ -16865,14 +16859,8 @@
     {
       "source_module": "research.reproductions.adas_meta_agent_search.study",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.adas_meta_agent_search.study",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.adas_meta_agent_search.study",
@@ -16889,20 +16877,14 @@
     {
       "source_module": "research.reproductions.aflow.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.aflow.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.aflow.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.machines.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.aflow.source",
@@ -16919,12 +16901,6 @@
     {
       "source_module": "research.reproductions.aflow.study",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.aflow.study",
-      "source_role": "research_reproductions",
       "target_module": "research.benchmarks.humaneval",
       "target_role": "research_reproductions"
     },
@@ -16937,8 +16913,8 @@
     {
       "source_module": "research.reproductions.agemem_acl2026.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.agemem_acl2026.source",
@@ -16973,20 +16949,8 @@
     {
       "source_module": "research.reproductions.agent_q_surrogate.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.agent_q_surrogate.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.agent_q_surrogate.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.agent_q_surrogate.source",
@@ -17015,20 +16979,8 @@
     {
       "source_module": "research.reproductions.agent_s3.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.agent_s3.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.agent_s3.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.agent_s3.source",
@@ -17057,20 +17009,8 @@
     {
       "source_module": "research.reproductions.agentless_swebench.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.agentless_swebench.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.agentless_swebench.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.agentless_swebench.source",
@@ -17099,20 +17039,14 @@
     {
       "source_module": "research.reproductions.agentsquare.fidelity",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.agentsquare.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.agentsquare.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.machines.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.agentsquare.reported",
@@ -17159,14 +17093,8 @@
     {
       "source_module": "research.reproductions.agentsquare.study",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.agentsquare.study",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.ai_scientist_v1.definition",
@@ -17201,8 +17129,8 @@
     {
       "source_module": "research.reproductions.astranav_memory_cvpr2026.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.astranav_memory_cvpr2026.source",
@@ -17213,8 +17141,8 @@
     {
       "source_module": "research.reproductions.astranav_memory_cvpr2026.study",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.astranav_memory_cvpr2026.study",
@@ -17249,20 +17177,8 @@
     {
       "source_module": "research.reproductions.autogen_agentchat.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.autogen_agentchat.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.autogen_agentchat.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.autogen_agentchat.source",
@@ -17315,20 +17231,8 @@
     {
       "source_module": "research.reproductions.camel_role_playing.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.camel_role_playing.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.camel_role_playing.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.camel_role_playing.source",
@@ -17379,12 +17283,6 @@
       "target_role": "public_facade"
     },
     {
-      "source_module": "research.reproductions.cer_acl2025.study",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "research.reproductions.ces_gui_cvpr2026.definition",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.contracts",
@@ -17393,8 +17291,8 @@
     {
       "source_module": "research.reproductions.ces_gui_cvpr2026.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.ces_gui_cvpr2026.source",
@@ -17423,92 +17321,14 @@
     {
       "source_module": "research.reproductions.chain_of_thought_gsm8k.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.chain_of_thought_gsm8k.prompt",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.model.serving.endpoint.providers",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.model.serving.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.composition.method_runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.composition.model_requests",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.concurrency.composition",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.composition",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.providers",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chain_of_thought_gsm8k.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "research.benchmarks.gsm8k",
-      "target_role": "research_reproductions"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.chain_of_thought_gsm8k.source",
@@ -17531,8 +17351,8 @@
     {
       "source_module": "research.reproductions.chatdev_v1.chain",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.chatdev_v1.definition",
@@ -17543,50 +17363,20 @@
     {
       "source_module": "research.reproductions.chatdev_v1.environment",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chatdev_v1.environment",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.machines.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.chatdev_v1.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chatdev_v1.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chatdev_v1.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.machines.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chatdev_v1.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.chatdev_v1.runtime",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chatdev_v1.runtime",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.machines.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.chatdev_v1.source",
@@ -17603,38 +17393,14 @@
     {
       "source_module": "research.reproductions.chatdev_v1.study",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chatdev_v1.study",
-      "source_role": "research_reproductions",
       "target_module": "research.benchmarks.srdd",
       "target_role": "research_reproductions"
     },
     {
       "source_module": "research.reproductions.chatdev_v1.workspace",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.environment.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chatdev_v1.workspace",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.environment.software.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chatdev_v1.workspace",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.chatdev_v1.workspace",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.infrastructure.lifecycle.process.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.code_as_policies.benchmark",
@@ -17651,38 +17417,14 @@
     {
       "source_module": "research.reproductions.code_as_policies.hierarchy",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.code_as_policies.hierarchy",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.code_as_policies.program",
-      "source_role": "research_reproductions",
       "target_module": "noetrium.api",
       "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.code_as_policies.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.code_as_policies.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.code_as_policies.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.code_as_policies.source",
@@ -17695,12 +17437,6 @@
       "source_role": "research_reproductions",
       "target_module": "noetrium.api",
       "target_role": "public_facade"
-    },
-    {
-      "source_module": "research.reproductions.code_as_policies.study",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.code_as_policies.study",
@@ -17735,12 +17471,6 @@
     {
       "source_module": "research.reproductions.cogagent.study",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.cogagent.study",
-      "source_role": "research_reproductions",
       "target_module": "research.benchmarks.mind2web",
       "target_role": "research_reproductions"
     },
@@ -17759,8 +17489,8 @@
     {
       "source_module": "research.reproductions.crossha_cvpr2026.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.crossha_cvpr2026.source",
@@ -17789,8 +17519,8 @@
     {
       "source_module": "research.reproductions.d3d_vlp_cvpr2026.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.d3d_vlp_cvpr2026.source",
@@ -17841,12 +17571,6 @@
       "target_role": "public_facade"
     },
     {
-      "source_module": "research.reproductions.dars_acl2025.study",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "research.reproductions.dejavu_cvpr2026.definition",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.contracts",
@@ -17855,8 +17579,8 @@
     {
       "source_module": "research.reproductions.dejavu_cvpr2026.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.dejavu_cvpr2026.source",
@@ -17895,24 +17619,6 @@
       "target_role": "public_facade"
     },
     {
-      "source_module": "research.reproductions.deps_minecraft.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.deps_minecraft.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.deps_minecraft.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "research.reproductions.deps_minecraft.source",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
@@ -17945,20 +17651,8 @@
     {
       "source_module": "research.reproductions.drvideo.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.capabilities.participant.method.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.drvideo.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "research.reproductions.drvideo.program",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.drvideo.source",
@@ -17971,12 +17665,6 @@
       "source_role": "research_reproductions",
       "target_module": "noetrium.api",
       "target_role": "public_facade"
-    },
-    {
-      "source_module": "research.reproductions.drvideo.study",
-      "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.drvideo.study",
@@ -18023,8 +17711,8 @@
     {
       "source_module": "research.reproductions.echotrail_gui_cvprf2026.program",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.echotrail_gui_cvprf2026.source",
@@ -18035,8 +17723,8 @@
     {
       "source_module": "research.reproductions.echotrail_gui_cvprf2026.study",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.echotrail_gui_cvprf2026.study",
@@ -18077,8 +17765,8 @@
     {
       "source_module": "research.reproductions.embodied_videoagent_iccv2025.benchmark",
       "source_role": "research_reproductions",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
-      "target_role": "core_platform"
+      "target_module": "noetrium.api",
+      "target_role": "public_facade"
     },
     {
       "source_module": "research.reproductions.embodied_videoagent_iccv2025.definition",
@@ -28019,6 +27707,12 @@
     {
       "source_module": "tests.test_local_service_process_v110",
       "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_local_service_process_v110",
+      "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_journal",
       "target_role": "core_platform"
     },
@@ -34782,6 +34476,12 @@
       "source_module": "tests.test_runtime_asset_management_v190",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.model.deployment.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_runtime_asset_management_v190",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
       "target_role": "core_platform"
     },
     {
@@ -42845,7 +42545,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2594,
+      "count": 2599,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42890,22 +42590,22 @@
       "target_role": "public_facade"
     },
     {
-      "count": 508,
+      "count": 420,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
     {
-      "count": 147,
+      "count": 179,
       "source_role": "research_reproductions",
       "target_role": "public_facade"
     },
     {
-      "count": 337,
+      "count": 336,
       "source_role": "research_reproductions",
       "target_role": "research_reproductions"
     },
     {
-      "count": 2805,
+      "count": 2807,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42967,12 +42667,12 @@
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
-    "research_reproductions": 780,
+    "research_reproductions": 779,
     "tests": 834,
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3370,
+    "core_platform": 3371,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -42980,11 +42680,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1047,
+    "tests": 1053,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "553e2f22be3906edc27c08b545702051eac6b90c",
+  "source_git_sha": "c585c4e3e219b2c1c41d9570a2565913b5d9e6d0",
   "symbols": [
     {
       "bases": [],
@@ -48586,7 +48286,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 41,
+      "line": 42,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
       "name": "MinecraftServerServiceError",
@@ -48600,7 +48300,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 45,
+      "line": 46,
       "methods": [
         "__init__",
         "_wait_ready_async",
@@ -48618,7 +48318,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 131,
+      "line": 132,
       "methods": [
         "__init__",
         "_wait_rcon",
@@ -48636,7 +48336,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 268,
+      "line": 269,
       "methods": [
         "__init__",
         "validate"
@@ -48657,11 +48357,12 @@
         "contract: ServiceLaunchContract",
         "service_runtime: ExactServiceRuntimePort",
         "diagnostics: MinecraftDiagnosticsPort | None",
-        "diagnostic_sink_failures: list[str]"
+        "diagnostic_sink_failures: list[str]",
+        "_process: ServiceProcessIdentity | None"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 382,
+      "line": 383,
       "methods": [
         "_event",
         "_failure",
@@ -48693,7 +48394,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 471,
+      "line": 514,
       "methods": [
         "__post_init__"
       ],
@@ -48709,7 +48410,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 500,
+      "line": 543,
       "methods": [
         "__init__",
         "create"
@@ -50146,6 +49847,22 @@
     },
     {
       "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 9,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.software.api.contracts",
+      "name": "SoftwareActionTimeoutError",
+      "path": "noetrium_platform/capabilities/environment/software/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.software.api.contracts.SoftwareActionTimeoutError",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
         "StrEnum"
       ],
       "decorators": [],
@@ -50159,7 +49876,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 9,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.software.api.contracts",
       "name": "SoftwareActionKind",
@@ -50182,7 +49899,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 19,
+      "line": 23,
       "methods": [
         "__post_init__",
         "spec_digest"
@@ -50225,7 +49942,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 73,
+      "line": 75,
       "methods": [
         "__init__",
         "identity",
@@ -50248,7 +49965,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 158,
+      "line": 160,
       "methods": [
         "__init__",
         "spec",
@@ -53031,7 +52748,7 @@
       "fields": [
         "deployment_id: str",
         "desired_spec_digest: str",
-        "applied_contract_digest: str | None"
+        "applied_runtime_digest: str | None"
       ],
       "kind": "dataclass",
       "language": "python",
@@ -53586,12 +53303,15 @@
       "fields": [
         "spec: ModelDeploymentSpec",
         "contract: ServiceLaunchContract",
-        "environment: tuple[tuple[str, str], ...]"
+        "environment: tuple[tuple[str, str], ...]",
+        "process: ServiceProcessIdentity"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 10,
-      "methods": [],
+      "line": 14,
+      "methods": [
+        "runtime_digest"
+      ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.applied",
       "name": "AppliedModelDeployment",
       "path": "noetrium_platform/capabilities/model/deployment/runtime/applied.py",
@@ -53604,12 +53324,22 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 15,
+      "line": 19,
       "methods": [
         "__init__",
+        "_key",
+        "_path",
+        "_lock_path",
+        "_cleared_path",
+        "_validate_runtime_digest",
+        "_decode",
+        "_cleared_snapshot_unlocked",
+        "_active_unlocked",
         "put",
         "read",
         "clear",
+        "purge_cleared_after_retirement",
+        "reconcile_cleared",
         "_validate_id"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
@@ -92459,7 +92189,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 88,
+      "line": 92,
       "methods": [
         "alive"
       ],
@@ -92477,7 +92207,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 94,
+      "line": 98,
       "methods": [
         "wait_ready"
       ],
@@ -92495,7 +92225,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 105,
+      "line": 109,
       "methods": [
         "open"
       ],
@@ -93444,7 +93174,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 14,
+      "line": 15,
       "methods": [
         "__init__",
         "reconcile_exact",
@@ -93570,7 +93300,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 12,
+      "line": 16,
       "methods": [
         "__init__",
         "stop_exact"
@@ -93957,12 +93687,13 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 8,
+      "line": 9,
       "methods": [
         "exists",
         "write",
         "read",
-        "reference"
+        "reference",
+        "mutation"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_ports",
       "name": "ServiceStateStorePort",
@@ -93976,13 +93707,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 11,
+      "line": 14,
       "methods": [
         "__init__",
         "exists",
         "write",
         "read",
-        "reference"
+        "reference",
+        "mutation"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
       "name": "FileServiceStateStore",
@@ -123161,7 +122893,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 147,
+      "line": 144,
       "methods": [
         "__init__",
         "identity_digest",
@@ -132364,7 +132096,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1197,
+      "line": 1199,
       "methods": [
         "reconcile",
         "start",
@@ -132383,7 +132115,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1311,
+      "line": 1313,
       "methods": [
         "act"
       ],
@@ -136807,12 +136539,13 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 43,
+      "line": 44,
       "methods": [
         "setUp",
         "tearDown",
         "test_exact_local_process_can_start_reconcile_and_stop_without_host_env_merge",
         "test_local_process_is_recovered_after_crash_between_spawn_and_process_journal",
+        "test_spawn_identity_failure_force_fallback_is_reaped",
         "test_materialized_environment_drift_fails_before_spawn",
         "test_pid_start_identity_mismatch_is_treated_as_missing_not_adopted"
       ],
@@ -136828,7 +136561,89 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 169,
+      "line": 184,
+      "methods": [
+        "__init__",
+        "poll",
+        "wait"
+      ],
+      "module": "tests.test_local_service_process_v110",
+      "name": "FakeChild",
+      "path": "tests/test_local_service_process_v110.py",
+      "qualname": "tests.test_local_service_process_v110.LocalServiceProcessV110Tests.FakeChild",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 201,
+      "methods": [
+        "visible_pid"
+      ],
+      "module": "tests.test_local_service_process_v110",
+      "name": "FailingProcfs",
+      "path": "tests/test_local_service_process_v110.py",
+      "qualname": "tests.test_local_service_process_v110.LocalServiceProcessV110Tests.FailingProcfs",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 206,
+      "methods": [
+        "remember"
+      ],
+      "module": "tests.test_local_service_process_v110",
+      "name": "Children",
+      "path": "tests/test_local_service_process_v110.py",
+      "qualname": "tests.test_local_service_process_v110.LocalServiceProcessV110Tests.Children",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 212,
+      "methods": [
+        "result"
+      ],
+      "module": "tests.test_local_service_process_v110",
+      "name": "FailedHandle",
+      "path": "tests/test_local_service_process_v110.py",
+      "qualname": "tests.test_local_service_process_v110.LocalServiceProcessV110Tests.FailedHandle",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 217,
+      "methods": [
+        "terminate"
+      ],
+      "module": "tests.test_local_service_process_v110",
+      "name": "FailingSupervisor",
+      "path": "tests/test_local_service_process_v110.py",
+      "qualname": "tests.test_local_service_process_v110.LocalServiceProcessV110Tests.FailingSupervisor",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 266,
       "methods": [
         "resolve"
       ],
@@ -136846,7 +136661,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 204,
+      "line": 301,
       "methods": [
         "test_facts_resolves_process_directory_once"
       ],
@@ -136864,7 +136679,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 224,
+      "line": 321,
       "methods": [
         "__init__",
         "_process_directory"
@@ -143846,7 +143661,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 137,
+      "line": 152,
       "methods": [
         "__init__",
         "open",
@@ -143866,7 +143681,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 178,
+      "line": 193,
       "methods": [
         "test_directory_manager_allocates_and_removes_workspaces",
         "test_python_environment_manager_is_backend_driven",
@@ -143902,7 +143717,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 476,
+      "line": 491,
       "methods": [
         "run"
       ],
@@ -143918,7 +143733,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 526,
+      "line": 541,
       "methods": [
         "__init__",
         "run"
@@ -143935,7 +143750,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 684,
+      "line": 699,
       "methods": [
         "__init__",
         "wait"
@@ -148366,7 +148181,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 33,
+      "line": 35,
       "methods": [
         "__init__",
         "run"
@@ -148375,6 +148190,22 @@
       "name": "_Runner",
       "path": "tests/test_software_environment_v1.py",
       "qualname": "tests.test_software_environment_v1._Runner",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 204,
+      "methods": [
+        "run"
+      ],
+      "module": "tests.test_software_environment_v1",
+      "name": "_TimeoutRunner",
+      "path": "tests/test_software_environment_v1.py",
+      "qualname": "tests.test_software_environment_v1._TimeoutRunner",
       "role": "tests"
     },
     {
