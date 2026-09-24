@@ -74,9 +74,19 @@ class Controller:
         return {"cycles": self.cycles}
 
 
+class Fleet:
+    def __init__(self):
+        self.shutdowns = 0
+
+    def shutdown_all(self):
+        self.shutdowns += 1
+        return ()
+
+
 @dataclass
 class Models:
     controller: Controller
+    fleet: Fleet
 
 
 @dataclass
@@ -93,7 +103,21 @@ class Observability:
 
 
 class ResourceController(Controller):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.cleaned = 0
+
+    def shutdown_cleanup(self):
+        self.cleaned += 1
+        return None
+
+
+class RuntimeLock:
+    def __init__(self):
+        self.released = False
+
+    def __exit__(self, exc_type, exc, tb):
+        self.released = True
 
 
 class RecoveryExecution:
@@ -105,23 +129,34 @@ def runtime():
     pool = Pool()
     group = Group()
     controller = Controller()
+    fleet = Fleet()
     resource_controller = ResourceController()
+    runtime_lock = RuntimeLock()
     observability = Observability()
     managed = ManagedResearchRuntime(
         execution_pool=pool,
-        management=Management(Models(controller)),
+        management=Management(Models(controller, fleet)),
         observability=observability,
         recovery_execution=RecoveryExecution(),
         services=object(),
         _orchestration_group=group,
         _stop=Event(),
         resources=resource_controller,
+        _runtime_lock=runtime_lock,
     )
-    return managed, pool, group, controller, resource_controller
+    return (
+        managed,
+        pool,
+        group,
+        controller,
+        resource_controller,
+        fleet,
+        runtime_lock,
+    )
 
 
 def test_managed_runtime_owns_background_controller_lifecycle() -> None:
-    managed, pool, group, controller, resource_controller = runtime()
+    managed, pool, group, controller, resource_controller, fleet, runtime_lock = runtime()
     managed.start_background_controllers(model_reconcile_interval_seconds=0.01)
     assert controller.started.wait(1.0)
     assert resource_controller.started.wait(1.0)
@@ -144,10 +179,13 @@ def test_managed_runtime_owns_background_controller_lifecycle() -> None:
     assert managed.observability.closed is True
     assert controller.cycles >= 1
     assert resource_controller.cycles >= 1
+    assert resource_controller.cleaned == 1
+    assert fleet.shutdowns == 1
+    assert runtime_lock.released is True
 
 
 def test_managed_runtime_close_is_idempotent() -> None:
-    managed, pool, _group, _controller, _resource_controller = runtime()
+    managed, pool, _group, _controller, _resource_controller, _fleet, _runtime_lock = runtime()
     managed.start_background_controllers(model_reconcile_interval_seconds=0.01)
     managed.close()
     managed.close()
@@ -155,7 +193,7 @@ def test_managed_runtime_close_is_idempotent() -> None:
 
 
 def test_managed_runtime_rejects_controller_restart_after_close() -> None:
-    managed, _pool, _group, _controller, _resource_controller = runtime()
+    managed, _pool, _group, _controller, _resource_controller, _fleet, _runtime_lock = runtime()
     managed.close()
     try:
         managed.start_background_controllers()
