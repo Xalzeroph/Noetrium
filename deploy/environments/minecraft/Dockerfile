@@ -12,6 +12,9 @@ ENV JAVA_HOME=/opt/java/openjdk \
     PATH=/opt/java/openjdk/bin:/usr/local/bin:$PATH
 
 USER root
+RUN mkdir -p /usr/local/lib/noetrium/environment-doctor.d
+COPY deploy/environments/minecraft/doctor.sh /usr/local/lib/noetrium/environment-doctor.d/minecraft
+RUN chmod 0755 /usr/local/lib/noetrium/environment-doctor.d/minecraft
 COPY --from=java-runtime /opt/java/openjdk /opt/java/openjdk
 
 RUN apt-get update \
