@@ -15,6 +15,7 @@ from .contracts import (
     EnvironmentProfileLifecycle,
     EnvironmentProfileReferenceSummary,
     EnvironmentProfileRevision,
+    EnvironmentProfileUseIntent,
     EnvironmentSpec,
     EnvironmentTemplate,
     ResolvedEnvironmentSpec,
@@ -46,13 +47,13 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         self,
         instance: EnvironmentInstance,
         *,
-        recovery: bool = False,
+        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> None: ...
     def bind(
         self,
         binding: EnvironmentBinding,
         *,
-        recovery: bool = False,
+        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> None: ...
     def acquire_reusable_instance(
         self,
@@ -63,7 +64,7 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         binding_id: str,
         role: str,
         scope: ScopeIdentity,
-        recovery: bool = False,
+        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> EnvironmentInstanceAcquisition: ...
     def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
     def binding(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
