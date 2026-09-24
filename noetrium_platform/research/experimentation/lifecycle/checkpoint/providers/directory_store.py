@@ -185,6 +185,225 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         except CheckpointPublicationIntentCorruptionError as exc:
             raise RunCheckpointIntegrityError(str(exc)) from exc
 
+    @staticmethod
+    def _gc_state_digest(
+        checkpoint_id: str,
+        persistence_state: RunCheckpointPersistenceState,
+        manifest_sha256: str,
+        blob_sha256s: tuple[str, ...],
+    ) -> str:
+        return canonical_digest(
+            {
+                "schema": "noetrium.run-checkpoint-persistence-state.v1",
+                "checkpoint_id": checkpoint_id,
+                "persistence_state": persistence_state.value,
+                "manifest_sha256": manifest_sha256,
+                "blob_sha256s": list(blob_sha256s),
+            }
+        )
+
+    def _current_gc_state_unlocked(
+        self,
+        checkpoint_id: str,
+    ) -> tuple[RunCheckpointPersistenceState, str, tuple[str, ...]]:
+        path = self._manifest_path(checkpoint_id)
+        try:
+            pending = self._intents.load(checkpoint_id)
+        except CheckpointPublicationIntentCorruptionError as exc:
+            raise RunCheckpointIntegrityError(
+                "pending checkpoint publication intent is corrupt"
+            ) from exc
+
+        if path.exists():
+            encoded = path.read_bytes()
+            manifest = self.codec.decode(encoded)
+            if manifest.checkpoint_id != checkpoint_id:
+                raise RunCheckpointIntegrityError(
+                    "checkpoint manifest identity mismatch during GC assessment"
+                )
+            blobs = tuple(
+                sorted(
+                    {
+                        ref.checkpoint.payload_sha256
+                        for ref in manifest.participant_snapshots
+                    }
+                )
+            )
+            manifest_sha256 = self._sha(encoded)
+            if pending is not None:
+                expected = CheckpointPublicationIntent(
+                    namespace=self._intents.namespace,
+                    checkpoint_id=checkpoint_id,
+                    manifest_sha256=manifest_sha256,
+                    blob_sha256s=blobs,
+                )
+                if pending != expected:
+                    raise RunCheckpointIntegrityError(
+                        "committed checkpoint conflicts with pending publication intent"
+                    )
+            return (
+                RunCheckpointPersistenceState.COMMITTED,
+                self._gc_state_digest(
+                    checkpoint_id,
+                    RunCheckpointPersistenceState.COMMITTED,
+                    manifest_sha256,
+                    blobs,
+                ),
+                blobs,
+            )
+
+        if pending is not None:
+            return (
+                RunCheckpointPersistenceState.PENDING,
+                self._gc_state_digest(
+                    checkpoint_id,
+                    RunCheckpointPersistenceState.PENDING,
+                    pending.manifest_sha256,
+                    pending.blob_sha256s,
+                ),
+                pending.blob_sha256s,
+            )
+        raise FileNotFoundError(
+            f"checkpoint persistence state not found: {checkpoint_id}"
+        )
+
+    @staticmethod
+    def _retirement_document(
+        gc: RunCheckpointGcAssessment,
+        *,
+        purged: bool,
+    ) -> dict[str, object]:
+        return {
+            "checkpoint_id": gc.checkpoint_id,
+            "persistence_state": gc.persistence_state.value,
+            "state_digest": gc.state_digest,
+            "blob_sha256s": list(gc.blob_sha256s),
+            "gc_proof_digest": gc.proof_digest,
+            "purged": purged,
+        }
+
+    def _write_retirement(
+        self,
+        gc: RunCheckpointGcAssessment,
+        *,
+        purged: bool,
+    ) -> None:
+        atomic_replace_bytes(
+            self._retirement_path(gc.checkpoint_id),
+            encode_checksummed_document(
+                _RETIREMENT_SCHEMA,
+                self._retirement_document(gc, purged=purged),
+            ),
+        )
+
+    def _read_retirement(
+        self,
+        checkpoint_id: str,
+    ) -> dict[str, object] | None:
+        path = self._retirement_path(checkpoint_id)
+        if not path.exists():
+            return None
+        try:
+            payload = decode_checksummed_document(
+                path.read_bytes(),
+                expected_schema=_RETIREMENT_SCHEMA,
+            ).payload
+        except (OSError, ChecksummedDocumentError) as exc:
+            raise RunCheckpointIntegrityError(
+                "checkpoint retirement document is corrupt"
+            ) from exc
+        if set(payload) != _RETIREMENT_FIELDS:
+            raise RunCheckpointIntegrityError(
+                "checkpoint retirement document fields drifted"
+            )
+        try:
+            if payload["checkpoint_id"] != checkpoint_id:
+                raise ValueError("checkpoint retirement identity drifted")
+            RunCheckpointPersistenceState(str(payload["persistence_state"]))
+            for label in ("state_digest", "gc_proof_digest"):
+                value = payload[label]
+                if (
+                    type(value) is not str
+                    or len(value) != 64
+                    or any(ch not in "0123456789abcdef" for ch in value)
+                ):
+                    raise ValueError(f"invalid retirement {label}")
+            blobs = payload["blob_sha256s"]
+            if (
+                not isinstance(blobs, list)
+                or any(
+                    type(value) is not str
+                    or len(value) != 64
+                    or any(ch not in "0123456789abcdef" for ch in value)
+                    for value in blobs
+                )
+                or tuple(blobs) != tuple(sorted(set(blobs)))
+            ):
+                raise ValueError("invalid retirement blob_sha256s")
+            if type(payload["purged"]) is not bool:
+                raise TypeError("retirement purged must be bool")
+        except (TypeError, ValueError) as exc:
+            raise RunCheckpointIntegrityError(
+                "checkpoint retirement document payload is invalid"
+            ) from exc
+        return payload
+
+    @staticmethod
+    def _manifest_filename(checkpoint_id: str) -> str:
+        return hashlib.sha256(checkpoint_id.encode("utf-8")).hexdigest() + ".json"
+
+    def _blob_referenced_elsewhere(
+        self,
+        digest: str,
+        *,
+        excluding_run_checkpoint_id: str,
+    ) -> bool:
+        for path in sorted(self.manifests.glob("*.json")):
+            manifest = self.codec.decode(path.read_bytes())
+            if path.name != self._manifest_filename(manifest.checkpoint_id):
+                raise RunCheckpointIntegrityError(
+                    "run checkpoint manifest filename identity mismatch"
+                )
+            if manifest.checkpoint_id == excluding_run_checkpoint_id:
+                continue
+            if any(
+                ref.checkpoint.payload_sha256 == digest
+                for ref in manifest.participant_snapshots
+            ):
+                return True
+
+        workload_root = self.root / "workload_manifests"
+        for path in sorted(workload_root.glob("*.json")):
+            manifest = self._workload_codec.decode(path.read_bytes())
+            if path.name != self._manifest_filename(manifest.checkpoint_id):
+                raise RunCheckpointIntegrityError(
+                    "workload checkpoint manifest filename identity mismatch"
+                )
+            if any(
+                ref.payload_sha256 == digest
+                for ref in manifest.component_refs
+            ):
+                return True
+
+        try:
+            run_intents = self._intents.all()
+            workload_intents = self._workload_intents.all()
+        except CheckpointPublicationIntentCorruptionError as exc:
+            raise RunCheckpointIntegrityError(
+                "checkpoint publication intent set is corrupt"
+            ) from exc
+
+        if any(
+            intent.checkpoint_id != excluding_run_checkpoint_id
+            and digest in intent.blob_sha256s
+            for intent in run_intents
+        ):
+            return True
+        return any(
+            digest in intent.blob_sha256s
+            for intent in workload_intents
+        )
+
     def _write_blob_under_lock(
         self,
         payload: bytes,
