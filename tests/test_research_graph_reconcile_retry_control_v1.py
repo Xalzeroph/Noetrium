@@ -139,7 +139,7 @@ def test_unproven_pool_does_not_reclaim_foreign_generation_before_ttl(
         "a",
         owner_id="research-graph-scheduler:other-generation:worker",
         now_ns=2,
-        lease_expires_at_ns=10**20,
+        lease_expires_at_ns=(1 << 63) - 1,
     )
     pool = _pool()
     scheduler = ResearchGraphScheduler(
