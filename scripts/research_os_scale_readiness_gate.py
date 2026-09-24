@@ -203,6 +203,8 @@ _SCALE_EXECUTION_TESTS = (
     "tests/test_research_graph_scheduler_durable_v1.py",
     "tests/test_research_graph_scale_v1.py",
     "tests/test_research_graph_frontier_v1.py",
+    "tests/test_execution_admission_boundary_v1.py",
+    "tests/test_research_graph_admission_claim_v1.py",
     "tests/test_research_graph_claim_control_fence_v1.py",
     "tests/test_research_graph_cut_switch_fence_v1.py",
     "tests/test_research_os_multi_program_selection_v1.py",
