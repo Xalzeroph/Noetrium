@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ego2web_cvpr2026",
-  "package_digest": "41cb64f5e2c3db7896b74452821abaf3113d13ddce0fa8ae7cfbbfb289a06820",
+  "package_digest": "d7b58c6711b1fc93ad1621b7d614c787997c0ef8f004ae498f2d3e920d9cd3bf",
   "definition_digest": "89411309c7bc897f299342ade600214d7d7a0ca85ded070e416e9b13cf15d2f5",
   "source_registry_digest": "84b00b2edc21f7c1d1c11ea0e7d13884aa5ff6e9ae5b535407b5f2014d87c39d",
   "lifecycle": "protocol_bound",
@@ -81,7 +81,7 @@
       "kind": "method_program",
       "path": "research/reproductions/ego2web_cvpr2026/program.py",
       "declaration_digest": "d1a77cb8a457b2a5c216e7edb32c155b4e0c5d0ca17ec7aa16c80301e66d6757",
-      "content_sha256": "b3bf9785efe3cb2c849119982a3a536500c87d0362667080039f1ff80fcc54cd"
+      "content_sha256": "2de6c77fb4d432c422d4d465e717b09839b3733b7a7c0cd966dd39af8c6de88b"
     },
     {
       "kind": "study",

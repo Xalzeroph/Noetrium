@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "worldmm_memory",
-  "package_digest": "a979117ff73ae3084bd955cef30ee4e1d4402c9e6a97d75882406f36689dc631",
+  "package_digest": "9e5daa77e1af4d043b9b798ed356caeec713d7d63bbaca8d04f0a2d1b468bccc",
   "definition_digest": "3314ca00b83178a9c509432fa74f6aa63b1fc1aba43de1686e47ac5bb46ad530",
   "source_registry_digest": "59fad67df15f1fffd4579cda87465a6feb1607352e4bdf24806f77c92a06dc6e",
   "lifecycle": "protocol_bound",
@@ -112,7 +112,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/worldmm_memory/benchmark.py",
       "declaration_digest": "a8329d0d869493d59faa39fd8f4babf7e83f5140476fe253a568f1c5dccea4c4",
-      "content_sha256": "a191b712b98214bc6312cc345e98aeefa8322444f4c943468499286a39e98ef3"
+      "content_sha256": "2129fccba62b78422a06e92ac598a8c113cbf52f30fa8e332d9570a0d7566b4b"
     },
     {
       "kind": "fidelity",

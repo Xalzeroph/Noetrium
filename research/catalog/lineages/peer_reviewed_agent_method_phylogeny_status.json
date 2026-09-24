@@ -1858,7 +1858,7 @@
       "reproductions": [
         {
           "package": "swe_agent_swebench",
-          "package_digest": "5d34041cf64b3a198216dd9df4cf302b8f9ea93edfba6b12012b5b57e5a3fdaf",
+          "package_digest": "855f8f27c2833ccb9d8a69d72e9519cb6501caa0f3b8199e13a70e72d32a9732",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -1885,7 +1885,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/swe_agent_swebench/study.py",
-              "content_sha256": "afd8a0f08da566bb4ca8e16a7d5ce8efe030010abde703106006d742e4aa6075"
+              "content_sha256": "8083ffd50ed74d71c82190bef9a3aba9c639a8dd1b1dd1770bc94ee52d2b0e37"
             },
             {
               "kind": "support",
@@ -3813,7 +3813,7 @@
       "reproductions": [
         {
           "package": "worldmm_memory",
-          "package_digest": "a979117ff73ae3084bd955cef30ee4e1d4402c9e6a97d75882406f36689dc631",
+          "package_digest": "9e5daa77e1af4d043b9b798ed356caeec713d7d63bbaca8d04f0a2d1b468bccc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egolifeqa"
@@ -3846,7 +3846,7 @@
             {
               "kind": "benchmark",
               "path": "research/reproductions/worldmm_memory/benchmark.py",
-              "content_sha256": "a191b712b98214bc6312cc345e98aeefa8322444f4c943468499286a39e98ef3"
+              "content_sha256": "2129fccba62b78422a06e92ac598a8c113cbf52f30fa8e332d9570a0d7566b4b"
             },
             {
               "kind": "fidelity",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "d91ad140aa6b98687ca9dad67fb68bb5b763e8b4d001a34340c41b37d466ef54"
+  "projection_digest": "9de9c0dcd8ff020898fd9fa4b705ca27d1838203b5711e9260e1db41d61bb881"
 }
