@@ -128,6 +128,75 @@ def research_manifest_requirement_keys(
     )
 
 
+class ResearchManifestRequirementsUnresolved(ValueError):
+    """A ProjectManifest does not cover the exact keys selected by one Study."""
+
+    def __init__(
+        self,
+        *,
+        keys: ResearchManifestRequirementKeys,
+        missing_capability_requirement_ids: tuple[str, ...],
+        missing_method_requirement_keys: tuple[tuple[str, str], ...],
+        missing_configuration_ref_ids: tuple[str, ...],
+    ) -> None:
+        if type(keys) is not ResearchManifestRequirementKeys:
+            raise TypeError(
+                "unresolved Research manifest requirements require typed keys"
+            )
+        for field_name, values in (
+            (
+                "missing_capability_requirement_ids",
+                missing_capability_requirement_ids,
+            ),
+            (
+                "missing_method_requirement_keys",
+                missing_method_requirement_keys,
+            ),
+            (
+                "missing_configuration_ref_ids",
+                missing_configuration_ref_ids,
+            ),
+        ):
+            if type(values) is not tuple:
+                raise TypeError(
+                    f"unresolved Research manifest {field_name} must be tuple"
+                )
+        if not (
+            missing_capability_requirement_ids
+            or missing_method_requirement_keys
+            or missing_configuration_ref_ids
+        ):
+            raise ValueError(
+                "unresolved Research manifest requirements need a missing key"
+            )
+        self.keys = keys
+        self.missing_capability_requirement_ids = (
+            missing_capability_requirement_ids
+        )
+        self.missing_method_requirement_keys = missing_method_requirement_keys
+        self.missing_configuration_ref_ids = missing_configuration_ref_ids
+        self.error_digest = canonical_digest(
+            {
+                "manifest_keys_digest": keys.keys_digest,
+                "missing_capability_requirement_ids": (
+                    missing_capability_requirement_ids
+                ),
+                "missing_method_requirement_keys": (
+                    missing_method_requirement_keys
+                ),
+                "missing_configuration_ref_ids": (
+                    missing_configuration_ref_ids
+                ),
+            }
+        )
+        super().__init__(
+            "research ProjectManifest requirements unresolved: "
+            f"capabilities={missing_capability_requirement_ids} "
+            f"methods={missing_method_requirement_keys} "
+            f"configurations={missing_configuration_ref_ids}"
+        )
+
+
 def resolve_research_requirements(
     definition: ResearchStudyDefinition,
     project_manifest: ProjectManifest,
@@ -152,9 +221,11 @@ def resolve_research_requirements(
     missing_methods = tuple(row for row in selected_method_keys if row not in method_by_key)
     missing_configs = tuple(row for row in selected_config_ids if row not in config_by_id)
     if missing_capabilities or missing_methods or missing_configs:
-        raise ValueError(
-            f"research requirements unresolved: capabilities={missing_capabilities} "
-            f"methods={missing_methods} configurations={missing_configs}"
+        raise ResearchManifestRequirementsUnresolved(
+            keys=selected,
+            missing_capability_requirement_ids=missing_capabilities,
+            missing_method_requirement_keys=missing_methods,
+            missing_configuration_ref_ids=missing_configs,
         )
     selected_capabilities = tuple(capability_by_id[row] for row in selected_capability_ids)
     selected_methods = tuple(method_by_key[row] for row in selected_method_keys)
