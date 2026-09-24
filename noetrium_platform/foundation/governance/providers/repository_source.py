@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ast
-import hashlib
 import os
 from pathlib import Path, PurePosixPath
 import re
@@ -10,6 +9,7 @@ import subprocess
 import sys
 from typing import Iterable
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.governance.api import (
     RepositorySourceBlob,
     RepositorySourceFailure,
@@ -139,7 +139,7 @@ class RepositorySourceTree:
             blobs.append(RepositorySourceBlob(
                 relative_path=relative,
                 suffix=path.suffix.lower(),
-                sha256=hashlib.sha256(raw).hexdigest(),
+                sha256=sha256_bytes(raw),
                 text=text,
             ))
         return tuple(blobs)
@@ -481,7 +481,7 @@ class GitRepositorySourceTree:
             blobs.append(RepositorySourceBlob(
                 relative_path=relative,
                 suffix=PurePosixPath(relative).suffix.lower(),
-                sha256=hashlib.sha256(raw).hexdigest(),
+                sha256=sha256_bytes(raw),
                 text=text,
             ))
         return tuple(blobs)
