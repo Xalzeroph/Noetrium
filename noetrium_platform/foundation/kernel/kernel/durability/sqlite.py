@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from enum import StrEnum
 import math
 from pathlib import Path
 import sqlite3
 from typing import Iterator
 
 from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
+
+
+class SQLiteDurabilityProfile(StrEnum):
+    AUTHORITATIVE = "authoritative"
+    PROJECTION = "projection"
 
 
 def _validated_timeout(timeout_seconds: float) -> float:
@@ -22,9 +28,12 @@ def open_durable_sqlite_writer(
     path: str | Path,
     *,
     timeout_seconds: float,
+    profile: SQLiteDurabilityProfile = SQLiteDurabilityProfile.AUTHORITATIVE,
 ) -> sqlite3.Connection:
-    """Open one authoritative SQLite writer with platform durability hardening."""
+    """Open one SQLite writer under the canonical platform durability policy."""
     timeout = _validated_timeout(timeout_seconds)
+    if not isinstance(profile, SQLiteDurabilityProfile):
+        raise TypeError("SQLite durability profile must be typed")
     conn = sqlite3.connect(
         Path(path),
         timeout=timeout,
@@ -42,7 +51,14 @@ def open_durable_sqlite_writer(
             ),
             timeout_seconds=timeout,
         )
-        conn.execute("PRAGMA synchronous=FULL")
+        conn.execute(
+            "PRAGMA synchronous="
+            + (
+                "FULL"
+                if profile is SQLiteDurabilityProfile.AUTHORITATIVE
+                else "NORMAL"
+            )
+        )
         conn.execute("PRAGMA foreign_keys=ON")
         return conn
     except BaseException:
@@ -81,11 +97,13 @@ def durable_sqlite_connection(
     path: str | Path,
     *,
     timeout_seconds: float,
+    profile: SQLiteDurabilityProfile = SQLiteDurabilityProfile.AUTHORITATIVE,
 ) -> Iterator[sqlite3.Connection]:
     """Yield one durable writer and guarantee connection close."""
     conn = open_durable_sqlite_writer(
         path,
         timeout_seconds=timeout_seconds,
+        profile=profile,
     )
     try:
         yield conn
@@ -114,6 +132,7 @@ def rollback_sqlite_writer(
 
 
 __all__ = [
+    "SQLiteDurabilityProfile",
     "durable_sqlite_connection",
     "open_durable_sqlite_reader",
     "open_durable_sqlite_writer",
