@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator, Mapping
-from contextlib import contextmanager
 from dataclasses import dataclass, field
-import sqlite3
 from pathlib import Path
 from threading import RLock
 from typing import Protocol
@@ -13,6 +11,11 @@ from typing import Protocol
 from noetrium.contracts.json import (
     JsonValue, canonical_digest, canonical_text, freeze_json, require_sha256,
     strict_json_loads,
+)
+
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    durable_sqlite_connection,
+    immediate_sqlite_transaction,
 )
 
 
@@ -154,8 +157,6 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connection() as connection:
-            connection.execute("PRAGMA journal_mode=WAL")
-            connection.execute("PRAGMA synchronous=FULL")
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS graph_checkpoints (
@@ -174,17 +175,8 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
                 """
             )
 
-    @contextmanager
     def _connection(self):
-        connection = sqlite3.connect(
-            str(self.path), timeout=30.0, isolation_level=None
-        )
-        try:
-            connection.execute("PRAGMA busy_timeout=30000")
-            connection.execute("PRAGMA synchronous=FULL")
-            yield connection
-        finally:
-            connection.close()
+        return durable_sqlite_connection(self.path, timeout_seconds=30.0)
 
     @staticmethod
     def _document(snapshot: GraphSnapshot) -> dict[str, JsonValue]:
@@ -230,8 +222,11 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
             raise TypeError("graph checkpointer accepts GraphSnapshot")
         document = canonical_text(self._document(snapshot))
         with self._connection() as connection:
-            connection.execute("BEGIN IMMEDIATE")
-            try:
+            with immediate_sqlite_transaction(
+                connection,
+                timeout_seconds=30.0,
+                label="reference graph checkpoint save",
+            ):
                 row = connection.execute(
                     "SELECT snapshot_json FROM graph_checkpoints "
                     "WHERE checkpoint_id = ?",
@@ -250,10 +245,6 @@ class SQLiteGraphCheckpointer(GraphCheckpointerPort):
                     "latest_checkpoint_id = excluded.latest_checkpoint_id",
                     (snapshot.thread_id, snapshot.checkpoint_id),
                 )
-                connection.execute("COMMIT")
-            except BaseException:
-                connection.execute("ROLLBACK")
-                raise
 
     def load(self, thread_id: str) -> GraphSnapshot | None:
         history = self.history(thread_id)
