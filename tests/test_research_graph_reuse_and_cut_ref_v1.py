@@ -4,6 +4,7 @@ import pytest
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphCutSwitchFence,
     ResearchGraphExecutionConflict,
     ResearchGraphLiveNodeState,
     ResearchGraphNode,
@@ -119,10 +120,32 @@ def test_active_cut_ref_moves_with_compare_and_swap(tmp_path) -> None:
     assert first.cut_id == first_id
     assert first.generation == 1
 
+    with pytest.raises(
+        ResearchGraphExecutionConflict,
+        match="requires an exact source execution fence",
+    ):
+        store.move_active_cut(
+            "logical",
+            second_id,
+            expected_cut_id=first_id,
+        )
+
+    snapshot = store.snapshot(first_id)
+    fence = ResearchGraphCutSwitchFence(
+        first_id,
+        first.generation,
+        snapshot.generation,
+        store.control_state(first_id),
+        tuple(
+            store.node_control_state(first_id, node.node_id)
+            for node in snapshot.nodes
+        ),
+    )
     second = store.move_active_cut(
         "logical",
         second_id,
         expected_cut_id=first_id,
+        source_fence=fence,
     )
     assert second.cut_id == second_id
     assert second.generation == 2
