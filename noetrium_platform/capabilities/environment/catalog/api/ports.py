@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Protocol
 
 from noetrium_platform.substrate.api import ScopeIdentity
+from noetrium_platform.foundation.kernel.kernel import DurableCarrierReferenceClosure
 
 from .contracts import (
     EnvironmentAssignment,
@@ -117,8 +118,7 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         profile_id: str,
         profile_revision: str,
         *,
-        resumable_execution_ids: tuple[str, ...] | None = None,
-        retained_evidence_ids: tuple[str, ...] | None = None,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> EnvironmentProfileGcAssessment: ...
     def runtime_references(
         self,
@@ -132,8 +132,7 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         profile_revision: str,
         runtime_identity_digest: str,
         *,
-        resumable_execution_ids: tuple[str, ...] | None = None,
-        retained_evidence_ids: tuple[str, ...] | None = None,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> EnvironmentRuntimeGcAssessment: ...
 
 
