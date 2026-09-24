@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkTaskSet
+from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.egolifeqa import (
     EGOLIFEQA_BENCHMARK_ID,
     EgoLifeQATaskRecord,
