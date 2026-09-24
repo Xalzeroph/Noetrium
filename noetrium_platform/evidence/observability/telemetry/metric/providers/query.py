@@ -8,6 +8,7 @@ import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     open_durable_sqlite_reader,
+    sqlite_read_snapshot,
 )
 
 from ..api.json_contract import decode_string_map
@@ -124,8 +125,7 @@ class SQLiteTelemetryReader:
     def summarize(self, *, run_id: str, metric: str) -> MetricSummary:
         """Summarize from one read snapshot with bounded Python memory."""
         index = "idx_metric_run_name_value"
-        with closing(self._connect()) as db:
-            db.execute("BEGIN")
+        with closing(self._connect()) as db, sqlite_read_snapshot(db):
             corrupt = db.execute(
                 f"SELECT value FROM metric_observations INDEXED BY {index} "
                 "WHERE run_id=? AND metric=? AND ("
