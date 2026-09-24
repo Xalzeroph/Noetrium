@@ -4,26 +4,26 @@ import json
 import re
 from collections.abc import Mapping, Sequence
 
-from noetrium_platform.capabilities.participant.capability.api import (
+from noetrium.api import (
     CapabilityRequest,
     CapabilityResult,
 )
-from noetrium_platform.capabilities.participant.method.api import (
+from noetrium.api import (
     MethodIdentity,
     MethodProgramIdentity,
 )
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
     JsonObject,
     JsonValue,
     canonical_digest,
     thaw_json,
 )
-from noetrium_platform.research.execution.machines.api import (
+from noetrium.api import (
     ChildFailurePolicy,
     ChildResearchMachineExecution,
     ChildResearchMachineRequest,
 )
-from noetrium_platform.research.execution.workflow.api import (
+from noetrium.api import (
     MethodEvent,
     MethodExecutionClass,
     MethodNodeRequest,
