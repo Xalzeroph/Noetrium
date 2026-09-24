@@ -5,10 +5,9 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
+    immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
-    rollback_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_text
 from noetrium_platform.evidence.artifact.content.api import (
@@ -186,28 +185,26 @@ class SQLiteArtifactStorageBindingStore:
             generation=1,
         )
         with closing(self._connect_writer()) as db:
-            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=self.timeout_seconds,
+                label="artifact storage bind",
+            ):
                 row = db.execute(
-                    f"SELECT {self._select_columns()} FROM artifact_storage_bindings WHERE artifact_id=?",
+                    f"SELECT {self._select_columns()} "
+                    "FROM artifact_storage_bindings WHERE artifact_id=?",
                     (artifact_id,),
                 ).fetchone()
                 if row is not None:
                     current = self._decode(row)
                     if current != proposed:
                         raise ArtifactStorageBindingConflict(artifact_id)
-                    self._verify_binding(current)
-                    db.execute("COMMIT")
                 else:
                     db.execute(
-                        "INSERT INTO artifact_storage_bindings VALUES(?,?,?,?,?,?)",
+                        "INSERT INTO artifact_storage_bindings "
+                        "VALUES(?,?,?,?,?,?)",
                         self._encode(proposed),
                     )
-                    self._verify_binding(proposed)
-                    db.execute("COMMIT")
-            except BaseException as primary:
-                rollback_sqlite_writer(db, primary, label="artifact")
-                raise
         return self.resolve(artifact_id)
 
     def _resolve_binding_record(self, artifact_id: str) -> ArtifactStorageBinding:
@@ -235,14 +232,21 @@ class SQLiteArtifactStorageBindingStore:
         storage_provider_id: str,
         location: str,
     ) -> ArtifactStorageBinding:
-        if isinstance(expected_generation, bool) or not isinstance(expected_generation, int) or expected_generation <= 0:
+        if (
+            isinstance(expected_generation, bool)
+            or not isinstance(expected_generation, int)
+            or expected_generation <= 0
+        ):
             raise ValueError("expected_generation must be a positive integer")
         if not storage_provider_id.strip() or not location.strip():
-            raise ValueError("artifact storage provider/location must be non-empty")
+            raise ValueError(
+                "artifact storage provider/location must be non-empty"
+            )
         observed = self._resolve_binding_record(artifact_id)
         if observed.generation != expected_generation:
             raise ArtifactStorageBindingConflict(
-                f"{artifact_id}: expected generation {expected_generation}, got {observed.generation}"
+                f"{artifact_id}: expected generation {expected_generation}, "
+                f"got {observed.generation}"
             )
         verified = self._verify_placement(
             artifact_id=artifact_id,
@@ -251,10 +255,14 @@ class SQLiteArtifactStorageBindingStore:
             location=location,
         )
         with closing(self._connect_writer()) as db:
-            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=self.timeout_seconds,
+                label="artifact storage relocate",
+            ):
                 row = db.execute(
-                    f"SELECT {self._select_columns()} FROM artifact_storage_bindings WHERE artifact_id=?",
+                    f"SELECT {self._select_columns()} "
+                    "FROM artifact_storage_bindings WHERE artifact_id=?",
                     (artifact_id,),
                 ).fetchone()
                 if row is None:
@@ -262,48 +270,45 @@ class SQLiteArtifactStorageBindingStore:
                 current = self._decode(row)
                 if current.generation != expected_generation:
                     raise ArtifactStorageBindingConflict(
-                        f"{artifact_id}: expected generation {expected_generation}, got {current.generation}"
+                        f"{artifact_id}: expected generation "
+                        f"{expected_generation}, got {current.generation}"
                     )
                 if current.content_sha256 != observed.content_sha256:
                     raise ArtifactStorageBindingCorruptionError(
-                        f"artifact storage content identity changed during relocation: {artifact_id}"
+                        "artifact storage content identity changed during "
+                        f"relocation: {artifact_id}"
                     )
                 if (
-                    current.storage_provider_id == verified.storage_provider_id
-                    and current.location == verified.location
+                    current.storage_provider_id != verified.storage_provider_id
+                    or current.location != verified.location
                 ):
-                    self._verify_binding(current)
-                    db.execute("COMMIT")
-                    return self.resolve(artifact_id)
-                updated = ArtifactStorageBinding(
-                    artifact_id=current.artifact_id,
-                    content_sha256=current.content_sha256,
-                    storage_provider_id=verified.storage_provider_id,
-                    location=verified.location,
-                    generation=current.generation + 1,
-                )
-                self._verify_binding(updated)
-                cursor = db.execute(
-                    "UPDATE artifact_storage_bindings SET content_sha256=?,storage_provider_id=?,location=?,generation=?,record_sha256=? WHERE artifact_id=? AND generation=?",
-                    (
-                        updated.content_sha256,
-                        updated.storage_provider_id,
-                        updated.location,
-                        updated.generation,
-                        self._record_digest(updated),
-                        updated.artifact_id,
-                        expected_generation,
-                    ),
-                )
-                if cursor.rowcount != 1:
-                    raise ArtifactStorageBindingConflict(
-                        f"{artifact_id}: storage generation changed during relocation"
+                    updated = ArtifactStorageBinding(
+                        artifact_id=current.artifact_id,
+                        content_sha256=current.content_sha256,
+                        storage_provider_id=verified.storage_provider_id,
+                        location=verified.location,
+                        generation=current.generation + 1,
                     )
-                self._verify_binding(updated)
-                db.execute("COMMIT")
-            except BaseException as primary:
-                rollback_sqlite_writer(db, primary, label="artifact")
-                raise
+                    cursor = db.execute(
+                        "UPDATE artifact_storage_bindings "
+                        "SET content_sha256=?,storage_provider_id=?,location=?,"
+                        "generation=?,record_sha256=? "
+                        "WHERE artifact_id=? AND generation=?",
+                        (
+                            updated.content_sha256,
+                            updated.storage_provider_id,
+                            updated.location,
+                            updated.generation,
+                            self._record_digest(updated),
+                            updated.artifact_id,
+                            expected_generation,
+                        ),
+                    )
+                    if cursor.rowcount != 1:
+                        raise ArtifactStorageBindingConflict(
+                            f"{artifact_id}: storage generation changed "
+                            "during relocation"
+                        )
         return self.resolve(artifact_id)
 
 
