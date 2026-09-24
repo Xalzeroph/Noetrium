@@ -14,6 +14,7 @@ from .manifest_ports import EvidenceBundlePublisherPort
 from .artifacts import (
     RunArtifactFinalizationError,
     RunArtifactFinalizationPort,
+    RunArtifactGcAssessment,
     RunArtifactKind,
     RunArtifactSnapshotReceipt,
     RunArtifactSealedError,
@@ -44,6 +45,7 @@ __all__ = [
     "EvidenceBundlePublisherPort",
     "RunArtifactFinalizationError",
     "RunArtifactFinalizationPort",
+    "RunArtifactGcAssessment",
     "RunArtifactKind",
     "RunArtifactSnapshotReceipt",
     "RunArtifactSealedError",
