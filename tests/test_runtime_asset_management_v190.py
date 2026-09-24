@@ -1044,6 +1044,63 @@ def test_model_remove_retries_after_physical_stop_without_retargeting_generation
             models.deployment_catalog.put_deployment(spec)
 
 
+def test_model_deployment_retirement_purges_obsolete_process_tombstones() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model-retirement-tombstone-gc"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        spec = ModelDeploymentSpec(
+            deployment_id="retirement-tombstone-gc",
+            service_id="model:retirement-tombstone-gc",
+            model_id="m",
+            engine="custom",
+            scope=PLATFORM_SCOPE,
+            executable="{python}",
+            argv=("{python}", "-m", "server"),
+            cwd=root,
+            python_environment_id="serve",
+            desired_state=ModelDesiredState.RUNNING,
+        )
+        models.deployment_catalog.put_deployment(spec)
+        models.deployment_runtime.start(
+            models.deployment_runtime.generation(spec.deployment_id)
+        )
+        owned = models.deployment_runtime.generation(spec.deployment_id)
+        store = models.deployment_runtime._applied_store
+        applied = store.read(spec.deployment_id)
+        assert applied is not None
+        marker = store._cleared_path(spec.deployment_id, applied.runtime_digest)
+
+        assert (
+            models.deployment_runtime.shutdown(owned).runtime_state
+            is ModelRuntimeState.STOPPED
+        )
+        assert marker.exists()
+
+        assert models.deployment_runtime.remove_deployment(owned) is True
+        assert not marker.exists()
+        assert tuple(
+            store._cleared_root.glob(
+                f"{store._key(spec.deployment_id)}.*.json"
+            )
+        ) == ()
+
+        assert models.deployment_runtime.remove_deployment(owned) is True
+        assert tuple(
+            store._cleared_root.glob(
+                f"{store._key(spec.deployment_id)}.*.json"
+            )
+        ) == ()
+
+
 def test_model_asset_retirement_retries_managed_delete_with_durable_original_policy() -> None:
     with TemporaryDirectory() as td:
         root = Path(td)
