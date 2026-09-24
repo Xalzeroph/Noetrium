@@ -129,6 +129,21 @@ class ExecutionEnvironmentCatalog:
                 "environment profile lifecycle is monotonic: "
                 f"{current.lifecycle.value} -> {lifecycle.value} is forbidden"
             )
+        if lifecycle is EnvironmentProfileLifecycle.RETIRED:
+            in_use = tuple(
+                sorted(
+                    row.instance_id
+                    for row in self._instances.values()
+                    if row.profile_id == profile_id
+                    and row.profile_revision == profile_revision
+                    and row.state is EnvironmentInstanceState.IN_USE
+                )
+            )
+            if in_use:
+                raise EnvironmentCatalogConflict(
+                    "environment profile cannot retire with in-use instances: "
+                    + ",".join(in_use)
+                )
         updated = replace(current, lifecycle=lifecycle)
         self._profile_revisions[(profile_id, profile_revision)] = updated
         return updated
@@ -625,7 +640,7 @@ __all__ = ["EnvironmentCatalogConflict", "EnvironmentCatalogNotFound", "Executio
 class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
     """Restart-safe environment hierarchy and binding authority."""
 
-    SCHEMA_VERSION = 4
+    SCHEMA_VERSION = 5
 
     def __init__(
         self, path: str | Path, scopes: ScopeRegistryPort, *,
