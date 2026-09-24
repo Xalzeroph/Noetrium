@@ -5,6 +5,9 @@ FROM ${PLATFORM_BASE_IMAGE}
 ENV NOETRIUM_ENVIRONMENT_PROFILE=software
 
 USER root
+RUN mkdir -p /usr/local/lib/noetrium/environment-doctor.d
+COPY deploy/environments/software/doctor.sh /usr/local/lib/noetrium/environment-doctor.d/software
+RUN chmod 0755 /usr/local/lib/noetrium/environment-doctor.d/software
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential cmake jq ninja-build openssh-client patch rsync unzip \
