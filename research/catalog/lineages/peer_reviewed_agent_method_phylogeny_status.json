@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "chain_of_thought_gsm8k",
-          "package_digest": "482d214af5b864783b365c263b8ce451d6d344a99a9967d5eb8e20ada1772f9b",
+          "package_digest": "42138bb777a1c75e4d476bda061f0c14bdf0e5566e5d3cbabd743b5263aeee41",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "gsm8k"
@@ -40,7 +40,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/chain_of_thought_gsm8k/study.py",
-              "content_sha256": "ca72d8bac8a53d9fd3f197c6cc366b7845709c3249972490e2f8f8b77004ce3c"
+              "content_sha256": "75055e0453e836c13ccbc9aa0730b08756dfa4d4ae50239c3a822e1b3c4a44c0"
             }
           ],
           "blockers": [
@@ -797,7 +797,7 @@
       "reproductions": [
         {
           "package": "self_consistency_gsm8k",
-          "package_digest": "a30a5cc171477663bbb859cbf2e53ecb7ceb41dd61a4ed0888d87a1a8a6642c3",
+          "package_digest": "574b5d27a6ce6c36ce5c1ebd9b49209d22ad9c5d991b48a7c9edf7e141fe1ef9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "gsm8k"
@@ -828,7 +828,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/self_consistency_gsm8k/study.py",
-              "content_sha256": "aeed803d6c734e01c96e091b8b96c7c2c5351f08ee92d279c7238d346dacf895"
+              "content_sha256": "c068508bbf26e3d9e024fa7aa4639c3212b2e0c01b60a4f1087536f4c241f870"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "c650ee438f38e6516f539638d1b0e3be2d7137b935b6ed9d24ebec001176c5ed"
+  "projection_digest": "49775e7b578d03d631840f1b71c0f85c4eedb0d4c52a1b95d9700b7d8099f592"
 }

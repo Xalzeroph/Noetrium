@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "openwebvoyager_acl2025",
-  "package_digest": "3def7409e0c653ca154a6ac22389bcdc495dcdd501efe7de4ce0737d79559aa2",
+  "package_digest": "52ad6c03b41530835077d256d04023b8b060f69f537a9f4532316751d919b182",
   "definition_digest": "6f19edd6d128abbbd1dfc05ecfda969e79fcb9ab91e0ae1f8db6a4ccb0371a8c",
   "source_registry_digest": "2786a755ecfaf94cc7a57d6cbb3293d435778d7369320d104cb57d3f0c44c4f4",
   "lifecycle": "protocol_bound",
@@ -91,7 +91,7 @@
       "kind": "study",
       "path": "research/reproductions/openwebvoyager_acl2025/study.py",
       "declaration_digest": "d4cd29f5d857ba8d55e51f2a603f8bed32065eab82dc14bdb15212bde27e25db",
-      "content_sha256": "14b160eaf7dcbded9af6c02ab43984541cd2129f1d7cf60ef9e6220aa7e33231"
+      "content_sha256": "14fb58a12f0d6deb26f2565c0932036354493ceecc96718097735ac458507062"
     }
   ],
   "primary_executable": "research/reproductions/openwebvoyager_acl2025/program.py",

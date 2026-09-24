@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chain_of_thought_gsm8k",
-  "package_digest": "482d214af5b864783b365c263b8ce451d6d344a99a9967d5eb8e20ada1772f9b",
+  "package_digest": "42138bb777a1c75e4d476bda061f0c14bdf0e5566e5d3cbabd743b5263aeee41",
   "definition_digest": "2687a49ab37d0ea47afc94894e7a46afc600f2d4e5f2ca6f6c91cdc0c09ce399",
   "source_registry_digest": "fc74cb2f69f422446062876d3fb62441e1e3d08543aa287d805a02c23927870d",
   "lifecycle": "protocol_bound",
@@ -81,7 +81,7 @@
       "kind": "study",
       "path": "research/reproductions/chain_of_thought_gsm8k/study.py",
       "declaration_digest": "9e17358c95e861af881e6ec09d6f8c4c63fe7431f2e1a450718b52c498402d1e",
-      "content_sha256": "ca72d8bac8a53d9fd3f197c6cc366b7845709c3249972490e2f8f8b77004ce3c"
+      "content_sha256": "75055e0453e836c13ccbc9aa0730b08756dfa4d4ae50239c3a822e1b3c4a44c0"
     }
   ],
   "primary_executable": "research/reproductions/chain_of_thought_gsm8k/program.py",

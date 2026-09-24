@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "mmbench_gui_cvpr2026",
-  "package_digest": "96b666715ba244be9b422c32b1ac849d20cad985672f09b17a487e9613c19cd6",
+  "package_digest": "c4f8583cfb3bdcd48a65a8daa56c4de19f24c3889455177ec08cfbb56480e69c",
   "definition_digest": "0b458fdb6db1d2419ced972a62c742a827d4a621bf0e2f5802213b52f3a6d04b",
   "source_registry_digest": "0bd637491221155365b0c5b74f30276537c21dcb8d83df4f0f8e86de19e11023",
   "lifecycle": "protocol_bound",
@@ -81,7 +81,7 @@
       "kind": "method_program",
       "path": "research/reproductions/mmbench_gui_cvpr2026/program.py",
       "declaration_digest": "8d053997d348d69d6632b42ee49cc724bf7a8332a3c19e77c42a83f911599a98",
-      "content_sha256": "85c5567e4a3c50e5a27fb6cdb6a37debd8c6cbeca325a675792cdf603f340fd9"
+      "content_sha256": "17dd05a06442370f7ae0936c7eb489dcc1abc074e1a149d7dbc3a9df7becf24e"
     },
     {
       "kind": "study",
