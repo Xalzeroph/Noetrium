@@ -282,6 +282,28 @@ class ExperimentRuntimeComponentsForTest:
     run_runtime: object
 
 
+class ExperimentComponentBinderForTest:
+    def __init__(self, resolver) -> None:
+        self._resolver = resolver
+
+    def bind(self, spec, context):
+        from noetrium_platform.research.execution.api import BoundParticipants
+        from noetrium_platform.research.experimentation.lifecycle.experiment.api import (
+            ExperimentParticipantTopology,
+        )
+
+        bound = []
+        rows = []
+        for participant in ExperimentParticipantTopology.from_spec(spec).ordered():
+            resolved, operation = self._resolver.resolve(
+                participant.runtime_binding(),
+                context,
+            )
+            bound.append(resolved)
+            rows.append(operation)
+        return BoundParticipants(tuple(bound), tuple(rows))
+
+
 def build_experiment_runtime_components_for_test(
     *,
     participant_adapters,
@@ -317,7 +339,6 @@ def build_experiment_runtime_components_for_test(
         ParticipantLifecycleAdapterRegistry,
     )
     from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
-        ExperimentComponentBinder,
         ExperimentTrialCycleExecutor,
         trial_protocol_identity,
     )
@@ -376,7 +397,7 @@ def build_experiment_runtime_components_for_test(
         dispatcher,
         adapters,
     )
-    binder = ExperimentComponentBinder(participant_resolution)
+    binder = ExperimentComponentBinderForTest(participant_resolution)
     lifecycle = ParticipantSessionLifecycle(dispatcher, services)
     participant_checkpoints = ParticipantCheckpointOperations(
         dispatcher,
