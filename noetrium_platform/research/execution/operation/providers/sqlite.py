@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import open_durable_sqlite_writer
 from noetrium_platform.research.execution.operation.command.api import CommandId
 from noetrium_platform.research.execution.operation.api import (
     EffectId,
@@ -35,10 +36,10 @@ class SQLiteOperationStore:
         return "sqlite-wal"
 
     def _connect(self) -> sqlite3.Connection:
-        db = sqlite3.connect(self._path, timeout=30.0, isolation_level=None)
-        db.execute("PRAGMA busy_timeout=30000")
-        db.execute("PRAGMA synchronous=FULL")
-        return db
+        return open_durable_sqlite_writer(
+            self._path,
+            timeout_seconds=30.0,
+        )
 
     def _initialize(self) -> None:
         retry_until_deadline(
