@@ -2,6 +2,7 @@ from .endpoint_allocator import (
     AtomicEndpointAllocator,
     EndpointAllocationConflict,
     EndpointAllocationUnavailable,
+    EndpointPhysicalConvergencePending,
     InMemoryEndpointAllocator,
 )
 
@@ -9,6 +10,7 @@ __all__ = [
     "AtomicEndpointAllocator",
     "EndpointAllocationConflict",
     "EndpointAllocationUnavailable",
+    "EndpointPhysicalConvergencePending",
     "InMemoryEndpointAllocator",
 ]
 

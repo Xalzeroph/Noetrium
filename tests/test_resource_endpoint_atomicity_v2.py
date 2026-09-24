@@ -25,6 +25,8 @@ from noetrium_platform.infrastructure.resources.allocation.runtime import (
     AtomicEndpointAllocator,
     EndpointLeaseHeartbeatError,
     EndpointLeaseHeartbeatFactory,
+    EndpointPhysicalConvergencePending,
+    InMemoryEndpointAllocator,
 )
 from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
@@ -45,6 +47,21 @@ class _AvailableProbe:
         if self._barrier is not None:
             self._barrier.wait(timeout=5)
         return EndpointProbeResult(endpoint, True, "available")
+
+
+class _MutableProbe:
+    def __init__(self) -> None:
+        self.available = True
+        self.raise_error = False
+
+    def probe(self, endpoint: NetworkEndpoint) -> EndpointProbeResult:
+        if self.raise_error:
+            raise OSError("simulated endpoint observation failure")
+        return EndpointProbeResult(
+            endpoint,
+            self.available,
+            "available" if self.available else "listener-still-present",
+        )
 
 
 def _request(allocation_id: str, *, port: int = 25565) -> EndpointAllocationRequest:
@@ -86,29 +103,94 @@ def test_same_allocation_race_commits_exactly_one_allocation_and_one_lease() -> 
         assert _active_lease_count(database) == 1
 
 
-def test_expiry_releases_orphan_and_next_allocation_gets_higher_fencing_token() -> None:
-    with TemporaryDirectory() as directory:
-        database = Path(directory) / "platform.sqlite"
-        store = SQLiteEndpointAllocationStore(database)
-        first_allocator = AtomicEndpointAllocator(
-            reservations=store,
-            probe=_AvailableProbe(),
+@pytest.mark.parametrize("durable", (False, True))
+def test_expiry_quarantines_endpoint_until_os_listener_converges(
+    tmp_path,
+    durable: bool,
+) -> None:
+    probe = _MutableProbe()
+    if durable:
+        allocator = AtomicEndpointAllocator(
+            reservations=SQLiteEndpointAllocationStore(
+                tmp_path / "endpoint-quarantine.sqlite"
+            ),
+            probe=probe,
             lease_ttl_seconds=0.05,
         )
-        first = first_allocator.allocate(_request("first"))
-        assert first.lease_fencing_token == 1
+    else:
+        resources = InMemoryResourceLeaseRegistry()
+        allocator = InMemoryEndpointAllocator(
+            ownership=resources,
+            leases=resources,
+            probe=probe,
+            lease_ttl_seconds=0.05,
+        )
 
-        expired = store.reconcile_orphans(now=(first.lease_expires_at_epoch_s or 0) + 1)
-        assert [row.allocation_id for row in expired] == ["first"]
-        assert store.get("first").state is EndpointAllocationState.RELEASED  # type: ignore[union-attr]
+    first = allocator.allocate(_request("first"))
+    expiry = first.lease_expires_at_epoch_s
+    assert expiry is not None
 
-        second = AtomicEndpointAllocator(
-            reservations=store,
-            probe=_AvailableProbe(),
-            lease_ttl_seconds=60,
-        ).allocate(_request("second"))
-        assert second.endpoint == first.endpoint
-        assert second.lease_fencing_token > first.lease_fencing_token
+    probe.available = False
+    with pytest.raises(
+        EndpointPhysicalConvergencePending,
+        match="physical convergence is not proven",
+    ):
+        allocator.reconcile(now=expiry + 1.0)
+
+    current = allocator.get(first.allocation_id)
+    assert current.state.is_live
+    assert allocator.active() == (current,)
+
+    with pytest.raises(EndpointPhysicalConvergencePending):
+        allocator.allocate(_request("replacement"))
+
+    probe.available = True
+    retired = allocator.reconcile(now=expiry + 2.0)
+    assert len(retired) == 1
+    assert retired[0].allocation_id == first.allocation_id
+    assert retired[0].state is EndpointAllocationState.RELEASED
+
+    replacement = allocator.allocate(_request("replacement"))
+    assert replacement.endpoint == first.endpoint
+    assert replacement.lease_fencing_token > first.lease_fencing_token
+
+
+@pytest.mark.parametrize("durable", (False, True))
+def test_endpoint_orphan_probe_failure_retains_quarantined_generation(
+    tmp_path,
+    durable: bool,
+) -> None:
+    probe = _MutableProbe()
+    if durable:
+        allocator = AtomicEndpointAllocator(
+            reservations=SQLiteEndpointAllocationStore(
+                tmp_path / "endpoint-probe-unknown.sqlite"
+            ),
+            probe=probe,
+            lease_ttl_seconds=0.05,
+        )
+    else:
+        resources = InMemoryResourceLeaseRegistry()
+        allocator = InMemoryEndpointAllocator(
+            ownership=resources,
+            leases=resources,
+            probe=probe,
+            lease_ttl_seconds=0.05,
+        )
+
+    first = allocator.allocate(_request("unknown"))
+    expiry = first.lease_expires_at_epoch_s
+    assert expiry is not None
+    probe.raise_error = True
+
+    with pytest.raises(OSError, match="observation failure"):
+        allocator.reconcile(now=expiry + 1.0)
+
+    assert allocator.get(first.allocation_id).state.is_live
+    assert tuple(row.allocation_id for row in allocator.active()) == ("unknown",)
+
+    probe.raise_error = False
+    assert allocator.reconcile(now=expiry + 2.0)[0].allocation_id == "unknown"
 
 
 def test_renew_is_fenced_and_atomic_with_allocation_expiry_projection() -> None:
@@ -121,7 +203,7 @@ def test_renew_is_fenced_and_atomic_with_allocation_expiry_projection() -> None:
             lease_ttl_seconds=30,
         )
         current = allocator.allocate(_request("renew"))
-        renewed = allocator.renew("renew", ttl_seconds=120)
+        renewed = allocator.renew(current, ttl_seconds=120)
         assert renewed.lease_fencing_token == current.lease_fencing_token
         assert renewed.lease_expires_at_epoch_s is not None
         assert current.lease_expires_at_epoch_s is not None
@@ -136,9 +218,9 @@ def test_renew_is_fenced_and_atomic_with_allocation_expiry_projection() -> None:
             conn.commit()
         reconciled = store.get("renew")
         assert reconciled is not None
-        assert reconciled.state is EndpointAllocationState.RELEASED
+        assert reconciled.state.is_live
         with pytest.raises(RuntimeError):
-            allocator.renew("renew", ttl_seconds=120)
+            allocator.renew(current, ttl_seconds=120)
 
 
 def test_release_updates_lease_and_allocation_in_one_transaction() -> None:
@@ -188,7 +270,7 @@ def test_endpoint_reconciliation_does_not_expire_other_resource_kinds() -> None:
         assert granted.state is LeaseState.ACTIVE
 
         endpoint_store = SQLiteEndpointAllocationStore(database)
-        assert endpoint_store.reconcile_orphans(now=12.0) == ()
+        assert endpoint_store.expire_orphans(now=12.0) == ()
         with closing(sqlite3.connect(database)) as conn:
             state = conn.execute(
                 "SELECT state FROM resource_leases WHERE lease_id='compute-lease'"
@@ -212,7 +294,11 @@ def test_early_external_lease_release_is_reconciled_by_point_get() -> None:
         )
         current = store.get("orphan")
         assert current is not None
-        assert current.state is EndpointAllocationState.RELEASED
+        assert current.state.is_live
+
+        retired = allocator.reconcile()
+        assert tuple(row.allocation_id for row in retired) == ("orphan",)
+        assert store.get("orphan").state is EndpointAllocationState.RELEASED  # type: ignore[union-attr]
 
 
 def test_concurrent_schema_bootstrap_is_idempotent() -> None:
@@ -277,7 +363,7 @@ def test_endpoint_binding_requires_current_fencing_and_is_idempotent() -> None:
         with pytest.raises(RuntimeError, match="fencing lost"):
             allocator.confirm_bound(stale)
 
-        released = allocator.release(reserved.allocation_id)
+        released = allocator.release(reserved)
         assert released.state is EndpointAllocationState.RELEASED
         assert released.binding_proof_digest == proof.digest()
         assert released.binding_evidence_ref == proof.evidence_ref

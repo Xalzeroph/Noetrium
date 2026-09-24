@@ -156,9 +156,9 @@ def test_endpoint_authorities_reject_non_finite_runtime_budgets() -> None:
         reserved = allocator.allocate(request)
         for value in (float("nan"), float("inf")):
             with pytest.raises(ValueError, match="finite and > 0"):
-                store.renew(reserved.allocation_id, ttl_seconds=value, now=1.0)
+                store.renew(reserved, ttl_seconds=value, now=1.0)
             with pytest.raises(ValueError, match="observation time must be finite"):
-                store.reconcile_orphans(now=value)
+                store.expire_orphans(now=value)
 
 
 def test_workspace_and_recovery_keep_distinct_storage_mechanics_and_authorities() -> None:
