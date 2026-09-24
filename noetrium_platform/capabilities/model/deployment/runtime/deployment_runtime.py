@@ -291,7 +291,7 @@ class ModelDeploymentRuntime:
                 current, desired, applied = self._snapshot_unlocked(
                     generation.deployment_id
                 )
-            except KeyError:
+            except (KeyError, FileNotFoundError):
                 # Removal publishes a durable retirement tombstone before the
                 # desired record disappears, so absence is an idempotent terminal
                 # state and the logical id cannot later be recycled.
