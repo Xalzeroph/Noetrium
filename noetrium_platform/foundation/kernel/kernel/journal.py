@@ -54,6 +54,7 @@ def _commit_document(commit: MachineCommit) -> dict[str, object]:
         "before_state_digest": commit.before_state_digest,
         "input_digest": commit.input_digest,
         "program_digest": commit.program_digest,
+        "program_lock_digest": commit.program_lock_digest,
         "machine_kind": commit.machine_kind,
         "machine_version": commit.machine_version,
         "input_refs": list(commit.input_refs),
@@ -145,7 +146,7 @@ def _decode_commit(value: object) -> MachineCommit:
         "machine_id", "command_id", "base_revision", "revision",
         "proposal_digest", "command_digest", "state", "output_refs", "event_payloads",
         "effect_intent_refs", "emitted_commands", "previous_commit_id", "before_state_digest",
-        "input_digest", "program_digest", "machine_kind", "machine_version", "input_refs",
+        "input_digest", "program_digest", "program_lock_digest", "machine_kind", "machine_version", "input_refs",
         "state_delta_ref", "evidence_refs", "artifact_refs", "parent_transition_id", "attempt_id",
         "authority_epoch", "child_links", "accepted_status",
     }, "journal commit")
@@ -176,7 +177,11 @@ def _decode_commit(value: object) -> MachineCommit:
         previous_commit_id=row["previous_commit_id"],  # type: ignore[arg-type]
         before_state_digest=row["before_state_digest"],  # type: ignore[arg-type]
         input_digest=row["input_digest"],  # type: ignore[arg-type]
-        program_digest=row["program_digest"],  # type: ignore[arg-type]
+        program_digest=_require_text(row["program_digest"], "program_digest"),
+        program_lock_digest=_require_text(
+            row["program_lock_digest"],
+            "program_lock_digest",
+        ),
         machine_kind=row["machine_kind"],  # type: ignore[arg-type]
         machine_version=row["machine_version"],  # type: ignore[arg-type]
         input_refs=tuple(_require_text(item, "input ref") for item in input_refs),
@@ -248,6 +253,13 @@ class _JournalHistory:
         if commit.previous_commit_id != expected_previous:
             raise MachineConflict(
                 "machine commit previous_commit_id does not match journal head"
+            )
+        if latest is not None and (
+            commit.program_digest != latest.program_digest
+            or commit.program_lock_digest != latest.program_lock_digest
+        ):
+            raise MachineConflict(
+                "machine commit executable identity does not match journal head"
             )
         return None
 
