@@ -43,9 +43,6 @@ from noetrium_platform.infrastructure.resources.providers.sqlite_resource import
     ensure_resource_schema,
     expire_lease,
 )
-from noetrium_platform.infrastructure.resources.lease.runtime.clock import (
-    LocalLeaseClock,
-)
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
 
@@ -70,14 +67,16 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         path: str | Path,
         *,
         timeout_seconds: float = 30.0,
-        clock: LeaseClockPort | None = None,
+        clock: LeaseClockPort,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if not math.isfinite(float(timeout_seconds)) or timeout_seconds <= 0:
             raise ValueError("SQLite endpoint timeout_seconds must be finite and positive")
         self.timeout_seconds = float(timeout_seconds)
-        self._clock = LocalLeaseClock() if clock is None else clock
+        if not isinstance(clock, LeaseClockPort):
+            raise TypeError("SQLite endpoint authority requires LeaseClockPort")
+        self._clock = clock
         with self._transaction() as conn:
             try:
                 ensure_resource_schema(conn)
