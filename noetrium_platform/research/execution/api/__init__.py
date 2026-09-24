@@ -554,3 +554,16 @@ __all__ = tuple(__all__) + (
     "ResearchGraphNodeState",
     "ResearchGraphPlan",
 )
+
+from .lineage import (
+    ExecutionForkReceipt,
+    ExecutionSourceCut,
+    ExecutionStateAnchor,
+    bind_execution_fork,
+)
+__all__ = tuple(__all__) + (
+    "ExecutionForkReceipt",
+    "ExecutionSourceCut",
+    "ExecutionStateAnchor",
+    "bind_execution_fork",
+)
