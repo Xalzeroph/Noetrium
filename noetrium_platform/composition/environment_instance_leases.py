@@ -473,8 +473,12 @@ class EnvironmentInstanceLeaseHeartbeatGuard:
             self._closing = True
             scheduled = self._scheduled
         if scheduled is not None:
+            # Teardown cancels future renewal authority. Historical heartbeat
+            # failure remains observable through assert_healthy()/task-group
+            # evidence, but must not permanently block exact-generation release.
+            # Any already-dispatched renewal is fenced by the allocation/lease
+            # generation and therefore cannot mutate a replacement generation.
             scheduled.cancel()
-        self.assert_healthy()
         with self._lock:
             self._closed = True
             self._closing = False
