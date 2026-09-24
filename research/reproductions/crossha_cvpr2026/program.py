@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="crossha_cvpr2026"
 TITLE="Training One Model to Master Cross-Level Agentic Actions via Reinforcement Learning"
 VENUE="CVPR 2026"
