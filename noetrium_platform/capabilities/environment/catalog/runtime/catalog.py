@@ -159,7 +159,7 @@ __all__ = ["EnvironmentCatalogConflict", "EnvironmentCatalogNotFound", "Executio
 class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
     """Restart-safe environment hierarchy and binding authority."""
 
-    SCHEMA_VERSION = 1
+    SCHEMA_VERSION = 2
 
     def __init__(
         self, path: str | Path, scopes: ScopeRegistryPort, *,
@@ -242,8 +242,11 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         return {
             "instance_id": value.instance_id,
             "resolved_spec_digest": value.resolved_spec_digest,
-            "backend": value.backend, "runtime_reference": value.runtime_reference,
+            "backend": value.backend,
+            "runtime_reference": value.runtime_reference,
             "scope": cls._scope(value.scope),
+            "profile_id": value.profile_id,
+            "profile_revision": value.profile_revision,
         }
 
     @classmethod
@@ -330,8 +333,13 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         }
         self._instances = {
             row["instance_id"]: EnvironmentInstance(
-                row["instance_id"], row["resolved_spec_digest"], row["backend"],
-                row["runtime_reference"], self._decode_scope(row["scope"]),
+                row["instance_id"],
+                row["resolved_spec_digest"],
+                row["backend"],
+                row["runtime_reference"],
+                self._decode_scope(row["scope"]),
+                row["profile_id"],
+                row["profile_revision"],
             )
             for row in value.get("instances", [])
         }
