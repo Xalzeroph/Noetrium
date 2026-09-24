@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 import json
 from pathlib import Path
 import sqlite3
 from threading import RLock
 
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeGPU, ComputeHost
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
@@ -90,16 +90,11 @@ class SQLiteComputeInventory:
             if row is None or int(row[0]) != self.SCHEMA_VERSION:
                 raise RuntimeError("unsupported SQLiteComputeInventory schema")
 
-    @contextmanager
     def _connection(self):
-        conn = sqlite3.connect(self.path, timeout=self.timeout_seconds, isolation_level=None)
-        try:
-            conn.execute(f"PRAGMA busy_timeout={max(1, int(self.timeout_seconds * 1000))}")
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA synchronous=FULL")
-            yield conn
-        finally:
-            conn.close()
+        return durable_sqlite_connection(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     @staticmethod
     def _scope(value: ScopeIdentity) -> dict[str, str]:
