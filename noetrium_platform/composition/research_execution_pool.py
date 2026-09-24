@@ -105,19 +105,22 @@ class ResearchExecutionPool:
         self._endpoint_lease_group: TaskGroupPort | None = None
         self._environment_lease_group: TaskGroupPort | None = None
         self._container_lease_group: TaskGroupPort | None = None
+        self._workloads_quiescing = False
         self._workloads_quiesced = False
+        self._closing = False
         self._closed = False
 
     def _require_workloads_open(self) -> None:
         if self._closed:
             raise RuntimeError("research execution pool is closed")
-        if self._workloads_quiesced:
-            raise RuntimeError("research execution pool workloads are quiesced")
+        if self._closing:
+            raise RuntimeError("research execution pool is closing")
+        if self._workloads_quiescing or self._workloads_quiesced:
+            raise RuntimeError("research execution pool workloads are quiescing")
 
     @property
     def model_admission(self) -> ModelAdmissionRegistryPort:
-        if self._closed:
-            raise RuntimeError("research execution pool is closed")
+        self._require_workloads_open()
         return self._model_admission
 
     def open_orchestration_group(
@@ -133,6 +136,8 @@ class ResearchExecutionPool:
     ) -> TaskGroupPort:
         if self._closed:
             raise RuntimeError("research execution pool is closed")
+        if self._closing:
+            raise RuntimeError("research execution pool is closing")
         return self._orchestration.open_task_group(
             group_id,
             tenant_id=tenant_id,
@@ -347,6 +352,7 @@ class ResearchExecutionPool:
 
         if self._closed or self._workloads_quiesced:
             return
+        self._workloads_quiescing = True
         errors: list[BaseException] = []
         try:
             self._experiments.close(deadline=deadline)
@@ -377,9 +383,11 @@ class ResearchExecutionPool:
     def close(self, *, deadline: Deadline | None = None) -> None:
         if self._closed:
             return
+        # Seal every submission path immediately, but mark fully closed only
+        # after every provider has physically converged. Failed bounded close
+        # attempts remain retryable.
+        self._closing = True
         errors: list[BaseException] = []
-        # Close in dependency order: parent orchestration may synchronously wait
-        # on studies, and studies may synchronously wait on model I/O.
         for runtime in (self._orchestration, self._experiments, self._model_io):
             try:
                 runtime.close(deadline=deadline)
@@ -389,13 +397,15 @@ class ResearchExecutionPool:
             self._model_admission.close()
         except BaseException as exc:
             errors.append(exc)
-        self._closed = True
         if errors:
             raise ExceptionGroup("research execution pool close failed", errors)
+        self._closed = True
 
     def __enter__(self) -> "ResearchExecutionPool":
         if self._closed:
             raise RuntimeError("research execution pool is closed")
+        if self._closing:
+            raise RuntimeError("research execution pool is closing")
         return self
 
     def __exit__(self, exc_type, exc, traceback) -> bool:
