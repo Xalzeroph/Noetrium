@@ -23,6 +23,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
+    ResearchGraphLeaseRenewal,
     ResearchGraphLiveNodeState,
     ResearchGraphNodeControlPhase,
     ResearchGraphNodeControlRecord,
@@ -779,6 +780,8 @@ class ResearchGraphScheduler:
                     continue
 
                 now_ns = time.time_ns()
+                renewal_rows: list[ResearchGraphLeaseRenewal] = []
+                renewal_node_ids: list[str] = []
                 for node_id in tuple(sorted(running)):
                     node, handle, attempt_id, next_renewal = running[node_id]
                     if handle.done() or now_ns < next_renewal:
@@ -801,21 +804,38 @@ class ResearchGraphScheduler:
                         raise ResearchGraphExecutionConflict(
                             "running scheduler attempt lost authoritative node state"
                         )
-                    renewed = store.renew_lease(
+                    renewal_rows.append(
+                        ResearchGraphLeaseRenewal(
+                            node_id,
+                            attempt_id,
+                            self._scheduler_owner_id,
+                            now_ns + self._lease_ns,
+                        )
+                    )
+                    renewal_node_ids.append(node_id)
+
+                if renewal_rows:
+                    renewed_rows = store.renew_leases(
                         execution_id,
-                        node_id,
-                        attempt_id=attempt_id,
-                        owner_id=self._scheduler_owner_id,
+                        tuple(renewal_rows),
                         now_ns=now_ns,
-                        lease_expires_at_ns=now_ns + self._lease_ns,
                     )
-                    live[node_id] = renewed
-                    running[node_id] = (
-                        node,
-                        handle,
-                        attempt_id,
-                        now_ns + renewal_interval_ns,
-                    )
+                    renewed_by_node = {
+                        row.node_id: row for row in renewed_rows
+                    }
+                    if set(renewed_by_node) != set(renewal_node_ids):
+                        raise ResearchGraphExecutionConflict(
+                            "batch lease renewal returned a different node set"
+                        )
+                    for node_id in renewal_node_ids:
+                        node, handle, attempt_id, _next_renewal = running[node_id]
+                        live[node_id] = renewed_by_node[node_id]
+                        running[node_id] = (
+                            node,
+                            handle,
+                            attempt_id,
+                            now_ns + renewal_interval_ns,
+                        )
 
                 if draining and not running:
                     paused = control_store.pause_if_quiescent(
