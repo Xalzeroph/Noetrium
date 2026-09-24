@@ -66,6 +66,7 @@ class _Interpreter:
             parent_machine_id=command.machine_id,
             child_machine_id="child-1",
             child_program_digest=command.payload_digest,
+            child_program_lock_digest=canonical_digest("child-lock"),
             child_snapshot_ref="snapshot/child-1",
             child_transition_start=1,
             child_transition_end=2,
