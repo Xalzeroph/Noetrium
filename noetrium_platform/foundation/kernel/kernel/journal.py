@@ -450,11 +450,30 @@ class DirectoryMachineJournal(MachineJournalPort):
             self._log_path(machine_id)
         )
         cached = self._cache.get(machine_id)
-        if (
-            cached is not None
-            and cached.file_identity == current_identity
-        ):
-            return cached
+        if cached is not None:
+            previous = cached.file_identity
+            if previous == current_identity:
+                return cached
+            if previous is not None:
+                if current_identity is None:
+                    raise MachineIntegrityError(
+                        "machine journal disappeared after being observed"
+                    )
+                previous_size, _pm, _pc, previous_dev, previous_ino = previous
+                current_size, _cm, _cc, current_dev, current_ino = (
+                    current_identity
+                )
+                if (previous_dev, previous_ino) != (
+                    current_dev,
+                    current_ino,
+                ):
+                    raise MachineIntegrityError(
+                        "machine journal file identity was replaced"
+                    )
+                if current_size < previous_size:
+                    raise MachineIntegrityError(
+                        "machine journal was truncated"
+                    )
         rebuilt = self._read_authoritative(machine_id)
         self._cache[machine_id] = rebuilt
         return rebuilt
