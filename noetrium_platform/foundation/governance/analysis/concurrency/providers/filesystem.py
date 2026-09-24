@@ -45,29 +45,24 @@ class FilesystemConcurrencySnapshotStore:
         if not self._baseline.exists(): return None
         data=json.loads(self._baseline.read_text(encoding="utf-8"))
         schema=str(data.get('schema_version',''))
-        if schema == "concurrency-baseline.v2":
-            expected={
-                "schema_version","source_authority","source_revision","source_digest",
-                "analyzer_revision","analyzer_implementation_digest","observed_blocker_fingerprints","accepted_blocker_fingerprints",
-            }
-            if set(data) != expected:
-                raise ValueError("concurrency baseline v2 has unexpected fields")
-            revision=data["source_revision"]
-            if revision is not None and not isinstance(revision,str):
-                raise ValueError("concurrency baseline source_revision must be string or null")
-            return ConcurrencyBaseline(
-                schema_version=schema, source_authority=str(data["source_authority"]),
-                source_revision=revision, source_digest=str(data["source_digest"]),
-                analyzer_revision=str(data["analyzer_revision"]),
-                analyzer_implementation_digest=str(data["analyzer_implementation_digest"]),
-                observed_blocker_fingerprints=tuple(str(x) for x in data["observed_blocker_fingerprints"]),
-                accepted_blocker_fingerprints=tuple(str(x) for x in data["accepted_blocker_fingerprints"]),
-            )
+        if schema != "concurrency-baseline.v2":
+            raise ValueError(f"unsupported concurrency baseline schema: {schema}")
+        expected={
+            "schema_version","source_authority","source_revision","source_digest",
+            "analyzer_revision","analyzer_implementation_digest","observed_blocker_fingerprints","accepted_blocker_fingerprints",
+        }
+        if set(data) != expected:
+            raise ValueError("concurrency baseline v2 has unexpected fields")
+        revision=data["source_revision"]
+        if revision is not None and not isinstance(revision,str):
+            raise ValueError("concurrency baseline source_revision must be string or null")
         return ConcurrencyBaseline(
-            schema_version=schema, source_authority="legacy", source_revision=None, source_digest="",
-            analyzer_revision=str(data.get('analyzer_revision','')), analyzer_implementation_digest="",
-            observed_blocker_fingerprints=(),
-            accepted_blocker_fingerprints=tuple(str(x) for x in data.get('blocker_fingerprints',())),
+            schema_version=schema, source_authority=str(data["source_authority"]),
+            source_revision=revision, source_digest=str(data["source_digest"]),
+            analyzer_revision=str(data["analyzer_revision"]),
+            analyzer_implementation_digest=str(data["analyzer_implementation_digest"]),
+            observed_blocker_fingerprints=tuple(str(x) for x in data["observed_blocker_fingerprints"]),
+            accepted_blocker_fingerprints=tuple(str(x) for x in data["accepted_blocker_fingerprints"]),
         )
     def publish_baseline(self,baseline:ConcurrencyBaseline)->None:
         self._baseline.parent.mkdir(parents=True,exist_ok=True)
