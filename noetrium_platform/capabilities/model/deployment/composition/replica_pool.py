@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from threading import RLock
+from typing import Callable
 from time import time
 from uuid import uuid4
 
@@ -144,6 +146,7 @@ class ModelReplicaPoolLease:
         endpoint_allocations: EndpointAllocationPort,
         compute_guard,
         endpoint_guard,
+        on_closed: Callable[["ModelReplicaPoolLease"], None] | None = None,
     ) -> None:
         self.report = report
         self._deployment_runtime = deployment_runtime
@@ -157,10 +160,13 @@ class ModelReplicaPoolLease:
         self._released_endpoint_ids: set[str] = set()
         self._released_compute_ids: set[str] = set()
         self._closed = False
+        self._on_closed = on_closed
+        self._lifecycle_lock = RLock()
 
     def assert_healthy(self) -> None:
-        if self._closed:
-            raise RuntimeError("model replica pool lease is closed")
+        with self._lifecycle_lock:
+            if self._closed:
+                raise RuntimeError("model replica pool lease is closed")
         self._compute_guard.assert_healthy()
         self._endpoint_guard.assert_healthy()
         for row in self.report.placements:
@@ -172,6 +178,10 @@ class ModelReplicaPoolLease:
                 )
 
     def close(self) -> None:
+        with self._lifecycle_lock:
+            self._close_locked()
+
+    def _close_locked(self) -> None:
         if self._closed:
             return
 
@@ -239,6 +249,8 @@ class ModelReplicaPoolLease:
         )
         if not self._closed:
             raise RuntimeError("model replica pool cleanup did not converge")
+        if self._on_closed is not None:
+            self._on_closed(self)
 
     def __enter__(self) -> "ModelReplicaPoolLease":
         return self
@@ -269,6 +281,44 @@ class LocalModelReplicaPoolRuntime:
         self._endpoint_allocations = endpoint_allocations
         self._compute_lease_guards = compute_lease_guards
         self._endpoint_lease_guards = endpoint_lease_guards
+        self._lifecycle_lock = RLock()
+        self._active_leases: dict[str, ModelReplicaPoolLease] = {}
+        self._closing = False
+        self._closed = False
+
+    @property
+    def active_lease_count(self) -> int:
+        with self._lifecycle_lock:
+            return len(self._active_leases)
+
+    def _lease_closed(self, lease: ModelReplicaPoolLease) -> None:
+        with self._lifecycle_lock:
+            digest = lease.report.report_digest
+            current = self._active_leases.get(digest)
+            if current is lease:
+                self._active_leases.pop(digest, None)
+
+    def close_all(self) -> None:
+        with self._lifecycle_lock:
+            if self._closed:
+                return
+            self._closing = True
+            errors: list[BaseException] = []
+            for lease in tuple(self._active_leases.values()):
+                try:
+                    lease.close()
+                except BaseException as exc:
+                    errors.append(exc)
+            if errors:
+                raise ExceptionGroup(
+                    "model replica pool runtime cleanup failed",
+                    errors,
+                )
+            if self._active_leases:
+                raise RuntimeError(
+                    "model replica pool runtime cleanup did not retire all leases"
+                )
+            self._closed = True
 
     def _target_count(self, request: ModelReplicaPoolRequest) -> int:
         if request.replica_count is not None:
@@ -320,6 +370,17 @@ class LocalModelReplicaPoolRuntime:
         return replace(spec, desired_state=ModelDesiredState.RUNNING, tags=tags)
 
     def ensure(self, request: ModelReplicaPoolRequest) -> ModelReplicaPoolLease:
+        with self._lifecycle_lock:
+            if self._closed:
+                raise RuntimeError("model replica pool runtime is closed")
+            if self._closing:
+                raise RuntimeError("model replica pool runtime is closing")
+            return self._ensure_locked(request)
+
+    def _ensure_locked(
+        self,
+        request: ModelReplicaPoolRequest,
+    ) -> ModelReplicaPoolLease:
         if not isinstance(request, ModelReplicaPoolRequest):
             raise TypeError("model replica pool requires ModelReplicaPoolRequest")
         request_digest = canonical_digest(request)
@@ -443,8 +504,14 @@ class LocalModelReplicaPoolRuntime:
                 endpoint_allocations=self._endpoint_allocations,
                 compute_guard=compute_guard,
                 endpoint_guard=endpoint_guard,
+                on_closed=self._lease_closed,
             )
             lease.assert_healthy()
+            if report.report_digest in self._active_leases:
+                raise RuntimeError(
+                    "model replica pool report identity was already registered"
+                )
+            self._active_leases[report.report_digest] = lease
             return lease
         except BaseException as primary:
             cleanup_errors: list[BaseException] = []
