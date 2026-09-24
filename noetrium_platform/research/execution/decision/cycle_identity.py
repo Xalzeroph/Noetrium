@@ -5,8 +5,9 @@ import json
 from typing import Protocol
 import uuid
 
-
 from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
+
+
 @dataclass(frozen=True, slots=True)
 class DecisionCycleIdentity:
     """Stable identity for one trial decision cycle.
