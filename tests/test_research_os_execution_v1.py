@@ -820,6 +820,9 @@ class _ExecutionStoreWithoutActiveCut:
     def snapshot(self, execution_id):
         raise AssertionError("unused")
 
+    def node_state(self, execution_id, node_id):
+        raise AssertionError("unused")
+
     def recover_expired(self, execution_id, *, now_ns):
         raise AssertionError("unused")
 
