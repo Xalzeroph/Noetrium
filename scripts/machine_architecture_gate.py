@@ -260,6 +260,13 @@ def _check_research_machine_bypasses() -> int:
         "noetrium_platform/research/execution/lifecycle/contracts.py",
         "noetrium_platform/research/execution/lifecycle/health.py",
         "noetrium_platform/research/execution/lifecycle/manager.py",
+        "noetrium_platform/composition/experiment_runtime.py",
+        "noetrium_platform/research/execution/machines/composition/host_factory.py",
+        "noetrium_platform/research/experimentation/lifecycle/run/runtime/lifecycle_factory.py",
+        "noetrium_platform/research/experimentation/lifecycle/run/runtime/lifecycle_closer.py",
+        "noetrium_platform/research/experimentation/lifecycle/run/runtime/resources.py",
+        "noetrium_platform/research/experimentation/lifecycle/run/api/ports.py",
+        "noetrium_platform/research/experimentation/lifecycle/experiment/api/ports.py",
     )
     existing = tuple(path for path in retired_paths if (ROOT / path).exists())
     if existing:
