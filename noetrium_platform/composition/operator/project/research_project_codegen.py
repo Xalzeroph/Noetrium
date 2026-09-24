@@ -28,7 +28,7 @@ from noetrium import api
 
 def _bootstrap():
     """Minimal pure executable used only until the author replaces this core."""
-    return {"ready": True}
+    return None
 
 
 def build_research() -> api.ResearchPortfolio:
