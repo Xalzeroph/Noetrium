@@ -434,6 +434,7 @@ class ResearchGraphScheduler:
         store.ensure_execution(execution_id, self._plan)
         if (
             self._automatic_owner_generation
+            and self._pool.can_recover_abandoned_owner_generations
             and isinstance(store, ResearchGraphOwnerGenerationRecoveryPort)
         ):
             # The managed local runtime holds the outer interprocess lock.

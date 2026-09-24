@@ -335,6 +335,7 @@ def build_local_managed_research_runtime(
         experiment_admission_budget=experiment_admission_budget,
         model_io_concurrency_budget=model_io_concurrency_budget,
         model_io_admission_budget=model_io_admission_budget,
+        exclusive_owner_generation=True,
         )
         group = pool.open_orchestration_group(
             "managed-research-runtime",

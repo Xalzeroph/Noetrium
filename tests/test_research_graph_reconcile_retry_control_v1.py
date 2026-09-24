@@ -126,3 +126,37 @@ def test_reconciled_retry_remains_node_paused_until_explicit_resume(
         ResearchGraphLiveNodeState.RETRY_WAIT
     )
     assert len(store.attempts("execution", "a")) == 1
+
+
+def test_unproven_pool_does_not_reclaim_foreign_generation_before_ttl(
+    tmp_path: Path,
+) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph-no-exclusive.sqlite3")
+    store.ensure_execution("execution-no-exclusive", _plan())
+    store.mark_ready("execution-no-exclusive", "a", now_ns=1)
+    claim = store.claim(
+        "execution-no-exclusive",
+        "a",
+        owner_id="research-graph-scheduler:other-generation:worker",
+        now_ns=2,
+        lease_expires_at_ns=10**20,
+    )
+    pool = _pool()
+    scheduler = ResearchGraphScheduler(
+        _plan(),
+        _NeverExecute(),
+        execution_pool=pool,
+        execution_store=store,
+        execution_id="execution-no-exclusive",
+        selected_node_ids=("a",),
+    )
+    try:
+        with pytest.raises(Exception, match="active non-expired leases"):
+            scheduler.execute()
+    finally:
+        scheduler.close()
+        pool.close()
+
+    current = store.snapshot("execution-no-exclusive").node("a")
+    assert current.state is ResearchGraphLiveNodeState.CLAIMED
+    assert current.attempt_id == claim.attempt_id

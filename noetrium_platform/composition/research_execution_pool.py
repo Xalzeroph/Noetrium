@@ -70,6 +70,7 @@ class ResearchExecutionPool:
         model_io_concurrency_budget: ConcurrencyBudget | None = None,
         model_io_admission_budget: AdmissionBudget | None = None,
         priority_aging_seconds: float = 1.0,
+        exclusive_owner_generation: bool = False,
     ) -> None:
         self._orchestration = build_execution_concurrency_runtime(
             concurrency_budget=orchestration_concurrency_budget,
@@ -101,7 +102,10 @@ class ResearchExecutionPool:
         except BaseException:
             self._orchestration.close()
             raise
+        if type(exclusive_owner_generation) is not bool:
+            raise TypeError("exclusive_owner_generation must be boolean")
         self._owner_generation_id = uuid4().hex
+        self._exclusive_owner_generation = exclusive_owner_generation
         self._compute_lease_group: TaskGroupPort | None = None
         self._endpoint_lease_group: TaskGroupPort | None = None
         self._environment_lease_group: TaskGroupPort | None = None
@@ -124,6 +128,12 @@ class ResearchExecutionPool:
         """Process-generation fence shared by all schedulers in this pool."""
 
         return self._owner_generation_id
+
+    @property
+    def can_recover_abandoned_owner_generations(self) -> bool:
+        """Whether composition proved this pool is the only live local generation."""
+
+        return self._exclusive_owner_generation
 
     @property
     def model_admission(self) -> ModelAdmissionRegistryPort:
