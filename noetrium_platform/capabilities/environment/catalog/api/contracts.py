@@ -7,6 +7,47 @@ from noetrium_platform.substrate.api import ScopeIdentity
 from noetrium_platform.substrate.api import ResolutionPolicy
 
 
+class EnvironmentProfileLifecycle(StrEnum):
+    ACTIVE = "active"
+    DRAINING = "draining"
+    RETIRED = "retired"
+
+
+@dataclass(frozen=True, slots=True)
+class EnvironmentProfileRevision:
+    profile_id: str
+    category_id: str
+    profile_revision: str
+    lifecycle: EnvironmentProfileLifecycle = EnvironmentProfileLifecycle.ACTIVE
+
+    def __post_init__(self) -> None:
+        for field_name, value in (
+            ("profile_id", self.profile_id),
+            ("category_id", self.category_id),
+        ):
+            if (
+                type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"environment profile {field_name} must be canonical non-empty text"
+                )
+        revision = self.profile_revision
+        if (
+            type(revision) is not str
+            or len(revision) != 64
+            or any(ch not in "0123456789abcdef" for ch in revision)
+        ):
+            raise ValueError(
+                "environment profile revision must be lowercase sha256"
+            )
+        if type(self.lifecycle) is not EnvironmentProfileLifecycle:
+            raise TypeError(
+                "environment profile lifecycle must be EnvironmentProfileLifecycle"
+            )
+
+
 class EnvironmentInstanceState(StrEnum):
     CLEAN = "clean"
     IN_USE = "in_use"
@@ -273,6 +314,8 @@ __all__ = [
     "EnvironmentInstanceAcquisition",
     "EnvironmentInstanceState",
     "EnvironmentProfileGcAssessment",
+    "EnvironmentProfileLifecycle",
+    "EnvironmentProfileRevision",
     "EnvironmentProfileReferenceSummary",
     "EnvironmentOverlay",
     "EnvironmentSpec",
