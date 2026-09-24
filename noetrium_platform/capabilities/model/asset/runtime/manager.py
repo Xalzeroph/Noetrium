@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from hashlib import sha256
 from pathlib import Path
 import json
 from threading import RLock
@@ -8,7 +9,9 @@ from noetrium_platform.substrate.api import ScopeIdentity
 
 from noetrium_platform.capabilities.model.asset.api import (
     ManagedModelAsset,
+    ModelAssetGcAssessment,
     ModelAssetMode,
+    ModelAssetReferenceClosure,
     ModelAssetOrigin,
     ModelAssetStats,
     ModelAssetStoragePort,
@@ -21,6 +24,7 @@ from noetrium_platform.capabilities.model.asset.api import (
 
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentCatalogPort, ModelDesiredState
 
+from .codec import encode_model_asset
 from .registry import ModelAssetRegistry
 
 
@@ -194,7 +198,58 @@ class ModelAssetManager:
     def _normalize_tags(tags: tuple[str, ...]) -> tuple[str, ...]:
         return tuple(sorted({str(tag).strip() for tag in tags if str(tag).strip()}))
 
-    def unregister_model(self, model_id: str, *, delete_managed_files: bool = False) -> bool:
+    @staticmethod
+    def _asset_digest(asset: ManagedModelAsset) -> str:
+        return sha256(encode_model_asset(asset)).hexdigest()
+
+    def assess_model_gc(
+        self,
+        model_id: str,
+        *,
+        closures: tuple[ModelAssetReferenceClosure, ...] = (),
+    ) -> ModelAssetGcAssessment:
+        asset = self.model(model_id)
+        references = self._references.references(model_id)
+        if references:
+            raise RuntimeError(
+                f"model is still referenced by a deployment: {model_id}"
+            )
+        return ModelAssetGcAssessment(
+            model_id=model_id,
+            asset_digest=self._asset_digest(asset),
+            closures=closures,
+        )
+
+    def _require_physical_gc(
+        self,
+        asset: ManagedModelAsset,
+        gc: ModelAssetGcAssessment | None,
+    ) -> ModelAssetGcAssessment:
+        if type(gc) is not ModelAssetGcAssessment:
+            raise RuntimeError(
+                "managed model bytes require a typed model asset GC assessment"
+            )
+        if (
+            gc.model_id != asset.model_id
+            or gc.asset_digest != self._asset_digest(asset)
+        ):
+            raise RuntimeError(
+                "model asset GC assessment does not bind the exact asset generation"
+            )
+        if not gc.eligible:
+            raise RuntimeError(
+                "managed model bytes require complete execution, evidence, and "
+                "recovery closure with zero retained references"
+            )
+        return gc
+
+    def unregister_model(
+        self,
+        model_id: str,
+        *,
+        delete_managed_files: bool = False,
+        gc: ModelAssetGcAssessment | None = None,
+    ) -> bool:
         if type(delete_managed_files) is not bool:
             raise TypeError("delete_managed_files must be bool")
         with self._lock:
@@ -207,20 +262,46 @@ class ModelAssetManager:
             retirement = self._asset_registry.retirement(model_id)
             if retirement is None:
                 asset = self.model(model_id)
+                physical_gc = (
+                    self._require_physical_gc(asset, gc)
+                    if delete_managed_files
+                    else None
+                )
                 asset = self._asset_registry.begin_retirement(
                     asset,
                     delete_managed_files=delete_managed_files,
+                    gc_proof_digest=(
+                        None
+                        if physical_gc is None
+                        else physical_gc.proof_digest
+                    ),
                 )
                 durable_delete = delete_managed_files
+                durable_gc_proof = (
+                    None
+                    if physical_gc is None
+                    else physical_gc.proof_digest
+                )
             else:
-                asset, durable_delete = retirement
+                asset, durable_delete, durable_gc_proof = retirement
                 if asset is None:
                     return True
 
-            # Reference truth belongs to deployment authority, not this registry.
-            # Recheck after publishing retirement before destructive bytes are
-            # touched. Any forbidden concurrent reference leaves a recoverable
-            # retired asset rather than deleting bytes under a consumer.
+                if durable_delete:
+                    physical_gc = self._require_physical_gc(asset, gc)
+                    if physical_gc.proof_digest != durable_gc_proof:
+                        raise RuntimeError(
+                            "model asset GC proof changed across retirement retry"
+                        )
+                else:
+                    # The first durable retirement policy is authoritative.
+                    # A later caller cannot upgrade a logical retirement into
+                    # physical deletion by changing its request.
+                    physical_gc = None
+
+            # Deployment reference truth belongs to deployment authority.
+            # Recheck after retirement publication before touching bytes so a
+            # concurrent deployment can never be deleted underneath.
             references = self._references.references(model_id)
             if references:
                 raise RuntimeError(
@@ -231,6 +312,7 @@ class ModelAssetManager:
             if durable_delete:
                 self._storage.remove(asset)
             return self._asset_registry.finish_retirement(asset)
+
 
 
 __all__ = ["ModelAssetManager"]
