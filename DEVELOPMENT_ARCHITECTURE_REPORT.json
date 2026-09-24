@@ -2,8 +2,8 @@
   "architecture_budget_violations": [],
   "architecture_complexity": {
     "authorities": 20,
-    "contract_declarations": 185,
-    "import_edges": 5307,
+    "contract_declarations": 184,
+    "import_edges": 5286,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -22,8 +22,8 @@
     },
     "effective_limits": {
       "authorities": 31,
-      "contract_declarations": 185,
-      "import_edges": 5307,
+      "contract_declarations": 184,
+      "import_edges": 5286,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5307,
+  "import_edges": 5286,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "7ab159908d53186ff89e19eb822c8c4d008e2e10ff61d884784bd06f3781bc02",
+  "report_sha256": "ed6f86e412c9362225e879e1adfbc9aa9c3b057e415e8b739bda53c045885bea",
   "source_authority_violations": [],
-  "source_digest": "4ef8f8d76f3aa19e3ed7f8f42beff6d0996442b0ef47fa270e8b34a3e8b4d50f",
+  "source_digest": "c52d46d8fdf5d536c5e83edf3e48e01751694ef81bd42b6dc3f629466512ce9d",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1844,7 +1844,7 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 452,
+      "import_fan_in": 451,
       "import_fan_out": 27,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1855,7 +1855,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1889,
+      "risk_score": 1885,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -1987,20 +1987,22 @@
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 0,
-      "import_fan_in": 82,
-      "import_fan_out": 23,
+      "exception_handlers": 15,
+      "import_fan_in": 1,
+      "import_fan_out": 7,
       "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.research.execution.api",
-      "path": "noetrium_platform/research/execution/api/__init__.py",
+      "lock_sites": 6,
+      "long_functions": 2,
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
       "reason_codes": [
-        "HIGH_FAN_IN",
-        "HIGH_FAN_OUT"
+        "LOCK_CONTENTION_RISK",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
       ],
-      "risk_score": 397,
-      "self_mutation_sites": 0,
+      "risk_score": 412,
+      "self_mutation_sites": 31,
       "serialization_sites": 0
     },
     {
@@ -2092,6 +2094,23 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 0,
+      "import_fan_in": 75,
+      "import_fan_out": 23,
+      "io_sites": 0,
+      "lock_sites": 0,
+      "long_functions": 0,
+      "module": "noetrium_platform.research.execution.api",
+      "path": "noetrium_platform/research/execution/api/__init__.py",
+      "reason_codes": [
+        "HIGH_FAN_IN",
+        "HIGH_FAN_OUT"
+      ],
+      "risk_score": 369,
+      "self_mutation_sites": 0,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 11,
       "import_fan_in": 3,
       "import_fan_out": 7,
@@ -2123,25 +2142,6 @@
       ],
       "risk_score": 341,
       "self_mutation_sites": 0,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 14,
-      "import_fan_in": 1,
-      "import_fan_out": 7,
-      "io_sites": 0,
-      "lock_sites": 4,
-      "long_functions": 2,
-      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
-      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
-      "reason_codes": [
-        "LOCK_CONTENTION_RISK",
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 335,
-      "self_mutation_sites": 22,
       "serialization_sites": 0
     },
     {

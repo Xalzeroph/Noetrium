@@ -1,6 +1,6 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "7b31a364f167f4f49bee43596fdbdd533742ed90233c015c1050f57c8b3a7c59",
+  "catalog_digest": "f2aebae7b5d1589970ca32fe6f78f06e2667d9daf8b8f774f69085c19a64f27f",
   "direct_symbol_sources": {
     "ActionKind": "noetrium_platform.product.api",
     "ActionRequest": "noetrium_platform.product.api",
@@ -842,7 +842,7 @@
       "canonical_authority": "experimentation",
       "downstream_surface": "metadata_only",
       "facade_module": "noetrium.contracts.systems.experimentation",
-      "interface_digest": "b60c447ba76b617f51343ad70596e03dbbe99eb9359108dfcf3721530603dfe9",
+      "interface_digest": "ba5d5781dbe7a1f25da19ec0a3955a15522f16a2349ec7a2eac0a04580711bc1",
       "must_not_own": "server/process control and model serving",
       "node_kind": "authority",
       "owns": "study, experiment, run, branch and checkpoint semantics",
@@ -850,7 +850,6 @@
       "provides": [
         "experiment.catalog",
         "experiment.definition",
-        "experiment.resource-policy",
         "experiment.runtime",
         "experiment.workload",
         "research.workbench",
@@ -1424,5 +1423,5 @@
       "system_key": "scope"
     }
   ],
-  "topology_digest": "31c2f26c4e934ccbbedf934a7302bfeb1e84861690f74b58e58aa61411a41de9"
+  "topology_digest": "08d68ed5eec97297020d8747da32973664283da1e23e84313f1599bffe99f0f1"
 }

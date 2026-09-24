@@ -330,7 +330,6 @@
     "provides": [
       "experiment.catalog",
       "experiment.definition",
-      "experiment.resource-policy",
       "experiment.runtime",
       "experiment.workload",
       "research.workbench",

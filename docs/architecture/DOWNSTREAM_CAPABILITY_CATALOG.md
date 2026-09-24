@@ -20,7 +20,7 @@ Example:
 - Registered systems: 31
 - Public API modules: 1
 - Public symbols: 142
-- Registry digest: 31c2f26c4e934ccbbedf934a7302bfeb1e84861690f74b58e58aa61411a41de9
+- Registry digest: 08d68ed5eec97297020d8747da32973664283da1e23e84313f1599bffe99f0f1
 
 ## Capability domains
 
@@ -211,7 +211,7 @@ Example:
 - Owns: study, experiment, run, branch and checkpoint semantics
 - Must not own: server/process control and model serving
 - Requires: artifact, environment, execution, governance, model, participant, platform, portfolio, resource, scope
-- Provides: experiment.catalog, experiment.definition, experiment.resource-policy, experiment.runtime, experiment.workload, research.workbench, run.checkpoint, run.control, run.decision, run.identity, run.lifecycle, run.manifest, study.definition
+- Provides: experiment.catalog, experiment.definition, experiment.runtime, experiment.workload, research.workbench, run.checkpoint, run.control, run.decision, run.identity, run.lifecycle, run.manifest, study.definition
 - Downstream surface: metadata_only
 - Facade: noetrium.contracts.systems.experimentation
 
