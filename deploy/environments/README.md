@@ -132,7 +132,13 @@ The generic entrypoint performs the base Noetrium qualification first and then e
 
 The host contract remains Docker + Docker Compose and access to the Docker daemon. GPU nodes additionally need the NVIDIA container runtime required by their provider.
 
-Host Python is not part of the deployment contract. Qualification and image orchestration run in the disposable bootstrap image:
+Host Python is not part of the deployment contract. The canonical server entrypoint is `./deploy/noetrium`: `doctor` verifies ordinary-user Docker/Compose access, `build` prepares or reuses the environment fleet, `preflight` closes execution authority and admission without starting work, and `run` chains environment build/reuse -> authority audit -> preflight -> Research OS execution. The launcher never invokes `sudo`. Rootful Docker group access or rootless Docker is sufficient; GPU hosts must already provide the NVIDIA container runtime.
+
+Scientific execution remains fail-closed. Repository fleet execution requires an explicit `NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory` in the host environment or `deploy/.env`; the launcher never guesses model, participant, benchmark, trial, reconciliation, or other scientific bindings.
+
+Network endpoints are Resource-owned infrastructure. The Resource authority obtains kernel-selected candidates, probes current OS bind availability, skips endpoints already occupied or leased, atomically fences concurrent claims, renews live leases, and makes a released physical port eligible for reuse. Papers and environment providers therefore do not need fixed host ports.
+
+Qualification and low-level image orchestration run in the disposable bootstrap image:
 
 ```bash
 ./deploy/build-environments.sh list
