@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.research.experimentation.lifecycle.run.api import DecisionCycleRuntimePort, RunRuntimePort
+from noetrium_platform.research.experimentation.lifecycle.run.api.ports import DecisionCycleRuntimePort, RunRuntimePort
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentTrialProtocolIdentity
 
 
