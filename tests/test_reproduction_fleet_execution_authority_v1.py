@@ -11,10 +11,7 @@ from noetrium_platform.composition.research_os_experiment_runtime_binding import
 from research.reproductions.fleet import (
     ReproductionFleetExecutionAuthorities,
 )
-from scripts.run_reproduction_fleet import (
-    _load_authority_materializer,
-    _load_execution_authorities,
-)
+from scripts.run_reproduction_fleet import _load_authority_materializer
 
 
 class _BenchmarkResolver:
@@ -81,72 +78,13 @@ def test_execution_authorities_require_all_runtime_closure_ports() -> None:
     assert isinstance(authorities.capability_resolver, _CapabilityResolver)
 
 
-def test_cli_authority_loader_accepts_only_typed_public_factory() -> None:
-    module_name = "_noetrium_test_fleet_authority"
-    module = ModuleType(module_name)
-    module.build = _authorities
-    sys.modules[module_name] = module
-    try:
-        context = object()
-        loaded = _load_execution_authorities(module_name + ":build", context)
-        assert type(loaded) is ReproductionFleetExecutionAuthorities
-    finally:
-        sys.modules.pop(module_name, None)
-
-
-@pytest.mark.parametrize(
-    "spec",
-    (
-        "",
-        "missing-separator",
-        "module:",
-        ":factory",
-        "module:_private",
-        "module:factory:extra",
-    ),
-)
-def test_cli_authority_loader_rejects_ambiguous_or_private_specs(spec: str) -> None:
-    with pytest.raises((ValueError, ModuleNotFoundError)):
-        _load_execution_authorities(spec, object())
-
-
-def test_cli_authority_loader_passes_runtime_context_to_factory() -> None:
-    module_name = "_noetrium_test_fleet_context"
-    module = ModuleType(module_name)
-    seen = []
-
-    def build(context):
-        seen.append(context)
-        return _authorities()
-
-    module.build = build
-    sys.modules[module_name] = module
-    context = object()
-    try:
-        _load_execution_authorities(module_name + ":build", context)
-    finally:
-        sys.modules.pop(module_name, None)
-    assert seen == [context]
-
-
 def test_cli_materializer_loader_passes_runtime_context_to_factory() -> None:
     class Materializer:
         def materialize_prerequisites(self, requirements):
             raise AssertionError(requirements)
 
-        def materialize_manifests(self, requirements, fleet):
+        def materialize_owners(self, requirements, fleet):
             raise AssertionError((requirements, fleet))
-
-        def materialize_execution_owners(
-            self,
-            requirements,
-            capability_requirements,
-            fleet,
-            manifests,
-        ):
-            raise AssertionError(
-                (requirements, capability_requirements, fleet, manifests)
-            )
 
     module_name = "_noetrium_test_fleet_materializer_context"
     module = ModuleType(module_name)
