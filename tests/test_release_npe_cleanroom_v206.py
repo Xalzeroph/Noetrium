@@ -62,7 +62,7 @@ def _doctor(
         "command": "project doctor",
         "result": {
             "project_root": "project",
-            "template_revision": "noetrium.project-template.v7",
+            "template_revision": "noetrium.project-template.v9",
             "checks": checks,
         },
     }
@@ -70,14 +70,19 @@ def _doctor(
 
 def _identity(
     *,
-    program_digest: str = "1" * 64,
     portfolio_digest: str = "2" * 64,
+    program_digests: tuple[str, ...] = ("1" * 64, "4" * 64),
 ) -> dict:
     return {
-        "program_id": "npe-reference",
-        "program_digest": program_digest,
         "portfolio_id": "npe-reference",
         "portfolio_digest": portfolio_digest,
+        "programs": [
+            {
+                "program_id": f"paper-{index}",
+                "program_digest": digest,
+            }
+            for index, digest in enumerate(program_digests, start=1)
+        ],
     }
 
 
@@ -115,7 +120,7 @@ def test_json_output_rejects_duplicate_keys_and_non_finite_constants() -> None:
     assert npe._json_output(non_finite) is None
 
 
-def test_doctor_facts_preserve_public_boundary_and_v7_template() -> None:
+def test_doctor_facts_preserve_public_boundary_and_v9_template() -> None:
     receipt = _receipt(
         "project-doctor",
         4,
@@ -124,7 +129,7 @@ def test_doctor_facts_preserve_public_boundary_and_v7_template() -> None:
     ready, public_boundary, template, blockers = npe._doctor_facts(receipt)
     assert ready is False
     assert public_boundary is True
-    assert template == "noetrium.project-template.v7"
+    assert template == "noetrium.project-template.v9"
     assert blockers == ("standard_bindings",)
 
 
@@ -155,7 +160,7 @@ def test_clean_room_reports_missing_venv_as_environment_blocker(
 
     result = npe.verify_npe_cleanroom(artifact)
 
-    assert result.schema == "noetrium.npe-clean-room.v4"
+    assert result.schema == "noetrium.npe-clean-room.v5"
     assert result.npe_verified is False
     assert result.blocker_codes == ("PYTHON_VENV_UNAVAILABLE",)
     assert result.commands == ()
@@ -207,7 +212,7 @@ def test_clean_room_records_doctor_blocker_without_false_pass(
     assert result.project_created is True
     assert result.generated_tests_passed is True
     assert result.public_import_boundary_passed is True
-    assert result.research_program_loaded is False
+    assert result.research_portfolio_loaded is False
     assert "DOCTOR_BLOCKED:standard_bindings" in result.blocker_codes
 
 
@@ -248,12 +253,12 @@ def test_clean_room_verifies_research_identity_across_fresh_processes(
                 _doctor(ready=True),
             ),
             "project-test": _receipt("project-test", 0, {"ok": True}),
-            "research-program-load-1": _receipt(
+            "research-portfolio-load-1": _receipt(
                 "research-program-load-1",
                 0,
                 _identity(),
             ),
-            "research-program-load-2": _receipt(
+            "research-portfolio-load-2": _receipt(
                 "research-program-load-2",
                 0,
                 _identity(),
@@ -270,6 +275,17 @@ def test_clean_room_verifies_research_identity_across_fresh_processes(
     assert result.fresh_process_identity_stable is True
     assert result.npe_verified is True
     assert result.blocker_codes == ()
+
+
+def test_research_identity_accepts_multiple_programs() -> None:
+    receipt = _receipt(
+        "research-portfolio-load",
+        0,
+        _identity(program_digests=("1" * 64, "2" * 64, "3" * 64)),
+    )
+    facts = npe._research_identity_facts(receipt)
+    assert facts is not None
+    assert len(facts["programs"]) == 3
 
 
 def test_clean_room_rejects_fresh_process_research_identity_drift(
