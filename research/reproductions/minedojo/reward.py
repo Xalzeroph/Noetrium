@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 import math
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.evidence.artifact.content.api import TensorContentRef
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import TensorContentRef
+from noetrium.api import (
     JsonObject,
     JsonValue,
     canonical_digest,
