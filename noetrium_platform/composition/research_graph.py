@@ -803,6 +803,83 @@ class ResearchGraphScheduler:
                 now_ns + renewal_interval_ns,
             )
 
+    def _handle_durable_stall(
+        self,
+        *,
+        execution_id: str,
+        node_control_store: ResearchGraphNodeControlStorePort,
+        pending: dict[str, ResearchGraphNode],
+        running: dict[str, tuple[ResearchGraphNode, object]],
+        reconciliation_required: set[str],
+        frontier: ResearchGraphDependencyFrontier,
+        live: dict[str, ResearchGraphNodeExecutionRecord],
+        completion_queue: Queue[str],
+        record_completion,
+    ) -> bool:
+        """Resolve a quiescent durable scheduler state or wait for retry eligibility.
+
+        Returns True when the caller should continue the scheduling loop.
+        Raises a typed control/reconciliation error for durable stop states.
+        """
+        local_control_ids = set(pending) | reconciliation_required
+        local_control_tuple = tuple(sorted(local_control_ids))
+        refreshed_controls = {
+            row.node_id: row
+            for row in node_control_store.node_control_states(
+                execution_id,
+                local_control_tuple,
+            )
+        }
+        missing_local_controls = tuple(
+            sorted(local_control_ids - set(refreshed_controls))
+        )
+        if missing_local_controls:
+            raise ResearchGraphExecutionConflict(
+                "research graph node control snapshot lost pending nodes: "
+                f"{missing_local_controls}"
+            )
+        local_controls = tuple(
+            refreshed_controls[node_id]
+            for node_id in sorted(local_control_ids)
+            if refreshed_controls[node_id].phase in {
+                ResearchGraphNodeControlPhase.PAUSED,
+                ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+            }
+        )
+        if local_controls:
+            raise ResearchGraphNodeControlHalt(local_controls)
+        if reconciliation_required:
+            raise ResearchGraphReconciliationRequired(
+                execution_id,
+                tuple(sorted(reconciliation_required)),
+            )
+
+        ready_pending = set(frontier.ready_node_ids(set(pending)))
+        retry_times = tuple(
+            record.retry_not_before_ns
+            for node_id, record in live.items()
+            if node_id in ready_pending
+            and record.state is ResearchGraphLiveNodeState.RETRY_WAIT
+            and record.retry_not_before_ns is not None
+        )
+        if retry_times:
+            delay = max(
+                0.0,
+                (min(retry_times) - time.time_ns()) / 1_000_000_000,
+            )
+            wait_seconds = min(0.05, delay)
+            if wait_seconds > 0.0:
+                try:
+                    completed_id = completion_queue.get(timeout=wait_seconds)
+                except Empty:
+                    return True
+                if completed_id in running:
+                    record_completion(completed_id)
+                return True
+        raise RuntimeError(
+            "durable research graph scheduler reached an impossible dependency state"
+        )
+
     def _execute_durable(
         self,
         *,
@@ -1152,70 +1229,18 @@ class ResearchGraphScheduler:
                     raise ResearchGraphControlHalt(paused)
 
                 if pending and not running and not progressed:
-                    local_control_ids = set(pending) | reconciliation_required
-                    local_control_tuple = tuple(
-                        sorted(local_control_ids)
-                    )
-                    refreshed_controls = {
-                        row.node_id: row
-                        for row in node_control_store.node_control_states(
-                            execution_id,
-                            local_control_tuple,
-                        )
-                    }
-                    missing_local_controls = tuple(
-                        sorted(local_control_ids - set(refreshed_controls))
-                    )
-                    if missing_local_controls:
-                        raise ResearchGraphExecutionConflict(
-                            "research graph node control snapshot lost pending nodes: "
-                            f"{missing_local_controls}"
-                        )
-                    local_controls = tuple(
-                        refreshed_controls[node_id]
-                        for node_id in sorted(local_control_ids)
-                        if refreshed_controls[node_id].phase in {
-                            ResearchGraphNodeControlPhase.PAUSED,
-                            ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
-                        }
-                    )
-                    if local_controls:
-                        raise ResearchGraphNodeControlHalt(local_controls)
-                    if reconciliation_required:
-                        raise ResearchGraphReconciliationRequired(
-                            execution_id,
-                            tuple(sorted(reconciliation_required)),
-                        )
-                    ready_pending = set(
-                        frontier.ready_node_ids(set(pending))
-                    )
-                    retry_times = tuple(
-                        record.retry_not_before_ns
-                        for node_id, record in live.items()
-                        if node_id in ready_pending
-                        and record.state is ResearchGraphLiveNodeState.RETRY_WAIT
-                        and record.retry_not_before_ns is not None
-                    )
-                    if retry_times:
-                        delay = max(
-                            0.0,
-                            (min(retry_times) - time.time_ns()) / 1_000_000_000,
-                        )
-                        wait_seconds = min(0.05, delay)
-                        if wait_seconds > 0.0:
-                            try:
-                                completed_id = completion_queue.get(
-                                    timeout=wait_seconds
-                                )
-                            except Empty:
-                                continue
-                            if completed_id in running:
-                                record_completion(completed_id)
-                            continue
-                    raise RuntimeError(
-                        "durable research graph scheduler reached an "
-                        "impossible dependency state"
-                    )
+                    if self._handle_durable_stall(
+                        execution_id=execution_id,
+                        node_control_store=node_control_store,
+                        pending=pending,
+                        running=running,
+                        reconciliation_required=reconciliation_required,
+                        frontier=frontier,
+                        live=live,
+                        completion_queue=completion_queue,
+                        record_completion=record_completion,
+                    ):
+                        continue
 
                 if not running:
                     continue
