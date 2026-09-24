@@ -60,8 +60,8 @@ class _AdmissionLease:
         with self._lock:
             if self._released:
                 return
+            self._authority._release(self._group_id, self._lane_kind)
             self._released = True
-        self._authority._release(self._group_id, self._lane_kind)
 
 
 class HierarchicalAdmissionAuthority:
