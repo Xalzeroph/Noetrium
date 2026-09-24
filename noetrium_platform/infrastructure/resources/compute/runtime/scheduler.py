@@ -729,7 +729,7 @@ class SQLiteComputeScheduler:
         explicit_now: float | None,
     ) -> float:
         if explicit_now is not None:
-            return _lease_now(explicit_now)
+            _lease_now(explicit_now)
         return authoritative_lease_now(conn, self._clock.read())
 
     def _ensure_schema(self, conn: sqlite3.Connection) -> None:
