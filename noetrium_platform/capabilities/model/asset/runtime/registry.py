@@ -43,7 +43,7 @@ class ModelAssetRegistry:
         return self._root / f"{model_id}.json"
 
     def _retired_path(self, model_id: str):
-        return self._retired_root / f"{model_id}.sha256"
+        return self._retired_root / f"{model_id}.json"
 
     def _lock(self, model_id: str) -> InterprocessFileLock:
         return InterprocessFileLock(
@@ -53,6 +53,35 @@ class ModelAssetRegistry:
     @staticmethod
     def _digest(value: ManagedModelAsset) -> str:
         return sha256(encode_model_asset(value)).hexdigest()
+
+    @staticmethod
+    def _retirement_payload(
+        asset_digest: str,
+        delete_managed_files: bool,
+    ) -> bytes:
+        return json.dumps(
+            {
+                "asset_digest": asset_digest,
+                "delete_managed_files": delete_managed_files,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+
+    @staticmethod
+    def _decode_retirement(raw: bytes) -> tuple[str, bool]:
+        value = json.loads(raw.decode("utf-8"))
+        if (
+            not isinstance(value, dict)
+            or set(value) != {"asset_digest", "delete_managed_files"}
+            or type(value.get("asset_digest")) is not str
+            or len(value["asset_digest"]) != 64
+            or any(ch not in "0123456789abcdef" for ch in value["asset_digest"])
+            or type(value.get("delete_managed_files")) is not bool
+        ):
+            raise RuntimeError("invalid model asset retirement document")
+        return value["asset_digest"], value["delete_managed_files"]
+
 
     def put(self, value: ManagedModelAsset) -> ManagedModelAsset:
         self._validate_id(value.model_id)
@@ -92,12 +121,18 @@ class ModelAssetRegistry:
     def begin_retirement(
         self,
         expected: ManagedModelAsset,
+        *,
+        delete_managed_files: bool,
     ) -> ManagedModelAsset:
         """Fence one exact registered asset and retain metadata for recovery."""
 
         if type(expected) is not ManagedModelAsset:
             raise TypeError(
                 "model asset retirement requires ManagedModelAsset"
+            )
+        if type(delete_managed_files) is not bool:
+            raise TypeError(
+                "model asset retirement deletion policy must be bool"
             )
         self._validate_id(expected.model_id)
         with self._lock(expected.model_id):
@@ -106,10 +141,15 @@ class ModelAssetRegistry:
             expected_digest = self._digest(expected)
 
             if retired.exists():
-                retired_digest = retired.read_text("ascii").strip()
-                if retired_digest != expected_digest:
+                retired_digest, durable_delete = self._decode_retirement(
+                    retired.read_bytes()
+                )
+                if (
+                    retired_digest != expected_digest
+                    or durable_delete != delete_managed_files
+                ):
                     raise RuntimeError(
-                        "model asset retirement generation drifted: "
+                        "model asset retirement generation/policy drifted: "
                         f"{expected.model_id}"
                     )
                 if not path.exists():
@@ -130,30 +170,36 @@ class ModelAssetRegistry:
                 )
             atomic_replace_bytes(
                 retired,
-                (expected_digest + "\n").encode("ascii"),
+                self._retirement_payload(
+                    expected_digest,
+                    delete_managed_files,
+                ),
             )
             return current
 
-    def retiring_asset(
+    def retirement(
         self,
         model_id: str,
-    ) -> ManagedModelAsset | None:
-        """Read exact retained metadata for an interrupted retirement."""
+    ) -> tuple[ManagedModelAsset | None, bool] | None:
+        """Read durable policy and retained metadata for retirement recovery."""
 
         self._validate_id(model_id)
         with self._lock(model_id):
             retired = self._retired_path(model_id)
             if not retired.exists():
                 return None
+            retired_digest, delete_managed_files = self._decode_retirement(
+                retired.read_bytes()
+            )
             path = self._path(model_id)
             if not path.exists():
-                return None
+                return None, delete_managed_files
             current = self._read(model_id)
-            if retired.read_text("ascii").strip() != self._digest(current):
+            if retired_digest != self._digest(current):
                 raise RuntimeError(
                     f"model asset retirement metadata drifted: {model_id}"
                 )
-            return current
+            return current, delete_managed_files
 
     def finish_retirement(
         self,
@@ -174,7 +220,10 @@ class ModelAssetRegistry:
                     "model asset retirement was not prepared: "
                     f"{expected.model_id}"
                 )
-            if retired.read_text("ascii").strip() != expected_digest:
+            retired_digest, _delete_managed_files = self._decode_retirement(
+                retired.read_bytes()
+            )
+            if retired_digest != expected_digest:
                 raise RuntimeError(
                     "model asset retirement generation drifted: "
                     f"{expected.model_id}"
