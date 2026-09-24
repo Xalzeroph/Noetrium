@@ -5,6 +5,10 @@ research projects author and control work through the Research OS only.
 """
 
 from ..research_authoring import (
+    ArtifactBlobRef,
+    EmbodiedSimulatorBackendPort,
+    SimulatorObservation,
+    SimulatorStep,
     ActionKind,
     ActionRequest,
     ActionResult,
@@ -173,6 +177,10 @@ from ..research_os import (
 )
 
 __all__ = [
+    "ArtifactBlobRef",
+    "EmbodiedSimulatorBackendPort",
+    "SimulatorObservation",
+    "SimulatorStep",
     "ResearchBranch",
     "ResearchControlAction",
     "ResearchControlReceipt",
