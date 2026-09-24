@@ -54,6 +54,7 @@ def test_every_reproduction_has_typed_authorities_and_generated_projection() -> 
                 "source_registry_digest": document["source_registry_digest"],
                 "assets": document["assets"],
                 "scientific_tests": document["scientific_tests"],
+                "research_os": document["research_os"],
             }
         )
 
