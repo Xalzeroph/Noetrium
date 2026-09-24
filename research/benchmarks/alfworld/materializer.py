@@ -8,6 +8,9 @@ from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkSourceResolution
+from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    BenchmarkResolutionRegistration,
+)
 
 from .authority import (
     ALFWORLD_RELEASE_AUTHORITY_DIGEST,
@@ -72,6 +75,30 @@ class AlfworldMaterialization:
     source_digest: str
     resolution: BenchmarkSourceResolution
     provider_order_digest: str
+
+
+def register_alfworld_materialization(
+    materialization: AlfworldMaterialization,
+) -> BenchmarkResolutionRegistration:
+    """Freeze one verified ALFWorld materialization into Benchmark authority."""
+
+    if type(materialization) is not AlfworldMaterialization:
+        raise TypeError(
+            "ALFWorld benchmark registration requires AlfworldMaterialization"
+        )
+    proof_digest = canonical_digest(
+        {
+            "schema": "alfworld.paper-eval.benchmark-authority-proof.v1",
+            "release_authority_digest": ALFWORLD_RELEASE_AUTHORITY_DIGEST,
+            "source_digest": materialization.source_digest,
+            "provider_order_digest": materialization.provider_order_digest,
+            "resolution_digest": materialization.resolution.resolution_digest,
+        }
+    )
+    return BenchmarkResolutionRegistration(
+        materialization.resolution,
+        proof_digest,
+    )
 
 
 def materialize_alfworld_paper_eval(
@@ -176,4 +203,8 @@ def materialize_alfworld_paper_eval(
     )
 
 
-__all__ = ["AlfworldMaterialization", "materialize_alfworld_paper_eval"]
+__all__ = [
+    "AlfworldMaterialization",
+    "materialize_alfworld_paper_eval",
+    "register_alfworld_materialization",
+]
