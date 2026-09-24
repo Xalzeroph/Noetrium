@@ -555,6 +555,105 @@ class ResearchGraphScheduler:
         )
         return live, pending, results, reconciliation_required, frontier
 
+    def _renew_due_durable_leases(
+        self,
+        *,
+        store: ResearchGraphExecutionStorePort,
+        node_control_store: ResearchGraphNodeControlStorePort,
+        execution_id: str,
+        running: dict[str, tuple[ResearchGraphNode, object]],
+        attempts: _DurableAttemptBook,
+        live: dict[str, ResearchGraphNodeExecutionRecord],
+        renewal_interval_ns: int,
+        now_ns: int,
+    ) -> None:
+        due_attempts: dict[str, tuple[str, int]] = {}
+        for node_id in tuple(sorted(running)):
+            _node, handle = running[node_id]
+            attempt = attempts.current(node_id)
+            if handle.done() or attempt is None:
+                continue
+            attempt_id, next_renewal = attempt
+            if now_ns >= next_renewal:
+                due_attempts[node_id] = (attempt_id, next_renewal)
+
+        if not due_attempts:
+            return
+
+        due_ids = tuple(sorted(due_attempts))
+        current_rows = store.node_states(execution_id, due_ids)
+        control_rows = node_control_store.node_control_states(
+            execution_id,
+            due_ids,
+        )
+        current_by_id = {row.node_id: row for row in current_rows}
+        control_by_id = {row.node_id: row for row in control_rows}
+        if (
+            set(current_by_id) != set(due_ids)
+            or set(control_by_id) != set(due_ids)
+        ):
+            raise ResearchGraphExecutionConflict(
+                "lease-renewal batch read lost active nodes"
+            )
+
+        renewal_rows: list[ResearchGraphLeaseRenewal] = []
+        renewal_node_ids: list[str] = []
+        for node_id in due_ids:
+            _node, handle = running[node_id]
+            attempt_id, _next_renewal = due_attempts[node_id]
+            current = current_by_id[node_id]
+            node_control = control_by_id[node_id]
+            if (
+                current.state is not ResearchGraphLiveNodeState.RUNNING
+                or current.attempt_id != attempt_id
+            ):
+                if node_control.phase in {
+                    ResearchGraphNodeControlPhase.PAUSED,
+                    ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+                    ResearchGraphNodeControlPhase.CANCELLED,
+                }:
+                    handle.cancel()
+                    continue
+                raise ResearchGraphExecutionConflict(
+                    "running scheduler attempt lost authoritative node state"
+                )
+            renewal_rows.append(
+                ResearchGraphLeaseRenewal(
+                    node_id,
+                    attempt_id,
+                    self._scheduler_owner_id,
+                    now_ns + self._lease_ns,
+                )
+            )
+            renewal_node_ids.append(node_id)
+
+        if not renewal_rows:
+            return
+
+        renewed_rows = store.renew_leases(
+            execution_id,
+            tuple(renewal_rows),
+            now_ns=now_ns,
+        )
+        renewed_by_node = {row.node_id: row for row in renewed_rows}
+        if set(renewed_by_node) != set(renewal_node_ids):
+            raise ResearchGraphExecutionConflict(
+                "batch lease renewal returned a different node set"
+            )
+        for node_id in renewal_node_ids:
+            attempt = attempts.current(node_id)
+            if attempt is None:
+                raise ResearchGraphExecutionConflict(
+                    "renewed research graph node lost local attempt"
+                )
+            attempt_id, _next_renewal = attempt
+            live[node_id] = renewed_by_node[node_id]
+            attempts.renew(
+                node_id,
+                attempt_id,
+                now_ns + renewal_interval_ns,
+            )
+
     def _execute_durable(
         self,
         *,
@@ -998,101 +1097,16 @@ class ResearchGraphScheduler:
                     continue
 
                 now_ns = time.time_ns()
-                renewal_rows: list[ResearchGraphLeaseRenewal] = []
-                renewal_node_ids: list[str] = []
-                due_attempts: dict[str, tuple[str, int]] = {}
-                for node_id in tuple(sorted(running)):
-                    _node, handle = running[node_id]
-                    attempt = attempts.current(node_id)
-                    if handle.done() or attempt is None:
-                        continue
-                    attempt_id, next_renewal = attempt
-                    if now_ns >= next_renewal:
-                        due_attempts[node_id] = (
-                            attempt_id,
-                            next_renewal,
-                        )
-
-                if due_attempts:
-                    due_ids = tuple(sorted(due_attempts))
-                    current_rows = store.node_states(
-                        execution_id,
-                        due_ids,
-                    )
-                    control_rows = node_control_store.node_control_states(
-                        execution_id,
-                        due_ids,
-                    )
-                    current_by_id = {
-                        row.node_id: row for row in current_rows
-                    }
-                    control_by_id = {
-                        row.node_id: row for row in control_rows
-                    }
-                    if (
-                        set(current_by_id) != set(due_ids)
-                        or set(control_by_id) != set(due_ids)
-                    ):
-                        raise ResearchGraphExecutionConflict(
-                            "lease-renewal batch read lost active nodes"
-                        )
-                    for node_id in due_ids:
-                        _node, handle = running[node_id]
-                        attempt_id, _next_renewal = due_attempts[node_id]
-                        current = current_by_id[node_id]
-                        node_control = control_by_id[node_id]
-                        if (
-                            current.state
-                            is not ResearchGraphLiveNodeState.RUNNING
-                            or current.attempt_id != attempt_id
-                        ):
-                            if node_control.phase in {
-                                ResearchGraphNodeControlPhase.PAUSED,
-                                ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
-                                ResearchGraphNodeControlPhase.CANCELLED,
-                            }:
-                                handle.cancel()
-                                continue
-                            raise ResearchGraphExecutionConflict(
-                                "running scheduler attempt lost authoritative "
-                                "node state"
-                            )
-                        renewal_rows.append(
-                            ResearchGraphLeaseRenewal(
-                                node_id,
-                                attempt_id,
-                                self._scheduler_owner_id,
-                                now_ns + self._lease_ns,
-                            )
-                        )
-                        renewal_node_ids.append(node_id)
-
-                if renewal_rows:
-                    renewed_rows = store.renew_leases(
-                        execution_id,
-                        tuple(renewal_rows),
-                        now_ns=now_ns,
-                    )
-                    renewed_by_node = {
-                        row.node_id: row for row in renewed_rows
-                    }
-                    if set(renewed_by_node) != set(renewal_node_ids):
-                        raise ResearchGraphExecutionConflict(
-                            "batch lease renewal returned a different node set"
-                        )
-                    for node_id in renewal_node_ids:
-                        attempt = attempts.current(node_id)
-                        if attempt is None:
-                            raise ResearchGraphExecutionConflict(
-                                "renewed research graph node lost local attempt"
-                            )
-                        attempt_id, _next_renewal = attempt
-                        live[node_id] = renewed_by_node[node_id]
-                        attempts.renew(
-                            node_id,
-                            attempt_id,
-                            now_ns + renewal_interval_ns,
-                        )
+                self._renew_due_durable_leases(
+                    store=store,
+                    node_control_store=node_control_store,
+                    execution_id=execution_id,
+                    running=running,
+                    attempts=attempts,
+                    live=live,
+                    renewal_interval_ns=renewal_interval_ns,
+                    now_ns=now_ns,
+                )
 
                 if draining and not running:
                     paused = control_store.pause_if_quiescent(
