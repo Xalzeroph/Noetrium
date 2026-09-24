@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from contextlib import contextmanager
-import sqlite3
 from pathlib import Path
 from typing import Protocol
 
 from noetrium.contracts.json import canonical_text, strict_json_loads
+
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    durable_sqlite_connection,
+    immediate_sqlite_transaction,
+)
 
 from .stores import MemoryItem
 
@@ -34,8 +37,6 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connection() as connection:
-            connection.execute("PRAGMA journal_mode=WAL")
-            connection.execute("PRAGMA synchronous=FULL")
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS memory_items (
@@ -52,17 +53,8 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
                 """
             )
 
-    @contextmanager
     def _connection(self):
-        connection = sqlite3.connect(
-            str(self.path), timeout=30.0, isolation_level=None
-        )
-        try:
-            connection.execute("PRAGMA busy_timeout=30000")
-            connection.execute("PRAGMA synchronous=FULL")
-            yield connection
-        finally:
-            connection.close()
+        return durable_sqlite_connection(self.path, timeout_seconds=30.0)
 
     @staticmethod
     def _row(item: MemoryItem) -> tuple[object, ...]:
@@ -125,8 +117,11 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
         if len(keys) != len(set(keys)):
             raise ValueError("memory persistence contains duplicate identities")
         with self._connection() as connection:
-            connection.execute("BEGIN IMMEDIATE")
-            try:
+            with immediate_sqlite_transaction(
+                connection,
+                timeout_seconds=30.0,
+                label="reference memory replace",
+            ):
                 connection.execute("DELETE FROM memory_items WHERE plane = ?", (plane,))
                 connection.executemany(
                     "INSERT INTO memory_items "
@@ -134,10 +129,6 @@ class SQLiteMemoryPersistence(MemoryPersistencePort):
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                     tuple((plane, *self._row(item)) for item in items),
                 )
-                connection.execute("COMMIT")
-            except BaseException:
-                connection.execute("ROLLBACK")
-                raise
 
     def close(self) -> None:
         """Retained as a lifecycle no-op; connections are scoped per operation."""
