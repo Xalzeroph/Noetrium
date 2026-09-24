@@ -33,11 +33,6 @@ from noetrium_platform.infrastructure.resources.providers.sqlite_resource import
     expire_lease,
     expire_resource,
 )
-from noetrium_platform.infrastructure.resources.lease.runtime.clock import (
-    LocalLeaseClock,
-)
-
-
 class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
     """Durable owner/lease authority with TTL, renewal and monotonic fencing.
 
@@ -53,14 +48,16 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
         path: str | Path,
         *,
         timeout_seconds: float = 30.0,
-        clock: LeaseClockPort | None = None,
+        clock: LeaseClockPort,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if not math.isfinite(float(timeout_seconds)) or timeout_seconds <= 0:
             raise ValueError("SQLite resource timeout_seconds must be finite and positive")
         self.timeout_seconds = float(timeout_seconds)
-        self._clock = LocalLeaseClock() if clock is None else clock
+        if not isinstance(clock, LeaseClockPort):
+            raise TypeError("SQLite resource authority requires LeaseClockPort")
+        self._clock = clock
         with self._connection() as conn:
             with immediate_sqlite_transaction(
                 conn,
