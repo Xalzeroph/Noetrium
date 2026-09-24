@@ -25,7 +25,10 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
     ResourceOwnershipConflict,
 )
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    durable_sqlite_connection,
+)
 from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
     acquire_resource_lease,
     decode_resource_lease,
@@ -64,7 +67,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             raise ValueError("SQLite endpoint timeout_seconds must be finite and positive")
         self.timeout_seconds = float(timeout_seconds)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 ensure_resource_schema(conn)
                 self._ensure_schema(conn)
@@ -218,7 +221,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 existing = self._reconcile_one(conn, allocation.allocation_id, now_epoch_s)
                 if existing is not None:
@@ -293,7 +296,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 current = self._reconcile_one(conn, proof.allocation_id, now_epoch_s)
                 if current is None:
@@ -365,7 +368,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 current = self._reconcile_one(conn, proof.allocation_id, now_epoch_s)
                 if current is None:
@@ -411,7 +414,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             current = self._reconcile_one(conn, allocation_id, now_epoch_s)
             if current is None:
                 conn.rollback()
@@ -454,7 +457,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         now_epoch_s = time() if now is None else float(now)
         expires_at = now_epoch_s + ttl_seconds
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 current_rows: list[EndpointAllocation] = []
                 for allocation_id in allocation_ids:
@@ -489,7 +492,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
     def release(self, allocation_id: str) -> EndpointAllocation:
         now_epoch_s = time()
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             current = self._reconcile_one(conn, allocation_id, now_epoch_s)
             if current is None:
                 conn.rollback()
@@ -512,7 +515,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         # This is still O(1): both allocation_id and lease_id are indexed keys.
         now_epoch_s = time()
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 current = self._reconcile_one(conn, allocation_id, now_epoch_s)
                 conn.commit()
@@ -535,7 +538,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             reconcile_expired_resource_leases(
                 conn,
                 now_epoch_s=now_epoch_s,
