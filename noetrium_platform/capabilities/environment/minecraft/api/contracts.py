@@ -140,13 +140,23 @@ class MinecraftEndpointSpec:
     """Operational network location for one MC environment instance."""
 
     host: str = "127.0.0.1"
-    port: int = 25565
+    port: int | None = None
 
     def __post_init__(self) -> None:
         if not self.host.strip():
             raise ValueError("Minecraft endpoint host is required")
-        if not 1 <= self.port <= 65535:
+        if self.port is not None and (
+            type(self.port) is not int or not 1 <= self.port <= 65535
+        ):
             raise ValueError("Minecraft endpoint port must be between 1 and 65535")
+
+    @property
+    def bound_port(self) -> int:
+        if self.port is None:
+            raise RuntimeError(
+                "Minecraft endpoint is not Resource-bound to a physical port"
+            )
+        return self.port
 
 
 @dataclass(frozen=True, slots=True)
@@ -277,7 +287,7 @@ class MinecraftServerSpec:
     java_executable: str
     libraries_dir: str | None = None
     host: str = "127.0.0.1"
-    port: int = 25565
+    port: int | None = None
     level_name: str = "research-world"
     level_seed: str = "NOETRIUM_FIXED_WORLD_V1"
     online_mode: bool = False
@@ -297,8 +307,12 @@ class MinecraftServerSpec:
             not self.libraries_dir.strip() or not is_absolute_target_path(self.libraries_dir)
         ):
             raise ValueError("Minecraft server libraries_dir must be an absolute path when provided")
-        if not self.host.strip() or not 1 <= self.port <= 65535:
-            raise ValueError("Minecraft server host/port is invalid")
+        if not self.host.strip():
+            raise ValueError("Minecraft server host is invalid")
+        if self.port is not None and (
+            type(self.port) is not int or not 1 <= self.port <= 65535
+        ):
+            raise ValueError("Minecraft server port is invalid")
         if (
             not self.level_name.strip()
             or "/" in self.level_name
@@ -308,6 +322,14 @@ class MinecraftServerSpec:
             raise ValueError("Minecraft server level identity is invalid")
         if not self.xms.strip() or not self.xmx.strip():
             raise ValueError("Minecraft server heap sizes must be non-empty")
+
+    @property
+    def bound_port(self) -> int:
+        if self.port is None:
+            raise RuntimeError(
+                "Minecraft server is not Resource-bound to a physical port"
+            )
+        return self.port
 
     def command(self) -> tuple[str, ...]:
         if self.libraries_dir is not None:
@@ -357,14 +379,26 @@ class MinecraftRconEndpoint:
     """MC-native control endpoint; the secret is resolved outside this value."""
 
     host: str = "127.0.0.1"
-    port: int = 25575
+    port: int | None = None
     command_timeout_s: float = 10.0
 
     def __post_init__(self) -> None:
-        if not self.host.strip() or not 1 <= self.port <= 65535:
-            raise ValueError("Minecraft RCON endpoint is invalid")
+        if not self.host.strip():
+            raise ValueError("Minecraft RCON endpoint host is invalid")
+        if self.port is not None and (
+            type(self.port) is not int or not 1 <= self.port <= 65535
+        ):
+            raise ValueError("Minecraft RCON endpoint port is invalid")
         if self.command_timeout_s <= 0:
             raise ValueError("Minecraft RCON command timeout must be positive")
+
+    @property
+    def bound_port(self) -> int:
+        if self.port is None:
+            raise RuntimeError(
+                "Minecraft RCON endpoint is not Resource-bound to a physical port"
+            )
+        return self.port
 
 
 @dataclass(frozen=True, slots=True)
@@ -502,6 +536,21 @@ class MinecraftBranchRuntimeRequest:
             raise ValueError("Minecraft branch runtime session_id is required")
         if type(self.scope) is not ScopeIdentity or self.scope.kind is not ScopeKind.BRANCH:
             raise ValueError("Minecraft branch runtime scope must be a branch scope")
+        if self.environment_template.endpoint.port is not None:
+            raise ValueError(
+                "Minecraft branch environment template must not preselect a port"
+            )
+        if self.server_template.port is not None:
+            raise ValueError(
+                "Minecraft branch server template must not preselect a port"
+            )
+        if (
+            self.server_template.rcon_endpoint is not None
+            and self.server_template.rcon_endpoint.port is not None
+        ):
+            raise ValueError(
+                "Minecraft branch RCON template must not preselect a port"
+            )
         if not self.endpoint_host.strip():
             raise ValueError("Minecraft branch endpoint_host is required")
         if (
