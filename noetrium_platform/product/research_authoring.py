@@ -13,6 +13,19 @@ from noetrium_platform.capabilities.environment.api import (
     ActionResult,
     EnvironmentSession,
 )
+from noetrium_platform.capabilities.environment.embodied.api import (
+    ActionKind,
+    ActionSpec,
+    EmbodiedActionCommand,
+    EmbodiedCaptureReceipt,
+    EmbodiedEvent,
+    EmbodiedEventKind,
+    EmbodimentKind,
+    EmbodimentSpec,
+    EpisodeSpec,
+    SensorModality,
+    SensorSpec,
+)
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityPort,
@@ -22,6 +35,7 @@ from noetrium_platform.capabilities.participant.capability.api import (
     CapabilitySelectionView,
     GuardDecision,
     GuardVerdict,
+    materialize_capability_selection_view,
 )
 from noetrium_platform.capabilities.participant.method.api import (
     MethodIdentity,
@@ -34,6 +48,10 @@ from noetrium_platform.composition.environment_capabilities import (
     environment_query_capability_payload,
     environment_replay_action_payload,
     environment_reset_capability_payload,
+)
+from noetrium_platform.evidence.artifact.content.api import (
+    TensorContentRef,
+    TensorContentStorePort,
 )
 from noetrium_platform.foundation.kernel.kernel import (
     ChildMachineLink,
@@ -125,8 +143,10 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 )
 
 __all__ = [
+    "ActionKind",
     "ActionRequest",
     "ActionResult",
+    "ActionSpec",
     "AgentMethodSpec",
     "AgentPhaseSpec",
     "BenchmarkTaskSet",
@@ -149,7 +169,14 @@ __all__ = [
     "EffectReceipt",
     "EnvironmentConcern",
     "EnvironmentProgramBuilder",
+    "EmbodiedActionCommand",
+    "EmbodiedCaptureReceipt",
+    "EmbodiedEvent",
+    "EmbodiedEventKind",
+    "EmbodimentKind",
+    "EmbodimentSpec",
     "EnvironmentSession",
+    "EpisodeSpec",
     "EvaluationConcern",
     "EvaluationProgramBuilder",
     "ExecutionContext",
@@ -209,7 +236,11 @@ __all__ = [
     "RuntimeProgramBuilder",
     "Study",
     "StudyModel",
+    "SensorModality",
+    "SensorSpec",
     "StudyParticipant",
+    "TensorContentRef",
+    "TensorContentStorePort",
     "TrialBudget",
     "canonical_digest",
     "environment_action_capability_payload",
@@ -219,6 +250,7 @@ __all__ = [
     "environment_replay_action_payload",
     "environment_reset_capability_payload",
     "freeze_json",
+    "materialize_capability_selection_view",
     "program_execution_capability_payload",
     "require_sha256",
     "thaw_json",
