@@ -17,6 +17,7 @@ MANAGED_CONTAINER_LABEL = "io.noetrium.managed"
 MANAGED_CONTAINER_LABEL_VALUE = "leased-container-v1"
 
 LABEL_AUTHORITY = "io.noetrium.authority-id"
+LABEL_OWNER_GENERATION = "io.noetrium.owner-generation-id"
 LABEL_ALLOCATION = "io.noetrium.allocation-id"
 LABEL_LEASE = "io.noetrium.lease-id"
 LABEL_FENCING = "io.noetrium.fencing-token"
@@ -70,6 +71,7 @@ class ManagedDockerContainerLease:
     image: str
     runtime_identity_digest: str
     authority_id: str
+    owner_generation_id: str
     container_name: str
     lease: ResourceLease
 
@@ -79,6 +81,7 @@ class ManagedDockerContainerLease:
         for field_name, value in (
             ("runtime_identity_digest", self.runtime_identity_digest),
             ("authority_id", self.authority_id),
+            ("owner_generation_id", self.owner_generation_id),
         ):
             if (
                 len(value) != 64
@@ -101,6 +104,7 @@ class ManagedDockerContainerLease:
         return (
             (MANAGED_CONTAINER_LABEL, MANAGED_CONTAINER_LABEL_VALUE),
             (LABEL_AUTHORITY, self.authority_id),
+            (LABEL_OWNER_GENERATION, self.owner_generation_id),
             (LABEL_ALLOCATION, self.allocation_id),
             (LABEL_LEASE, self.lease.lease_id),
             (LABEL_FENCING, str(self.lease.fencing_token)),
@@ -133,6 +137,7 @@ __all__ = [
     "DockerContainerObservation",
     "DockerContainerReconciliation",
     "LABEL_AUTHORITY",
+    "LABEL_OWNER_GENERATION",
     "LABEL_ALLOCATION",
     "LABEL_FENCING",
     "LABEL_HOLDER",
