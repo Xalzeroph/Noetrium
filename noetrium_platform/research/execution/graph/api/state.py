@@ -520,6 +520,14 @@ class ResearchGraphExecutionStorePort(Protocol):
         now_ns: int,
     ) -> ResearchGraphNodeExecutionRecord: ...
 
+    def mark_ready_many(
+        self,
+        execution_id: str,
+        node_ids: tuple[str, ...],
+        *,
+        now_ns: int,
+    ) -> tuple[ResearchGraphNodeExecutionRecord, ...]: ...
+
     def claim(
         self,
         execution_id: str,
@@ -577,6 +585,12 @@ class ResearchGraphExecutionStorePort(Protocol):
         *,
         blocked_by_node_ids: tuple[str, ...],
     ) -> ResearchGraphNodeExecutionRecord: ...
+
+    def mark_blocked_many(
+        self,
+        execution_id: str,
+        transitions: tuple[tuple[str, tuple[str, ...]], ...],
+    ) -> tuple[ResearchGraphNodeExecutionRecord, ...]: ...
 
     def recover_expired(
         self,
