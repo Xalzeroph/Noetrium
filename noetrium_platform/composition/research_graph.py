@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from queue import Empty, Queue
+from threading import RLock
 from uuid import uuid4
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
@@ -11,6 +12,7 @@ from noetrium_platform.composition.research_graph_frontier import (
 from noetrium_platform.foundation.kernel.concurrency.api import (
     Deadline,
     ExecutionLaneKind,
+    ExecutionPermitRejected,
     ExecutionSpec,
     TaskFailurePolicy,
     TaskFailureScope,
@@ -35,7 +37,10 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphPlan,
     ResearchGraphReconciliationRequired,
 )
-from noetrium_platform.research.execution.policy.api import ExecutionPriority
+from noetrium_platform.research.execution.policy.api import (
+    AdmissionMode,
+    ExecutionPriority,
+)
 
 
 def _reportable_failure(exc: BaseException) -> BaseException:
@@ -493,27 +498,116 @@ class ResearchGraphScheduler:
             terminal_results=results,
         )
 
-        group = self._pool.open_orchestration_group(
-            self._task_group_id or f"research-graph:{execution_id}",
+        base_group_id = (
+            self._task_group_id or f"research-graph:{execution_id}"
+        )
+        fair_group = self._pool.open_orchestration_group(
+            f"{base_group_id}:fair",
             tenant_id=self._tenant_id,
             resource_id=f"research-graph:{self._plan.graph_id}",
             priority=self._priority,
+            admission_mode=AdmissionMode.BLOCK,
             deadline=deadline,
             failure_policy=TaskFailurePolicy.COLLECT_ALL,
         )
-        running: dict[str, tuple[ResearchGraphNode, object, str, int]] = {}
+        try:
+            opportunistic_group = self._pool.open_orchestration_group(
+                f"{base_group_id}:opportunistic",
+                tenant_id=self._tenant_id,
+                resource_id=f"research-graph:{self._plan.graph_id}",
+                priority=self._priority,
+                admission_mode=AdmissionMode.REJECT,
+                deadline=deadline,
+                failure_policy=TaskFailurePolicy.COLLECT_ALL,
+            )
+        except BaseException:
+            self._pool.close_orchestration_group(
+                fair_group,
+                cancel_pending=True,
+                deadline=deadline,
+            )
+            raise
+
+        running: dict[str, tuple[ResearchGraphNode, object]] = {}
         renewal_interval_ns = max(1, self._lease_ns // 3)
+        attempt_lock = RLock()
+        attempt_state: dict[str, tuple[str, int]] = {}
         completion_queue: Queue[str] = Queue()
 
-        def submit(node: ResearchGraphNode, attempt_id: str):
-            def run(context, owned_node=node, owned_attempt_id=attempt_id):
+        def current_attempt(node_id: str) -> tuple[str, int] | None:
+            with attempt_lock:
+                return attempt_state.get(node_id)
+
+        def publish_attempt(
+            node_id: str,
+            attempt_id: str,
+            next_renewal_ns: int,
+        ) -> None:
+            with attempt_lock:
+                if node_id in attempt_state:
+                    raise RuntimeError(
+                        f"research graph attempt published twice: {node_id}"
+                    )
+                attempt_state[node_id] = (
+                    attempt_id,
+                    next_renewal_ns,
+                )
+
+        def update_attempt_renewal(
+            node_id: str,
+            attempt_id: str,
+            next_renewal_ns: int,
+        ) -> None:
+            with attempt_lock:
+                current = attempt_state.get(node_id)
+                if current is None or current[0] != attempt_id:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph renewal lost local attempt identity"
+                    )
+                attempt_state[node_id] = (
+                    attempt_id,
+                    next_renewal_ns,
+                )
+
+        def drop_attempt(node_id: str) -> tuple[str, int] | None:
+            with attempt_lock:
+                return attempt_state.pop(node_id, None)
+
+        def submit(
+            node: ResearchGraphNode,
+            *,
+            block_for_capacity: bool,
+        ):
+            target_group = (
+                fair_group if block_for_capacity else opportunistic_group
+            )
+
+            def run(context, owned_node=node):
                 try:
+                    claim_now_ns = time.time_ns()
+                    claim = store.claim(
+                        execution_id,
+                        owned_node.node_id,
+                        owner_id=self._scheduler_owner_id,
+                        now_ns=claim_now_ns,
+                        lease_expires_at_ns=claim_now_ns + self._lease_ns,
+                    )
+                    attempt_id = claim.attempt_id
+                    if attempt_id is None:
+                        raise RuntimeError(
+                            "claimed research graph node lost attempt id"
+                        )
                     store.mark_running(
                         execution_id,
                         owned_node.node_id,
-                        attempt_id=owned_attempt_id,
+                        attempt_id=attempt_id,
                         owner_id=self._scheduler_owner_id,
                         now_ns=time.time_ns(),
+                    )
+                    publish_attempt(
+                        owned_node.node_id,
+                        attempt_id,
+                        time.time_ns() + renewal_interval_ns,
                     )
                     context.checkpoint()
                     self._executor.execute(
@@ -525,7 +619,7 @@ class ResearchGraphScheduler:
                 finally:
                     completion_queue.put(owned_node.node_id)
 
-            return group.submit(
+            return target_group.submit(
                 ExecutionSpec(
                     task_id=(
                         f"research-graph-node:{execution_id}:{node.node_id}"
@@ -538,9 +632,15 @@ class ResearchGraphScheduler:
             )
 
         def record_completion(node_id: str) -> None:
-            node, handle, attempt_id, _next_renewal = running.pop(node_id)
+            node, handle = running.pop(node_id)
+            attempt = drop_attempt(node_id)
+            attempt_id = None if attempt is None else attempt[0]
             try:
                 handle.result()
+                if attempt_id is None:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph task completed without durable claim"
+                    )
                 record = store.mark_succeeded(
                     execution_id,
                     node.node_id,
@@ -565,6 +665,38 @@ class ResearchGraphScheduler:
                 )
                 current = store.node_state(execution_id, node_id)
                 live[node_id] = current
+                if attempt_id is None:
+                    node_control = node_control_store.node_control_state(
+                        execution_id,
+                        node_id,
+                    )
+                    control = control_store.control_state(execution_id)
+                    if (
+                        current.state in {
+                            ResearchGraphLiveNodeState.PENDING,
+                            ResearchGraphLiveNodeState.READY,
+                        }
+                        and (
+                            node_control.phase
+                            is not ResearchGraphNodeControlPhase.ACTIVE
+                            or control.phase
+                            is not ResearchGraphControlPhase.ACTIVE
+                        )
+                    ):
+                        pending[node_id] = node
+                        frontier.restore_ready(node_id)
+                        return
+                    if current.state is ResearchGraphLiveNodeState.CANCELLED:
+                        results[node_id] = ResearchGraphNodeResult(
+                            node.node_id,
+                            node.semantic_digest,
+                            ResearchGraphNodeState.CANCELLED,
+                        )
+                        frontier.record_terminal(results[node_id])
+                        return
+                    raise ResearchGraphExecutionConflict(
+                        "research graph worker failed before acquiring durable claim"
+                    ) from failure
                 if (
                     current.state is ResearchGraphLiveNodeState.RUNNING
                     and current.attempt_id == attempt_id
@@ -637,12 +769,7 @@ class ResearchGraphScheduler:
                     ResearchGraphControlPhase.RECOVERY_REQUIRED,
                     ResearchGraphControlPhase.CANCELLED,
                 }:
-                    for _node_id, (
-                        _node,
-                        handle,
-                        _attempt_id,
-                        _renewal,
-                    ) in tuple(running.items()):
+                    for _node_id, (_node, handle) in tuple(running.items()):
                         handle.cancel()
                     raise ResearchGraphControlHalt(current_control)
                 draining = (
@@ -650,7 +777,7 @@ class ResearchGraphScheduler:
                 )
 
                 if deadline is not None and deadline.expired:
-                    for _node_id, (_node, handle, _attempt_id, _renewal) in tuple(
+                    for _node_id, (_node, handle) in tuple(
                         running.items()
                     ):
                         handle.cancel()
@@ -739,30 +866,19 @@ class ResearchGraphScheduler:
                             )
                             live[node_id] = current
                         try:
-                            claim = store.claim(
-                                execution_id,
-                                node_id,
-                                owner_id=self._scheduler_owner_id,
-                                now_ns=now_ns,
-                                lease_expires_at_ns=now_ns + self._lease_ns,
+                            handle = submit(
+                                node,
+                                block_for_capacity=not running,
                             )
-                        except ResearchGraphExecutionConflict:
-                            live[node_id] = store.node_state(execution_id, node_id)
-                            raise
-                        live[node_id] = claim
-                        attempt_id = claim.attempt_id
-                        if attempt_id is None:
-                            raise RuntimeError(
-                                "claimed research graph node lost attempt id"
-                            )
-                        handle = submit(node, attempt_id)
+                        except ExecutionPermitRejected:
+                            if not running:
+                                raise ResearchGraphExecutionConflict(
+                                    "fair research graph admission rejected a "
+                                    "single-node request"
+                                )
+                            break
                         frontier.consume_ready(node_id)
-                        running[node_id] = (
-                            node,
-                            handle,
-                            attempt_id,
-                            now_ns + renewal_interval_ns,
-                        )
+                        running[node_id] = (node, handle)
                         del pending[node_id]
                         progressed = True
 
@@ -783,8 +899,12 @@ class ResearchGraphScheduler:
                 renewal_rows: list[ResearchGraphLeaseRenewal] = []
                 renewal_node_ids: list[str] = []
                 for node_id in tuple(sorted(running)):
-                    node, handle, attempt_id, next_renewal = running[node_id]
-                    if handle.done() or now_ns < next_renewal:
+                    node, handle = running[node_id]
+                    attempt = current_attempt(node_id)
+                    if handle.done() or attempt is None:
+                        continue
+                    attempt_id, next_renewal = attempt
+                    if now_ns < next_renewal:
                         continue
                     current = store.node_state(execution_id, node_id)
                     node_control = node_control_store.node_control_state(
@@ -828,11 +948,15 @@ class ResearchGraphScheduler:
                             "batch lease renewal returned a different node set"
                         )
                     for node_id in renewal_node_ids:
-                        node, handle, attempt_id, _next_renewal = running[node_id]
+                        attempt = current_attempt(node_id)
+                        if attempt is None:
+                            raise ResearchGraphExecutionConflict(
+                                "renewed research graph node lost local attempt"
+                            )
+                        attempt_id, _next_renewal = attempt
                         live[node_id] = renewed_by_node[node_id]
-                        running[node_id] = (
-                            node,
-                            handle,
+                        update_attempt_renewal(
+                            node_id,
                             attempt_id,
                             now_ns + renewal_interval_ns,
                         )
@@ -909,12 +1033,13 @@ class ResearchGraphScheduler:
                     continue
 
                 wait_seconds = 0.05
-                if running:
-                    next_renewal_ns = min(
-                        renewal
-                        for _node, _handle, _attempt, renewal
-                        in running.values()
-                    )
+                renewal_deadlines = tuple(
+                    attempt[1]
+                    for node_id in running
+                    if (attempt := current_attempt(node_id)) is not None
+                )
+                if renewal_deadlines:
+                    next_renewal_ns = min(renewal_deadlines)
                     wait_seconds = min(
                         wait_seconds,
                         max(
@@ -960,11 +1085,25 @@ class ResearchGraphScheduler:
                 tuple(results[node_id] for node_id in sorted(results)),
             )
         finally:
-            self._pool.close_orchestration_group(
-                group,
-                cancel_pending=deadline.expired if deadline is not None else False,
-                deadline=deadline,
-            )
+            close_errors: list[BaseException] = []
+            for owned_group in (opportunistic_group, fair_group):
+                try:
+                    self._pool.close_orchestration_group(
+                        owned_group,
+                        cancel_pending=(
+                            deadline.expired
+                            if deadline is not None
+                            else False
+                        ),
+                        deadline=deadline,
+                    )
+                except BaseException as exc:
+                    close_errors.append(exc)
+            if close_errors:
+                raise ExceptionGroup(
+                    "research graph resource groups failed to close",
+                    close_errors,
+                )
 
     def close(self, *, deadline: Deadline | None = None) -> None:
         if self._closed:
