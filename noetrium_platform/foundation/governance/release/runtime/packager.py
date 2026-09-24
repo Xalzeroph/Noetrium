@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 from dataclasses import dataclass
 import hashlib
 import os
@@ -180,7 +182,7 @@ class ReleasePackager:
                         authority_info._compresslevel = self._policy.compression_level
                         zf.writestr(authority_info, authority.to_json_bytes())
                 sink.flush()
-                os.fsync(raw.fileno())
+                flush_file_descriptor(raw.fileno())
                 sha256 = sink.sha256
             durable_replace_file(temp_path, zip_path)
             published = True
