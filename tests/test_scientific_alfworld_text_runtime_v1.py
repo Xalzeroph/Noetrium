@@ -11,6 +11,7 @@ from noetrium_platform.capabilities.environment.providers import JsonlProcessMes
 from noetrium_platform.capabilities.participant.capability.api import CapabilityRequest
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, ExecutionContext
 from research.benchmarks.alfworld.runtime import AlfworldTextRuntimeSpec, AlfworldTextSession
+from research.benchmarks.alfworld.runtime.session import _ManagedDockerWorkerTransport
 
 
 class _FakeWorkerTransport:
@@ -176,3 +177,117 @@ def test_generic_environment_capability_adapter_executes_real_session_contract(t
     assert result.effect is not None
     assert result.effect.certainty is EffectCertainty.EFFECT_CONFIRMED
     adapter.close()
+
+
+def test_managed_docker_close_keeps_lower_fences_when_worker_stop_fails() -> None:
+    class Delegate:
+        def __init__(self) -> None:
+            self.close_calls = 0
+
+        @property
+        def started(self) -> bool:
+            return True
+
+        def close(self) -> None:
+            self.close_calls += 1
+            if self.close_calls == 1:
+                raise RuntimeError("worker still live")
+
+    class Guard:
+        def __init__(self) -> None:
+            self.close_calls = 0
+
+        def start(self) -> None:
+            return None
+
+        def assert_healthy(self) -> None:
+            return None
+
+        def close(self) -> None:
+            self.close_calls += 1
+
+    class Containers:
+        def __init__(self) -> None:
+            self.release_calls = 0
+
+        def release(self, lease) -> None:
+            del lease
+            self.release_calls += 1
+
+    delegate = Delegate()
+    guard = Guard()
+    containers = Containers()
+    transport = _ManagedDockerWorkerTransport(
+        delegate,
+        container_leases=containers,
+        lease=object(),
+        lease_guard=guard,
+    )
+
+    with pytest.raises(BaseExceptionGroup, match="before physical convergence"):
+        transport.close()
+
+    assert delegate.close_calls == 1
+    assert guard.close_calls == 0
+    assert containers.release_calls == 0
+
+    transport.close()
+
+    assert delegate.close_calls == 2
+    assert guard.close_calls == 1
+    assert containers.release_calls == 1
+
+
+def test_managed_docker_close_retries_container_release_without_reclosing_worker() -> None:
+    class Delegate:
+        def __init__(self) -> None:
+            self.close_calls = 0
+
+        @property
+        def started(self) -> bool:
+            return True
+
+        def close(self) -> None:
+            self.close_calls += 1
+
+    class Guard:
+        def __init__(self) -> None:
+            self.close_calls = 0
+
+        def start(self) -> None:
+            return None
+
+        def assert_healthy(self) -> None:
+            return None
+
+        def close(self) -> None:
+            self.close_calls += 1
+
+    class Containers:
+        def __init__(self) -> None:
+            self.release_calls = 0
+
+        def release(self, lease) -> None:
+            del lease
+            self.release_calls += 1
+            if self.release_calls == 1:
+                raise RuntimeError("durable release failed")
+
+    delegate = Delegate()
+    guard = Guard()
+    containers = Containers()
+    transport = _ManagedDockerWorkerTransport(
+        delegate,
+        container_leases=containers,
+        lease=object(),
+        lease_guard=guard,
+    )
+
+    with pytest.raises(BaseExceptionGroup, match="releasing container"):
+        transport.close()
+
+    transport.close()
+
+    assert delegate.close_calls == 1
+    assert guard.close_calls == 1
+    assert containers.release_calls == 2
