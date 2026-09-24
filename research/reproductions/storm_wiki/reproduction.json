@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "storm_wiki",
-  "package_digest": "0c09c494aa1c5c8cf534132e802a2ff2fc9110f9d9f4eef3f96f3a29231c2141",
+  "package_digest": "d8160b56730ebd3b8a8601466d29ebf3bbb0c83427ef6ec3493d1877aa3fa406",
   "definition_digest": "6984850bbaaa1139acee2db5aee2b4bfbeb80ccd94ddd7f49c298c04d45bc06d",
   "source_registry_digest": "a81615aa99cc6d96340bca8447ebe87504c9bdb0bcc0f961f51286299458a9b0",
   "lifecycle": "protocol_bound",
@@ -102,7 +102,7 @@
       "kind": "study",
       "path": "research/reproductions/storm_wiki/study.py",
       "declaration_digest": "4141ae8f24e3a995b5d418446f42488eb924974525e0bc8eb81a66ebe477e9f1",
-      "content_sha256": "5511e007bac17f6fd8a6f1dfa7ac64961c748ab6f4043f28b457a11a5f903f30"
+      "content_sha256": "aab75853c518941226a28069685e8dd5adfdf054dda7f3a90dcf771b69d1cbe3"
     },
     {
       "kind": "support",

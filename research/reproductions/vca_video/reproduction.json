@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vca_video",
-  "package_digest": "3d1ba4b7ceb6ae59712d4e074bdc9c9bd3e250c031bc7cc4ec131155021e3644",
+  "package_digest": "b7d16c973f53ebe1171fae5042a86b1788111cf76f0ec9112853b4152eaa1095",
   "definition_digest": "475825bad1ef41fa8e9bc3bec73c0374d2425e0cd6019f7b44b79ffa9d2dd184",
   "source_registry_digest": "993b22ccf2d2e42518ffca18ac76bb9e7465b2b1dfd22cf2c63ca2867c6a8a4b",
   "lifecycle": "protocol_bound",
@@ -89,7 +89,7 @@
       "kind": "study",
       "path": "research/reproductions/vca_video/study.py",
       "declaration_digest": "ecea08a091320896f8014d8b2bd449f1ff27b918171a2669b251677417c6800f",
-      "content_sha256": "827aedc216e318e7d089f8a90da2272a4a2579ed514307737fecc1e0435462a1"
+      "content_sha256": "e99db7e29f5f01558240586e2c62d828c7ce39c7063dc955f797000fab29afcd"
     },
     {
       "kind": "support",

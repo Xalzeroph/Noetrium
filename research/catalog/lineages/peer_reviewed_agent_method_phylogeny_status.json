@@ -68,7 +68,7 @@
       "reproductions": [
         {
           "package": "minedojo",
-          "package_digest": "5867f38a9e8e11111ed61c892bf74844d8ff7cbd046540682afe5fc1ee89ca9b",
+          "package_digest": "4b49c2dbf394232dafa3f9e38787d7ffeb3b3cab890a9d7d9a2cb5c8f55e1d6a",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minedojo"
@@ -121,7 +121,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/minedojo/study.py",
-              "content_sha256": "e2893b00900dcaf5cf4e9ba6ce8ebbfe79569d553eef51f3453a0c8d073e4370"
+              "content_sha256": "a307f69f7a1d995e715336e01c9b0fae0fe41012f84eaeedd342a3925811ab03"
             },
             {
               "kind": "support",
@@ -856,7 +856,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "1cacd0015f67a866916b5b0ad7962b1c682e0d1539a58b03be1683360702bd9c",
+          "package_digest": "6604b014dd9d0159363a8a67aa71fc1c700caad47e0e2105c78a09958c03ec9c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -883,7 +883,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/self_refine/study.py",
-              "content_sha256": "10386089e7b85bf4d5664fe070d7c3a15c826ae37463b8786728446a10b88011"
+              "content_sha256": "70c3d3040baaca70f5335e487160c97ec1fa469e8468de2f8b1c9efbb7637463"
             }
           ],
           "blockers": [
@@ -996,7 +996,7 @@
       "reproductions": [
         {
           "package": "toolformer",
-          "package_digest": "375ad93ebb3c71741c2f614bd23d655d7e26262f6f1280878b4c0736548fc002",
+          "package_digest": "6c4e3c297791062829d823686cf6c798734af27f2f30484192e10b6f60dc1a2a",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolformer-eval"
@@ -1027,7 +1027,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/toolformer/study.py",
-              "content_sha256": "91db93d07d0b6a6cbd717450e81b6f0696bb8353b52cbe15ecd99ea4c8677b14"
+              "content_sha256": "f090da8de7a1a2d72e67a2783cdca47734299a1d0901b0d84a9812343dded285"
             },
             {
               "kind": "support",
@@ -1118,7 +1118,7 @@
       "reproductions": [
         {
           "package": "vima_embodied",
-          "package_digest": "8f46df1ed6892855c434b4ae120652ccad36a039bd79566e90d51952abe170e0",
+          "package_digest": "e2e1fce199cc552b3a452fdc2732946ebbe6921165ab298a2ffc63c611f50f2b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "vima-bench"
@@ -1166,7 +1166,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/vima_embodied/study.py",
-              "content_sha256": "d48cf1a08779c78e6c8f320c64add0e9f9c540646d879da0c406053c40b1b4a8"
+              "content_sha256": "5e3d85f0bc340e18ef91efde03f6cd21f556a8581b7bfd720b11a7b2b16a9956"
             },
             {
               "kind": "support",
@@ -1370,7 +1370,7 @@
       "reproductions": [
         {
           "package": "cogagent",
-          "package_digest": "2ce183703bd3f335ad4492dbe8357a38333477ccfb2766575193c4e0a9643e2e",
+          "package_digest": "46cac80f39d2ff445c298b9ced517c2576b8c2c77e8a6986f6ba715e27847400",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mind2web"
@@ -1396,7 +1396,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/cogagent/program.py",
-              "content_sha256": "b1030c7adf84ef9f4e344f39016c1b4f3896990bf0ce5ba2694e450c7b2004bf"
+              "content_sha256": "f4090c55c4def1dec4aacf7994c64b1985e82994cd008dfa959c627ecb36aa07"
             },
             {
               "kind": "study",
@@ -1503,7 +1503,7 @@
       "reproductions": [
         {
           "package": "ma_lmm_memory",
-          "package_digest": "9c9179a9e99597fd9809f9145024a6b2f0afb14c85231fb7c6299b364f2f2aba",
+          "package_digest": "5fa33515520a2b86ecc5f2e0fc28899f87c82046c8e3bc4ffff7c4d6eb410892",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -1551,7 +1551,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/ma_lmm_memory/study.py",
-              "content_sha256": "989c3449ae8705b741fe890ba757f800f09ba06830e750eee19cc4a9a3784603"
+              "content_sha256": "cd7922e0288f8afae029eb2228a575d713bbd03dc465dbdca4f5230ba68c6b42"
             },
             {
               "kind": "support",
@@ -1723,7 +1723,7 @@
       "reproductions": [
         {
           "package": "seeclick",
-          "package_digest": "ebe9931a2e04dcd194ee809b073b1cd6aaaf28bbcbbe67a844a62ee3a507a83c",
+          "package_digest": "4b9f49fc2dbae8bbd3fe56238bbcb430357af98fa6963a662622fae9795a3c64",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "screenspot"
@@ -1749,7 +1749,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/seeclick/program.py",
-              "content_sha256": "603e93e508485279e750a7dbf0e01e532f2aaa43c504d464591b95677221664d"
+              "content_sha256": "63781a6bb9e9ad02265b2686ea62d558f103f8b41a8dd36b8a6b7bae55dfd898"
             },
             {
               "kind": "study",
@@ -1785,7 +1785,7 @@
       "reproductions": [
         {
           "package": "storm_wiki",
-          "package_digest": "0c09c494aa1c5c8cf534132e802a2ff2fc9110f9d9f4eef3f96f3a29231c2141",
+          "package_digest": "d8160b56730ebd3b8a8601466d29ebf3bbb0c83427ef6ec3493d1877aa3fa406",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "freshwiki"
@@ -1822,7 +1822,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/storm_wiki/study.py",
-              "content_sha256": "5511e007bac17f6fd8a6f1dfa7ac64961c748ab6f4043f28b457a11a5f903f30"
+              "content_sha256": "aab75853c518941226a28069685e8dd5adfdf054dda7f3a90dcf771b69d1cbe3"
             },
             {
               "kind": "support",
@@ -2791,7 +2791,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "8283e636cd2ad7dc11d7ec348d5cc279f40bebd177f0e43063ad80eff97c6751",
+          "package_digest": "ccf565a53335938c2dd437f7b9fb05359610c0e4fc7904833343f7e1615dec0b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -2825,7 +2825,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/qlass_alfworld/study.py",
-              "content_sha256": "e370b57e705b40f44c631314858369efe0d737dff6a92269cdf53abb70d8eea6"
+              "content_sha256": "efb60c16952923eaba2d4fe36b98f9a45e2bd8a0c1105e6e8c51accfd787d79e"
             },
             {
               "kind": "support",
@@ -3813,7 +3813,7 @@
       "reproductions": [
         {
           "package": "worldmm_memory",
-          "package_digest": "3833ba9954a72e37e11a7397aa7117eac3d05212282f710e4adb84901828f889",
+          "package_digest": "01d73feb26ec997b4af58e7b5f8101128663a1e0beb6400ec52b9a07bcaec9f3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egolifeqa"
@@ -3866,7 +3866,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/worldmm_memory/study.py",
-              "content_sha256": "57e31dc7fe8761439ad2288821e808e6d1cb06501e425bcbe78ba45dfd29357d"
+              "content_sha256": "5058f0883d9a83815b635a6c43a9f23edd0c5b968857703696453c84f0e5ddfe"
             },
             {
               "kind": "support",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "5c99b9937ef1fd2f9dc996ed72963e26647802df2f4561a3e091fb6cbf607390"
+  "projection_digest": "6d80270796c11fc1130f1c395d0ed4b581ef260d7f2d83b82a373897158c2bd6"
 }

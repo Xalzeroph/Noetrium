@@ -81,7 +81,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "1cacd0015f67a866916b5b0ad7962b1c682e0d1539a58b03be1683360702bd9c",
+          "package_digest": "6604b014dd9d0159363a8a67aa71fc1c700caad47e0e2105c78a09958c03ec9c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -108,7 +108,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/self_refine/study.py",
-              "content_sha256": "10386089e7b85bf4d5664fe070d7c3a15c826ae37463b8786728446a10b88011"
+              "content_sha256": "70c3d3040baaca70f5335e487160c97ec1fa469e8468de2f8b1c9efbb7637463"
             }
           ],
           "blockers": [
@@ -411,7 +411,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "8283e636cd2ad7dc11d7ec348d5cc279f40bebd177f0e43063ad80eff97c6751",
+          "package_digest": "ccf565a53335938c2dd437f7b9fb05359610c0e4fc7904833343f7e1615dec0b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -445,7 +445,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/qlass_alfworld/study.py",
-              "content_sha256": "e370b57e705b40f44c631314858369efe0d737dff6a92269cdf53abb70d8eea6"
+              "content_sha256": "efb60c16952923eaba2d4fe36b98f9a45e2bd8a0c1105e6e8c51accfd787d79e"
             },
             {
               "kind": "support",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "e3098aafee71b4ae5f5a246a21a36fd77a88ddba5c1a9457542ea0587a4f2afa"
+  "projection_digest": "3dfe4166a59ccd409ef6887dc399cf9d044cc4a1d1b97f1a48ff3fa6412b1e15"
 }

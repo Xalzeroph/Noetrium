@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "minedojo",
-  "package_digest": "5867f38a9e8e11111ed61c892bf74844d8ff7cbd046540682afe5fc1ee89ca9b",
+  "package_digest": "4b49c2dbf394232dafa3f9e38787d7ffeb3b3cab890a9d7d9a2cb5c8f55e1d6a",
   "definition_digest": "859f1c1220814ec7377557548db8c0a5703d0ebd323a8be89adff59072207a5e",
   "source_registry_digest": "4e2bb1c63f4746aac56e56ee71551b01971ab4476cff7f802b1806783b01b3b1",
   "lifecycle": "protocol_bound",
@@ -134,7 +134,7 @@
       "kind": "study",
       "path": "research/reproductions/minedojo/study.py",
       "declaration_digest": "33ff80cc5a2d51de0beeacbf583c12052d3eb088fe8ca396055b5237e4979985",
-      "content_sha256": "e2893b00900dcaf5cf4e9ba6ce8ebbfe79569d553eef51f3453a0c8d073e4370"
+      "content_sha256": "a307f69f7a1d995e715336e01c9b0fae0fe41012f84eaeedd342a3925811ab03"
     },
     {
       "kind": "support",
