@@ -12,6 +12,7 @@ from .authority import (
     MachineAuthorityPort,
     MachineLease,
     MachineLeaseBusy,
+    MachineLeaseClockConflict,
     MachineLeaseLost,
 )
 from .semantic_policy import OperationSemanticPolicyViolation
@@ -120,7 +121,7 @@ __all__ = [
     "DurableCarrierClosureAuthority", "DurableCarrierReferenceClosure",
     "durable_carrier_closure_complete", "durable_carrier_gc_eligible", "validate_durable_carrier_closures",
     "DirectoryMachineAuthority", "InMemoryMachineAuthority", "MachineAuthorityError",
-    "MachineAuthorityPort", "MachineLease", "MachineLeaseBusy", "MachineLeaseLost",
+    "MachineAuthorityPort", "MachineLease", "MachineLeaseBusy", "MachineLeaseClockConflict", "MachineLeaseLost",
     "CapabilityDescriptor", "ChildMachineLink", "MachineAttempt", "RunBinding",
     "DirectoryChildMachineSupervisor", "ChildMachinePending", "ChildMachineRecord", "ChildMachineStatus",
     "ChildMachineSupervisorPort", "InMemoryChildMachineSupervisor",
