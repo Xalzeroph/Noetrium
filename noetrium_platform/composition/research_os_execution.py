@@ -1528,6 +1528,20 @@ class StrictResearchOSControl(
         compilation, cut, active, _snapshot, control = self._active_execution_state(
             request, portfolio,
         )
+        # RESUME is an execution-producing transition. Prove the exact target
+        # closure before changing durable control from PAUSED to ACTIVE so an
+        # admission failure cannot leave a falsely runnable cut behind.
+        prepared = prepare_research_os_execution(
+            request.target,
+            portfolio,
+            self._runtime,
+            self._values,
+            experiment_closures=self._experiment_closures,
+            artifact_lineage=self._artifact_lineage,
+        )
+        if prepared.compilation != compilation or prepared.cut != cut:
+            raise ValueError("Research OS resume preflight identity drifted")
+
         if request.target.node is not None:
             if control.phase is not ResearchGraphControlPhase.ACTIVE:
                 raise ResearchGraphExecutionConflict(
@@ -1556,17 +1570,6 @@ class StrictResearchOSControl(
                 raise ResearchGraphExecutionConflict(
                     "Research OS resume did not produce active graph control"
                 )
-
-        prepared = prepare_research_os_execution(
-            request.target,
-            portfolio,
-            self._runtime,
-            self._values,
-            experiment_closures=self._experiment_closures,
-            artifact_lineage=self._artifact_lineage,
-        )
-        if prepared.compilation != compilation or prepared.cut != cut:
-            raise ValueError("Research OS resume preflight identity drifted")
         return self._drive(request, prepared, active.generation)
 
     def _cancel(
@@ -1671,17 +1674,40 @@ class StrictResearchOSControl(
             compilation,
             root.graph_node_id,
         )
+        retry_seed_node_ids = (root.graph_node_id, *descendants)
+        staged = (
+            control.phase is ResearchGraphControlPhase.PAUSED
+            or root_control.phase is ResearchGraphNodeControlPhase.PAUSED
+        )
+
+        prepared = None
+        if not staged:
+            # Active RETRY immediately produces execution. Admission therefore
+            # precedes the durable failed-subgraph reset; otherwise an admission
+            # failure would erase the failed state without launching a retry.
+            execution_target = ResearchExecutionTarget(
+                request.target.execution_id,
+                request.target.revision,
+            )
+            prepared = prepare_research_os_execution(
+                execution_target,
+                portfolio,
+                self._runtime,
+                self._values,
+                experiment_closures=self._experiment_closures,
+                artifact_lineage=self._artifact_lineage,
+                selection_seed_node_ids=retry_seed_node_ids,
+            )
+            if prepared.compilation != compilation or prepared.cut != cut:
+                raise ValueError("Research OS retry preflight identity drifted")
+
         self._store.retry_failed_subgraph(
             cut.cut_id,
             root.graph_node_id,
             descendant_node_ids=descendants,
             retry_not_before_ns=time.time_ns(),
         )
-        retry_seed_node_ids = (root.graph_node_id, *descendants)
-        if (
-            control.phase is ResearchGraphControlPhase.PAUSED
-            or root_control.phase is ResearchGraphNodeControlPhase.PAUSED
-        ):
+        if staged:
             snapshot = self._store.snapshot(cut.cut_id)
             return self._durable_control_receipt(
                 request,
@@ -1697,21 +1723,8 @@ class StrictResearchOSControl(
                     "retry_root_control_phase": root_control.phase.value,
                 },
             )
-        execution_target = ResearchExecutionTarget(
-            request.target.execution_id,
-            request.target.revision,
-        )
-        prepared = prepare_research_os_execution(
-            execution_target,
-            portfolio,
-            self._runtime,
-            self._values,
-            experiment_closures=self._experiment_closures,
-            artifact_lineage=self._artifact_lineage,
-            selection_seed_node_ids=retry_seed_node_ids,
-        )
-        if prepared.compilation != compilation or prepared.cut != cut:
-            raise ValueError("Research OS retry preflight identity drifted")
+        if prepared is None:
+            raise AssertionError("active retry lost preflighted execution")
         return self._drive(request, prepared, active.generation)
 
     def _reconcile(
