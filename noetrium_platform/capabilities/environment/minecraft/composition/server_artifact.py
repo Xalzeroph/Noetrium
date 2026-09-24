@@ -6,6 +6,9 @@ from noetrium_platform.substrate.api import (
     ArtifactAcquisitionPort,
     ArtifactHttpOpener,
 )
+from noetrium_platform.evidence.artifact.content.providers.download import (
+    open_artifact_http,
+)
 
 from ..providers.server_artifact import OfficialMinecraftServerArtifactProvider
 
@@ -25,7 +28,7 @@ def compose_official_minecraft_server_artifacts(
     return MinecraftServerArtifactAssembly(
         provider=OfficialMinecraftServerArtifactProvider(
             acquisition,
-            metadata_opener=metadata_opener,
+            metadata_opener=metadata_opener or open_artifact_http,
         )
     )
 
