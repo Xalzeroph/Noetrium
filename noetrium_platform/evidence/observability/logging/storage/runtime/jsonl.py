@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 """Durable append-only structured log storage.
 
 The logging system owns records and queries; this adapter owns only the
@@ -160,7 +162,7 @@ class JsonlLogStore:
         with self.path.open("ab") as handle:
             handle.write(encoded)
             handle.flush()
-            os.fsync(handle.fileno())
+            flush_file_descriptor(handle.fileno())
         if not existed:
             fsync_directory(self.path.parent)
 
