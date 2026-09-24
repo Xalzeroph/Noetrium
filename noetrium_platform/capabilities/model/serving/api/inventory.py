@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
+
 from dataclasses import asdict, dataclass
-import hashlib
 import json
 import math
 
@@ -183,9 +184,9 @@ class HostInventory:
             "runtime":asdict(self.runtime),
         }
         raw=json.dumps(payload,sort_keys=True,ensure_ascii=False,separators=(",",":")).encode()
-        return hashlib.sha256(raw).hexdigest()
+        return sha256_bytes(raw)
 
     def snapshot_digest(self)->str:
         """Full point-in-time inventory digest including free resources and listening ports."""
         raw=json.dumps(asdict(self),sort_keys=True,ensure_ascii=False,separators=(",",":")).encode()
-        return hashlib.sha256(raw).hexdigest()
+        return sha256_bytes(raw)
