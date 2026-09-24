@@ -8,6 +8,7 @@ from scripts.build_environment_images import (
     _default_active_profile_ids,
     _profile_map,
     _profile_revision,
+    _require_profile_build_intent,
     validate_catalog,
 )
 
@@ -44,6 +45,7 @@ def test_environment_profile_registry_is_dynamic_and_lifecycle_driven() -> None:
     builder = (ROOT / "scripts" / "build_environment_images.py").read_text(encoding="utf-8")
     assert "EXPECTED_PROFILES" not in builder
     assert "_default_active_profile_ids" in builder
+    assert "--allow-draining" in builder
     assert "--allow-retired" in builder
 
 
@@ -64,6 +66,50 @@ def test_environment_registry_accepts_parallel_retired_revision_without_code_cha
     assert result["retired_profile_count"] == 1
     assert "minecraft-r0" not in _default_active_profile_ids(profiles)
     assert _profile_revision(retired) != _profile_revision(current)
+
+
+def test_environment_profile_lifecycle_blocks_new_work_without_recovery_intent() -> None:
+    profiles = {
+        "active": {"lifecycle": "active"},
+        "draining": {"lifecycle": "draining"},
+        "retired": {"lifecycle": "retired"},
+    }
+    _require_profile_build_intent(
+        profiles,
+        ("active",),
+        allow_draining=False,
+        allow_retired=False,
+    )
+
+    import pytest
+
+    with pytest.raises(RuntimeError, match="allow-draining"):
+        _require_profile_build_intent(
+            profiles,
+            ("draining",),
+            allow_draining=False,
+            allow_retired=False,
+        )
+    _require_profile_build_intent(
+        profiles,
+        ("draining",),
+        allow_draining=True,
+        allow_retired=False,
+    )
+
+    with pytest.raises(RuntimeError, match="allow-retired"):
+        _require_profile_build_intent(
+            profiles,
+            ("retired",),
+            allow_draining=False,
+            allow_retired=False,
+        )
+    _require_profile_build_intent(
+        profiles,
+        ("retired",),
+        allow_draining=False,
+        allow_retired=True,
+    )
 
 
 def test_environment_registry_declares_share_vs_isolate_policy() -> None:
