@@ -71,7 +71,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
         self._request_counter = 0
         self._action_proofs: dict[str, ActionReconciliationDisposition] = {}
         actor_identity = hashlib.sha256(
-            f"{endpoint.host}:{endpoint.port}:{agent.username}".encode("utf-8")
+            f"{endpoint.host}:{endpoint.bound_port}:{agent.username}".encode("utf-8")
         ).hexdigest()[:20]
         self._task_group = task_group
         self._bridge_identity = actor_identity
@@ -323,7 +323,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
                 "command": self.spec.command,
                 "cwd": self.spec.cwd,
                 "host": self.endpoint.host,
-                "port": self.endpoint.port,
+                "port": self.endpoint.bound_port,
             },
         )
         try:
@@ -333,7 +333,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
                 "connect",
                 {
                     "host": self.endpoint.host,
-                    "port": self.endpoint.port,
+                    "port": self.endpoint.bound_port,
                     "username": self.agent.username,
                     "auth": self.agent.auth,
                     **({"version": self.agent.version} if self.agent.version else {}),
