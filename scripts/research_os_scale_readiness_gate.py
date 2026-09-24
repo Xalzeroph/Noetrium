@@ -252,6 +252,7 @@ def _durable_execution_contract() -> ReadinessCriterion:
     required = (
         "ensure_execution",
         "snapshot",
+        "node_state",
         "recover_expired",
         "mark_ready",
         "claim",
@@ -259,14 +260,27 @@ def _durable_execution_contract() -> ReadinessCriterion:
         "renew_lease",
         "mark_succeeded",
         "mark_failed",
+        "retry_failed_subgraph",
+        "resolve_reconciliation",
+        "mark_reused",
+        "reuse_record",
         "active_cut",
         "move_active_cut",
         "control_state",
         "request_drain",
+        "pause_if_quiescent",
         "interrupt",
         "cancel_if_quiescent",
         "require_recovery",
         "settle_recovery",
+        "node_control_state",
+        "node_control_snapshot",
+        "request_node_drain",
+        "pause_node_if_quiescent",
+        "resume_node",
+        "interrupt_node",
+        "settle_node_recovery",
+        "cancel_node_subgraph",
     )
     missing = tuple(
         name for name in required
@@ -281,6 +295,9 @@ def _durable_execution_contract() -> ReadinessCriterion:
         "synchronous_full": 'PRAGMA synchronous=FULL' in source,
         "immediate_transactions": 'BEGIN IMMEDIATE' in source,
         "active_cut_expected_cas": "expected_cut_id" in source,
+        "active_cut_source_fence": "source_fence" in source,
+        "claim_graph_control_fence": "claim requires active graph control" in source,
+        "claim_node_control_fence": "claim requires active node control" in source,
         "schema_migration_forbidden": "automatic compatibility migration is forbidden"
         in source,
     }
