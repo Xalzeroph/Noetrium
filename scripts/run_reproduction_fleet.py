@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import sys
 from dataclasses import asdict, dataclass
@@ -17,6 +18,10 @@ from noetrium_platform.composition.research_os_graph import (
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from research.reproductions import build_research
 from research.reproductions.contracts import ReproductionAssetKind
+from research.reproductions.fleet import (
+    ReproductionFleetExecutionAuthorities,
+    run_repository_execution_fleet,
+)
 from research.reproductions.research_os import (
     compile_reproduction_research_program,
     discover_reproduction_definitions,
@@ -240,15 +245,105 @@ def build_plan() -> dict:
     return document
 
 
+def _load_execution_authorities(spec: str) -> ReproductionFleetExecutionAuthorities:
+    if type(spec) is not str or not spec.strip() or spec != spec.strip():
+        raise ValueError("fleet execution authority spec must be canonical text")
+    module_name, separator, qualname = spec.partition(":")
+    if (
+        separator != ":"
+        or not module_name
+        or not qualname
+        or ":" in qualname
+    ):
+        raise ValueError(
+            "fleet execution authority must use module:factory format"
+        )
+    module = importlib.import_module(module_name)
+    value = module
+    for part in qualname.split("."):
+        if not part or part.startswith("_"):
+            raise ValueError(
+                "fleet execution authority factory qualname must be public"
+            )
+        value = getattr(value, part)
+    if not callable(value):
+        raise TypeError("fleet execution authority target must be callable")
+    authorities = value()
+    if type(authorities) is not ReproductionFleetExecutionAuthorities:
+        raise TypeError(
+            "fleet execution authority factory must return "
+            "ReproductionFleetExecutionAuthorities"
+        )
+    return authorities
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Compile every protocol-bound paper reproduction through the current "
-            "Research OS authority and emit its exact admission state."
+            "Audit or execute the complete repository reproduction fleet through "
+            "the canonical Research OS authority."
         )
     )
     parser.add_argument("--output", type=Path)
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help=(
+            "resolve exact execution closure and RUN the materialized fleet; "
+            "without this flag the command is read-only admission audit"
+        ),
+    )
+    parser.add_argument(
+        "--execution-authority",
+        help=(
+            "module:factory returning ReproductionFleetExecutionAuthorities; "
+            "required for --execute and never inferred"
+        ),
+    )
+    parser.add_argument(
+        "--state-root",
+        type=Path,
+        default=ROOT / ".noetrium" / "reproduction-fleet",
+    )
+    parser.add_argument("--execution-id")
     args = parser.parse_args()
+
+    if args.execute:
+        if args.execution_authority is None:
+            parser.error("--execute requires --execution-authority")
+        authorities = _load_execution_authorities(args.execution_authority)
+        result = run_repository_execution_fleet(
+            authorities,
+            state_root=args.state_root,
+            execution_id=args.execution_id,
+        )
+        payload = {
+            "schema": "noetrium.reproduction-fleet-execution.v1",
+            "execution_id": result.receipt.target.execution_id,
+            "revision_digest": result.receipt.target.research_revision_digest,
+            "materialization_digest": (
+                result.materialization.materialization_digest
+            ),
+            "portfolio_digest": result.materialization.portfolio.portfolio_digest,
+            "request_count": len(result.materialization.requests),
+            "lane_count": len(result.materialization.lanes),
+            "control_action": result.receipt.action.value,
+            "control_state": result.receipt.state,
+            "control_receipt_digest": result.receipt.receipt_digest,
+            "execution_digest": result.execution_digest,
+        }
+        rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(rendered, encoding="utf-8")
+        print(rendered, end="")
+        return 0 if result.receipt.state == "succeeded" else 1
+
+    if args.execution_authority is not None:
+        parser.error("--execution-authority is valid only with --execute")
+    if args.execution_id is not None:
+        parser.error("--execution-id is valid only with --execute")
+
     payload = build_plan()
     rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if args.output:
