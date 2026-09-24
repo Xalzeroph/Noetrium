@@ -3,6 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
+from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
+    InterprocessFileLock,
+)
 
 from .service_state_codec import ServiceSupervisorStateCodec
 from .service_state_contracts import ServiceSupervisorState
@@ -26,6 +29,11 @@ class FileServiceStateStore:
 
     def reference(self) -> str:
         return str(self._path)
+
+    def mutation(self) -> InterprocessFileLock:
+        return InterprocessFileLock(
+            self._path.with_name(self._path.name + ".mutation.lock")
+        )
 
 
 __all__ = ["FileServiceStateStore"]
